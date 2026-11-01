@@ -11,7 +11,11 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/Serialization/Json/PointerJsonSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ::Dom::Utils
 {
@@ -67,7 +71,84 @@ namespace AZ::Dom::Utils
         return AZ::Success(AZStd::move(value));
     }
 
+    // ----------------------------------------------------------------------------------
+    // Marshal cache scope (DomUtils.h)
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to the marshal cache. A named namespace: a unity build joins this file with others.
+    namespace MarshalCacheInternal
+    {
+        //! The outermost MarshalCacheScope on this thread, or null when none exists
+        thread_local MarshalCacheScope* t_scope = nullptr;
+
+        //! The field PointerJsonSerializer gives a PointerObject's address
+        const AZ::Name PointerObjectAddressFieldName = AZ::Name::FromStringLiteral("$address", AZ::Interface<AZ::NameDictionary>::Get());
+
+        Value ConvertTypeId(const AZ::TypeId& typeId);
+
+        //! True if the serializer registered for PointerObject is the stock PointerJsonSerializer, whose value BuildPointerObject builds
+        bool StockPointerObjectSerializer()
+        {
+            auto* application = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+            const JsonRegistrationContext* registrationContext = application ? application->GetJsonRegistrationContext() : nullptr;
+            const BaseJsonSerializer* serializer =
+                registrationContext ? registrationContext->GetSerializerForType(azrtti_typeid<AZ::PointerObject>()) : nullptr;
+            return serializer && azrtti_typeid(serializer) == azrtti_typeid<PointerJsonSerializer>();
+        }
+
+        //! The value the JSON path gives a PointerObject (PointerJsonSerializer::Store, then Json::VisitRapidJsonValue): the address,
+        //! an Int64 as rapidjson types a number up to INT64_MAX (a Uint64 above it), then the type id as JsonUuidSerializer writes it
+        Value BuildPointerObject(const AZ::PointerObject& pointerObject)
+        {
+            Value result(Type::Object);
+            const AZ::u64 address = static_cast<AZ::u64>(reinterpret_cast<uintptr_t>(pointerObject.m_address));
+            if (address <= static_cast<AZ::u64>(AZStd::numeric_limits<AZ::s64>::max()))
+            {
+                result[PointerObjectAddressFieldName] = Value(static_cast<AZ::s64>(address));
+            }
+            else
+            {
+                result[PointerObjectAddressFieldName] = Value(address);
+            }
+            result[TypeFieldName] = Value(pointerObject.m_typeId.ToFixedString(), true);
+            return result;
+        }
+    } // namespace MarshalCacheInternal
+
+    MarshalCacheScope::MarshalCacheScope()
+    {
+        if (!MarshalCacheInternal::t_scope)
+        {
+            MarshalCacheInternal::t_scope = this;
+            m_isOutermost = true;
+        }
+    }
+
+    MarshalCacheScope::~MarshalCacheScope()
+    {
+        if (m_isOutermost)
+        {
+            MarshalCacheInternal::t_scope = nullptr;
+        }
+    }
+
     Value TypeIdToDomValue(const AZ::TypeId& typeId)
+    {
+        MarshalCacheScope* scope = MarshalCacheInternal::t_scope;
+        if (!scope)
+        {
+            return MarshalCacheInternal::ConvertTypeId(typeId);
+        }
+        if (auto cached = scope->m_typeIdValues.find(typeId); cached != scope->m_typeIdValues.end())
+        {
+            return cached->second;
+        }
+        Value value = MarshalCacheInternal::ConvertTypeId(typeId);
+        scope->m_typeIdValues.emplace(typeId, value);
+        return value;
+    }
+
+    Value MarshalCacheInternal::ConvertTypeId(const AZ::TypeId& typeId)
     {
         // Assign a custom reporting callback to ignore unregistered types
         AZ::JsonSerializerSettings settings;
@@ -534,6 +615,22 @@ namespace AZ::Dom::Utils
             // It can't actually compare the data
             // Therefore two opaque values with the same data, but that different are aprt of different objects
             // will always compare unequal. This can result in-efficient behavior such as creating more Dom Patches than necessary
+            // A PointerObject inside a marshal cache scope: built directly, as the JSON path below would give it (DomUtils.h)
+            if (typeTraits.m_typeId == azrtti_typeid<AZ::PointerObject>())
+            {
+                if (MarshalCacheScope* scope = MarshalCacheInternal::t_scope)
+                {
+                    if (scope->m_buildPointerObjects < 0)
+                    {
+                        scope->m_buildPointerObjects = MarshalCacheInternal::StockPointerObjectSerializer() ? 1 : 0;
+                    }
+                    if (scope->m_buildPointerObjects == 1)
+                    {
+                        return MarshalCacheInternal::BuildPointerObject(*reinterpret_cast<const AZ::PointerObject*>(valueAddress));
+                    }
+                }
+            }
+
             AZ::JsonSerializerSettings storeSettings;
             // Defaults should be kept in the Dom::Value to make sure a complete object is written to the Dom
             storeSettings.m_keepDefaults = true;

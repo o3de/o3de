@@ -183,8 +183,14 @@ set(FILES
     ThumbnailerTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
+    UI/DocumentPropertyEditorHoldTests.cpp
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
+    UI/EntityOutlinerFlatSheetTests.cpp
+    UI/EntityPropertyEditorInterruptibleLoadTests.cpp
+    UI/EntityPropertyEditorLayoutTests.cpp
+    UI/EntityPropertyEditorLazyCardsTests.cpp
+    UI/EntityPropertyEditorTestFixture.h
     UI/EntityPropertyEditorTests.cpp
     UI/PropertyAssetCtrlTests.cpp
     UI/AssetBrowserTests.cpp

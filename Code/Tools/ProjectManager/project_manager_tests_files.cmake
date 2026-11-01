@@ -15,4 +15,5 @@ set(FILES
     tests/main.cpp
     tests/UtilsTests.cpp
     tests/TextOverflowTests.cpp
+    tests/FlatElementsTests.cpp
 )

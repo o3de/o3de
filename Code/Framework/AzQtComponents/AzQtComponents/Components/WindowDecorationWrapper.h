@@ -99,6 +99,7 @@ namespace AzQtComponents
     protected:
         bool event(QEvent* ev) override;
         bool eventFilter(QObject* watched, QEvent* event) override;
+        void paintEvent(QPaintEvent* ev) override;
         void resizeEvent(QResizeEvent* ev) override;
         void childEvent(QChildEvent* ev) override;
         void closeEvent(QCloseEvent* ev) override;

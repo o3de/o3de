@@ -35,6 +35,8 @@ set(FILES
     Scene.cpp
     CameraState.cpp
     DocumentPropertyEditor/AdapterBuilderTests.cpp
+    DocumentPropertyEditor/AggregateAdapterTests.cpp
+    DocumentPropertyEditor/ExpanderSettingsTests.cpp
     DocumentPropertyEditor/SchemaTests.cpp
     DocumentPropertyEditor/CvarAdapterTests.cpp
     DocumentPropertyEditor/SettingsRegistryAdapterTests.cpp

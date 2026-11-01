@@ -7,6 +7,10 @@
  */
 
 #include <AzQtComponents/Components/Widgets/ColorLabel.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/LineEdit.h>
+
+#include <QLineEdit>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/ColorHexEdit.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/Swatch.h>
@@ -33,6 +37,21 @@ namespace AzQtComponents
 
         boxLayout->addWidget(m_swatch);
         boxLayout->addWidget(m_hexEdit);
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // ColorLabel.qss:20-23 $size.surface.idle.min-width.Alt5 $size.surface.idle.max-width.Alt3 $size.surface.idle.min-height.Alt4
+            // $size.surface.idle.max-height.Alt3
+            m_swatch->setFixedSize(32, 16);
+            // ColorLabel.qss:31-32 $size.surface.idle.max-width.Alt6 $size.surface.idle.min-width.Alt7
+            m_hexEdit->setFixedWidth(100);
+            if (auto hexLineEdit = m_hexEdit->findChild<QLineEdit*>())
+            {
+                const QMargins box = LineEdit::flattenedFieldBox(hexLineEdit);
+                // Contents width in the box: ColorLabel.qss:37-38 $size.field.idle.max-width.Alt4 $size.field.idle.min-width.Alt3
+                hexLineEdit->setFixedWidth(100 + box.left() + box.right());
+            }
+        }
 
         m_swatch->installEventFilter(this);
 

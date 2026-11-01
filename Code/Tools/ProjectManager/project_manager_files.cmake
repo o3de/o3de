@@ -163,4 +163,6 @@ set(FILES
     Source/GemRepo/GemRepoModel.cpp
     Source/GemRepo/GemRepoProxyModel.h
     Source/GemRepo/GemRepoProxyModel.cpp
+    Source/FlatElements.h
+    Source/FlatElements.cpp
 )

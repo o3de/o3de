@@ -18,6 +18,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
@@ -83,6 +84,26 @@ namespace AzToolsFramework
 
         //hide header for dropdown-style, single-column, tree
         m_componentTree->header()->hide();
+
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            // Editor.qss: ComponentPaletteWidget { border: 1px solid #4E4E4E; background-color:
+            // #383A3B }, ComponentPaletteWidget > QTreeView { background-color: #222222 }.
+            // TOKENIZE: ComponentPaletteBorder, ComponentPaletteBackground, ComponentPaletteTreeBackground
+            setFrameStyle(QFrame::Box | QFrame::Plain);
+            setLineWidth(1);
+            QPalette palettePalette = palette();
+            palettePalette.setColor(QPalette::Window, QColor(0x38, 0x3A, 0x3B));
+            palettePalette.setColor(QPalette::WindowText, QColor(0x4E, 0x4E, 0x4E));
+            setPalette(palettePalette);
+            setAutoFillBackground(true);
+
+            QPalette treePalette = m_componentTree->palette();
+            treePalette.setColor(QPalette::Base, QColor(0x22, 0x22, 0x22));
+            treePalette.setColor(QPalette::Text, QColor(0xFF, 0xFF, 0xFF));
+            treePalette.setColor(QPalette::WindowText, QColor(0xFF, 0xFF, 0xFF));
+            m_componentTree->setPalette(treePalette);
+        }
 
         connect(m_searchText, &QLineEdit::textChanged, this, &ComponentPaletteWidget::QueueUpdateSearch);
         QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(m_searchText);

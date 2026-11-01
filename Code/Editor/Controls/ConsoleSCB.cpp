@@ -468,7 +468,7 @@ void CConsoleSCB::RefreshStyle()
     m_colorTable[0] = textColor;
     m_colorTable[1] = textColor;
 
-    ui->textEdit->setStyleSheet(QString("background: %1").arg(bgColor.name(QColor::HexRgb)));
+    AzQtComponents::ScrollBar::setBackgroundColor(ui->textEdit, bgColor);
 
     // Clear out the console text when we change our background color since
     // some of the previous text colors may not be appropriate for the

@@ -11,6 +11,7 @@ set(FILES
     Lib/Tests/test_CryEditPythonBindings.cpp
     Lib/Tests/test_CryEditDocPythonBindings.cpp
     Lib/Tests/test_EditorPythonBindings.cpp
+    Lib/Tests/test_EditorFlatSheet.cpp
     Lib/Tests/test_EditorUtils.cpp
     Lib/Tests/test_Main.cpp
     Lib/Tests/test_MainWindowPythonBindings.cpp

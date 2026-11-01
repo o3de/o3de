@@ -33,6 +33,33 @@ set(FILES
     Components/DockTabBar.h
     Components/DockTabWidget.cpp
     Components/DockTabWidget.h
+    Components/Elements/BoxElement.cpp
+    Components/Elements/BoxElement.h
+    Components/Elements/ColorPickerElements.cpp
+    Components/Elements/ColorPickerElements.h
+    Components/Elements/ComboPopupElement.cpp
+    Components/Elements/ComboPopupElement.h
+    Components/Elements/ControlElements.cpp
+    Components/Elements/ControlElements.h
+    Components/Elements/ElementCommon.cpp
+    Components/Elements/ElementCommon.h
+    Components/Elements/Foundations.h
+    Components/Elements/FrameElement.cpp
+    Components/Elements/FrameElement.h
+    Components/Elements/IndicatorElement.cpp
+    Components/Elements/IndicatorElement.h
+    Components/Elements/ItemViewElement.cpp
+    Components/Elements/ItemViewElement.h
+    Components/Elements/MenuElement.cpp
+    Components/Elements/MenuElement.h
+    Components/Elements/PropertyEditorElements.cpp
+    Components/Elements/PropertyEditorElements.h
+    Components/Elements/SpinBoxElement.cpp
+    Components/Elements/SpinBoxElement.h
+    Components/Elements/TabElement.cpp
+    Components/Elements/TabElement.h
+    Components/Elements/TextElement.cpp
+    Components/Elements/TextElement.h
     Components/FancyDocking.cpp
     Components/FancyDocking.h
     Components/FancyDockingGhostWidget.cpp
@@ -87,6 +114,12 @@ set(FILES
     Components/StyleSheetCache.h
     Components/StylesheetPreprocessor.cpp
     Components/StylesheetPreprocessor.h
+    Components/GuiPerfCounters.cpp
+    Components/GuiPerfCounters.h
+    Components/GuiPerfFloor.cpp
+    Components/GuiPerfFloor.h
+    Components/UiCaptureHarness.cpp
+    Components/UiCaptureHarness.h
     Components/TagSelector.cpp
     Components/TagSelector.h
     Components/ToolBarArea.cpp
@@ -156,6 +189,8 @@ set(FILES
     Components/Widgets/FilteredSearchWidgetConfig.ini
     Components/Widgets/GradientSlider.cpp
     Components/Widgets/GradientSlider.h
+    Components/Widgets/IconElidingLabel.cpp
+    Components/Widgets/IconElidingLabel.h
     Components/Widgets/LineEdit.cpp
     Components/Widgets/LineEdit.h
     Components/Widgets/LineEdit.qss
@@ -285,6 +320,8 @@ set(FILES
     Utilities/DesktopUtilities.h
     Utilities/HandleDpiAwareness.cpp
     Utilities/HandleDpiAwareness.h
+    Utilities/IconUtilities.cpp
+    Utilities/IconUtilities.h
     Utilities/MouseHider.h
     Utilities/PixmapScaleUtilities.cpp
     Utilities/PixmapScaleUtilities.h

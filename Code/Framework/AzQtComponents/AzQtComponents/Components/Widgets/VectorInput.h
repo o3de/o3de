@@ -97,6 +97,10 @@ namespace AzQtComponents
         static bool polish(QProxyStyle* style, QWidget* widget, const SpinBox::Config& config);
         static bool unpolish(QProxyStyle* style, QWidget* widget, const SpinBox::Config& config);
 
+        //! Flattened GUI only: the frame of the coordinate label of a vector element (VectorInput.qss:9-16, :37-55), which Style::drawControl
+        //! hands to it as CE_ShapedFrame. False: not such a label.
+        static bool drawFlattenedLabel(const QStyleOption* option, QPainter* painter, const QWidget* widget);
+
         static void initStaticVars(int labelSize);
 
         void resizeLabel();

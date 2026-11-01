@@ -9,12 +9,17 @@
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 
 #include <QDialogButtonBox>
 #include <QImage>
+#include <QLinearGradient>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QPixmapCache>
 #include <QPushButton>
@@ -103,7 +108,14 @@ bool PushButton::polish(Style* style, QWidget* widget, const PushButton::Config&
     }
     else if (pushButton != nullptr)
     {
-        widget->setMaximumHeight(config.defaultFrame.height);
+        // A BrowseEdit's attached button: the sheet's geometry (BrowseEdit.qss:55-58) came after this and replaced the maximum height
+        // (QStyleSheetStyle::polish); the flattened BrowseEdit fixes the button's size, which the default frame must not raise again
+        const bool browseEditButton = StyleManager::stylesheetsDisabled() && pushButton->objectName() == QLatin1String("attached-button")
+            && Selectors::childOfClass(pushButton, "AzQtComponents::BrowseEdit");
+        if (!browseEditButton)
+        {
+            widget->setMaximumHeight(config.defaultFrame.height);
+        }
         return true;
     }
 
@@ -164,6 +176,59 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
     Q_UNUSED(style);
 
     const auto* button = qobject_cast<const QPushButton*>(widget);
+    if (StyleManager::stylesheetsDisabled() && button && button->objectName() == QLatin1String("attached-button"))
+    {
+        // The attached button of a BrowseEdit (BrowseEdit.qss:50-89): a vertical gradient, flat when pressed or disabled (with a line at
+        // its left then), the left corners square and the right ones round
+        const bool enabled = option->state.testFlag(QStyle::State_Enabled);
+        const bool pressed = option->state.testFlag(QStyle::State_Sunken);
+        const bool hover = enabled && option->state.testFlag(QStyle::State_MouseOver);
+        const QRectF r(option->rect);
+
+        QBrush face;
+        if (!enabled)
+        {
+            face = QColor(0x66, 0x66, 0x66);                            // BrowseEdit.qss:87 $fill.button.disabled.Alt1
+        }
+        else if (pressed)
+        {
+            face = Foundations::Mid;                                    // BrowseEdit.qss:82 $fill.button.pressed.Mid
+        }
+        else
+        {
+            // BrowseEdit.qss:63, :77 (the top stops) $fill.button.idle.gradient $fill.button.hover.gradient
+            const QColor top = hover ? QColor(0x77, 0x77, 0x77) : QColor(0x66, 0x66, 0x66);
+            // BrowseEdit.qss:63, :77 (the bottom stops) $fill.button.idle.gradient $fill.button.hover.gradient
+            const QColor bottom = hover ? QColor(0x66, 0x66, 0x66) : QColor(0x55, 0x55, 0x55);
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0.0, top);
+            gradient.setColorAt(1.0, bottom);
+            face = gradient;
+        }
+
+        //! BrowseEdit.qss:70-71 $radius.button.idle.top-right.Alt1 $radius.button.idle.bottom-right.Alt1
+        const qreal radius = 2.0;
+        QPainterPath path;
+        path.moveTo(r.left(), r.top());
+        path.lineTo(r.right() - radius, r.top());
+        path.arcTo(QRectF(r.right() - 2 * radius, r.top(), 2 * radius, 2 * radius), 90, -90);
+        path.lineTo(r.right(), r.bottom() - radius);
+        path.arcTo(QRectF(r.right() - 2 * radius, r.bottom() - 2 * radius, 2 * radius, 2 * radius), 0, -90);
+        path.lineTo(r.left(), r.bottom());
+        path.closeSubpath();
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->fillPath(path, face);
+        if (!enabled)
+        {
+            // BrowseEdit.qss:88 $line.button.disabled.width $line.button.disabled.color
+            painter->fillRect(QRectF(r.left(), r.top(), 1.0, r.height()), Foundations::Highest);
+        }
+        painter->restore();
+        return true;
+    }
+
     if (!button || button->isFlat())
     {
         return false;

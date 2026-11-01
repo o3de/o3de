@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
@@ -18,12 +19,60 @@
 
 namespace AtomToolsFramework
 {
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one
+    //! translation unit, where anonymous namespaces merge.
+    namespace InspectorGroupHeaderWidgetInternal
+    {
+        // ------------------------------------------------------------------------------
+        // Flattened GUI: the box of the header. The legacy sheets gave it, together, the vertical margin of every label
+        // (`.Label, QLabel`, Text.qss:89-95) and its own sheet below, set in the constructor (a fill, and a line above and below
+        // it). That sheet still runs in the flattened GUI, and QStyleSheetStyle draws what its rule has and leaves nothing to the
+        // style beneath (qstylesheetstyle.cpp:4681-4727): it drew the line at the widget's edge and missed the margin. So the element
+        // carries both and the constructor sets no sheet. The widget draws its icon and text itself (paintEvent).
+        // ------------------------------------------------------------------------------
+
+        const AzQtComponents::BoxElement GroupHeader{
+            .m_name = "AtomTools.Box.InspectorGroupHeader",
+            .m_margin = QMargins(0, 1, 0, 1),                                       // margin-top, margin-bottom: Text.qss:93, :94
+            .m_nativeBorder = false,                                                // border-style solid: a border of its own (:74)
+            .m_idle = {
+                .m_fill = QBrush(QColor(0x33, 0x33, 0x33)),                         // background-color (:74). TOKENIZE: InspectorGroupHeaderFill
+                // border-color #1B1B1B, border-width 1px; border-left and border-right none (:74). TOKENIZE: InspectorGroupHeaderBorder
+                .m_edges = { { 1, QColor(0x1B, 0x1B, 0x1B) }, {}, { 1, QColor(0x1B, 0x1B, 0x1B) }, {} },
+            },
+        };
+
+        bool isGroupHeader(const QWidget*)
+        {
+            return true;                // the class is the selector: every InspectorGroupHeaderWidget set this sheet
+        }
+    } // namespace InspectorGroupHeaderWidgetInternal
+
+    void InspectorGroupHeaderWidget::RegisterFlatElement()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            AzQtComponents::BoxElement::registerElement(
+                &InspectorGroupHeaderWidgetInternal::GroupHeader, &InspectorGroupHeaderWidget::staticMetaObject,
+                &InspectorGroupHeaderWidgetInternal::isGroupHeader);
+        }
+    }
+
     InspectorGroupHeaderWidget::InspectorGroupHeaderWidget(QWidget* parent)
         : ExtendedLabel(parent)
     {
         AzQtComponents::Text::addPrimaryStyle(this);
         AzQtComponents::Text::addLabelStyle(this);
-        setStyleSheet("background-color: #333333; border-style: solid; border-color: #1B1B1B; border-width: 1px; border-left: none; border-right: none;");
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            RegisterFlatElement();
+        }
+        else
+        {
+            setStyleSheet("background-color: #333333; border-style: solid; border-color: #1B1B1B; border-width: 1px; border-left: none; border-right: none;");
+        }
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         setFixedHeight(24);
         setContentsMargins(0, 0, 0, 0);

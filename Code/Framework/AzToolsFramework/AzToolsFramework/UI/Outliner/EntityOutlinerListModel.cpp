@@ -38,6 +38,8 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzQtComponents/Utilities/IconUtilities.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
@@ -309,7 +311,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QString(":/Entity/entity_editoronly.svg"));
+            return AzQtComponents::CachedIcon(QStringLiteral(":/Entity/entity_editoronly.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -318,10 +320,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QString(":/Entity/entity_notactive.svg"));
+            return AzQtComponents::CachedIcon(QStringLiteral(":/Entity/entity_notactive.svg"));
         }
 
-        return QIcon(QString(":/Entity/entity.svg"));
+        return AzQtComponents::CachedIcon(QStringLiteral(":/Entity/entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const

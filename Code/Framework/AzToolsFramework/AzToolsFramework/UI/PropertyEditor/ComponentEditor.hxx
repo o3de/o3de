@@ -82,6 +82,15 @@ namespace AzToolsFramework
         bool HasContents();
         void SetFilterString(AZStd::string filterString);
         void InvalidateAll(const char* filter = nullptr);
+
+        //! The inspector's lazy cards: holds the build of the card's rows until it is released, which builds them once; discarding
+        //! drops the hold without building (the card is being cleared). Only a DPE card holds. A multi-edit card held before its
+        //! instances are added also defers its aggregate: the release adds the instances after the first.
+        void HoldContentBuild();
+        void ReleaseContentBuild();
+        void DiscardContentBuild();
+        bool IsContentBuildHeld() const;
+
         void QueuePropertyEditorInvalidation(PropertyModificationRefreshLevel refreshLevel);
         void QueuePropertyEditorInvalidationForComponent(AZ::EntityComponentIdPair entityComponentIdPair, PropertyModificationRefreshLevel refreshLevel);
         
@@ -174,6 +183,12 @@ namespace AzToolsFramework
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter> m_aggregateAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
+
+        //! Multi-edit: adds an instance after the first to the aggregate (creating it with the first instance's adapter), which
+        //! generates the instance's contents
+        void AddAggregateInstance(AZ::Component* componentInstance);
+        //! The instances after the first that a card held before they were added gives the aggregate when it is released
+        AZStd::vector<AZ::Component*> m_pendingAggregateInstances;
 
         AZ::SerializeContext* m_serializeContext = nullptr;
 

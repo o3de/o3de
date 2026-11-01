@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -527,14 +528,18 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         case QEvent::DynamicPropertyChange:
         {
             // ignore properties coming from inside the style sheet system itself, which are all by convention
-            // prefixed with _q_
+            // prefixed with _q_, and those the flattened elements keep on a widget while the style polishes it (_o3de_)
             QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
             QString propertyName = QString::fromUtf8(eventFull->propertyName());
-            if (!propertyName.startsWith(QStringLiteral("_q_")))
+            if (!propertyName.startsWith(QStringLiteral("_q_")) && !propertyName.startsWith(QStringLiteral("_o3de_")))
             {
-                auto styleSheet = StyleManager::styleSheetStyle(spinBox);
-                styleSheet->unpolish(spinBox);
-                styleSheet->polish(spinBox);
+                // None before the StyleManager exists, as in the unit tests (ComboBox.cpp, ScrollBar.cpp and TreeView.cpp guard the
+                // same call)
+                if (auto styleSheet = StyleManager::styleSheetStyle(spinBox))
+                {
+                    styleSheet->unpolish(spinBox);
+                    styleSheet->polish(spinBox);
+                }
             }
             break;
         }
@@ -1071,6 +1076,32 @@ bool SpinBox::polish(QProxyStyle* style, QWidget* widget, const SpinBox::Config&
         if (newStyle)
         {
             newStyle->repolishOnSettingsChange(spinBox);
+        }
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // The :hover faces (SpinBox.qss:24-25, :33-40): the sheet style gave a widget with such a rule the hover attribute, and
+            // its embedded widget (the line edit) mouse tracking (QStyleSheetStyle::polish)
+            spinBox->setAttribute(Qt::WA_Hover, true);
+            if (QLineEdit* embedded = spinBox->findChild<QLineEdit*>())
+            {
+                embedded->setAttribute(Qt::WA_Hover, true);
+                embedded->setMouseTracking(true);
+            }
+
+            // The line edit paints no field of its own (the spin box element draws the box). The field's text colour reaches Text and
+            // WindowText (QRenderRule::configurePalette): nothing paints a line edit with WindowText, but the legacy palette has it.
+            if (QLineEdit* lineEdit = spinBox->findChild<QLineEdit*>())
+            {
+                QPalette lineEditPalette = lineEdit->palette();
+                lineEditPalette.setColor(QPalette::Base, Qt::transparent);
+                for (const QPalette::ColorRole role : { QPalette::Text, QPalette::WindowText })
+                {
+                    lineEditPalette.setColor(role, Foundations::Field::Text);
+                    lineEditPalette.setColor(QPalette::Disabled, role, Foundations::Field::DisabledText);
+                }
+                lineEdit->setPalette(lineEditPalette);
+            }
         }
 
         s_spinBoxWatcher->m_config = config;

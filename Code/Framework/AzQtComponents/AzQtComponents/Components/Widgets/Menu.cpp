@@ -7,6 +7,8 @@
  */
 
 #include <AzQtComponents/Components/Widgets/Menu.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
@@ -44,6 +46,12 @@ namespace AzQtComponents
         if (!menu)
         {
             return false;
+        }
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // The font is the QMenu class font (TextElement::installClassFonts)
+            MenuElement::resolve(menu);
         }
 
         style->repolishOnSettingsChange(widget);

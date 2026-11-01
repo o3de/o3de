@@ -24,12 +24,16 @@ AZ_POP_DISABLE_WARNING
 #include <QString>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QVector>
 #include <QWidget>
 
 #include <AzQtComponents/Components/AutoCustomWindowDecorations.h>
+#include <AzQtComponents/Components/GuiPerfCounters.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
+#include <AzQtComponents/Components/UiCaptureHarness.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 namespace AzQtComponents
@@ -46,6 +50,70 @@ namespace AzQtComponents
     {
         return QStyleFactory::create("Fusion");
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Style sheet kill switch (GUI flattening work)
+    //
+    // When the environment variable O3DE_DISABLE_STYLESHEETS is set, or the
+    // application was launched with the --disable-stylesheets argument, the
+    // StyleManager installs no Qt style sheets at all - neither the app-wide
+    // BaseStyleSheet.qss nor any per-widget tracked sheet. Widgets then render
+    // through the plain style chain (Style -> Fusion base), with no
+    // QStyleSheetStyle interposed. This is the flattened target state; the
+    // switch exists to capture the visual breakage catalog and the
+    // no-stylesheet performance floor. Inline widget->setStyleSheet() calls
+    // outside StyleManager are not affected by this switch.
+    //
+    // The switch is the flat rung of the GuiPerfFloor ladder (GuiPerfFloor.h):
+    // the noop rung (--stylesheets-noop) and the passthrough rung
+    // (--style-passthrough) imply it, and go on to take the inline sheets and
+    // the styling of Style away. GuiPerfFloor reads the flags and variables
+    // once; the answer is the rung.
+    //////////////////////////////////////////////////////////////////////////
+    static bool areStyleSheetsDisabled()
+    {
+        // Every caller runs after QApplication exists
+        return GuiPerfFloor::rung() != GuiPerfFloor::Rung::Qss;
+    }
+
+    bool StyleManager::stylesheetsDisabled()
+    {
+        return areStyleSheetsDisabled();
+    }
+
+    bool StyleManager::flatStylingActive()
+    {
+        return areStyleSheetsDisabled() && !GuiPerfFloor::isPassthrough();
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Flat sheets (GUI flattening work)
+    //
+    // Where legacy setStyleSheet(widget, sheet) replaced the widget's own style
+    // sheet with the file's, the flattened GUI clears the widget's own sheet and
+    // carries the file's rules as elements: a module registers the function that
+    // defines them (registerFlatSheet) and setStyleSheet runs it, once per sheet.
+    // A sheet nobody registered is logged once, which lists the sheets still to
+    // carry.
+    //////////////////////////////////////////////////////////////////////////
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file
+    //! with others into one translation unit, where anonymous namespaces merge (TextElement.cpp does the same).
+    namespace StyleManagerInternal
+    {
+        struct FlatSheet
+        {
+            QVector<StyleManager::FlatSheetRegistrar> m_registrars;
+            bool m_applied = false;     //!< a widget was given the sheet: its registrars have run
+        };
+
+        //! By the name a sheet is loaded by (with the extension)
+        QHash<QString, FlatSheet>& flatSheets()
+        {
+            static QHash<QString, FlatSheet> sheets;
+            return sheets;
+        }
+    } // namespace StyleManagerInternal
 
     void StyleManager::addSearchPaths(
         const QString& searchPrefix, const QString& pathOnDisk, const QString& qrcPrefix, const AZ::IO::PathView& engineRootPath)
@@ -84,6 +152,14 @@ namespace AzQtComponents
             return false;
         }
 
+        // The flattened GUI sets no sheet. The file is resolved as legacy resolved it (a sheet it never found
+        // replaced nothing), and the widget's own sheet goes as the file's replaced it.
+        if (areStyleSheetsDisabled())
+        {
+            applyFlatSheet(widget, styleFileName);
+            return false;
+        }
+
         s_instance->m_widgetToStyleSheetMap.insert(widget, styleFileName);
 
         connect(widget, &QObject::destroyed, s_instance, &StyleManager::stopTrackingWidget, Qt::UniqueConnection);
@@ -91,6 +167,58 @@ namespace AzQtComponents
         widget->setStyleSheet(styleSheet);
 
         return true;
+    }
+
+    void StyleManager::registerFlatSheet(const QString& styleFileName, FlatSheetRegistrar registrar)
+    {
+        QString name = styleFileName;
+        if (!name.endsWith(StyleSheetCache::styleSheetExtension()))
+        {
+            name.append(StyleSheetCache::styleSheetExtension());
+        }
+
+        StyleManagerInternal::FlatSheet& sheet = StyleManagerInternal::flatSheets()[name];
+        if (sheet.m_registrars.contains(registrar))
+        {
+            return;
+        }
+        sheet.m_registrars.append(registrar);
+
+        // The sheet was set before this call: the widgets it reached are built, and the element registries
+        // resolve the polished ones again
+        if (sheet.m_applied)
+        {
+            registrar();
+        }
+    }
+
+    void StyleManager::applyFlatSheet(QWidget* widget, const QString& styleFileName)
+    {
+        // Legacy replaced the sheet the widget had. One that only follows the sheet of a parent is left alone:
+        // clearing it would repolish it for nothing (qwidget.cpp:2595-2600, 2753-2764).
+        if (!widget->styleSheet().isEmpty())
+        {
+            widget->setStyleSheet(QString());
+        }
+
+        StyleManagerInternal::FlatSheet& sheet = StyleManagerInternal::flatSheets()[styleFileName];
+        if (sheet.m_applied)
+        {
+            return;
+        }
+        sheet.m_applied = true;
+
+        // A registrar may register sheets, which moves the hash: copied, and 'sheet' is not read again
+        const QVector<FlatSheetRegistrar> registrars = sheet.m_registrars;
+        if (registrars.isEmpty())
+        {
+            AZ_Info("StyleManager", "Flat sheet '%s' has no registrar, its rules are not carried (first set on %s '%s').\n",
+                styleFileName.toUtf8().constData(), widget->metaObject()->className(), widget->objectName().toUtf8().constData());
+        }
+        for (FlatSheetRegistrar registrar : registrars)
+        {
+            registrar();
+        }
     }
 
     QStyle* StyleManager::styleSheetStyle(const QWidget* widget)
@@ -194,12 +322,20 @@ namespace AzQtComponents
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
-        // Order matters: set the .qss stylesheet first so that Qt creates a (private) QStyleSheetStyle
-        const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
-        application->setStyleSheet(globalStyleSheet);
+        if (areStyleSheetsDisabled())
+        {
+            qDebug() << "StyleManager: O3DE_DISABLE_STYLESHEETS is set - no style sheets will be installed (flattened style chain: Style -> Fusion).";
+        }
+        else
+        {
+            // Order matters: set the .qss stylesheet first so that Qt creates a (private) QStyleSheetStyle
+            const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
+            application->setStyleSheet(globalStyleSheet);
+        }
 
         // The resulting style chain is: QStyleSheetStyle -> Style (our custom class) -> native base.
         // Anything not handled in via QStyleSheetStyle will be able to fallback in our custom Style class.
+        // (With the kill switch set, no QStyleSheetStyle exists and the chain is just Style -> native base.)
         m_style = new Style(createBaseStyle());
 
         QApplication::setStyle(m_style);
@@ -213,6 +349,17 @@ namespace AzQtComponents
             {
                 refresh();
             });
+
+        // HARNESS (flatten capture, not product code): no-op unless O3DE_UI_CAPTURE_DIR is set.
+        UiCaptureHarness::installIfRequested(application);
+
+        // GUI performance floor (not product code): writes the rung line, and at the noop and passthrough rungs installs the filter that
+        // clears inline style sheets. BEFORE the counters on purpose: Qt asks the filter installed last first, so the counters still see
+        // the inline sheet of a widget at its first polish, and the floor clears it after.
+        GuiPerfFloor::initialize(application);
+
+        // GUI performance counters (not product code): no-op unless O3DE_UI_PERF_COUNTERS is set.
+        GuiPerfCounters::installIfRequested(application);
     }
 
     void StyleManager::cleanupStyles()
@@ -278,16 +425,19 @@ namespace AzQtComponents
 
     void StyleManager::refresh()
     {
-        const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
-        qApp->setStyleSheet(globalStyleSheet);
-
-        // Iterate widgets and update the stylesheet (the base style has already been set)
-        auto i = m_widgetToStyleSheetMap.constBegin();
-        while (i != m_widgetToStyleSheetMap.constEnd())
+        if (!areStyleSheetsDisabled())
         {
-            const auto styleSheet = m_stylesheetCache->loadStyleSheet(i.value());
-            i.key()->setStyleSheet(styleSheet);
-            ++i;
+            const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
+            qApp->setStyleSheet(globalStyleSheet);
+
+            // Iterate widgets and update the stylesheet (the base style has already been set)
+            auto i = m_widgetToStyleSheetMap.constBegin();
+            while (i != m_widgetToStyleSheetMap.constEnd())
+            {
+                const auto styleSheet = m_stylesheetCache->loadStyleSheet(i.value());
+                i.key()->setStyleSheet(styleSheet);
+                ++i;
+            }
         }
 
         // QMessageBox uses "QMdiSubWindowTitleBar" class to query the titlebar font

@@ -69,6 +69,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         m_tagLabel = new QLabel(this);
@@ -94,6 +100,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         if (!extraIconFileName.isEmpty())
@@ -116,6 +128,8 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
+        // FilteredSearchWidget.qss QPushButton#closeTag (the icon, its size, the box of 16 by 16 at most) is the Global box element
+        // Global.Box.CloseTag (ControlElements.cpp), applied when the button is polished
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);
@@ -134,6 +148,12 @@ namespace AzQtComponents
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss chips: min/max-height 22 + the 1px border = 24
+            // TOKENIZE: TagChipHeight
+            setFixedHeight(24);
+        }
         m_frameLayout->setSpacing(0);
 
         if (type != FilterCriteriaButton::ExtraButtonType::None)
@@ -180,6 +200,8 @@ namespace AzQtComponents
         button->setFlat(true);
         button->setProperty("iconButton", "true");
         button->setMouseTracking(true);
+        // FilteredSearchWidget.qss QPushButton#closeTag (the icon, its size, the box of 16 by 16 at most) is the Global box element
+        // Global.Box.CloseTag (ControlElements.cpp), applied when the button is polished
 
         m_frameLayout->addWidget(m_tagLabel);
         m_frameLayout->addWidget(button);
@@ -1467,6 +1489,13 @@ namespace AzQtComponents
         }
 
         LineEdit::applySearchStyle(filteredSearchWidget->m_ui->textSearch);
+
+        if (StyleManager::stylesheetsDisabled())
+        {
+            // FilteredSearchWidget.qss: #assetTypeSelector { qproperty-icon: filter.svg }
+            // TOKENIZE: FilterIcon
+            filteredSearchWidget->m_ui->assetTypeSelector->setIcon(QIcon(QStringLiteral(":/stylesheet/img/UI20/filter.svg")));
+        }
 
         return true;
     }

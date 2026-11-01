@@ -7,7 +7,9 @@
  */
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QStyleFactory>
 
@@ -49,16 +51,45 @@ void CheckBox::setVisibilityMode(QAbstractItemView* view, bool enabled)
 
 bool CheckBox::polish(Style* style, QWidget* widget, const CheckBox::Config& config)
 {
-    Q_UNUSED(style);
-    Q_UNUSED(widget);
     Q_UNUSED(config);
 
-    return false;
+    if (!StyleManager::stylesheetsDisabled() || !qobject_cast<QCheckBox*>(widget))
+    {
+        return false;
+    }
+
+    // The widget's indicator element is resolved once, here (Style::addClass polishes a widget again when its class
+    // tags change)
+    IndicatorElement::resolve(widget);
+
+    if (style->hasClass(widget, g_expanderClass))
+    {
+        // The expander's own box: QCheckBox.Expander's limits
+        widget->setMinimumSize(IndicatorElement::ExpanderMinSize);
+        widget->setMaximumSize(IndicatorElement::ExpanderMaxSize);
+    }
+
+    return true;
 }
 
 QSize CheckBox::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& size, const QWidget* widget, const CheckBox::Config& config)
 {
     Q_UNUSED(config);
+
+    if (StyleManager::stylesheetsDisabled() && style->hasClass(widget, g_expanderClass))
+    {
+        // QCheckBox.Expander has no label: its size is its limits (QRenderRule::adjustSize)
+        return size.boundedTo(IndicatorElement::ExpanderMaxSize).expandedTo(IndicatorElement::ExpanderMinSize);
+    }
+
+    if (StyleManager::stylesheetsDisabled())
+    {
+        // The indicator element: the box (indicator and margin) and the label spacing around the text
+        if (const IndicatorElement* indicator = IndicatorElement::forWidget(widget))
+        {
+            return indicator->sizeFromContents(size, style->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, option, widget));
+        }
+    }
 
     QSize sz = style->QProxyStyle::sizeFromContents(type, option, size, widget);
 
@@ -83,13 +114,12 @@ CheckBox::Config CheckBox::defaultConfig()
 
 bool CheckBox::drawCheckBox(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const CheckBox::Config& config)
 {
-    Q_UNUSED(style);
-    Q_UNUSED(widget);
     Q_UNUSED(config);
-    Q_UNUSED(option);
-    Q_UNUSED(painter);
 
-    return false;
+    // The indicator element draws the indicator and the label where the legacy sheet laid them out, and no
+    // focus rectangle (CheckBox.qss:15 `outline: 0`); the base style's own layout does not match it
+    return StyleManager::stylesheetsDisabled()
+        && IndicatorElement::draw(style, qstyleoption_cast<const QStyleOptionButton*>(option), painter, widget);
 }
 
 bool CheckBox::drawCheckBoxLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const CheckBox::Config& config)

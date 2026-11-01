@@ -24,6 +24,39 @@ public:
     explicit ComponentDemoWidget(QWidget* parent = nullptr);
     ~ComponentDemoWidget() override;
 
+    //! Rasterizes every gallery page into outputDirPath as numbered PNGs
+    //! (whole window, including the custom title bar chrome) at a pinned frame
+    //! (see pinCaptureLayout), a per-page __geometry.txt dump, plus secondary
+    //! interaction states per page: expanded trees / toggled cards, open combo
+    //! popups, modal dialogs (grabbed and closed via a polling watchdog), the
+    //! lazily created dock host and its floated dock widgets.
+    //! Used by the --screenshot-dir command line mode for parity evaluation.
+    void captureAllPages(const QString& outputDirPath);
+
+    //! Selects a page by (case-insensitive, partial) title match or numeric
+    //! index. Used by the --page command line option.
+    void selectPage(const QString& pageNameOrIndex);
+
+private:
+    void capturePageInteractions(const QString& outputDirPath, int pageIndex, const QString& pageName);
+
+    //! Waits until the window's styling has played out: a minimum dwell, then
+    //! repeated grabs until two consecutive frames are identical (bounded).
+    void settleForCapture();
+
+    //! Pins the capture-time layout of a page so both styling modes rasterize
+    //! the same frame: the example text panel gets a fixed width and every
+    //! QSplitter an even split. Widget sizeHints are NOT touched -- they are
+    //! recorded by dumpPageGeometry so metric differences stay measurable.
+    void pinCaptureLayout(QWidget* page);
+
+    //! Writes one line per descendant widget of the page: class, objectName,
+    //! geometry relative to the page, sizeHint, minimumSizeHint, visibility.
+    //! Diffed between styling modes by Tools/FlattenDiff/flatten_diff.py.
+    void dumpPageGeometry(QWidget* page, const QString& filePath);
+
+public:
+
 Q_SIGNALS:
     void styleChanged(bool enableLegacyUI);
     void refreshStyle();

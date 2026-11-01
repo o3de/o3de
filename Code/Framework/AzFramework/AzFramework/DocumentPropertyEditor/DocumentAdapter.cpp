@@ -134,16 +134,18 @@ namespace AZ::DocumentPropertyEditor
         // This is invoked by the document (which is the GUI widget itself) when it knows that the callstack is no longer
         // deep inside some event handling callstack such as undo or value change, and its safe to rebuild the document out from
         // under it.
-        NotifyResetDocument(m_queuedResetType);
+        // Only reset when a reset is actually pending: a source adapter or an earlier call may already have executed it.
+        if (m_isResetQueued)
+        {
+            NotifyResetDocument(m_queuedResetType);
+        }
     }
 
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
     {
         // this is the actual reset function, which overrides any queuing, so reset it.
-        if (!m_isResetQueued)
-        {
-            return;
-        }
+        // It also works without a queued reset: adapters that reset immediately by design (RowAggregateAdapter::ClearAdapters, MetaAdapter
+        // when its source changes, BasicAdapter) call it directly. The debounce lives in ExecuteQueuedReset.
         m_isResetQueued = false;
         if (resetType == DocumentResetType::HardReset || m_cachedContents.IsNull())
         {

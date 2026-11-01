@@ -21,6 +21,10 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::AddAdapter(DocumentAdapterPtr sourceAdapter)
     {
+        // The source may have only queued its reset (ReflectionAdapter::SetValue does), in which case its cached contents are
+        // still those of the previous instance. Execute it now so the aggregate reads current data.
+        sourceAdapter->ExecuteQueuedReset();
+
         // capture the actual adapter, not just the index, as adding or removing adapters could change the index
         auto& newAdapterInfo = m_adapters.emplace_back(AZStd::make_unique<AdapterInfo>());
         newAdapterInfo->adapter = sourceAdapter;
@@ -48,7 +52,10 @@ namespace AZ::DocumentPropertyEditor
 
         const auto adapterIndex = m_adapters.size() - 1;
         PopulateNodesForAdapter(adapterIndex);
-        NotifyResetDocument();
+
+        // Queue the reset instead of running it: a multi-selection adds one adapter per entity, and the views attached run the queued
+        // reset once (the Entity Inspector in DocumentPropertyEditor::InvalidateAll; a standalone view on its next event loop pass).
+        QueueResetDocument(DocumentResetType::HardReset);
     }
 
     void RowAggregateAdapter::RemoveAdapter(DocumentAdapterPtr sourceAdapter)

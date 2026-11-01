@@ -27,6 +27,10 @@ namespace AtomToolsFramework
         void SetExpanded(bool expand);
         bool IsExpanded() const;
 
+        //! Flattened GUI only (AzQtComponents::StyleManager::stylesheetsDisabled): registers the element that carries the box
+        //! the header's style sheet gave it, which the flattened GUI does not set. The constructor calls it; once is enough.
+        static void RegisterFlatElement();
+
     Q_SIGNALS:
         void clicked(QMouseEvent* event);
         void expanded();

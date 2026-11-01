@@ -25,6 +25,7 @@ namespace AzQtComponents
     static constexpr const char* g_showBackgroundProperty = "ShowBackground";
     static constexpr const char* g_scrollBarModeProperty = "ScrollBarMode";
     static constexpr const char* g_darkStyleClass = "DarkScrollBar";
+    static constexpr const char* g_backgroundColorProperty = "_o3de_scrollAreaBackgroundColor";
 
     class ScrollBarWatcher : public QObject
     {
@@ -231,6 +232,46 @@ namespace AzQtComponents
         // Note: ScrollBars default to light
         Style::removeClass(scrollArea, g_darkStyleClass);
         StyleManager::repolishStyleSheet(scrollArea);
+    }
+
+    void ScrollBar::setBackgroundColor(QAbstractScrollArea* scrollArea, const QColor& color)
+    {
+        if (!scrollArea)
+        {
+            return;
+        }
+
+        if (!StyleManager::stylesheetsDisabled())
+        {
+            scrollArea->setStyleSheet(QString("background: %1").arg(color.name(QColor::HexRgb)));
+            return;
+        }
+
+        scrollArea->setProperty(g_backgroundColorProperty, color);
+        applyBackgroundColor(scrollArea);
+    }
+
+    void ScrollBar::applyBackgroundColor(QWidget* widget)
+    {
+        if (!qobject_cast<QAbstractScrollArea*>(widget))
+        {
+            return;
+        }
+
+        const QVariant background = widget->property(g_backgroundColorProperty);
+        if (!background.isValid())
+        {
+            return;
+        }
+
+        // The inline sheet's `background` filled the area, its viewport and the lanes of its scroll bars, in every state of the widget:
+        // the viewport fills with Base, the area itself (under the scroll bars) with Window
+        const QColor color = background.value<QColor>();
+        QPalette palette = widget->palette();
+        palette.setColor(QPalette::Base, color);
+        palette.setColor(QPalette::Window, color);
+        widget->setPalette(palette);
+        widget->setAutoFillBackground(true);
     }
 
     QPointer<ScrollBarWatcher> ScrollBar::s_scrollBarWatcher = nullptr;

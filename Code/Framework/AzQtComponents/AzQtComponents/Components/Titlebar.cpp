@@ -14,6 +14,8 @@
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/DockTabBar.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QApplication>
@@ -21,6 +23,8 @@
 #include <QLabel>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
 #include <QHBoxLayout>
 #include <QOperatingSystemVersion>
 #include <QStackedLayout>
@@ -306,6 +310,15 @@ namespace AzQtComponents
         if (enable != m_appearAsTabBar)
         {
             m_appearAsTabBar = enable;
+
+            // TitleBar.qss:54 `TitleBar[drawAsTabBar="true"] #tabButtons`. TitleBar::polish sets this property, but the frame of the tab
+            // buttons is polished before it: the stacked layout shows its first page in the constructor, which polishes everything on
+            // the page. The flattened mode resolves the element of the frame again, now that the property has changed.
+            if (StyleManager::stylesheetsDisabled())
+            {
+                BoxElement::resolve(m_tabButtonsContainer);
+            }
+
             update();
             emit drawAsTabBarChanged(m_appearAsTabBar);
         }
@@ -492,6 +505,10 @@ namespace AzQtComponents
 
         titleBar->m_icon->setVisible(config.icon.visible);
         titleBar->m_label->setIndent(config.title.indent);
+
+        // TitleBar.qss:31-37 #title: its box (margin-left 10px, margin-right 16px, with the QLabel's 1px above and
+        // below) is the label's frame box, which Style.cpp's flattenedLabelFrameContents gives it when the label is
+        // polished; its font-size 14px is TextElement's TitleBarTitle
         titleBar->m_showLabelWhenSimple = config.title.visibleWhenSimple;
         titleBar->setDrawAsTabBar(config.titleBar.appearAsTabBar);
         titleBar->m_buttonsLayout->setSpacing(config.buttons.spacing);
@@ -1168,6 +1185,27 @@ namespace AzQtComponents
                 QObject::connect(button, &DockBarButton::buttonPressed, this, &TitleBar::handleButtonClicked);
                 w = button;
 
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    // Footprints + icon sizes from TitleBar.qss per context (the qss
+                    // min/max width/height + qproperty-iconSize rules)
+                    if (container == m_tabButtonsContainer)
+                    {
+                        button->setFixedSize(26, 26);
+                        button->setIconSize(QSize(14, 14));
+                    }
+                    else if (drawSimple())
+                    {
+                        button->setFixedSize(24, 24);
+                        button->setIconSize(QSize(14, 14));
+                    }
+                    else
+                    {
+                        button->setFixedSize(32, 32);
+                        button->setIconSize(QSize(16, 16));
+                    }
+                }
+
                 if (disabledButtons.contains(buttonType))
                 {
                     button->setDisabled(true);
@@ -1181,6 +1219,30 @@ namespace AzQtComponents
 
             layout->addWidget(w);
         }
+    }
+
+    void TitleBar::paintEvent(QPaintEvent* event)
+    {
+        if (!StyleManager::stylesheetsDisabled())
+        {
+            QFrame::paintEvent(event);
+            return;
+        }
+
+        // TitleBar.qss:11-12, :20-23: base/tab-bar background #111111; drawSimple #222222 with a 3px #111111 bottom border (torn-off floating
+        // dock widgets: `border-bottom` over the `border: none` of :15-18). The sheet drew the border antialiased (QRenderRule::drawBorder,
+        // qstylesheetstyle.cpp:1282-1285): at a fractional device ratio the edge row of the 3px blends (n2 Gallery 25_styled-dock-widget,
+        // dock1 floating: rows 36-39 #111111, row 40 #191919, the last half row of the border over the #222222 fill, not a fifth full row), as
+        // BoxElement::drawFrame draws it.
+        // TOKENIZE: TitleBarSimpleFill, TitleBarFill, TitleBarSimpleAccent
+        QPainter painter(this);
+        const QColor background = drawSimple() ? QColor(0x22, 0x22, 0x22) : QColor(0x11, 0x11, 0x11);
+        BoxElement::Edges edges;
+        if (drawSimple())
+        {
+            edges.m_bottom = { 3, QColor(0x11, 0x11, 0x11) };
+        }
+        BoxElement::drawFrame(&painter, rect(), QBrush(background), edges, BoxElement::Radii());
     }
 
     bool TitleBar::isLeftButtonDown() const

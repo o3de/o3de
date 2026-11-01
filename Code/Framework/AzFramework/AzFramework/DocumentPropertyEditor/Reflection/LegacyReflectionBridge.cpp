@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
@@ -331,6 +332,10 @@ namespace AZ::Reflection
             SerializeContext* m_serializeContext;
             SerializeContext::EnumerateInstanceCallContext* m_enumerateContext;
 
+            //! The class elements of the UI nodes (groups and UI elements) this visit makes: nothing outside the visit refers to them, so
+            //! the visitor owns them and they go with it; a deque keeps their addresses while it grows.
+            AZStd::deque<AZ::SerializeContext::ClassElement> m_uiClassElements;
+
             struct StackEntry
             {
                 StackEntry() = default;
@@ -627,7 +632,7 @@ namespace AZ::Reflection
                                 else
                                 {
                                     // not a toggle group, just make the normal group UI element
-                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    AZ::SerializeContext::ClassElement* UIElement = &m_uiClassElements.emplace_back();
                                     UIElement->m_editData = &currElement;
                                     UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                     // A UI node isn't backed with a real C++ type, so its pointer level is 0
@@ -654,7 +659,7 @@ namespace AZ::Reflection
 
                                     // Create a dummy group entry that will be used to correctly display all children properties and UI
                                     // elements.
-                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    AZ::SerializeContext::ClassElement* UIElement = &m_uiClassElements.emplace_back();
                                     UIElement->m_editData = &currElement;
                                     UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                     // A group is a UI node that isn't backed with a real C++ type, so its pointer level is 0.
@@ -707,7 +712,7 @@ namespace AZ::Reflection
                         }
                         else if (iter->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
-                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                            AZ::SerializeContext::ClassElement* UIElement = &m_uiClassElements.emplace_back();
                             UIElement->m_editData = &*iter;
                             UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                             // Use the instance itself to retrieve parameter values that invoke functions on the UI Element.

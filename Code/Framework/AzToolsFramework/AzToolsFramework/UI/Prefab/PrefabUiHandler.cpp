@@ -9,6 +9,7 @@
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Utilities/IconUtilities.h>
 #include <AzQtComponents/Utilities/ScreenUtilities.h>
 #include <AzQtComponents/Utilities/TextUtilities.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -116,15 +117,15 @@ namespace AzToolsFramework
     {
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            return QIcon(m_prefabEditIconPath);
+            return AzQtComponents::CachedIcon(m_prefabEditIconPath);
         }
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
         {
-            return QIcon(m_prefabEditIconPath);
+            return AzQtComponents::CachedIcon(m_prefabEditIconPath);
         }
 
-        return QIcon(m_prefabIconPath);
+        return AzQtComponents::CachedIcon(m_prefabIconPath);
     }
 
     bool PrefabUiHandler::CanToggleLockVisibility(AZ::EntityId entityId) const

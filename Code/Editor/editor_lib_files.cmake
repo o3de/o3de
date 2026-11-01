@@ -234,6 +234,8 @@ set(FILES
     CryEditPy.cpp
     CryEdit.cpp
     CryEdit.h
+    EditorFlatSheet.cpp
+    EditorFlatSheet.h
     EditorToolsApplication.cpp
     EditorToolsApplication.h
     EditorToolsApplicationAPI.h

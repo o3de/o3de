@@ -18,6 +18,7 @@
 
 #include <AzCore/Settings/CommandLine.h>
 
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include "MainWindowSavedState.h"
@@ -229,7 +230,9 @@ namespace AzToolsFramework
                 }
             }
 
-            if ((pApplication->styleSheet().isEmpty()) && (enableStyleSheet))
+            // With stylesheets switched off (flattened GUI) the application sheet is empty by design;
+            // the fallback sheet must not take its place.
+            if ((pApplication->styleSheet().isEmpty()) && (enableStyleSheet) && !AzQtComponents::StyleManager::stylesheetsDisabled())
             {
                 QDir::addSearchPath("UI", ":/StyleSheetImages");
                 QFile file(":/styles/style_dark.qss");
