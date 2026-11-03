@@ -123,6 +123,33 @@ namespace UnitTest
         entity.Deactivate();
     }
 
+    TEST_F(PythonBindingLibTest, RedirectedStreamsAfterInterpreterRestart)
+    {
+        AZ::Entity entity;
+        entity.CreateComponent<EditorPythonBindings::PythonSystemComponent>();
+        entity.Init();
+        entity.Activate();
+
+        for (int restart = 0; restart < 3; ++restart)
+        {
+            SimulateEditorBecomingInitialized(restart == 0);
+            EXPECT_NO_THROW(pybind11::exec(
+                "\nimport io\n"
+                "import os\n"
+                "import sys\n"
+                "for _ in range(100):\n"
+                "    sys.stdout.flush()\n"
+                "    sys.stderr.flush()\n"
+                "    with io.FileIO(os.devnull, 'w') as stream:\n"
+                "        stream.flush()\n"));
+            auto* python = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+            ASSERT_NE(nullptr, python);
+            EXPECT_TRUE(python->StopPython());
+        }
+
+        entity.Deactivate();
+    }
+
     TEST_F(PythonBindingLibTest, ImportBaseModule)
     {
         AZ::Entity entity;

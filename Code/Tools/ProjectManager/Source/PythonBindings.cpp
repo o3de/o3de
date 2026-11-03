@@ -71,7 +71,7 @@ pybind11::list QStringList_To_Py_List(const QStringList& values)
 
 namespace RedirectOutput
 {
-    using RedirectOutputFunc = AZStd::function<void(const char*)>;
+    using RedirectOutputFunc = void (*)(const char*);
 
     struct RedirectOutput
     {
@@ -109,48 +109,27 @@ namespace RedirectOutput
         {nullptr, nullptr, 0, nullptr} // sentinel
     };
 
-    PyTypeObject RedirectOutputType = {
-        PyVarObject_HEAD_INIT(nullptr, 0) "azlmbr_redirect.RedirectOutputType", // tp_name
-        sizeof(RedirectOutput), /* tp_basicsize */
-        0, /* tp_itemsize */
-        nullptr, /* tp_dealloc */
-        0, /* tp_print */
-        nullptr, /* tp_getattr */
-        nullptr, /* tp_setattr */
-        nullptr, /* tp_reserved */
-        nullptr, /* tp_repr */
-        nullptr, /* tp_as_number */
-        nullptr, /* tp_as_sequence */
-        nullptr, /* tp_as_mapping */
-        nullptr, /* tp_hash  */
-        nullptr, /* tp_call */
-        nullptr, /* tp_str */
-        nullptr, /* tp_getattro */
-        nullptr, /* tp_setattro */
-        nullptr, /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT, /* tp_flags */
-        "azlmbr_redirect objects", /* tp_doc */
-        nullptr, /* tp_traverse */
-        nullptr, /* tp_clear */
-        nullptr, /* tp_richcompare */
-        0, /* tp_weaklistoffset */
-        nullptr, /* tp_iter */
-        nullptr, /* tp_iternext */
-        RedirectMethods, /* tp_methods */
-        nullptr, /* tp_members */
-        nullptr, /* tp_getset */
-        nullptr, /* tp_base */
-        nullptr, /* tp_dict */
-        nullptr, /* tp_descr_get */
-        nullptr, /* tp_descr_set */
-        0, /* tp_dictoffset */
-        nullptr, /* tp_init */
-        nullptr, /* tp_alloc */
-        nullptr /* tp_new */
+    PyType_Slot RedirectOutputSlots[] = {
+        {Py_tp_new, reinterpret_cast<void*>(PyType_GenericNew)},
+        {Py_tp_methods, RedirectMethods},
+        {Py_tp_doc, const_cast<char*>("azlmbr_redirect objects")},
+        {0, nullptr},
+    };
+
+    PyType_Spec RedirectOutputSpec = {
+        "azlmbr_redirect.RedirectOutputType",
+        sizeof(RedirectOutput),
+        0,
+        Py_TPFLAGS_DEFAULT,
+        RedirectOutputSlots,
     };
 
     PyModuleDef RedirectOutputModule = {
-        PyModuleDef_HEAD_INIT, "azlmbr_redirect", nullptr, -1, nullptr,
+        PyModuleDef_HEAD_INIT,
+        "azlmbr_redirect",
+        nullptr,
+        -1,
+        nullptr,
     };
 
     // Internal state
@@ -166,33 +145,39 @@ namespace RedirectOutput
         g_redirect_stderr = nullptr;
         g_redirect_stderr_saved = nullptr;
 
-        RedirectOutputType.tp_new = PyType_GenericNew;
-        if (PyType_Ready(&RedirectOutputType) < 0)
+        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
+        if (!redirectModule)
         {
             return nullptr;
         }
 
-        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
-        if (redirectModule)
+        // A fresh type avoids retaining Python's method-cache state across interpreter restarts.
+        PyObject* redirectType = PyType_FromSpec(&RedirectOutputSpec);
+        if (!redirectType || PyModule_AddObject(redirectModule, "Redirect", redirectType) < 0)
         {
-            Py_INCREF(&RedirectOutputType);
-            PyModule_AddObject(redirectModule, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
+            Py_XDECREF(redirectType);
+            Py_DECREF(redirectModule);
+            return nullptr;
         }
         return redirectModule;
     }
 
-    void SetRedirection(const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
+    void SetRedirection(PyObject* module, const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
     {
-        if (PyType_Ready(&RedirectOutputType) < 0)
-        {
-            AZ_Warning("python", false, "RedirectOutputType not ready!");
-            return;
-        }
-
         if (!current)
         {
+            PyObject* redirectType = PyObject_GetAttrString(module, "Redirect");
+            if (!redirectType)
+            {
+                throw pybind11::error_already_set();
+            }
+            current = PyObject_CallNoArgs(redirectType);
+            Py_DECREF(redirectType);
+            if (!current)
+            {
+                throw pybind11::error_already_set();
+            }
             saved = PySys_GetObject(funcname); // borrowed
-            current = RedirectOutputType.tp_new(&RedirectOutputType, nullptr, nullptr);
         }
 
         RedirectOutput* redirectOutput = reinterpret_cast<RedirectOutput*>(current);
@@ -214,10 +199,14 @@ namespace RedirectOutput
 
     void Intialize(PyObject* module, RedirectOutputFunc stdoutFunction, RedirectOutputFunc stderrFunction)
     {
+        if (!module)
+        {
+            throw pybind11::error_already_set();
+        }
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, stdoutFunction);
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, stderrFunction);
+        SetRedirection(module, "stdout", g_redirect_stdout_saved, g_redirect_stdout, stdoutFunction);
+        SetRedirection(module, "stderr", g_redirect_stderr_saved, g_redirect_stderr, stderrFunction);
 
         PySys_WriteStdout("RedirectOutput installed\n");
     }
