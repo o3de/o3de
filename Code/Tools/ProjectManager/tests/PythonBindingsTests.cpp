@@ -94,6 +94,30 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(PyGILState_Check());
     }
 
+    TEST_F(PythonBindingsTests, PythonBindings_RedirectedStreams_AfterInterpreterRestart)
+    {
+        for (int restart = 0; restart < 3; ++restart)
+        {
+            m_pythonBindings.reset();
+            const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
+            m_pythonBindings = AZStd::make_unique<TestablePythonBindings>(AZ::IO::PathView(engineRootPath));
+            ASSERT_TRUE(m_pythonBindings->PythonStarted());
+
+            pybind11::gil_scoped_acquire acquire;
+            EXPECT_EQ(
+                PyRun_SimpleString(
+                    "\nimport io\n"
+                    "import os\n"
+                    "import sys\n"
+                    "for _ in range(100):\n"
+                    "    sys.stdout.flush()\n"
+                    "    sys.stderr.flush()\n"
+                    "    with io.FileIO(os.devnull, 'w') as stream:\n"
+                    "        stream.flush()\n"),
+                0);
+        }
+    }
+
     TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
     {
         ASSERT_TRUE(m_pythonBindings->PythonStarted());
