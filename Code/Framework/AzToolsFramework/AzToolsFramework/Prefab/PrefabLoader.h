@@ -13,6 +13,7 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
@@ -122,7 +123,24 @@ namespace AzToolsFramework
             SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const override;
             void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) override;
 
+            bool RegisterTemplateFileHandler(
+                AZStd::string_view extension,
+                PrefabTemplateLoadFileHandler loadHandler,
+                PrefabTemplateSaveFileHandler saveHandler) override;
+            bool UnregisterTemplateFileHandler(AZStd::string_view extension) override;
+            AZStd::vector<AZStd::string> GetRegisteredTemplateFileExtensions() const override;
+
         private:
+            struct TemplateFileHandlers
+            {
+                PrefabTemplateLoadFileHandler m_loadHandler;
+                PrefabTemplateSaveFileHandler m_saveHandler;
+            };
+
+            //! Returns the handlers for the path's extension, or nullptr when none is registered and built-in JSON applies.
+            //! Points into m_templateFileHandlers; invalidated if that extension is unregistered, and its handlers
+            //! replaced if it is re-registered.
+            const TemplateFileHandlers* FindTemplateFileHandlers(AZ::IO::PathView path) const;
 
             /**
              * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
@@ -209,6 +227,7 @@ namespace AzToolsFramework
             ScriptingPrefabLoader m_scriptingPrefabLoader;
             AZ::IO::Path m_projectPathWithOsSeparator;
             AZ::IO::Path m_projectPathWithSlashSeparator;
+            AZStd::unordered_map<AZStd::string, TemplateFileHandlers> m_templateFileHandlers; //!< Keyed by lower-cased file extension.
         };
     } // namespace Prefab
 } // namespace AzToolsFramework
