@@ -57,7 +57,7 @@ jobs:
   Build:
     runs-on: ${{ inputs.image }}
     env:
-      LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
+      LY_PACKAGE_SERVER_URLS: "https://prod.packages.o3debinaries.org;https://dev.packages.o3debinaries.org"
 
     steps:
       - name: Check disk space
