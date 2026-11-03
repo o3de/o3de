@@ -17,4 +17,4 @@ ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                       
 # platform-specific:
 
 # Required packages to add :
-# expat, Lua, zlib, lz4, tiff, png, openssl, freetype, samplerate
+# expat, Lua, zlib, lz4, png, openssl, freetype, samplerate
