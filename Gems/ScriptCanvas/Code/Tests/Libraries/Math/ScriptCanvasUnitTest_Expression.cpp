@@ -7,45 +7,22 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
-#include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/ModifiableDatumView.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Libraries/Math/MathExpression.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 #include <ScriptCanvas/Utils/Expression.h>
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 
-#include <AzCore/Serialization/Locale.h>
 #include <cmath>
 
 namespace ScriptCanvasUnitTest
 {
     AZ_CVAR(double, sc_eval_test_value, 9, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Expression console test value");
-
-    class ExpressionConsoleOutput : public AZ::Debug::TraceMessageBus::Handler
-    {
-    public:
-        ExpressionConsoleOutput()
-        {
-            BusConnect();
-        }
-        ~ExpressionConsoleOutput() override
-        {
-            BusDisconnect();
-        }
-        bool OnPrintf(const char* window, const char* message) override
-        {
-            if (AZStd::string_view(window) == "ScriptCanvas")
-            {
-                m_output += message;
-                return true;
-            }
-            return false;
-        }
-        AZStd::string m_output;
-    };
 
     class ScriptCanvasMathExpressionTests : public ScriptCanvasUnitTestFixture
     {
@@ -68,40 +45,46 @@ namespace ScriptCanvasUnitTest
             const auto values = ScriptCanvas::Expression::Bind(parsed.m_value, bindings);
             ASSERT_TRUE(values) << values.m_error.c_str();
             const auto expected = ScriptCanvas::Expression::Evaluate(parsed.m_value, values.m_value);
-            auto lua = ScriptCanvas::Expression::ToLua(parsed.m_value);
-            ASSERT_TRUE(lua) << lua.m_error.c_str();
-            AZ::Locale::ScopedSerializationLocale locale;
-            for (double value : values.m_value)
-            {
-                const auto at = lua.m_value.find('@');
-                ASSERT_NE(at, AZStd::string::npos);
-                lua.m_value.replace(at, 1, AZStd::string::format("%.17g", value));
-            }
             lua_State* state = luaL_newstate();
             ASSERT_NE(state, nullptr);
-            lua_register(state, ScriptCanvas::Expression::LuaOperationName, &ScriptCanvas::Execution::MathExpressionOperation);
-            const auto script = "return " + lua.m_value;
+            lua_register(state, "SC_MathExpression", &ScriptCanvas::Execution::EvaluateMathExpression);
+            const auto script = "local graph = {}; return function(...) return SC_MathExpression(graph, " +
+                ScriptCanvas::Translation::MakeRuntimeSafeStringLiteral(source) + ", ...) end";
             const int loaded = luaL_loadbuffer(state, script.data(), script.size(), "MathExpressionTest");
             EXPECT_EQ(loaded, LUA_OK) << (loaded == LUA_OK ? "" : lua_tostring(state, -1));
-            if (loaded == LUA_OK)
+            if (loaded == LUA_OK && lua_pcall(state, 0, 1, 0) == LUA_OK)
             {
-                const int status = lua_pcall(state, 0, 1, 0);
-                if (expected)
+                // A second call exercises the cached native program with the same bound inputs.
+                for (int pass = 0; pass < 2; ++pass)
                 {
-                    EXPECT_EQ(status, LUA_OK) << (status == LUA_OK ? "" : lua_tostring(state, -1));
-                    EXPECT_EQ(lua_type(state, -1), LUA_TNUMBER);
-                    EXPECT_NEAR(lua_tonumber(state, -1), expected.m_value, 1e-12 * std::fmax(1, std::abs(expected.m_value)));
+                    lua_pushvalue(state, -1);
+                    for (double value : values.m_value)
+                    {
+                        lua_pushnumber(state, value);
+                    }
+                    const int status = lua_pcall(state, static_cast<int>(values.m_value.size()), 1, 0);
+                    if (expected)
+                    {
+                        EXPECT_EQ(status, LUA_OK) << (status == LUA_OK ? "" : lua_tostring(state, -1));
+                        EXPECT_EQ(lua_type(state, -1), LUA_TNUMBER);
+                        EXPECT_NEAR(lua_tonumber(state, -1), expected.m_value, 1e-12 * std::fmax(1, std::abs(expected.m_value)));
+                    }
+                    else
+                    {
+                        EXPECT_NE(status, LUA_OK);
+                    }
+                    lua_pop(state, 1);
                 }
-                else
-                {
-                    EXPECT_NE(status, LUA_OK);
-                }
+            }
+            else if (loaded == LUA_OK)
+            {
+                ADD_FAILURE() << lua_tostring(state, -1);
             }
             lua_close(state);
         }
     };
 
-    TEST_F(ScriptCanvasMathExpressionTests, LuaMatchesCppOperatorsFunctionsAndLazyTernaries)
+    TEST_F(ScriptCanvasMathExpressionTests, NativeLuaBridgeMatchesEvaluatorAndLazyTernaries)
     {
         for (const char* expression : { "2 + 3 * 4 - 5 / 2",
                                         "-5 % 2",
@@ -150,6 +133,46 @@ namespace ScriptCanvasUnitTest
         CheckLua("{x}>0 ? sqrt({x}) : {fallback}", { { "x", -4 }, { "fallback", 7 } });
         CheckLua("{x}>0 ? sqrt({x}) : {fallback}", { { "x", 9 }, { "fallback", 7 } });
         CheckLua("{pi}+{input with spaces}*{pi}", { { "pi", 2 }, { "input with spaces", 3 } });
+        CheckLua("{a@]]\"}+1", { { "a@]]\"", 2 } });
+    }
+
+    TEST_F(ScriptCanvasMathExpressionTests, NativeLuaBridgeRebindsAndRejectsInvalidArguments)
+    {
+        lua_State* state = luaL_newstate();
+        ASSERT_NE(state, nullptr);
+        lua_register(state, "SC_MathExpression", &ScriptCanvas::Execution::EvaluateMathExpression);
+        lua_newtable(state);
+        const auto call = [&](const char* source, AZStd::initializer_list<double> values)
+        {
+            lua_getglobal(state, "SC_MathExpression");
+            lua_pushvalue(state, 1);
+            lua_pushstring(state, source);
+            for (double value : values)
+            {
+                lua_pushnumber(state, value);
+            }
+            return lua_pcall(state, static_cast<int>(values.size()) + 2, 1, 0);
+        };
+        const char* source = "{x}>0 ? sqrt({x}) : {fallback}";
+        EXPECT_EQ(call(source, { 9, 7 }), LUA_OK);
+        EXPECT_DOUBLE_EQ(lua_tonumber(state, -1), 3);
+        lua_pop(state, 1);
+        EXPECT_EQ(call(source, { -4, 7 }), LUA_OK);
+        EXPECT_DOUBLE_EQ(lua_tonumber(state, -1), 7);
+        lua_pop(state, 1);
+        EXPECT_NE(call(source, { 9 }), LUA_OK);
+        lua_pop(state, 1);
+        EXPECT_NE(call("1 +", {}), LUA_OK);
+        lua_pop(state, 1);
+        EXPECT_NE(call("1 / 0", {}), LUA_OK);
+        lua_pop(state, 1);
+        lua_getglobal(state, "SC_MathExpression");
+        lua_pushvalue(state, 1);
+        lua_pushstring(state, "{x}");
+        lua_pushboolean(state, true);
+        EXPECT_NE(lua_pcall(state, 3, 1, 0), LUA_OK);
+        // Closing the state must release all cached native programs, including error paths.
+        lua_close(state);
     }
 
     TEST_F(ScriptCanvasMathExpressionTests, ConsoleFunctorBindsCvarsAndReportsErrors)
@@ -157,30 +180,50 @@ namespace ScriptCanvasUnitTest
         AZ::Console console;
         console.LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
         AZ::Interface<AZ::IConsole>::Register(&console);
-        ExpressionConsoleOutput capture;
+        AZ::LoggerSystemComponent logger;
+        AZStd::string output;
+        AZ::LogLevel lastLevel = AZ::LogLevel::Trace;
+        AZ::ILogger::LogEvent::Handler logHandler(
+            [&](AZ::LogLevel level, const char* message, const char*, const char*, int32_t)
+            {
+                const AZStd::string_view text(message);
+                if (text.starts_with("sc_eval:") || text.starts_with("Usage: sc_eval"))
+                {
+                    output += message;
+                    lastLevel = level;
+                }
+            });
+        logger.BindLogHandler(logHandler);
         EXPECT_NE(console.FindCommand("sc_eval"), nullptr);
         EXPECT_TRUE(console.PerformCommand("sc_eval_test_value 9"));
         EXPECT_TRUE(console.PerformCommand("sc_eval {sc_eval_test_value} > 0 ? sqrt(sc_eval_test_value) : 1/0"));
-        EXPECT_NE(capture.m_output.find("sc_eval: 3\n"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("sc_eval: 3"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Info);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval_test_value -4"));
         EXPECT_TRUE(console.PerformCommand("sc_eval sc_eval_test_value > 0 ? sqrt(sc_eval_test_value) : 7"));
-        EXPECT_NE(capture.m_output.find("sc_eval: 7\n"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("sc_eval: 7"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Info);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval \"sin(pi / 2)\""));
-        EXPECT_NE(capture.m_output.find("sc_eval: 1\n"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("sc_eval: 1"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Info);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval missing_expression_test_cvar + 1"));
-        EXPECT_NE(capture.m_output.find("Unknown or non-numeric console variable"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("Unknown or non-numeric console variable"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Warn);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval 1 / 0"));
-        EXPECT_NE(capture.m_output.find("Division by zero"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("Division by zero"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Warn);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval 1 +"));
-        EXPECT_NE(capture.m_output.find("incomplete expression"), AZStd::string::npos);
-        capture.m_output.clear();
+        EXPECT_NE(output.find("incomplete expression"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Warn);
+        output.clear();
         EXPECT_TRUE(console.PerformCommand("sc_eval"));
-        EXPECT_NE(capture.m_output.find("Usage: sc_eval"), AZStd::string::npos);
+        EXPECT_NE(output.find("Usage: sc_eval"), AZStd::string::npos);
+        EXPECT_EQ(lastLevel, AZ::LogLevel::Info);
         AZ::Interface<AZ::IConsole>::Unregister(&console);
     }
 

@@ -301,14 +301,85 @@ namespace ScriptCanvas
             return 1;
         }
 
-        int MathExpressionOperation(lua_State* lua)
+        namespace
         {
-            const char* name = luaL_checkstring(lua, 1);
-            const double a = luaL_checknumber(lua, 2);
-            const double b = luaL_checknumber(lua, 3);
-            bool success = false;
+            int DestroyMathExpression(lua_State* lua)
             {
-                const auto result = ScriptCanvas::Expression::Apply(name, a, b);
+                static_cast<Expression::Program*>(lua_touserdata(lua, 1))->~Program();
+                return 0;
+            }
+        } // namespace
+
+        int EvaluateMathExpression(lua_State* lua)
+        {
+            // One native evaluation per graph call; keep parsed programs with the graph, not in a global cache.
+            luaL_checktype(lua, 1, LUA_TTABLE);
+            size_t sourceLength = 0;
+            const char* source = luaL_checklstring(lua, 2, &sourceLength);
+            const int valueCount = lua_gettop(lua) - 2;
+            for (int index = 0; index < valueCount; ++index)
+            {
+                luaL_checknumber(lua, index + 3);
+            }
+
+            static const char cacheKey = 0;
+            lua_rawgetp(lua, 1, &cacheKey);
+            if (lua_isnil(lua, -1))
+            {
+                lua_pop(lua, 1);
+                lua_newtable(lua);
+                lua_pushvalue(lua, -1);
+                lua_rawsetp(lua, 1, &cacheKey);
+            }
+            const int cacheIndex = lua_gettop(lua);
+            lua_pushvalue(lua, 2);
+            lua_rawget(lua, cacheIndex);
+            bool success = false;
+            if (lua_isnil(lua, -1))
+            {
+                lua_pop(lua, 1);
+                auto* program = new (lua_newuserdatauv(lua, sizeof(Expression::Program), 0)) Expression::Program;
+                if (luaL_newmetatable(lua, "ScriptCanvas.MathExpression"))
+                {
+                    lua_pushcfunction(lua, &DestroyMathExpression);
+                    lua_setfield(lua, -2, "__gc");
+                }
+                lua_setmetatable(lua, -2);
+                {
+                    const auto tokens = Expression::Tokenize(AZStd::string(source, sourceLength), true);
+                    auto parsed =
+                        tokens ? Expression::ShuntingYard(tokens.m_value) : Expression::Result<Expression::Program>{ {}, tokens.m_error };
+                    success = static_cast<bool>(parsed);
+                    if (success)
+                    {
+                        *program = AZStd::move(parsed.m_value);
+                    }
+                    else
+                    {
+                        lua_pushlstring(lua, parsed.m_error.data(), parsed.m_error.size());
+                    }
+                }
+                if (!success)
+                {
+                    return lua_error(lua);
+                }
+                lua_pushvalue(lua, 2);
+                lua_pushvalue(lua, -2);
+                lua_rawset(lua, cacheIndex);
+            }
+            const auto& program = *static_cast<const Expression::Program*>(lua_touserdata(lua, -1));
+            if (static_cast<size_t>(valueCount) != program.m_variables.size())
+            {
+                return luaL_error(lua, "Math Expression input count does not match its variables");
+            }
+            {
+                AZStd::vector<double> values;
+                values.reserve(valueCount);
+                for (int index = 0; index < valueCount; ++index)
+                {
+                    values.push_back(lua_tonumber(lua, index + 3));
+                }
+                const auto result = Expression::Evaluate(program, values);
                 success = static_cast<bool>(result);
                 if (success)
                 {
@@ -319,12 +390,8 @@ namespace ScriptCanvas
                     lua_pushlstring(lua, result.m_error.data(), result.m_error.size());
                 }
             }
-            // Lua errors longjmp, so destroy the result's string before raising one.
-            if (!success)
-            {
-                return lua_error(lua);
-            }
-            return 1;
+            // Lua errors longjmp; release C++ temporaries before raising one.
+            return success ? 1 : lua_error(lua);
         }
 
         void RegisterAPI(lua_State* lua)
@@ -332,7 +399,7 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Grammar;
             using namespace ExecutionInterpretedAPICpp;
 
-            lua_register(lua, ScriptCanvas::Expression::LuaOperationName, &MathExpressionOperation);
+            lua_register(lua, "SC_MathExpression", &EvaluateMathExpression);
 
             lua_register(lua, k_InitializeExecutionOutsName, &InitializeNodeableOutKeys);
             lua_register(lua, k_SetExecutionOutNameNodeable, &SetExecutionOut);

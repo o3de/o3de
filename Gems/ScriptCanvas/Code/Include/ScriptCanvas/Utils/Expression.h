@@ -6,7 +6,6 @@
  */
 #pragma once
 
-#include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -71,11 +70,4 @@ namespace ScriptCanvas::Expression
     Result<Program> ShuntingYard(const AZStd::vector<Token>& tokens);
     Result<AZStd::vector<double>> Bind(const Program& expression, const Bindings& values);
     Result<double> Evaluate(const Program& expression, const AZStd::vector<double>& values);
-    Result<double> Apply(AZStd::string_view name, double a, double b = 0);
-
-    inline constexpr const char* LuaOperationName = "SC_MathExpression";
-    // Produces a Lua expression with one @ placeholder per variable, in binding order.
-    Result<AZStd::string> ToLua(const Program& expression);
-
-    void EvaluateConsole(const AZ::ConsoleCommandContainer& arguments);
 } // namespace ScriptCanvas::Expression

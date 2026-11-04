@@ -47,7 +47,7 @@ namespace ScriptCanvas
 
         void RegisterAPI(lua_State* lua);
 
-        int MathExpressionOperation(lua_State* lua);
+        int EvaluateMathExpression(lua_State* lua);
 
         void RegisterUserObjectAPI(lua_State* lua);
 

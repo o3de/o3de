@@ -264,12 +264,6 @@ namespace ScriptCanvas
             auto mathNode = azrtti_cast<const Nodes::Math::MathExpression*>(expression->GetId().m_node);
             const auto& slotIdsByName = mathNode->GetSlotsByName();
             const auto& parsed = mathNode->GetExpression();
-            const auto lua = ScriptCanvas::Expression::ToLua(parsed);
-            if (!lua)
-            {
-                model.AddError(expression, aznew Internal::ParseError(mathNode->GetEntityId(), lua.m_error));
-                return;
-            }
 
             // store the old input by slot id
             AZStd::unordered_map<SlotId, ExecutionInput> oldInput;
@@ -293,7 +287,7 @@ namespace ScriptCanvas
                 expression->AddInput(oldInput.at(slot->second));
             }
 
-            m_expressionString = lua.m_value;
+            m_expressionString = mathNode->GetRawFormat();
         }
 
     }
