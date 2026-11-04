@@ -19,7 +19,6 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QtTest>
-#include "qtestsystem.h"
 
 namespace EMotionFX
 {

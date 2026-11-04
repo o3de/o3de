@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <qnamespace.h>
+#include <Qt>
 
 enum EItemType
 {

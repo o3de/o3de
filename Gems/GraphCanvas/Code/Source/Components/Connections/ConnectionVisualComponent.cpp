@@ -12,7 +12,7 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QStyle>
 #include <QStyleOption>
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include <Components/Connections/ConnectionVisualComponent.h>
 

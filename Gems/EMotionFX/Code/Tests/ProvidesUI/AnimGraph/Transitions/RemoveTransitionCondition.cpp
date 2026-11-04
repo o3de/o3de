@@ -16,7 +16,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <QApplication>
 #include <QtTest>
-#include "qtestsystem.h"
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AttributesWindow.h>
 #include <Source/Editor/ObjectEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
