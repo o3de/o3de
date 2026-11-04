@@ -20,6 +20,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
@@ -215,30 +216,38 @@ namespace AZ
 
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
-        // Separate adjacent entries unless the previous entry already ended with a newline.
-        if (!m_debugLogEntires.empty())
+        if (m_maxEntriesToDisplay <= 0)
         {
-            const AZStd::string& previousEntry = m_debugLogEntires.back().first;
-            if (previousEntry.empty() || previousEntry.back() != '\n')
+            return;
+        }
+        // Separate adjacent entries unless the previous entry already ended with a newline.
+        if (!m_debugLogEntries.empty())
+        {
+            const auto& previousEntry = m_debugLogEntries.back();
+            if (previousEntry.m_begin == previousEntry.m_end || m_debugLogText.back() != '\n')
             {
                 m_debugLogText.push_back('\n');
             }
         }
 
-        // Add the debug to our display, removing the oldest entry if we exceed the maximum.
-        m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
+        const size_t begin = m_debugLogText.size();
         m_debugLogText += debugLogString;
-        if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
+        m_debugLogEntries.push_back({ begin, m_debugLogText.size(), color });
+        if (m_debugLogEntries.size() > static_cast<size_t>(m_maxEntriesToDisplay))
         {
-            const AZStd::string& oldestEntry = m_debugLogEntires.front().first;
-            size_t charactersToRemove = oldestEntry.size();
-            if (oldestEntry.empty() || oldestEntry.back() != '\n')
+            m_debugLogEntries.pop_front();
+        }
+
+        // Advance the visible range without moving text on each trim. Compact only after reclaiming at least half.
+        const size_t discarded = m_debugLogEntries.front().m_begin;
+        if (discarded >= 4096 && discarded >= m_debugLogText.size() - discarded)
+        {
+            m_debugLogText.erase(0, discarded);
+            for (auto& entry : m_debugLogEntries)
             {
-                // Remove the separator that follows this entry as well.
-                ++charactersToRemove;
+                entry.m_begin -= discarded;
+                entry.m_end -= discarded;
             }
-            m_debugLogText.erase(0, AZStd::min(charactersToRemove, m_debugLogText.size()));
-            m_debugLogEntires.pop_front();
         }
     }
 
@@ -252,8 +261,13 @@ namespace AZ
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyleColorVec4(ImGuiCol_ChildBg));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+        const size_t visibleBegin = m_debugLogEntries.empty() ? 0 : m_debugLogEntries.front().m_begin;
         ImGui::InputTextMultiline(
-            DebugLogTextLabel, const_cast<char*>(m_debugLogText.c_str()), m_debugLogText.size() + 1, size, ImGuiInputTextFlags_ReadOnly);
+            DebugLogTextLabel,
+            const_cast<char*>(m_debugLogText.c_str() + visibleBegin),
+            m_debugLogText.size() - visibleBegin + 1,
+            size,
+            ImGuiInputTextFlags_ReadOnly);
         ImGui::PopStyleVar();
         ImGui::PopStyleColor(2);
 
@@ -274,20 +288,21 @@ namespace AZ
         drawList->PushClipRect(debugLogWindow->InnerClipRect.Min, debugLogWindow->InnerClipRect.Max, true);
 
         size_t lineIndex = 0;
-        for (auto entryIterator = m_debugLogEntires.begin(); entryIterator != m_debugLogEntires.end(); ++entryIterator)
+        for (auto entryIterator = m_debugLogEntries.begin(); entryIterator != m_debugLogEntries.end(); ++entryIterator)
         {
-            const AZStd::string& entryText = entryIterator->first;
+            const AZStd::string_view entryText(
+                m_debugLogText.data() + entryIterator->m_begin, entryIterator->m_end - entryIterator->m_begin);
             if (!entryText.empty())
             {
-                const AZ::Color& entryColor = entryIterator->second;
+                const AZ::Color& entryColor = entryIterator->m_color;
                 const ImVec4 color(entryColor.GetR(), entryColor.GetG(), entryColor.GetB(), entryColor.GetA());
                 drawList->AddText(
                     ImGui::GetFont(),
                     ImGui::GetFontSize(),
                     ImVec2(textOrigin.x, textOrigin.y + lineIndex * ImGui::GetFontSize()),
                     ImGui::GetColorU32(color),
-                    entryText.c_str(),
-                    entryText.c_str() + entryText.size());
+                    entryText.data(),
+                    entryText.data() + entryText.size());
             }
 
             for (char character : entryText)
@@ -295,7 +310,7 @@ namespace AZ
                 lineIndex += character == '\n' ? 1 : 0;
             }
             auto nextEntryIterator = entryIterator;
-            const bool hasAnotherEntry = ++nextEntryIterator != m_debugLogEntires.end();
+            const bool hasAnotherEntry = ++nextEntryIterator != m_debugLogEntries.end();
             if (hasAnotherEntry && (entryText.empty() || entryText.back() != '\n'))
             {
                 ++lineIndex;
@@ -332,7 +347,7 @@ namespace AZ
 
     void DebugConsole::ClearDebugLog()
     {
-        m_debugLogEntires.clear();
+        m_debugLogEntries.clear();
         m_debugLogText.clear();
     }
 
