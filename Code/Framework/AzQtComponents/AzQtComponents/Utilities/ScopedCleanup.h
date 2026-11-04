@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 /**
  * RAII-style class that executes a lambda when it goes out of scope.

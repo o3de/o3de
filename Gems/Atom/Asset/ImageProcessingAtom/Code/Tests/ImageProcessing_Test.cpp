@@ -58,7 +58,7 @@
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 
 #include <QFileInfo>
-#include <qdir.h>
+#include <QDir>
 #include <QDirIterator>
 #include <QIODevice>
 

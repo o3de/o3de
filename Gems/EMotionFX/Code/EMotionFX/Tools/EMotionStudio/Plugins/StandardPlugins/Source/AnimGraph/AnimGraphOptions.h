@@ -11,7 +11,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginOptions.h>
-#include <qglobal.h>
+#include <QtGlobal>
 
 QT_FORWARD_DECLARE_CLASS(QSettings);
 

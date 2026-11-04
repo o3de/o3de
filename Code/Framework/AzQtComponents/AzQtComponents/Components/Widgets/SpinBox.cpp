@@ -31,7 +31,7 @@
 #include <QTimer>
 #include <QWindow>
 #include <QTextLayout>
-#include <qcoreevent.h>
+#include <QEvent>
 
 namespace AzQtComponents
 {
