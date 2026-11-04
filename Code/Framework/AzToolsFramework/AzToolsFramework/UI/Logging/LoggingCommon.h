@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <qnamespace.h>
+#include <Qt>
 
 namespace AzToolsFramework
 {
