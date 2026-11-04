@@ -8,10 +8,10 @@
         Base="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
         Category="Math"
         DynamicSlotOrdering="True"
-        Description="Will evaluate a series of math operations, allowing users to specify inputs using {}.">
+        Description="Evaluates math, comparisons, logical operators and condition ? a : b. Use {name} for inputs; angles are radians.">
         <Out Name="Out" Description="Output signal"/>
         <Property Name="Result"
-            Description="The resulting string."
+            Description="The numeric result. Comparisons and logical operators return 0 or 1."
             Type="double"
             DisplayGroup="ExpressionDisplayGroup"
             IsInput="False"

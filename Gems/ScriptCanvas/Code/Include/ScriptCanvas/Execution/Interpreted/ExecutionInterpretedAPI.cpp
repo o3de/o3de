@@ -21,6 +21,7 @@
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
+#include <ScriptCanvas/Utils/Expression.h>
 
 #include "ExecutionInterpretedClassAPI.h"
 #include "ExecutionInterpretedCloningAPI.h"
@@ -300,10 +301,38 @@ namespace ScriptCanvas
             return 1;
         }
 
+        int MathExpressionOperation(lua_State* lua)
+        {
+            const char* name = luaL_checkstring(lua, 1);
+            const double a = luaL_checknumber(lua, 2);
+            const double b = luaL_checknumber(lua, 3);
+            bool success = false;
+            {
+                const auto result = ScriptCanvas::Expression::Apply(name, a, b);
+                success = static_cast<bool>(result);
+                if (success)
+                {
+                    lua_pushnumber(lua, result.m_value);
+                }
+                else
+                {
+                    lua_pushlstring(lua, result.m_error.data(), result.m_error.size());
+                }
+            }
+            // Lua errors longjmp, so destroy the result's string before raising one.
+            if (!success)
+            {
+                return lua_error(lua);
+            }
+            return 1;
+        }
+
         void RegisterAPI(lua_State* lua)
         {
             using namespace ScriptCanvas::Grammar;
             using namespace ExecutionInterpretedAPICpp;
+
+            lua_register(lua, ScriptCanvas::Expression::LuaOperationName, &MathExpressionOperation);
 
             lua_register(lua, k_InitializeExecutionOutsName, &InitializeNodeableOutKeys);
             lua_register(lua, k_SetExecutionOutNameNodeable, &SetExecutionOut);

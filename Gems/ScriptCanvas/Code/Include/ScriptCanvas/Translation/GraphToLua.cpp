@@ -2526,6 +2526,7 @@ namespace ScriptCanvas
 
             size_t inputIndex = 0;
 
+            // The evaluator emits validated Lua with @ placeholders for the bound pins.
             const size_t inputStringSentinel = meta->m_expressionString.size();
             const auto& inputString = meta->m_expressionString;
 
