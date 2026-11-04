@@ -20,7 +20,6 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
-#include <cstring>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
@@ -31,33 +30,6 @@ using namespace AzFramework;
 
 namespace AZ
 {
-    namespace
-    {
-        size_t FindLogTextOffset(const char* begin, const char* end, float mouseX)
-        {
-            const ImFont* font = ImGui::GetFont();
-            const float scale = ImGui::GetFontSize() / font->FontSize;
-            float x = 0;
-            for (const char* cursor = begin; cursor < end;)
-            {
-                unsigned int character = 0;
-                const int bytes = ImTextCharFromUtf8(&character, cursor, end);
-                if (bytes <= 0)
-                {
-                    break;
-                }
-                const float width = character == '\r' ? 0 : font->GetCharAdvance(static_cast<ImWchar>(character)) * scale;
-                if (mouseX < x + width * 0.5f)
-                {
-                    return static_cast<size_t>(cursor - begin);
-                }
-                x += width;
-                cursor += bytes;
-            }
-            return static_cast<size_t>(end - begin);
-        }
-    } // namespace
-
     AZ_CVAR(bool, bg_showDebugConsole, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enables or disables the debug console within imGui");
     AZ_CVAR(float, bg_defaultDebugConsoleWidth, 960.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default width for the imGui debug console");
     AZ_CVAR(float, bg_defaultDebugConsoleHeight, 480.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default height for the imGui debug console");
@@ -164,9 +136,121 @@ namespace AZ
         }
         bg_showDebugConsole = continueShowing;
 
-        // Show a scrolling region in which to display all debug log entries.
+        // Show a scrolling child region in which to display all debug log entires.
         const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
-        DrawDebugLog(ImVec2(0, -footerHeightToReserve));
+        ImGui::BeginChild("DebugLogEntriesScrollBox", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
+        {
+            const auto& io = ImGui::GetIO();
+            const ImGuiID selectionId = ImGui::GetID("LogSelection");
+            const ImRect clip = ImGui::GetCurrentWindow()->InnerClipRect;
+            const bool clicked = ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(clip.Min, clip.Max) && ImGui::IsMouseClicked(0);
+            if (clicked)
+            {
+                ImGui::SetWindowFocus();
+                ImGui::SetActiveID(selectionId, ImGui::GetCurrentWindow());
+                m_logSelection[1] = {};
+            }
+            const bool dragging = ImGui::GetActiveID() == selectionId;
+            size_t entryIndex = 0;
+            // Display each debug log entry individually so they can be colored.
+            for (const auto& debugLogEntry : m_debugLogEntires)
+            {
+                const auto& text = debugLogEntry.first;
+                if (dragging ||
+                    (AZStd::min(m_logSelection[0], m_logSelection[1]).first <= entryIndex &&
+                     entryIndex <= AZStd::max(m_logSelection[0], m_logSelection[1]).first && m_logSelection[0] != m_logSelection[1]))
+                {
+                    const ImVec2 origin = ImGui::GetCursorScreenPos();
+                    const char* line = text.data();
+                    const char* end = line + text.size();
+                    float y = origin.y;
+                    do
+                    {
+                        const char* newline = AZStd::find(line, end, '\n');
+                        const size_t from = static_cast<size_t>(line - text.data());
+                        const size_t lineEnd = static_cast<size_t>(newline - text.data());
+                        const size_t to = lineEnd +
+                            (newline != end || (&debugLogEntry != &m_debugLogEntires.back() && (text.empty() || text.back() != '\n')));
+                        const float height = text.empty() ? ImGui::GetStyle().ItemSpacing.y : ImGui::GetTextLineHeight();
+                        LogPosition cursor = m_logSelection[1];
+                        if (dragging)
+                        {
+                            const char* hit = newline;
+                            if (io.MousePos.y >= y && io.MousePos.y < y + height)
+                            {
+                                ImGui::GetFont()->CalcTextSizeA(
+                                    ImGui::GetFontSize(), AZStd::max(0.0f, io.MousePos.x - origin.x) + 0.01f, 0, line, newline, &hit);
+                            }
+                            cursor = { entryIndex,
+                                       io.MousePos.y < y                 ? from
+                                           : io.MousePos.y >= y + height ? to
+                                                                         : static_cast<size_t>(hit - text.data()) };
+                            if (io.MousePos.y >= y)
+                            {
+                                m_logSelection[1] = { entryIndex, AZStd::min(cursor.second, text.size()) };
+                            }
+                        }
+                        const LogPosition begin{ entryIndex, from };
+                        const LogPosition limit{ entryIndex, to };
+                        const size_t a = AZStd::clamp(AZStd::min(m_logSelection[0], cursor), begin, limit).second;
+                        const size_t b = AZStd::clamp(AZStd::max(m_logSelection[0], cursor), begin, limit).second;
+                        if (!clicked && a < b && y + height >= clip.Min.y && y < clip.Max.y)
+                        {
+                            const float x1 = ImGui::CalcTextSize(line, text.data() + AZStd::min(a, lineEnd)).x;
+                            const float x2 = ImGui::CalcTextSize(line, text.data() + AZStd::min(b, lineEnd)).x +
+                                (b > lineEnd ? ImGui::CalcTextSize(" ").x : 0);
+                            ImGui::GetWindowDrawList()->AddRectFilled(
+                                ImVec2(origin.x + x1, y), ImVec2(origin.x + x2, y + height), ImGui::GetColorU32(ImGuiCol_TextSelectedBg));
+                        }
+                        y += height;
+                        line = newline != end ? newline + 1 : end;
+                    } while (line < end);
+                }
+                const ImVec4 color(debugLogEntry.second.GetR(),
+                    debugLogEntry.second.GetG(),
+                    debugLogEntry.second.GetB(),
+                    debugLogEntry.second.GetA());
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                ImGui::TextUnformatted(debugLogEntry.first.c_str());
+                ImGui::PopStyleColor();
+                ++entryIndex;
+            }
+            if (clicked)
+            {
+                m_logSelection[0] = m_logSelection[1];
+            }
+            if (dragging && !ImGui::IsMouseDown(0))
+            {
+                ImGui::ClearActiveID();
+            }
+            if (ImGui::IsWindowFocused() && (io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl) &&
+                ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false) && m_logSelection[0] != m_logSelection[1])
+            {
+                AZStd::string selected;
+                const auto first = AZStd::min(m_logSelection[0], m_logSelection[1]);
+                const auto last = AZStd::max(m_logSelection[0], m_logSelection[1]);
+                for (size_t index = first.first; index <= last.first; ++index)
+                {
+                    const auto& text = m_debugLogEntires[index].first;
+                    const size_t a = index == first.first ? first.second : 0;
+                    const size_t b = index == last.first ? last.second : text.size();
+                    selected.append(text.data() + a, b - a);
+                    if (index != last.first && (text.empty() || text.back() != '\n'))
+                    {
+                        selected.push_back('\n');
+                    }
+                }
+                ImGui::SetClipboardText(selected.c_str());
+            }
+
+            // Scroll to the last debug log entry if needed.
+            if (m_forceScroll || (m_autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+            {
+                ImGui::SetScrollHereY(1.0f);
+                m_forceScroll = false;
+            }
+        }
+        ImGui::EndChild();
 
         // Show a text input field.
         ImGui::Separator();
@@ -224,203 +308,16 @@ namespace AZ
 
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
-        if (m_maxEntriesToDisplay <= 0)
-        {
-            return;
-        }
+        // Add the debug to our display, removing the oldest entry if we exceed the maximum.
         m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
-        if (m_debugLogEntires.size() > static_cast<size_t>(m_maxEntriesToDisplay))
+        if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
+            for (auto& endpoint : m_logSelection)
+            {
+                endpoint = endpoint.first ? LogPosition{ endpoint.first - 1, endpoint.second } : LogPosition{};
+            }
             m_debugLogEntires.pop_front();
-            ++m_firstLogEntry;
-            const LogPosition first{ m_firstLogEntry, 0 };
-            m_logSelectionAnchor = AZStd::max(m_logSelectionAnchor, first);
-            m_logSelectionEnd = AZStd::max(m_logSelectionEnd, first);
         }
-    }
-
-    AZStd::string DebugConsole::GetSelectedDebugLogText() const
-    {
-        const auto first = AZStd::min(m_logSelectionAnchor, m_logSelectionEnd);
-        const auto last = AZStd::max(m_logSelectionAnchor, m_logSelectionEnd);
-        AZStd::string selected;
-        if (first == last || m_debugLogEntires.empty())
-        {
-            return selected;
-        }
-        const size_t begin = static_cast<size_t>(first.first - m_firstLogEntry);
-        const size_t end = static_cast<size_t>(last.first - m_firstLogEntry);
-        size_t size = 0;
-        for (size_t index = begin; index <= end; ++index)
-        {
-            const auto& text = m_debugLogEntires[index].first;
-            const size_t from = index == begin ? first.second : 0;
-            const size_t to = index == end ? last.second : text.size();
-            size += to - from;
-            size += index != end && (text.empty() || text.back() != '\n');
-        }
-        // Allocate a contiguous string only for an explicit clipboard request, sized once.
-        selected.reserve(size);
-        for (size_t index = begin; index <= end; ++index)
-        {
-            const auto& text = m_debugLogEntires[index].first;
-            const size_t from = index == begin ? first.second : 0;
-            const size_t to = index == end ? last.second : text.size();
-            selected.append(text.data() + from, to - from);
-            if (index != end && (text.empty() || text.back() != '\n'))
-            {
-                selected.push_back('\n');
-            }
-        }
-        return selected;
-    }
-
-    void DebugConsole::DrawDebugLog(const ImVec2& size)
-    {
-        ImGui::BeginChild("DebugLogEntriesScrollBox", size, false, ImGuiWindowFlags_HorizontalScrollbar);
-        const auto& io = ImGui::GetIO();
-        const ImGuiID selectionId = ImGui::GetID("DebugLogSelection");
-        const ImRect content = ImGui::GetCurrentWindow()->InnerClipRect;
-        const bool clicked = ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(content.Min, content.Max) &&
-            ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-        const bool resetAnchor = clicked && !io.KeyShift;
-        if (clicked)
-        {
-            ImGui::SetWindowFocus();
-            ImGui::SetActiveID(selectionId, ImGui::GetCurrentWindow());
-            m_draggingLogSelection = true;
-        }
-        if (m_draggingLogSelection && ImGui::GetActiveID() != selectionId)
-        {
-            m_draggingLogSelection = false;
-        }
-        if (m_draggingLogSelection)
-        {
-            ImGui::KeepAliveID(selectionId);
-        }
-        const bool selecting = m_draggingLogSelection;
-        const bool highlight = selecting || m_logSelectionAnchor != m_logSelectionEnd;
-        const bool wasAtBottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY();
-        LogPosition mousePosition{ m_firstLogEntry, 0 };
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        uint64_t entryId = m_firstLogEntry;
-        for (const auto& entry : m_debugLogEntires)
-        {
-            const ImVec2 origin = ImGui::GetCursorScreenPos();
-            if (highlight)
-            {
-                const char* text = entry.first.data();
-                const char* end = text + entry.first.size();
-                const char* line = text;
-                float y = origin.y;
-                do
-                {
-                    const auto* newline = static_cast<const char*>(memchr(line, '\n', static_cast<size_t>(end - line)));
-                    const char* lineEnd = newline ? newline : end;
-                    const size_t from = static_cast<size_t>(line - text);
-                    const size_t textEnd = static_cast<size_t>(lineEnd - text);
-                    const size_t to = textEnd + (newline || entryId + 1 < m_firstLogEntry + m_debugLogEntires.size());
-                    const float height = entry.first.empty() ? ImGui::GetStyle().ItemSpacing.y : ImGui::GetTextLineHeight();
-                    const auto project = [&](LogPosition position)
-                    {
-                        return position.first < entryId ? from : position.first > entryId ? to : AZStd::clamp(position.second, from, to);
-                    };
-                    size_t cursor = project(m_logSelectionEnd);
-                    if (selecting)
-                    {
-                        cursor = io.MousePos.y < y        ? from
-                            : io.MousePos.y >= y + height ? to
-                                                          : from + FindLogTextOffset(line, lineEnd, io.MousePos.x - origin.x);
-                        if (io.MousePos.y >= y)
-                        {
-                            mousePosition = { entryId, AZStd::min(cursor, entry.first.size()) };
-                        }
-                    }
-                    if (!resetAnchor)
-                    {
-                        const size_t anchor = project(m_logSelectionAnchor);
-                        const size_t a = AZStd::min(anchor, cursor);
-                        const size_t b = AZStd::max(anchor, cursor);
-                        if (a != b && y + height >= ImGui::GetWindowPos().y && y <= ImGui::GetWindowPos().y + ImGui::GetWindowHeight())
-                        {
-                            const float x1 = ImGui::CalcTextSize(line, text + AZStd::min(a, textEnd)).x;
-                            float x2 = ImGui::CalcTextSize(line, text + AZStd::min(b, textEnd)).x;
-                            if (b > textEnd)
-                            {
-                                x2 += ImGui::CalcTextSize(" ").x;
-                            }
-                            drawList->AddRectFilled(
-                                ImVec2(origin.x + x1, y), ImVec2(origin.x + x2, y + height), ImGui::GetColorU32(ImGuiCol_TextSelectedBg));
-                        }
-                    }
-                    y += ImGui::GetTextLineHeight();
-                    line = newline ? newline + 1 : end;
-                } while (line < end);
-            }
-            const auto& color = entry.second;
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(color.GetR(), color.GetG(), color.GetB(), color.GetA()));
-            ImGui::TextUnformatted(entry.first.data(), entry.first.data() + entry.first.size());
-            ImGui::PopStyleColor();
-            ++entryId;
-        }
-        if (selecting)
-        {
-            m_logSelectionEnd = mousePosition;
-            if (resetAnchor)
-            {
-                m_logSelectionAnchor = mousePosition;
-            }
-            if (io.MouseDown[ImGuiMouseButton_Left])
-            {
-                const float top = ImGui::GetWindowPos().y;
-                const float bottom = top + ImGui::GetWindowHeight();
-                const float outside = io.MousePos.y < top ? io.MousePos.y - top : io.MousePos.y > bottom ? io.MousePos.y - bottom : 0;
-                ImGui::SetScrollY(ImGui::GetScrollY() + outside * io.DeltaTime * 10);
-            }
-            else
-            {
-                m_draggingLogSelection = false;
-                ImGui::ClearActiveID();
-            }
-        }
-        const auto selectAll = [&]()
-        {
-            if (!m_debugLogEntires.empty())
-            {
-                m_logSelectionAnchor = { m_firstLogEntry, 0 };
-                m_logSelectionEnd = { m_firstLogEntry + m_debugLogEntires.size() - 1, m_debugLogEntires.back().first.size() };
-            }
-        };
-        const bool shortcut = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
-        if (ImGui::IsWindowFocused() && shortcut)
-        {
-            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A), false))
-            {
-                selectAll();
-            }
-            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false) && m_logSelectionAnchor != m_logSelectionEnd)
-            {
-                ImGui::SetClipboardText(GetSelectedDebugLogText().c_str());
-            }
-        }
-        if (ImGui::BeginPopupContextWindow("DebugLogContextMenu", ImGuiPopupFlags_MouseButtonRight))
-        {
-            if (ImGui::MenuItem("Copy", nullptr, false, m_logSelectionAnchor != m_logSelectionEnd))
-            {
-                ImGui::SetClipboardText(GetSelectedDebugLogText().c_str());
-            }
-            if (ImGui::MenuItem("Select All"))
-            {
-                selectAll();
-            }
-            ImGui::EndPopup();
-        }
-        if (m_forceScroll || (m_autoScroll && wasAtBottom && !selecting))
-        {
-            ImGui::SetScrollHereY(1.0f);
-            m_forceScroll = false;
-        }
-        ImGui::EndChild();
     }
 
     void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel)
@@ -444,10 +341,8 @@ namespace AZ
 
     void DebugConsole::ClearDebugLog()
     {
-        m_firstLogEntry += m_debugLogEntires.size();
         m_debugLogEntires.clear();
-        m_logSelectionAnchor = m_logSelectionEnd = { m_firstLogEntry, 0 };
-        m_draggingLogSelection = false;
+        m_logSelection[0] = m_logSelection[1] = {};
     }
 
     bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)

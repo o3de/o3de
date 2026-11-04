@@ -96,15 +96,10 @@ namespace AZ
 
     private:
         void AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel);
-        void DrawDebugLog(const ImVec2& size);
 
-        AZStd::string GetSelectedDebugLogText() const;
-        using LogPosition = AZStd::pair<uint64_t, size_t>; // Stable entry ID and UTF-8 byte offset.
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
-        uint64_t m_firstLogEntry = 0;
-        LogPosition m_logSelectionAnchor{};
-        LogPosition m_logSelectionEnd{};
-        bool m_draggingLogSelection = false;
+        using LogPosition = AZStd::pair<size_t, size_t>; // Entry index and UTF-8 byte offset.
+        LogPosition m_logSelection[2]{};
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
