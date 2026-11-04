@@ -159,7 +159,13 @@ namespace AZ
             RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
-                defaultSwapChain->SetVerticalSyncInterval(interval);
+                const RHI::ResultCode result = defaultSwapChain->TrySetVerticalSyncInterval(interval);
+                AZ_Error(
+                    "WindowContext",
+                    result == RHI::ResultCode::Success,
+                    "Swap chain cannot honor VSync interval %u (native maximum %u).",
+                    interval,
+                    defaultSwapChain->GetMaximumVerticalSyncInterval());
             }
         }
 

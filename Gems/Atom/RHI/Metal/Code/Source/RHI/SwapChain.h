@@ -28,6 +28,7 @@ namespace AZ
 
             static RHI::Ptr<SwapChain> Create();
             Device& GetDevice() const;
+            uint32_t GetMaximumVerticalSyncInterval() const override;
             void SetCommandBuffer(id <MTLCommandBuffer> mtlCommandBuffer);
             
             id<MTLTexture> RequestDrawable(bool isFrameCaptureEnabled); 
