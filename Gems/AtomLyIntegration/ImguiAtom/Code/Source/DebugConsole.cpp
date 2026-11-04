@@ -19,15 +19,36 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/algorithm.h>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 using namespace AzFramework;
 
 namespace AZ
 {
+    namespace
+    {
+        constexpr const char* DebugLogTextLabel = "##DebugLogEntriesText";
+
+        ImGuiWindow* FindChildWindow(ImGuiWindow* parentWindow, ImGuiID childId)
+        {
+            ImGuiContext& context = *GImGui;
+            for (int windowIndex = context.Windows.Size - 1; windowIndex >= 0; --windowIndex)
+            {
+                ImGuiWindow* window = context.Windows[windowIndex];
+                if (window->ParentWindow == parentWindow && window->ChildId == childId)
+                {
+                    return window;
+                }
+            }
+            return nullptr;
+        }
+    } // namespace
+
     AZ_CVAR(bool, bg_showDebugConsole, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enables or disables the debug console within imGui");
     AZ_CVAR(float, bg_defaultDebugConsoleWidth, 960.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default width for the imGui debug console");
     AZ_CVAR(float, bg_defaultDebugConsoleHeight, 480.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default height for the imGui debug console");
@@ -134,30 +155,9 @@ namespace AZ
         }
         bg_showDebugConsole = continueShowing;
 
-        // Show a scrolling child region in which to display all debug log entires.
+        // Show a scrolling region in which to display all debug log entries.
         const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
-        ImGui::BeginChild("DebugLogEntriesScrollBox", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
-        {
-            // Display each debug log entry individually so they can be colored.
-            for (const auto& debugLogEntry : m_debugLogEntires)
-            {
-                const ImVec4 color(debugLogEntry.second.GetR(),
-                    debugLogEntry.second.GetG(),
-                    debugLogEntry.second.GetB(),
-                    debugLogEntry.second.GetA());
-                ImGui::PushStyleColor(ImGuiCol_Text, color);
-                ImGui::TextUnformatted(debugLogEntry.first.c_str());
-                ImGui::PopStyleColor();
-            }
-
-            // Scroll to the last debug log entry if needed.
-            if (m_forceScroll || (m_autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
-            {
-                ImGui::SetScrollHereY(1.0f);
-                m_forceScroll = false;
-            }
-        }
-        ImGui::EndChild();
+        DrawDebugLog(ImVec2(-FLT_MIN, -footerHeightToReserve));
 
         // Show a text input field.
         ImGui::Separator();
@@ -215,11 +215,99 @@ namespace AZ
 
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
+        // Separate adjacent entries unless the previous entry already ended with a newline.
+        if (!m_debugLogEntires.empty())
+        {
+            const AZStd::string& previousEntry = m_debugLogEntires.back().first;
+            if (previousEntry.empty() || previousEntry.back() != '\n')
+            {
+                m_debugLogText.push_back('\n');
+            }
+        }
+
         // Add the debug to our display, removing the oldest entry if we exceed the maximum.
         m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
+        m_debugLogText += debugLogString;
         if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
+            const AZStd::string& oldestEntry = m_debugLogEntires.front().first;
+            size_t charactersToRemove = oldestEntry.size();
+            if (oldestEntry.empty() || oldestEntry.back() != '\n')
+            {
+                // Remove the separator that follows this entry as well.
+                ++charactersToRemove;
+            }
+            m_debugLogText.erase(0, AZStd::min(charactersToRemove, m_debugLogText.size()));
             m_debugLogEntires.pop_front();
+        }
+    }
+
+    void DebugConsole::DrawDebugLog(const ImVec2& size)
+    {
+        ImGuiWindow* parentWindow = ImGui::GetCurrentWindow();
+        const ImGuiID debugLogId = parentWindow->GetID(DebugLogTextLabel);
+
+        // InputTextMultiline supplies text selection, drag handling, and platform-native copy
+        // shortcuts. Its own text is transparent because the colored entries are redrawn below.
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImGui::GetStyleColorVec4(ImGuiCol_ChildBg));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+        ImGui::InputTextMultiline(
+            DebugLogTextLabel, const_cast<char*>(m_debugLogText.c_str()), m_debugLogText.size() + 1, size, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor(2);
+
+        ImGuiWindow* debugLogWindow = FindChildWindow(parentWindow, debugLogId);
+        if (!debugLogWindow)
+        {
+            return;
+        }
+
+        const ImGuiInputTextState* inputState = ImGui::GetInputTextState(debugLogId);
+        const float horizontalScroll = inputState ? inputState->ScrollX : 0.0f;
+        const ImGuiStyle& style = ImGui::GetStyle();
+        const ImVec2 textOrigin(
+            debugLogWindow->DC.CursorStartPos.x + style.FramePadding.x - horizontalScroll,
+            debugLogWindow->DC.CursorStartPos.y + style.FramePadding.y);
+
+        ImDrawList* drawList = debugLogWindow->DrawList;
+        drawList->PushClipRect(debugLogWindow->InnerClipRect.Min, debugLogWindow->InnerClipRect.Max, true);
+
+        size_t lineIndex = 0;
+        for (auto entryIterator = m_debugLogEntires.begin(); entryIterator != m_debugLogEntires.end(); ++entryIterator)
+        {
+            const AZStd::string& entryText = entryIterator->first;
+            if (!entryText.empty())
+            {
+                const AZ::Color& entryColor = entryIterator->second;
+                const ImVec4 color(entryColor.GetR(), entryColor.GetG(), entryColor.GetB(), entryColor.GetA());
+                drawList->AddText(
+                    ImGui::GetFont(),
+                    ImGui::GetFontSize(),
+                    ImVec2(textOrigin.x, textOrigin.y + lineIndex * ImGui::GetFontSize()),
+                    ImGui::GetColorU32(color),
+                    entryText.c_str(),
+                    entryText.c_str() + entryText.size());
+            }
+
+            for (char character : entryText)
+            {
+                lineIndex += character == '\n' ? 1 : 0;
+            }
+            auto nextEntryIterator = entryIterator;
+            const bool hasAnotherEntry = ++nextEntryIterator != m_debugLogEntires.end();
+            if (hasAnotherEntry && (entryText.empty() || entryText.back() != '\n'))
+            {
+                ++lineIndex;
+            }
+        }
+
+        drawList->PopClipRect();
+
+        if (m_forceScroll || (m_autoScroll && debugLogWindow->Scroll.y >= debugLogWindow->ScrollMax.y))
+        {
+            ImGui::SetScrollFromPosY(debugLogWindow, debugLogWindow->DC.CursorMaxPos.y - debugLogWindow->Pos.y, 1.0f);
+            m_forceScroll = false;
         }
     }
 
@@ -245,6 +333,7 @@ namespace AZ
     void DebugConsole::ClearDebugLog()
     {
         m_debugLogEntires.clear();
+        m_debugLogText.clear();
     }
 
     bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)

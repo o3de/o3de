@@ -96,8 +96,10 @@ namespace AZ
 
     private:
         void AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel);
+        void DrawDebugLog(const ImVec2& size);
 
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
+        AZStd::string m_debugLogText; //!< All debug logs combined into selectable text.
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
