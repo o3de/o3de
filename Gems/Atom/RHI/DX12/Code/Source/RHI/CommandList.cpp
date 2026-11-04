@@ -926,7 +926,7 @@ namespace AZ
                 RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw),
                 "PerDraw shading rate is not supported on this platform");
 
-            AZStd::array<D3D12_SHADING_RATE_COMBINER, RHI::ShadingRateCombinators::array_size> d3d12Combinators;
+            AZStd::array<D3D12_SHADING_RATE_COMBINER, AZStd::tuple_size_v<RHI::ShadingRateCombinators>> d3d12Combinators;
             for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
             {
                 d3d12Combinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);

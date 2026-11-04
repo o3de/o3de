@@ -91,7 +91,7 @@ namespace OpenParticleSystemEditor
             m_initialClick = mouseEvent->pos();
             m_checkForDrag = true;
             mouseEvent->accept();
-            QMouseEvent customMouseEvent(mouseEvent->type(), mouseEvent->pos(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
+            QMouseEvent customMouseEvent(mouseEvent->type(), mouseEvent->position(), mouseEvent->globalPosition(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
             SetItemSelected();
             QGraphicsView::mousePressEvent(&customMouseEvent);
             QGraphicsView::mouseReleaseEvent(&customMouseEvent);
@@ -132,11 +132,11 @@ namespace OpenParticleSystemEditor
                 setInteractive(false);
 
                 QMouseEvent startPressMouseEvent(
-                    QEvent::MouseButtonPress, m_initialClick, Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
+                    QEvent::MouseButtonPress, m_initialClick, m_initialClick, Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
                 QGraphicsView::mousePressEvent(&startPressMouseEvent);
 
                 QMouseEvent customMouseEvent(
-                    mouseEvent->type(), mouseEvent->pos(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
+                    mouseEvent->type(), mouseEvent->position(), mouseEvent->globalPosition(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
                 QGraphicsView::mousePressEvent(&customMouseEvent);
             }
             return;
@@ -162,7 +162,7 @@ namespace OpenParticleSystemEditor
             if (!isInteractive())
             {
                 QMouseEvent customMouseEvent(
-                    mouseEvent->type(), mouseEvent->pos(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
+                    mouseEvent->type(), mouseEvent->position(), mouseEvent->globalPosition(), Qt::LeftButton, Qt::LeftButton, mouseEvent->modifiers());
                 QGraphicsView::mouseReleaseEvent(&customMouseEvent);
                 mouseEvent->accept();
                 setInteractive(true);

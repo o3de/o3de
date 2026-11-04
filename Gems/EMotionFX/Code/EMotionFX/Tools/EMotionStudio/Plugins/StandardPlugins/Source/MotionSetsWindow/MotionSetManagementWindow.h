@@ -8,13 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <MysticQt/Source/DialogStack.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
+
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -22,7 +22,6 @@
 #include <QTreeWidget>
 #include <QLineEdit>
 #include <QDialog>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 

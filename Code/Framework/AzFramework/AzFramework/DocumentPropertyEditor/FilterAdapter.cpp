@@ -139,6 +139,28 @@ namespace AZ::DocumentPropertyEditor
         return newNode;
     }
 
+    RowFilterAdapter::MatchInfoNode::MatchInfoNode() = default;
+
+    RowFilterAdapter::MatchInfoNode::~MatchInfoNode()
+    {
+        for (auto child : m_childMatchState)
+        {
+            delete child;
+        }
+        m_childMatchState.clear();
+    }
+
+    bool RowFilterAdapter::MatchInfoNode::IncludeInFilter()
+    {
+        return (m_matchesSelf || m_hasMatchingAncestor || !m_matchingDescendants.empty());
+    };
+
+    void RowFilterAdapter::MatchInfoNode::RemoveChildAtIndex(size_t index)
+    {
+        AZ_Assert(m_childMatchState.size() > index, "MatchInfoNode child out of bounds!");
+        m_childMatchState.erase(m_childMatchState.begin() + index);
+    }
+
     void RowFilterAdapter::SetFilterActive(bool activateFilter)
     {
         if (m_filterActive != activateFilter)

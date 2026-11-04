@@ -1,0 +1,16 @@
+class A
+{
+    void MethodA();
+};
+
+class B
+{
+    void M()
+    {
+        A::MethodA();
+
+        __azslc_print_message("@check predicate ");  // message for the test system
+        __azslc_print_symbol(A::MethodA, __azslc_prtsym_fully_qualified);
+        __azslc_print_message(" == /A/MethodA\n");
+    }
+};

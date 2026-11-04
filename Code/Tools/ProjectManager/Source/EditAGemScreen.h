@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <CreateAGemScreen.h>
 
 QT_FORWARD_DECLARE_CLASS(QDir)
-#endif
 
 namespace O3DE::ProjectManager
 {

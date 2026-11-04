@@ -11,6 +11,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -33,7 +34,9 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorLookAtComponent>("Look At", "Force an entity to always look at a given target")
+                editContext->Class<EditorLookAtComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Look At"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Force an entity to always look at a given target"))
 
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
@@ -43,35 +46,51 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_targetId, "Target", "The entity to look at")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_targetId,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Target"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The entity to look at"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::OnTargetChanged)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorLookAtComponent::m_forwardAxis, "Forward Axis", "The local axis that should point at the target")
-                        ->EnumAttribute(AZ::Transform::Axis::YPositive, "Y+")
-                        ->EnumAttribute(AZ::Transform::Axis::YNegative, "Y-")
-                        ->EnumAttribute(AZ::Transform::Axis::XPositive, "X+")
-                        ->EnumAttribute(AZ::Transform::Axis::XNegative, "X-")
-                        ->EnumAttribute(AZ::Transform::Axis::ZPositive, "Z+")
-                        ->EnumAttribute(AZ::Transform::Axis::ZNegative, "Z-")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorLookAtComponent::m_forwardAxis,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Forward Axis"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The local axis that should point at the target"))
+                        ->EnumAttribute(AZ::Transform::Axis::YPositive, QT_TRANSLATE_NOOP("LmbrCentral", "Y+"))
+                        ->EnumAttribute(AZ::Transform::Axis::YNegative, QT_TRANSLATE_NOOP("LmbrCentral", "Y-"))
+                        ->EnumAttribute(AZ::Transform::Axis::XPositive, QT_TRANSLATE_NOOP("LmbrCentral", "X+"))
+                        ->EnumAttribute(AZ::Transform::Axis::XNegative, QT_TRANSLATE_NOOP("LmbrCentral", "X-"))
+                        ->EnumAttribute(AZ::Transform::Axis::ZPositive, QT_TRANSLATE_NOOP("LmbrCentral", "Z+"))
+                        ->EnumAttribute(AZ::Transform::Axis::ZNegative, QT_TRANSLATE_NOOP("LmbrCentral", "Z-"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorLookAtComponent::m_strength, "Strength", "Determines how quickly the rotation is performed and how much it resists changes in the rotation")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorLookAtComponent::m_strength,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Strength"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Determines how quickly the rotation is performed and how much it resists changes in the rotation"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixatePitch, "Fixate Pitch", "Whether the pitch is fixated towards the Look At entity / point")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixatePitch,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Fixate Pitch"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Whether the pitch is fixated towards the Look At entity / point"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateRoll, "Fixate Roll", "Whether the pitch is fixated towards the Look At entity / point")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateRoll,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Fixate Roll"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Whether the pitch is fixated towards the Look At entity / point"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateYaw, "Fixate Yaw", "Whether the pitch is fixated towards the Look At entity / point")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateYaw,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Fixate Yaw"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Whether the pitch is fixated towards the Look At entity / point"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_enabled, "Enabled", "Whether the Look At component is enabled or disabled")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_enabled,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Enabled"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Whether the Look At component is enabled or disabled"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::OnEnabledChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_applyLookAtTransform, "Apply Look At Transform", "Whether the Look At transform is applied when the component is enabled")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_applyLookAtTransform,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Apply Look At Transform"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Whether the Look At transform is applied when the component is enabled"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
                     ;
             }

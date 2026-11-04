@@ -19,6 +19,7 @@
 #include <QPainter>
 #include <QScopedValueRollback>
 #include <QTimer>
+#include <QWindow>
 
 // AzCore
 #include <AzCore/Component/EntityId.h>
@@ -84,8 +85,6 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
-
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
@@ -157,11 +156,8 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
 
     using AzToolsFramework::ToolsApplicationRequests;
 
-    AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;
-    ToolsApplicationRequests::Bus::BroadcastResult(
-        undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "EditorCameraComponentEntityChange");
-    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
-    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+    AzToolsFramework::ScopedUndoBatch undoBatch("EditorCameraComponentEntityChange");
+    undoBatch.MarkEntityDirty(entityId);
 }
 
 static void PopViewGroupForDefaultContext()
@@ -1234,8 +1230,6 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
     {
         out.x = (x / 100) * m_rcClient.width();
         out.y = (y / 100) * m_rcClient.height();
-        out.x /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
-        out.y /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
     }
     return out;
 }
@@ -2239,4 +2233,3 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
     return AZStd::nullopt;
 }
 
-#include <moc_EditorViewportWidget.cpp>

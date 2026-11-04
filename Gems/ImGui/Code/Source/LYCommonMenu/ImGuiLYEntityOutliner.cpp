@@ -188,7 +188,7 @@ namespace ImGui
         ImGui::Columns(1);
 
         // The 3rd parameter of this Combo box HAS to match the order of ImGuiLYEntityOutliner::HierarchyUpdateType
-        ImGui::Combo("Hierarchy Update Type", reinterpret_cast<int*>(&m_hierarchyUpdateType), "Constant\0Update Tick");
+        ImGui::Combo("Hierarchy Update Type", reinterpret_cast<int*>(&m_hierarchyUpdateType), "Constant\0Update Tick\0");
 
         // Refresh the hierarchy / display further options, based on update type
         switch (m_hierarchyUpdateType)

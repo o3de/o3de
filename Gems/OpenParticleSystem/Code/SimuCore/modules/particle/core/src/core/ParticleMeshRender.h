@@ -31,10 +31,9 @@ namespace SimuCore::ParticleCore {
     private:
         void UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<AZ::Vector3>& positionBuffer);
 
-        AZ::u8* gDriver = nullptr;
+        AZ::u8* m_driver = nullptr;
         AZ::u32 particleSize = 0;
-        AZStd::unordered_map<AZ::u64, AZStd::vector<ParticleMeshVertex>> vbs;
-        AZStd::unordered_map<AZ::u64, BufferView> bufferViews;
+        AZStd::unordered_map<AZ::u64, AZStd::vector<ParticleMeshInstanceData>> instanceData;
+        AZStd::unordered_map<AZ::u64, BufferView> instanceBufferViews;
     };
 }
-

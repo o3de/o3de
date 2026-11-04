@@ -30,7 +30,7 @@ def EntityOutliner_EntityOrdering():
     5) Add another new entity, ensure the rest of the order is unchanged
     """
 
-    from PySide2 import QtCore
+    from PySide6 import QtCore
     
     import editor_python_test_tools.hydra_editor_utils as hydra
     import pyside_utils

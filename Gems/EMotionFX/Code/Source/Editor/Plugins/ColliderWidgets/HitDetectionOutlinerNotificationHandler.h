@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)

@@ -9,6 +9,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
@@ -38,18 +39,18 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorProxyCylinderShapeConfig>("EditorProxyCylinderShapeConfig", "Proxy structure to wrap cylinder data")
+                editContext->Class<EditorProxyCylinderShapeConfig>(QT_TRANSLATE_NOOP("PhysX", "EditorProxyCylinderShapeConfig"), QT_TRANSLATE_NOOP("PhysX", "Proxy structure to wrap cylinder data"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_configuration,
-                        "Configuration", "PhysX cylinder collider configuration.")
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration"), QT_TRANSLATE_NOOP("PhysX", "PhysX cylinder collider configuration."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
-                        "Subdivision", "Cylinder subdivision count.")
+                        QT_TRANSLATE_NOOP("PhysX", "Subdivision"), QT_TRANSLATE_NOOP("PhysX", "Cylinder subdivision count."))
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
                         ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, QT_TRANSLATE_NOOP("PhysX", "Height"), QT_TRANSLATE_NOOP("PhysX", "Cylinder height."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, QT_TRANSLATE_NOOP("PhysX", "Radius"), QT_TRANSLATE_NOOP("PhysX", "Cylinder radius."))
                     ;
             }
         }
@@ -90,31 +91,31 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorProxyShapeConfig>(
-                    "EditorProxyShapeConfig", "PhysX Base shape collider")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, "Shape", "The shape of the collider.")
-                        ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
-                        ->EnumAttribute(Physics::ShapeType::Box, "Box")
-                        ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
-                        ->EnumAttribute(Physics::ShapeType::Cylinder, "Cylinder")
+                    QT_TRANSLATE_NOOP("PhysX", "EditorProxyShapeConfig"), QT_TRANSLATE_NOOP("PhysX", "PhysX Base shape collider"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, QT_TRANSLATE_NOOP("PhysX", "Shape"), QT_TRANSLATE_NOOP("PhysX", "The shape of the collider."))
+                        ->EnumAttribute(Physics::ShapeType::Sphere, QT_TRANSLATE_NOOP("PhysX", "Sphere"))
+                        ->EnumAttribute(Physics::ShapeType::Box, QT_TRANSLATE_NOOP("PhysX", "Box"))
+                        ->EnumAttribute(Physics::ShapeType::Capsule, QT_TRANSLATE_NOOP("PhysX", "Capsule"))
+                        ->EnumAttribute(Physics::ShapeType::Cylinder, QT_TRANSLATE_NOOP("PhysX", "Cylinder"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, "Sphere", "Configuration of sphere shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, QT_TRANSLATE_NOOP("PhysX", "Sphere"), QT_TRANSLATE_NOOP("PhysX", "Configuration of sphere shape."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, "Box", "Configuration of box shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, QT_TRANSLATE_NOOP("PhysX", "Box"), QT_TRANSLATE_NOOP("PhysX", "Configuration of box shape."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, QT_TRANSLATE_NOOP("PhysX", "Capsule"), QT_TRANSLATE_NOOP("PhysX", "Configuration of capsule shape."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_cylinder, "Cylinder", "Configuration of cylinder shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_cylinder, QT_TRANSLATE_NOOP("PhysX", "Cylinder"), QT_TRANSLATE_NOOP("PhysX", "Configuration of cylinder shape."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCylinderConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, "Subdivision level",
-                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, QT_TRANSLATE_NOOP("PhysX", "Subdivision level"),
+                        QT_TRANSLATE_NOOP("PhysX", "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling."))
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
                         ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
@@ -172,7 +173,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorColliderComponent>(
-                    "PhysX Primitive Collider", "Creates geometry in the PhysX simulation using primitive shape.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Primitive Collider"), QT_TRANSLATE_NOOP("PhysX", "Creates geometry in the PhysX simulation using primitive shape."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
@@ -180,16 +181,16 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, QT_TRANSLATE_NOOP("PhysX", "Collider Configuration"), QT_TRANSLATE_NOOP("PhysX", "Configuration of the collider."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_proxyShapeConfiguration, "Shape Configuration", "Configuration of the shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_proxyShapeConfiguration, QT_TRANSLATE_NOOP("PhysX", "Shape Configuration"), QT_TRANSLATE_NOOP("PhysX", "Configuration of the shape."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, QT_TRANSLATE_NOOP("PhysX", "Component Mode"), QT_TRANSLATE_NOOP("PhysX", "Collider Component Mode."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings.")
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw settings"), QT_TRANSLATE_NOOP("PhysX", "Debug draw settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

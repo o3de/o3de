@@ -381,4 +381,3 @@ namespace AzQtComponents
     }
 }
 
-#include "Components/Widgets/moc_SegmentBar.cpp"

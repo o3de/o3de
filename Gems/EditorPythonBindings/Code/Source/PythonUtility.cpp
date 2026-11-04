@@ -672,7 +672,7 @@ namespace EditorPythonBindings
             {
                 if (Internal::AllocateBehaviorValueParameter(behaviorMethod, result, stackVariableAllocator))
                 {
-                    if (behaviorMethod->Call(parameters.begin(), static_cast<unsigned int>(totalPythonArgs), &result))
+                    if (behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs), &result))
                     {
                         result.m_azRtti = behaviorMethod->GetResult()->m_azRtti;
                         result.m_typeId = behaviorMethod->GetResult()->m_typeId;
@@ -689,7 +689,7 @@ namespace EditorPythonBindings
                     AZ_Warning("python", false, "Failed to allocate return value for method %s", behaviorMethod->m_name.c_str());
                 }
             }
-            else if (!behaviorMethod->Call(parameters.begin(), static_cast<unsigned int>(totalPythonArgs)))
+            else if (!behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs)))
             {
                 AZ_Warning("python", false, "Failed to invoke class method %s", behaviorMethod->m_name.c_str());
             }
@@ -977,6 +977,20 @@ namespace EditorPythonBindings
                     {
                         // address argument is part of the bus call, skip from event argument list
                         continue;
+                    }
+
+                    // Emit the reflected argument name (matching the class/global method path in
+                    // MethodDefinition), falling back to a positional argN name when none is reflected.
+                    // The names come from ->Event("Name", &Fn, {{ {"argName", "tooltip"} }}) reflection.
+                    const AZStd::string* argName = behaviorMethod->GetArgumentName(i);
+                    if (!argName || argName->empty())
+                    {
+                        AzFramework::StringFunc::Append(inOutStrBuffer, AZStd::string::format("arg%zu: ", i).c_str());
+                    }
+                    else
+                    {
+                        AzFramework::StringFunc::Append(inOutStrBuffer, argName->c_str());
+                        AzFramework::StringFunc::Append(inOutStrBuffer, ": ");
                     }
 
                     AZStd::string_view argType = FetchPythonTypeAndTraits(argParam->m_typeId, argParam->m_traits);

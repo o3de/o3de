@@ -94,4 +94,3 @@ void GammaEdit::valueChanged(double gamma)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_GammaEdit.cpp"

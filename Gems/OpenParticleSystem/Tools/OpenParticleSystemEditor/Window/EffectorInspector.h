@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <Window/ui_EffectorInspector.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -21,7 +21,6 @@
 #include <EventHandlerWidgets.h>
 #include <Document/ParticleDocumentBus.h>
 #include <AzCore/Math/Vector3.h>
-#endif
 
 namespace Ui
 {

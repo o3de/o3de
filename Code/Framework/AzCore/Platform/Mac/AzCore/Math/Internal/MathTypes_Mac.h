@@ -13,4 +13,6 @@
 #   include <pmmintrin.h>
 #   include <emmintrin.h>
 #   include <smmintrin.h>
+#elif AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+#   include <arm_neon.h>
 #endif

@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettings.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -28,16 +29,16 @@ namespace AtomToolsFramework
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EntityPreviewViewportSettings>(
-                    "EntityPreviewViewportSettings", "")
+                    QT_TRANSLATE_NOOP("AtomToolsFramework", "EntityPreviewViewportSettings"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableGrid, "Enable Grid", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableShadowCatcher, "Enable Shadow Catcher", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableAlternateSkybox, "Enable Alternate Skybox", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &EntityPreviewViewportSettings::m_fieldOfView, "Field Of View", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableGrid, QT_TRANSLATE_NOOP("AtomToolsFramework", "Enable Grid"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableShadowCatcher, QT_TRANSLATE_NOOP("AtomToolsFramework", "Enable Shadow Catcher"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EntityPreviewViewportSettings::m_enableAlternateSkybox, QT_TRANSLATE_NOOP("AtomToolsFramework", "Enable Alternate Skybox"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &EntityPreviewViewportSettings::m_fieldOfView, QT_TRANSLATE_NOOP("AtomToolsFramework", "Field Of View"), "")
                         ->Attribute(AZ::Edit::Attributes::Min, 60.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntityPreviewViewportSettings::m_displayMapperOperationType, "Display Mapper Type", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntityPreviewViewportSettings::m_displayMapperOperationType, QT_TRANSLATE_NOOP("AtomToolsFramework", "Display Mapper Type"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AZ::Render::DisplayMapperOperationType>())
                     ;
             }

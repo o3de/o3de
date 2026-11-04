@@ -10,6 +10,8 @@
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -36,7 +38,9 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorInspectorComponent>("Inspector Component Order", "Edit-time entity inspector state")
+                    editContext->Class<EditorInspectorComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Inspector Component Order"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Edit-time entity inspector state"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden)

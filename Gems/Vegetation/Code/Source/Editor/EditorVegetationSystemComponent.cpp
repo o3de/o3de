@@ -9,6 +9,7 @@
 
 #include <Vegetation/Editor/EditorAreaComponentBase.h>
 #include <Vegetation/Editor/EditorVegetationComponentBase.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 namespace Vegetation
@@ -37,9 +38,9 @@ namespace Vegetation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<EditorVegetationSystemComponent>("Editor Vegetation System", "Manages and discovers surface tag list assets that define the dictionary of selectable tags at edit time")
+                editContext->Class<EditorVegetationSystemComponent>(QT_TRANSLATE_NOOP("Vegetation", "Editor Vegetation System"), QT_TRANSLATE_NOOP("Vegetation", "Manages and discovers surface tag list assets that define the dictionary of selectable tags at edit time"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("Vegetation", "Vegetation"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

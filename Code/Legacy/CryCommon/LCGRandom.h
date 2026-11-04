@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LCGRANDOM_H
-#define CRYINCLUDE_CRYCOMMON_LCGRANDOM_H
 #pragma once
 
 #include "BaseTypes.h"  // uint32, uint64
@@ -95,5 +92,3 @@ public:
 private:
     uint64 m_state;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_LCGRANDOM_H

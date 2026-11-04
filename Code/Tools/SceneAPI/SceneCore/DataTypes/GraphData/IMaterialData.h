@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,8 +6,7 @@
  *
  */
 
-#ifndef AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMATERIALDATA_H_
-#define AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMATERIALDATA_H_
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -100,5 +97,3 @@ namespace AZ
         }  //namespace DataTypes
     }  //namespace SceneAPI
 }  //namespace AZ
-
-#endif // AZINCLUDE_TOOLS_SCENECORE_DATATYPES_IMATERIALDATA_H_

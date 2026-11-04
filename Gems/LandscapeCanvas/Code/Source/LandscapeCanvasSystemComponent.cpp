@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LyViewPaneNames.h>
 
 // LmbrCentral
@@ -265,7 +266,9 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<LandscapeCanvasSystemComponent>("LandscapeCanvas", "Graph canvas representation of Dynamic Vegetation")
+                ec->Class<LandscapeCanvasSystemComponent>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "LandscapeCanvas"),
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "Graph canvas representation of Dynamic Vegetation"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

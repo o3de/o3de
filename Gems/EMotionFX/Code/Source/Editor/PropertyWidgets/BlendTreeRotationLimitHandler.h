@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/std/containers/array.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <QWidget>
-#include <QPushButton>
+#include <EMotionFX/Source/BlendTreeRotationLimitNode.h>
+
 #include <QGridLayout>
 #include <QLabel>
-#include <EMotionFX/Source/BlendTreeRotationLimitNode.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <AzCore/std/containers/array.h>
-#endif
+#include <QPushButton>
+#include <QWidget>
 
 namespace EMotionFX
 {

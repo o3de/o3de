@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "DebugDrawSphereComponent.h"
 
@@ -31,12 +32,20 @@ namespace DebugDraw
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<DebugDrawSphereElement>("DebugDraw Sphere Element Settings", "Settings for DebugDraw sphere element.")
+                editContext->Class<DebugDrawSphereElement>(
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Sphere Element Settings"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw sphere element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawSphereElement::m_color,  "Color",    "Display color for the line.")
-                    ->DataElement(0, &DebugDrawSphereElement::m_radius, "Radius",   "The size of the sphere.")
-                    ->DataElement(0, &DebugDrawSphereElement::m_isRayTracingEnabled, "Use ray tracing", "Includes this object in ray tracing calculations.")
+                    ->DataElement(0, &DebugDrawSphereElement::m_color,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Color"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Display color for the line."))
+                    ->DataElement(0, &DebugDrawSphereElement::m_radius,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Radius"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "The size of the sphere."))
+                    ->DataElement(0, &DebugDrawSphereElement::m_isRayTracingEnabled,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Use ray tracing"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Includes this object in ray tracing calculations."))
                     ;
             }
         }

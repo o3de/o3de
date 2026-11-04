@@ -1,0 +1,17 @@
+ShaderResourceGroupSemantic freq { FrequencyId =0; }
+struct PassVars
+{
+    float4 stuff;
+};
+
+typealias StructBuf = StructuredBuffer<PassVars>;
+
+ShaderResourceGroup MySRG : freq
+{
+    StructBuf m_s;
+    
+    float4 Get()
+    {
+        return m_s.stuff;
+    }
+}

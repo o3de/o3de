@@ -57,7 +57,7 @@ add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 import DccScriptingInterface.config as dccsi_core_config
 # logic based dccsi config management
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
-                                                       enable_o3de_pyside2=False,
+                                                       enable_o3de_pyside=False,
                                                        set_env=True)
 
 # local dccsi imports

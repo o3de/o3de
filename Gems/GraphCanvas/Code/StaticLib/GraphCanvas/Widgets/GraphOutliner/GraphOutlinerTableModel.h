@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <qabstractitemmodel.h>
-#include <qitemdelegate.h>
-#include <qobject.h>
-#include <qsortfilterproxymodel.h>
+#include <QAbstractItemModel>
+#include <QItemDelegate>
+#include <QObject>
 #include <QRegularExpression>
+#include <QSortFilterProxyModel>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
@@ -24,8 +23,6 @@
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
-
-#endif
 
 namespace GraphCanvas
 {

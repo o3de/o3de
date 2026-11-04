@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_UNITTEST_DLLTESTVIRTUALCLASS_H
-#define AZCORE_UNITTEST_DLLTESTVIRTUALCLASS_H
+
+#pragma once
 
 namespace UnitTest
 {
@@ -20,5 +20,3 @@ namespace UnitTest
         int m_data;
     };
 }
-
-#endif // AZCORE_UNITTEST_DLLTESTVIRTUALCLASS_H

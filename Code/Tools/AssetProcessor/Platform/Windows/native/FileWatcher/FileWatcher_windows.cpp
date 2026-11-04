@@ -132,16 +132,16 @@ void FileWatcher::WatchFolderLoop()
                 {
                 case FILE_ACTION_ADDED:
                 case FILE_ACTION_RENAMED_NEW_NAME:
-                    rawFileAdded(file, {});
+                    rawFileAdded(file);
                     break;
                 case FILE_ACTION_REMOVED:
                 case FILE_ACTION_RENAMED_OLD_NAME:
-                    rawFileRemoved(file, {});
+                    rawFileRemoved(file);
                     break;
                 case FILE_ACTION_MODIFIED:
                     // note that changing a files size, attributes, data, modified time, create time, all count as individual modifies
                     // and may send multiple events asynchronously.
-                    rawFileModified(file, {});
+                    rawFileModified(file);
                     break;
                 }
 

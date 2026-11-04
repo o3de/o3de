@@ -1,0 +1,3 @@
+interface ILight{};
+
+void func<T : ILight>();

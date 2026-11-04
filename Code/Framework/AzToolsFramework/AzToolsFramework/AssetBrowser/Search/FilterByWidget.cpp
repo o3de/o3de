@@ -35,4 +35,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Search/moc_FilterByWidget.cpp"

@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 /**
  * Based on Fast-Delegate v. 1.5 from Don Clugston. http://www.codeproject.com/cpp/FastDelegate.asp
  *
@@ -16,8 +18,6 @@
  *
  * \note A good article about fast delegates and tr1::function can be found http://www.codeproject.com/KB/cpp/fastdelegate2.aspx
  */
-#ifndef AZSTD_DELEGATE_H
-#define AZSTD_DELEGATE_H
 
 #include <AzCore/std/base.h>
 
@@ -2009,8 +2009,3 @@ namespace AZStd
         return delegate<R (Param1, Param2, Param3, Param4, Param5, Param6, Param7, Param8)>(x, func);
     }
 }
-
-
-
-#endif // AZSTD_DELEGATE_H
-#pragma once

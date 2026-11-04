@@ -26,5 +26,4 @@ namespace LandscapeCanvasEditor
         m_nodePalette->GetTreeView()->expandAll();
     }
 
-#include <Source/Editor/Menus/moc_LayerExtenderContextMenu.cpp>
 }

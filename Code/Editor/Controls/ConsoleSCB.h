@@ -6,12 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
-#define CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
 #pragma once
-
-#if !defined(Q_MOC_RUN)
 
 #include "Settings.h"
 #include "IConsole.h"
@@ -28,7 +23,6 @@
 #include <QPushButton>
 #include <QScopedPointer>
 #include <QStyledItemDelegate>
-#endif
 
 class QMenu;
 class ConsoleWidget;
@@ -192,6 +186,3 @@ private:
     QMenu* m_optionsMenu;
     QAction* m_clearOnPlayAction;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H
-

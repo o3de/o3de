@@ -79,7 +79,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME ProjectManager.Tests EXECUTABLE
         NAMESPACE AZ
-        AUTORCC
         FILES_CMAKE
             project_manager_tests_files.cmake
             Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}_tests_files.cmake

@@ -44,7 +44,7 @@ namespace Profiler
     {
         AZStd::scoped_lock lock{ m_mutex };
         AZ_Assert(!m_treemaps.contains(name), "Attempting to create treemap %s but it already exists!", name.GetCStr());
-        ImGuiTreemap& treemap = m_treemaps.emplace(name).first->second;
+        ImGuiTreemap& treemap = m_treemaps.try_emplace(name).first->second;
         treemap.SetName(AZStd::move(name));
         treemap.SetUnitLabel(unitLabel);
         return treemap;

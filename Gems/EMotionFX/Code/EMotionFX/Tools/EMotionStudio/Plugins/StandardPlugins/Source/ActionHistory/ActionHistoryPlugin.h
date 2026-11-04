@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "ActionHistoryCallback.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
-#endif
 
 
 namespace EMStudio

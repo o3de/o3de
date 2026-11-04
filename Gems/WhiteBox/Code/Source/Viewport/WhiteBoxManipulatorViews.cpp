@@ -195,7 +195,7 @@ namespace WhiteBox
         AZStd::unique_ptr<ManipulatorViewPolygon> viewPolygon = AZStd::make_unique<ManipulatorViewPolygon>();
         viewPolygon->m_triangles = triangles;
         viewPolygon->m_outlines = outlines;
-        return AZStd::move(viewPolygon);
+        return viewPolygon;
     }
 
     AZStd::unique_ptr<ManipulatorViewEdge> CreateManipulatorViewEdge(const AZ::Vector3& start, const AZ::Vector3& end)
@@ -203,6 +203,6 @@ namespace WhiteBox
         AZStd::unique_ptr<ManipulatorViewEdge> viewEdge = AZStd::make_unique<ManipulatorViewEdge>();
         viewEdge->m_start = start;
         viewEdge->m_end = end;
-        return AZStd::move(viewEdge);
+        return viewEdge;
     }
 } // namespace WhiteBox

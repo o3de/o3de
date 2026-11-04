@@ -104,6 +104,11 @@ namespace AZ
                     resultCode = LoadVariant<Vector2>(*property, Vector2::CreateZero(), inputValue, context);
                 }
 
+                if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    resultCode = LoadVariant<RHI::SamplerState>(*property, RHI::SamplerState{}, inputValue, context);
+                }
+
                 if(resultCode.GetProcessing() == JsonSerializationResult::Processing::Completed)
                 {
                     result.Combine(resultCode);
@@ -182,6 +187,10 @@ namespace AZ
             else if (property->Is<AZStd::string>())
             {
                 result.Combine(ContinueStoring(outputValue, &property->GetValue<AZStd::string>(), nullptr, azrtti_typeid<AZStd::string>(), context));
+            }
+            else if (property->Is<RHI::SamplerState>())
+            {
+                result.Combine(ContinueStoring(outputValue, &property->GetValue<RHI::SamplerState>(), nullptr, azrtti_typeid<RHI::SamplerState>(), context));
             }
             else
             {

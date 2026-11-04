@@ -1,0 +1,27 @@
+ShaderResourceGroupSemantic slot0
+{
+    FrequencyId = 1;
+    ShaderVariantFallback = 128;
+};
+ShaderResourceGroup srg0 : slot0{}
+
+class C
+{
+    void f(double) { f(0) + f(0) * f(0) / f(0); f(0) - f(0) % f(0); }  // cost 7*7+2
+    void f(int) { ;;;;;;; }  // cost 7
+};
+
+option bool o;
+
+float4 main()
+{
+    if (o)  // unnamed block $bk0
+    {
+        C c;
+        {   // unnamed block $bk1 to verify lookup capability to find `/main/$bk0/c` from `/main/$bk0/$bk1/`
+            // understand that `c`'s type is `/C`, and use /C scope to lookup the f() method.
+            // also deep expression on LHS of MAE to give no break to the typeof system
+            (c).f(2 * 5.0l);   // double promotion in binary expression that resolves to double overload method call
+        }
+    }
+}

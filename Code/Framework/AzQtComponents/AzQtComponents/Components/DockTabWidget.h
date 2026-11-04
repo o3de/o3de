@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <QMap>
-#endif
 
 class QDockWidget;
 class QMouseEvent;

@@ -46,4 +46,3 @@ CSelectSequenceDialog::GetItems(std::vector<SItem>& outItems)
     }
 }
 
-#include <moc_SelectSequenceDialog.cpp>

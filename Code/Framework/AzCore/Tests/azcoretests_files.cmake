@@ -113,6 +113,7 @@ set(FILES
     Math/AabbTests.cpp
     Math/CapsuleTests.cpp
     Math/ColorTests.cpp
+    Math/ColorGradientTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
@@ -196,6 +197,7 @@ set(FILES
     Serialization/Json/BoolSerializerTests.cpp
     Serialization/Json/ByteStreamSerializerTests.cpp
     Serialization/Json/ColorSerializerTests.cpp
+    Serialization/Json/CrcSerializerTests.cpp
     Serialization/Json/DoubleSerializerTests.cpp
     Serialization/Json/IntSerializerTests.cpp
     Serialization/Json/JsonRegistrationContextTests.cpp

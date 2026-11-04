@@ -6,13 +6,10 @@
  *
  */
 
-#ifndef ASSETPROCESSOR_APPLICATIONMANAGERAPI_H
-#define ASSETPROCESSOR_APPLICATIONMANAGERAPI_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/mutex.h>
-
-#pragma once
 
 namespace AssetProcessor
 {
@@ -42,5 +39,3 @@ namespace AssetProcessor
         //////////////////////////////////////////////////////////////////////////
     };
 } // namespace AssetProcesor
-
-#endif // ASSETPROCESSOR_APPLICATIONMANAGERAPI_H

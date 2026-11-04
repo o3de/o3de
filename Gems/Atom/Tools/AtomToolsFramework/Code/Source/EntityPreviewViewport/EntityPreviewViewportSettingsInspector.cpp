@@ -359,4 +359,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/EntityPreviewViewport/moc_EntityPreviewViewportSettingsInspector.cpp>

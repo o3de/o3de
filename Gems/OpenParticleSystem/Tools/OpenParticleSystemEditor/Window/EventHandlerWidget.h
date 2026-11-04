@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <QToolButton>
 #include <QWidget>
 #include <QHBoxLayout>
-#endif
 
 namespace OpenParticleSystemEditor
 {

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef AZCORE_RAPIDXML_ITERATORS_H_INCLUDED
-#define AZCORE_RAPIDXML_ITERATORS_H_INCLUDED
+#pragma once
 
 #define RAPIDXML_SKIP_AZCORE_ERROR
 
@@ -16,5 +15,3 @@
 #include <rapidxml/rapidxml_iterators.h>
 
 #undef INCLUDING_RAPIDXML_VIA_AZCORE
-
-#endif // AZCORE_RAPIDXML_ITERATORS_H_INCLUDED

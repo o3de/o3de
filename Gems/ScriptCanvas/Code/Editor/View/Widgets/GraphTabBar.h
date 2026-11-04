@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 #include <QMetaType>
@@ -18,8 +17,6 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
-
-#endif
 
 class QGraphicsView;
 class QVBoxLayout;

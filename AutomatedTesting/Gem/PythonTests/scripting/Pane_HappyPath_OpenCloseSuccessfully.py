@@ -47,7 +47,7 @@ def Pane_HappyPath_OpenCloseSuccessfully():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     PANE_WIDGETS = ("NodePalette", "VariableManager")
 

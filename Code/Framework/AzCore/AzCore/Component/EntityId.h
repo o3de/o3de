@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ENTITY_ID_H
-#define AZCORE_ENTITY_ID_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/ChildAllocatorSchema.h>
@@ -172,5 +172,3 @@ namespace AZStd
 
     };
 }
-#endif  // AZCORE_ENTITY_ID_H
-#pragma once

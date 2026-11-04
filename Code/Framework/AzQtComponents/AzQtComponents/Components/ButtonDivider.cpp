@@ -17,5 +17,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_ButtonDivider.cpp"

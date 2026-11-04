@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import os.path
+import os
 from os import path
 import shutil
 import json
@@ -15,7 +15,6 @@ def find_or_copy_file(destFilePath, sourceFilePath):
         return
     if not path.exists(sourceFilePath):
         raise ValueError('find_or_copy_file: source file [', sourceFilePath, '] doesn\'t exist')
-        return
     
     dstDir = path.dirname(destFilePath)
     if not path.isdir(dstDir):

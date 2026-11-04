@@ -6,13 +6,10 @@
  *
  */
 
-#ifndef LUAEDITOR_LUATARGETCONTEXTTRACKERMESSAGES_H
-#define LUAEDITOR_LUATARGETCONTEXTTRACKERMESSAGES_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -53,5 +50,3 @@ namespace LUAEditor
         virtual ~LUATargetContextRequestMessages() {}
     };
 }
-
-#endif//LUAEDITOR_LUATARGETCONTEXTTRACKERMESSAGES_H

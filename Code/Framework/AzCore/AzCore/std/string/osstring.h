@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_OS_STRING_H
-#define AZCORE_OS_STRING_H
+
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/OSAllocator.h>
@@ -18,5 +18,3 @@ namespace AZ
     // the system allocator is not yet available.
     typedef AZStd::basic_string<char, AZStd::char_traits<char>, OSStdAllocator> OSString;
 } // namespace AZ
-
-#endif // AZCORE_OS_STRING_H

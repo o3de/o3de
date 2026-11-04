@@ -322,4 +322,3 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include "UI/PropertyEditor/moc_PropertyFilePathCtrl.cpp"

@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/InstanceData.h>
 #include <Vegetation/Descriptor.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -41,18 +42,18 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SurfaceMaskDepthFilterConfig>(
-                    "Vegetation Surface Depth Filter", "Filters vegetation based on the depth between two surface mask tags")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Surface Depth Filter"), QT_TRANSLATE_NOOP("Vegetation", "Filters vegetation based on the depth between two surface mask tags"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceMaskDepthFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_upperDistance, "Upper Distance Range", "Highest distance between the comparison tag elevation and the current instance, negative for below")
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_lowerDistance, "Lower Distance Range", "Lowest distance between the comparison tag elevation and the current instance, negative for below")
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_depthComparisonTags, "Depth Comparison Tags", "The surface tag mask to query the elevation to compare against")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceMaskDepthFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_upperDistance, QT_TRANSLATE_NOOP("Vegetation", "Upper Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Highest distance between the comparison tag elevation and the current instance, negative for below"))
+                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_lowerDistance, QT_TRANSLATE_NOOP("Vegetation", "Lower Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Lowest distance between the comparison tag elevation and the current instance, negative for below"))
+                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_depthComparisonTags, QT_TRANSLATE_NOOP("Vegetation", "Depth Comparison Tags"), QT_TRANSLATE_NOOP("Vegetation", "The surface tag mask to query the elevation to compare against"))
                     ;
             }
         }

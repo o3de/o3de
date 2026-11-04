@@ -279,7 +279,7 @@ namespace EMStudio
         }
         if (event->buttons() &  Qt::LeftButton)
         {
-            SetCurrentSamplePoint(event->x(), event->y());
+            SetCurrentSamplePoint(event->position().x(), event->position().y());
             setCursor(Qt::ClosedHandCursor);  // dragging the hotspot
         }
         else
@@ -290,7 +290,7 @@ namespace EMStudio
 
     void BlendSpace2DNodeWidget::mouseReleaseEvent(QMouseEvent* event)
     {
-        OnMouseMove(event->x(), event->y());
+        OnMouseMove(event->position().x(), event->position().y());
     }
 
     void BlendSpace2DNodeWidget::mouseMoveEvent(QMouseEvent* event)
@@ -303,12 +303,12 @@ namespace EMStudio
 
         if (event->buttons() &  Qt::LeftButton)
         {
-            SetCurrentSamplePoint(event->x(), event->y());
+            SetCurrentSamplePoint(event->position().x(), event->position().y());
             m_hoverMotionIndex = MCORE_INVALIDINDEX32;
         }
         else
         {
-            OnMouseMove(event->x(), event->y());
+            OnMouseMove(event->position().x(), event->position().y());
         }
 
         if (m_hoverMotionIndex != prevHoverMotionIndex)

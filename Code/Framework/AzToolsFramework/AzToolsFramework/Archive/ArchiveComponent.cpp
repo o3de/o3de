@@ -11,6 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
@@ -112,9 +113,10 @@ namespace AzToolsFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ArchiveComponent>(
-                    "Archive", "Handles creation and extraction of zip archives.")
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Archive"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Handles creation and extraction of zip archives."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                     ;
             }
         }

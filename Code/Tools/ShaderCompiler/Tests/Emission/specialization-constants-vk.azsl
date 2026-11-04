@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+/*
+ * Demonstrates the use of shader variants (options)
+ *
+ * Global constants and SRG constants marked with the "option" qualifier are treated as variant options
+ */
+ 
+enum class QualityT {Low, Medium, High};
+// Option keyword   Type     Name      Default value (hint)
+option              QualityT Quality = QualityT::High;
+
+// Boolean is supported
+option bool UseGI = true;
+
+// Integer is supported
+[range(1, 64)]
+option int IntOption         = 42;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 64;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+struct VertexInput  { float3 m_position : POSITION; };
+
+struct VertexOutput { float4 m_position : SV_Position; };
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+float4 MainPS() : SV_Target0
+{
+    switch (Quality)
+    {
+        case QualityT::Low:     return ExampleSRG::exampleColor * float4(IntOption, 0, 0, 0);
+        case QualityT::Medium:  return ExampleSRG::exampleColor * float4(0, IntOption, 0, 0);
+        case QualityT::High:    return ExampleSRG::exampleColor * float4(0, 0, IntOption, 0);
+        default:                return ExampleSRG::exampleColor; // https://github.com/microsoft/DirectXShaderCompiler/issues/2331
+    }
+}

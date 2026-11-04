@@ -9,6 +9,7 @@
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "display_name": "Default",
     "summary": "This is the project template that will be used if no project template is specified during project creation.",
+    "inherits": "EngineFinder",
     "canonical_tags": [
         "Template",
         "Project"
@@ -32,10 +33,6 @@
         },
         {
             "file": "CMakePresets.json",
-            "isTemplated": true
-        },
-        {
-            "file": "cmake/EngineFinder.cmake",
             "isTemplated": true
         },
         {
@@ -437,9 +434,6 @@
         },
         {
             "dir": "Assets"
-        },
-        {
-            "dir": "cmake"
         },
         {
             "dir": "Config"

@@ -15,6 +15,8 @@
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 
 namespace AzToolsFramework
 {
@@ -45,7 +47,9 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<GenericComponentWrapper>("GenericComponentWrapper", "This should be hidden!")
+                    editContext->Class<GenericComponentWrapper>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "GenericComponentWrapper"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "This should be hidden!"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GenericComponentWrapper::GetDisplayName)
                             ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &GenericComponentWrapper::GetDisplayDescription)

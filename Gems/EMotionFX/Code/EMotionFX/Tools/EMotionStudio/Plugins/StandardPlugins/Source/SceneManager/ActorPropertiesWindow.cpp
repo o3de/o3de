@@ -43,7 +43,7 @@ namespace EMStudio
 
         // actor name
         rowNr = 0;
-        layout->addWidget(new QLabel("Actor name"), rowNr, 0);
+        layout->addWidget(new QLabel(tr("Actor name")), rowNr, 0);
         m_nameEdit = new QLineEdit();
         connect(m_nameEdit, &QLineEdit::editingFinished, this, &ActorPropertiesWindow::NameEditChanged);
         layout->addWidget(m_nameEdit, rowNr, 1);
@@ -55,14 +55,14 @@ namespace EMStudio
         extractNodeLayout->setContentsMargins(0, 0, 0, 0);
 
         m_motionExtractionJointBrowseEdit = aznew ActorJointBrowseEdit(this);
-        m_motionExtractionJointBrowseEdit->setToolTip("The joint used to drive the character's movement and rotation.");
+        m_motionExtractionJointBrowseEdit->setToolTip(tr("The joint used to drive the character's movement and rotation."));
         m_motionExtractionJointBrowseEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-        layout->addWidget(new QLabel("Motion extraction joint"), rowNr, 0);
+        layout->addWidget(new QLabel(tr("Motion extraction joint")), rowNr, 0);
         extractNodeLayout->addWidget(m_motionExtractionJointBrowseEdit);
         connect(m_motionExtractionJointBrowseEdit, &ActorJointBrowseEdit::SelectionDone, this, &ActorPropertiesWindow::OnMotionExtractionJointSelected);
 
         // Find best match for motion extraction joint.
-        m_findBestMatchButton = new QPushButton("Find best match");
+        m_findBestMatchButton = new QPushButton(tr("Find best match"));
         m_findBestMatchButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         extractNodeLayout->addWidget(m_findBestMatchButton);
         connect(m_findBestMatchButton, &QPushButton::clicked, this, &ActorPropertiesWindow::OnFindBestMatchingNode);
@@ -72,16 +72,16 @@ namespace EMStudio
         // Retarget root joint.
         rowNr++;
         m_retargetRootJointBrowseEdit = aznew ActorJointBrowseEdit(this);
-        m_retargetRootJointBrowseEdit->setToolTip("The root joint that will use special handling when retargeting. Z must point up.");
+        m_retargetRootJointBrowseEdit->setToolTip(tr("The root joint that will use special handling when retargeting. Z must point up."));
         m_retargetRootJointBrowseEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
         connect(m_retargetRootJointBrowseEdit, &ActorJointBrowseEdit::SelectionDone, this, &ActorPropertiesWindow::OnRetargetRootJointSelected);
-        layout->addWidget(new QLabel("Retarget root joint"), rowNr, 0);
+        layout->addWidget(new QLabel(tr("Retarget root joint")), rowNr, 0);
         layout->addWidget(m_retargetRootJointBrowseEdit, rowNr, 1);
 
         // bounding box nodes
         rowNr++;
         m_excludeFromBoundsBrowseEdit = aznew ActorJointBrowseEdit(this);
-        m_excludeFromBoundsBrowseEdit->setToolTip("Joints that are excluded from bounding volume calculations.");
+        m_excludeFromBoundsBrowseEdit->setToolTip(tr("Joints that are excluded from bounding volume calculations."));
         m_excludeFromBoundsBrowseEdit->SetSingleJointSelection(false);
         m_excludeFromBoundsBrowseEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
 
@@ -89,7 +89,7 @@ namespace EMStudio
         connect(m_excludeFromBoundsBrowseEdit, &ActorJointBrowseEdit::SelectionChanged, this, &ActorPropertiesWindow::OnExcludedJointsFromBoundsSelectionChanged);
         connect(m_excludeFromBoundsBrowseEdit, &ActorJointBrowseEdit::SelectionRejected, this, &ActorPropertiesWindow::OnExcludedJointsFromBoundsSelectionChanged);
 
-        layout->addWidget(new QLabel("Excluded from bounds"), rowNr, 0);
+        layout->addWidget(new QLabel(tr("Excluded from bounds")), rowNr, 0);
         layout->addWidget(m_excludeFromBoundsBrowseEdit, rowNr, 1);
 
         // mirror setup
@@ -98,8 +98,8 @@ namespace EMStudio
         m_mirrorSetupLink = new AzQtComponents::BrowseEdit();
         m_mirrorSetupLink->setClearButtonEnabled(true);
         m_mirrorSetupLink->setLineEditReadOnly(true);
-        m_mirrorSetupLink->setPlaceholderText("Click folder to setup");
-        layout->addWidget(new QLabel("Mirror setup"), rowNr, 0);
+        m_mirrorSetupLink->setPlaceholderText(tr("Click folder to setup"));
+        layout->addWidget(new QLabel(tr("Mirror setup")), rowNr, 0);
         layout->addWidget(m_mirrorSetupLink, rowNr, 1);
         connect(m_mirrorSetupLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &ActorPropertiesWindow::OnMirrorSetup);
 

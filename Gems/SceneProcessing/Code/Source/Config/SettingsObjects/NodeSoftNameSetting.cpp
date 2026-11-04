@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <Config/SettingsObjects/NodeSoftNameSetting.h>
@@ -36,11 +37,14 @@ namespace AZ
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<NodeSoftNameSetting>("Node name setting", "Applies the pattern to the name of the node.")
+                    editContext->Class<NodeSoftNameSetting>(
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Node name setting"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Applies the pattern to the name of the node."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->DataElement(Edit::UIHandlers::Default, &NodeSoftNameSetting::m_includeChildren, 
-                            "Include child nodes", "Whether or not the soft name only applies to the matching node or propagated to all its children as well.");
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Include child nodes"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Whether or not the soft name only applies to the matching node or propagated to all its children as well."));
                 }
             }
         }

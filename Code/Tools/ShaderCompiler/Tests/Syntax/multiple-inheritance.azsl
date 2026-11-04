@@ -1,0 +1,9 @@
+interface interf1 {};
+
+interface interf2 {};
+
+interface interf3 {};
+
+interface interf4 {};
+
+class s : interf1, interf2, interf3, interf4 {};

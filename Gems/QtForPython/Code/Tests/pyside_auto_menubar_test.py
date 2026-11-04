@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 #
-# This is a pytest module to test the basic integration of PySide2 (aka Qt for Python)
+# This is a pytest module to test the basic integration of PySide (aka Qt for Python)
 #
 import pytest
 import time

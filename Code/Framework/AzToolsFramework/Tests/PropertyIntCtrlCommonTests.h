@@ -64,7 +64,7 @@ namespace UnitTest
             // note: must set a widget as the active window and add widgets
             // as children to ensure focus in/out events fire correctly
             m_dummyWidget = AZStd::make_unique<QWidget>();
-            QApplication::setActiveWindow(m_dummyWidget.get());
+            m_dummyWidget->activateWindow();
 
             m_handler = AZStd::make_unique<HandlerAPI>();
             m_widget = static_cast<WidgetType*>(m_handler->CreateGUI(m_dummyWidget.get()));
@@ -72,7 +72,6 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
             m_dummyWidget.reset();
             m_handler.reset();
         }

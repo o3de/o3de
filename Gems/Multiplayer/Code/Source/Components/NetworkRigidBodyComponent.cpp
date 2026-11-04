@@ -70,6 +70,8 @@ namespace Multiplayer
 
     void NetworkRigidBodyComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        m_transformChangedHandler.Disconnect();
+        m_syncRewindHandler.Disconnect();
         Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
         NetworkRigidBodyRequestBus::Handler::BusDisconnect();
 

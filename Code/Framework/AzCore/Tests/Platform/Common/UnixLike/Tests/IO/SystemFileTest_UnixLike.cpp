@@ -5,10 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/limits.h>
 #include <AzTest/Utils.h>
+
+#include <sys/mman.h>
 
 namespace UnitTest
 {
@@ -56,5 +59,25 @@ namespace UnitTest
         AZ::IO::PosixInternal::Close(fileHandle);
 
         EXPECT_EQ(testData, readData);
+    }
+
+    TEST_F(SystemFilePlatformFixture, Read_OversizedRequest_ReturnsDataUntilEof)
+    {
+        constexpr AZStd::string_view testData{ "Testing oversized reads" };
+        auto testFileName = m_tempDirectory.GetDirectoryAsFixedMaxPath() / "TestFile.txt";
+        AZ::IO::SystemFile testFile(testFileName.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_READ_WRITE);
+        ASSERT_TRUE(testFile.IsOpen());
+        ASSERT_EQ(testData.size(), testFile.Write(testData.data(), testData.size()));
+        testFile.Seek(0, AZ::IO::SystemFile::SF_SEEK_BEGIN);
+
+        // Reserve the requested address range.
+        // Only the small file's contents consume physical memory.
+        constexpr size_t requestSize = static_cast<size_t>(AZStd::numeric_limits<int>::max()) + 1;
+        void* buffer = mmap(nullptr, requestSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        ASSERT_NE(MAP_FAILED, buffer);
+        EXPECT_EQ(testData.size(), testFile.Read(requestSize, buffer));
+        EXPECT_EQ(testData, AZStd::string_view(static_cast<const char*>(buffer), testData.size()));
+        EXPECT_TRUE(testFile.Eof());
+        EXPECT_EQ(0, munmap(buffer, requestSize));
     }
 }   // namespace UnitTest

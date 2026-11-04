@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#pragma once
+
 // Based on boost 1.39.0
 
-#ifndef AZSTD_FUNCTION_BASE_HEADER
-#define AZSTD_FUNCTION_BASE_HEADER
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/base.h>
@@ -23,7 +24,8 @@
 #include <AzCore/std/createdestroy.h>
 
 #define AZSTD_FUNCTION_TARGET_FIX(x)
-#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor> && !std::is_null_pointer_v<Functor>, Type>
+#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type) \
+    requires (!std::is_integral_v<Functor> && !std::is_null_pointer_v<Functor>) Type
 
 
 
@@ -129,15 +131,15 @@ namespace AZStd
             template<typename F>
             class get_function_tag
             {
-                typedef conditional_t<(is_pointer<F>::value),
+                typedef conditional_t<is_pointer_v<F>,
                     function_ptr_tag,
                     function_obj_tag> ptr_or_obj_tag;
 
-                typedef conditional_t<(is_member_pointer<F>::value),
+                typedef conditional_t<is_member_pointer_v<F>,
                     member_ptr_tag,
                     ptr_or_obj_tag> ptr_or_obj_or_mem_tag;
 
-                typedef conditional_t<(is_reference_wrapper<F>::value),
+                typedef conditional_t<is_reference_wrapper_v<F>,
                     function_obj_ref_tag,
                     ptr_or_obj_or_mem_tag> or_ref_tag;
 
@@ -359,7 +361,7 @@ namespace AZStd
                         const functor_type* f = (const functor_type*)(in_buffer.obj_ptr);
                         // \todo provide a more generic way to supply utility allocators
                         AZStd::allocator a;
-                        functor_type* new_f = new (a.allocate(sizeof(functor_type), AZStd::alignment_of<functor_type>::value))functor_type(*f);
+                        functor_type* new_f = new (a.allocate(sizeof(functor_type), AZStd::alignment_of_v<functor_type>))functor_type(*f);
                         out_buffer.obj_ptr = new_f;
                     }
                     else if (op == move_functor_tag)
@@ -467,7 +469,7 @@ namespace AZStd
                         // GCC 2.95.3 gets the CV qualifiers wrong here, so we
                         // can't do the static_cast that we should do.
                         functor_wrapper_type* f = static_cast<functor_wrapper_type*>(in_buffer.obj_ptr);
-                        functor_wrapper_type* new_f = new (f->allocate(sizeof(functor_wrapper_type), AZStd::alignment_of<functor_wrapper_type>::value))functor_wrapper_type(*f);
+                        functor_wrapper_type* new_f = new (f->allocate(sizeof(functor_wrapper_type), AZStd::alignment_of_v<functor_wrapper_type>))functor_wrapper_type(*f);
                         out_buffer.obj_ptr = new_f;
                     }
                     else if (op == move_functor_tag)
@@ -481,7 +483,7 @@ namespace AZStd
                         functor_wrapper_type* victim = static_cast<functor_wrapper_type*>(in_buffer.obj_ptr);
                         Allocator wrapper_allocator(static_cast<Allocator const&>(*victim)); // copy the allocator
                         Internal::destroy<functor_wrapper_type*>::single(victim);
-                        wrapper_allocator.deallocate(victim, sizeof(functor_wrapper_type), AZStd::alignment_of<functor_wrapper_type>::value);
+                        wrapper_allocator.deallocate(victim, sizeof(functor_wrapper_type), AZStd::alignment_of_v<functor_wrapper_type>);
                         out_buffer.obj_ptr = 0;
                     }
                     else if (op == check_functor_type_tag)
@@ -592,8 +594,8 @@ namespace AZStd
 
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
-            type_result.type.const_qualified = AZStd::is_const<Functor>::value;
-            type_result.type.volatile_qualified = AZStd::is_volatile<Functor>::value;
+            type_result.type.const_qualified = AZStd::is_const_v<Functor>;
+            type_result.type.volatile_qualified = AZStd::is_volatile_v<Functor>;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             return static_cast<Functor*>(type_result.obj_ptr);
         }
@@ -609,7 +611,7 @@ namespace AZStd
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
             type_result.type.const_qualified = true;
-            type_result.type.volatile_qualified = AZStd::is_volatile<Functor>::value;
+            type_result.type.volatile_qualified = AZStd::is_volatile_v<Functor>;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             // GCC 2.95.3 gets the CV qualifiers wrong here, so we
             // can't do the static_cast that we should do.
@@ -790,6 +792,3 @@ namespace AZStd
 #undef AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL
 //#undef aztypeid
 //#undef aztypeid_cmp
-
-#endif // AZSTD_FUNCTION_BASE_HEADER
-#pragma once

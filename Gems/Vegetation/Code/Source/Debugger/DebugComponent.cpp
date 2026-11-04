@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/IO/SystemFile.h>
@@ -54,27 +55,27 @@ void DebugConfig::Reflect(AZ::ReflectContext* context)
         if (edit)
         {
             edit->Class<DebugConfig>(
-                "DebugConfig", "")
+                QT_TRANSLATE_NOOP("Vegetation", "DebugConfig"), "")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(0, &DebugConfig::m_collectionFrequencyUs, "Collection Frequency", "How often to collect the data points in microseconds")
-                ->DataElement(0, &DebugConfig::m_minThresholdUs, "Medium Threshold", "Minimum number of microseconds the sector should reach")
-                ->DataElement(0, &DebugConfig::m_maxThresholdUs, "High Threshold", "Maximum number of microseconds the sector should reach")
-                ->DataElement(0, &DebugConfig::m_maxDatapointDisplayCount, "Max Data Point Display Count", "Only display the X newest data points")
-                ->DataElement(0, &DebugConfig::m_maxLabelDisplayDistance, "Max Label Display Distance", "Only display labels within X meters")
-                ->DataElement(0, &DebugConfig::m_showVisualization, "Show Sector Info", "Show the sector info in the 3D viewport")
-                ->DataElement(0, &DebugConfig::m_showDebugStats, "Show Debug Stats", "Show debug stats from the vegetation system on screen")
-                ->DataElement(0, &DebugConfig::m_showInstanceVisualization, "Show Per Instance Visualization", "Show a colored cube per instance, color is specified by the creating area")
-                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugConfig::m_filterLevel, "Dump Filter", "")
-                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Danger, "High-Only")
-                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Warning, "Medium-Only")
-                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Trace, "All")
-                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugConfig::m_sortType, "Dump Sort Type", "")
-                    ->EnumAttribute(DebugRequests::SortType::BySector, "By Sector")
-                    ->EnumAttribute(DebugRequests::SortType::BySectorDetailed, "By Sector Detailed")
-                    ->EnumAttribute(DebugRequests::SortType::ByArea, "By Area")
-                    ->EnumAttribute(DebugRequests::SortType::ByAreaDetailed, "By Area Detailed")
+                ->DataElement(0, &DebugConfig::m_collectionFrequencyUs, QT_TRANSLATE_NOOP("Vegetation", "Collection Frequency"), QT_TRANSLATE_NOOP("Vegetation", "How often to collect the data points in microseconds"))
+                ->DataElement(0, &DebugConfig::m_minThresholdUs, QT_TRANSLATE_NOOP("Vegetation", "Medium Threshold"), QT_TRANSLATE_NOOP("Vegetation", "Minimum number of microseconds the sector should reach"))
+                ->DataElement(0, &DebugConfig::m_maxThresholdUs, QT_TRANSLATE_NOOP("Vegetation", "High Threshold"), QT_TRANSLATE_NOOP("Vegetation", "Maximum number of microseconds the sector should reach"))
+                ->DataElement(0, &DebugConfig::m_maxDatapointDisplayCount, QT_TRANSLATE_NOOP("Vegetation", "Max Data Point Display Count"), QT_TRANSLATE_NOOP("Vegetation", "Only display the X newest data points"))
+                ->DataElement(0, &DebugConfig::m_maxLabelDisplayDistance, QT_TRANSLATE_NOOP("Vegetation", "Max Label Display Distance"), QT_TRANSLATE_NOOP("Vegetation", "Only display labels within X meters"))
+                ->DataElement(0, &DebugConfig::m_showVisualization, QT_TRANSLATE_NOOP("Vegetation", "Show Sector Info"), QT_TRANSLATE_NOOP("Vegetation", "Show the sector info in the 3D viewport"))
+                ->DataElement(0, &DebugConfig::m_showDebugStats, QT_TRANSLATE_NOOP("Vegetation", "Show Debug Stats"), QT_TRANSLATE_NOOP("Vegetation", "Show debug stats from the vegetation system on screen"))
+                ->DataElement(0, &DebugConfig::m_showInstanceVisualization, QT_TRANSLATE_NOOP("Vegetation", "Show Per Instance Visualization"), QT_TRANSLATE_NOOP("Vegetation", "Show a colored cube per instance, color is specified by the creating area"))
+                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugConfig::m_filterLevel, QT_TRANSLATE_NOOP("Vegetation", "Dump Filter"), "")
+                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Danger, QT_TRANSLATE_NOOP("Vegetation", "High-Only"))
+                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Warning, QT_TRANSLATE_NOOP("Vegetation", "Medium-Only"))
+                    ->EnumAttribute(DebugRequests::FilterTypeLevel::Trace, QT_TRANSLATE_NOOP("Vegetation", "All"))
+                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugConfig::m_sortType, QT_TRANSLATE_NOOP("Vegetation", "Dump Sort Type"), "")
+                    ->EnumAttribute(DebugRequests::SortType::BySector, QT_TRANSLATE_NOOP("Vegetation", "By Sector"))
+                    ->EnumAttribute(DebugRequests::SortType::BySectorDetailed, QT_TRANSLATE_NOOP("Vegetation", "By Sector Detailed"))
+                    ->EnumAttribute(DebugRequests::SortType::ByArea, QT_TRANSLATE_NOOP("Vegetation", "By Area"))
+                    ->EnumAttribute(DebugRequests::SortType::ByAreaDetailed, QT_TRANSLATE_NOOP("Vegetation", "By Area Detailed"))
                 ;
         }
     }

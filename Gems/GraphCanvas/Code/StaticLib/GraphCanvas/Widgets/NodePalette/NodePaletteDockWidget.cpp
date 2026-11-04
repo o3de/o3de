@@ -186,5 +186,4 @@ namespace GraphCanvas
         return m_ui->nodePaletteWidget->CreatePaletteRoot();
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/NodePalette/moc_NodePaletteDockWidget.cpp>
 }

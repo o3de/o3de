@@ -8,6 +8,7 @@
 
 #include <PhysXCharacters/Components/EditorCharacterGameplayComponent.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace PhysX
 {
@@ -43,7 +44,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterGameplayComponent>(
-                    "PhysX Character Gameplay", "An example implementation of character physics behavior such as gravity.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Character Gameplay"), QT_TRANSLATE_NOOP("PhysX", "An example implementation of character physics behavior such as gravity."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
@@ -51,7 +52,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/character-gameplay/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
-                        "Gameplay Configuration", "Gameplay Configuration.")
+                        QT_TRANSLATE_NOOP("PhysX", "Gameplay Configuration"), QT_TRANSLATE_NOOP("PhysX", "Gameplay Configuration."))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

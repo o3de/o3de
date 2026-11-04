@@ -276,7 +276,7 @@ ReflectedPropertyEditorPage::ReflectedPropertyEditorPage(QWidget* parent)
 
     // ReflectedPropertyEditor by in a Card
     AzQtComponents::Card* card = new AzQtComponents::Card(this);
-    card->setTitle(QStringLiteral("Card"));
+    card->setTitle(tr("Card"));
     card->header()->setIcon(QIcon(QStringLiteral(":/Gallery/Grid-small.svg")));
 
     auto cardPropertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(card);
@@ -293,7 +293,7 @@ ReflectedPropertyEditorPage::ReflectedPropertyEditorPage(QWidget* parent)
 
     // ReflectedPropertyEditor by in a disabled Card
     AzQtComponents::Card* disabledCard = new AzQtComponents::Card(this);
-    disabledCard->setTitle(QStringLiteral("Disabled card"));
+    disabledCard->setTitle(tr("Disabled card"));
     disabledCard->setEnabled(false);
 
     auto disabledCardPropertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(disabledCard);
@@ -325,7 +325,7 @@ See the documentation linked above for more details.
 )";
 
     ui->exampleText->setHtml(exampleText);
-    ui->hyperlinkLabel->setText(QStringLiteral(R"(<a href="https://o3de.org/docs/user-guide/components/development/reflection/">Reflected Property Editor docs</a>)"));
+    ui->hyperlinkLabel->setText(QStringLiteral(R"(<a href="https://o3de.org/docs/user-guide/components/development/reflection/">)") + tr("Reflected Property Editor docs") + QStringLiteral("</a>"));
 }
 
 ReflectedPropertyEditorPage::~ReflectedPropertyEditorPage()

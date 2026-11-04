@@ -9,12 +9,11 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Source/Editor/EditorCommon.h>
-#endif
 
 namespace Ui
 {

@@ -16,6 +16,17 @@ namespace AZ
 {
     namespace Render
     {
+        namespace  MotionBlur
+        {
+            enum class SampleQuality : uint8_t
+            {
+                Low = 0,
+                Medium = 1,
+                High = 2,
+                Ultra = 3,
+            };
+        }
+
         class MotionBlurSettingsInterface
         {
         public:

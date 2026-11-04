@@ -1,0 +1,8 @@
+void f()
+{
+    int i;
+    if (false)
+    {
+        int i;
+    }
+}

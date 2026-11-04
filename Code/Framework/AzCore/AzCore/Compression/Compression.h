@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_COMPRESSOR_H
-#define AZCORE_COMPRESSOR_H
+
+#pragma once
 
 #include <AzCore/base.h>
 
@@ -92,6 +92,3 @@ namespace AZ
         IAllocator* m_workMemoryAllocator;
     };
 }
-
-#endif // AZCORE_COMPRESSOR_H
-#pragma once

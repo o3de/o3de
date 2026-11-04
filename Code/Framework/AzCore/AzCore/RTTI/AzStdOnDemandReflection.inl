@@ -13,6 +13,8 @@
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+
+#include <AzCore/i18n/TranslationMacros.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/typetraits/has_member_function.h>
 
@@ -32,8 +34,6 @@ namespace AZStd
     class forward_list;
     template< class T, size_t Capacity >
     class fixed_vector;
-    template< class T, size_t N >
-    class array;
     template<class Key, class MappedType, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/ >
     class unordered_map;
     template<class Key, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/>
@@ -354,13 +354,13 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 BranchOnResultInfo hasElementsBranchInfo;
                 hasElementsBranchInfo.m_returnResultInBranches = true;
-                hasElementsBranchInfo.m_trueToolTip = "The container has elements";
-                hasElementsBranchInfo.m_falseToolTip = "The container has no elements";
+                hasElementsBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container has elements");
+                hasElementsBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container has no elements");
 
                 behaviorContext->Class<ContainerType>()
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
@@ -821,8 +821,8 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
                 {
@@ -841,7 +841,7 @@ namespace AZ
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("contains", {}, "Out", "Key Not Found"))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Element", "Containers"))
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
-                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
                     ->Method("Erase", &ErasePost_VM)
@@ -976,8 +976,8 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
                 {
@@ -992,7 +992,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, ScriptCanvasOnDemandReflection::OnDemandCategoryName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::ScriptOwn)
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
-                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
                     ->Method("EraseCheck_VM", &EraseCheck_VM)

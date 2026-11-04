@@ -6,13 +6,10 @@
  *
  */
 
-#ifndef LUAEDITOR_LUALOCALSTRACKERMESSAGES_H
-#define LUAEDITOR_LUALOCALSTRACKERMESSAGES_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -56,5 +53,3 @@ namespace LUAEditor
     //  virtual ~LUALocalsRequestMessages() {}
     //};
 }
-
-#endif//LUAEDITOR_LUALOCALSTRACKERMESSAGES_H

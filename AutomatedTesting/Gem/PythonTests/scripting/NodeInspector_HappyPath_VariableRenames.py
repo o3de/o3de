@@ -43,8 +43,8 @@ def NodeInspector_HappyPath_VariableRenames():
 
     :return: None
     """
-    from PySide2 import QtWidgets, QtCore, QtTest
-    from PySide2.QtCore import Qt
+    from PySide6 import QtWidgets, QtCore, QtTest
+    from PySide6.QtCore import Qt
 
     import pyside_utils
     from utils import TestHelper as helper

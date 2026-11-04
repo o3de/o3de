@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "EditorDebugDrawComponentCommon.h"
 
@@ -34,13 +35,17 @@ namespace DebugDraw
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<EditorDebugDrawComponentSettings>("DebugDraw Component Settings", "Common settings for DebugDraw components.")
+                editContext->Class<EditorDebugDrawComponentSettings>(
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Component Settings"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->DataElement(0, &EditorDebugDrawComponentSettings::m_visibleInGame,
-                        "Visible In Game", "Whether this DebugDraw component is visible in game.")
+                        QT_TRANSLATE_NOOP("DebugDraw", "Visible In Game"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Whether this DebugDraw component is visible in game."))
                     ->DataElement(0, &EditorDebugDrawComponentSettings::m_visibleInEditor,
-                        "Visible In Editor", "Whether this DebugDraw component is visible in editor.")
+                        QT_TRANSLATE_NOOP("DebugDraw", "Visible In Editor"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Whether this DebugDraw component is visible in editor."))
                     ;
             }
         }

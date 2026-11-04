@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Profiler
 {
@@ -98,7 +99,9 @@ namespace Profiler
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ProfilerSystemComponent>("Profiler", "Provides a custom implementation of the AZ::Debug::Profiler interface for capturing performance data")
+                ec->Class<ProfilerSystemComponent>(
+                    QT_TRANSLATE_NOOP("Profiler", "Profiler"),
+                    QT_TRANSLATE_NOOP("Profiler", "Provides a custom implementation of the AZ::Debug::Profiler interface for capturing performance data"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

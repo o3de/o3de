@@ -7,13 +7,11 @@
  */
 
 #pragma once
-
-#if !defined(Q_MOC_RUN)
-#include <QStyledItemDelegate>
 #include "GemInfo.h"
+
+#include <QStyledItemDelegate>
 #include <QAbstractItemModel>
 #include <QHash>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QEvent)
 

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
@@ -19,7 +18,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <source/utils/utils.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
-#endif
+
 namespace AssetBundler
 {
     struct SeedsParams

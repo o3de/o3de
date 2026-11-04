@@ -295,7 +295,7 @@ namespace EMotionFX
             QString fileName = fileInfo.fileName();
 
             // Remove the shortcut at the start.
-            const int shortcutLen = fileName.indexOf(" ");
+            const auto shortcutLen = fileName.indexOf(" ");
             fileName = fileName.mid(shortcutLen + 1);
 
             return actorFilename.endsWith(fileName);
@@ -346,7 +346,7 @@ namespace EMotionFX
             QString fileName = fileInfo.fileName();
 
             // Remove the shortcut at the start.
-            const int shortcutLen = fileName.indexOf(" ");
+            const auto shortcutLen = fileName.indexOf(" ");
             fileName = fileName.mid(shortcutLen + 1);
 
             return m_lastSavedWorkspaceFilename.endsWith(fileName);

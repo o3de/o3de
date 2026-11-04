@@ -24,7 +24,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridQueryPass> DiffuseProbeGridQueryPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridQueryPass> pass = aznew DiffuseProbeGridQueryPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridQueryPass::DiffuseProbeGridQueryPass(const RPI::PassDescriptor& descriptor)
@@ -161,7 +161,7 @@ namespace AZ
             }
 
             // output buffer
-            {                      
+            {
                 RHI::BufferScopeAttachmentDescriptor desc;
                 desc.m_attachmentId = m_outputBufferAttachmentId;
                 desc.m_bufferViewDescriptor = m_outputBufferViewDesc;
@@ -270,7 +270,7 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             diffuseProbeGridFeatureProcessor->ClearIrradianceQueries();
-                
+
             RenderPass::FrameEndInternal();
         }
     }   // namespace Render

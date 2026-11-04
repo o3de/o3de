@@ -6,14 +6,9 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H
-#define CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "GenericSelectItemDialog.h"
-#endif
 
 // CSelectSequence dialog
 
@@ -32,5 +27,3 @@ protected:
     // Derived Dialogs should override this
     void GetItems(std::vector<SItem>& outItems) override;
 };
-
-#endif // CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H

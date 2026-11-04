@@ -732,14 +732,14 @@ def get_object_name_and_optional_version_specifier(input:str):
         return input, None
 
 
-def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None, place_values_in_list:bool = False):
+def replace_dict_keys_with_value_key(input:dict, value_keys:list, replaced_key_name:str = None, place_values_in_list:bool = False):
     """
     Takes a dictionary of dictionaries and replaces the keys with the value of 
     a specific value key.
     For example, if you have a dictionary of gem_paths->gem_json_data, this function can be used
     to convert the dictionary so the keys are gem names instead of paths (gem_name->gem_json_data)
     :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
-    :param value_key: The value's key to replace the current key with
+    :param value_keys: A list of keys to check for the value to replace the original key with, the first value key found in the value will be used
     :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
     :param place_values_in_list: (Optional) Put the values in a list, useful when the new key is not unique
     """
@@ -764,11 +764,17 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
 
         # replace with an entry keyed on value_key's value
         if place_values_in_list:
-            entries = input.get(value[value_key], [])
-            entries.append(value)
-            input[value[value_key]] = entries
+            for value_key in value_keys:
+                if value_key not in value:
+                    continue
+                entries = input.get(value[value_key], [])
+                entries.append(value)
+                input[value[value_key]] = entries
         else:
-            input[value[value_key]] = value
+            for value_key in value_keys:
+                if value_key not in value:
+                    continue
+                input[value[value_key]] = value
 
 def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger = None) -> None:
     """

@@ -76,7 +76,6 @@ public:
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());
     MOCK_METHOD1(GetColorByName, const QColor& (const QString&));
     MOCK_METHOD0(GetMovieSystem, struct IMovieSystem* ());
-    MOCK_METHOD0(GetPluginManager, class CPluginManager*());
     MOCK_METHOD0(GetViewManager, class CViewManager* ());
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
@@ -103,9 +102,6 @@ public:
     MOCK_METHOD1(RestoreUndo, void(bool));
     MOCK_METHOD1(AcceptUndo, void(const QString& ));
     MOCK_METHOD0(CancelUndo, void());
-    MOCK_METHOD0(SuperBeginUndo, void());
-    MOCK_METHOD1(SuperAcceptUndo, void(const QString&));
-    MOCK_METHOD0(SuperCancelUndo, void());
     MOCK_METHOD0(SuspendUndo, void());
     MOCK_METHOD0(ResumeUndo, void());
     MOCK_METHOD0(Undo, void());
@@ -135,8 +131,6 @@ public:
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
-    MOCK_METHOD0(UnloadPlugins, void());
-    MOCK_METHOD0(LoadPlugins, void());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
 
 };

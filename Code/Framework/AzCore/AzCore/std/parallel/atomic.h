@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/parallel/config.h>
@@ -23,27 +24,27 @@ namespace AZStd
     using std::memory_order_seq_cst;
     using std::memory_order;
 
-    using atomic_char = std::atomic<char>;
-    using atomic_uchar = std::atomic<unsigned char>;
-    using atomic_wchar_t = std::atomic<wchar_t>;
-    using atomic_short = std::atomic<short>;
-    using atomic_ushort = std::atomic<unsigned short>;
-    using atomic_int = std::atomic<int>;
-    using atomic_uint = std::atomic<unsigned int>;
-    using atomic_long = std::atomic<long>;
-    using atomic_ulong = std::atomic<unsigned long>;
-    using atomic_llong = std::atomic<long long>;
-    using atomic_ullong = std::atomic<unsigned long long>;
-    using atomic_size_t = std::atomic<size_t>;
-    using atomic_ptrdiff_t = std::atomic<ptrdiff_t>;
-    using atomic_int8_t = std::atomic<int8_t>;
-    using atomic_uint8_t = std::atomic<uint8_t>;
-    using atomic_int16_t = std::atomic<int16_t>;
-    using atomic_uint16_t = std::atomic<uint16_t>;
-    using atomic_int32_t = std::atomic<int32_t>;
-    using atomic_uint32_t = std::atomic<uint32_t>;
-    using atomic_int64_t = std::atomic<int64_t>;
-    using atomic_uint64_t = std::atomic<uint64_t>;
+    using std::atomic_char;
+    using std::atomic_uchar;
+    using std::atomic_wchar_t;
+    using std::atomic_short;
+    using std::atomic_ushort;
+    using std::atomic_int;
+    using std::atomic_uint;
+    using std::atomic_long;
+    using std::atomic_ulong;
+    using std::atomic_llong;
+    using std::atomic_ullong;
+    using std::atomic_size_t;
+    using std::atomic_ptrdiff_t;
+    using std::atomic_int8_t;
+    using std::atomic_uint8_t;
+    using std::atomic_int16_t;
+    using std::atomic_uint16_t;
+    using std::atomic_int32_t;
+    using std::atomic_uint32_t;
+    using std::atomic_int64_t;
+    using std::atomic_uint64_t;
 
     using std::atomic_thread_fence;
     using std::atomic_signal_fence;

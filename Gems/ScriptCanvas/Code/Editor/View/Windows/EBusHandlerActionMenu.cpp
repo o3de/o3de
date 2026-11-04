@@ -312,6 +312,5 @@ namespace ScriptCanvasEditor
             QMenu::keyPressEvent(keyEvent);
         }
     }
-    
-#include <Editor/View/Windows/moc_EBusHandlerActionMenu.cpp>
+
 }

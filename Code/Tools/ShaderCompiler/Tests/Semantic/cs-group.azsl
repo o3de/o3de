@@ -1,0 +1,7 @@
+groupshared uint gs_GpShared[1024];
+
+[numthreads(1, 1, 1)]
+void MainCS() 
+{
+    gs_GpShared[0] = 1; 
+}

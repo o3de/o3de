@@ -441,8 +441,8 @@ namespace AZ
 
             AZ_MATH_INLINE __m128 Madd(__m128 mul1, __m128 mul2, __m128 add)
             {
-#if 0
-                return _mm_fmadd_ps(mul1, mul2, add); // Requires FMA CPUID
+#if defined(__FMA__)
+                return _mm_fmadd_ps(mul1, mul2, add);
 #else
                 return Add(Mul(mul1, mul2), add);
 #endif

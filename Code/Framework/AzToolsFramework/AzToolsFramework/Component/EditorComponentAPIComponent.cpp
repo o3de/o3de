@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -22,6 +23,27 @@
 
 namespace AzToolsFramework
 {
+    namespace
+    {
+        // For a non-EditorComponentBase component added via the editor, the live
+        // pointer returned by Entity::GetComponents() is a GenericComponentWrapper.
+        // GetUnderlyingComponentType() returns the type of the wrapped template
+        // component (correct), but the instance pointer stays as the wrapper unless
+        // we explicitly unwrap. PropertyTreeEditor needs the (instance, type) pair
+        // to refer to the same object, otherwise its InstanceDataHierarchy walks
+        // the wrapper's memory while believing it's the wrapped class.
+        void* UnwrapInstanceForReflection(AZ::Component* component)
+        {
+            if (auto* wrapper = azrtti_cast<AzToolsFramework::Components::GenericComponentWrapper*>(component))
+            {
+                if (AZ::Component* tmpl = wrapper->GetTemplate())
+                {
+                    return reinterpret_cast<void*>(tmpl);
+                }
+            }
+            return reinterpret_cast<void*>(component);
+        }
+    }
     namespace Components
     {
         //! Helper class for scripting.
@@ -562,7 +584,7 @@ namespace AzToolsFramework
                 return EditorComponentAPIRequests::PropertyOutcome{ AZStd::unexpect, PropertyOutcome::ErrorType("GetComponentProperty - Component Instance is Invalid.") };
             }
 
-            PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
+            PropertyTreeEditor pte = PropertyTreeEditor(UnwrapInstanceForReflection(component), component->GetUnderlyingComponentType());
 
             if (m_usePropertyVisibility)
             {
@@ -582,7 +604,7 @@ namespace AzToolsFramework
                 return EditorComponentAPIRequests::PropertyOutcome{ AZStd::unexpect, PropertyOutcome::ErrorType("SetComponentProperty - Component Instance is Invalid.") };
             }
 
-            PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
+            PropertyTreeEditor pte = PropertyTreeEditor(UnwrapInstanceForReflection(component), component->GetUnderlyingComponentType());
 
             if (m_usePropertyVisibility)
             {
@@ -610,7 +632,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
+            PropertyTreeEditor pte = PropertyTreeEditor(UnwrapInstanceForReflection(component), component->GetUnderlyingComponentType());
 
             if (m_usePropertyVisibility)
             {
@@ -630,7 +652,7 @@ namespace AzToolsFramework
                 return { AZStd::string("BuildComponentPropertyList - Component Instance is Invalid.") };
             }
 
-            PropertyTreeEditor pte = PropertyTreeEditor(reinterpret_cast<void*>(component), component->GetUnderlyingComponentType());
+            PropertyTreeEditor pte = PropertyTreeEditor(UnwrapInstanceForReflection(component), component->GetUnderlyingComponentType());
 
             if (m_usePropertyVisibility)
             {

@@ -14,4 +14,27 @@
 #include <limits.h>
 #include <RHI/Vulkan.h>
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND && PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/WaylandConnectionManager.h>
+inline const char* GetVulkanSurfaceExtensionName()
+{
+    if (AzFramework::WaylandConnectionManagerInterface::Get())
+    {
+        return VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+    }
+
+    return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+}
+
+//Let a function at runtime figure it out
+#define AZ_VULKAN_SURFACE_EXTENSION_NAME GetVulkanSurfaceExtensionName()
+#else
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #define AZ_VULKAN_SURFACE_EXTENSION_NAME VK_KHR_XCB_SURFACE_EXTENSION_NAME
+#endif
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#define AZ_VULKAN_SURFACE_EXTENSION_NAME VK_KHR_XCB_SURFACE_EXTENSION_NAME
+#endif
+
+#endif

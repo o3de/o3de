@@ -8,6 +8,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <ScreenSpace/EditorDeferredFogComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDeferredFogComponent>(
-                        "Deferred Fog", "Controls the Deferred Fog")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Deferred Fog"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Deferred Fog"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/Environment")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
@@ -39,7 +40,7 @@ namespace AZ
                         "DeferredFogComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DeferredFogComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DeferredFogComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -49,34 +50,34 @@ namespace AZ
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &DeferredFogComponentConfig::m_enabled,
-                            "Enable Deferred Fog",
-                            "Enable Deferred Fog.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Deferred Fog"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Deferred Fog."))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(Edit::UIHandlers::CheckBox, &DeferredFogComponentConfig::m_enableFogLayerShaderOption,
-                            "Enable Fog Layer",
-                            "Enable Fog Layer")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Fog Layer"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Fog Layer"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                          ->DataElement(Edit::UIHandlers::CheckBox, &DeferredFogComponentConfig::m_useNoiseTextureShaderOption,
-                            "Enable Turbulence Properties",
-                            "Enable Turbulence Properties")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Turbulence Properties"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Turbulence Properties"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Color, &DeferredFogComponentConfig::m_fogColor,
-                            "Fog Color", "The fog color.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Color"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The fog color."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(Edit::UIHandlers::ComboBox, &DeferredFogComponentConfig::m_fogMode,
-                            "Fog Mode",
-                            "Which formula to use for calculating the fog.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Mode"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Which formula to use for calculating the fog."))
                             ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<Render::FogMode>())
 
-                        ->ClassElement(Edit::ClassElements::Group, "Distance")
+                        ->ClassElement(Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Distance"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogStartDistance,
-                            "Fog Start Distance", "The distance from the viewer when the fog starts")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Start Distance"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The distance from the viewer when the fog starts"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
@@ -84,7 +85,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogEndDistance,
-                            "Fog End Distance", "At what distance from the viewer does the fog take over and mask the background scene out.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog End Distance"), QT_TRANSLATE_NOOP("AtomLyIntegration", "At what distance from the viewer does the fog take over and mask the background scene out."))
                             ->Attribute(AZ::Edit::Attributes::Min, &DeferredFogComponentConfig::m_fogStartDistance)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
@@ -92,12 +93,12 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::SupportsFogEnd)
 
-                        ->ClassElement(Edit::ClassElements::Group, "Density Control")
+                        ->ClassElement(Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Density Control"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogDensity,
-                            "Fog Density",
-                            "Density of the fog that can range from 0.0 to 1.0")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Density"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Density of the fog that can range from 0.0 to 1.0"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
@@ -106,8 +107,8 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::SupportsFogDensity)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogDensityClamp,
-                            "Fog Density Clamp",
-                            "The maximum density that the fog can reach. This enables the sky, horizon, and other bright, distant objects to be visible through dense fog.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Density Clamp"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The maximum density that the fog can reach. This enables the sky, horizon, and other bright, distant objects to be visible through dense fog."))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
@@ -115,11 +116,11 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Fog layer properties
-                        ->ClassElement(Edit::ClassElements::Group, "Fog Layer")
+                        ->ClassElement(Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Layer"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::GetEnableFogLayerShaderOption)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogMinHeight,
-                            "Fog Bottom Height", "The height at which the fog layer starts")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Bottom Height"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The height at which the fog layer starts"))
                             ->Attribute(AZ::Edit::Attributes::Min, -5000.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -100.0f)
@@ -128,7 +129,7 @@ namespace AZ
 
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogMaxHeight,
-                            "Fog Max Height", "The height of the fog layer top")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog Max Height"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The height of the fog layer top"))
                             ->Attribute(AZ::Edit::Attributes::Min, -5000.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -100.0f)
@@ -136,33 +137,33 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Fog turbulence properties
-                        ->ClassElement(Edit::ClassElements::Group, "Turbulence")
+                        ->ClassElement(Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Turbulence"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &DeferredFogComponentConfig::GetUseNoiseTextureShaderOption)
                         ->DataElement(AZ::Edit::UIHandlers::LineEdit, &DeferredFogComponentConfig::m_noiseTexture,
-                            "Noise Texture", "The noise texture used for creating the fog turbulence")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Noise Texture"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The noise texture used for creating the fog turbulence"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // First noise octave
                         ->DataElement(AZ::Edit::UIHandlers::Vector2, &DeferredFogComponentConfig::m_noiseScaleUV,
-                            "Noise Texture First Octave Scale", "The scale of the first noise octave - higher indicates higher frequency / repetition")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Noise Texture First Octave Scale"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The scale of the first noise octave - higher indicates higher frequency / repetition"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Vector2, &DeferredFogComponentConfig::m_noiseVelocityUV,
-                            "Noise Texture First Octave Velocity", "The velocity of the first noise octave UV coordinates")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Noise Texture First Octave Velocity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The velocity of the first noise octave UV coordinates"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Second noise octave
                         ->DataElement(AZ::Edit::UIHandlers::Vector2, &DeferredFogComponentConfig::m_noiseScaleUV2,
-                            "Noise Texture Second Octave Scale", "The scale of the second noise octave - higher indicates higher frequency / repetition")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Noise Texture Second Octave Scale"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The scale of the second noise octave - higher indicates higher frequency / repetition"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Vector2, &DeferredFogComponentConfig::m_noiseVelocityUV2,
-                            "Noise Texture Second Octave Velocity", "The velocity of the second noise octave UV coordinates")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Noise Texture Second Octave Velocity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The velocity of the second noise octave UV coordinates"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_octavesBlendFactor,
-                            "Octaves Blend Factor", "The blend factor between the noise octaves")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Octaves Blend Factor"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The blend factor between the noise octaves"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)

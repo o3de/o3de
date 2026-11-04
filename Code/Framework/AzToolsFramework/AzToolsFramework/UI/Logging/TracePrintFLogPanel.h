@@ -9,8 +9,6 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 
@@ -18,7 +16,6 @@
 #include "LogControl.h" // for BaseLogView
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/Component/TickBus.h>
-#endif
 
 namespace AzToolsFramework
 {

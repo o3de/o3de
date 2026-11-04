@@ -6,12 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H
-#define CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "ErrorReport.h"
 
 namespace Ui {
@@ -20,7 +16,6 @@ namespace Ui {
 class CErrorReportTableModel;
 
 #include <QWidget>
-#endif
 
 class CErrorReportDialog
     : public QWidget
@@ -83,5 +78,3 @@ protected:
     int m_sortIndicatorColumn;
     Qt::SortOrder m_sortIndicatorOrder;
 };
-
-#endif // CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H

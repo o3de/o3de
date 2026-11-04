@@ -1,0 +1,59 @@
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    struct Sab  {
+        float   a;  // Offset  0
+        float2  b;  // Offset  4
+    };
+    
+    struct Sba  {
+        float2  b;  // Offset  0
+        float   a;  // Offset  8
+    };
+    
+    struct Sabc {
+        float   a;  // Offset  0
+        float2  b;  // Offset  4
+        float3  c;  // Offset 16
+    };
+    
+    struct Sac {
+        float   a;  // Offset  0
+        float3  c;  // Offset  4
+    };
+    
+    struct S {
+        float  a;  // Offset  0
+        float4 b;  // Offset 16
+    };
+
+	struct U {
+		int32_t  a; // Offset 0
+		int64_t  b; // Offset 4
+		uint32_t c; // Offset 12
+		uint64_t d; // Offset 16
+	};
+    
+    // Note! dxc's SpirV generation has the following error:
+    // fatal error: generated SPIR-V is invalid: Structure id 5 decorated as BufferBlock for variable 
+    // in Uniform storage class must follow relaxed storage buffer layout rules: 
+    // member 1 is an improperly straddling vector at offset 12
+    
+    struct T {
+        // Dxc bug (below):
+        // Having a float before the Sab struct below causes a layouting error in StructuredBuffer-s
+        // float    b;  
+        Sab      ab;           // Offset   0
+        Sba      ba;           // Offset  16 (+16)
+        Sabc     abc;          // Offset  32 (+16)
+        Sac      ac;           // Offset  64 (+32)
+        S        s;            // Offset  80 (+16)
+        float    a_float;      // Offset 112 (+32)
+		U        u;            // Offset 116/128 (+4/16)
+    };
+
+    T m_CB;
+
+    StructuredBuffer<T> m_SB;
+};

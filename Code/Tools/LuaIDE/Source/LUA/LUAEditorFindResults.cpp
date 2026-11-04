@@ -10,7 +10,7 @@
 #include "LUAEditorStyleMessages.h"
 #include "LUAEditorBlockState.h"
 
-#include <Source/LUA/moc_LUAEditorFindResults.cpp>
+
 #include <Source/LUA/ui_LUAEditorFindResults.h>
 
 #include <QRegularExpression>
@@ -58,24 +58,24 @@ namespace LUAEditor
                     QRegularExpression regex(
                         m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                     QRegularExpressionMatch match = regex.match(text);
-                    int index = match.capturedStart();
+                    int index = static_cast<int>(match.capturedStart());
                     while (match.hasMatch())
                     {
-                        const int length = match.capturedLength();
+                        const int length = static_cast<int>(match.capturedLength());
                         setFormat(index, length, textFormat);
 
                         match = regex.match(text, index + length);
-                        index = match.capturedStart();
+                        index = static_cast<int>(match.capturedStart());
                     }
                 }
                 else
                 {
-                    int index = text.indexOf(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    int index = static_cast<int>(text.indexOf(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive));
                     while (index > 1)
                     {
-                        setFormat(index, m_searchString.length(), textFormat);
+                        setFormat(index, static_cast<int>(m_searchString.length()), textFormat);
                         ++index;
-                        index = text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                        index = static_cast<int>(text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive));
                     }
                 }
  

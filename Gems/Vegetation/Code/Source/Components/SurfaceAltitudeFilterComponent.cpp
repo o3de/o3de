@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <Vegetation/Descriptor.h>
 #include <Vegetation/InstanceData.h>
@@ -39,20 +40,20 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SurfaceAltitudeFilterConfig>(
-                    "Vegetation Altitude Filter", "Vegetation altitude filter")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Altitude Filter"), QT_TRANSLATE_NOOP("Vegetation", "Vegetation altitude filter"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceAltitudeFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceAltitudeFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_shapeEntityId, "Pin To Shape Entity Id", "Shape bounds override min/max altitude if specified.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceAltitudeFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceAltitudeFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("Vegetation", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("Vegetation", "Shape bounds override min/max altitude if specified."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMin, "Altitude Min", "Minimum acceptable surface altitude.")
+                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMin, QT_TRANSLATE_NOOP("Vegetation", "Altitude Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeFilterConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMax, "Altitude Max", "Maximum acceptable surface altitude.")
+                    ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMax, QT_TRANSLATE_NOOP("Vegetation", "Altitude Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeFilterConfig::IsShapeValid)
                     ;
             }

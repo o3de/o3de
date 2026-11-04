@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef AZCORE_RAPIDXML_RAPIDXML_H_INCLUDED
-#define AZCORE_RAPIDXML_RAPIDXML_H_INCLUDED
+#pragma once
 
 #define RAPIDXML_SKIP_AZCORE_ERROR
 
@@ -15,5 +14,3 @@
 // you can override behavior here.
 #include <stdio.h>
 #include <rapidxml/rapidxml.h>
-
-#endif // AZCORE_RAPIDXML_RAPIDXML_H_INCLUDED

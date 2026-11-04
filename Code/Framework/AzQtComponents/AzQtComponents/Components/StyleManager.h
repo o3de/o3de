@@ -7,29 +7,25 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <AzCore/IO/Path/Path_fwd.h>
 
 #include <QObject>
-#include <QColor>
 #include <QHash>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::StyleManager::m_widgetToStyleSheetMap': class 'QHash<QWidget *,QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::StyleManager'
 #include <QPointer>
-#endif
 AZ_POP_DISABLE_WARNING
 
 class QApplication;
 class QStyle;
 class QWidget;
-class QStyleSheetStyle;
+class QColor;
 
 namespace AzQtComponents
 {
     class StyleSheetCache;
     class StylesheetPreprocessor;
-    class TitleBarOverdrawHandler;
     class AutoCustomWindowDecorations;
 
     /**
@@ -65,10 +61,13 @@ namespace AzQtComponents
 
         static bool setStyleSheet(QWidget* widget, QString styleFileName);
 
-        static QStyleSheetStyle* styleSheetStyle(const QWidget* widget);
+        static QStyle* styleSheetStyle(const QWidget* widget);
         static QStyle* baseStyle(const QWidget* widget);
 
         static void repolishStyleSheet(QWidget* widget);
+
+        //! Utility - set an object property, and return true if it changed.
+        static bool setObjectProperty(QWidget* widget, const char* propertyName, const QVariant& value);
 
         explicit StyleManager(QObject* parent);
         ~StyleManager() override;
@@ -113,12 +112,10 @@ namespace AzQtComponents
 
         StylesheetPreprocessor* m_stylesheetPreprocessor = nullptr;
         StyleSheetCache* m_stylesheetCache = nullptr;
-        TitleBarOverdrawHandler* m_titleBarOverdrawHandler = nullptr;
 
         using WidgetToStyleSheetMap = QHash<QWidget*, QString>;
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::StyleManager::m_widgetToStyleSheetMap': class 'QHash<QWidget *,QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::StyleManager'
         WidgetToStyleSheetMap m_widgetToStyleSheetMap;
-        QStyleSheetStyle* m_styleSheetStyle = nullptr;
 
         // Track the style as a QPointer, as the QApplication will delete it if it still has a pointer to it
         QPointer<QStyle> m_style;

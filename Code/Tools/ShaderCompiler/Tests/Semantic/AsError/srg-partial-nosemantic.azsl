@@ -1,0 +1,10 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 0;
+};
+
+// partial SRGs must define the semantic at least once.
+partial ShaderResourceGroup MySrg     // : sem
+{
+};
+// #EC 130  Srg Without semantic

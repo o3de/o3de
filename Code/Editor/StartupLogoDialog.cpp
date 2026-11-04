@@ -108,4 +108,3 @@ void CStartupLogoDialog::paintEvent(QPaintEvent*)
     painter.drawPixmap(rect(), m_backgroundImage);
 }
 
-#include <moc_StartupLogoDialog.cpp>

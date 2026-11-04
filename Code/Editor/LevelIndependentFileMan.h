@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LEVELINDEPENDENTFILEMAN_H
-#define CRYINCLUDE_EDITOR_LEVELINDEPENDENTFILEMAN_H
 #pragma once
-
 
 struct ILevelIndependentFileModule
 {
@@ -32,5 +28,3 @@ public:
 private:
     std::vector<ILevelIndependentFileModule* > m_Modules;
 };
-
-#endif // CRYINCLUDE_EDITOR_LEVELINDEPENDENTFILEMAN_H

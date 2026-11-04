@@ -28,7 +28,7 @@ namespace Benchmark
     void SingleInstanceOverrideBenchmarks::SetupHarness(const benchmark::State& state)
     {
         BM_Prefab::SetupHarness(state);
-        
+
         const unsigned int depthOfNesting = static_cast<unsigned int>(state.range(0));
         const unsigned int entitiesCountInEachPrefab = static_cast<unsigned int>(state.range(1));
 
@@ -72,7 +72,7 @@ namespace Benchmark
         {
             entitiesInNestedInstance.emplace_back(CreateEntity("Entity"));
         }
-        return AZStd::move(entitiesInNestedInstance);
+        return entitiesInNestedInstance;
     }
 
     BENCHMARK_DEFINE_F(SingleInstanceOverrideBenchmarks, PropagateOverrideComponent)(benchmark::State& state)

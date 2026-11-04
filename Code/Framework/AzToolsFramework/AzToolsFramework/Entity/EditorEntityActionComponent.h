@@ -48,6 +48,7 @@ namespace AzToolsFramework
             void CutComponents(AZStd::span<AZ::Component* const> components) override;
             void CopyComponents(AZStd::span<AZ::Component* const> components) override;
             void PasteComponentsToEntity(AZ::EntityId entityId) override;
+            void PasteComponentsToEntityFromMimeData(AZ::EntityId entityId, const QMimeData* mimeData) override;
             bool HasComponentsToPaste() override;
 
             void EnableComponents(AZStd::span<AZ::Component* const> components) override;

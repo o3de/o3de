@@ -6,6 +6,7 @@
 #
 #
 
+add_subdirectory(3rdParty)
 add_subdirectory(Framework)
 add_subdirectory(LauncherUnified)
 add_subdirectory(Legacy)

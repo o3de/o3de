@@ -8,20 +8,28 @@
 
 #include <AzQtComponents/PropertyInput/PropertyInputWidgets.h>
 
+#include <AzQtComponents/Components/Style.h>
+
 #include <QEvent>
-#include <QKeyEvent>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 
 constexpr int FieldMargins = 17;
 constexpr int SpinBoxWidth = 64;
+constexpr int MenuItemTextLeftMargin = 22;
 
 namespace AzQtComponents
 {
     PropertyInputDoubleWidget::PropertyInputDoubleWidget()
     {
+        Style::addClass(this, "WidgetAction");
+        setAttribute(Qt::WA_StyledBackground, true);
+        setAttribute(Qt::WA_Hover, true);
+
         // Create Label.
         m_label = new QLabel(this);
         m_label->setContentsMargins(QMargins(0, 0, FieldMargins / 2, 0));
+        m_label->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
         // Create SpinBox.
         m_spinBox = new AzQtComponents::DoubleSpinBox(this);
@@ -43,7 +51,7 @@ namespace AzQtComponents
 
         // Add to Layout.
         QHBoxLayout* layout = new QHBoxLayout(this);
-        layout->setContentsMargins(QMargins(FieldMargins, 0, FieldMargins, 0));
+        layout->setContentsMargins(QMargins(MenuItemTextLeftMargin, 0, FieldMargins, 0));
         layout->addWidget(m_label);
         layout->addWidget(m_spinBox);
     }
@@ -66,7 +74,7 @@ namespace AzQtComponents
             }
         }
 
-        return false;
+        return QWidget::event(event);
     }
 
 } // namespace AzQtComponents

@@ -27,8 +27,6 @@ namespace AZStd
     class forward_list;
     template< class T, size_t Capacity >
     class fixed_vector;
-    template< class T, size_t N >
-    class array;
     template<class Key, class MappedType, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/ >
     class unordered_map;
     template<class Key, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/>

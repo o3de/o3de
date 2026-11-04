@@ -104,34 +104,34 @@ card->mockDisabledState(true);
 
     ui->exampleText->setHtml(exampleText);
 
-    ui->basicCard->setTitle("Example Card");
+    ui->basicCard->setTitle(tr("Example Card"));
     addContentWidget(ui->basicCard, 30);
 
-    ui->warningCard->setTitle("Card With Warning");
+    ui->warningCard->setTitle(tr("Card With Warning"));
     ui->warningCard->header()->setWarning(true);
     addContentWidget(ui->warningCard, 30);
 
-    ui->disabledCard->setTitle("Actually Disabled Card");
+    ui->disabledCard->setTitle(tr("Actually Disabled Card"));
     ui->disabledCard->setContentWidget(new QWidget());
     ui->disabledCard->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
     ui->disabledCard->header()->setHelpURL("https://o3de.org/docs/");
-    ui->disabledCard->setSecondaryTitle("Secondary Title");
+    ui->disabledCard->setSecondaryTitle(tr("Secondary Title"));
     ui->disabledCard->setSecondaryContentWidget(new QWidget());
     ui->disabledCard->setEnabled(false);
     
-    ui->disabledCard2->setTitle("Mock Disabled Card");
+    ui->disabledCard2->setTitle(tr("Mock Disabled Card"));
     ui->disabledCard2->setContentWidget(new QWidget());
     ui->disabledCard2->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
     ui->disabledCard2->header()->setHelpURL("https://o3de.org/docs/");
-    ui->disabledCard2->setSecondaryTitle("Secondary Title");
+    ui->disabledCard2->setSecondaryTitle(tr("Secondary Title"));
     ui->disabledCard2->setSecondaryContentWidget(new QWidget());
     ui->disabledCard2->mockDisabledState(true);
 
-    ui->functionalCard->setTitle("Card With Secondary Section");
+    ui->functionalCard->setTitle(tr("Card With Secondary Section"));
     addContentWidget(ui->functionalCard, 60);
 
     AzQtComponents::Card::applyContainerStyle(ui->containerCard);
-    ui->containerCard->setTitle("Container card");
+    ui->containerCard->setTitle(tr("Container card"));
     ui->containerCard->header()->setUnderlineColor(QColor("#a675ff"));
 
     auto* contentWidget = new QWidget;
@@ -139,11 +139,11 @@ card->mockDisabledState(true);
     ui->containerCard->setContentWidget(contentWidget);
 
     auto* nestedCard = new AzQtComponents::Card();
-    nestedCard->setTitle("Nested card");
+    nestedCard->setTitle(tr("Nested card"));
     addContentWidget(nestedCard, 30);
     nestedLayout->addWidget(nestedCard);
 
-    auto* button = new QPushButton("Nested button");
+    auto* button = new QPushButton(tr("Nested button"));
     nestedLayout->addWidget(button);
 
     // put in an example icon
@@ -159,29 +159,29 @@ card->mockDisabledState(true);
     connect(ui->disabledCard, &AzQtComponents::Card::contextMenuRequested, this, &CardPage::showContextMenu);
     connect(ui->disabledCard2, &AzQtComponents::Card::contextMenuRequested, this, &CardPage::showContextMenu);
 
-    m_addNotification = new QAction("Add Notification", this);
+    m_addNotification = new QAction(tr("Add Notification"), this);
     addAction(m_addNotification);
     connect(m_addNotification, &QAction::triggered, this, &CardPage::addNotification);
 
-    m_clearNotification = new QAction("Clear Notifications", this);
+    m_clearNotification = new QAction(tr("Clear Notifications"), this);
     addAction(m_clearNotification);
     connect(m_clearNotification, &QAction::triggered, ui->functionalCard, &AzQtComponents::Card::clearNotifications);
 
-    m_warningAction = new QAction("Show Warning Icon", this);
+    m_warningAction = new QAction(tr("Show Warning Icon"), this);
     m_warningAction->setCheckable(true);
     addAction(m_warningAction);
     connect(m_warningAction, &QAction::toggled, this, &CardPage::toggleWarning);
 
-    m_contentChangedAction = new QAction("Set content changed", this);
+    m_contentChangedAction = new QAction(tr("Set content changed"), this);
     m_contentChangedAction->setCheckable(true);
     connect(m_contentChangedAction, &QAction::toggled, this, &CardPage::toggleContentChanged);
 
-    m_selectedChangedAction = new QAction("Toggle selected", this);
+    m_selectedChangedAction = new QAction(tr("Toggle selected"), this);
     m_selectedChangedAction->setCheckable(true);
     connect(m_selectedChangedAction, &QAction::toggled, this, &CardPage::toggleSelectedChanged);
 
     auto card = ui->functionalCard;
-    card->setSecondaryTitle("Advanced Options");
+    card->setSecondaryTitle(tr("Advanced Options"));
 
     QWidget* testWidget2 = new QWidget(card);
     testWidget2->setMaximumHeight(30);
@@ -195,8 +195,8 @@ CardPage::~CardPage()
 
 void CardPage::addNotification()
 {
-    AzQtComponents::CardNotification* notification = ui->functionalCard->addNotification("A warning message indicating a conflict or problem.");
-    QPushButton* button = notification->addButtonFeature("Clear Warnings");
+    AzQtComponents::CardNotification* notification = ui->functionalCard->addNotification(tr("A warning message indicating a conflict or problem."));
+    QPushButton* button = notification->addButtonFeature(tr("Clear Warnings"));
     connect(button, &QPushButton::clicked, ui->functionalCard, &AzQtComponents::Card::clearNotifications);
 }
 

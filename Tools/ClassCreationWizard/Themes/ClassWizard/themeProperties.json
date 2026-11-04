@@ -1,0 +1,22 @@
+{
+	"theme_id": "class_wizard_default",
+	"theme_name": "Class Wizard Default",
+	"theme_description": "Default theme for the standalone Class Creation Wizard. Self-contained (theme_base empty) so the tool renders identically with no engine present. Values mirror the O3DE_Original editor theme's ClassWizard group so the standalone baseline matches the editor's default theme. Format matches the O3DE editor theming system (AzQtComponents/Themes/<Name>/themeProperties.json) so the editor StyleManager / Theme Editor can read and author it. Engine themes override these via their own ClassWizard block.",
+	"theme_base": "",
+	"theme_properties": {
+		"ClassWizard": {
+			"WindowBackgroundColor": "#393a3c",
+			"InputBackgroundColor": "#303030",
+			"BorderColor": "#4E4E4E",
+			"TextColor": "#cccccc",
+			"DisabledTextColor": "#999999",
+			"OnAccentTextColor": "#ffffff",
+			"AccentColor": "#D9822E",
+			"AccentHoverColor": "#e09854",
+			"AccentPressedColor": "#b26b26",
+			"DisabledBackgroundColor": "#555555",
+			"ControlRadius": "3px",
+			"GroupBoxRadius": "4px"
+		}
+	}
+}

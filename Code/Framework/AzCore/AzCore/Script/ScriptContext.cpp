@@ -25,11 +25,10 @@
 extern "C" {
 #   include <Lua/lualib.h>
 #   include <Lua/lauxlib.h>
-#   include <Lua/lobject.h>
 
-    // versions of LUA before 5.3.x used to define a union that contained a double, a pointer, and a long
-    // as L_Umaxalign.  Newer versions define those inner types in the macro LUAI_MAXALIGN instead but
-    // no longer actually declare a union around it.  For backward compatibility we define the same one here
+    // Lua < 5.3.x defined a union containing double + pointer + long as L_Umaxalign. Lua 5.3+ replaced the
+    // union with the LUAI_MAXALIGN macro (defined in luaconf.h, public API; also used in lauxlib.h's
+    // luaL_Buffer). Wrap it in a union here so existing call sites can keep using sizeof(L_Umaxalign).
     union L_Umaxalign { LUAI_MAXALIGN; };
 }
 
@@ -5484,7 +5483,7 @@ LUA_API const Node* lua_getDummyNode()
                 // Lua: ExposedEvent, lambda
                 lua_pushvalue(lua, -1);
                 // Lua: ExposedEvent, lambda, lambda
-                auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, AZStd::move(ExposedLambda(lua)));
+                auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, ExposedLambda(lua));
                 // Lua: ExposedEvent, lambda
                 Internal::RegisteredObjectToLua(lua, handlerAndType.m_address, handlerAndType.m_typeId, ObjectToLua::ByReference, AcquisitionOnPush::ScriptAcquire);
                 // Lua: ExposedEvent, lambda, handler

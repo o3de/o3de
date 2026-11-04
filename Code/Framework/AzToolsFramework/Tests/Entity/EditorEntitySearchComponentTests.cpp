@@ -153,7 +153,7 @@ namespace AzToolsFramework
             m_app.Start(m_descriptor, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -174,7 +174,7 @@ namespace AzToolsFramework
             m_testComponentType2 = azrtti_typeid<EntitySearch_TestComponent2>();
         }
 
-        void GenerateTestHierarchy() 
+        void GenerateTestHierarchy()
         {
             /*
             *   City
@@ -318,7 +318,7 @@ namespace AzToolsFramework
             EXPECT_EQ(searchResults.size(), 1);
             EXPECT_EQ(searchResults[0], m_entityMap["streetId"]);
         }
-        
+
         {
             EntitySearchFilter filter;
             filter.m_names.push_back("St*t");
@@ -544,7 +544,7 @@ namespace AzToolsFramework
     {
         {
             EntitySearchFilter filter;
-            filter.m_components.emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType1);
 
             EntityIdList searchResults;
             AzToolsFramework::EditorEntitySearchBus::BroadcastResult(searchResults, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);
@@ -554,7 +554,7 @@ namespace AzToolsFramework
 
         {
             EntitySearchFilter filter;
-            filter.m_components.emplace(m_testComponentType2);
+            filter.m_components.try_emplace(m_testComponentType2);
 
             EntityIdList searchResults;
             AzToolsFramework::EditorEntitySearchBus::BroadcastResult(searchResults, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);
@@ -567,8 +567,8 @@ namespace AzToolsFramework
     {
         {
             EntitySearchFilter filter;
-            filter.m_components.emplace(m_testComponentType1);
-            filter.m_components.emplace(m_testComponentType2);
+            filter.m_components.try_emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType2);
             filter.m_mustMatchAllComponents = false; // Default
 
             EntityIdList searchResults;
@@ -579,8 +579,8 @@ namespace AzToolsFramework
 
         {
             EntitySearchFilter filter;
-            filter.m_components.emplace(m_testComponentType1);
-            filter.m_components.emplace(m_testComponentType2);
+            filter.m_components.try_emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType2);
             filter.m_mustMatchAllComponents = true;
 
             EntityIdList searchResults;
@@ -600,7 +600,7 @@ namespace AzToolsFramework
             EntityIdList searchResults;
             AzToolsFramework::EditorEntitySearchBus::BroadcastResult(searchResults, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);
 
-            
+
             EXPECT_EQ(searchResults.size(), 2);
         }
 
@@ -741,7 +741,7 @@ namespace AzToolsFramework
         {
             EntitySearchFilter filter;
             filter.m_mustMatchAllComponents = false;
-            filter.m_components.emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType1);
             filter.m_components.emplace(m_testComponentType2, EntitySearchFilter::ComponentProperties{ { "Float", EntitySearch_TestComponent2::DefaultFloatValue } });
 
             EntityIdList searchResults;
@@ -754,7 +754,7 @@ namespace AzToolsFramework
         {
             EntitySearchFilter filter;
             filter.m_mustMatchAllComponents = true;
-            filter.m_components.emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType1);
             filter.m_components.emplace(m_testComponentType2, EntitySearchFilter::ComponentProperties{ { "Float", EntitySearch_TestComponent2::DefaultFloatValue } });
 
             EntityIdList searchResults;
@@ -929,7 +929,7 @@ namespace AzToolsFramework
             EntitySearchFilter filter;
             filter.m_names.push_back("Car");
             filter.m_aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
-            filter.m_components.emplace(m_testComponentType1);
+            filter.m_components.try_emplace(m_testComponentType1);
 
             EntityIdList searchResults;
             AzToolsFramework::EditorEntitySearchBus::BroadcastResult(searchResults, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);

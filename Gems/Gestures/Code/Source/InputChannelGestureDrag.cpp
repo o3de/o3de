@@ -7,6 +7,7 @@
  */
 
 #include "InputChannelGestureDrag.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -24,7 +25,9 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TypeAndConfig>("Drag", "Gesture recognizer for drags.")
+                ec->Class<TypeAndConfig>(
+                    QT_TRANSLATE_NOOP("Gestures", "Drag"),
+                    QT_TRANSLATE_NOOP("Gestures", "Gesture recognizer for drags."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

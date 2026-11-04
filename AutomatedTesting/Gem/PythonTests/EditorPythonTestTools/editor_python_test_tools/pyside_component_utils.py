@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import PySide2
+import PySide6
 
 import pyside_utils
 
@@ -27,11 +27,11 @@ def get_component_combobox_values(component_name, property_name, log_fn=None):
         log_fn(message) if log_fn else None
 
     editor_window = pyside_utils.get_editor_main_window()
-    entity_inspector = editor_window.findChild(PySide2.QtWidgets.QDockWidget, 'Entity Inspector')
+    entity_inspector = editor_window.findChild(PySide6.QtWidgets.QDockWidget, 'Entity Inspector')
     assert entity_inspector, 'Entity Inspector widget is not valid.'
     entity_inspector.update()
 
-    component_list_widget = entity_inspector.findChild(PySide2.QtWidgets.QWidget, 'm_componentListContents')
+    component_list_widget = entity_inspector.findChild(PySide6.QtWidgets.QWidget, 'm_componentListContents')
     component_list_children = component_list_widget.children()
     assert component_list_children, 'Could not retrieve components for the entity.'
 
@@ -40,16 +40,16 @@ def get_component_combobox_values(component_name, property_name, log_fn=None):
     # If that label is found, the same QFrame is inspected for a child frame with the name matching the "property_name".
     # This property frame should have the combo box as child.
     for component_widget in component_list_children:
-        if type(component_widget) is PySide2.QtWidgets.QFrame:
+        if type(component_widget) is PySide6.QtWidgets.QFrame:
             component_label = pyside_utils.find_child_by_pattern(component_widget, {'text': component_name})
             if component_label:
-                property_frame = component_widget.findChild(PySide2.QtWidgets.QFrame, property_name)
+                property_frame = component_widget.findChild(PySide6.QtWidgets.QFrame, property_name)
 
                 if not property_frame:
                     _log_fn_wrapper(f'QFrame not found as child of the component widget {component_widget}.')
                     continue
 
-                combobox = pyside_utils.find_child_by_pattern(property_frame, {'type': PySide2.QtWidgets.QComboBox})
+                combobox = pyside_utils.find_child_by_pattern(property_frame, {'type': PySide6.QtWidgets.QComboBox})
 
                 if not combobox:
                     _log_fn_wrapper(f'QComboBox not found as child of the property frame {property_frame}.')

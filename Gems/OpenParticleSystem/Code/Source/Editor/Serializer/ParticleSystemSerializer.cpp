@@ -549,9 +549,22 @@ namespace OpenParticle
             {
                 destField = AZ::Data::AssetManager::Instance().FindOrCreateAsset<T>(resultId, loadBehavior);
             }
+            else
+            {
+                // Preserve the original path string even when the asset catalog
+                // does not yet know about the referenced asset (cold cache).
+                // Without this, downstream builders that walk this object's
+                // references at CreateJobs time (notably ParticleBuilder for
+                // emitter material refs) lose the path information and cannot
+                // declare a JobDependency, which causes the dependent's job to
+                // be scheduled before its upstream dep is baked and fail with a
+                // generic "no material assigned to render" error on the first
+                // pass. A second AP pass then succeeds against the warmed cache.
+                destField.SetHint(sourceAssetPath);
+            }
         }
 
-        if (destField.GetId().IsValid())
+        if (destField.GetId().IsValid() || !destField.GetHint().empty())
         {
             return JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success);
         }

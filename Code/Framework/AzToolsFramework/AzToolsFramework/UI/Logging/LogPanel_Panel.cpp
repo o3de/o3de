@@ -501,8 +501,9 @@ namespace AzToolsFramework
 
         void FilteredLogDataModel::SetTabSettings(const TabSettings& source)
         {
+            beginFilterChange();
             m_tabSettings = source;
-            invalidateFilter();
+            endFilterChange();
         }
 
         bool FilteredLogDataModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
@@ -887,4 +888,3 @@ namespace AzToolsFramework
     } // namespace LogPanel
 } // namespace AzToolsFramework
 
-#include "UI/Logging/moc_LogPanel_Panel.cpp"

@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <PreviewRenderer/PreviewRendererSystemComponent.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -23,7 +24,7 @@ namespace AtomToolsFramework
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<PreviewRendererSystemComponent>("PreviewRendererSystemComponent", "System component that manages a global PreviewRenderer.")
+                ec->Class<PreviewRendererSystemComponent>(QT_TRANSLATE_NOOP("AtomToolsFramework", "PreviewRendererSystemComponent"), QT_TRANSLATE_NOOP("AtomToolsFramework", "System component that manages a global PreviewRenderer."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

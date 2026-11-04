@@ -80,4 +80,3 @@ FilteredSearchWidgetPage::~FilteredSearchWidgetPage()
 {
 }
 
-#include "Gallery/moc_FilteredSearchWidgetPage.cpp"

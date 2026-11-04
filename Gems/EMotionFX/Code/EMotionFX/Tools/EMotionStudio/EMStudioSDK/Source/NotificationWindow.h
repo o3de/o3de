@@ -8,15 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include <MCore/Source/MemoryManager.h>
+
 #include <QToolButton>
 #include <QWidget>
 #include <QTimer>
 #include <QLabel>
-#endif
-
 
 namespace EMStudio
 {

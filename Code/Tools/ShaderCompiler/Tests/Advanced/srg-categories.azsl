@@ -1,0 +1,11 @@
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup SRG : slot1
+{
+    RaytracingAccelerationStructure scene;
+    Buffer<float4> buf;
+    Texture2D tex;
+};

@@ -1,0 +1,3 @@
+rootconstant void Func2();  // #EC 33
+
+// Semantic Error 33: line 1 ' Functions can't have option or rootconstant qualified return types.

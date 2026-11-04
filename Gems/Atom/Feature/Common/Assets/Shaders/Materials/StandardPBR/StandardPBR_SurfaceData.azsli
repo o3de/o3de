@@ -88,6 +88,7 @@
         real3 GetDefaultNormal() { return normal; }
         real3 GetVertexNormal() { return vertexNormal; }
         real3 GetSpecularF0() { return specularF0; }
+        real GetMetallic() { return metallic; }
     };
 
     void SurfaceData_StandardPBR::CalculateRoughnessA()

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QScopedPointer>
@@ -22,7 +21,6 @@
 #include <QStandardItem>
 
 #include <AzCore/std/chrono/chrono.h>
-#endif
 
 namespace Ui
 {

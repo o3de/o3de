@@ -34,7 +34,7 @@ namespace AZ
         RPI::Ptr<BloomCompositePass> BloomCompositePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomCompositePass> pass = aznew BloomCompositePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BloomCompositePass::BloomCompositePass(const RPI::PassDescriptor& descriptor)
@@ -91,7 +91,7 @@ namespace AZ
 
         void BloomCompositePass::UpdateParameters()
         {
- 
+
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
             RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
@@ -183,7 +183,7 @@ namespace AZ
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
                 outBinding.SetAttachment(parentInAttachment);
             }
-            
+
             pass->AddAttachmentBinding(outBinding);
         }
 
@@ -256,7 +256,7 @@ namespace AZ
         RPI::Ptr<BloomCompositeChildPass> BloomCompositeChildPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomCompositeChildPass> pass = aznew BloomCompositeChildPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BloomCompositeChildPass::BloomCompositeChildPass(const RPI::PassDescriptor& descriptor)

@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QWidget>
 #include <QVector>
 #include <QString>
 #include <QPushButton>
-#endif
 
 
 class QComboBox;

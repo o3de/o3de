@@ -41,7 +41,7 @@ ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
               'min_cmake_version': '3.20'},
     '7.3.1': {'min_gradle_version': '7.5.1',
               'sdk_build': '33.0.0',
-              'default_ndk': '25.1.8937393',
+              'default_ndk': '27.3.13750724',
               'min_cmake_version': '3.24'},
 }
 

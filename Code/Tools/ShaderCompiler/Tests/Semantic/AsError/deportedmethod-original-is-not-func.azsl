@@ -1,0 +1,12 @@
+class C
+{
+    int v;
+};
+
+int C::v(){}  //#EC 4
+
+//  From v1.5+:
+// Semantic Error 4: line 6::0 'class /C doesn't have a declaration for v()'
+//
+//  superseeds this diagnostic from previous versions: (the reason being the mangling changed and cannot match a non-function anymore)
+// Semantic Error 5: line 6::0 ' class /C holds a member /C/v but it is of kind Variable instead of expected Function'

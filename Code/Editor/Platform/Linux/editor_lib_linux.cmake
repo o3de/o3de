@@ -6,3 +6,10 @@
 #
 #
 
+if(PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND)
+    set(LY_BUILD_DEPENDENCIES
+        PRIVATE
+            Qt6::GuiPrivate
+            Qt6::WaylandClient
+    )
+endif ()

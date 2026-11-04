@@ -14,9 +14,9 @@
 import os
 from pathlib import Path
 import logging as _logging
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QDoubleValidator
-from PySide2.QtWidgets import QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QSizePolicy
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator
+from PySide6.QtWidgets import QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QSizePolicy
 # -------------------------------------------------------------------------
 
 

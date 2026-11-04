@@ -21,11 +21,11 @@ namespace AZ
     namespace Render
     {
         static const char* const NumSourceLutsShaderVariantOptionName{ "o_numSourceLuts" };
-        
+
         RPI::Ptr<BlendColorGradingLutsPass> BlendColorGradingLutsPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BlendColorGradingLutsPass> pass = aznew BlendColorGradingLutsPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BlendColorGradingLutsPass::BlendColorGradingLutsPass(const RPI::PassDescriptor& descriptor)
@@ -247,7 +247,7 @@ namespace AZ
             m_blendedLutShaperParams = shaperParams;
         }
 
-        
+
         AZStd::optional<ShaperParams> BlendColorGradingLutsPass::GetCommonShaperParams() const
         {
             LookModificationSettings* settings = GetLookModificationSettings();

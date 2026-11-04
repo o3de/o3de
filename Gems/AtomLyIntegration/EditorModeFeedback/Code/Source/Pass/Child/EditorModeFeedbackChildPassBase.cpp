@@ -15,7 +15,7 @@ namespace AZ
         RPI::Ptr<EditorModeFeedbackChildPassBase> EditorModeFeedbackChildPassBase::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<EditorModeFeedbackChildPassBase> pass = aznew EditorModeFeedbackChildPassBase(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         EditorModeFeedbackChildPassBase::EditorModeFeedbackChildPassBase(

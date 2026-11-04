@@ -5,8 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from PySide2 import QtWidgets, QtTest
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets, QtTest
+from PySide6.QtCore import Qt
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
 import pyside_utils

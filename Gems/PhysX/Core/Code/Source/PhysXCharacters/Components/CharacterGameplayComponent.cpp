@@ -9,6 +9,7 @@
 #include <PhysXCharacters/Components/CharacterGameplayComponent.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
@@ -29,16 +30,16 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CharacterGameplayConfiguration>(
-                    "PhysX Character Gameplay Configuration", "PhysX Character Gameplay Configuration")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Character Gameplay Configuration"), QT_TRANSLATE_NOOP("PhysX", "PhysX Character Gameplay Configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_gravityMultiplier,
-                        "Gravity Multiplier", "Multiplier for global gravity value that applies only to this character entity.")
+                        QT_TRANSLATE_NOOP("PhysX", "Gravity Multiplier"), QT_TRANSLATE_NOOP("PhysX", "Multiplier for global gravity value that applies only to this character entity."))
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CharacterGameplayConfiguration::m_groundDetectionBoxHeight,
-                        "Ground Detection Box Height",
-                        "Vertical size of box centered on the character's foot position used when testing for ground contact.")
+                        QT_TRANSLATE_NOOP("PhysX", "Ground Detection Box Height"),
+                        QT_TRANSLATE_NOOP("PhysX", "Vertical size of box centered on the character's foot position used when testing for ground contact."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                     ;

@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "FastNoiseSystemComponent.h"
 
@@ -23,7 +24,9 @@ namespace FastNoiseGem
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<FastNoiseSystemComponent>("FastNoise", "System component for Fast Noise gradient gem")
+                ec->Class<FastNoiseSystemComponent>(
+                    QT_TRANSLATE_NOOP("FastNoiseGem", "FastNoise"),
+                    QT_TRANSLATE_NOOP("FastNoiseGem", "System component for Fast Noise gradient gem"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

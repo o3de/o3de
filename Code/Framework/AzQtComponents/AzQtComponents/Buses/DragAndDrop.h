@@ -8,8 +8,6 @@
 
 #pragma once
 
-
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
@@ -20,7 +18,6 @@ class QDragEnterEvent;
 class QDropEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
-#endif
 
 namespace AzQtComponents
 {

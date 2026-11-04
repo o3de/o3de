@@ -20,8 +20,6 @@
 #include <QScrollBar>
 #include <QEvent>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
-
 namespace AzQtComponents
 {
     static constexpr const char* g_showBackgroundProperty = "ShowBackground";
@@ -167,9 +165,17 @@ namespace AzQtComponents
                 {
                     case QEvent::DynamicPropertyChange:
                     {
-                        if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
+                        // ignore properties coming from inside the style sheet system itself, which are all by convention
+                        // prefixed with _q_
+                        QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+                        QString propertyName = QString::fromUtf8(eventFull->propertyName());
+                        if (!propertyName.startsWith(QStringLiteral("_q_")))
                         {
-                            styleSheet->repolish(cornerWidget);
+                            if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
+                            {
+                                styleSheet->unpolish(cornerWidget);
+                                styleSheet->polish(cornerWidget);
+                            }
                         }
                     }
                     break;
@@ -306,10 +312,10 @@ namespace AzQtComponents
     {
         Q_UNUSED(config);
 
-        auto styleSheetStyle = qobject_cast<QStyleSheetStyle*>(style->baseStyle());
+        QStyle* styleSheetStyle = style->baseStyle();
         if (styleSheetStyle)
         {
-            styleSheetStyle->QWindowsStyle::drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
+            styleSheetStyle->drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
             return true;
         }
 

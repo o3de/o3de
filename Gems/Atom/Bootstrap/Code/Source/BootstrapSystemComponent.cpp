@@ -15,6 +15,7 @@
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -156,7 +157,7 @@ namespace AZ
 
                     if (EditContext* ec = serialize->GetEditContext())
                     {
-                        ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
+                        ec->Class<BootstrapSystemComponent>(QT_TRANSLATE_NOOP("Atom::Bootstrap", "Atom RPI"), QT_TRANSLATE_NOOP("Atom::Bootstrap", "Atom Renderer"))
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;

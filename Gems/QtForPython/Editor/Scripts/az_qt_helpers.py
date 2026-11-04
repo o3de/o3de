@@ -9,8 +9,8 @@ import azlmbr
 import azlmbr.bus
 import azlmbr.editor as editor
 
-from PySide2 import QtWidgets
-from shiboken2 import wrapInstance, getCppPointer
+from PySide6 import QtWidgets
+from shiboken6 import wrapInstance, getCppPointer
 
 
 # The `view_pane_handlers` holds onto the callback handlers that get created

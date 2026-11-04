@@ -48,7 +48,7 @@ def AssetBrowser_TreeNavigation():
     :return: None
     """
 
-    from PySide2 import QtWidgets, QtTest, QtCore
+    from PySide6 import QtWidgets, QtTest, QtCore
 
     import azlmbr.legacy.general as general
 

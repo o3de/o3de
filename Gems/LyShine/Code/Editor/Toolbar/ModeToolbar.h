@@ -7,12 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "AlignToolbarSection.h"
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 #include <QToolBar>
-#endif
 
 class EditorWindow;
 class QActionGroup;

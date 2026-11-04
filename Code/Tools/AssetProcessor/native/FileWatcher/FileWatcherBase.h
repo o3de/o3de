@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QString>
-#endif
 
 namespace AssetBuilderSDK
 {
@@ -77,7 +75,7 @@ Q_SIGNALS:
     // change. Some platforms' file watch APIs do not support non-recursive
     // watches, so the signals are filtered before being forwarded to the
     // non-"raw" fileAdded/Removed/Modified signals above.
-    void rawFileAdded(QString filePath, QPrivateSignal);
-    void rawFileRemoved(QString filePath, QPrivateSignal);
-    void rawFileModified(QString filePath, QPrivateSignal);
+    void rawFileAdded(QString filePath);
+    void rawFileRemoved(QString filePath);
+    void rawFileModified(QString filePath);
 };

@@ -54,4 +54,3 @@ namespace AZ
     } // SceneAPI
 } // AZ
 
-#include <CommonWidgets/moc_ExpandCollapseToggler.cpp>

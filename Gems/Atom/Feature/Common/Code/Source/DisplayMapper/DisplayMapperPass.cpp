@@ -283,7 +283,7 @@ namespace AZ
             Data::AssetId shaderAssetId = AZ::RPI::AssetUtils::GetAssetIdForProductPath(shaderFilePath, AZ::RPI::AssetUtils::TraceLevel::Assert, azrtti_typeid<RPI::ShaderAsset>());
             if (!shaderAssetId.IsValid())
             {
-                // The above GetAssetIdForProductPath will already have asserted if the asset was not found.  
+                // The above GetAssetIdForProductPath will already have asserted if the asset was not found.
                 return nullptr;
             }
 
@@ -313,7 +313,7 @@ namespace AZ
             const Name ldrGradingLutTemplateName = Name{ "LdrGradingLutTemplate" };
             const Name outputTransformTemplateName = Name{ "OutputTransformTemplate" };
 
-            // Pass classes 
+            // Pass classes
             const Name acesOutputTransformPassClassName = Name{ "AcesOutputTransformPass" };
             const Name acesOutputTransformLutPassClassName = Name{ "AcesOutputTransformLutPass" };
             const Name bakeAcesOutputTransformLutPassClassName = Name{ "BakeAcesOutputTransformLutPass" };
@@ -403,7 +403,7 @@ namespace AZ
             }
 
             RPI::Ptr<PassType> returnPass = static_cast<PassType*>(pass.get());
-            return AZStd::move(returnPass);
+            return returnPass;
         }
 
         void DisplayMapperPass::CreateGradingAndAcesPasses()

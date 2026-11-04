@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
@@ -20,9 +19,9 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <EMStudio/AnimViewportWidget.h>
 #include <Editor/Picking.h>
+
 #include <QWidget>
 #include <QTimer>
-#endif
 
 namespace AZ
 {

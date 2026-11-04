@@ -1,0 +1,12 @@
+{
+    "PackageName": "CLI11",
+    "Version": "2.6.2",
+    "URL": "https://github.com/CLIUtils/CLI11",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/CLIUtils/CLI11/archive/refs/tags/v2.6.2.tar.gz",
+        "Revision": "v2.6.2",
+        "SHA256": "c6ea6b2e5608b3ea8617999bd5f47420c71b2ebdb8dc4767c1034d1da5785711"
+    }
+}

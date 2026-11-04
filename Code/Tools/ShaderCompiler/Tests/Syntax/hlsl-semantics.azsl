@@ -1,0 +1,67 @@
+// Reference: https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-semantics
+// All examples target DX12 and Shader model 6 or above
+
+struct VS_OUTPUT
+{
+    float4 Position   : SV_POSITION; 
+    float4 Diffuse    : COLOR0;
+    float2 TextureUV  : TEXCOORD0;
+};
+
+VS_OUTPUT ValidVS1( float4 vPos : POSITION,
+                    float3 vNormal : NORMAL,
+                    float2 vTexCoord0 : TEXCOORD)
+{
+    VS_OUTPUT Output;
+    return Output;    
+}
+
+struct VS_INPUT
+{
+    float4 vPos       : POSITION;
+    float3 vNormal    : NORMAL;
+    float2 vTexCoord0 : TEXCOORD;
+};
+
+VS_OUTPUT ValidVS2(VS_INPUT input)
+{
+    VS_OUTPUT Output;
+    return Output;    
+}
+
+struct PSSceneIn{float2 uv : TEXCOORD ; float4 color : COLOR;};
+uniform Texture2D g_txDiffuse;
+sampler g_samLinear;
+float4 PSPointSprite(PSSceneIn input) : SV_Target
+{   
+    return g_txDiffuse.Sample( g_samLinear, input.uv ) * input.color;
+}
+
+// Invalid examples
+// These examples are only invalid when compiled with dxc for Shader Model 6 and later
+// Other compilers (fxc, Shader Model 5 or earlier) can compile some of them, but we keep
+//  them here to illustrate the differences in the supported grammar.
+// AZSLc will not error here, because the syntax is still valid
+
+// Expected DXC error: Semantic must be defined for all parameters of an entry function or patch constant function
+VS_OUTPUT InvalidVS1( float4 vPos : POSITION,
+                      uniform int nNumLights )
+{
+    VS_OUTPUT Output;
+    return Output;    
+}
+
+// Double Binding Semantics are not supported in SM6.0
+// Expected DXC error: Parameter with semantic SV_POSITION has overlapping semantic index at 0
+float4x4 WorldView[60] : WORLDVIEW : register(c16);
+float4 InvalidVS2( float3 Pos : SV_POSITION, int4 IPos : SV_POSITION ) : SV_POSITION
+{
+    float3 P = mul(float4(Pos, 1), (float4x3)WorldView[IPos.w]);
+    return float4(P,1);        
+}
+
+// Expected DXC  error: invalid semantic 'COLOR' for ps 6.0
+float4 InvalidPS1( float4 screenSpace : SV_Position ) : COLOR
+{
+}
+

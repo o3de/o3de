@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -20,7 +19,6 @@ AZ_POP_DISABLE_WARNING
 
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ContextMenuAction.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
-#endif
 
 namespace GraphCanvas
 {

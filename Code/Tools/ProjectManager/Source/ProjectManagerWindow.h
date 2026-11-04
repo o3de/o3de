@@ -7,12 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <QPointer>
+
 #include <AzCore/IO/Path/Path.h>
 #include <ScreenDefs.h>
-#endif
 
 namespace O3DE::ProjectManager
 {

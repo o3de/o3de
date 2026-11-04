@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/Ebuses/SystemConfigurationBus.h>
 
 namespace Vegetation
@@ -33,13 +34,13 @@ namespace Vegetation
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<LevelSettingsConfig>(
-                    "Vegetation System Settings", "The vegetation system settings for this level/map.")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation System Settings"), QT_TRANSLATE_NOOP("Vegetation", "The vegetation system settings for this level/map."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &LevelSettingsConfig::m_areaSystemConfig, "Area System Settings", "Area management settings.")
-                    ->DataElement(0, &LevelSettingsConfig::m_instanceSystemConfig, "Instance System Settings", "Instance management settings.")
+                    ->DataElement(0, &LevelSettingsConfig::m_areaSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Area System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Area management settings."))
+                    ->DataElement(0, &LevelSettingsConfig::m_instanceSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Instance System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Instance management settings."))
                     ;
             }
         }

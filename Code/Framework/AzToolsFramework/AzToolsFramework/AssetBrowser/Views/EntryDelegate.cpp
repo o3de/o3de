@@ -396,4 +396,3 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#include "AssetBrowser/Views/moc_EntryDelegate.cpp"

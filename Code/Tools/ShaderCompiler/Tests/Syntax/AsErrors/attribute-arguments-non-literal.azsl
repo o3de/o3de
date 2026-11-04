@@ -1,0 +1,6 @@
+// Error: The suntax only accepts literals as attribute arguments
+static const int minSSSAOTaps = 1;
+static const int maxSSSAOTaps = 16;
+[[range(minSSSAOTaps, maxSSSAOTaps)]]
+option int ssaoTaps = 5;
+

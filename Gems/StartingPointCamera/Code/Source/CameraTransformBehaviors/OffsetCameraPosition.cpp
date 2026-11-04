@@ -9,6 +9,7 @@
 #include "OffsetCameraPosition.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Camera
 {
@@ -25,11 +26,17 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<OffsetCameraPosition>("Offset Position", "Offset the Camera's position")
+                editContext->Class<OffsetCameraPosition>(
+                    QT_TRANSLATE_NOOP("Camera", "Offset Position"),
+                    QT_TRANSLATE_NOOP("Camera", "Offset the Camera's position"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &OffsetCameraPosition::m_offset, "Offset", "The displacement you wish to move the Camera by")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
-                    ->DataElement(0, &OffsetCameraPosition::m_isRelativeOffset, "Is Offset Relative", "If yes then the displacement will occur from the perspective of the camera");
+                    ->DataElement(0, &OffsetCameraPosition::m_offset,
+                        QT_TRANSLATE_NOOP("Camera", "Offset"),
+                        QT_TRANSLATE_NOOP("Camera", "The displacement you wish to move the Camera by"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
+                    ->DataElement(0, &OffsetCameraPosition::m_isRelativeOffset,
+                        QT_TRANSLATE_NOOP("Camera", "Is Offset Relative"),
+                        QT_TRANSLATE_NOOP("Camera", "If yes then the displacement will occur from the perspective of the camera"));
             }
         }
     }

@@ -14,10 +14,60 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // Editor
 #include "DisplaySettings.h"
 #include "Settings.h"
+
+namespace EditorPreferencesViewportGeneralStrings
+{
+    static const char* GeneralViewportSettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "General Viewport Settings");
+    static const char* Sync2DViewportsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Synchronize 2D Viewports");
+    static const char* PerspectiveViewFOVName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Perspective View FOV");
+    static const char* PerspectiveNearPlaneName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Perspective Near Plane");
+    static const char* PerspectiveFarPlaneName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Perspective Far Plane");
+    static const char* PerspectiveAspectRatioName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Perspective View Aspect Ratio");
+    static const char* EnableContextMenuName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Enable Right-Click Context Menu");
+    static const char* EnableStickySelectName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Enable Sticky Select");
+
+    static const char* ViewportDisplaySettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Viewport Display Settings");
+    static const char* HighlightSelectedGeometryName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Highlight Selected Geometry");
+    static const char* HighlightSelectedVegetationName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Highlight Selected Vegetation");
+    static const char* HighlightOnMouseOverName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Highlight Geometry On Mouse Over");
+    static const char* HideCursorWhenCapturedName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Hide Cursor When Captured");
+    static const char* HideCursorWhenCapturedDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Hide Mouse Cursor When Captured");
+    static const char* DragSquareSizeName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Drag Square Size");
+    static const char* DisplayObjectLinksName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Display Object Links");
+    static const char* DisplayAnimationTracksName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Display Animation Tracks");
+    static const char* AlwaysShowRadiiName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Always Show Radii");
+    static const char* ShowBoundingBoxesName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Show Bounding Boxes");
+    static const char* AlwaysDrawEntityLabelsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Always Draw Entity Labels");
+    static const char* AlwaysShowTriggerBoundsName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Always Show Trigger Bounds");
+    static const char* ShowFrozenHelpersName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Show Helpers of Frozen Objects");
+    static const char* FillSelectedShapesName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Fill Selected Shapes");
+    static const char* ShowSnappingGridGuideName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Show Snapping Grid Guide");
+    static const char* DisplayDimensionFiguresName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Display Dimension Figures");
+
+    static const char* MapViewportSettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Map Viewport Settings");
+    static const char* SwapXYAxisName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Swap X/Y Axis");
+    static const char* MapTextureResolutionName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Map Texture Resolution");
+
+    static const char* TextLabelSettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Text Label Settings");
+    static const char* EnabledName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Enabled");
+    static const char* DistanceName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Distance");
+
+    static const char* SelectionPreviewColorClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Selection Preview Color Settings");
+    static const char* GroupBoundingBoxName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Group Bounding Box");
+    static const char* EntityBoundingBoxName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Entity Bounding Box");
+    static const char* BBoxHighlightAlphaName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Bounding Box Highlight Alpha");
+    static const char* GeometryColorName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Geometry Color");
+    static const char* SolidBrushGeometryColorName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Solid Brush Geometry Color");
+    static const char* GeometryHighlightAlphaName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Geometry Highlight Alpha");
+    static const char* ChildGeometryHighlightAlphaName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "Child Geometry Highlight Alpha");
+
+    static const char* GeneralViewportPreferencesClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageViewportGeneral", "General Viewport Preferences");
+}
 
 void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& serialize)
 {
@@ -82,101 +132,89 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
     {
-        editContext->Class<General>("General Viewport Settings", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_sync2DViews, "Synchronize 2D Viewports", "Synchronize 2D Viewports")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFOV, "Perspective View FOV", "Perspective View FOV")
+        using namespace EditorPreferencesViewportGeneralStrings;
+
+        editContext->Class<General>(GeneralViewportSettingsClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_sync2DViews, Sync2DViewportsName, Sync2DViewportsName)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFOV, PerspectiveViewFOVName, PerspectiveViewFOVName)
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultNearPlane, "Perspective Near Plane", "Perspective Near Plane")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFarPlane, "Perspective Far Plane", "Perspective Far Plane")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultNearPlane, PerspectiveNearPlaneName, PerspectiveNearPlaneName)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFarPlane, PerspectiveFarPlaneName, PerspectiveFarPlaneName)
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &General::m_defaultAspectRatio, "Perspective View Aspect Ratio",
-                "Perspective View Aspect Ratio")
+                AZ::Edit::UIHandlers::SpinBox, &General::m_defaultAspectRatio, PerspectiveAspectRatioName, PerspectiveAspectRatioName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &General::m_contextMenuEnabled, "Enable Right-Click Context Menu",
-                "Enable Right-Click Context Menu")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelectEnabled, "Enable Sticky Select", "Enable Sticky Select");
+                AZ::Edit::UIHandlers::CheckBox, &General::m_contextMenuEnabled, EnableContextMenuName, EnableContextMenuName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelectEnabled, EnableStickySelectName, EnableStickySelectName);
 
-        editContext->Class<Display>("Viewport Display Settings", "")
+        editContext->Class<Display>(ViewportDisplaySettingsClassName, "")
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelGeom, "Highlight Selected Geometry", "Highlight Selected Geometry")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelGeom, HighlightSelectedGeometryName, HighlightSelectedGeometryName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelVegetation, "Highlight Selected Vegetation",
-                "Highlight Selected Vegetation")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelVegetation, HighlightSelectedVegetationName, HighlightSelectedVegetationName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightOnMouseOver, "Highlight Geometry On Mouse Over",
-                "Highlight Geometry On Mouse Over")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightOnMouseOver, HighlightOnMouseOverName, HighlightOnMouseOverName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_hideMouseCursorWhenCaptured, "Hide Cursor When Captured",
-                "Hide Mouse Cursor When Captured")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Display::m_dragSquareSize, "Drag Square Size", "Drag Square Size")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_displayLinks, "Display Object Links", "Display Object Links")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_displayTracks, "Display Animation Tracks", "Display Animation Tracks")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_alwaysShowRadii, "Always Show Radii", "Always Show Radii")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_showBBoxes, "Show Bounding Boxes", "Show Bounding Boxes")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_hideMouseCursorWhenCaptured, HideCursorWhenCapturedName, HideCursorWhenCapturedDesc)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Display::m_dragSquareSize, DragSquareSizeName, DragSquareSizeName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_displayLinks, DisplayObjectLinksName, DisplayObjectLinksName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_displayTracks, DisplayAnimationTracksName, DisplayAnimationTracksName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_alwaysShowRadii, AlwaysShowRadiiName, AlwaysShowRadiiName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_showBBoxes, ShowBoundingBoxesName, ShowBoundingBoxesName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_drawEntityLabels, "Always Draw Entity Labels", "Always Draw Entity Labels")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_drawEntityLabels, AlwaysDrawEntityLabelsName, AlwaysDrawEntityLabelsName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_showTriggerBounds, "Always Show Trigger Bounds", "Always Show Trigger Bounds")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_showTriggerBounds, AlwaysShowTriggerBoundsName, AlwaysShowTriggerBoundsName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_showFrozenHelpers, "Show Helpers of Frozen Objects",
-                "Show Helpers of Frozen Objects")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_fillSelectedShapes, "Fill Selected Shapes", "Fill Selected Shapes")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_showGridGuide, "Show Snapping Grid Guide", "Show Snapping Grid Guide")
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_showFrozenHelpers, ShowFrozenHelpersName, ShowFrozenHelpersName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_fillSelectedShapes, FillSelectedShapesName, FillSelectedShapesName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_showGridGuide, ShowSnappingGridGuideName, ShowSnappingGridGuideName)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_displayDimension, "Display Dimension Figures", "Display Dimension Figures");
+                AZ::Edit::UIHandlers::CheckBox, &Display::m_displayDimension, DisplayDimensionFiguresName, DisplayDimensionFiguresName);
 
-        editContext->Class<MapViewport>("Map Viewport Settings", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MapViewport::m_swapXY, "Swap X/Y Axis", "Swap X/Y Axis")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &MapViewport::m_resolution, "Map Texture Resolution", "Map Texture Resolution");
+        editContext->Class<MapViewport>(MapViewportSettingsClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MapViewport::m_swapXY, SwapXYAxisName, SwapXYAxisName)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &MapViewport::m_resolution, MapTextureResolutionName, MapTextureResolutionName);
 
-        editContext->Class<TextLabels>("Text Label Settings", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextLabels::m_labelsOn, "Enabled", "Enabled")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextLabels::m_labelsDistance, "Distance", "Distance")
+        editContext->Class<TextLabels>(TextLabelSettingsClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextLabels::m_labelsOn, EnabledName, EnabledName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextLabels::m_labelsDistance, DistanceName, DistanceName)
             ->Attribute(AZ::Edit::Attributes::Min, 0.f)
             ->Attribute(AZ::Edit::Attributes::Max, 100000.f);
 
-        editContext->Class<SelectionPreviewColor>("Selection Preview Color Settings", "")
-            ->DataElement(AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_colorGroupBBox, "Group Bounding Box", "Group Bounding Box")
+        editContext->Class<SelectionPreviewColor>(SelectionPreviewColorClassName, "")
+            ->DataElement(AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_colorGroupBBox, GroupBoundingBoxName, GroupBoundingBoxName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_colorEntityBBox, "Entity Bounding Box", "Entity Bounding Box")
+                AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_colorEntityBBox, EntityBoundingBoxName, EntityBoundingBoxName)
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_fBBoxAlpha, "Bounding Box Highlight Alpha",
-                "Bounding Box Highlight Alpha")
+                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_fBBoxAlpha, BBoxHighlightAlphaName, BBoxHighlightAlphaName)
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-            ->DataElement(AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_geometryHighlightColor, "Geometry Color", "Geometry Color")
+            ->DataElement(AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_geometryHighlightColor, GeometryColorName, GeometryColorName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_solidBrushGeometryColor, "Solid Brush Geometry Color",
-                "Solid Brush Geometry Color")
+                AZ::Edit::UIHandlers::Color, &SelectionPreviewColor::m_solidBrushGeometryColor, SolidBrushGeometryColorName, SolidBrushGeometryColorName)
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_fgeomAlpha, "Geometry Highlight Alpha", "Geometry Highlight Alpha")
+                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_fgeomAlpha, GeometryHighlightAlphaName, GeometryHighlightAlphaName)
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_childObjectGeomAlpha, "Child Geometry Highlight Alpha",
-                "Child Geometry Highlight Alpha")
+                AZ::Edit::UIHandlers::SpinBox, &SelectionPreviewColor::m_childObjectGeomAlpha, ChildGeometryHighlightAlphaName, ChildGeometryHighlightAlphaName)
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-        editContext->Class<CEditorPreferencesPage_ViewportGeneral>("General Viewport Preferences", "General Viewport Preferences")
+        editContext->Class<CEditorPreferencesPage_ViewportGeneral>(GeneralViewportPreferencesClassName, GeneralViewportPreferencesClassName)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_general, "General Viewport Settings",
-                "General Viewport Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_general, GeneralViewportSettingsClassName, GeneralViewportSettingsClassName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_display, "Viewport Display Settings",
-                "Viewport Display Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_display, ViewportDisplaySettingsClassName, ViewportDisplaySettingsClassName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_map, "Map Viewport Settings",
-                "Map Viewport Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_map, MapViewportSettingsClassName, MapViewportSettingsClassName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_textLabels, "Text Label Settings",
-                "Text Label Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_textLabels, TextLabelSettingsClassName, TextLabelSettingsClassName)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_selectionPreviewColor,
-                "Selection Preview Color Settings", "Selection Preview Color Settings");
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportGeneral::m_selectionPreviewColor, SelectionPreviewColorClassName, SelectionPreviewColorClassName);
     }
 }
 
@@ -188,12 +226,12 @@ CEditorPreferencesPage_ViewportGeneral::CEditorPreferencesPage_ViewportGeneral()
 
 const char* CEditorPreferencesPage_ViewportGeneral::GetCategory()
 {
-    return "Viewports";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports");
 }
 
 const char* CEditorPreferencesPage_ViewportGeneral::GetTitle()
 {
-    return "Viewport";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewport");
 }
 
 QIcon& CEditorPreferencesPage_ViewportGeneral::GetIcon()

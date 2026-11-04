@@ -60,7 +60,7 @@ namespace AZ
             {
                 auto shaderOption = m_shader->CreateShaderOptionGroup();
                 shaderOption.SetValue(m_optionName, m_optionValues[shaderVariantIndex]);
-                PreloadShaderVariant(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
+                PreloadShaderVariantForDraw(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
             }
 
             m_needToUpdateShaderVariant = true;

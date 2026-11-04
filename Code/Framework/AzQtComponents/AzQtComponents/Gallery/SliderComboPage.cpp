@@ -87,4 +87,3 @@ void SliderComboPage::sliderValueChanged()
         Q_UNREACHABLE();
 }
 
-#include <Gallery/moc_SliderComboPage.cpp>

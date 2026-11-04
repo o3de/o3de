@@ -6,14 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Implements the command line argument interface ICmdLineArg.
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_CMDLINEARG_H
-#define CRYINCLUDE_CRYSYSTEM_CMDLINEARG_H
-
-#pragma once
 
 #include <ICmdLine.h>
 
@@ -38,5 +34,3 @@ private:
     AZStd::string   m_name;
     AZStd::string   m_value;
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_CMDLINEARG_H

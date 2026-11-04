@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_SHARED_PTR
-#define AZSTD_SMART_PTR_SHARED_PTR
+
+#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 // Standard C++0x 20.8.10.2, which was drafted from boost.
@@ -446,6 +446,3 @@ namespace AZStd
         return static_cast<D*>(p._internal_get_deleter(aztypeid(D)));
     }
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_SHARED_PTR
-#pragma once

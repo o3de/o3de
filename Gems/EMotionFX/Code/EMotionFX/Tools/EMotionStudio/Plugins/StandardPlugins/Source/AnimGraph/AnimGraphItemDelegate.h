@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStyledItemDelegate>
 #include <QPixmap>
-#endif
 
 namespace EMStudio
 {

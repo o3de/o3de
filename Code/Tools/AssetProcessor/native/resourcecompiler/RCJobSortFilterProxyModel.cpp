@@ -61,6 +61,7 @@ namespace AssetProcessor
 
     void JobSortFilterProxyModel::OnJobStatusFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
     {
+        beginFilterChange();
         m_completedWithWarningsFilter = false;
         m_activeTypeFilters.clear();
 
@@ -76,7 +77,7 @@ namespace AssetProcessor
             }
         }
 
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool JobSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const

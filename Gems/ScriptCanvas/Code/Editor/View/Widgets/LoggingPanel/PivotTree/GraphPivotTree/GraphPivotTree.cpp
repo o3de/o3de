@@ -587,6 +587,5 @@ namespace ScriptCanvasEditor
         static_cast<GraphPivotTreeRoot*>(GetTreeRoot())->TraverseTree();
     }
 
-#include <Editor/View/Widgets/LoggingPanel/PivotTree/GraphPivotTree/moc_GraphPivotTree.cpp>
 
 }

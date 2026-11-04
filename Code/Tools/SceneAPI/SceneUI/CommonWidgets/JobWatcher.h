@@ -8,14 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QTimer>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 namespace AzToolsFramework
 {

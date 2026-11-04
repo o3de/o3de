@@ -85,6 +85,7 @@ set(FILES
     Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
+    Passes/AoParent.pass
     Passes/AuxGeom.pass
     Passes/BlendColorGradingLuts.pass
     Passes/Bloom.pass
@@ -142,6 +143,8 @@ set(FILES
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/FullscreenShadow.pass
+    Passes/GtaoCompute.pass
+    Passes/GtaoParent.pass
     Passes/HDRColorGrading.pass
     Passes/ImGui.pass
     Passes/KawaseShadowBlur.pass
@@ -572,6 +575,8 @@ set(FILES
     Shaders/PostProcessing/FilmGrain.shader
     Shaders/PostProcessing/FullscreenCopy.azsl
     Shaders/PostProcessing/FullscreenCopy.shader
+    Shaders/PostProcessing/GtaoCompute.azsl
+    Shaders/PostProcessing/GtaoCompute.shader
     Shaders/PostProcessing/HDRColorGrading.azsl
     Shaders/PostProcessing/HDRColorGrading.shader
     Shaders/PostProcessing/LookModificationTransform.azsl

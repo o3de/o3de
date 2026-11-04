@@ -13,11 +13,41 @@ namespace AzFramework
 {
     LibEVDevWrapper::LibEVDevWrapper()
     {
-        m_libevdevHandle = AZ::DynamicModuleHandle::Create("libevdev.so");
-        if (!m_libevdevHandle->Load())
+        // Try the unversioned name first (present when the -dev/-devel package is
+        // installed), then fall back to the versioned runtime SONAMEs that ship
+        // with the shared library itself. Most end-user systems only have the
+        // runtime package, which provides libevdev.so.2 but not the unversioned
+        // libevdev.so symlink, so loading only "libevdev.so" silently disabled
+        // gamepad support on an otherwise correctly configured machine. dlopen
+        // resolves these SONAMEs through the dynamic linker cache.
+        //
+        // The versioned names are passed with correctModuleName = false: name
+        // correction appends the platform library extension (".so") when the name
+        // does not already end with it, which would turn "libevdev.so.2" into
+        // "libevdev.so.2.so" and never resolve.
+        struct LibraryCandidate
         {
-            AZ_Info("Input", "libevdev.so not found - gamepad support disabled.  Install libevdev2 to enable.\n");
-            m_libevdevHandle.reset();
+            const char* m_name;
+            bool m_correctModuleName;
+        };
+        constexpr LibraryCandidate candidates[] = {
+            { "libevdev.so", true },
+            { "libevdev.so.2", false },
+            { "libevdev.so.1", false },
+        };
+        for (const LibraryCandidate& candidate : candidates)
+        {
+            auto handle = AZ::DynamicModuleHandle::Create(candidate.m_name, candidate.m_correctModuleName);
+            if (handle && handle->Load())
+            {
+                m_libevdevHandle = AZStd::move(handle);
+                break;
+            }
+        }
+
+        if (!m_libevdevHandle)
+        {
+            AZ_Info("Input", "libevdev not found - gamepad support disabled.  Install libevdev to enable.\n");
             return;
         }
 

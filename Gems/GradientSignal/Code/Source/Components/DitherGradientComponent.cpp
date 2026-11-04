@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Util.h>
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -36,25 +37,25 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<DitherGradientConfig>(
-                    "Dither Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Dither Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &DitherGradientConfig::m_patternOffset, "Pattern Offset", "Shift pattern lookup indices")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DitherGradientConfig::m_patternType, "Pattern Type", "")
-                    ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4, "4x4")
-                    ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8, "8x8")
+                    ->DataElement(0, &DitherGradientConfig::m_patternOffset, QT_TRANSLATE_NOOP("GradientSignal", "Pattern Offset"), QT_TRANSLATE_NOOP("GradientSignal", "Shift pattern lookup indices"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DitherGradientConfig::m_patternType, QT_TRANSLATE_NOOP("GradientSignal", "Pattern Type"), "")
+                    ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4, QT_TRANSLATE_NOOP("GradientSignal", "4x4"))
+                    ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8, QT_TRANSLATE_NOOP("GradientSignal", "8x8"))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Sample Settings")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DitherGradientConfig::m_useSystemPointsPerUnit, "Use System Points Per Unit", "Automatically sets points per unit.  Value is equal to Sector Density / Sector Size")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DitherGradientConfig::m_pointsPerUnit, "Points Per Unit", "Scales input position before sampling")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Sample Settings"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DitherGradientConfig::m_useSystemPointsPerUnit, QT_TRANSLATE_NOOP("GradientSignal", "Use System Points Per Unit"), QT_TRANSLATE_NOOP("GradientSignal", "Automatically sets points per unit.  Value is equal to Sector Density / Sector Size"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DitherGradientConfig::m_pointsPerUnit, QT_TRANSLATE_NOOP("GradientSignal", "Points Per Unit"), QT_TRANSLATE_NOOP("GradientSignal", "Scales input position before sampling"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &DitherGradientConfig::IsPointsPerUnitResdOnly)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                     ->EndGroup()
 
-                    ->DataElement(0, &DitherGradientConfig::m_gradientSampler, "Gradient", "Input gradient whose values will be dithered.")
+                    ->DataElement(0, &DitherGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be dithered."))
                     ;
             }
         }

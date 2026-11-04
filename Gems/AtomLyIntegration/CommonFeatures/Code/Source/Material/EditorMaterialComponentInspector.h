@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
@@ -22,7 +21,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <Material/EditorMaterialComponentUtil.h>
-#endif
 
 class QLabel;
 

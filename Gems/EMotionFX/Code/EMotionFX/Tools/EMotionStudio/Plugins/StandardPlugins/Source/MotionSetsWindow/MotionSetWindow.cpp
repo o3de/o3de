@@ -25,7 +25,6 @@
 #include <QSplitter>
 #include <QClipboard>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <MCore/Source/LogManager.h>
@@ -279,29 +278,29 @@ namespace EMStudio
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(0, headerItem);
 
-        headerItem = new QTableWidgetItem("ID");
+        headerItem = new QTableWidgetItem(tr("ID"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(1, headerItem);
 
-        headerItem = new QTableWidgetItem("Duration");
+        headerItem = new QTableWidgetItem(tr("Duration"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(2, headerItem);
 
-        headerItem = new QTableWidgetItem("Joints");
+        headerItem = new QTableWidgetItem(tr("Joints"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        headerItem->setToolTip("The number of joints inside the motion");
+        headerItem->setToolTip(tr("The number of joints inside the motion"));
         m_tableWidget->setHorizontalHeaderItem(3, headerItem);
 
-        headerItem = new QTableWidgetItem("Morphs");
+        headerItem = new QTableWidgetItem(tr("Morphs"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        headerItem->setToolTip("The number of morph targets inside the motion.");
+        headerItem->setToolTip(tr("The number of morph targets inside the motion."));
         m_tableWidget->setHorizontalHeaderItem(4, headerItem);
 
-        headerItem = new QTableWidgetItem("Type");
+        headerItem = new QTableWidgetItem(tr("Type"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(5, headerItem);
 
-        headerItem = new QTableWidgetItem("Filename");
+        headerItem = new QTableWidgetItem(tr("Filename"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(6, headerItem);
 
@@ -618,7 +617,7 @@ namespace EMStudio
     {
         // Get the previously selected items.
         const QList<QTableWidgetItem*> selectedItems = tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // Store the previously selected motion ids.
         AZStd::vector<AZStd::string> selectedMotionIds;
@@ -1016,7 +1015,7 @@ namespace EMStudio
         {
             // read out the dropped file names
             QList<QUrl> urls = mimeData->urls();
-            const int numUrls = urls.count();
+            const int numUrls = static_cast<int>(urls.count());
 
             AZStd::vector<AZStd::string> filenames;
             filenames.reserve(numUrls);
@@ -1109,7 +1108,7 @@ namespace EMStudio
 
         // Get the selected items and return in case nothing is selected.
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
         if (numSelectedItems == 0)
         {
             return;
@@ -1599,15 +1598,15 @@ namespace EMStudio
         if (rowIndices.size() == 1)
         {
             // add the rename selected motion action
-            QAction* renameSelectedMotionAction = menu.addAction("Rename Motion ID");
+            QAction* renameSelectedMotionAction = menu.addAction(tr("Rename Motion ID"));
             connect(renameSelectedMotionAction, &QAction::triggered, this, &MotionSetWindow::OnRenameEntry);
 
             // Unassign the linked motion.
-            QAction* unassignMotionAction = menu.addAction("Unassign Motion");
+            QAction* unassignMotionAction = menu.addAction(tr("Unassign Motion"));
             connect(unassignMotionAction, &QAction::triggered, this, &MotionSetWindow::OnUnassignMotions);
 
             // add the copy selected motion ID action
-            QAction* copySelectedMotionIDAction = menu.addAction("Copy Selected Motion ID");
+            QAction* copySelectedMotionIDAction = menu.addAction(tr("Copy Selected Motion ID"));
             connect(copySelectedMotionIDAction, &QAction::triggered, this, &MotionSetWindow::OnCopyMotionID);
 
             QAction* browserAction = menu.addAction(AzQtComponents::fileBrowserActionName());
@@ -1629,17 +1628,17 @@ namespace EMStudio
         else if (rowIndices.size() > 1)
         {
             // Unassign linked motions for the selected entries.
-            QAction* unassignMotionAction = menu.addAction("Unassign Motions");
+            QAction* unassignMotionAction = menu.addAction(tr("Unassign Motions"));
             connect(unassignMotionAction, &QAction::triggered, this, &MotionSetWindow::OnUnassignMotions);
         }
 
-        QAction* saveMotionsAction = menu.addAction("Save Selected Motions");
+        QAction* saveMotionsAction = menu.addAction(tr("Save Selected Motions"));
         saveMotionsAction->setObjectName("EMFX.MotionSetTableWidget.SaveSelectedMotionsAction");
         connect(saveMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnSave);
 
         menu.addSeparator();
 
-        QAction* removeSelectedMotionsAction = menu.addAction("Remove Selected Motions");
+        QAction* removeSelectedMotionsAction = menu.addAction(tr("Remove Selected Motions"));
         removeSelectedMotionsAction->setObjectName("EMFX.MotionSetTableWidget.RemoveSelectedMotionsAction");
         connect(removeSelectedMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnRemoveMotions);
 
@@ -1688,7 +1687,7 @@ namespace EMStudio
 
 
     // return the mime data
-    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
+    QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*>& items) const
     {
         EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (motionSet == nullptr)
@@ -1959,7 +1958,7 @@ namespace EMStudio
 
         // Remember the selected motion IDs so we can restore selection after swapping the table items.
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.size();
+        const int numSelectedItems = static_cast<int>(selectedItems.size());
         QVector<QString> selectedMotionIds(numSelectedItems);
         for (int i = 0; i < numSelectedItems; ++i)
         {
@@ -2224,7 +2223,7 @@ namespace EMStudio
 
     void MotionSetWindow::GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices)
     {
-        const int numItems = items.size();
+        const int numItems = static_cast<int>(items.size());
         outRowIndices.reserve(numItems);
 
         for (const QTableWidgetItem* item : items)

@@ -36,7 +36,7 @@ namespace AZ
         RPI::Ptr<LuminanceHistogramGeneratorPass> LuminanceHistogramGeneratorPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LuminanceHistogramGeneratorPass> pass = aznew LuminanceHistogramGeneratorPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         LuminanceHistogramGeneratorPass::LuminanceHistogramGeneratorPass(const RPI::PassDescriptor& descriptor)

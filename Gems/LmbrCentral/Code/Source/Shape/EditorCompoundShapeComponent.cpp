@@ -28,7 +28,8 @@ namespace LmbrCentral
             if (editContext)
             {
                 editContext->Class<EditorCompoundShapeComponent>(
-                    "Compound Shape", "The Compound Shape component allows two or more shapes to be combined to create more complex shapes")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Compound Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Compound Shape component allows two or more shapes to be combined to create more complex shapes"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Compound_Shape.svg")
@@ -36,7 +37,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/compound-shape/")
-                    ->DataElement(0, &EditorCompoundShapeComponent::m_configuration, "Configuration", "Compound Shape Configuration")
+                    ->DataElement(0, &EditorCompoundShapeComponent::m_configuration,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Compound Shape Configuration"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCompoundShapeComponent::ConfigurationChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ;

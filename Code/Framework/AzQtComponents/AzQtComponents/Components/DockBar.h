@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QColor>
 #include <QObject>
 #include <QPixmap>
 #include <QString>
-#endif
 
 class QPainter;
 class QRect;

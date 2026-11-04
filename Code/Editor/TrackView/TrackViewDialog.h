@@ -12,7 +12,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <IMovieSystem.h>
 
 #include "AnimationContext.h"
@@ -28,7 +27,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QMainWindow>
-#endif
 
 class QComboBox;
 class QLabel;
@@ -142,9 +140,6 @@ protected slots:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
-#endif
     bool event(QEvent* event) override;
 
 private slots:
@@ -187,10 +182,6 @@ private:
     void ReadTrackColors();
 
     void SetCursorPosText(float fTime);
-
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool processRawInput(MSG* pMsg);
-#endif
 
     void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
     void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;

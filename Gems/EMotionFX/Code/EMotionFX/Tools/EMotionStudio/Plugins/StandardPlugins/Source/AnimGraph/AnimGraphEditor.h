@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Source/AnimGraphObject.h>
 #include <Editor/AnimGraphEditorBus.h>
+
 #include <QWidget>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QComboBox)

@@ -8,9 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <string>
+
 #include <QWidget>
+
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -19,7 +20,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 class QStandardItem; 
 class QStandardItemModel;

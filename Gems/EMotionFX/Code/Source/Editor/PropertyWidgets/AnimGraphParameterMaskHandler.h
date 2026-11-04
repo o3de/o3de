@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <Source/Editor/PropertyWidgets/AnimGraphParameterHandler.h>
+
 #include <QWidget>
-#endif
 
 
 namespace EMotionFX

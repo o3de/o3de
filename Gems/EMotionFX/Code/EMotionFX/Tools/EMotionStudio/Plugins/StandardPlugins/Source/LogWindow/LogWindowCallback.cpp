@@ -122,7 +122,10 @@ namespace EMStudio
                 setRowHidden(newRowIndex, false);
 
                 // custom resize of the column to be efficient
-                const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                QStyleOptionViewItem option;
+                initViewItemOption(&option);
+
+                const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                 m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 SetColumnWidthToTakeWholeSpace();
             }
@@ -168,7 +171,10 @@ namespace EMStudio
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
-                    const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                    QStyleOptionViewItem option;
+                    initViewItemOption(&option);
+
+                    const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                     m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
@@ -214,7 +220,10 @@ namespace EMStudio
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
-                    const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
+                    QStyleOptionViewItem option;
+                    initViewItemOption(&option);
+
+                    const int itemWidth = itemDelegate()->sizeHint(option, indexFromItem(messageItem)).width();
                     m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
@@ -281,7 +290,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> items = selectedItems();
 
         // get the number of selected items
-        const int numSelectedItems = items.count();
+        const int numSelectedItems = static_cast<int>(items.count());
 
         // check if nothing needed to be copied
         if (numSelectedItems == 0)
@@ -362,22 +371,22 @@ namespace EMStudio
         // add actions
         if (!items.empty())
         {
-            QAction* copyAction = menu.addAction("Copy");
+            QAction* copyAction = menu.addAction(tr("Copy"));
             connect(copyAction, &QAction::triggered, this, &LogWindowCallback::Copy);
         }
         if (numRows > 0)
         {
-            QAction* selectAllAction = menu.addAction("Select All");
+            QAction* selectAllAction = menu.addAction(tr("Select All"));
             connect(selectAllAction, &QAction::triggered, this, &LogWindowCallback::SelectAll);
         }
         if (!items.empty())
         {
-            QAction* UnselectAllAction = menu.addAction("Unselect All");
+            QAction* UnselectAllAction = menu.addAction(tr("Unselect All"));
             connect(UnselectAllAction, &QAction::triggered, this, &LogWindowCallback::UnselectAll);
         }
         if (numRows > 0)
         {
-            QAction* clearAction = menu.addAction("Clear");
+            QAction* clearAction = menu.addAction(tr("Clear"));
             connect(clearAction, &QAction::triggered, this, &LogWindowCallback::Clear);
         }
 

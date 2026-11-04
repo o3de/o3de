@@ -75,7 +75,6 @@ set(FILES
     ranges/swap.h
     ranges/transform_view.h
     ranges/zip_view.h
-    ranges/zip_view.inl
     reference_wrapper.h
     sort.h
     time.h
@@ -88,8 +87,6 @@ set(FILES
     containers/array.h
     containers/array_fwd.h
     containers/bitset.h
-    containers/compressed_pair.h
-    containers/compressed_pair.inl
     containers/containers_concepts.h
     containers/deque.h
     containers/fixed_forward_list.h
@@ -110,12 +107,10 @@ set(FILES
     containers/set.h
     containers/span_fwd.h
     containers/span.h
-    containers/span.inl
     containers/stack.h
     containers/unordered_map.h
     containers/unordered_set.h
     containers/variant.h
-    containers/variant.inl
     containers/variant_impl.h
     containers/vector.h
     parallel/allocator_concurrent_static.h
@@ -174,7 +169,6 @@ set(FILES
     string/conversions.h
     string/fixed_string.cpp
     string/fixed_string.h
-    string/fixed_string.inl
     string/memorytoascii.h
     string/memorytoascii.cpp
     string/regex.h
@@ -267,13 +261,10 @@ set(FILES
     utility/charconv.h
     utility/declval.h
     utility/expected.h
-    utility/expected.inl
     utility/expected_internal.h
-    utility/expected_internal.inl
     utility/move.h
     utility/pair_fwd.h
     utility/pair.h
-    utility/pair.inl
     utility/to_underlying.h
     utility/tuple_concepts.h
     utility/tuple_fwd.h

@@ -159,7 +159,7 @@ namespace AZStd
     inline void lock_free_stamped_stack<T, Allocator>::destroy_node(node_ptr_type node)
     {
         node->~node_type();
-        m_allocator.deallocate(node, sizeof(node_type), alignment_of<node_type>::value);
+        m_allocator.deallocate(node, sizeof(node_type), alignment_of_v<node_type>);
     }
 }
 

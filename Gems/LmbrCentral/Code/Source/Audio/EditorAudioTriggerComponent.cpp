@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -41,7 +42,9 @@ namespace LmbrCentral
                     ->Value("MultiRay", Audio::ObstructionType::MultiRay)
                     ;
 
-                editContext->Class<EditorAudioTriggerComponent>("Audio Trigger", "The Audio Trigger component provides Audio Translation Layer (ATL) triggers for play/stop functionality and on-demand execution")
+                editContext->Class<EditorAudioTriggerComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Trigger"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Trigger component provides Audio Translation Layer (ATL) triggers for play/stop functionality and on-demand execution"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioTrigger.svg")
@@ -49,10 +52,18 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/trigger/")
-                    ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultPlayTrigger, "Default 'play' Trigger", "The default ATL Trigger control used by 'Play'")
-                    ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultStopTrigger, "Default 'stop' Trigger", "The default ATL Trigger control used by 'Stop'")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioTriggerComponent::m_obstructionType, "Obstruction Type", "Ray-casts used in calculation of obstruction and occlusion")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioTriggerComponent::m_playsImmediately, "Plays immediately", "Play when this component is Activated")
+                    ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultPlayTrigger,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default 'play' Trigger"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL Trigger control used by 'Play'"))
+                    ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultStopTrigger,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default 'stop' Trigger"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL Trigger control used by 'Stop'"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioTriggerComponent::m_obstructionType,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Obstruction Type"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Ray-casts used in calculation of obstruction and occlusion"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioTriggerComponent::m_playsImmediately,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Plays immediately"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Play when this component is Activated"))
                     ;
             }
         }

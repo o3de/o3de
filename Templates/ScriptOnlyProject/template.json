@@ -17,6 +17,7 @@
         "ScriptOnlyProject"
     ],
     "icon_path": "preview.png",
+    "inherits": "EngineFinder",
     "copyFiles": [
         {
             "file": ".gitignore",
@@ -32,10 +33,6 @@
         },
         {
             "file": "CMakePresets.json",
-            "isTemplated": true
-        },
-        {
-            "file": "cmake/EngineFinder.cmake",
             "isTemplated": true
         },
         {

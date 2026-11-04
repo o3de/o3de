@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Main header included by every file in Editor.
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_SANDBOXAPI_H
-#define CRYINCLUDE_EDITOR_INCLUDE_SANDBOXAPI_H
-#pragma once
 
 #include <AzCore/PlatformDef.h>
 
@@ -37,4 +34,3 @@
 #define CRYEDIT_API
 #define SANDBOX_API
 #endif
-#endif // CRYINCLUDE_EDITOR_INCLUDE_SANDBOXAPI_H

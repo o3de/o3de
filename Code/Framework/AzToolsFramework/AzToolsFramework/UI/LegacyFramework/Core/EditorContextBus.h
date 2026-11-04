@@ -6,12 +6,9 @@
  *
  */
 
-#ifndef EDITORCONTEXTBUS_H
-#define EDITORCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/base.h>
-
-#pragma once
 
 #include <AzCore/EBus/EBus.h>
 
@@ -46,5 +43,3 @@ namespace LegacyFramework
         virtual ~EditorContextClientMessages() {}
     };
 }
-
-#endif

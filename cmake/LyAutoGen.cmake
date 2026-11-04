@@ -49,8 +49,12 @@ function(ly_add_autogen)
         unset(AUTOGEN_ERROR)
         string(STRIP "${AUTOGEN_OUTPUTS}" AUTOGEN_OUTPUTS)
         set(AZCG_DEPENDENCIES ${AZCG_INPUTFILES})
-        list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py")
-        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${AZCG_DEPENDENCIES})
+        list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${input_files_path}")
+
+        # The configure-time dry run only needs to be repeated when the generator
+        # logic changes. XML/Jinja content changes are handled by the build rule
+        # below so ordinary data/template edits avoid a full CMake regeneration.
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py")
         add_custom_command(
             OUTPUT ${AUTOGEN_OUTPUTS}
             DEPENDS ${AZCG_DEPENDENCIES}

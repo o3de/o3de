@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <GraphCanvas/Types/GraphCanvasGraphData.h>
@@ -31,8 +32,8 @@ namespace GraphCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Endpoint>("Endpoint", "Endpoint")
-                    ->DataElement(0, &Endpoint::m_nodeId, "Node Id", "Node Id portion of endpoint")
+                editContext->Class<Endpoint>(QT_TRANSLATE_NOOP("GraphCanvas", "Endpoint"), QT_TRANSLATE_NOOP("GraphCanvas", "Endpoint"))
+                    ->DataElement(0, &Endpoint::m_nodeId, QT_TRANSLATE_NOOP("GraphCanvas", "Node Id"), QT_TRANSLATE_NOOP("GraphCanvas", "Node Id portion of endpoint"))
                     ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushable)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                     ;

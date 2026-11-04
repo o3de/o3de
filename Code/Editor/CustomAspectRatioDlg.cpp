@@ -55,4 +55,3 @@ int CCustomAspectRatioDlg::GetY() const
     return m_ui->m_y->value();
 }
 
-#include <moc_CustomAspectRatioDlg.cpp>

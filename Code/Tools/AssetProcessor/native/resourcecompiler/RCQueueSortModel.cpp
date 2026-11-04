@@ -51,15 +51,16 @@ namespace AssetProcessor
         {
             AZ_Printf(
                 AssetProcessor::ConsoleChannel,
-                "    Job %04i: (Escalation: %i) (Priority: %3i) (Status: %10s) (Crit? %s) (Plat: %s) (MissingDeps? %s) - %s\n",
+                "    Job %04i: (Escalation: %i) (Priority: %3i) (Status: %10s) (Crit? %s) (MissingDeps? %s) - %s %s %s\n",
                 idx,
                 actualJob->JobEscalation(),
                 actualJob->GetPriority(),
                 RCJob::GetStateDescription(actualJob->GetState()).toUtf8().constData(),
                 actualJob->IsCritical() ? "Y" : "N",
-                actualJob->GetPlatformInfo().m_identifier.c_str(),
                 actualJob->HasMissingSourceDependency() ? "Y" : "N",
-                actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
+                actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData(),
+                actualJob->GetJobEntry().m_jobKey.toUtf8().constData(),
+                actualJob->GetPlatformInfo().m_identifier.c_str());
 
             for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
             {

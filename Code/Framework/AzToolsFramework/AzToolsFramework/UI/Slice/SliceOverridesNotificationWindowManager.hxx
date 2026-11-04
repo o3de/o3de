@@ -10,9 +10,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include "SliceOverridesNotificationWindow.hxx"
-#endif
 
 #include <AzCore/std/containers/vector.h>
 

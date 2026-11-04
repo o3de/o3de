@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
 #include <QPushButton>
-#endif
 
 class HierarchyWidget;
 

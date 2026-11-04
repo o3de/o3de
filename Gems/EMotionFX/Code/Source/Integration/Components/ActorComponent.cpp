@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 
@@ -176,10 +177,10 @@ namespace EMotionFX
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Enum<EMotionFX::Integration::Space>("Space", "The transformation space.")
-                        ->Value("Local Space", Space::LocalSpace)
-                        ->Value("Model Space", Space::ModelSpace)
-                        ->Value("World Space", Space::WorldSpace);
+                    editContext->Enum<EMotionFX::Integration::Space>(QT_TRANSLATE_NOOP("EMotionFX", "Space"), QT_TRANSLATE_NOOP("EMotionFX", "The transformation space."))
+                        ->Value(QT_TRANSLATE_NOOP("EMotionFX", "Local Space"), Space::LocalSpace)
+                        ->Value(QT_TRANSLATE_NOOP("EMotionFX", "Model Space"), Space::ModelSpace)
+                        ->Value(QT_TRANSLATE_NOOP("EMotionFX", "World Space"), Space::WorldSpace);
                 }
             }
 

@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
@@ -69,53 +70,53 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<RotationModifierConfig>(
-                    "Vegetation Rotation Modifier", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Rotation Modifier"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &RotationModifierConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &RotationModifierConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Rotation X")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Rotation X"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinX, "Range Min", "Minimum rotation offset on X axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinX, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum rotation offset on X axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxX, "Range Max", "Maximum rotation offset on X axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxX, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum rotation offset on X axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerX, "Gradient", "Gradient used as blend factor to lerp between ranges on X axis.")
+                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Rotation Y")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Rotation Y"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinY, "Range Min", "Minimum rotation offset on Y axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinY, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum rotation offset on Y axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxY, "Range Max", "Maximum rotation offset on Y axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxY, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum rotation offset on Y axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerY, "Gradient", "Gradient used as blend factor to lerp between ranges on Y axis.")
+                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Rotation Z")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Rotation Z"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinZ, "Range Min", "Minimum rotation offset on Z axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMinZ, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum rotation offset on Z axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxZ, "Range Max", "Maximum rotation offset on Z axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RotationModifierConfig::m_rangeMaxZ, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum rotation offset on Z axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 180.0f)
-                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerZ, "Gradient", "Gradient used as blend factor to lerp between ranges on Z axis.")
+                    ->DataElement(0, &RotationModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
                     ;
             }
 

@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_TIMEVALUE_H
-#define CRYINCLUDE_CRYCOMMON_TIMEVALUE_H
-
 #pragma once
 
 #include <CryCommon/BaseTypes.h>
@@ -169,5 +165,3 @@ private: // ----------------------------------------------------------
 
     friend class CTimer;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_TIMEVALUE_H

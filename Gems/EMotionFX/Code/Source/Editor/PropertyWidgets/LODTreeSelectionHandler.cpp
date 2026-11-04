@@ -79,4 +79,3 @@ namespace EMotionFX
     }
 }
 
-#include <Source/Editor/PropertyWidgets/moc_LODTreeSelectionHandler.cpp>

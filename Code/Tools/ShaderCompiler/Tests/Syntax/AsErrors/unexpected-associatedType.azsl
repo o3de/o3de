@@ -1,0 +1,5 @@
+void f()
+{
+    associatedtype T;
+}
+// Error: associatedType can only appear in member-definition-list (of interfaces)

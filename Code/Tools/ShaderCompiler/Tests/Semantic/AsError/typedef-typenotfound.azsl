@@ -1,0 +1,1 @@
+typedef not_found X; // #EC 36 'target type not_found not understood in typealias expression'

@@ -11,6 +11,8 @@ set(FILES
     Source/RecastNavigationSystemComponent.cpp
     Source/RecastNavigationSystemComponent.h
 
+    Source/Components/DetourCrowdNavigationComponent.h
+    Source/Components/DetourCrowdNavigationComponent.cpp
     Source/Components/DetourNavigationComponent.h
     Source/Components/DetourNavigationComponent.cpp
     Source/Components/RecastNavigationMeshComponent.h
@@ -19,6 +21,8 @@ set(FILES
     Source/Components/RecastNavigationPhysXProviderComponent.cpp
 
     Source/Misc/RecastNavigationConstants.h
+    Source/Misc/DetourCrowdAgentParams.cpp
+    Source/Misc/DetourObstacleAvoidanceParams.cpp
     Source/Misc/RecastNavigationDebugDraw.h
     Source/Misc/RecastNavigationDebugDraw.cpp
     Source/Misc/RecastNavigationMeshConfig.h

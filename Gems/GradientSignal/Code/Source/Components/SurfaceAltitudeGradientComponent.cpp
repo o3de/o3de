@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <GradientSignal/Util.h>
@@ -35,17 +36,17 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<SurfaceAltitudeGradientConfig>(
-                    "Altitude Gradient", "altitude Gradient")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Altitude Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "altitude Gradient"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_shapeEntityId, "Pin To Shape Entity Id", "Shape bounds override min/max altitude if specified.")
+                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Pin To Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Shape bounds override min/max altitude if specified."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMin, "Altitude Min", "Minimum acceptable surface altitude.")
+                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMin, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeGradientConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMax, "Altitude Max", "Maximum acceptable surface altitude.")
+                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_altitudeMax, QT_TRANSLATE_NOOP("GradientSignal", "Altitude Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum acceptable surface altitude."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeGradientConfig::IsShapeValid)
-                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_surfaceTagsToSample, "Surface Tags to track", "")
+                    ->DataElement(0, &SurfaceAltitudeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
                     ;
             }
         }

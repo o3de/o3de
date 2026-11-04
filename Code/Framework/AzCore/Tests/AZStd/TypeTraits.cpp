@@ -390,7 +390,7 @@ namespace UnitTest
     {};
 }
 
-namespace AZStd
+namespace std
 {
     template <template <class> class TQual, template <class> class UQual>
     struct basic_common_reference<UnitTest::CommonReferenceSpecializationTest, int, TQual, UQual>

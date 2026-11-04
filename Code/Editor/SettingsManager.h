@@ -6,13 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
-#define CRYINCLUDE_EDITOR_SETTINGSMANAGER_H
 #pragma once
 
-#include <QString>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 #include <IXml.h>
+#include <map>
+
+#include <QString>
 
 class QByteArray;
 
@@ -146,5 +147,3 @@ private:
     TToolNamesMap m_toolNames;
     TToolNamesMap m_toolVersions;
 };
-
-#endif // CRYINCLUDE_EDITOR_SETTINGSMANAGER_H

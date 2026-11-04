@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 
@@ -36,12 +37,17 @@ namespace Terrain
 
             if (auto edit = serialize->GetEditContext())
             {
-                edit->Class<TerrainSurfaceMaterialMapping>("Terrain surface gradient mapping", "Mapping between a surface and a material.")
+                edit->Class<TerrainSurfaceMaterialMapping>(
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain surface gradient mapping"),
+                    QT_TRANSLATE_NOOP("Terrain", "Mapping between a surface and a material."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface tag", "Surface type to map to a material.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material asset", "")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag,
+                        QT_TRANSLATE_NOOP("Terrain", "Surface tag"),
+                        QT_TRANSLATE_NOOP("Terrain", "Surface type to map to a material."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset,
+                        QT_TRANSLATE_NOOP("Terrain", "Material asset"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
                     ;
@@ -77,17 +83,20 @@ namespace Terrain
             if (edit)
             {
                 edit->Class<TerrainSurfaceMaterialsListConfig>(
-                        "Terrain Surface Material List Component", "Provide mapping between surfaces and render materials.")
+                        QT_TRANSLATE_NOOP("Terrain", "Terrain Surface Material List Component"),
+                        QT_TRANSLATE_NOOP("Terrain", "Provide mapping between surfaces and render materials."))
                     ->SetDynamicEditDataProvider(&TerrainSurfaceMaterialsListConfig::GetDynamicData)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_defaultSurfaceMaterial,
-                        "Default Material", "The default material to fall back to where no other material surface mappings exist.")
+                        QT_TRANSLATE_NOOP("Terrain", "Default Material"),
+                        QT_TRANSLATE_NOOP("Terrain", "The default material to fall back to where no other material surface mappings exist."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials,
-                        "Material Mappings", "Maps surfaces to materials.");
+                        QT_TRANSLATE_NOOP("Terrain", "Material Mappings"),
+                        QT_TRANSLATE_NOOP("Terrain", "Maps surfaces to materials."));
             }
         }
 

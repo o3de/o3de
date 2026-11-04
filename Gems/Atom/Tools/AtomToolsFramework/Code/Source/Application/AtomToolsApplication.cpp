@@ -20,7 +20,6 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
@@ -66,8 +65,6 @@ namespace AtomToolsFramework
 
         // Suppress spam from the Source Control system
         m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
-
-        installEventFilter(new AzQtComponents::GlobalEventFilter(this));
 
         const AZ::IO::FixedMaxPath engineRootPath(
             GetSettingsValue(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZStd::string()));

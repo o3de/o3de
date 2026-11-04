@@ -208,7 +208,7 @@ namespace EMStudio
                 }
                 else if (nodeGroup)
                 {
-                    QAction* renameNodeGroupAction = menu->addAction(QIcon(":/EMotionFX/Rename.svg"), "Rename");
+                    QAction* renameNodeGroupAction = menu->addAction(QIcon(":/EMotionFX/Rename.svg"), tr("Rename"));
                     connect(
                         renameNodeGroupAction,
                         &QAction::triggered,

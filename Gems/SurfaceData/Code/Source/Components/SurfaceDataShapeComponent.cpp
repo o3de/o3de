@@ -12,6 +12,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <SurfaceDataProfiler.h>
@@ -33,12 +34,16 @@ namespace SurfaceData
             if (edit)
             {
                 edit->Class<SurfaceDataShapeConfig>(
-                    "Shape Surface Tag Emitter", "")
+                    QT_TRANSLATE_NOOP("SurfaceData", "Shape Surface Tag Emitter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceDataShapeConfig::m_providerTags, "Generated Tags", "Surface tags to add to created points")
-                    ->DataElement(0, &SurfaceDataShapeConfig::m_modifierTags, "Extended Tags", "Surface tags to add to contained points")
+                    ->DataElement(0, &SurfaceDataShapeConfig::m_providerTags,
+                        QT_TRANSLATE_NOOP("SurfaceData", "Generated Tags"),
+                        QT_TRANSLATE_NOOP("SurfaceData", "Surface tags to add to created points"))
+                    ->DataElement(0, &SurfaceDataShapeConfig::m_modifierTags,
+                        QT_TRANSLATE_NOOP("SurfaceData", "Extended Tags"),
+                        QT_TRANSLATE_NOOP("SurfaceData", "Surface tags to add to contained points"))
                     ;
             }
         }

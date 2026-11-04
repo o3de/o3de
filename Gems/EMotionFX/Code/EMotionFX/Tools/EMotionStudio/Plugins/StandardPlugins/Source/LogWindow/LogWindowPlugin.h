@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
+
 #include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
-#endif
 
 namespace AzQtComponents
 {

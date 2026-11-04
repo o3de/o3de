@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <EditorComponents/EditorDiffuseGlobalIlluminationComponent.h>
 
 namespace AZ
@@ -25,7 +26,8 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDiffuseGlobalIlluminationComponent>(
-                        "Diffuse Global Illumination", "Diffuse Global Illumination configuration")
+                        QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Diffuse Global Illumination"),
+                        QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Diffuse Global Illumination configuration"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -39,17 +41,23 @@ namespace AZ
                         "ToneMapperComponentControl", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DiffuseGlobalIlluminationComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DiffuseGlobalIlluminationComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<DiffuseGlobalIlluminationComponentConfig>("DiffuseGlobalIlluminationComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(Edit::UIHandlers::ComboBox, &DiffuseGlobalIlluminationComponentConfig::m_qualityLevel, "Quality Level", "Quality Level")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &DiffuseGlobalIlluminationComponentConfig::m_qualityLevel,
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Quality Level"),
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Quality Level"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::Low, "Low")
-                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::Medium, "Medium")
-                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::High, "High")
+                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::Low,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Low"))
+                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::Medium,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Medium"))
+                            ->EnumAttribute(DiffuseGlobalIlluminationQualityLevel::High,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "High"))
                     ;
                 }
             }

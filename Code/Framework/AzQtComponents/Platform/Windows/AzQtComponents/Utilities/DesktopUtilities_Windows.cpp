@@ -29,7 +29,6 @@ namespace AzQtComponents
 
     QString fileBrowserActionName()
     {
-        const char* exploreActionName = "Open in Explorer";
-        return QObject::tr(exploreActionName);
+        return QObject::tr("Open in Explorer");
     }
 }

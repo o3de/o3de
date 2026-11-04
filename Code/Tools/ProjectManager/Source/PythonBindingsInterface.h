@@ -19,10 +19,8 @@
 #include <ProjectTemplateInfo.h>
 #include <GemRepo/GemRepoInfo.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QHash>
 #include <QStringList>
-#endif
 
 
 namespace O3DE::ProjectManager

@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AzFramework
 {
@@ -34,19 +35,29 @@ namespace AzFramework
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<FileTagData>("Definition", "Files/Patterns and their associated tags.")
+                    editContext->Class<FileTagData>(
+                        QT_TRANSLATE_NOOP("AzFramework", "Definition"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Files/Patterns and their associated tags."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FileTagData::m_filePatternType,
-                            "File Pattern", "File Pattern can either be an exact value, a regex or a wildcard.")
+                            QT_TRANSLATE_NOOP("AzFramework", "File Pattern"),
+                            QT_TRANSLATE_NOOP("AzFramework", "File Pattern can either be an exact value, a regex or a wildcard."))
                         ->Attribute(AZ::Edit::Attributes::EnumValues,
                             AZStd::vector<AZ::Edit::EnumConstant<FilePatternType>>
                     {
-                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Exact, "Exact"),
-                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Wildcard, "Wildcard"),
-                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Regex, "Regex")
+                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Exact,
+                            QT_TRANSLATE_NOOP("AzFramework", "Exact")),
+                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Wildcard,
+                            QT_TRANSLATE_NOOP("AzFramework", "Wildcard")),
+                        AZ::Edit::EnumConstant<FilePatternType>(FilePatternType::Regex,
+                            QT_TRANSLATE_NOOP("AzFramework", "Regex"))
                     })
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagData::m_fileTags, "File Tags", "List of tags associated with the file/pattern.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagData::m_comment, "Comment", "Comment for the file tag definition");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagData::m_fileTags,
+                            QT_TRANSLATE_NOOP("AzFramework", "File Tags"),
+                            QT_TRANSLATE_NOOP("AzFramework", "List of tags associated with the file/pattern."))
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagData::m_comment,
+                            QT_TRANSLATE_NOOP("AzFramework", "Comment"),
+                            QT_TRANSLATE_NOOP("AzFramework", "Comment for the file tag definition"));
                 }
             }
         }
@@ -63,9 +74,13 @@ namespace AzFramework
                     ->Field("FileTagMap", &FileTagAsset::m_fileTagMap);
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<FileTagAsset>("Definition", "Asset storing all the file/pattern tagging information.")
+                    editContext->Class<FileTagAsset>(
+                        QT_TRANSLATE_NOOP("AzFramework", "Definition"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Asset storing all the file/pattern tagging information."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagAsset::m_fileTagMap, "File Tag Map", "Container for storing file tagging information.");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &FileTagAsset::m_fileTagMap,
+                            QT_TRANSLATE_NOOP("AzFramework", "File Tag Map"),
+                            QT_TRANSLATE_NOOP("AzFramework", "Container for storing file tagging information."));
                 }
             }
         }

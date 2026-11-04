@@ -142,7 +142,7 @@ namespace O3DE::ProjectManager
     int FilterCategoryWidget::RemoveUnusedElements(uint32_t usedCount)
     {
         const auto& elements = GetElements();
-        const int numToDelete = elements.size() - usedCount;
+        const int numToDelete = static_cast<int>(elements.size()) - usedCount;
         if (numToDelete > 0)
         {
             qDeleteAll(elements.cend() - numToDelete, elements.cend());
@@ -153,13 +153,13 @@ namespace O3DE::ProjectManager
     void FilterCategoryWidget::SetElements(const QMap<QString, int>& elementNamesAndCounts)
     {
         int i = 0;
-        const int numChildren = GetElements().size();
+        const int numChildren = static_cast<int>(GetElements().size());
         for (auto iter = elementNamesAndCounts.begin(); iter != elementNamesAndCounts.end(); iter++)
         {
             SetElement(i, iter.key(), iter.value());
             i++;
         }
-        RemoveUnusedElements(elementNamesAndCounts.size());
+        RemoveUnusedElements(static_cast<int>(elementNamesAndCounts.size()));
 
         // if the number of elements changed we need to update the collapsed state
         if(numChildren != GetElements().size())
@@ -171,12 +171,12 @@ namespace O3DE::ProjectManager
 
     void FilterCategoryWidget::SetElements(const QVector<QString>& elementNames, const QVector<int>& elementCounts)
     {
-        const int numChildren = GetElements().size();
+        const int numChildren = static_cast<int>(GetElements().size());
         for (int i = 0; i < elementNames.size(); ++i)
         {
             SetElement(i, elementNames[i], elementCounts[i]);
         }
-        RemoveUnusedElements(elementNames.size());
+        RemoveUnusedElements(static_cast<int>(elementNames.size()));
 
         // if the number of elements changed we need to update the collapsed state
         if(numChildren != GetElements().size())
@@ -222,8 +222,8 @@ namespace O3DE::ProjectManager
         m_seeAllLessLabel->show();
         m_seeAllLessLabel->setText(m_seeAll ? tr("See less") : tr("See all"));
 
-        int showCount = m_seeAll ? elements.size() : m_defaultShowCount;
-        showCount = AZ::GetMin(showCount, elements.size());
+        int showCount = m_seeAll ? static_cast<int>(elements.size()) : m_defaultShowCount;
+        showCount = AZ::GetMin<int>(showCount, static_cast<int>(elements.size()));
         for (int i = 0; i < showCount; ++i)
         {
             elements[i]->show();
@@ -301,7 +301,7 @@ namespace O3DE::ProjectManager
         mainLayout->setAlignment(Qt::AlignTop);
         mainWidget->setLayout(mainLayout);
 
-        QLabel* filterByLabel = new QLabel("Filter by");
+        QLabel* filterByLabel = new QLabel(tr("Filter by"));
         filterByLabel->setObjectName("FilterByLabel");
         mainLayout->addWidget(filterByLabel);
 
@@ -313,22 +313,22 @@ namespace O3DE::ProjectManager
         filterLayout->setContentsMargins(0, 0, 0, 0);
         filterSection->setLayout(filterLayout);
 
-        m_statusFilter = new FilterCategoryWidget("Status");
+        m_statusFilter = new FilterCategoryWidget(tr("Status"));
         connect(m_statusFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnStatusFilterToggled);
 
-        m_versionsFilter = new FilterCategoryWidget("Versions");
+        m_versionsFilter = new FilterCategoryWidget(tr("Versions"));
         connect(m_versionsFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnUpdateFilterToggled);
 
-        m_featureFilter = new FilterCategoryWidget("Feature", /*showAllLessButton=*/true, /*collapsed*/false, /*defaultShowCount=*/5);
+        m_featureFilter = new FilterCategoryWidget(tr("Feature"), /*showAllLessButton=*/true, /*collapsed*/false, /*defaultShowCount=*/5);
         connect(m_featureFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnFeatureFilterToggled);
 
-        m_platformFilter = new OrFilterCategoryWidget("Platform", GemInfo::NumPlatforms, m_gemModel);
+        m_platformFilter = new OrFilterCategoryWidget(tr("Platform"), GemInfo::NumPlatforms, m_gemModel);
         connect(m_platformFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetPlatformFilterFlag);
 
-        m_originFilter = new OrFilterCategoryWidget("Provider", GemInfo::NumGemOrigins, m_gemModel);
+        m_originFilter = new OrFilterCategoryWidget(tr("Provider"), GemInfo::NumGemOrigins, m_gemModel);
         connect(m_originFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetOriginFilterFlag);
 
-        m_typeFilter = new OrFilterCategoryWidget("Type", GemInfo::NumTypes, m_gemModel);
+        m_typeFilter = new OrFilterCategoryWidget(tr("Type"), GemInfo::NumTypes, m_gemModel);
         connect(m_typeFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetTypeFilterFlag);
 
         // add filters in the order they appear
@@ -393,7 +393,7 @@ namespace O3DE::ProjectManager
             numCompatibleGems += GemModel::IsCompatible(m_gemModel->index(i, 0)) ? 1 : 0;
         }
 
-        m_versionsFilter->SetElements({ "Update Available", "Compatible" }, { numGemsWithUpdates, numCompatibleGems });
+        m_versionsFilter->SetElements({ tr("Update Available"), tr("Compatible") }, { numGemsWithUpdates, numCompatibleGems });
 
         if (buttons.isEmpty())
         {
@@ -484,8 +484,8 @@ namespace O3DE::ProjectManager
         QVector<QString> elementNames;
         QVector<int> elementCounts;
         const int totalGems = m_gemModel->rowCount();
-        const int selectedGemTotal = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size();
-        const int unselectedGemTotal = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size();
+        const int selectedGemTotal = static_cast<int>(m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size());
+        const int unselectedGemTotal = static_cast<int>(m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size());
         const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
 
         if (selectedGemTotal == 0 && enabledGemTotal == 0 && unselectedGemTotal == 0 && totalGems > 0)

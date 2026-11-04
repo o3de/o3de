@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Viewport/ViewportColors.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/Components/EditorCharacterControllerComponent.h>
@@ -36,18 +37,18 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterControllerProxyShapeConfig>(
-                    "EditorCharacterControllerProxyShapeConfig", "PhysX character controller shape.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorCharacterControllerProxyShapeConfig::m_shapeType, "Shape",
-                        "The shape of the character controller.")
-                    ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
-                    ->EnumAttribute(Physics::ShapeType::Box, "Box")
+                    QT_TRANSLATE_NOOP("PhysX", "EditorCharacterControllerProxyShapeConfig"), QT_TRANSLATE_NOOP("PhysX", "PhysX character controller shape."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorCharacterControllerProxyShapeConfig::m_shapeType, QT_TRANSLATE_NOOP("PhysX", "Shape"),
+                        QT_TRANSLATE_NOOP("PhysX", "The shape of the character controller."))
+                    ->EnumAttribute(Physics::ShapeType::Capsule, QT_TRANSLATE_NOOP("PhysX", "Capsule"))
+                    ->EnumAttribute(Physics::ShapeType::Box, QT_TRANSLATE_NOOP("PhysX", "Box"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_box, "Box",
-                        "Configuration of box shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_box, QT_TRANSLATE_NOOP("PhysX", "Box"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration of box shape."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorCharacterControllerProxyShapeConfig::IsBoxConfig)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_capsule, "Capsule",
-                        "Configuration of capsule shape.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerProxyShapeConfig::m_capsule, QT_TRANSLATE_NOOP("PhysX", "Capsule"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration of capsule shape."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorCharacterControllerProxyShapeConfig::IsCapsuleConfig)
                     ;
             }
@@ -93,8 +94,8 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterControllerComponent>(
-                    "PhysX Character Controller",
-                    "Provides basic character interactions with the physical world, such as preventing movement through other PhysX bodies.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Character Controller"),
+                    QT_TRANSLATE_NOOP("PhysX", "Provides basic character interactions with the physical world, such as preventing movement through other PhysX bodies."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
@@ -102,12 +103,12 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/character-controller/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerComponent::m_configuration,
-                        "Configuration", "Configuration for the character controller.")
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration"), QT_TRANSLATE_NOOP("PhysX", "Configuration for the character controller."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCharacterControllerComponent::OnControllerConfigChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterControllerComponent::m_proxyShapeConfiguration,
-                        "Shape Configuration", "The configuration for the shape associated with the character controller.")
+                        QT_TRANSLATE_NOOP("PhysX", "Shape Configuration"), QT_TRANSLATE_NOOP("PhysX", "The configuration for the shape associated with the character controller."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCharacterControllerComponent::OnShapeConfigChanged)

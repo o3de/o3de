@@ -110,6 +110,10 @@ namespace AzToolsFramework
 
             AZStd::string m_customName;
             bool m_loadingNewScript = false;
+            // Guards against re-entrant LoadScript (e.g. a synchronous OnAssetReady
+            // dispatched while a load is already in progress), which can corrupt the
+            // shared script context and property buffers.
+            bool m_isLoadingScript = false;
         };
     } // namespace Component
 } // namespace AzToolsFramework

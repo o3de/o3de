@@ -8,15 +8,14 @@
 
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include "UIFrameworkAPI.h"
 
-#if !defined(Q_MOC_RUN)
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Crc.h>
-
-#include "UIFrameworkAPI.h"
-#include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have dll-interface to be used by clients of class '...'
 #include <QObject>
@@ -24,7 +23,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have
 #include <QTableView>
 #include <QStandardItemModel>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QAction;
 class QUrl;

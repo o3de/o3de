@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace WhiteBox
 {
@@ -26,13 +27,15 @@ namespace WhiteBox
             {
                 editContext
                     ->Class<WhiteBoxColliderConfiguration>(
-                        "White Box Collider Configuration", "White Box collider configuration properties")
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Collider Configuration"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box collider configuration properties"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &WhiteBoxColliderConfiguration::m_bodyType, "Body Type",
-                        "Set if the White Box Collider will be treated as static or kinematic at runtime.")
-                    ->EnumAttribute(WhiteBoxBodyType::Static, "Static")
-                    ->EnumAttribute(WhiteBoxBodyType::Kinematic, "Kinematic");
+                        AZ::Edit::UIHandlers::ComboBox, &WhiteBoxColliderConfiguration::m_bodyType,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Body Type"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Set if the White Box Collider will be treated as static or kinematic at runtime."))
+                    ->EnumAttribute(WhiteBoxBodyType::Static, QT_TRANSLATE_NOOP("WhiteBox", "Static"))
+                    ->EnumAttribute(WhiteBoxBodyType::Kinematic, QT_TRANSLATE_NOOP("WhiteBox", "Kinematic"));
             }
         }
     }

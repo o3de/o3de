@@ -57,7 +57,7 @@ QVector<NestedQAction> GetAllActionsForMenu(const QMenu* menu, const QString& pa
     QList<QAction*> menuActions = menu->actions();
     QVector<NestedQAction> actions;
     actions.reserve(menuActions.size());
-    foreach(QAction * action, menuActions)
+    for (QAction* action : menuActions)
     {
         if (action->menu() != nullptr)
         {
@@ -258,7 +258,7 @@ QStringList CustomizeKeyboardDialog::BuildModels(QWidget* parent)
     QList<QAction*> menuBarActions = menuBar->actions();
 
     QStringList categories;
-    foreach(QAction * menuAction, menuBarActions)
+    for (QAction* menuAction : menuBarActions)
     {
         QString category = RemoveAcceleratorAmpersands(menuAction->text());
         categories.append(category);
@@ -374,4 +374,3 @@ void CustomizeKeyboardDialog::DialogButtonClicked(const QAbstractButton* button)
     }
 }
 
-#include <moc_CustomizeKeyboardDialog.cpp>

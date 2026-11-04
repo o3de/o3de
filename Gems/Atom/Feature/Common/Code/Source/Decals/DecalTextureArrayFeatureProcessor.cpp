@@ -35,30 +35,6 @@ namespace AZ
     {
         namespace
         {
-            static AZ::RHI::Size GetTextureSizeFromMaterialAsset(AZ::RPI::MaterialAsset* materialAsset)
-            {
-                for (const auto& elem : materialAsset->GetPropertyValues())
-                {
-                    if (elem.Is<Data::Asset<RPI::ImageAsset>>())
-                    {
-                        const auto& imageBinding = elem.GetValue<Data::Asset<RPI::ImageAsset>>();
-                        if (imageBinding && imageBinding.IsReady())
-                        {
-                            return imageBinding->GetImageDescriptor().m_size;
-                        }
-                    }
-                }
-
-                AZ_Error(
-                    "DecalTextureFeatureProcessor",
-                    false,
-                    "GetSizeFromMaterial() unable to load image in material ID '%s'",
-                    materialAsset->GetId().ToString<AZStd::string>().c_str()
-                );
-
-                return {};
-            }
-
             static AZ::Data::Asset<AZ::RPI::MaterialAsset> QueueMaterialAssetLoad(const AZ::Data::AssetId material)
             {
                 auto asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MaterialAsset>(material, AZ::Data::AssetLoadBehavior::QueueLoad);
@@ -345,6 +321,19 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalMaxDrawDistance(const DecalHandle handle, float maxDrawDistance)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData<0>(handle.GetIndex()).m_maxDrawDistance = maxDrawDistance;
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalMaxDrawDistance().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalSortKey(DecalHandle handle, uint8_t sortKey)
         {
             if (handle.IsValid())
@@ -478,22 +467,33 @@ namespace AZ
 
         AZStd::optional<AZ::Render::DecalTextureArrayFeatureProcessor::DecalLocation> DecalTextureArrayFeatureProcessor::AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset)
         {
-            const RHI::Size textureSize = GetTextureSizeFromMaterialAsset(materialAsset);
+            const DecalTextureArray::PackingLayout layout = DecalTextureArray::GetPackingLayout(*materialAsset);
 
-            int textureArrayIndex = FindTextureArrayWithSize(textureSize);
-            const bool wasExistingTextureArrayFoundForGivenSize = textureArrayIndex != -1;
-            if (m_textureArrayList.size() == NumTextureArrays && !wasExistingTextureArrayFoundForGivenSize)
+            int textureArrayIndex = FindTextureArrayWithLayout(layout);
+            const bool wasExistingTextureArrayFoundForGivenLayout = textureArrayIndex != -1;
+            if (m_textureArrayList.size() == NumTextureArrays && !wasExistingTextureArrayFoundForGivenLayout)
             {
-                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Unable to add decal with size %u %u. There are no more texture arrays left to accept a decal with this size permutation.", textureSize.m_width, textureSize.m_height);
+                // Only read by AZ_Warning, which compiles out in configurations that disable it.
+                [[maybe_unused]] const auto& diffuse = layout.m_maps[DecalMapType_Diffuse];
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Unable to add decal with diffuse map size %u %u, format %u, %u mips. All %d texture arrays are in use and none "
+                    "matches this layout. Decals group by exact texture layout, so authoring them consistently lets more share an array.",
+                    diffuse.m_size.m_width,
+                    diffuse.m_size.m_height,
+                    static_cast<uint32_t>(diffuse.m_format),
+                    diffuse.m_mipLevels,
+                    NumTextureArrays);
                 return AZStd::nullopt;
             }
 
             int textureIndex;
-            if (!wasExistingTextureArrayFoundForGivenSize)
+            if (!wasExistingTextureArrayFoundForGivenLayout)
             {
                 DecalTextureArray decalTextureArray;
                 textureIndex = decalTextureArray.AddMaterial(materialAsset->GetId());
-                textureArrayIndex = m_textureArrayList.push_front(AZStd::make_pair(textureSize, decalTextureArray));
+                textureArrayIndex = m_textureArrayList.push_front(AZStd::make_pair(layout, decalTextureArray));
             }
             else
             {
@@ -550,12 +550,12 @@ namespace AZ
             }
         }
 
-        int DecalTextureArrayFeatureProcessor::FindTextureArrayWithSize(const RHI::Size& size) const
+        int DecalTextureArrayFeatureProcessor::FindTextureArrayWithLayout(const DecalTextureArray::PackingLayout& layout) const
         {
             int iter = m_textureArrayList.begin();
             while (iter != -1)
             {
-                if (m_textureArrayList[iter].first == size)
+                if (m_textureArrayList[iter].first == layout)
                 {
                     return iter;
                 }
@@ -610,6 +610,7 @@ namespace AZ
             }
 
             const auto& dataVector = m_decalData.GetDataVector<0>();
+            const AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
             size_t numVisibleDecals =
                 r_maxVisibleDecals < 0 ? dataVector.size() : AZStd::min(dataVector.size(), static_cast<size_t>(r_maxVisibleDecals));
             AZStd::vector<uint32_t> sortedDecals(dataVector.size());
@@ -618,7 +619,6 @@ namespace AZ
             // Only sort if we are going to limit the number of visible decals
             if (numVisibleDecals < dataVector.size())
             {
-                AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
                 AZStd::sort(
                     sortedDecals.begin(),
                     sortedDecals.end(),
@@ -637,6 +637,17 @@ namespace AZ
             {
                 uint32_t dataIndex = sortedDecals[i];
                 const auto& decalData = dataVector[dataIndex];
+
+                // Zero means unlimited, so only cull when a limit is actually set.
+                if (decalData.m_maxDrawDistance > 0.0f)
+                {
+                    const float maxDrawDistanceSq = decalData.m_maxDrawDistance * decalData.m_maxDrawDistance;
+                    if ((AZ::Vector3::CreateFromFloat3(decalData.m_position.data()) - viewPos).GetLengthSq() > maxDrawDistanceSq)
+                    {
+                        continue;
+                    }
+                }
+
                 AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
                     AZ::Vector3::CreateFromFloat3(decalData.m_position.data()),
                     AZ::Quaternion::CreateFromFloat4(decalData.m_quaternion.data()),

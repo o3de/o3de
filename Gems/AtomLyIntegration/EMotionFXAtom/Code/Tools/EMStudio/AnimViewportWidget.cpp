@@ -348,13 +348,13 @@ namespace EMStudio
     void AnimViewportWidget::mousePressEvent(QMouseEvent* event)
     {
         m_pixelsSinceClick = 0;
-        m_prevMousePoint = event->globalPos();
+        m_prevMousePoint = event->globalPosition().toPoint();
     }
 
     void AnimViewportWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        int deltaX = event->globalX() - m_prevMousePoint.x();
-        int deltaY = event->globalY() - m_prevMousePoint.y();
+        int deltaX = event->globalPosition().x() - m_prevMousePoint.x();
+        int deltaY = event->globalPosition().y() - m_prevMousePoint.y();
 
         m_pixelsSinceClick += AZStd::abs(deltaX) + AZStd::abs(deltaY);
     }
@@ -372,17 +372,17 @@ namespace EMStudio
         QMenu* menu = new QMenu(this);
 
         {
-            QMenu* cameraMenu = menu->addMenu("Camera Options");
-            QAction* frontAction = cameraMenu->addAction("Front");
-            QAction* backAction = cameraMenu->addAction("Back");
-            QAction* topAction = cameraMenu->addAction("Top");
-            QAction* bottomAction = cameraMenu->addAction("Bottom");
-            QAction* leftAction = cameraMenu->addAction("Left");
-            QAction* rightAction = cameraMenu->addAction("Right");
+            QMenu* cameraMenu = menu->addMenu(tr("Camera Options"));
+            QAction* frontAction = cameraMenu->addAction(tr("Front"));
+            QAction* backAction = cameraMenu->addAction(tr("Back"));
+            QAction* topAction = cameraMenu->addAction(tr("Top"));
+            QAction* bottomAction = cameraMenu->addAction(tr("Bottom"));
+            QAction* leftAction = cameraMenu->addAction(tr("Left"));
+            QAction* rightAction = cameraMenu->addAction(tr("Right"));
             cameraMenu->addSeparator();
-            QAction* resetCamAction = cameraMenu->addAction("Reset Camera");
+            QAction* resetCamAction = cameraMenu->addAction(tr("Reset Camera"));
             cameraMenu->addSeparator();
-            QAction* followAction = cameraMenu->addAction("Follow Character");
+            QAction* followAction = cameraMenu->addAction(tr("Follow Character"));
             followAction->setCheckable(true);
             followAction->setChecked(m_plugin->GetRenderOptions()->GetCameraFollowUp());
             connect(frontAction, &QAction::triggered, this, [this]()
@@ -432,7 +432,7 @@ namespace EMStudio
 
         if (!menu->isEmpty())
         {
-            menu->popup(event->globalPos());
+            menu->popup(event->globalPosition().toPoint());
         }
     }
 

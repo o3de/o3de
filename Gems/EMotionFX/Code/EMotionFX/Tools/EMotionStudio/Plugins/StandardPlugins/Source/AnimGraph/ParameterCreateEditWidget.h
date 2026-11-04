@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <MCore/Source/StandardHeaders.h>
+
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QComboBox)
 

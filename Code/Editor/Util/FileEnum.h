@@ -6,16 +6,12 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_FILEENUM_H
-#define CRYINCLUDE_EDITOR_UTIL_FILEENUM_H
 #pragma once
 
 #include <QDirIterator>
 
 class QFileInfo;
 class QString;
-class QStringList;
 
 class CFileEnum
 {
@@ -35,4 +31,3 @@ public:
 protected:
     QDirIterator* m_hEnumFile;
 };
-#endif // CRYINCLUDE_EDITOR_UTIL_FILEENUM_H

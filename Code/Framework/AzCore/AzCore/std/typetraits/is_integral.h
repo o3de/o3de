@@ -5,15 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/typetraits/config.h>
+#include <concepts>
 
 namespace AZStd
 {
     using std::is_integral;
     using std::is_integral_v;
-
-    template<class T>
-    /*concept*/ constexpr bool integral = is_integral_v<T>;
+    using std::integral;
 }

@@ -47,7 +47,7 @@ namespace AZ
                     constantBufferName = AZStd::string::format("ConstantBuffer%s", srgPool->GetName().GetCStr());
                     m_constantBuffer.SetName(constantBufferName.c_str());
 #endif
-                    
+
                     AZ_Assert(m_constantBuffer.IsValid(), "Couldnt allocate memory for Constant buffer")
                 }
 
@@ -80,7 +80,7 @@ namespace AZ
                 {
                     [argBufferDecriptors addObject:desc];
                 }
-                
+
                 SetArgumentBuffer(argBufferDecriptors, argBufferName);
             }
         }
@@ -112,12 +112,12 @@ namespace AZ
             [m_argumentEncoder setArgumentBuffer:m_argumentBuffer.GetGpuAddress<id<MTLBuffer>>()
                                                              offset:m_argumentBuffer.GetOffset()];
         }
-    
+
         bool ArgumentBuffer::CreateArgumentDescriptors(NSMutableArray* argBufferDecriptors)
         {
             bool resourceAdded = false;
 
-            
+
             for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : m_srgLayout->GetShaderInputListForBuffers())
             {
                 MTLArgumentDescriptor* bufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
@@ -218,10 +218,10 @@ namespace AZ
                 // SubpassInputs don't need to update the argument buffer because they are not really a texture.
                 return;
             }
-            
+
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
-            
+
             m_resourceBindings[shaderInputImage.m_name].clear();
             for (const RHI::ConstPtr<RHI::DeviceImageView>& imageViewBase : imageViews)
             {
@@ -232,8 +232,11 @@ namespace AZ
                     RHI::Ptr<Memory> textureMemPtr = imageView.GetMemoryView().GetMemory();
                     mtlTextures[imageArrayLen] = textureMemPtr->GetGpuAddress<id<MTLTexture>>();
                     m_resourceBindings[shaderInputImage.m_name].insert(
-                        ResourceBindingData{textureMemPtr->GetGpuAddress<id<MTLTexture>>(), textureMemPtr->GetResourceType(),
-                                            .m_imageAccess = shaderInputImage.m_access});
+                        ResourceBindingData{
+                            .m_resourcPtr = textureMemPtr->GetGpuAddress<id<MTLTexture>>(),
+                            .m_rescType = textureMemPtr->GetResourceType(),
+                            .m_imageAccess = shaderInputImage.m_access
+                        });
                 }
                 else
                 {
@@ -301,8 +304,11 @@ namespace AZ
                         AZ_Assert(textureBufferMemPtr, "This buffer does not have a texture view for texture_buffer");
                         mtlTextures[bufferArrayLen] = textureBufferMemPtr->GetGpuAddress<id<MTLTexture>>();
                         m_resourceBindings[shaderInputBuffer.m_name].insert(
-                            ResourceBindingData{textureBufferMemPtr->GetGpuAddress<id<MTLTexture>>(), textureBufferMemPtr->GetResourceType(),
-                                                .m_imageAccess = GetImageAccess(shaderInputBuffer.m_access)});
+                            ResourceBindingData{
+                                .m_resourcPtr = textureBufferMemPtr->GetGpuAddress<id<MTLTexture>>(),
+                                .m_rescType = textureBufferMemPtr->GetResourceType(),
+                                .m_imageAccess = GetImageAccess(shaderInputBuffer.m_access),
+                            });
                     }
                     else
                     {
@@ -310,8 +316,11 @@ namespace AZ
                         mtlBuffers[bufferArrayLen] = bufferMemPtr->GetGpuAddress<id<MTLBuffer>>();
                         mtlBufferOffsets[bufferArrayLen] = bufferView.GetMemoryView().GetOffset();
                         m_resourceBindings[shaderInputBuffer.m_name].insert(
-                            ResourceBindingData{bufferMemPtr->GetGpuAddress<id<MTLBuffer>>(), bufferMemPtr->GetResourceType(),
-                                                .m_bufferAccess = shaderInputBuffer.m_access});
+                            ResourceBindingData{
+                                .m_resourcPtr = bufferMemPtr->GetGpuAddress<id<MTLBuffer>>(),
+                                .m_rescType = bufferMemPtr->GetResourceType(),
+                                .m_bufferAccess = shaderInputBuffer.m_access,
+                            });
                     }
                 }
                 else
@@ -329,8 +338,11 @@ namespace AZ
                         mtlBuffers[bufferArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>();
                         mtlBufferOffsets[bufferArrayLen] = nullDescriptorManager.GetNullBuffer().GetOffset();
                         m_resourceBindings[shaderInputBuffer.m_name].insert(
-                            ResourceBindingData{nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>(), nullMtlBufferMemPtr->GetResourceType(),
-                                                .m_bufferAccess = shaderInputBuffer.m_access});
+                            ResourceBindingData{
+                                .m_resourcPtr = nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>(),
+                                .m_rescType = nullMtlBufferMemPtr->GetResourceType(),
+                                .m_bufferAccess = shaderInputBuffer.m_access
+                            });
                     }
                 }
 
@@ -571,7 +583,7 @@ namespace AZ
                 resourceSet[RHI::ShaderStageFragment].insert(resourcPtr);
             }
         }
-    
+
         bool ArgumentBuffer::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
         {
             bool isUsedByVertexStage = false;
@@ -592,20 +604,20 @@ namespace AZ
         {
             return m_useNullDescriptorHeap;
         }
-    
+
         void ArgumentBuffer::UpdateTextureView(id <MTLTexture> mtlTexture, uint32_t index)
         {
             [m_argumentEncoder setTexture : mtlTexture
                                 atIndex   : index];
         }
-        
+
         void ArgumentBuffer::UpdateBufferView(id <MTLBuffer> mtlBuffer, uint32_t offset, uint32_t index)
         {
             [m_argumentEncoder setBuffer : mtlBuffer
                                   offset : offset
                                  atIndex : index];
         }
-    
+
         const id<MTLArgumentEncoder> ArgumentBuffer::GetArgEncoder() const
         {
             return m_argumentEncoder;

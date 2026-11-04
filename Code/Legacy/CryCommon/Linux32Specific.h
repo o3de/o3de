@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Linux declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_LINUX32SPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_LINUX32SPECIFIC_H
-#pragma once
 
 
 #define _CPU_X86
@@ -92,5 +89,3 @@ typedef unsigned char       byte;
 #include "LinuxSpecific.h"
 
 #define TARGET_DEFAULT_ALIGN (0x4U)
-
-#endif // CRYINCLUDE_CRYCOMMON_LINUX32SPECIFIC_H

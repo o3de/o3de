@@ -638,4 +638,3 @@ namespace ImageProcessingAtomEditor
         return QWidget::eventFilter(obj, event);
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_TexturePreviewWidget.cpp>

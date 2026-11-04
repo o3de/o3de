@@ -101,7 +101,7 @@ namespace AzToolsFramework
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
 
                     delete menu;
                     delete parentWidget;

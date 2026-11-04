@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStandardItemModel>
+
 #include <GemRepo/GemRepoInfo.h>
 #include <TagWidget.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 

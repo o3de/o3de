@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(
@@ -21,7 +20,6 @@ AZ_PUSH_DISABLE_WARNING(
 AZ_POP_DISABLE_WARNING
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
-#endif
 
 class QValidator;
 

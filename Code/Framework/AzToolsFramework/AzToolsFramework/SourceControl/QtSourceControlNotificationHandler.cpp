@@ -58,4 +58,3 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-#include "SourceControl/moc_QtSourceControlNotificationHandler.cpp"

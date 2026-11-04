@@ -9,6 +9,7 @@
 #include "CameraRigComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/Entity.h>
 #include "CameraFramework/ICameraTargetAcquirer.h"
@@ -117,25 +118,36 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<ICameraTargetAcquirer>("ICameraTargetAcquirer", "Base class for all target acquirers.  Implementations can be found in other gems");
-                editContext->Class<ICameraLookAtBehavior>("ICameraLookAtBehavior", "Base class for all look at behaviors. Implementations can be found in other gems");
-                editContext->Class<ICameraTransformBehavior>("ICameraTransformBehavior", "Base class for all transform behaviors. Implementations can be found in other gems");
+                editContext->Class<ICameraTargetAcquirer>(
+                    QT_TRANSLATE_NOOP("CameraFramework", "ICameraTargetAcquirer"),
+                    QT_TRANSLATE_NOOP("CameraFramework", "Base class for all target acquirers.  Implementations can be found in other gems"));
+                editContext->Class<ICameraLookAtBehavior>(
+                    QT_TRANSLATE_NOOP("CameraFramework", "ICameraLookAtBehavior"),
+                    QT_TRANSLATE_NOOP("CameraFramework", "Base class for all look at behaviors. Implementations can be found in other gems"));
+                editContext->Class<ICameraTransformBehavior>(
+                    QT_TRANSLATE_NOOP("CameraFramework", "ICameraTransformBehavior"),
+                    QT_TRANSLATE_NOOP("CameraFramework", "Base class for all transform behaviors. Implementations can be found in other gems"));
 
-                editContext->Class<CameraRigComponent>( "Camera Rig", "The Camera Rig component can be used to add and remove behaviors to drive your camera entity")
+                editContext->Class<CameraRigComponent>(
+                    QT_TRANSLATE_NOOP("CameraFramework", "Camera Rig"),
+                    QT_TRANSLATE_NOOP("CameraFramework", "The Camera Rig component can be used to add and remove behaviors to drive your camera entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/CameraRig.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/CameraRig.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera-rig/")
-                    ->DataElement(0, &CameraRigComponent::m_targetAcquirers, "Target acquirers",
-                    "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds")
+                    ->DataElement(0, &CameraRigComponent::m_targetAcquirers,
+                        QT_TRANSLATE_NOOP("CameraFramework", "Target acquirers"),
+                        QT_TRANSLATE_NOOP("CameraFramework", "A list of behaviors that define how a camera will select a target.  They are executed in order until one succeeds"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &CameraRigComponent::m_lookAtBehaviors, "Look-at behaviors",
-                    "A list of look-at behaviors.  They are run in order, each having the chance to sequentially modify the look-at target transform")
+                    ->DataElement(0, &CameraRigComponent::m_lookAtBehaviors,
+                        QT_TRANSLATE_NOOP("CameraFramework", "Look-at behaviors"),
+                        QT_TRANSLATE_NOOP("CameraFramework", "A list of look-at behaviors.  They are run in order, each having the chance to sequentially modify the look-at target transform"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &CameraRigComponent::m_transformBehaviors, "Transform behaviors",
-                    "A list of behaviors that run in order, each having the chance to sequentially modify the camera's transform based on the look-at transform")
+                    ->DataElement(0, &CameraRigComponent::m_transformBehaviors,
+                        QT_TRANSLATE_NOOP("CameraFramework", "Transform behaviors"),
+                        QT_TRANSLATE_NOOP("CameraFramework", "A list of behaviors that run in order, each having the chance to sequentially modify the camera's transform based on the look-at transform"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }

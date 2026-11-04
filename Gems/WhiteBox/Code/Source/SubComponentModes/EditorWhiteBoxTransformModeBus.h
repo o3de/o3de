@@ -28,6 +28,25 @@ namespace WhiteBox
         //! Change the TransformType for the WhiteBox Transform sub-mode.
         virtual void ChangeTransformType(TransformType subModeType) = 0;
 
+        // ------------------------------------------------------------------ //
+        // Blender-style numeric input dispatch methods                       //
+        // ------------------------------------------------------------------ //
+        virtual void NumericBeginMove()           = 0;
+        virtual void NumericBeginRotate()         = 0;
+        virtual void NumericBeginScale()          = 0;
+        virtual void NumericSetAxisX()            = 0;
+        virtual void NumericSetAxisY()            = 0;
+        virtual void NumericSetAxisZ()            = 0;
+        virtual void NumericConfirm()             = 0;
+        virtual void NumericCancel()              = 0;
+        virtual void NumericBackspace()           = 0;
+        virtual void NumericDecimal()             = 0;
+        virtual void NumericNegate()              = 0; //!< '-' operator
+        virtual void NumericAppendDigit(char d)   = 0;
+        virtual void NumericAppendOperatorPlus()  = 0; //!< '+' binary add
+        virtual void NumericAppendOperatorMult()  = 0; //!< '*' multiply
+        virtual void NumericAppendOperatorDiv()   = 0; //!< '/' divide
+
     protected:
         ~EditorWhiteBoxTransformModeRequests() = default;
     };

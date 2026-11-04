@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H
-#define CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H
-
 #pragma once
 
 #include "Undo/Undo.h"
@@ -331,5 +327,3 @@ private:
     //! Listeners
     std::vector<IAnimationContextListener*> m_contextListeners;
 };
-
-#endif // CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H

@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <OpenParticleViewportWidgetRequestsBus.h>
-#endif
+
  // disable warnings spawned by QT
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QWidget>

@@ -1,0 +1,30 @@
+// Make sure we support all listed Vulkan attributes
+// https://github.com/microsoft/DirectXShaderCompiler/blob/master/docs/SPIR-V.rst#vulkan-specific-attributes
+
+// push_constant: For marking a variable as the push constant block. Allowed on global variables of struct type. At most one variable can be marked as push_constant in a shader.
+// https://github.com/microsoft/DirectXShaderCompiler/blob/master/tools/clang/test/CodeGenSPIRV/vk.push-constant.hlsl
+// Run: %dxc -T vs_6_0 -E main
+
+struct T {
+    float2 val[3];
+};
+
+struct S {
+    float    f1;
+    float3   f2;
+    float2x3 f3;
+    T        f4;
+};
+
+// The attribute passes, but AZSLc will fail the test for another reason:
+// ERROR at semantic check: (20): global variable pcs cannot be non static (or extern or uniform). AZSL data binding model uses ShaderResourceGroup.
+[[vk::push_constant]]
+S pcs;
+
+float main() : A {
+    return
+        pcs.f1 +
+        pcs.f2.z +
+        pcs.f3[1][2] +
+        pcs.f4.val[2].y;
+}

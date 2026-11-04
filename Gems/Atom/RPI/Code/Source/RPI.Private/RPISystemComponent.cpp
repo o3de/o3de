@@ -29,6 +29,7 @@
 #include <AzFramework/Components/ConsoleBus.h>
 
 #include <Atom/RPI.Public/PerformanceCollectionNotificationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
@@ -51,10 +52,10 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serializeContext->GetEditContext())
                 {
-                    ec->Class<RPISystemComponent>("Atom RPI", "Atom Renderer")
+                    ec->Class<RPISystemComponent>(QT_TRANSLATE_NOOP("Atom::RPI", "Atom RPI"), QT_TRANSLATE_NOOP("Atom::RPI", "Atom Renderer"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemComponent::m_rpiDescriptor, "RPI System Settings", "Settings for create RPI system")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemComponent::m_rpiDescriptor, QT_TRANSLATE_NOOP("Atom::RPI", "RPI System Settings"), QT_TRANSLATE_NOOP("Atom::RPI", "Settings for create RPI system"))
                         ;
                 }
             }

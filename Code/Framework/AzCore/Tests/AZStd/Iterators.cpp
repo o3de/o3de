@@ -351,11 +351,11 @@ namespace UnitTest
     {
         using MoveIterator = AZStd::move_iterator<int*>;
         using MoveIteratorTraits = AZStd::iterator_traits<MoveIterator>;
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::value_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::difference_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::iterator_category>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::pointer>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::reference>);
+        static_assert(requires { typename MoveIteratorTraits::value_type; });
+        static_assert(requires { typename MoveIteratorTraits::difference_type; });
+        static_assert(requires { typename MoveIteratorTraits::iterator_category; });
+        static_assert(requires { typename MoveIteratorTraits::pointer; });
+        static_assert(requires { typename MoveIteratorTraits::reference; });
     }
 
     TEST_F(Iterators, MoveSentinel_ComparableToMoveIterator_Succeeds)
@@ -400,11 +400,11 @@ namespace UnitTest
         // when using algorithms from std namespace
         using ConstIterator = AZStd::const_iterator<typename AZStd::string::iterator>;
         using ConstIteratorTraits = AZStd::iterator_traits<ConstIterator>;
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::value_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::difference_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::iterator_category>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::pointer>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::reference>);
+        static_assert(requires { typename ConstIteratorTraits::value_type; });
+        static_assert(requires { typename ConstIteratorTraits::difference_type; });
+        static_assert(requires { typename ConstIteratorTraits::iterator_category; });
+        static_assert(requires { typename ConstIteratorTraits::pointer; });
+        static_assert(requires { typename ConstIteratorTraits::reference; });
     }
 
     TEST_F(Iterators, CountedIterator_CanIterate_UntilDefaultSentinel)
@@ -451,10 +451,10 @@ namespace UnitTest
         // when using algorithms from std namespace
         using CountedIterator = AZStd::counted_iterator<typename AZStd::string::iterator>;
         using CountedIteratorTraits = AZStd::iterator_traits<CountedIterator>;
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::value_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::difference_type>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::iterator_category>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::pointer>);
-        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::reference>);
+        static_assert(requires { typename CountedIteratorTraits::value_type; });
+        static_assert(requires { typename CountedIteratorTraits::difference_type; });
+        static_assert(requires { typename CountedIteratorTraits::iterator_category; });
+        static_assert(requires { typename CountedIteratorTraits::pointer; });
+        static_assert(requires { typename CountedIteratorTraits::reference; });
     }
 }

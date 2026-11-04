@@ -7,8 +7,14 @@
 #
 
 find_library(IOKIT_LIBRARY IOKit)
+find_library(APPKIT_LIBRARY AppKit)
+find_library(COREVIDEO_FRAMEWORK CoreVideo)
+
+find_package(OpenGL REQUIRED)
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
         ${IOKIT_LIBRARY}
+        ${OpenGL_LIBRARIES}
+        ${APPKIT_LIBRARY}
 )

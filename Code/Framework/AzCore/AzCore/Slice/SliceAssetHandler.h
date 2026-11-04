@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SLICE_ASSET_HANDLER_H
-#define AZCORE_SLICE_ASSET_HANDLER_H
+
+#pragma once
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
@@ -67,6 +67,3 @@ namespace AZ
         u32 m_filterFlags;
     };
 }
-
-#endif // AZCORE_SLICE_ASSET_HANDLER_H
-#pragma once

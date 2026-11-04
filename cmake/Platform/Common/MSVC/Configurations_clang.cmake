@@ -27,7 +27,8 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 
 # C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
 # This is problematic if 3rd-party libraries use such operations in header files.
-set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18 -Wno-deprecated-enum-enum-conversion)
+# C++26 (P2864) makes it a hard error under -Wenum-enum-conversion, so silence both.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18 -Wno-deprecated-enum-enum-conversion -Wno-enum-enum-conversion)
 
 # If (USE_FAST_MATH) is set, then enable fast math optimizations.
 # Some targets might need to disable fast math individually (likely 3rd Party libraries)

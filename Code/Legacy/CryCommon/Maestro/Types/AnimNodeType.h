@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H
-#define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,5 +41,3 @@ enum class AnimNodeType
     Component,
     Num
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMNODETYPE_H

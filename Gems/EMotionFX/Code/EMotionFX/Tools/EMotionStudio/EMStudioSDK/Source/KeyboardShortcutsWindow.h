@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/Source/MemoryCategories.h>
 #include "EMStudioConfig.h"
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+
 #include <QDialog>
 #include <QWidget>
 #include <QLabel>
@@ -20,8 +20,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTableWidget>
-#endif
-
 
 
 namespace EMStudio

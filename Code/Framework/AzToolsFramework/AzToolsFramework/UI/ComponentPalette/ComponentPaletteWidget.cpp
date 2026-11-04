@@ -450,4 +450,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/ComponentPalette/moc_ComponentPaletteWidget.cpp"

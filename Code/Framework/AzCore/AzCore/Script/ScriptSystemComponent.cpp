@@ -33,6 +33,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
 
@@ -876,7 +878,8 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         if (EditContext* editContext = serializeContext->GetEditContext())
         {
             editContext->Class<ScriptSystemComponent>(
-                "Script System", "Initializes and maintains script contexts")
+                QT_TRANSLATE_NOOP("AzCore", "Script System"),
+                QT_TRANSLATE_NOOP("AzCore", "Initializes and maintains script contexts"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                 ;
@@ -903,6 +906,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
             ->Enum<static_cast<int>(PlatformID::PLATFORM_ANDROID_64)>("Android64")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_IOS)>("iOS")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_MAC)>("Mac")
+            ->Enum<static_cast<int>(PlatformID::PLATFORM_EMSCRIPTEN)>("Emscripten")
 #if defined(AZ_EXPAND_FOR_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
             ->Enum<static_cast<int>(PlatformID::PLATFORM_##PUBLICNAME)>(#CodeName)

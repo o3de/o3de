@@ -1,0 +1,4 @@
+float4 m(float4 : COLOR) : SV_Target0
+{
+    return c.color;
+}

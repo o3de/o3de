@@ -1,0 +1,40 @@
+interface IMaterial
+{
+    associatedtype BRDF;
+    BRDF GenBRDF(float3 color, float roughness);
+    float3 GetColor();
+    float GetRoughness();
+};
+
+class BlinnBRDF
+{
+    float3 Eval(float3 N, float3 H);
+};
+
+class Metal : IMaterial
+{
+    float3 color;
+    float roughness;
+    float3 GetColor() { return color; }
+    float GetRoughness() { return roughness; }
+
+    typealias BRDF = BlinnBRDF;
+    BlinnBRDF GenBRDF(float3 clr, float roughness)
+    {
+        return BlinnBRDF();
+    }
+};
+
+Mat_t::BRDF GetBRDF< Mat_t : IMaterial >(Mat_t mat)
+{
+    return mat.GenBRDF(mat.GetColor(), mat.GetRoughness());
+}
+
+static float3 g_H;
+
+float3 ps_main(float3 N) : COLOR
+{
+    Metal m;
+    Metal::BRDF b = GetBRDF(m);
+    return b.Eval(N, g_H);
+}

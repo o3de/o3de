@@ -80,4 +80,3 @@ namespace Ui
     }
 } // namespace Ui
 
-#include <AssetEditor/moc_AssetEditorHeader.cpp>

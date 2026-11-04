@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace OpenParticle
 {
@@ -428,71 +429,71 @@ namespace OpenParticle
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext != nullptr)
             {
-                editContext->Enum<SimuCore::ParticleCore::SimulateType>("Simulate Type", "Particle Simulate Type CPU or GPU")
-                    ->Value("CPU", SimuCore::ParticleCore::SimulateType::CPU)
-                    ->Value("GPU", SimuCore::ParticleCore::SimulateType::GPU);
+                editContext->Enum<SimuCore::ParticleCore::SimulateType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Simulate Type"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Simulate Type CPU or GPU"))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "CPU"), SimuCore::ParticleCore::SimulateType::CPU)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "GPU"), SimuCore::ParticleCore::SimulateType::GPU);
 
-                editContext->Enum<SimuCore::ParticleCore::Axis>("Axis", "The useful axis of the emitter shape.")
-                    ->Value("xPositive", SimuCore::ParticleCore::Axis::X_POSITIVE)
-                    ->Value("xNegative", SimuCore::ParticleCore::Axis::X_NEGATIVE)
-                    ->Value("yPositive", SimuCore::ParticleCore::Axis::Y_POSITIVE)
-                    ->Value("yNegative", SimuCore::ParticleCore::Axis::Y_NEGATIVE)
-                    ->Value("zPositive", SimuCore::ParticleCore::Axis::Z_POSITIVE)
-                    ->Value("zNegative", SimuCore::ParticleCore::Axis::Z_NEGATIVE)
-                    ->Value("noAxis", SimuCore::ParticleCore::Axis::NO_AXIS);
+                editContext->Enum<SimuCore::ParticleCore::Axis>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Axis"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The useful axis of the emitter shape."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "xPositive"), SimuCore::ParticleCore::Axis::X_POSITIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "xNegative"), SimuCore::ParticleCore::Axis::X_NEGATIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "yPositive"), SimuCore::ParticleCore::Axis::Y_POSITIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "yNegative"), SimuCore::ParticleCore::Axis::Y_NEGATIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "zPositive"), SimuCore::ParticleCore::Axis::Z_POSITIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "zNegative"), SimuCore::ParticleCore::Axis::Z_NEGATIVE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "noAxis"), SimuCore::ParticleCore::Axis::NO_AXIS);
 
-                editContext->Enum<SimuCore::ParticleCore::MeshSampleType>("MeshSampleType","The sample type of mesh.")
-                    ->Value("Bone", SimuCore::ParticleCore::MeshSampleType::BONE)
-                    ->Value("Vertex", SimuCore::ParticleCore::MeshSampleType::VERTEX)
-                    ->Value("Area", SimuCore::ParticleCore::MeshSampleType::AREA);
+                editContext->Enum<SimuCore::ParticleCore::MeshSampleType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "MeshSampleType"),QT_TRANSLATE_NOOP("OpenParticleSystem", "The sample type of mesh."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "Bone"), SimuCore::ParticleCore::MeshSampleType::BONE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "Vertex"), SimuCore::ParticleCore::MeshSampleType::VERTEX)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "Area"), SimuCore::ParticleCore::MeshSampleType::AREA);
 
-                editContext->Enum<SimuCore::ParticleCore::RenderType>("Renderer","The render type of particles.")
-                    ->Value("SPRITE", SimuCore::ParticleCore::RenderType::SPRITE)
-                    ->Value("MESH", SimuCore::ParticleCore::RenderType::MESH)
-                    ->Value("RIBBON", SimuCore::ParticleCore::RenderType::RIBBON);
+                editContext->Enum<SimuCore::ParticleCore::RenderType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Renderer"),QT_TRANSLATE_NOOP("OpenParticleSystem", "The render type of particles."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "SPRITE"), SimuCore::ParticleCore::RenderType::SPRITE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "MESH"), SimuCore::ParticleCore::RenderType::MESH)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "RIBBON"), SimuCore::ParticleCore::RenderType::RIBBON);
 
-                editContext->Enum<SimuCore::ParticleCore::Facing>("Render Alignment", "The facing mode of sprite particles.")
-                    ->Value("CAMERA_POS", SimuCore::ParticleCore::Facing::CAMERA_POS)
-                    ->Value("SQUARE", SimuCore::ParticleCore::Facing::CAMERA_SQUARE)
-                    ->Value("RECTANGLE", SimuCore::ParticleCore::Facing::CAMERA_RECTANGLE)
-                    ->Value("VELOCITY", SimuCore::ParticleCore::Facing::VELOCITY)
-                    ->Value("CUSTOM", SimuCore::ParticleCore::Facing::CUSTOM);
+                editContext->Enum<SimuCore::ParticleCore::Facing>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Alignment"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The facing mode of sprite particles."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "CAMERA_POS"), SimuCore::ParticleCore::Facing::CAMERA_POS)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "SQUARE"), SimuCore::ParticleCore::Facing::CAMERA_SQUARE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "RECTANGLE"), SimuCore::ParticleCore::Facing::CAMERA_RECTANGLE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "VELOCITY"), SimuCore::ParticleCore::Facing::VELOCITY)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "CUSTOM"), SimuCore::ParticleCore::Facing::CUSTOM);
 
-                editContext->Enum<SimuCore::ParticleCore::RibbonFacing>("Render Alignment", "The facing Mode of ribbon particles.")
-                    ->Value("SCREEN", SimuCore::ParticleCore::RibbonFacing::SCREEN)
-                    ->Value("CAMERA", SimuCore::ParticleCore::RibbonFacing::CAMERA);
+                editContext->Enum<SimuCore::ParticleCore::RibbonFacing>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Alignment"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The facing Mode of ribbon particles."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "SCREEN"), SimuCore::ParticleCore::RibbonFacing::SCREEN)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "CAMERA"), SimuCore::ParticleCore::RibbonFacing::CAMERA);
 
-                editContext->Enum<SimuCore::ParticleCore::TrailMode>("Trail Mode",
-                    "The type of trail.")
-                    ->Value("RIBBON", SimuCore::ParticleCore::TrailMode::RIBBON)
-                    ->Value("TRAIL", SimuCore::ParticleCore::TrailMode::TRAIL);
+                editContext->Enum<SimuCore::ParticleCore::TrailMode>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Trail Mode"),
+                    QT_TRANSLATE_NOOP("OpenParticleSystem", "The type of trail."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "RIBBON"), SimuCore::ParticleCore::TrailMode::RIBBON)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "TRAIL"), SimuCore::ParticleCore::TrailMode::TRAIL);
 
-                editContext->Enum<SimuCore::ParticleCore::ParticleEventType>("ParticleEventType","The event type of particles.")
-                    ->Value("SPAWN_LOCATION", SimuCore::ParticleCore::ParticleEventType::SPAWN_LOCATION)
-                    ->Value("UPDATE_LOCATION", SimuCore::ParticleCore::ParticleEventType::UPDATE_LOCATION)
-                    ->Value("UPDATE_DEATH", SimuCore::ParticleCore::ParticleEventType::UPDATE_DEATH)
-                    ->Value("UPDATE_COLLISION", SimuCore::ParticleCore::ParticleEventType::UPDATE_COLLISION);
+                editContext->Enum<SimuCore::ParticleCore::ParticleEventType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "ParticleEventType"),QT_TRANSLATE_NOOP("OpenParticleSystem", "The event type of particles."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "SPAWN_LOCATION"), SimuCore::ParticleCore::ParticleEventType::SPAWN_LOCATION)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "UPDATE_LOCATION"), SimuCore::ParticleCore::ParticleEventType::UPDATE_LOCATION)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "UPDATE_DEATH"), SimuCore::ParticleCore::ParticleEventType::UPDATE_DEATH)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "UPDATE_COLLISION"), SimuCore::ParticleCore::ParticleEventType::UPDATE_COLLISION);
 
-                editContext->Enum<SimuCore::ParticleCore::CpuCollisionType>("CpuCollisionType", "The collision type of particles.")
-                    ->Value("PLANE", SimuCore::ParticleCore::CpuCollisionType::PLANE);
+                editContext->Enum<SimuCore::ParticleCore::CpuCollisionType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "CpuCollisionType"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision type of particles."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "PLANE"), SimuCore::ParticleCore::CpuCollisionType::PLANE);
 
 
-                editContext->Enum<SimuCore::ParticleCore::RadiusCalculationType>("RadiusCalculationType", "The calculation type of particles' radius.")
-                    ->Value("SPRITE", SimuCore::ParticleCore::RadiusCalculationType::SPRITE)
-                    ->Value("MESH", SimuCore::ParticleCore::RadiusCalculationType::MESH)
-                    ->Value("CUSTOM", SimuCore::ParticleCore::RadiusCalculationType::CUSTOM);
+                editContext->Enum<SimuCore::ParticleCore::RadiusCalculationType>(QT_TRANSLATE_NOOP("OpenParticleSystem", "RadiusCalculationType"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The calculation type of particles' radius."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "SPRITE"), SimuCore::ParticleCore::RadiusCalculationType::SPRITE)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "MESH"), SimuCore::ParticleCore::RadiusCalculationType::MESH)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "CUSTOM"), SimuCore::ParticleCore::RadiusCalculationType::CUSTOM);
 
-                editContext->Enum<SimuCore::ParticleCore::RadiusCalculationMethod>("RadiusCalculationMethod", "The calculation method of particles' radius.")
-                    ->Value("BOUNDS", SimuCore::ParticleCore::RadiusCalculationMethod::BOUNDS)
-                    ->Value("MAXIMUM_AXIS", SimuCore::ParticleCore::RadiusCalculationMethod::MAXIMUM_AXIS)
-                    ->Value("MINIMUM_AXIS", SimuCore::ParticleCore::RadiusCalculationMethod::MINIMUM_AXIS);
+                editContext->Enum<SimuCore::ParticleCore::RadiusCalculationMethod>(QT_TRANSLATE_NOOP("OpenParticleSystem", "RadiusCalculationMethod"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The calculation method of particles' radius."))
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "BOUNDS"), SimuCore::ParticleCore::RadiusCalculationMethod::BOUNDS)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "MAXIMUM_AXIS"), SimuCore::ParticleCore::RadiusCalculationMethod::MAXIMUM_AXIS)
+                    ->Value(QT_TRANSLATE_NOOP("OpenParticleSystem", "MINIMUM_AXIS"), SimuCore::ParticleCore::RadiusCalculationMethod::MINIMUM_AXIS);
 
-                editContext->Class<SimuCore::ParticleCore::Friction>("Friction", "The friction of plane.")
+                editContext->Class<SimuCore::ParticleCore::Friction>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Friction"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The friction of plane."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SimuCore::ParticleCore::Friction::friCoefficient,
-                        "FriCoefficient", "The friCoefficient of plane.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "FriCoefficient"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The friCoefficient of plane."));
             }
         }
     }

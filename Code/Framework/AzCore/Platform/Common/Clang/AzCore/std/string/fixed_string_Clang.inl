@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 namespace AZStd
@@ -13,11 +14,19 @@ namespace AZStd
     inline decltype(auto) basic_fixed_string<Element, MaxElementCount, Traits>::format_arg(const wchar_t* format, va_list argList)
     {
         basic_fixed_string<wchar_t, MaxElementCount, char_traits<wchar_t>> result;
-        constexpr int maxBufferLength = 2048;
-        wchar_t buffer[maxBufferLength];
-        [[maybe_unused]] const int len = azvsnwprintf(buffer, maxBufferLength, format, argList);
-        AZ_Assert(len != -1, "azvsnwprintf failed increase the buffer size!");
-        result += buffer;
+        wchar_t buffer[MaxElementCount + 1];
+        const int len = azvsnwprintf(buffer, MaxElementCount + 1, format, argList);
+
+        const bool fitsInCapacity = len >= 0 && static_cast<size_t>(len) <= result.capacity();
+        AZ_Assert(
+            fitsInCapacity,
+            "azvsnwprintf failed! The formatted output does not fit in the fixed_string capacity of %zu wide characters.",
+            result.capacity());
+
+        if (fitsInCapacity && len > 0)
+        {
+            result.append(buffer, len);
+        }
 
         return result;
     }

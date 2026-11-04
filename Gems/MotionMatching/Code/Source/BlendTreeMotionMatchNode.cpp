@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
@@ -406,69 +407,101 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<BlendTreeMotionMatchNode>("Motion Matching Node", "Motion Matching Attributes")
+        editContext->Class<BlendTreeMotionMatchNode>(
+            QT_TRANSLATE_NOOP("MotionMatching", "Motion Matching Node"),
+            QT_TRANSLATE_NOOP("MotionMatching", "Motion Matching Attributes"))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency, "Search frequency", "How often per second we apply the motion matching search and find the lowest cost / best matching frame, and start to blend towards it.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency,
+                QT_TRANSLATE_NOOP("MotionMatching", "Search frequency"),
+                QT_TRANSLATE_NOOP("MotionMatching", "How often per second we apply the motion matching search and find the lowest cost / best matching frame, and start to blend towards it."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_sampleRate, "Feature sample rate", "The sample rate (in Hz) used for extracting the features from the animations. The higher the sample rate, the more data will be used and the more options the motion matching search has available for the best matching frame.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_sampleRate,
+                QT_TRANSLATE_NOOP("MotionMatching", "Feature sample rate"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The sample rate (in Hz) used for extracting the features from the animations. The higher the sample rate, the more data will be used and the more options the motion matching search has available for the best matching frame."))
                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                 ->Attribute(AZ::Edit::Attributes::Max, 240)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory Prediction", "Desired future trajectory generation mode.")
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode,
+                QT_TRANSLATE_NOOP("MotionMatching", "Trajectory Prediction"),
+                QT_TRANSLATE_NOOP("MotionMatching", "Desired future trajectory generation mode."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target-driven")
-                ->EnumAttribute(TrajectoryQuery::MODE_AUTOMATIC, "Automatic (Demo)")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathRadius, "Path radius", "")
+                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Target-driven"))
+                ->EnumAttribute(TrajectoryQuery::MODE_AUTOMATIC,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Automatic (Demo)"))
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathRadius,
+                QT_TRANSLATE_NOOP("MotionMatching", "Path radius"), "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathSpeed, "Path speed", "")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathSpeed,
+                QT_TRANSLATE_NOOP("MotionMatching", "Path speed"), "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->ClassElement(AZ::Edit::ClassElements::Group, "Data Normalization")
+            ->ClassElement(AZ::Edit::ClassElements::Group,
+                QT_TRANSLATE_NOOP("MotionMatching", "Data Normalization"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_normalizeData, "Normalize Data", "Normalize feature data for more intuitive control over weighting the cost factors.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_normalizeData,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Normalize Data"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "Normalize feature data for more intuitive control over weighting the cost factors."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_featureScalerType, "Type", "Feature scaler type to be used to normalize the data.")
+                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_featureScalerType,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Type"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "Feature scaler type to be used to normalize the data."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetFeatureScalerTypeSettingsVisibility)
-                    ->EnumAttribute(MotionMatchingData::StandardScalerType, "Standard Scaler")
-                    ->EnumAttribute(MotionMatchingData::MinMaxScalerType, "Min-max Scaler")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMin, "Feature Minimum", "Minimum value after data transformation.")
+                    ->EnumAttribute(MotionMatchingData::StandardScalerType,
+                        QT_TRANSLATE_NOOP("MotionMatching", "Standard Scaler"))
+                    ->EnumAttribute(MotionMatchingData::MinMaxScalerType,
+                        QT_TRANSLATE_NOOP("MotionMatching", "Min-max Scaler"))
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMin,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Feature Minimum"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "Minimum value after data transformation."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMax, "Feature Maximum", "Maximum value after data transformation.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMax,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Feature Maximum"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "Maximum value after data transformation."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_clipFeatures, "Clip Features", "Clip feature values for outliers to the above range.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_clipFeatures,
+                    QT_TRANSLATE_NOOP("MotionMatching", "Clip Features"),
+                    QT_TRANSLATE_NOOP("MotionMatching", "Clip feature values for outliers to the above range."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
-            ->ClassElement(AZ::Edit::ClassElements::Group, "Acceleration Structure")
+            ->ClassElement(AZ::Edit::ClassElements::Group,
+                QT_TRANSLATE_NOOP("MotionMatching", "Acceleration Structure"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kd-tree depth", "The maximum number of hierarchy levels in the kdTree.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth,
+                QT_TRANSLATE_NOOP("MotionMatching", "Max kd-tree depth"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The maximum number of hierarchy levels in the kdTree."))
                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                 ->Attribute(AZ::Edit::Attributes::Max, 20)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode, "Min kd-tree node size", "The minimum number of frames to store per kdTree node.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode,
+                QT_TRANSLATE_NOOP("MotionMatching", "Min kd-tree node size"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The minimum number of frames to store per kdTree node."))
                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                 ->Attribute(AZ::Edit::Attributes::Max, 100000)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
             ->EndGroup()
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureSchema, "FeatureSchema", "")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureSchema,
+                QT_TRANSLATE_NOOP("MotionMatching", "FeatureSchema"), "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
             ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::OnVisualizeSchemaButtonClicked)
                 ->Attribute(AZ::Edit::Attributes::ButtonText, &BlendTreeMotionMatchNode::OnVisualizeSchemaButtonText)
-            ->DataElement(AZ_CRC_CE("MotionSetMotionIds"), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
+            ->DataElement(AZ_CRC_CE("MotionSetMotionIds"), &BlendTreeMotionMatchNode::m_motionIds,
+                QT_TRANSLATE_NOOP("MotionMatching", "Motions"), "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)

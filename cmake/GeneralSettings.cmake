@@ -10,7 +10,7 @@
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-ly_set(CMAKE_WARN_DEPRECATED ON)
+set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
 
 set(O3DE_EXTERNAL_SUBDIRS "" CACHE STRING "Additional list of subdirectory to recurse into via the cmake `add_subdirectory()` command. \
     The subdirectories are included after the restricted platform folders have been visited by a call to `add_subdirectory(restricted/\${restricted_platform})`")

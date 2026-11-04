@@ -6,17 +6,11 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H
-#define CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H
-
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "LayoutWnd.h"
 
 #include <QDialog>
-#endif
 
 namespace Ui {
     class CLayoutConfigDialog;
@@ -46,5 +40,3 @@ protected:
     EViewLayout m_layout;
     QScopedPointer<Ui::CLayoutConfigDialog> ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H

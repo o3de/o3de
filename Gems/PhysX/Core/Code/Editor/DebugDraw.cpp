@@ -13,6 +13,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
@@ -147,21 +148,21 @@ namespace PhysX
                     using VisibilityFunc = bool(*)();
 
                     editContext->Class<Collider>(
-                        "PhysX Collider Debug Draw", "Global and per-collider debug draw preferences.")
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
-                            "Display collider geometry in the viewport.")
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX Collider Debug Draw"), QT_TRANSLATE_NOOP("PhysX", "Global and per-collider debug draw preferences."))
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, QT_TRANSLATE_NOOP("PhysX", "Draw collider"),
+                            QT_TRANSLATE_NOOP("PhysX", "Display collider geometry in the viewport."))
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
-                                "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
+                                QT_TRANSLATE_NOOP("PhysX", "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use."))
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "Draw collider",
-                            "Display collider geometry in the viewport.")
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("PhysX", "Draw collider"),
+                            QT_TRANSLATE_NOOP("PhysX", "Display collider geometry in the viewport."))
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("PhysX", "Global override"))
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
-                                "A global setting is overriding this property (to disable the override, "
+                                QT_TRANSLATE_NOOP("PhysX", "A global setting is overriding this property (to disable the override, "
                                 "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)."
-                                "'Draw Helpers' needs to be enabled to use.")
+                                "'Draw Helpers' needs to be enabled to use."))
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)

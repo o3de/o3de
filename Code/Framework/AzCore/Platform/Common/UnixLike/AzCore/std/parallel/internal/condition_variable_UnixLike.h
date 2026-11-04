@@ -97,7 +97,7 @@ namespace AZStd
     template <class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable::wait_for(unique_lock<mutex>& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        return wait_until(lock, chrono::steady_clock::now() + rel_time, move(pred));
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, AZStd::move(pred));
     }
     condition_variable::native_handle_type
     inline condition_variable::native_handle()
@@ -204,7 +204,7 @@ namespace AZStd
     template <class Lock, class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        return wait_until(lock, chrono::steady_clock::now() + rel_time, move(pred));
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, AZStd::move(pred));
     }
     condition_variable_any::native_handle_type
     inline condition_variable_any::native_handle()

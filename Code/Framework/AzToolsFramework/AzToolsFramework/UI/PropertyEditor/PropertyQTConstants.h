@@ -5,12 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTY_QT_CONSTANTS
-#define PROPERTY_QT_CONSTANTS
-
-#include <AzCore/base.h>
 
 #pragma once
+
+#include <AzCore/base.h>
 
 // Provides a shared set of values used by properties as they initialize QT components.
 namespace AzToolsFramework
@@ -30,5 +28,3 @@ namespace AzToolsFramework
     //! String for displaying inifinity
     static constexpr const char* PropertyQTConstant_InfinityString = "INF";
 };
-
-#endif

@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeComponentConverters.h>
 #include <Shape/ShapeDisplay.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
@@ -133,26 +134,30 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CapsuleShapeConfig>("Configuration", "Capsule shape configuration parameters")
+                editContext->Class<CapsuleShapeConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Capsule shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CapsuleShapeConfig::m_height,
-                        "Height",
-                        "End to end height of capsule, this includes the cylinder and both caps")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Height"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "End to end height of capsule, this includes the cylinder and both caps"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_radius, "Radius", "Radius of capsule")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShapeConfig::m_radius,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius of capsule"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CapsuleShapeConfig::m_translationOffset,
-                        "Translation Offset",
-                        "Translation offset of shape relative to its entity")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Translation Offset"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Translation offset of shape relative to its entity"))
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }

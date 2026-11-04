@@ -36,7 +36,7 @@ namespace ScriptCanvas
             // FunctionCallNode
             /////////////////
 
-            FunctionCallNode::FunctionCallNode() 
+            FunctionCallNode::FunctionCallNode()
                 : m_asset(AZ::Data::AssetLoadBehavior::NoLoad)
             {}
 
@@ -296,7 +296,7 @@ namespace ScriptCanvas
                     SlotExecution::Ins slotMapIns;
                     slotMapIns.push_back(in);
                     SlotExecution::Outs slotMapLatents;
-                    m_slotExecutionMap = AZStd::move(SlotExecution::Map(AZStd::move(slotMapIns), AZStd::move(slotMapLatents)));
+                    m_slotExecutionMap = SlotExecution::Map(AZStd::move(slotMapIns), AZStd::move(slotMapLatents));
                 }
                 else
                 {
@@ -326,7 +326,7 @@ namespace ScriptCanvas
                 }
 
                 // when returning variables: sort variables by source slot id, they are sorted in the slot map, so just take them from the slot map
-                m_slotExecutionMap = AZStd::move(SlotExecution::Map(AZStd::move(slotMapIns), AZStd::move(slotMapLatents)));
+                m_slotExecutionMap = SlotExecution::Map(AZStd::move(slotMapIns), AZStd::move(slotMapLatents));
             }
 
             AZ::Outcome<Grammar::LexicalScope, void> FunctionCallNode::GetFunctionCallLexicalScope(const Slot* slot) const
@@ -381,7 +381,7 @@ namespace ScriptCanvas
             bool FunctionCallNode::IsEntryPoint() const
             {
                 return m_slotExecutionMapSourceInterface.IsActiveDefaultObject()
-                    || m_slotExecutionMapSourceInterface.IsLatent(); 
+                    || m_slotExecutionMapSourceInterface.IsLatent();
             }
 
             bool FunctionCallNode::IsNodeableNode() const
@@ -451,7 +451,7 @@ namespace ScriptCanvas
                 AZ::Data::AssetId interfaceAssetId(assetId.m_guid, AZ_CRC_CE("SubgraphInterface"));
                 auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(interfaceAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
                 asset.BlockUntilLoadComplete();
-                
+
                 if (asset)
                 {
                     // do not nuke the assetId in case an update will be attempted immediately after this call

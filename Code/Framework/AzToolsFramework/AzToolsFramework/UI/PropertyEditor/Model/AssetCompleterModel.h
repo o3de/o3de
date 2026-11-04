@@ -11,10 +11,8 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#endif
 
 namespace AzToolsFramework
 {

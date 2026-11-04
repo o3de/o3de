@@ -58,6 +58,31 @@ namespace WhiteBox
         //! Set the white box mesh default shape.
         virtual void SetDefaultShape(DefaultShapeType defaultShape) = 0;
 
+        //! Number of sides the draw-shape tool uses for round / N-gon shapes
+        //! (4 = box / square). Sourced from the component's "Draw Sides" property.
+        virtual int GetDrawSides() { return 4; }
+
+        //! Shape the draw-shape tool builds, from the component's "Draw Shape" property.
+        virtual DrawShapeType GetDrawShape() { return DrawShapeType::Box; }
+
+        //! Staircase build parameters (step count, step-height division mode, riser height and
+        //! 90-degree rotation), sourced from the component's Staircase properties. Returned as a
+        //! single snapshot so callers fetch the whole group in one request.
+        virtual DrawStairInfo GetDrawStairInfo() { return DrawStairInfo{}; }
+
+        //! When true, draw acts as a CSG boolean (same as holding Ctrl): pulling in
+        //! carves/subtracts, pulling out adds/unions.
+        virtual bool GetDrawCarve() { return false; }
+
+        //! When true, draw mode click-stamps grid-snapped 1x1x1 cubes (CSG union, or
+        //! subtract with Ctrl) instead of the click-drag-pull workflow.
+        virtual bool GetDrawUnitCube() { return false; }
+
+        //! Fill (@p filled true) or clear a 1x1x1 voxel cell whose minimum corner is
+        //! @p cellMin (integer local coordinates). The mesh is regenerated from the
+        //! voxel set as a clean, watertight, merged surface (no CSG round-trip).
+        virtual void SetVoxelCell([[maybe_unused]] const AZ::Vector3& cellMin, [[maybe_unused]] bool filled) {}
+
     protected:
         ~EditorWhiteBoxComponentRequests() = default;
     };

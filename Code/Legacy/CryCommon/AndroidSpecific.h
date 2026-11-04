@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Android declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H
-#pragma once
 
 #if defined(__arm__) || defined(__aarch64__)
 #define _CPU_ARM
@@ -119,8 +116,6 @@ extern int wcsnicmp (const wchar_t* s1, const wchar_t* s2, size_t count);
 #undef wcsnlen
 extern size_t wcsnlen(const wchar_t* str, size_t maxLen);
 
-#undef stpcpy
-extern char* stpcpy(char* dest, const char* str);
 // end android-19
 
 
@@ -182,5 +177,3 @@ namespace std
         return result;
     }
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_ANDROIDSPECIFIC_H

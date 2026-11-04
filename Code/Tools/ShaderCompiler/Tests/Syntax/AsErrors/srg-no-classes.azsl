@@ -1,0 +1,9 @@
+ShaderResourceGroupSemantic UpdateFrequency
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroup ThatHasClasses : UpdateFrequency
+{
+    class ButShouldnt { }  // Error: We can't have class declarations in ShaderResourceGroup
+};

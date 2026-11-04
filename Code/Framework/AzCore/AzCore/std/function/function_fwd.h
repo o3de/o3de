@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#pragma once
+
 // Based on boost 1.39.0
-#ifndef AZSTD_FUNCTION_FWD_H
-#define AZSTD_FUNCTION_FWD_H
 
 #include <AzCore/std/base.h>
 
@@ -35,6 +36,3 @@ namespace AZStd
     //template<typename R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> class function9;
     //template<typename R, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> class function10;
 }
-
-#endif // AZSTD_FUNCTION_FWD_H
-#pragma once

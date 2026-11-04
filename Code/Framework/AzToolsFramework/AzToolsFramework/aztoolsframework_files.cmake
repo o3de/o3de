@@ -550,6 +550,8 @@ set(FILES
     UI/PropertyEditor/PropertyCheckBoxCtrl.cpp
     UI/PropertyEditor/PropertyColorCtrl.hxx
     UI/PropertyEditor/PropertyColorCtrl.cpp
+    UI/PropertyEditor/PropertyColorGradientCtrl.hxx
+    UI/PropertyEditor/PropertyColorGradientCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx
     UI/PropertyEditor/PropertyDoubleSliderCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
@@ -834,6 +836,8 @@ set(FILES
     AssetBrowser/Favorites/AssetBrowserFavoritesManager.h
     AssetBrowser/Favorites/AssetBrowserFavoritesModel.cpp
     AssetBrowser/Favorites/AssetBrowserFavoritesModel.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesSettings.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesSettings.h
     AssetBrowser/Favorites/AssetBrowserFavoriteItem.cpp
     AssetBrowser/Favorites/AssetBrowserFavoriteItem.h
     AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.cpp
@@ -1101,5 +1105,7 @@ set(SKIP_UNITY_BUILD_INCLUSION_FILES
     ViewportSelection/EditorDefaultSelection.cpp
     ViewportSelection/EditorInteractionSystemComponent.cpp
     ViewportSelection/EditorTransformComponentSelection.cpp
+    UI/PropertyEditor/PropertyCurveCtrl.hxx
+    UI/PropertyEditor/PropertyCurveCtrl.cpp
 )
 

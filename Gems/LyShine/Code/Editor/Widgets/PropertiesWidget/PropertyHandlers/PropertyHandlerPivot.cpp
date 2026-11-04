@@ -48,8 +48,8 @@ PropertyPivotCtrl::PropertyPivotCtrl(QWidget* parent)
 
     // Vector ctrl.
     {
-        m_propertyVectorCtrl->setLabel(0, "X");
-        m_propertyVectorCtrl->setLabel(1, "Y");
+        m_propertyVectorCtrl->setLabel(0, tr("X"));
+        m_propertyVectorCtrl->setLabel(1, tr("Y"));
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
@@ -187,4 +187,3 @@ void PropertyHandlerPivot::Register()
         &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerPivot());
 }
 
-#include <moc_PropertyHandlerPivot.cpp>

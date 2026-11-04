@@ -118,7 +118,7 @@ namespace Benchmark
             // Add a nested instance and update the template.
             AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>("Added nested instance");
             Instance& addedInstance =
-                m_instanceToModify->AddInstance(AZStd::move(m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId)));
+                m_instanceToModify->AddInstance(m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId));
             const InstanceAlias& instanceAlias = addedInstance.GetInstanceAlias();
             UpdateTemplate();
 

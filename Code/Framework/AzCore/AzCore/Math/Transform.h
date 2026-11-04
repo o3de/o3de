@@ -54,20 +54,20 @@ namespace AZ
         //! @}
 
         //! Sets the matrix from a quaternion, translation is set to zero.
-        static Transform CreateFromQuaternion(const class Quaternion& q);
+        static Transform CreateFromQuaternion(const Quaternion& q);
 
         //! Sets the matrix from a quaternion and a translation.
-        static Transform CreateFromQuaternionAndTranslation(const class Quaternion& q, const Vector3& p);
+        static Transform CreateFromQuaternionAndTranslation(const Quaternion& q, const Vector3& p);
 
         //! Constructs from a Matrix3x3, translation is set to zero.
         //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
         //! the largest matrix scale value will be used to uniformly scale the Transform.
-        static Transform CreateFromMatrix3x3(const class Matrix3x3& value);
+        static Transform CreateFromMatrix3x3(const Matrix3x3& value);
 
         //! Constructs from a Matrix3x3 and translation Vector3.
         //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
         //! the largest matrix scale value will be used to uniformly scale the Transform.
-        static Transform CreateFromMatrix3x3AndTranslation(const class Matrix3x3& value, const Vector3& p);
+        static Transform CreateFromMatrix3x3AndTranslation(const Matrix3x3& value, const Vector3& p);
 
         //! Constructs from a Matrix3x4.
         //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
@@ -75,7 +75,7 @@ namespace AZ
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
         //! Sets the transform to apply (uniform) scale only, no rotation or translation.
-        static Transform CreateUniformScale(const float scale);
+        static Transform CreateUniformScale(float scale);
 
         //! Sets the matrix to be a translation matrix, rotation part is set to identity.
         static Transform CreateTranslation(const Vector3& translation);
@@ -95,9 +95,9 @@ namespace AZ
         Vector3 GetBasisX() const;
         Vector3 GetBasisY() const;
         Vector3 GetBasisZ() const;
-        void GetBasisAndTranslation(Vector3* basisX, Vector3* basisY, Vector3* basisZ, Vector3* pos) const;
+        void GetBasisAndTranslation(Vector3& basisX, Vector3& basisY, Vector3& basisZ, Vector3& pos) const;
 
-        const Vector3& GetTranslation() const;
+        Vector3 GetTranslation() const;
         void SetTranslation(float x, float y, float z);
         void SetTranslation(const Vector3& v);
 
@@ -105,7 +105,7 @@ namespace AZ
         void SetRotation(const Quaternion& rotation);
 
         float GetUniformScale() const;
-        void SetUniformScale(const float scale);
+        void SetUniformScale(float scale);
 
         //! Sets the transform's scale to a unit value and returns the previous scale value.
         float ExtractUniformScale();
@@ -144,8 +144,17 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        float m_scale;
-        Vector3 m_translation;
+        union
+        {
+            Simd::Vec4::FloatType m_translationScale;
+            struct
+            {
+                float m_translationX;
+                float m_translationY;
+                float m_translationZ;
+                float m_scale;
+            };
+        };
     };
 
     //! Non-member functionality belonging to the AZ namespace

@@ -6,12 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Custom preference page interfaces
 
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IPREFERENCESPAGE_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IPREFERENCESPAGE_H
-#pragma once
 #include <AzCore/RTTI/RTTI.h>
 
 
@@ -36,5 +34,3 @@ struct IPreferencesPage
     //! Called by the editor when the preferences page is made the active page or is not longer the active page.
     //! @param bActive true when page become active, false when page deactivated.
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IPREFERENCESPAGE_H

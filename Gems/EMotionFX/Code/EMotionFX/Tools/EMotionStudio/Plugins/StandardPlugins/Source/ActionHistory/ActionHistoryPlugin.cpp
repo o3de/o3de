@@ -12,6 +12,10 @@
 #include <QListWidget>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
+#include <string>
+
 
 namespace EMStudio
 {
@@ -37,7 +41,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetName() const
     {
-        return "Action History";
+        return QT_TRANSLATE_NOOP("ActionHistoryPlugin", "Action History");
     }
 
 

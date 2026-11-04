@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_GRIDUTILS_H
-#define CRYINCLUDE_EDITOR_GRIDUTILS_H
 #pragma once
-
 
 namespace GridUtils
 {
@@ -58,5 +54,3 @@ namespace GridUtils
         }
     }
 }
-
-#endif // CRYINCLUDE_EDITOR_GRIDUTILS_H

@@ -77,7 +77,7 @@ namespace EMotionFX
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);
 
-        m_noSelectionLabel = new QLabel("Select an actor instance");
+        m_noSelectionLabel = new QLabel(tr("Select an actor instance"));
         m_noSelectionLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
         mainLayout->addWidget(m_noSelectionLabel, 0, Qt::AlignCenter);
 
@@ -92,12 +92,12 @@ namespace EMotionFX
         mainLayout->addWidget(m_headerWidget);
 
         nodeLayout->addSpacerItem(new QSpacerItem(5, 0, QSizePolicy::Fixed));
-        QLabel* NodeLabel = new QLabel("Node");
+        QLabel* NodeLabel = new QLabel(tr("Node"));
         NodeLabel->setAlignment(Qt::AlignLeft);
         nodeLayout->addWidget(NodeLabel, 0, Qt::AlignLeft);
 
         nodeLayout->addSpacerItem(new QSpacerItem(150, 0, QSizePolicy::Fixed));
-        QLabel* simulationLabel = new QLabel("Simulation");
+        QLabel* simulationLabel = new QLabel(tr("Simulation"));
         nodeLayout->addWidget(simulationLabel, 0, Qt::AlignRight);
         nodeLayout->addSpacerItem(new QSpacerItem(60, 0, QSizePolicy::Fixed));
 
@@ -321,7 +321,7 @@ namespace EMotionFX
 
             ActorInstance* selectedActorInstance = selectedRowIndices[0].data(SkeletonModel::ROLE_ACTOR_INSTANCE_POINTER).value<ActorInstance*>();
 
-            QAction* zoomToJointAction = contextMenu->addAction("Zoom to selected joints");
+            QAction* zoomToJointAction = contextMenu->addAction(tr("Zoom to selected joints"));
             connect(zoomToJointAction, &QAction::triggered, this, [=]
                 {
                     SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::ZoomToJoints, selectedActorInstance, selectedJoints);

@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QList>
 #include <QAbstractSocket>
-#endif
 
 class QTcpSocket;
 class QTcpServer;

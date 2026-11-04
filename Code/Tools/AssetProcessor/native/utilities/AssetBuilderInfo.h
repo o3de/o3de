@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef UTILITIES_ASSETBUILDERINFO_H
-#define UTILITIES_ASSETBUILDERINFO_H
+
 #pragma once
 
 #include <functional>
@@ -107,4 +106,3 @@ namespace AssetProcessor
 
     typedef AZ::EBus<AssetBuilderRegistrationBusTraits> AssetBuilderRegistrationBus;
 } // AssetProcessor
-#endif //UTILITIES_ASSETBUILDERINFO_H

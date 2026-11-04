@@ -10,9 +10,19 @@
 #define AZ_PLATFORM_MAC
 
 // Hardware traits ...
+#if defined(__x86_64__) || defined(__i386__)
+
 #define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
 #define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 0
 #define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 1
+
+#else
+
+#define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
+#define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 1
+#define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 0
+
+#endif
 
 // OS traits ...
 #define AZ_TRAIT_OS_ALLOW_MULTICAST 0

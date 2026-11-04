@@ -359,4 +359,3 @@ namespace ImageProcessingAtom
     }
 } // namespace ImageProcessingAtom
 
-#include <Source/Previewer/moc_ImagePreviewer.cpp>

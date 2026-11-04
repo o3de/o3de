@@ -15,6 +15,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Threading/ThreadUtils.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
  // PERFORMANCE NOTE & TODO
  // Profiling Ros Con demo, Task Graph was 2-3ms slower than Jobs
  // Time for Jobs was ~5.5ms, maxing out at ~6.3ms
@@ -100,7 +102,8 @@ namespace AZ
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
                 ec->Class<TaskGraphSystemComponent>
-                    ("TaskGraph", "System component to create the default executor")
+                    (QT_TRANSLATE_NOOP("AzCore", "TaskGraph"),
+                    QT_TRANSLATE_NOOP("AzCore", "System component to create the default executor"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                     ;

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETBUILDER_CONNECTIONMESSAGE_H
-#define ASSETBUILDER_CONNECTIONMESSAGE_H
+
+#pragma once
 
 #include <QByteArray>
 
@@ -29,5 +29,3 @@ namespace AssetProcessor
         Message(const Message&) = default;
     };
 }
-
-#endif // ASSETBUILDER_CONNECTIONMESSAGE_H

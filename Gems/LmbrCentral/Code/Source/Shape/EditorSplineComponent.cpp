@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Viewport/VertexContainerDisplay.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "MathConversion.h"
 
@@ -57,7 +58,8 @@ namespace LmbrCentral
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorSplineComponent>(
-                    "Spline", "Defines a sequence of points that can be interpolated.")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Spline"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Defines a sequence of points that can be interpolated."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spline.svg")
@@ -65,11 +67,17 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/spline/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_visibleInEditor, "Visible", "Always display this shape in the editor viewport")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_splineCommon, "Configuration", "Spline Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_visibleInEditor,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Visible"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Always display this shape in the editor viewport"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_splineCommon,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Spline Configuration"))
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSplineComponent::SplineChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_componentModeDelegate, "Component Mode", "Spline Component Mode")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_componentModeDelegate,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Component Mode"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Spline Component Mode"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
             }

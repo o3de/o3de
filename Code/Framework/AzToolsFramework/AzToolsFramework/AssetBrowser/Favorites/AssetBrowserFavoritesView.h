@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 
 #include <QString>
-#endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/FavoritesEntryDelegate.h>

@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_XMLBINARYHEADERS_H
-#define CRYINCLUDE_CRYCOMMON_XMLBINARYHEADERS_H
 #pragma once
-
 
 namespace XMLBinary
 {
@@ -76,5 +72,3 @@ namespace XMLBinary
         uint32 nStringDataSize;
     };
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_XMLBINARYHEADERS_H

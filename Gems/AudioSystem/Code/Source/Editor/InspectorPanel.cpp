@@ -414,4 +414,3 @@ namespace AudioControls
 
 } // namespace AudioControls
 
-#include <Source/Editor/moc_InspectorPanel.cpp>

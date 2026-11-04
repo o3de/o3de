@@ -47,16 +47,18 @@ namespace AZ
 
     size_t EntityActiveSystemComponent::GetActiveTypeIndexById(AZ::Crc32 typeNameId)
     {
+        // Always resolve an already-registered type, even when the registry is full - otherwise a
+        // fully-populated registry could no longer return existing indices (including index 0 "Entity").
+        size_t index = ScanListForIndex(typeNameId);
+        if (index != kInvalidIndex)
+        {
+            return index;
+        }
+
+        // Not registered yet: only hand out a new index if there is still room under the cap.
         if (m_activeTypeNameToIndex.size() >= s_maxStateFlags)
         {
             return kInvalidIndex;
-        }
-
-        size_t index = ScanListForIndex(typeNameId);
-        
-        if(index != kInvalidIndex)
-        {
-            return index;
         }
 
         m_activeTypeNameToIndex.push_back(typeNameId);

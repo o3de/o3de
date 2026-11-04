@@ -8,7 +8,6 @@
 
 // Description : CViewportTitleDlg implementation file
 
-#if !defined(Q_MOC_RUN)
 #include "EditorDefs.h"
 
 #include "ViewportTitleDlg.h"
@@ -49,7 +48,6 @@
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 #include "ui_ViewportTitleDlg.h"
-#endif //! defined(Q_MOC_RUN)
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -323,4 +321,3 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include <moc_ViewportTitleDlg.cpp>

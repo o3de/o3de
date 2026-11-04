@@ -1,0 +1,13 @@
+static const uint even_earlier_dim = 32u;
+static const uint earlier_dim = even_earlier_dim;
+static const uint dim = earlier_dim;
+
+ShaderResourceGroupSemantic freq1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRG : freq1
+{
+    Buffer<float4> stuff[dim];
+};

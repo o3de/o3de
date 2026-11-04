@@ -258,4 +258,3 @@ namespace AzQtComponents
     }
 }
 
-#include "Components/Widgets/moc_SegmentControl.cpp"

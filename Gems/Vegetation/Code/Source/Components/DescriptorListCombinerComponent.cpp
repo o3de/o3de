@@ -9,6 +9,7 @@
 #include "DescriptorListCombinerComponent.h"
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
@@ -31,11 +32,11 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DescriptorListCombinerConfig>(
-                    "Vegetation Asset List Combiner", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Asset List Combiner"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &DescriptorListCombinerConfig::m_descriptorProviders, "Descriptor Providers", "Ordered list of descriptor providers.")
+                    ->DataElement(0, &DescriptorListCombinerConfig::m_descriptorProviders, QT_TRANSLATE_NOOP("Vegetation", "Descriptor Providers"), QT_TRANSLATE_NOOP("Vegetation", "Ordered list of descriptor providers."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationDescriptorProviderService"));

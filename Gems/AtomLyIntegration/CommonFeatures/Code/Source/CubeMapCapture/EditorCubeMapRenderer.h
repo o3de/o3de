@@ -59,7 +59,7 @@ namespace AZ
             AZ::u32 RenderCubeMap(
                 AZStd::function<void(RenderCubeMapCallback, AZStd::string&)> renderCubeMapFn,
                 const AZStd::string dialogText,
-                const AZ::Entity* entity,
+                const AZ::Entity* entityRequestingRender,
                 const AZStd::string& folderName,
                 AZStd::string& relativePath,
                 CubeMapCaptureType captureType,

@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <MCore/Source/StandardHeaders.h>
+#include <MCore/Source/Command.h>
+
 #include <QWidget>
-#endif
 
 namespace EMStudio
 {

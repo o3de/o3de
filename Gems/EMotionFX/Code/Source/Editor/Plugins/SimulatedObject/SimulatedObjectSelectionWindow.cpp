@@ -24,10 +24,10 @@ namespace EMStudio
     SimulatedObjectSelectionWindow::SimulatedObjectSelectionWindow(QWidget* parent)
         : QDialog(parent)
     {
-        setWindowTitle("SimulatedObject Selection Window");
+        setWindowTitle(tr("SimulatedObject Selection Window"));
 
-        m_okButton = new QPushButton("OK");
-        m_cancelButton = new QPushButton("Cancel");
+        m_okButton = new QPushButton(tr("OK"));
+        m_cancelButton = new QPushButton(tr("Cancel"));
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->addWidget(m_okButton);

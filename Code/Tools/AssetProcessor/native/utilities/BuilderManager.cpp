@@ -62,7 +62,7 @@ namespace AssetProcessor
 
         if(auto uuidString = m_builderList.RemoveByConnectionId(connId); !uuidString.empty())
         {
-            AZ_TracePrintf("BuilderManager", "Lost connection to builder %s\n", uuidString.c_str());
+            AZ_Printf(AssetProcessor::ConsoleChannel, "BuilderManager: Lost connection to builder %s, index %u, removed from pool\n", uuidString.c_str(), connId);
         }
     }
 
@@ -111,7 +111,7 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    AZ_TracePrintf("BuilderManager", "Builder %s connected, connId: %d\n", builder->UuidString().c_str(), connId);
+                    AZ_Printf(AssetProcessor::ConsoleChannel, "BuilderManager: Builder %s connected, connId: %d\n", builder->UuidString().c_str(), connId);
                     builder->SetConnection(connId);
                     responsePing.m_accepted = true;
                     responsePing.m_uuid = builder->GetUuid();

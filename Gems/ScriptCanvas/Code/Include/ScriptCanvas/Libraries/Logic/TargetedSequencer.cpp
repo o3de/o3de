@@ -75,7 +75,7 @@ namespace ScriptCanvas
             AZStd::string TargetedSequencer::GenerateOutputName(int counter)
             {
                 AZStd::string slotName = AZStd::string::format("Out %i", counter);
-                return AZStd::move(slotName);
+                return slotName;
             }
 
             void TargetedSequencer::FixupStateNames()

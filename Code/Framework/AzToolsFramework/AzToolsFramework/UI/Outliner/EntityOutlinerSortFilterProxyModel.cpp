@@ -29,7 +29,8 @@ namespace AzToolsFramework
 
     void EntityOutlinerSortFilterProxyModel::UpdateFilter()
     {
-        invalidateFilter();
+        beginFilterChange();
+        endFilterChange();
     }
 
     void EntityOutlinerSortFilterProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
@@ -63,7 +64,7 @@ namespace AzToolsFramework
             QVariant rightData = sourceModel()->data(rightIndex);
 
             // make sure to compare the correct data types for sorting the current column
-            AZ_Assert(leftData.type() == rightData.type(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
+            AZ_Assert(leftData.metaType() == rightData.metaType(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
             if (leftData.canConvert<QString>())
             {
                 return leftData.toString() < rightData.toString();
@@ -85,5 +86,4 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerSortFilterProxyModel.cpp>
 

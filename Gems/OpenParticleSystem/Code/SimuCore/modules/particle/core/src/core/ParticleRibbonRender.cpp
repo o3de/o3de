@@ -10,6 +10,7 @@
 #include "particle/core/ParticlePool.h"
 #include "particle/core/ParticleDriver.h"
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Constants.h"
 #include "core/math/Math.h"
 
 namespace SimuCore::ParticleCore {
@@ -175,8 +176,13 @@ namespace SimuCore::ParticleCore {
             segment.segmentLength = localDistance;
             segment.tangent0 = segments.empty() ? curDir.GetNormalized() : segments[segments.size() - 1].tangent1;
             segment.tangent1 = (1.f - config.curveTension) * (dir.GetNormalized());
-            segment.interpCount = static_cast<AZ::u32>(std::ceil(localDistance / config.tesselationFactor));
-            segmentCount += segment.interpCount;
+
+            const float tesselationFactor = AZStd::GetMax(config.tesselationFactor, 1.f - SimuCore::ALMOST_ONE);
+            segment.interpCount = static_cast<AZ::u32>(std::ceil(localDistance / tesselationFactor));
+
+            // each segment added to this map causes at least one quad to be generated even if there is 0 interp.
+            // and segmentCount is used to calculate the total vertex and index count.
+            segmentCount = segmentCount + (segment.interpCount == 0 ? 1 : segment.interpCount);
             totalDistance += localDistance;
             segment.tileV = totalDistance / config.tilingDistance;
             segment.distance = totalDistance;
@@ -200,6 +206,24 @@ namespace SimuCore::ParticleCore {
         auto& indexBufferView = indexBufferViews[world.viewKey.v];
         auto& ib = ibs[world.viewKey.v];
 
+        // Note that there is a condition where a ribbon could look like this:
+        // Segments (3)
+        // [0] : interpCount = 0    - 0 interpcount still generates 1 quad.
+        // [1] : interpCount = 1    - 1 interpcount means 1 quad is generated.
+        // [2] : interpCount = 2    - 2 interpcount means 2 quads are generated.
+
+        // Each "Ribbon" always calls FillHeadVertex() for the first segment, which uses up 2 indices, and 2 vertices.
+        // Each "Ribbon" always calls FillEndVertex() after the last one, which also uses up 4 indices and 2 vertices.
+        // So at the very least, a ribbon costs one quad (two triangles, which is 4 verts and 6 indices).
+        // 
+        // It also calls FillVertex() for each segment that is not the first one, which uses up 6 indices and 2 vertices (another quad)
+        // It also calls FillVertex() again for each interpCount greater than 1 to generate middle vertices (another quad each).
+
+        // "segmentCount" is calculated while building the particle ribbon segments, and represents
+        // the number of quads that will be rendered, including the interps.  so in this case, segmentCount will be
+        // 4 (1 for the first segment, 1 for second segment, 2 for the third segment since it has an extra interpcount).
+
+        // so to calculate the vertex count, its going to be 2 verts per segmentCount, plus 2 verts for the head/end of each ribbon.
         bool reCreateVb = false;
         AZ::u32 vertexCount = (segmentCount + ribbonCount) * 2;
         if (vertexCount > vb.size()) {
@@ -209,6 +233,7 @@ namespace SimuCore::ParticleCore {
             reCreateVb = true;
         }
 
+        // and to calculate the index count, its going to be 6 indexes per quad rendered.
         bool reCreateIb = false;
         AZ::u32 indexCount = segmentCount * INDEX_COUNT_IN_ONE_SEGMENT;
         if (indexCount > ib.size()) {

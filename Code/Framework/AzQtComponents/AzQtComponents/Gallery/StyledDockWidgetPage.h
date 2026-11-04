@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QScopedPointer>
 #include <QPointer>
-#endif
 
 namespace Ui {
     class StyledDockWidgetPage;

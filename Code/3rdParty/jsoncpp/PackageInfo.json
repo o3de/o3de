@@ -1,0 +1,12 @@
+{
+    "PackageName": "JsonCpp",
+    "Version": "1.6.2",
+    "URL": "https://github.com/open-source-parsers/jsoncpp",
+    "License": "Public Domain OR MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.6.2.tar.gz",
+        "Revision": "1.6.2",
+        "SHA256": "c40e5a2583df633b904525305bda40b622d9971fee1ece7ce48ca723a4907d36"
+    }
+}

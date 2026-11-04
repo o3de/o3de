@@ -29,7 +29,7 @@ struct CCommentContext
         , m_align(0)
         , m_color(0.f, 0.f, 0.f, 1.f)
     {
-        sprintf_s(m_strFont, sizeof(m_strFont), "default");
+        azsnprintf(m_strFont, sizeof(m_strFont), "default");
         m_unitPos = Vec2(0.f, 0.f);
     }
 

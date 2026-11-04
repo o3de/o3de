@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_DATA_OVERLAY_INSTANCE_MSGS_H
-#define AZCORE_DATA_OVERLAY_INSTANCE_MSGS_H
+
+#pragma once
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/DataOverlay.h>
@@ -70,6 +70,3 @@ namespace AZStd
         inline result_type operator()(const argument_type& value) const { return static_cast<result_type>(reinterpret_cast<ptrdiff_t>(value.m_ptr)); }
     };
 }   // namespace AZStd
-
-#endif  // AZCORE_DATA_OVERLAY_INSTANCE_MSGS_H
-#pragma once

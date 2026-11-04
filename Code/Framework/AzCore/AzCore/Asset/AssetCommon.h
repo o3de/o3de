@@ -1093,7 +1093,7 @@ namespace AZ
             }
             else
             {
-                // if we are a different asset (or being swapped with a empty) then we just swap as usual.
+                // if we are a different asset (or being swapped with an empty) then we just swap as usual.
                 AZStd::swap(m_assetHint, rhs.m_assetHint);
             }
 

@@ -1,0 +1,8 @@
+class C
+{
+};
+
+int C::v();
+
+// Semantic Error 7: line 5::7 'intC::v()is a deported method declaration, which is considered ill-formed. You can make it a definition (with a body), or delete that statement.'
+// #EC 7

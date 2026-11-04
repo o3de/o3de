@@ -14,6 +14,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace OpenParticle
 {
@@ -29,34 +30,34 @@ namespace OpenParticle
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext != nullptr)
             {
-                editContext->Class<EditorParticleComponent>("Particle", "Particle System")
+                editContext->Class<EditorParticleComponent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle System"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Particle System")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<ParticleAsset>::Uuid());
 
-                editContext->Class<ParticleComponentController>("ParticleComponentController", "")
+                editContext->Class<ParticleComponentController>(QT_TRANSLATE_NOOP("OpenParticleSystem", "ParticleComponentController"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentController::m_configuration, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentController::m_configuration, QT_TRANSLATE_NOOP("OpenParticleSystem", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
-                editContext->Class<ParticleComponentConfig>("ParticleComponentConfig", "")
+                editContext->Class<ParticleComponentConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "ParticleComponentConfig"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ParticleComponentConfig::m_enable, "Enable",
-                            "Control whether this particle effect is enabled, can only be changed in edit mode")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ParticleComponentConfig::m_autoPlay, "AutoPlay",
-                            "Control whether this particle effect auto played after loaded, (e.g. loaded in editor or game beginning)")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_particleAsset, "Asset", "Particle Asset")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ParticleComponentConfig::m_enable, QT_TRANSLATE_NOOP("OpenParticleSystem", "Enable"),
+                            QT_TRANSLATE_NOOP("OpenParticleSystem", "Control whether this particle effect is enabled, can only be changed in edit mode"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ParticleComponentConfig::m_autoPlay, QT_TRANSLATE_NOOP("OpenParticleSystem", "AutoPlay"),
+                            QT_TRANSLATE_NOOP("OpenParticleSystem", "Control whether this particle effect auto played after loaded, (e.g. loaded in editor or game beginning)"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_particleAsset, QT_TRANSLATE_NOOP("OpenParticleSystem", "Asset"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Asset"))
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Particle Editor")
                         ->Attribute("EditCallback", &EditorParticleComponent::OpenParticleEditor)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_followActiveCamera, "FollowActiveCamera",
-                            "Particles always generated around active camera and absolute position of particle system will be ignored, global space "
-                            "used forcibly.");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_followActiveCamera, QT_TRANSLATE_NOOP("OpenParticleSystem", "FollowActiveCamera"),
+                            QT_TRANSLATE_NOOP("OpenParticleSystem", "Particles always generated around active camera and absolute position of particle system will be ignored, global space "
+                            "used forcibly."));
             }
         }
 

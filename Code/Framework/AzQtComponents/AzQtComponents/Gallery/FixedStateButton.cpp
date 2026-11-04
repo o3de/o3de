@@ -26,4 +26,3 @@ void FixedStateButton::paintEvent([[maybe_unused]] QPaintEvent* event)
     painter.drawControl(QStyle::CE_PushButton, option);
 }
 
-#include <Gallery/moc_FixedStateButton.cpp>

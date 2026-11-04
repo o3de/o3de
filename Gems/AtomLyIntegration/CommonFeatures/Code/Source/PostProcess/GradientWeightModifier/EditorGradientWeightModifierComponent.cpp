@@ -8,6 +8,7 @@
 
 #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/GradientWeightModifier/GradientWeightModifierComponentConstants.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorGradientWeightModifierComponent>(
-                        "PostFX Gradient Weight Modifier", "Modifies PostFX override factor based on a gradient signal sampled from an entity")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "PostFX Gradient Weight Modifier"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Modifies PostFX override factor based on a gradient signal sampled from an entity"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -43,7 +44,7 @@ namespace AZ
                         ;
 
                     editContext->Class<GradientWeightModifierComponentConfig>("GradientWeightModifierComponentConfig", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GradientWeightModifierComponentConfig::m_gradientSampler, "Gradient Sampler", "Gradient sampler configuration")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GradientWeightModifierComponentConfig::m_gradientSampler, QT_TRANSLATE_NOOP("AtomLyIntegration", "Gradient Sampler"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Gradient sampler configuration"))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ;
                 }

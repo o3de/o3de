@@ -8,7 +8,7 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief: help_menu.py: Setup a standard Help item in the menubar for PySide2 GUIs"""
+"""! @brief: help_menu.py: Setup a standard Help item in the menubar for PySide GUIs"""
 
 # built in's
 import os
@@ -17,12 +17,13 @@ from pathlib import Path
 import logging as _logging
 
 # 3rd Party
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMenuBar, QMenu, QAction
-from PySide2 import QtGui
-from PySide2 import QtCore
-from PySide2.QtCore import Slot, QObject, QUrl
-from shiboken2 import wrapInstance, getCppPointer
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import QMenuBar, QMenu
+from PySide6 import QtGui
+from PySide6.QtGui import QAction
+from PySide6 import QtCore
+from PySide6.QtCore import Slot, QObject, QUrl
+from shiboken6 import wrapInstance, getCppPointer
 
 # -------------------------------------------------------------------------
 #  global scope
@@ -47,7 +48,7 @@ HELP_URL = 'https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration
 # -------------------------------------------------------------------------
 class HelpMenu():
     """
-    Setup a standard Help item in the menubar for PySide2 GUIs
+    Setup a standard Help item in the menubar for PySide GUIs
 
     INPUTS:
     @param parent_widget: the class instance of the QMainWindow, or QWidget object
@@ -153,10 +154,10 @@ class TestMainWindow(QtWidgets.QMainWindow):
         self.setup_ui()
 
     def setup_ui(self):
-        self.setWindowTitle('PySide2-HelpMenu-Test')
+        self.setWindowTitle('PySide-HelpMenu-Test')
 
         # Setup Help Menu
-        self.help_menu = HelpMenu(self, 'PySide2-Test Help...', 'http://dccSI.com/NewTool')
+        self.help_menu = HelpMenu(self, 'PySide-Test Help...', 'http://dccSI.com/NewTool')
 
         # main widget
         self.main_widget = QtWidgets.QWidget(self)

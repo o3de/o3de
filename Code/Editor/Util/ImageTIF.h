@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_IMAGETIF_H
-#define CRYINCLUDE_EDITOR_UTIL_IMAGETIF_H
 #pragma once
 
 #include "Util/Image.h"
@@ -21,6 +18,3 @@ public:
     bool SaveRAW(const QString& fileName, const void* pData, int width, int height, int bytesPerChannel, int numChannels, bool bFloat, const char* preset);
     static const char* GetPreset(const QString& fileName);
 };
-
-
-#endif // CRYINCLUDE_EDITOR_UTIL_IMAGETIF_H

@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <QString>
-#endif
 
 namespace AzQtComponents
 {

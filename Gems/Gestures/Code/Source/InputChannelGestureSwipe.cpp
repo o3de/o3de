@@ -7,6 +7,7 @@
  */
 
 #include "InputChannelGestureSwipe.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -24,7 +25,9 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TypeAndConfig>("Swipe", "Gesture recognizer for swipes.")
+                ec->Class<TypeAndConfig>(
+                    QT_TRANSLATE_NOOP("Gestures", "Swipe"),
+                    QT_TRANSLATE_NOOP("Gestures", "Gesture recognizer for swipes."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

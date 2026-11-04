@@ -8,18 +8,17 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
+#include <Editor/ActorEditorBus.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Node.h>
-#include <QAbstractItemModel>
-#include <QItemSelectionModel>
-#include <Editor/ActorEditorBus.h>
-#include <MCore/Source/Command.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <MCore/Source/Command.h>
+
+#include <QAbstractItemModel>
 #include <QIcon>
-#endif
+#include <QItemSelectionModel>
 
 
 namespace EMotionFX

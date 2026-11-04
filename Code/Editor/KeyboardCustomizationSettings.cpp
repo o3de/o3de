@@ -35,7 +35,7 @@ QVector<QAction*> GetAllActionsForMenu(const QMenu* menu)
     QList<QAction*> menuActions = menu->actions();
     QVector<QAction*> actions;
     actions.reserve(menuActions.size());
-    foreach(QAction * action, menuActions)
+    for (QAction* action : menuActions)
     {
         if (action->menu() != nullptr)
         {

@@ -166,4 +166,3 @@ namespace AzToolsFramework
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
-#include "Thumbnails/moc_SourceControlThumbnail.cpp"

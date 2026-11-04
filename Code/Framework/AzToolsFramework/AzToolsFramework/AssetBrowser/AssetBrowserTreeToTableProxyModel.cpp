@@ -63,7 +63,7 @@ namespace AzToolsFramework
 
         int AssetBrowserTreeToTableProxyModel::rowCount(const QModelIndex& parent) const
         {
-            return parent.isValid() ? 0 : flattenedData.size();
+            return parent.isValid() ? 0 : static_cast<int>(flattenedData.size());
         }
 
         int AssetBrowserTreeToTableProxyModel::columnCount(const QModelIndex& parent) const
@@ -172,4 +172,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/moc_AssetBrowserTreeToTableProxyModel.cpp"

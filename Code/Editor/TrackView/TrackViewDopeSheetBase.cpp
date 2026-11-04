@@ -524,22 +524,24 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
         return;
     }
 
+    if (m_rubberBand)
+    {
+        m_rubberBand->deleteLater();
+        m_rubberBand = nullptr;
+    }
+
     if (m_mouseMode == eTVMouseMode_Select)
     {
         // Check if any key are selected.
         m_rcSelect.translate(-m_scrollOffset);
         SelectKeys(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_SelectWithinTime)
     {
         m_rcSelect.translate(-m_scrollOffset);
         SelectAllKeysWithinTimeFrame(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_DragTime)
     {
@@ -551,7 +553,6 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
             GetIEditor()->GetAnimation()->SetRecording(true);   // re-enable recording that was disabled while dragging time
             m_stashedRecordModeWhileTimeDragging = false;       // reset stashed value
         }
-
     }
     else if (m_mouseMode == eTVMouseMode_Paste)
     {
@@ -1424,7 +1425,7 @@ void CTrackViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
     QRect rcClient = rect();
     rc = rc.intersected(rcClient);
 
-    if (m_rubberBand == nullptr)
+    if (!m_rubberBand)
     {
         m_rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
     }
@@ -2899,11 +2900,11 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
                     // Show its time or frame number additionally.
                     if (GetTickDisplayMode() == eTVTickMode_InSeconds)
                     {
-                        sprintf_s(keydesc, "%.3f, {", time);
+                        azsprintf(keydesc, "%.3f, {", time);
                     }
                     else
                     {
-                        sprintf_s(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
+                        azsprintf(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
                     }
                 }
                 else

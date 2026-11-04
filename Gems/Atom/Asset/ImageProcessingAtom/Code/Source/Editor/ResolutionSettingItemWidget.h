@@ -9,11 +9,10 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Editor/EditorCommon.h>
-#endif
 
 namespace ImageProcessingAtom
 {

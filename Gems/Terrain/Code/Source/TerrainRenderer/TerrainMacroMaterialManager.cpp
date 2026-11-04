@@ -340,7 +340,7 @@ namespace Terrain
             AZ::Vector2 tileMax = tileMin + AZ::Vector2(MacroMaterialGridSize);
             for (auto& [entityId, materialHandle] : m_entityToMaterialHandle)
             {
-                if (AZStd::find(alreadyUsedMaterials.begin(), alreadyUsedMaterials.end(), materialHandle) != nullptr)
+                if (AZStd::find(alreadyUsedMaterials.begin(), alreadyUsedMaterials.end(), materialHandle) != alreadyUsedMaterials.end())
                 {
                     continue;
                 }

@@ -1,0 +1,74 @@
+ShaderResourceGroupSemantic UpdatePerEmpty
+{
+    FrequencyId = 0u;
+};
+
+struct UserStruct
+{
+    int      partial_;
+    float    m_myFloat;
+    double   m_myDouble;
+    bool     m_myBool;
+};
+
+struct IntegerTypesStruct
+{
+	int32_t m_int32;
+	uint32_t m_uint32;
+	int64_t m_int64;
+	uint64_t m_uint64;
+};
+
+ShaderResourceGroup PerEmpty : UpdatePerEmpty
+{
+    Texture1D                                          m_texArray[4];
+    Texture1D<float4>                                  m_texArray[4];
+    Texture1DArray                                     m_texArray[4];
+    Texture1DArray<float4>                             m_texArray[4];
+    RasterizerOrderedTexture1D                         m_texArray[4];
+    RasterizerOrderedTexture1D<float4>                 m_texArray[4];
+    RasterizerOrderedTexture1DArray                    m_texArray[4];
+    RasterizerOrderedTexture1DArray<float4>            m_texArray[4];
+    Texture2D                                          m_texArray[4];
+    Texture2D<float4>                                  m_texArray[4];
+    Texture2DArray                                     m_texArray[4];
+    Texture2DArray<float4>                             m_texArray[4];
+    RasterizerOrderedTexture2D                         m_texArray[4];
+    RasterizerOrderedTexture2D<float4>                 m_texArray[4];
+    RasterizerOrderedTexture2DArray                    m_texArray[4];
+    RasterizerOrderedTexture2DArray<float4>            m_texArray[4];
+    Texture2DMS<float4, 4>                             m_texArray[4];
+    Texture2DMSArray<float4, 8>                        m_texArray[4];
+    Texture3D                                          m_texArray[4];
+    Texture3D<float4>                                  m_texArray[4];
+    RasterizerOrderedTexture3D                         m_texArray[4];
+    RasterizerOrderedTexture3D<float4>                 m_texArray[4];
+    TextureCube                                        m_texArray[4];
+    TextureCube<float4>                                m_texArray[4];
+    RWTexture1D                                        m_texArray[4];
+    RWTexture1D<float4>                                m_texArray[4];
+    RWTexture1DArray                                   m_texArray[4];
+    RWTexture1DArray<float4>                           m_texArray[4];
+    RWTexture2D                                        m_texArray[4];
+    RWTexture2D<float4>                                m_texArray[4];
+    RWTexture2DArray                                   m_texArray[4];
+    RWTexture2DArray<float4>                           m_texArray[4];
+    RWTexture3D                                        m_texArray[4];
+    RWTexture3D<float4>                                m_texArray[4];
+	
+    AppendStructuredBuffer<UserStruct>                 m_bufferView[4];
+    ConsumeStructuredBuffer<UserStruct>                m_bufferView[4];
+    Buffer<float>                                      m_bufferView[4];
+    ByteAddressBuffer                                  m_bufferView[4];
+    StructuredBuffer<UserStruct>                       m_bufferView[4];
+    RWBuffer<float4x4>                                 m_bufferView[4];
+    RWByteAddressBuffer                                m_bufferView[4];
+    RWStructuredBuffer<UserStruct>                     m_bufferView[4];
+    RasterizerOrderedBuffer<int4>                      m_bufferView[4];
+    RasterizerOrderedByteAddressBuffer                 m_bufferView[4];
+    RasterizerOrderedStructuredBuffer<UserStruct>      m_bufferView[4];
+	RWStructuredBuffer<IntegerTypesStruct>             m_bufferView[4];
+	RWStructuredBuffer<uint64_t>                       m_bufferView[4];
+
+    ConstantBuffer<UserStruct>                         m_materialConstants[4];
+};

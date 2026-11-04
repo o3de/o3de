@@ -1,0 +1,13 @@
+class A
+{
+	float4 color : COLOR;
+	class A  // this creates a trap of spurious lookup find if we search for A in B when we ought to search for A in /
+	{
+	    int4 i;
+	};
+};
+// note: in C++ it's a forbidden construct. gcc: error: 'A::A' has the same name as the class in which it is declared
+
+class B : A
+{
+};

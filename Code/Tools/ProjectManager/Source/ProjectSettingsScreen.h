@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <ScreenWidget.h>
 
 #include <AzCore/Outcome/Outcome.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)

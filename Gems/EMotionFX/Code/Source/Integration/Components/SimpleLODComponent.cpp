@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Integration/Components/SimpleLODComponent.h>
 #include <MCore/Source/AttributeString.h>
@@ -43,22 +44,22 @@ namespace EMotionFX
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<SimpleLODComponent::Configuration>("Configuration", "The LOD Configuration.")
+                    editContext->Class<SimpleLODComponent::Configuration>(QT_TRANSLATE_NOOP("EMotionFX", "Configuration"), QT_TRANSLATE_NOOP("EMotionFX", "The LOD Configuration."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->DataElement(0, &SimpleLODComponent::Configuration::m_lodDistances,
-                            "LOD distance (Max)", "The maximum camera distance of this LOD.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "LOD distance (Max)"), QT_TRANSLATE_NOOP("EMotionFX", "The maximum camera distance of this LOD."))
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->ElementAttribute(AZ::Edit::Attributes::Step, 0.01f)
                             ->ElementAttribute(AZ::Edit::Attributes::Suffix, " m")
                             ->ElementAttribute(AZ::Edit::Attributes::Min, 0.00f)
                         ->DataElement(0, &SimpleLODComponent::Configuration::m_enableLodSampling,
-                            "Enable LOD anim graph sampling", "AnimGraph sample rate will adjust based on LOD level.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Enable LOD anim graph sampling"), QT_TRANSLATE_NOOP("EMotionFX", "AnimGraph sample rate will adjust based on LOD level."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(0, &SimpleLODComponent::Configuration::m_lodSampleRates,
-                            "Anim graph sample rates", "The sample rate of anim graph based on LOD. Setting it to O means the maximum sample rate.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Anim graph sample rates"), QT_TRANSLATE_NOOP("EMotionFX", "The sample rate of anim graph based on LOD. Setting it to O means the maximum sample rate."))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &SimpleLODComponent::Configuration::GetEnableLodSampling)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -118,7 +119,7 @@ namespace EMotionFX
                 if (editContext)
                 {
                     editContext->Class<SimpleLODComponent>(
-                        "Simple LOD distance", "The Simple LOD distance component alters the actor LOD level based on distance to camera")
+                        QT_TRANSLATE_NOOP("EMotionFX", "Simple LOD distance"), QT_TRANSLATE_NOOP("EMotionFX", "The Simple LOD distance component alters the actor LOD level based on distance to camera"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ;
                 }

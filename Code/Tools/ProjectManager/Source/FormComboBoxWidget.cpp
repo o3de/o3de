@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/StyledLineEdit.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <FormComboBoxWidget.h>
 #include <QEvent>
 #include <QFrame>
@@ -92,20 +93,26 @@ namespace O3DE::ProjectManager
     void FormComboBoxWidget::setErrorLabelVisible(bool visible)
     {
         m_errorLabel->setVisible(visible);
-        m_frame->setProperty("Valid", !visible);
-        refreshStyle();
+        if (AzQtComponents::StyleManager::setObjectProperty(m_frame, "Valid", !visible))
+        {
+            refreshStyle();
+        }
     }
 
     void FormComboBoxWidget::onFocus()
     {
-        m_frame->setProperty("Focus", true);
-        refreshStyle();
+        if (AzQtComponents::StyleManager::setObjectProperty(m_frame, "Focus", true))
+        {
+            refreshStyle();
+        }
     }
 
     void FormComboBoxWidget::onFocusOut()
     {
-        m_frame->setProperty("Focus", false);
-        refreshStyle();
+        if (AzQtComponents::StyleManager::setObjectProperty(m_frame, "Focus", false))
+        {
+            refreshStyle();
+        }
     }
 
     void FormComboBoxWidget::refreshStyle()

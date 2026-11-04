@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H
-#define CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H
 #pragma once
 
 #include "ISystem.h"
@@ -351,6 +348,3 @@ private:
         return szResult;
     }
 };
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_SIMPLESTRINGPOOL_H

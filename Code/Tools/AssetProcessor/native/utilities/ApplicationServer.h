@@ -8,10 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QTcpServer>
+
 #include <native/utilities/AssetUtilEBusHelper.h>
-#endif
 
 /** This Class is responsible for listening and getting new connections
  */

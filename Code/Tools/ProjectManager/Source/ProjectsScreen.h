@@ -10,7 +10,6 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
@@ -19,7 +18,6 @@
 
 #include <QQueue>
 #include <QVector>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)

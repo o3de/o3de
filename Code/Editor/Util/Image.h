@@ -6,14 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : Generic image class
 
 
 #include <ITexture.h>
-#ifndef CRYINCLUDE_EDITOR_UTIL_IMAGE_H
-#define CRYINCLUDE_EDITOR_UTIL_IMAGE_H
-#pragma once
 #include "MemoryBlock.h"
 
 
@@ -496,5 +494,3 @@ public:
 private:
     bool m_bGetHistogramEqualization;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_IMAGE_H

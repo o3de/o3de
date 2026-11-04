@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <QScopedPointer>
-#endif
 
 namespace Ui {
     class ComponentDemoWidget;

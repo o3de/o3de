@@ -39,7 +39,7 @@ def TestNodePaletteHappyPathCanSelectNode():
         """
 
     # Pre conditions
-    from PySide2 import QtWidgets as qtwidgets
+    from PySide6 import QtWidgets as qtwidgets
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import pyside_utils

@@ -105,10 +105,9 @@ namespace LUAEditor
 
         QMenu* theMenu = new QMenu(this);
         (void)theMenu->addAction(
-            "Close Lua Editor App",
+            "Close Lua Editor App", QKeySequence("Alt+F4"),
             this,
-            SLOT(OnMenuCloseCurrentWindow()),
-            QKeySequence("Alt+F4")
+            SLOT(OnMenuCloseCurrentWindow())
             );
 
         AzToolsFramework::FrameworkMessages::Bus::Broadcast(
@@ -327,7 +326,8 @@ namespace LUAEditor
 
         QList<QAction*> actions = m_gui->menuOpenRecent->actions();
 
-        for (int i = actions.size() - 1; i >= 0; i--)
+        const int size = aznumeric_cast<int>(actions.size());
+        for (int i = size - 1; i >= 0; i--)
         {
             m_gui->menuOpenRecent->removeAction(actions[i]);
         }
@@ -2521,4 +2521,3 @@ namespace LUAEditor
     }
 }//namespace LUAEditor
 
-#include <Source/LUA/moc_LUAEditorMainWindow.cpp>

@@ -6,16 +6,13 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
-#define CRYINCLUDE_EDITOR_MAINSTATUSBAR_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStatusBar>
 #include <QWidget>
 #include <QIcon>
-#endif
+
+#include "IEditor.h"
 
 class MainStatusBar;
 class QLabel;
@@ -56,9 +53,10 @@ protected:
 
 private:
     QIcon m_icon;
+    qint64 m_iconCacheKey = 0;
     QString m_text;
-    bool m_isClickable;
-    bool m_hasLeadingSpacer;
+    bool m_isClickable = false;
+    bool m_hasLeadingSpacer = false;
 };
 
 class MainStatusBar
@@ -81,6 +79,3 @@ public:
 signals:
     void requestStatusUpdate();
 };
-
-
-#endif // CRYINCLUDE_EDITOR_MAINSTATUSBAR_H

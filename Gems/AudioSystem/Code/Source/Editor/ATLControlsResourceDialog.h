@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string_view.h>
 
 #include <ACETypes.h>
@@ -19,7 +18,6 @@
 #include <QWidget>
 #include <QDialog>
 #include <QLineEdit>
-#endif
 
 class QAudioControlsTreeView;
 class QDialogButtonBox;

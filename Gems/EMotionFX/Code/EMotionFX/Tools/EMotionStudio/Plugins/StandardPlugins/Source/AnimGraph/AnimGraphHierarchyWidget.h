@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/StandardHeaders.h>
 #include "../StandardPluginsConfig.h"
+
 #include <QWidget>
-#endif
 
 
 // forward declarations

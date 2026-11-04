@@ -13,12 +13,52 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // Editor
 #include "Settings.h"
 #include "EditorViewportSettings.h"
 
+namespace EditorPreferencesFilesStrings
+{
+    static const char* FilesClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Files");
+    static const char* FilesClassDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "File Preferences");
+    static const char* AutoNumberSlicesName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Append numeric value to slices");
+    static const char* AutoNumberSlicesDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Should the name of the slice file be automatically numbered. e.g SliceName_001.slice vs. SliceName.slice");
+    static const char* BackupOnSaveName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Backup on Save");
+    static const char* MaxSaveBackupsName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Maximum Save Backups");
+    static const char* TempDirectoryName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Standard Temporary Directory");
+    static const char* UISliceSaveLocationName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "UI Slice Save location");
+    static const char* UISliceSaveLocationDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Specify the default location to save new UI slices");
 
+    static const char* ExternalEditorsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "External Editors");
+    static const char* ScriptsEditorName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Scripts Editor");
+    static const char* ScriptsEditorDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Scripts Text Editor (Default to O3DE internal tool when empty)");
+    static const char* ScriptsEditorPlaceholder = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Default to O3DE internal tool when empty");
+    static const char* ShadersEditorName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Shaders Editor");
+    static const char* ShadersEditorDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Shaders Text Editor");
+    static const char* BSpaceEditorName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "BSpace Editor");
+    static const char* BSpaceEditorDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Bspace Text Editor");
+    static const char* TextureEditorName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Texture Editor");
+    static const char* AnimationEditorName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Animation Editor");
+
+    static const char* AutoBackupClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Auto Backup");
+    static const char* EnableName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Enable");
+    static const char* EnableDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Enable Auto Backup");
+    static const char* TimeIntervalName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Time Interval");
+    static const char* TimeIntervalDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Auto Backup Interval (Minutes)");
+    static const char* MaxBackupsName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Maximum Backups");
+    static const char* MaxBackupsDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Maximum Auto Backups");
+    static const char* RemindTimeName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Remind Time");
+    static const char* RemindTimeDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Auto Remind Every (Minutes)");
+
+    static const char* AssetBrowserSettingsClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Asset Browser Settings");
+    static const char* MaxItemsDisplayedName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Maximum number of displayed items");
+    static const char* MaxItemsDisplayedDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Maximum number of items to display in the Search View.");
+
+    static const char* FilePreferencesClassName = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "File Preferences");
+    static const char* FilePreferencesClassDesc = QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Class for handling File Preferences");
+}
 
 void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
 {
@@ -59,47 +99,48 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
     {
-        editContext->Class<Files>("Files", "File Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_autoNumberSlices, "Append numeric value to slices", "Should the name of the slice file be automatically numbered. e.g SliceName_001.slice vs. SliceName.slice")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_backupOnSave, "Backup on Save", "Backup on Save")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Files::m_backupOnSaveMaxCount, "Maximum Save Backups", "Maximum Save Backups")
+        using namespace EditorPreferencesFilesStrings;
+
+        editContext->Class<Files>(FilesClassName, FilesClassDesc)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_autoNumberSlices, AutoNumberSlicesName, AutoNumberSlicesDesc)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_backupOnSave, BackupOnSaveName, BackupOnSaveName)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Files::m_backupOnSaveMaxCount, MaxSaveBackupsName, MaxSaveBackupsName)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, "Standard Temporary Directory", "Standard Temporary Directory")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "UI Slice Save location", "Specify the default location to save new UI slices");
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, TempDirectoryName, TempDirectoryName)
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, UISliceSaveLocationName, UISliceSaveLocationDesc);
 
-        editContext->Class<ExternalEditors>("External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor (Default to O3DE internal tool when empty)")
-            ->Attribute(AZ::Edit::Attributes::PlaceholderText, "Default to O3DE internal tool when empty")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
-            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_animations, "Animation Editor", "Animation Editor");
+        editContext->Class<ExternalEditors>(ExternalEditorsClassName, ExternalEditorsClassName)
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, ScriptsEditorName, ScriptsEditorDesc)
+            ->Attribute(AZ::Edit::Attributes::PlaceholderText, ScriptsEditorPlaceholder)
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_shaders, ShadersEditorName, ShadersEditorDesc)
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_BSpaces, BSpaceEditorName, BSpaceEditorDesc)
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_textures, TextureEditorName, TextureEditorName)
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_animations, AnimationEditorName, AnimationEditorName);
 
-        editContext->Class<AutoBackup>("Auto Backup", "Auto Backup")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AutoBackup::m_enabled, "Enable", "Enable Auto Backup")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_timeInterval, "Time Interval", "Auto Backup Interval (Minutes)")
+        editContext->Class<AutoBackup>(AutoBackupClassName, AutoBackupClassName)
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AutoBackup::m_enabled, EnableName, EnableDesc)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_timeInterval, TimeIntervalName, TimeIntervalDesc)
             ->Attribute(AZ::Edit::Attributes::Min, 2)
             ->Attribute(AZ::Edit::Attributes::Max, 10000)
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_maxCount, "Maximum Backups", "Maximum Auto Backups")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_maxCount, MaxBackupsName, MaxBackupsDesc)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, "Remind Time", "Auto Remind Every (Minutes)");
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, RemindTimeName, RemindTimeDesc);
 
-         editContext->Class<AssetBrowserSettings>("Asset Browser Settings", "Asset Browser Settings")
+        editContext->Class<AssetBrowserSettings>(AssetBrowserSettingsClassName, AssetBrowserSettingsClassName)
             ->DataElement(
-                AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
-                "Maximum number of items to display in the Search View.")
+                AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch, MaxItemsDisplayedName, MaxItemsDisplayedDesc)
             ->Attribute(AZ::Edit::Attributes::Min, 50)
             ->Attribute(AZ::Edit::Attributes::Max, 5000);
 
-        editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
+        editContext->Class<CEditorPreferencesPage_Files>(FilePreferencesClassName, FilePreferencesClassDesc)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, "Asset Browser Settings","Asset Browser Settings");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, FilesClassName, FilesClassDesc)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, ExternalEditorsClassName, ExternalEditorsClassName)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, AutoBackupClassName, AutoBackupClassName)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, AssetBrowserSettingsClassName, AssetBrowserSettingsClassName);
     }
 }
 

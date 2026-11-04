@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <Pass/Child/EditorModeDesaturationPass.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -23,26 +23,26 @@ namespace AZ
         RPI::Ptr<EditorModeDesaturationPass> EditorModeDesaturationPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<EditorModeDesaturationPass> pass = aznew EditorModeDesaturationPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
             : EditorModeFeedbackChildPassBase(descriptor, { 0.75f, 0.0f, 20.0f }, 1.0f)
         {
         }
-        
+
         void EditorModeDesaturationPass::InitializeInternal()
         {
             EditorModeFeedbackChildPassBase::InitializeInternal();
             m_desaturationAmountIndex.Reset();
         }
-        
+
         void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
             EditorModeFeedbackChildPassBase::FrameBeginInternal(params);
         }
-        
+
         void EditorModeDesaturationPass::SetDesaturationAmount(const float amount)
         {
             m_desaturationAmount = amount;

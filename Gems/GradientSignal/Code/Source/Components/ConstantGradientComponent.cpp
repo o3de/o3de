@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace GradientSignal
@@ -28,11 +29,11 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<ConstantGradientConfig>(
-                    "Constant Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Constant Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ConstantGradientConfig::m_value, "Value", "Value always returned by this gradient.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ConstantGradientConfig::m_value, QT_TRANSLATE_NOOP("GradientSignal", "Value"), QT_TRANSLATE_NOOP("GradientSignal", "Value always returned by this gradient."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ;

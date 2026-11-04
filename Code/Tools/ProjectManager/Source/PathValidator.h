@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QValidator>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QWidget)
 

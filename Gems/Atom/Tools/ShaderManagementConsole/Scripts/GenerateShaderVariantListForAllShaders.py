@@ -16,7 +16,7 @@ import azlmbr.paths
 import collections
 import GenerateShaderVariantListUtil
 
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 def main():
     msgBox = QtWidgets.QMessageBox()

@@ -7,7 +7,6 @@
  */
 
 #pragma once
-
 #include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -15,11 +14,9 @@
 #include <EffectorInspector.h>
 #include <Window/ParticleItemWidget.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QGraphicsView>
 #include <QMenu>
 #include <Serializer/ParticleSourceData.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

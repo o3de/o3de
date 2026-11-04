@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBCOMPLETION_H
-#define AZCORE_JOBS_JOBCOMPLETION_H 1
+
+#pragma once
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/Job.h>
@@ -62,6 +62,3 @@ namespace AZ
         AZStd::semaphore m_semaphore;
     };
 }
-
-#endif
-#pragma once

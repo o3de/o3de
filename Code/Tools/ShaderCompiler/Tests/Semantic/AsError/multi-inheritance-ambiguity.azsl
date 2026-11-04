@@ -1,0 +1,29 @@
+interface interf1 { void f(); };
+
+interface interf2 { void f(); };
+
+class s : interf1, interf2  // let's error-out here: name hiding occurs.
+{
+    void f();  // which f() are you talking about ?
+    void f();
+};
+
+// Semantic Error 34:  'Found multiple symbols hidden by /s/f in bases of /s. First was /interf1/f, now also found in /interf2.'
+// #EC 34
+
+/* example of a problem:
+interface Mesh { int Count(); }; // count of polygons
+
+interface Particles { int Count(); }; // count of particles
+
+class RainDrop : Particles, Mesh
+{
+    int Count() override
+    {
+        // ?
+    }
+
+    SpriteParticle quad[2];
+    GeomMesh lod_0;
+};
+*/

@@ -54,7 +54,7 @@ namespace AzToolsFramework
         m_localPosition = localPosition;
     }
 
-    const AZ::Vector3& ManipulatorSpaceWithLocalTransform::GetLocalPosition() const
+    AZ::Vector3 ManipulatorSpaceWithLocalTransform::GetLocalPosition() const
     {
         return m_localTransform.GetTranslation();
     }

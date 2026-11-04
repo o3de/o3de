@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+
 #include <QPushButton>
-#endif
 
 
 namespace EMotionFX

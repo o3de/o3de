@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QString>
 #include <QMap>
 
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <native/assetprocessor.h>
-#endif
 
 namespace AzToolsFramework
 {

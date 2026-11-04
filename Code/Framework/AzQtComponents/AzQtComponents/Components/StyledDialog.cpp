@@ -39,5 +39,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_StyledDialog.cpp"

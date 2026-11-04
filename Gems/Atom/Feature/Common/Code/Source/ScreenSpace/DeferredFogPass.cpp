@@ -53,7 +53,7 @@ namespace AZ
             bool isEnabled = pass->Pass::IsEnabled(); // retrieves the state from the data driven pass
             fogSettings->SetEnabled(isEnabled); // Set it and mark for update
 
-            return AZStd::move(pass);
+            return pass;
         }
 
 
@@ -98,7 +98,7 @@ namespace AZ
         {
             DeferredFogSettings* fogSettings = GetPassFogSettings();
             Data::Instance<RPI::ShaderResourceGroup> srg = m_shaderResourceGroup.get();
-            
+
             // match and set all SRG constants' indices
 #define AZ_GFX_COMMON_PARAM(ValueType, FunctionName, MemberName, DefaultValue)                          \
             fogSettings->MemberName##SrgIndex = srg->FindShaderInputConstantIndex(Name(#MemberName));   \
@@ -131,7 +131,7 @@ namespace AZ
 
             if (fogSettings->GetSettingsNeedUpdate())
             {   // SRG constants are up to date and will be bound as they are.
-                // First time around they will be dirty to ensure properly set. 
+                // First time around they will be dirty to ensure properly set.
 
                 // Load all texture resources:
                 //  first set all macros to be empty, but override the texture for setting images.
@@ -175,14 +175,14 @@ namespace AZ
                         fogSettings->MemberName.c_str());                                                                                          \
                 }   \
             }   \
-       
+
 
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
             if (m_depthTextureDimensionsIndex.IsValid())
             {
-                
+
                 auto attachment = GetInputOutputBinding(0).GetAttachment();
                 if (attachment)
                 {
@@ -214,7 +214,7 @@ namespace AZ
             SetEnabled( fogSettings->GetEnabled() );
         }
 
-        bool DeferredFogPass::IsEnabled() const 
+        bool DeferredFogPass::IsEnabled() const
         {
             if (!r_enableFog)
             {

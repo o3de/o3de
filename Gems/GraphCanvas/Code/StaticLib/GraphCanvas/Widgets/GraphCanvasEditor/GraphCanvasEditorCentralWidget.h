@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
-#include <qdockwidget.h>
-#include <qmimedata.h>
+#include <QDockWidget>
+#include <QMimeData>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -22,7 +21,6 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 
 #include <GraphCanvas/Styling/StyleManager.h>
-#endif
 
 namespace Ui
 {

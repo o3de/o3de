@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -63,34 +64,34 @@ namespace AZ
                     editContext->Class<ShaderSourceData>("ShaderSourceData", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_source, "Source", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_drawListName, "Draw List", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_depthStencilState, "Depth Stencil State", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_rasterState, "Raster State", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_blendState, "Blend State", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_globalTargetBlendState, "Global Target Blend State", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_targetBlendStates, "Target Blend States", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_programSettings, "Program Settings", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, "Remove Build Arguments", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, "Add Build Arguments", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_definitions, "Definitions", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_shaderOptionValues, "Shader Options", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_disabledRhiBackends, "Disabled RHI Backends", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_supervariants, "Super Variants", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_keepTempFolder, "Keep Temp Folder", "Preserves the Temp folder for successful shader compilations.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_source, QT_TRANSLATE_NOOP("Atom::RPI", "Source"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_drawListName, QT_TRANSLATE_NOOP("Atom::RPI", "Draw List"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_depthStencilState, QT_TRANSLATE_NOOP("Atom::RPI", "Depth Stencil State"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_rasterState, QT_TRANSLATE_NOOP("Atom::RPI", "Raster State"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_blendState, QT_TRANSLATE_NOOP("Atom::RPI", "Blend State"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_globalTargetBlendState, QT_TRANSLATE_NOOP("Atom::RPI", "Global Target Blend State"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_targetBlendStates, QT_TRANSLATE_NOOP("Atom::RPI", "Target Blend States"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_programSettings, QT_TRANSLATE_NOOP("Atom::RPI", "Program Settings"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, QT_TRANSLATE_NOOP("Atom::RPI", "Remove Build Arguments"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, QT_TRANSLATE_NOOP("Atom::RPI", "Add Build Arguments"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_definitions, QT_TRANSLATE_NOOP("Atom::RPI", "Definitions"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_shaderOptionValues, QT_TRANSLATE_NOOP("Atom::RPI", "Shader Options"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_disabledRhiBackends, QT_TRANSLATE_NOOP("Atom::RPI", "Disabled RHI Backends"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_supervariants, QT_TRANSLATE_NOOP("Atom::RPI", "Super Variants"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_keepTempFolder, QT_TRANSLATE_NOOP("Atom::RPI", "Keep Temp Folder"), QT_TRANSLATE_NOOP("Atom::RPI", "Preserves the Temp folder for successful shader compilations."))
                         ;
 
                     editContext->Class<ProgramSettings>("ShaderSourceData::ProgramSettings", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ProgramSettings::m_entryPoints, "Entry Points", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ProgramSettings::m_entryPoints, QT_TRANSLATE_NOOP("Atom::RPI", "Entry Points"), "")
                         ;
 
                     editContext->Class<EntryPoint>("ShaderSourceData::EntryPoint", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntryPoint::m_name, "Name", "")
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntryPoint::m_type, "Type", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntryPoint::m_name, QT_TRANSLATE_NOOP("Atom::RPI", "Name"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntryPoint::m_type, QT_TRANSLATE_NOOP("Atom::RPI", "Type"), "")
                             ->EnumAttribute(ShaderStageType::Vertex, ToString(ShaderStageType::Vertex))
                             ->EnumAttribute(ShaderStageType::Geometry, ToString(ShaderStageType::Geometry))
                             ->EnumAttribute(ShaderStageType::TessellationControl, ToString(ShaderStageType::TessellationControl))
@@ -103,10 +104,10 @@ namespace AZ
                     editContext->Class<SupervariantInfo>("ShaderSourceData::SupervariantInfo", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_name, "Name", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_removeBuildArguments, "Remove Build Arguments", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_addBuildArguments, "Add Build Arguments", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_definitions, "Definitions", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_name, QT_TRANSLATE_NOOP("Atom::RPI", "Name"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_removeBuildArguments, QT_TRANSLATE_NOOP("Atom::RPI", "Remove Build Arguments"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_addBuildArguments, QT_TRANSLATE_NOOP("Atom::RPI", "Add Build Arguments"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_definitions, QT_TRANSLATE_NOOP("Atom::RPI", "Definitions"), "")
                         ;
                 }
             }

@@ -53,7 +53,7 @@ def CreateScriptEventFile():
     import azlmbr.bus as bus
 
     # Pyside imports
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     GENERAL_WAIT = 1.0  # seconds
 

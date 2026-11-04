@@ -347,7 +347,7 @@ namespace FileWatcherTests
 
         ASSERT_FALSE(lastFileWasIgnored); 
 
-        int totalNonIgnored = nonIgnoredFiles.count();
+        int totalNonIgnored = static_cast<int>(nonIgnoredFiles.count());
 
         WatchUntilNoMoreEvents(totalNonIgnored, totalNonIgnored, totalNonIgnored);
         
@@ -509,7 +509,7 @@ namespace FileWatcherTests
         }
         
         
-        WatchUntilNoMoreEvents(expectedFileAdds.count(), 0, 0); // dir%1, subdir%1 and the file are created so 3 per.
+        WatchUntilNoMoreEvents(static_cast<int>(expectedFileAdds.count()), 0, 0); // dir%1, subdir%1 and the file are created so 3 per.
         ASSERT_EQ(expectedFileAdds.count(), m_filesAdded.count()); // we are about to use operator[] on these, so we must assert.
 
         // order is not necessarily consistent in this case - to be more specific, its locally consistent - you will always

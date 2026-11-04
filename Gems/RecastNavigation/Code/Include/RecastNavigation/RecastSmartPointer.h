@@ -7,10 +7,11 @@
  */
 
 #pragma once
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <DetourCrowd.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace RecastNavigation
 {
@@ -81,6 +82,15 @@ namespace RecastNavigation
         void operator ()(dtNavMeshQuery* p)
         {
             dtFreeNavMeshQuery(p);
+        }
+    };
+
+    template<>
+    struct CustomRecastDeleter<dtCrowd>
+    {
+        void operator()(dtCrowd* p)
+        {
+            dtFreeCrowd(p);
         }
     };
 } // namespace RecastNavigation

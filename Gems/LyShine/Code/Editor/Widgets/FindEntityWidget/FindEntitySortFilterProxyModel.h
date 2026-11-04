@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
+
 #include <QSortFilterProxyModel>
-#endif
 
 /*!
  * Enables the Find Entity widget to filter entries based on search string.

@@ -5,13 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPHEADERVIEW_H
-#define COLUMNGROUPHEADERVIEW_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QHeaderView>
 #include <QVector>
-#endif
 
 class ColumnGroupProxyModel;
 
@@ -52,5 +50,3 @@ private:
 
     QVector<Group> m_groups;
 };
-
-#endif // COLUMNGROUPHEADERVIEW_H

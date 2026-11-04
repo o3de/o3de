@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_DATA_OVERLAY_H
-#define AZCORE_DATA_OVERLAY_H
+
+#pragma once
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
@@ -35,6 +35,3 @@ namespace AZ
         DataOverlayToken        m_dataToken;    // Provider-specific data used to identify and retrieve the actual data.
     };
 }   // namespace AZ
-
-#endif  // AZCORE_DATA_OVERLAY_H
-#pragma once

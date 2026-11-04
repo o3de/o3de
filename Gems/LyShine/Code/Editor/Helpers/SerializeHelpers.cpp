@@ -145,8 +145,8 @@ namespace SerializeHelpers
         {
             // This happens when the serialization version numbers DON'T match.
             QMessageBox(QMessageBox::Critical,
-                "Error",
-                QString("Failed to restore elements. The clipboard serialization format is incompatible."),
+                QObject::tr("Error"),
+                QObject::tr("Failed to restore elements. The clipboard serialization format is incompatible."),
                 QMessageBox::Ok, QApplication::activeWindow()).exec();
 
             // Nothing more to do.

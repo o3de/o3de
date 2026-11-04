@@ -1,0 +1,9 @@
+void PSMain()
+{
+    class S
+    {
+        void GetDiffuseHolderInCB()
+        {
+        }
+    };
+}

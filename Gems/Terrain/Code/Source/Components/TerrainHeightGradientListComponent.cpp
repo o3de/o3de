@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
@@ -37,12 +38,15 @@ namespace Terrain
             if (edit)
             {
                 edit->Class<TerrainHeightGradientListConfig>(
-                    "Terrain Height Gradient List Component", "Provide height data for a region of the world")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Height Gradient List Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Provide height data for a region of the world"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(0, &TerrainHeightGradientListConfig::m_gradientEntities, "Gradient Entities", "Ordered list of gradients to use as height providers.")
+                    ->DataElement(0, &TerrainHeightGradientListConfig::m_gradientEntities,
+                        QT_TRANSLATE_NOOP("Terrain", "Gradient Entities"),
+                        QT_TRANSLATE_NOOP("Terrain", "Ordered list of gradients to use as height providers."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))

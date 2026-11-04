@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/SmoothStep.h>
@@ -30,7 +31,7 @@ namespace GradientSignal
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<GradientSignalSystemComponent>("GradientSignal", "Manages registration of gradient image assets and reflection of required types")
+                ec->Class<GradientSignalSystemComponent>(QT_TRANSLATE_NOOP("GradientSignal", "GradientSignal"), QT_TRANSLATE_NOOP("GradientSignal", "Manages registration of gradient image assets and reflection of required types"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -8,6 +8,7 @@
 
 #include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorWhiteBalanceComponent>("White Balance", "Controls the White Balance")
+                    editContext->Class<EditorWhiteBalanceComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "White Balance"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the White Balance"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -46,24 +47,24 @@ namespace AZ
 
                     editContext->Class<WhiteBalanceComponentConfig>("WhiteBalanceComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &WhiteBalanceComponentConfig::m_enabled, "Enable White Balance", "Enable White Balance.")
+                            Edit::UIHandlers::CheckBox, &WhiteBalanceComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable White Balance"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable White Balance."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_temperature, "Temperature", "Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_temperature, QT_TRANSLATE_NOOP("AtomLyIntegration", "Temperature"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature."))
                         ->Attribute(AZ::Edit::Attributes::Min, -1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_tint, "Tint", "Factor for compensate for a green or magenta tint")
+                            AZ::Edit::UIHandlers::Slider, &WhiteBalanceComponentConfig::m_tint, QT_TRANSLATE_NOOP("AtomLyIntegration", "Tint"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor for compensate for a green or magenta tint"))
                         ->Attribute(AZ::Edit::Attributes::Min, -1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &WhiteBalanceComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

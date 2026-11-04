@@ -81,20 +81,20 @@ namespace ScriptedEntityTweener
             behaviorContext->EBus<ScriptedEntityTweenerNotificationsBus>("ScriptedEntityTweenerNotificationBus")
                 ->Handler<ScriptedEntityTweenerNotificationBusHandler>();
 
-            behaviorContext->Enum<(int)ScriptedEntityTweener::EasingMethod::Linear>("ScriptedEntityTweenerEasingMethod_Linear")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Quad>("ScriptedEntityTweenerEasingMethod_Quad")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Cubic>("ScriptedEntityTweenerEasingMethod_Cubic")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Quart>("ScriptedEntityTweenerEasingMethod_Quart")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Quint>("ScriptedEntityTweenerEasingMethod_Quint")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Sine>("ScriptedEntityTweenerEasingMethod_Sine")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Expo>("ScriptedEntityTweenerEasingMethod_Expo")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Circ>("ScriptedEntityTweenerEasingMethod_Circ")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Elastic>("ScriptedEntityTweenerEasingMethod_Elastic")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Back>("ScriptedEntityTweenerEasingMethod_Back")
-                ->Enum<(int)ScriptedEntityTweener::EasingMethod::Bounce>("ScriptedEntityTweenerEasingMethod_Bounce")
-                ->Enum<(int)ScriptedEntityTweener::EasingType::In>("ScriptedEntityTweenerEasingType_In")
-                ->Enum<(int)ScriptedEntityTweener::EasingType::Out>("ScriptedEntityTweenerEasingType_Out")
-                ->Enum<(int)ScriptedEntityTweener::EasingType::InOut>("ScriptedEntityTweenerEasingType_InOut");
+            behaviorContext->Enum<(int)AzFramework::EasingMethod::Linear>("ScriptedEntityTweenerEasingMethod_Linear")
+                ->Enum<(int)AzFramework::EasingMethod::Quad>("ScriptedEntityTweenerEasingMethod_Quad")
+                ->Enum<(int)AzFramework::EasingMethod::Cubic>("ScriptedEntityTweenerEasingMethod_Cubic")
+                ->Enum<(int)AzFramework::EasingMethod::Quart>("ScriptedEntityTweenerEasingMethod_Quart")
+                ->Enum<(int)AzFramework::EasingMethod::Quint>("ScriptedEntityTweenerEasingMethod_Quint")
+                ->Enum<(int)AzFramework::EasingMethod::Sine>("ScriptedEntityTweenerEasingMethod_Sine")
+                ->Enum<(int)AzFramework::EasingMethod::Expo>("ScriptedEntityTweenerEasingMethod_Expo")
+                ->Enum<(int)AzFramework::EasingMethod::Circ>("ScriptedEntityTweenerEasingMethod_Circ")
+                ->Enum<(int)AzFramework::EasingMethod::Elastic>("ScriptedEntityTweenerEasingMethod_Elastic")
+                ->Enum<(int)AzFramework::EasingMethod::Back>("ScriptedEntityTweenerEasingMethod_Back")
+                ->Enum<(int)AzFramework::EasingMethod::Bounce>("ScriptedEntityTweenerEasingMethod_Bounce")
+                ->Enum<(int)AzFramework::EasingType::In>("ScriptedEntityTweenerEasingType_In")
+                ->Enum<(int)AzFramework::EasingType::Out>("ScriptedEntityTweenerEasingType_Out")
+                ->Enum<(int)AzFramework::EasingType::InOut>("ScriptedEntityTweenerEasingType_InOut");
         }
     }
 
@@ -150,8 +150,8 @@ namespace ScriptedEntityTweener
     void ScriptedEntityTweenerSystemComponent::SetOptionalParams(float timeIntoAnimation, float duration, int easingMethod, int easingType, float delayTime, int timesToPlay, bool isFrom, bool isPlayingBackward, const AZ::Uuid& animationId, int timelineId, int onCompleteCallbackId, int onUpdateCallbackId, int onLoopCallbackId)
     {
         AnimationParameters& params = m_tempParams;
-        params.m_animationProperties.m_easeMethod = static_cast<EasingMethod>(easingMethod);
-        params.m_animationProperties.m_easeType = static_cast<EasingType>(easingType);
+        params.m_animationProperties.m_easeMethod = static_cast<AzFramework::EasingMethod>(easingMethod);
+        params.m_animationProperties.m_easeType = static_cast<AzFramework::EasingType>(easingType);
         params.m_animationProperties.m_timeIntoAnimation = timeIntoAnimation;
         params.m_animationProperties.m_timeDuration = duration;
         params.m_animationProperties.m_timeToDelayAnim = delayTime;

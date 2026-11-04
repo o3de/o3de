@@ -121,7 +121,7 @@ namespace AZ::DocumentPropertyEditor
                                 break;
                             }
                         }
-                        NotifyResetDocument();
+                        QueueResetDocument();
                     });
                 builder.EndPropertyEditor();
             }
@@ -136,7 +136,7 @@ namespace AZ::DocumentPropertyEditor
                     ColorTreeNode child;
                     child.m_parent = entry.m_node;
                     entry.m_node->m_children.push_back(child);
-                    NotifyResetDocument();
+                    QueueResetDocument();
                 });
             builder.EndPropertyEditor();
 
@@ -170,6 +170,6 @@ namespace AZ::DocumentPropertyEditor
         {
             m_matrix[i].resize(m_columnCount);
         }
-        NotifyResetDocument();
+        QueueResetDocument();
     }
 } // namespace AZ::DocumentPropertyEditor

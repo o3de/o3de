@@ -68,4 +68,3 @@ QSize EditorPreferencesTreeWidgetItemDelegate::sizeHint(const QStyleOptionViewIt
     return QStyledItemDelegate::sizeHint(option, index);
 }
 
-#include <moc_EditorPreferencesTreeWidgetItemDelegate.cpp>

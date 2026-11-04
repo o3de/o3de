@@ -40,6 +40,7 @@
 // Modified from original
 
 #include <QWidget>
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 FlowLayout::FlowLayout(QWidget* parent, int margin, int hSpacing, int vSpacing)
@@ -96,7 +97,7 @@ int FlowLayout::verticalSpacing() const
 
 int FlowLayout::count() const
 {
-    return itemList.size();
+    return aznumeric_cast<int>(itemList.size());
 }
 
 QLayoutItem* FlowLayout::itemAt(int index) const
@@ -151,7 +152,7 @@ QSize FlowLayout::minimumSize() const
         size = size.expandedTo(item->minimumSize());
     }
 
-    size += QSize(2 * margin(), 2 * margin());
+    size += QSize(2 * contentsMargins().left(), 2 * contentsMargins().top());
     return size;
 }
 

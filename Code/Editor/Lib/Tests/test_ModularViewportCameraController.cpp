@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UnitTest/Mocks/MockViewportInteractionRequests.h>
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
+#include <QApplication>
 
 namespace UnitTest
 {
@@ -99,7 +100,7 @@ namespace UnitTest
 
             m_rootWidget = new QWidget();
             // set root widget to the the active window to ensure focus in/out events are fired
-            QApplication::setActiveWindow(m_rootWidget);
+            m_rootWidget->activateWindow();
             m_rootWidget->setFixedSize(WidgetSize);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
 
@@ -126,7 +127,6 @@ namespace UnitTest
             m_controllerList->UnregisterViewportContext(TestViewportId);
             m_controllerList.reset();
 
-            QApplication::setActiveWindow(nullptr);
             delete m_rootWidget;
 
             LeakDetectionFixture::TearDown();
@@ -529,6 +529,9 @@ namespace UnitTest
 
         // move focus to the other widget
         m_otherWidget->setFocus();
+        // Qt6 delivers focus-change events asynchronously; flush them so the
+        // camera controller observes the focus loss before the next tick.
+        QApplication::processEvents();
         // update the viewport
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(1.0f), AZ::ScriptTimePoint() });
 

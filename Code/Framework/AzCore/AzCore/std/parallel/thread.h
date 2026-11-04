@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/parallel/config.h>
@@ -102,7 +103,8 @@ namespace AZStd
             return *this;
         }
 
-        template<class F, class... Args, typename = AZStd::enable_if_t<!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>>>
+        template<class F, class... Args>
+            requires (!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>)
         explicit thread(F&& f, Args&&... args);
 
         /**
@@ -231,14 +233,14 @@ namespace AZStd
         {
             using FunctorType = AZStd::decay_t<F>;
             AZStd::allocator a;
-            return new (a.allocate(sizeof(thread_info_impl<FunctorType>), AZStd::alignment_of< thread_info_impl<FunctorType> >::value))thread_info_impl<FunctorType>(AZStd::forward<F>(f));
+            return new (a.allocate(sizeof(thread_info_impl<FunctorType>), AZStd::alignment_of_v< thread_info_impl<FunctorType> >))thread_info_impl<FunctorType>(AZStd::forward<F>(f));
         }
 
         template<typename F>
         static AZ_INLINE thread_info* create_thread_info(thread_move_t<F> f)
         {
             AZStd::allocator a;
-            return new (a.allocate(sizeof(thread_info_impl<F>), AZStd::alignment_of< thread_info_impl<F> >::value))thread_info_impl<F>(f);
+            return new (a.allocate(sizeof(thread_info_impl<F>), AZStd::alignment_of_v< thread_info_impl<F> >))thread_info_impl<F>(f);
         }
 
         static AZ_INLINE void destroy_thread_info(thread_info*& ti)
@@ -268,4 +270,3 @@ namespace AZStd
 }
 
 #include <AzCore/std/parallel/internal/thread_Platform.h>
-

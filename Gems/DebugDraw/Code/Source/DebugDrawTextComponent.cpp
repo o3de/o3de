@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "DebugDrawTextComponent.h"
 
@@ -33,17 +34,33 @@ namespace DebugDraw
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<DebugDrawTextElement>("DebugDraw Text element settings", "Settings for DebugDraw text element.")
+                editContext->Class<DebugDrawTextElement>(
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Text element settings"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw text element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawTextElement::m_text, "Text", "The Debug Text.")
-                    ->DataElement(0, &DebugDrawTextElement::m_color, "Color", "Text Color.")
-                    ->DataElement(0, &DebugDrawTextElement::m_size, "Size", "Text size.")
-                    ->DataElement(0, &DebugDrawTextElement::m_drawMode, "Draw Mode", "Draw Mode Preference.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugDrawTextElement::m_drawMode, "Draw Mode", "Draw Mode Preference.")
-                    ->EnumAttribute(DrawMode::OnScreen, "Screen Space")
-                    ->EnumAttribute(DrawMode::InWorld, "World Space")
-                    ->DataElement(0, &DebugDrawTextElement::m_centered, "Centered", "Center align the text if enabled, otherwise left align.")
+                    ->DataElement(0, &DebugDrawTextElement::m_text,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Text"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "The Debug Text."))
+                    ->DataElement(0, &DebugDrawTextElement::m_color,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Color"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Text Color."))
+                    ->DataElement(0, &DebugDrawTextElement::m_size,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Size"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Text size."))
+                    ->DataElement(0, &DebugDrawTextElement::m_drawMode,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode Preference."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DebugDrawTextElement::m_drawMode,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Draw Mode Preference."))
+                    ->EnumAttribute(DrawMode::OnScreen,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Screen Space"))
+                    ->EnumAttribute(DrawMode::InWorld,
+                        QT_TRANSLATE_NOOP("DebugDraw", "World Space"))
+                    ->DataElement(0, &DebugDrawTextElement::m_centered,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Centered"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Center align the text if enabled, otherwise left align."))
                     // Currently supports World Space placement on component owners location Or exact placement via behavior context / scripting (TBC)
                     //->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     //->DataElement(AZ::Edit::UIHandlers::Default, &DebugDrawTextElement::m_targetEntityId, "TargetEntity", "The target entity to position debug text at.")

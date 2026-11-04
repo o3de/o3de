@@ -431,9 +431,8 @@
                     "glob": "*.ext",
                     "params": "copy"
                 },
-                // Copy all pak files except level.pak, level.pak has its own builder.
                 "RC pak": {
-                    "pattern": "^((?!\\\\/level\\\\.pak).)*\\\\.pak$",
+                    "glob": "*.pak",
                     "params": "copy"
                 },
                 "RC ctc": {

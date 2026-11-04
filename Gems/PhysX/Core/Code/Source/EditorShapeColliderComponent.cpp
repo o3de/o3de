@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
@@ -88,7 +89,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorShapeColliderComponent>(
-                    "PhysX Shape Collider", "Create a PhysX collider using a shape provided by a Shape component.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Shape Collider"), QT_TRANSLATE_NOOP("PhysX", "Create a PhysX collider using a shape provided by a Shape component."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
@@ -97,20 +98,20 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/shape-collider/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
-                        "Collider configuration", "Configuration of the collider.")
+                        QT_TRANSLATE_NOOP("PhysX", "Collider configuration"), QT_TRANSLATE_NOOP("PhysX", "Configuration of the collider."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings.")
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw settings"), QT_TRANSLATE_NOOP("PhysX", "Debug draw settings."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_subdivisionCount, "Subdivision count",
-                        "Number of angular subdivisions in the PhysX cylinder.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_subdivisionCount, QT_TRANSLATE_NOOP("PhysX", "Subdivision count"),
+                        QT_TRANSLATE_NOOP("PhysX", "Number of angular subdivisions in the PhysX cylinder."))
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
                         ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnSubdivisionCountChange)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorShapeColliderComponent::SubdivisionCountVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_singleSided, "Single sided",
-                        "If enabled, planar shapes will only collide from one direction (not valid for shapes attached to dynamic rigid bodies)")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_singleSided, QT_TRANSLATE_NOOP("PhysX", "Single sided"),
+                        QT_TRANSLATE_NOOP("PhysX", "If enabled, planar shapes will only collide from one direction (not valid for shapes attached to dynamic rigid bodies)"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnSingleSidedChange)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorShapeColliderComponent::SingleSidedVisibility)
                     ;

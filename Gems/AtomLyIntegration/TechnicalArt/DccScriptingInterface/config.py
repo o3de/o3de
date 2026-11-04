@@ -286,7 +286,7 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
 
 
 # -------------------------------------------------------------------------
-def init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH):
+def init_o3de_pyside(dccsi_sys_path=_DCCSI_SYS_PATH):
     """!
     Initialize the DCCsi Qt/PySide dynamic env and settings
     sets access to lumberyards Qt dlls and PySide access,
@@ -317,17 +317,17 @@ def init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH):
     dccsi_sys_path.append(QT_PLUGIN_PATH)
 
     QT_QPA_PLATFORM_PLUGIN_PATH = Path.joinpath(QT_PLUGIN_PATH, 'platforms').resolve()
-    # if the line below is removed external standalone apps can't load PySide2
+    # if the line below is removed external standalone apps can't load PySide
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QT_QPA_PLATFORM_PLUGIN_PATH.as_posix()
     # ^^ bypass trying to set only with DYNACONF environment
     _DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH'] = QT_QPA_PLATFORM_PLUGIN_PATH.as_posix()
     dccsi_sys_path.append(QT_QPA_PLATFORM_PLUGIN_PATH)
 
     # Access to QtForPython:
-    # PySide2 is added to the O3DE Python install during CMake built against O3DE Qt dlls
+    # PySide is added to the O3DE Python install during CMake built against O3DE Qt dlls
     # the only way import becomes an actual issue is if running this config script
     # within a completely foreign python interpreter,
-    # and/or a non-Qt app (or a DCC tool that is a Qt app but doesn't provide PySide2 bindings)
+    # and/or a non-Qt app (or a DCC tool that is a Qt app but doesn't provide PySide bindings)
     # To Do: tackle this when it becomes and issue (like Blender?)
 
     from dynaconf import settings
@@ -338,83 +338,56 @@ def init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH):
     return settings
 # -------------------------------------------------------------------------
 
-
 # -------------------------------------------------------------------------
-def init_o3de_pyside2_tools():
-    global _DCCSI_PYTHONPATH
-    # set up the pyside2-tools (pyside2uic)
-    _DCCSI_PYSIDE2_TOOLS = Path(PATH_DCCSI_PYTHON, 'pyside2-tools').resolve()
-    if _DCCSI_PYSIDE2_TOOLS.exists():
-        os.environ["DYNACONF_DCCSI_PYSIDE2_TOOLS"] = _DCCSI_PYSIDE2_TOOLS.as_posix()
-        os.environ['PATH'] = _DCCSI_PYSIDE2_TOOLS.as_posix() + os.pathsep + os.environ['PATH']
-
-        site.addsitedir(_DCCSI_PYSIDE2_TOOLS)
-        _DCCSI_PYTHONPATH.append(_DCCSI_PYSIDE2_TOOLS.as_posix())
-        _LOGGER.info('~   PySide2-Tools bootstrapped PATH for Windows.')
-        try:
-            import pyside2uic
-            _LOGGER.info('~   SUCCESS: import pyside2uic')
-            _LOGGER.debug(pyside2uic)
-            status = True
-        except ImportError as e:
-            _LOGGER.error('~   FAILURE: import pyside2uic')
-            status = False
-            raise(e)
-    else:
-        _LOGGER.warning(f'~   No PySide2 Tools: {_DCCSI_PYSIDE2_TOOLS.as_posix()}')
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def validate_o3de_pyside2():
+def validate_o3de_pyside():
     # To Do: finish implementing
     # To Do: doc strings
     # add Qt binaries to the Windows path to handle finding DLL file dependencies
     if sys.platform.startswith('win'):
-        _LOGGER.info('~   Qt/PySide2 bootstrapped PATH for Windows.')
+        _LOGGER.info('~   Qt/PySide bootstrapped PATH for Windows.')
     else:
         _LOGGER.warning('~   Not tested on Non-Windows platforms.')
         # To Do: figure out how to test and/or modify to work
 
     try:
-        import PySide2
-        _LOGGER.info('~   SUCCESS: import PySide2')
-        _LOGGER.debug(PySide2)
+        import PySide6
+        _LOGGER.info('~   SUCCESS: import PySide6')
+        _LOGGER.debug(PySide6)
         status = True
     except ImportError as e:
-        _LOGGER.error('~   FAILURE: import PySide2')
+        _LOGGER.error('~   FAILURE: import PySide6')
         status = False
         raise(e)
 
     try:
-        import shiboken2
-        _LOGGER.info('~   SUCCESS: import shiboken2')
-        _LOGGER.debug(shiboken2)
+        import shiboken6
+        _LOGGER.info('~   SUCCESS: import shiboken6')
+        _LOGGER.debug(shiboken6)
         status = True
     except ImportError as e:
-        _LOGGER.error('~   FAILURE: import shiboken2')
+        _LOGGER.error('~   FAILURE: import shiboken6')
         status = False
         raise(e)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def test_pyside2(exit=True):
-    """Convenience method to test Qt / PySide2 access"""
+def test_pyside(exit=True):
+    """Convenience method to test Qt / PySide access"""
     # now test
-    _LOGGER.info('~   Testing Qt / PySide2')
+    _LOGGER.info('~   Testing Qt / PySide')
     try:
-        from PySide2.QtWidgets import QApplication, QPushButton
+        from PySide6.QtWidgets import QApplication, QPushButton
         app = QApplication(sys.argv)
-        hello = QPushButton("~   O3DE DCCsi PySide2 Test!")
+        hello = QPushButton("~   O3DE DCCsi PySide Test!")
         hello.resize(200, 60)
         hello.show()
     except Exception as e:
-        _LOGGER.error('~   FAILURE: Qt / PySide2')
+        _LOGGER.error('~   FAILURE: Qt / PySide')
         status = False
         raise(e)
 
-    _LOGGER.info('~   SUCCESS: .test_pyside2()')
+    _LOGGER.info('~   SUCCESS: .test_pyside()')
 
     if exit:
         sys.exit(app.exec_())
@@ -634,8 +607,8 @@ def init_o3de_python(engine_path=O3DE_DEV,
 # -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_config_settings(enable_o3de_python=False,
-                        enable_o3de_pyside2=False,
-                        enable_o3de_pyside2_tools=False,
+                        enable_o3de_pyside=False,
+                        enable_o3de_pyside_tools=False,
                         set_env=True,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH):
@@ -654,13 +627,13 @@ def get_config_settings(enable_o3de_python=False,
         settings = init_o3de_python(dccsi_sys_path=_DCCSI_SYS_PATH,
                                     dccsi_pythonpath=_DCCSI_PYTHONPATH)
 
-    # Many DCC apps provide their own Qt dlls and Pyside2
+    # Many DCC apps provide their own Qt dlls and Pyside
     # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     # _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     # assume our standalone python tools wants this access?
     # it's safe to do this for dev and from ide
-    if enable_o3de_pyside2:
-        settings = init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH)
+    if enable_o3de_pyside:
+        settings = init_o3de_pyside(dccsi_sys_path=_DCCSI_SYS_PATH)
 
     # final stage, if we have managed path lists set them
     new_PATH = add_path_list_to_envar(dccsi_sys_path)
@@ -778,7 +751,7 @@ def export_settings(settings,
 
 # always init defaults
 settings = get_config_settings(enable_o3de_python=False,
-                               enable_o3de_pyside2=False,
+                               enable_o3de_pyside=False,
                                set_env=True)
 
 ###########################################################################
@@ -890,7 +863,7 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=False,
-                        help='Enables O3DE Qt & PySide2 access.')
+                        help='Enables O3DE Qt & PySide access.')
 
     parser.add_argument('-pc', '--project-config',
                         type=bool,
@@ -921,11 +894,11 @@ if __name__ == '__main__':
                         default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
 
-    parser.add_argument('-tp', '--test-pyside2',
+    parser.add_argument('-tp', '--test-pyside',
                         type=bool,
                         required=False,
                         default=False,
-                        help='Runs Qt/PySide2 tests and reports.')
+                        help='Runs Qt/PySide tests and reports.')
 
     parser.add_argument('-lps', '--log-print-settings',
                         type=bool,
@@ -980,7 +953,7 @@ if __name__ == '__main__':
     # for now hack to disable passing in other args
     # going to refactor anyway
     settings = get_config_settings(enable_o3de_python=args.enable_python,
-                                   enable_o3de_pyside2=args.enable_qt)
+                                   enable_o3de_pyside=args.enable_qt)
 
     ## CORE
     _LOGGER.info(STR_CROSSBAR)
@@ -1030,15 +1003,15 @@ if __name__ == '__main__':
         _LOGGER.info('QT_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_PLUGIN_PATH']))
         _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH']))
         try:
-            settings.DCCSI_PYSIDE2_TOOLS
-            _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))
+            settings.DCCSI_PYSIDE_TOOLS
+            _LOGGER.info('DCCSI_PYSIDE_TOOLS: {}'.format(settings.DCCSI_PYSIDE_TOOLS))
         except:
             pass # don't exist
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('')
     else:
-        _LOGGER.info('Tip: add arg --enable-qt (-qt) to extend the environment with O3DE Qt/PySide2 support')
-        _LOGGER.info('Tip: add arg --test-pyside2 (-tp) to test the O3DE Qt/PySide2 support')
+        _LOGGER.info('Tip: add arg --enable-qt (-qt) to extend the environment with O3DE Qt/PySide support')
+        _LOGGER.info('Tip: add arg --test-pyside (-tp) to test the O3DE Qt/PySide support')
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
@@ -1068,14 +1041,8 @@ if __name__ == '__main__':
     _MODULE_END = timeit.default_timer() - _MODULE_START
     _LOGGER.info(f'CLI {_MODULENAME} took: {_MODULE_END} sec')
 
-    if DCCSI_GDEBUG or args.test_pyside2:
-        test_pyside2()  # test PySide2 access with a pop-up button
-        try:
-            import pyside2uic
-        except ImportError as e:
-            _LOGGER.warning("Could not import 'pyside2uic'")
-            _LOGGER.warning("Refer to: '{}/3rdParty/Python/README.txt'".format(settings.PATH_DCCSIG))
-            _LOGGER.error(e)
+    if DCCSI_GDEBUG or args.test_pyside:
+        test_pyside()  # test PySide access with a pop-up button
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"

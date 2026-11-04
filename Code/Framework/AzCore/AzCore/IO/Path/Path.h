@@ -447,7 +447,7 @@ namespace AZ::IO
         //! Constructs a Path by constructing it's internal out of a value_type*
         //! The preferred separator is set to the parameter
         constexpr BasicPath(const value_type* pathString, const char preferredSeparator) noexcept;
-        //! Constructs a empty Path with the preferred separator set to the parameter
+        //! Constructs an empty Path with the preferred separator set to the parameter
         explicit constexpr BasicPath(const char preferredSeparator) noexcept;
 
         template <typename InputIt>

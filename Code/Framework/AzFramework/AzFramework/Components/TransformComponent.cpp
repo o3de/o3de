@@ -164,11 +164,11 @@ namespace AzFramework
 
     void TransformComponent::Init()
     {
+        // note that during Init() the other components on the entity are not yet init, and should be treated as not-yet-constructed.
+        // This basically means, avoid sending messages out that might cause the other components to do stuff.  Emit in PostInit (aka OnEntityExists) below.
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
-
-        const bool keepWorldTm = (m_parentActivationTransformMode == ParentActivationTransformMode::MaintainCurrentWorldTransform || !m_parentId.IsValid());
-        SetParentImpl(m_parentId, keepWorldTm);
+        AZ::EntityBus::MultiHandler::BusConnect(m_entity->GetId()); // get notifications about when *this* entity is destroyed/activated/etc
     }
 
     void TransformComponent::Activate() 
@@ -181,20 +181,13 @@ namespace AzFramework
     
     TransformComponent ::~TransformComponent()
     {
-        AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, m_entityId);
-        auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
-        if (parentTransform)
-        {
-            parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, m_entityId);
-        }
-
+       
         m_notificationBus = nullptr;
-        if (m_parentId.IsValid())
-        {
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
-            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
-            AZ::EntityBus::Handler::BusDisconnect();
-        }
+
+        // we are being destroyed, disconnect everything, its not valid to keep any connection alive after destructor:
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
+        AZ::EntityBus::MultiHandler::BusDisconnect(); 
         AZ::TransformBus::Handler::BusDisconnect();
     }
 
@@ -513,26 +506,30 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
-#ifndef _RELEASE
-        AZ::EntityId parentId = m_parentId;
-
-        while (parentId.IsValid())
+#ifndef AZ_RELEASE_BUILD
+        // The following is an error check for cyclic dependencies and can be omitted in shipping builds
+        // Put variables in such a check in their own scope to avoid this kind of code leaking out of scope
         {
-            if (parentId == GetEntityId())
+            AZ::EntityId parentId = m_parentId;
+
+            while (parentId.IsValid())
             {
-                AZ_Error("TransformComponent", false, "Trying to create a circular dependency of parenting. Aborting set parent call.");
-                SetParent(AZ::EntityId());
-                return;
+                if (parentId == GetEntityId())
+                {
+                    AZ_Error("TransformComponent", false, "Trying to create a circular dependency of parenting. Aborting set parent call.");
+                    SetParent(AZ::EntityId());
+                    return;
+                }
+
+                auto handler = AZ::TransformBus::FindFirstHandler(parentId);
+
+                if (handler == nullptr)
+                {
+                    break;
+                }
+
+                parentId = handler->GetParentId();
             }
-
-            auto handler = AZ::TransformBus::FindFirstHandler(parentId);
-
-            if (handler == nullptr)
-            {
-                break;
-            }
-
-            parentId = handler->GetParentId();
         }
 #endif
 
@@ -565,41 +562,106 @@ namespace AzFramework
         }
     }
 
-    void TransformComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
+    void TransformComponent::OnEntityExists([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-
-        m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
-        if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+        if (entityId == m_parentId)
         {
-            m_entity->ApplyEffectiveActiveState();
+            // My Parent popped into existence, OR, we called BusConnect(...parent...) since it has a connection policy that auto-calls it.
+            ProcessParentEntity(entityId);
+        }
+        else if (entityId == GetEntityId())
+        {
+            // This is self.PostInit.
+            // This is our opportunity to notify about hierarchy, 
+            // since the rest of the components on the same entity are now initialized.
+            const bool keepWorldTm = (m_parentActivationTransformMode == ParentActivationTransformMode::MaintainCurrentWorldTransform || !m_parentId.IsValid());
+            SetParentImpl(m_parentId, keepWorldTm);
         }
     }
 
-    void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
+    void TransformComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-
-        m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), false);
-        if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+        // did our parent just get activated?  In which case we have to recompute our own state.
+        if (entityId == m_parentId)
         {
-            m_entity->ApplyEffectiveActiveState();
-        }
-    }
-
-    void TransformComponent::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& parentEntityId)
-    {
-        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-
-        // Catch if the destruction is a false fire from runtime start.
-        if(m_entity->GetState() != AZ::Entity::State::Init && m_entity->GetState() != AZ::Entity::State::Active)
-        {
-            return;
+            m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
+            if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+            {
+                m_entity->ApplyEffectiveActiveState();
+            }
         }
         
-        m_parentTM = nullptr;
-        m_parentActive = false;
-        SetParentImpl(AZ::EntityId(), true);
+    }
+
+    void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        if (entityId == m_parentId)
+        {
+            // our parent was deactivated - we must also deactivate if we are active.
+            m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), false);
+            if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+            {
+                m_entity->ApplyEffectiveActiveState();
+            }
+        }
+    }
+
+    void TransformComponent::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        // This call happens before destruction of the entity, with entityId = GetEntityId.
+        // it also happens when the parent is destroyed, with entityId = m_parentId.
+
+        // If our parent is being destroyed, and we are not, it means that the hierarchy is being detached.
+        // on the other hand, if we are being destroyed, and our parent is not, it means we are being removed
+        // from the hierarchy either way, and should notify of child removal.
+
+        // For systems which destroy entire trees of entities, the optimal way would be from the leaves
+        // to the parent, so that none of these cascading transform change notifications happen.  So we
+        // essentially expect only to get into this function in the case where our parent is being destroyed
+        // and we are not.  A future optimization, if this turns out to be a profiler hotspot, would be
+        // to mark entities as being destroyed in a batch, so that elements in here can know whether
+        // its even worth sending out messages at all (ie, if the entire tree is being destroyed, then
+        // only the root, if it has a parent of its own, needs to notify its parent).
+
+        if (entityId == m_parentId)
+        {
+            // this can happen if the parent entity is destroyed but we are not.
+            // The default behavior in this case is to unparent and keep the world transform the same
+            // so that entities don't mysteriously teleport to the origin when their parent is deleted.
+
+            // Catch if the destruction is a false fire from runtime start.
+            if (m_entity->GetState() != AZ::Entity::State::Init && m_entity->GetState() != AZ::Entity::State::Active)
+            {
+                return;
+            }
+
+            m_parentTM = nullptr;
+            m_parentActive = false;
+            SetParentImpl(AZ::EntityId(), true);
+
+            // The "null" entity is never inactive, so make sure that we update our active state based on this in case we
+            // were inactive before.
+            m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
+            if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+            {
+                m_entity->ApplyEffectiveActiveState();
+            }
+        }
+        else if (entityId == GetEntityId())
+        {
+            // for symmetry with EntityExists(), we notify
+            // parent of our removal when we are about to no longer exist.
+            if (m_parentId.IsValid())
+            {
+                AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, m_entityId);
+            }
+
+            auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
+            if (parentTransform)
+            {
+                parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, m_entityId);
+            }
+        }
     }
 
     void TransformComponent::SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
@@ -615,7 +677,7 @@ namespace AzFramework
         {
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
-            AZ::EntityBus::Handler::BusDisconnect();
+            AZ::EntityBus::MultiHandler::BusDisconnect(oldParent);
             m_parentActive = false;
         }
 
@@ -631,7 +693,7 @@ namespace AzFramework
             AZ::TransformNotificationBus::Handler::BusConnect(m_parentId);
             AZ::TransformHierarchyInformationBus::Handler::BusConnect(m_parentId);
             // Parent (De)Activate handles local entity parent state flag changes.
-            AZ::EntityBus::Handler::BusConnect(m_parentId);
+            AZ::EntityBus::MultiHandler::BusConnect(m_parentId);
 
             // Every parent entity will be processed.
             // Parent active state is applied at parent due to no events firing on connect.

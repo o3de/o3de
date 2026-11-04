@@ -1,0 +1,16 @@
+// Error: Option (Samples) must specify a range with a minimum and maximum values
+option int Samples = 5;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Emitter Error 264: Option (optionName) must specify a range with a minimum and maximum values
+// #EC 264

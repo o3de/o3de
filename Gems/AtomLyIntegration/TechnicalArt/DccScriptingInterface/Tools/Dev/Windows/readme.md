@@ -8,7 +8,7 @@ DccScriptingInterface (DCCsi) is a framework for O3DE extensions, for example:
 
 - Lightweight python integrations with DCC tools like Maya
 - O3DE configuration, customization and extensions of tools
-- Standalone PySide2/Qt tools
+- Standalone PySide/Qt tools
 - ^ These might utilize a mix of O3DE and DDC python APIs
 
 The DccScriptingInterface\config.py, procedurally provides a synthetic env context.
@@ -32,7 +32,7 @@ What is in this folder ...
 ```bash
 Env_O3DE_Core.bat       : core access to O3DE and DCCsi
 Env_O3DE_Python.bat     : access to O3DE python and general py configuration
-Env_O3DE_Qt.bat         : access to O3DE Qt .dll files and PySide2
+Env_O3DE_Qt.bat         : access to O3DE Qt .dll files and PySide
 ```
 
 ### DCC add on envars
@@ -112,9 +112,9 @@ Here is a rundown of what is happeneing:
 - arg: -dm=True, enters 'dev mode'(-dm) and attempts to attach debugger (Wing IDE only for now, others planned)
 - arg: -py=True, enables additional O3DE python hooks and code access
 - ^ great for standalone tools, but you don't want that functionality to interfer with other DCC tools python environments (like Maya!)
-- arg: -qt=True, enables access to O3DE Qt .dlls and PySide2 python package support(-qt)
-- ^ great for standalone PySide2 which can operate outside of the O3DE editor
-- arg: -tp=True, will run a PySide2 test (pop-up button) to validate access
+- arg: -qt=True, enables access to O3DE Qt .dlls and PySide python package support(-qt)
+- ^ great for standalone PySide which can operate outside of the O3DE editor
+- arg: -tp=True, will run a PySide test (pop-up button) to validate access
 - note: config.py has a number of other cli args you may find useful
 
 __What does this look like?__

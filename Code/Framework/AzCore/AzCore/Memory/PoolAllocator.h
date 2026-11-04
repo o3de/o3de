@@ -188,9 +188,8 @@ namespace AZ::Internal
 
 namespace AZ
 {
-    // Extern the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template to
-    // to reduce instantations
-    extern template struct AZCORE_API AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
+    // Extern the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template to reduce instantiations
+    extern template struct AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
     /*!
      * Pool allocator
      * Specialized allocation for extremely fast small object memory allocations.

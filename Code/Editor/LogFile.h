@@ -6,15 +6,15 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LOGFILE_H
-#define CRYINCLUDE_EDITOR_LOGFILE_H
-
 #pragma once
 
+#include "SandboxAPI.h"
 #include "ILog.h"
+
 #include <IConsole.h>
 #include <stdarg.h>
+
+#include <QString>
 
 #define MAX_LOGBUFFER_SIZE 16384
 
@@ -74,7 +74,7 @@ public:
     static void AboutSystem();
 
 private:
-    static void OpenFile();
+    static void GetMemoryStatusMB(AZ::u32 &totalSystemMemory, AZ::u32& availablePageMemory);
 
     // Attached control(s)
     static QListWidget* m_hWndListBox;
@@ -82,5 +82,3 @@ private:
     static bool m_bShowMemUsage;
     static bool m_bIsQuitting;
 };
-
-#endif // CRYINCLUDE_EDITOR_LOGFILE_H

@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
@@ -66,37 +67,37 @@ namespace PhysX
                     editContext
                 )
                 {
-                    editContext->Class<TriangleMeshAssetParams>("Triangle Mesh Asset Parameters",
-                        "Configure the parameters controlling the exported triangle mesh asset.")
+                    editContext->Class<TriangleMeshAssetParams>(QT_TRANSLATE_NOOP("PhysX", "Triangle Mesh Asset Parameters"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configure the parameters controlling the exported triangle mesh asset."))
 
-                        ->DataElement(AZ_CRC_CE("MergeMeshes"), &TriangleMeshAssetParams::m_mergeMeshes, "Merge Meshes",
-                            "<span>When set, all selected nodes will be merged into a single collision mesh. Otherwise "
+                        ->DataElement(AZ_CRC_CE("MergeMeshes"), &TriangleMeshAssetParams::m_mergeMeshes, QT_TRANSLATE_NOOP("PhysX", "Merge Meshes"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When set, all selected nodes will be merged into a single collision mesh. Otherwise "
                             "they will be exported as separate shapes. Typically it is more efficient to have a single "
                             "mesh, however if you have game code handling specific shapes differently, you want to "
-                            "avoid merging them together.</span>")
+                            "avoid merging them together.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("WeldVertices"), &TriangleMeshAssetParams::m_weldVertices, "Weld Vertices",
-                            "<span>When set, mesh welding is performed. Clean mesh must be enabled.</span>")
+                        ->DataElement(AZ_CRC_CE("WeldVertices"), &TriangleMeshAssetParams::m_weldVertices, QT_TRANSLATE_NOOP("PhysX", "Weld Vertices"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When set, mesh welding is performed. Clean mesh must be enabled.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("DisableCleanMesh"), &TriangleMeshAssetParams::m_disableCleanMesh, "Disable Clean Mesh",
-                            "<span>When set, mesh cleaning is disabled. This makes cooking faster. When clean mesh is "
-                            "not performed, mesh welding is also not performed.</span>")
+                        ->DataElement(AZ_CRC_CE("DisableCleanMesh"), &TriangleMeshAssetParams::m_disableCleanMesh, QT_TRANSLATE_NOOP("PhysX", "Disable Clean Mesh"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When set, mesh cleaning is disabled. This makes cooking faster. When clean mesh is "
+                            "not performed, mesh welding is also not performed.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("Force32BitIndices"), &TriangleMeshAssetParams::m_force32BitIndices, "Force 32-Bit Indices",
-                            "<span>When set, 32-bit indices will always be created regardless of triangle count."
-                            "</span>")
+                        ->DataElement(AZ_CRC_CE("Force32BitIndices"), &TriangleMeshAssetParams::m_force32BitIndices, QT_TRANSLATE_NOOP("PhysX", "Force 32-Bit Indices"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When set, 32-bit indices will always be created regardless of triangle count."
+                            "</span>"))
 
-                        ->DataElement(AZ_CRC_CE("SuppressTriangleMeshRemapTable"), &TriangleMeshAssetParams::m_suppressTriangleMeshRemapTable, "Suppress Triangle Mesh Remap Table",
-                            "<span>When true, the face remap table is not created. This saves a significant amount of "
+                        ->DataElement(AZ_CRC_CE("SuppressTriangleMeshRemapTable"), &TriangleMeshAssetParams::m_suppressTriangleMeshRemapTable, QT_TRANSLATE_NOOP("PhysX", "Suppress Triangle Mesh Remap Table"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When true, the face remap table is not created. This saves a significant amount of "
                             "memory, but the SDK will not be able to provide the remap information for internal mesh "
-                            "triangles returned by collisions, sweeps or raycasts hits.</span>")
+                            "triangles returned by collisions, sweeps or raycasts hits.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("BuildTriangleAdjacencies"), &TriangleMeshAssetParams::m_buildTriangleAdjacencies, "Build Triangle Adjacencies",
-                            "<span>When true, the triangle adjacency information is created. You can get the adjacency "
-                            "triangles for a given triangle from getTriangle.</span>")
+                        ->DataElement(AZ_CRC_CE("BuildTriangleAdjacencies"), &TriangleMeshAssetParams::m_buildTriangleAdjacencies, QT_TRANSLATE_NOOP("PhysX", "Build Triangle Adjacencies"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When true, the triangle adjacency information is created. You can get the adjacency "
+                            "triangles for a given triangle from getTriangle.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("MeshWeldTolerance"), &TriangleMeshAssetParams::m_meshWeldTolerance, "Mesh Weld Tolerance",
-                            "<span>Mesh weld tolerance. If mesh welding is enabled, this controls the distance at "
+                        ->DataElement(AZ_CRC_CE("MeshWeldTolerance"), &TriangleMeshAssetParams::m_meshWeldTolerance, QT_TRANSLATE_NOOP("PhysX", "Mesh Weld Tolerance"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Mesh weld tolerance. If mesh welding is enabled, this controls the distance at "
                             "which vertices are welded. If mesh welding is not enabled, this value defines the "
                             "acceptance distance for mesh validation. Provided no two vertices are within this "
                             "distance, the mesh is considered to be clean. If not, a warning will be emitted. Having a "
@@ -110,18 +111,18 @@ namespace PhysX
                             "The mesh validation approach also uses the same snap-to-grid approach to identify nearby "
                             "vertices. If more than one vertex snaps to a given grid coordinate, we ensure that the "
                             "distance between the vertices is at least Mesh Weld Tolerance. If this is not the case, a "
-                            "warning is emitted.</span>")
+                            "warning is emitted.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                             ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 3)
                             ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 3)
 
-                        ->DataElement(AZ_CRC_CE("NumTrisPerLeaf"), &TriangleMeshAssetParams::m_numTrisPerLeaf, "Number of Triangles Per Leaf",
-                            "<span>Mesh cooking hint for max triangles per leaf limit. Fewer triangles per leaf "
+                        ->DataElement(AZ_CRC_CE("NumTrisPerLeaf"), &TriangleMeshAssetParams::m_numTrisPerLeaf, QT_TRANSLATE_NOOP("PhysX", "Number of Triangles Per Leaf"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Mesh cooking hint for max triangles per leaf limit. Fewer triangles per leaf "
                             "produces larger meshes with better runtime performance and worse cooking performance. "
                             "More triangles per leaf results in faster cooking speed and smaller mesh sizes, but with "
-                            "worse runtime performance.</span>")
+                            "worse runtime performance.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 4)
                             ->Attribute(AZ::Edit::Attributes::Max, 15);
                 }
@@ -224,19 +225,19 @@ namespace PhysX
                     editContext
                 )
                 {
-                    editContext->Class<ConvexAssetParams>("Convex Asset Parameters",
-                        "Configure the parameters controlling the exported convex asset.")
-                        ->DataElement(AZ_CRC_CE("AreaTestEpsilon"), &ConvexAssetParams::m_areaTestEpsilon, "Area Test Epsilon",
-                            "<span>If the area of a triangle of the hull is below this value, the triangle will be "
-                            "rejected. This test is done only if Check Zero Area Triangles is used.</span>")
+                    editContext->Class<ConvexAssetParams>(QT_TRANSLATE_NOOP("PhysX", "Convex Asset Parameters"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configure the parameters controlling the exported convex asset."))
+                        ->DataElement(AZ_CRC_CE("AreaTestEpsilon"), &ConvexAssetParams::m_areaTestEpsilon, QT_TRANSLATE_NOOP("PhysX", "Area Test Epsilon"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>If the area of a triangle of the hull is below this value, the triangle will be "
+                            "rejected. This test is done only if Check Zero Area Triangles is used.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                             ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 3)
                             ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 3)
 
-                        ->DataElement(AZ_CRC_CE("PlaneTolerance"), &ConvexAssetParams::m_planeTolerance, "Plane Tolerance",
-                            "<span>The value is used during hull construction. When a new point is about to be added "
+                        ->DataElement(AZ_CRC_CE("PlaneTolerance"), &ConvexAssetParams::m_planeTolerance, QT_TRANSLATE_NOOP("PhysX", "Plane Tolerance"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>The value is used during hull construction. When a new point is about to be added "
                             "to the hull it gets dropped when the point is closer to the hull than the planeTolerance. "
                             "The Plane Tolerance is increased according to the hull size. If 0.0f is set all points "
                             "are accepted when the convex hull is created. This may lead to edge cases where the new "
@@ -244,26 +245,26 @@ namespace PhysX
                             "slightly change therefore. This might lead to failures during polygon merging phase in "
                             "the hull computation. It is recommended to use the default value, however if it is "
                             "required that all points needs to be accepted or huge thin convexes are created, it might "
-                            "be required to lower the default value.</span>")
+                            "be required to lower the default value.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                             ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 4)
                             ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
 
-                        ->DataElement(AZ_CRC_CE("Use16bitIndices"), &ConvexAssetParams::m_use16bitIndices, "Use 16-bit Indices",
-                            "<span>Denotes the use of 16-bit vertex indices in Convex triangles or polygons. "
-                            "Otherwise, 32-bit indices are assumed.</span>")
+                        ->DataElement(AZ_CRC_CE("Use16bitIndices"), &ConvexAssetParams::m_use16bitIndices, QT_TRANSLATE_NOOP("PhysX", "Use 16-bit Indices"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Denotes the use of 16-bit vertex indices in Convex triangles or polygons. "
+                            "Otherwise, 32-bit indices are assumed.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("CheckZeroAreaTriangles"), &ConvexAssetParams::m_checkZeroAreaTriangles, "Check Zero Area Triangles",
-                            "<span>Checks and removes almost zero-area triangles during convex hull computation. The "
-                            "rejected area size is specified in Area Test Epsilon.</span>")
+                        ->DataElement(AZ_CRC_CE("CheckZeroAreaTriangles"), &ConvexAssetParams::m_checkZeroAreaTriangles, QT_TRANSLATE_NOOP("PhysX", "Check Zero Area Triangles"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Checks and removes almost zero-area triangles during convex hull computation. The "
+                            "rejected area size is specified in Area Test Epsilon.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("QuantizeInput"), &ConvexAssetParams::m_quantizeInput, "Quantize Input",
-                            "<span>Quantizes the input vertices using the k-means clustering.</span>")
+                        ->DataElement(AZ_CRC_CE("QuantizeInput"), &ConvexAssetParams::m_quantizeInput, QT_TRANSLATE_NOOP("PhysX", "Quantize Input"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Quantizes the input vertices using the k-means clustering.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("UsePlaneShifting"), &ConvexAssetParams::m_usePlaneShifting, "Use Plane Shifting",
-                            "<span>Enables plane shifting vertex limit algorithm. Plane shifting is an alternative "
+                        ->DataElement(AZ_CRC_CE("UsePlaneShifting"), &ConvexAssetParams::m_usePlaneShifting, QT_TRANSLATE_NOOP("PhysX", "Use Plane Shifting"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Enables plane shifting vertex limit algorithm. Plane shifting is an alternative "
                             "algorithm for the case when the computed hull has more vertices than the specified vertex "
                             "limit. The default algorithm computes the full hull, and an OBB around the input "
                             "vertices. This OBB is then sliced with the hull planes until the vertex limit is reached. "
@@ -274,24 +275,24 @@ namespace PhysX
                             "intersection points are then used to generate the final hull with the given vertex limit. "
                             "Plane shifting may produce sharp edges to vertices very far away from the input cloud, and"
                             "does not guarantee that all input vertices are inside the resulting hull. However, it can "
-                            "be used with a vertex limit as low as 4.</span>")
+                            "be used with a vertex limit as low as 4.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("ShiftVertices"), &ConvexAssetParams::m_shiftVertices, "Shift Vertices",
-                            "<span>Convex hull input vertices are shifted to be around origin to provide better "
+                        ->DataElement(AZ_CRC_CE("ShiftVertices"), &ConvexAssetParams::m_shiftVertices, QT_TRANSLATE_NOOP("PhysX", "Shift Vertices"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Convex hull input vertices are shifted to be around origin to provide better "
                             "computation stability. It is recommended to provide input vertices around the origin, "
-                            "otherwise use this flag to improve numerical stability.</span>")
+                            "otherwise use this flag to improve numerical stability.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("GaussMapLimit"), &ConvexAssetParams::m_gaussMapLimit, "Gauss Map Limit",
-                            "<span>Vertex limit beyond which additional acceleration structures are computed for each "
+                        ->DataElement(AZ_CRC_CE("GaussMapLimit"), &ConvexAssetParams::m_gaussMapLimit, QT_TRANSLATE_NOOP("PhysX", "Gauss Map Limit"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Vertex limit beyond which additional acceleration structures are computed for each "
                             "convex mesh. Increase that limit to reduce memory usage. Computing the extra structures "
                             "all the time does not guarantee optimal performance. There is a per-platform break - even "
-                            "point below which the extra structures actually hurt performance.</span>")
+                            "point below which the extra structures actually hurt performance.</span>"))
 
-                        ->DataElement(AZ_CRC_CE("BuildGpuData"), &ConvexAssetParams::m_buildGpuData, "Build GPU Data",
-                            "<span>When true, additional information required for GPU-accelerated rigid body "
+                        ->DataElement(AZ_CRC_CE("BuildGpuData"), &ConvexAssetParams::m_buildGpuData, QT_TRANSLATE_NOOP("PhysX", "Build GPU Data"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>When true, additional information required for GPU-accelerated rigid body "
                             "simulation is created. This can increase memory usage and cooking times for convex meshes "
                             "and triangle meshes. Convex hulls are created with respect to GPU simulation limitations. "
-                            "Vertex limit is set to 64 and vertex limit per face is internally set to 32.</span>");
+                            "Vertex limit is set to 64 and vertex limit per face is internally set to 32.</span>"));
                 }
             }
         }
@@ -358,19 +359,19 @@ namespace PhysX
                     editContext
                 )
                 {
-                    editContext->Class<PrimitiveAssetParams>("Primitive Asset Parameters",
-                        "Configure the parameters controlling the exported primitive asset.")
+                    editContext->Class<PrimitiveAssetParams>(QT_TRANSLATE_NOOP("PhysX", "Primitive Asset Parameters"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configure the parameters controlling the exported primitive asset."))
 
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PrimitiveAssetParams::m_primitiveShapeTarget, "Target Shape",
-                            "<span>The shape that should be fitted to this mesh. If \"Automatic\" is selected, the "
-                            "algorithm will determine which of the shapes fits best.</span>")
-                            ->EnumAttribute(PrimitiveShapeTarget::BestFit, "Automatic")
-                            ->EnumAttribute(PrimitiveShapeTarget::Sphere, "Sphere")
-                            ->EnumAttribute(PrimitiveShapeTarget::Box, "Box")
-                            ->EnumAttribute(PrimitiveShapeTarget::Capsule, "Capsule")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PrimitiveAssetParams::m_primitiveShapeTarget, QT_TRANSLATE_NOOP("PhysX", "Target Shape"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>The shape that should be fitted to this mesh. If \"Automatic\" is selected, the "
+                            "algorithm will determine which of the shapes fits best.</span>"))
+                            ->EnumAttribute(PrimitiveShapeTarget::BestFit, QT_TRANSLATE_NOOP("PhysX", "Automatic"))
+                            ->EnumAttribute(PrimitiveShapeTarget::Sphere, QT_TRANSLATE_NOOP("PhysX", "Sphere"))
+                            ->EnumAttribute(PrimitiveShapeTarget::Box, QT_TRANSLATE_NOOP("PhysX", "Box"))
+                            ->EnumAttribute(PrimitiveShapeTarget::Capsule, QT_TRANSLATE_NOOP("PhysX", "Capsule"))
 
-                        ->DataElement(AZ_CRC_CE("VolumeTermCoefficient"), &PrimitiveAssetParams::m_volumeTermCoefficient, "Volume Term Coefficient",
-                            "<span>This parameter controls how aggressively the primitive fitting algorithm will try "
+                        ->DataElement(AZ_CRC_CE("VolumeTermCoefficient"), &PrimitiveAssetParams::m_volumeTermCoefficient, QT_TRANSLATE_NOOP("PhysX", "Volume Term Coefficient"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>This parameter controls how aggressively the primitive fitting algorithm will try "
                             "to minimize the volume of the fitted primitive. A value of 0 (no volume minimization) is "
                             "recommended for most meshes, especially those with moderate to high vertex counts. For "
                             "meshes that have very few vertices, or vertices that are distributed mainly along the "
@@ -379,7 +380,7 @@ namespace PhysX
                             "increasing the value of this parameter so that the algorithm actively tries to shrink the "
                             "volume of the generated primitive in addition to minimizing its deviation from the mesh. "
                             "A value that is too high may cause the primitive collider shrink too much so that it is "
-                            "completely occluded by the mesh.</span>")
+                            "completely occluded by the mesh.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 0.002f)
                             ->Attribute(AZ::Edit::Attributes::Step, 0.00002f)
@@ -423,56 +424,56 @@ namespace PhysX
                     editContext
                 )
                 {
-                    editContext->Class<ConvexDecompositionParams>("Decomposition Parameters",
-                        "Configure the parameters controlling the approximate convex decomposition algorithm.")
+                    editContext->Class<ConvexDecompositionParams>(QT_TRANSLATE_NOOP("PhysX", "Decomposition Parameters"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configure the parameters controlling the approximate convex decomposition algorithm."))
 
-                        ->DataElement(AZ_CRC_CE("MaxConvexHulls"), &ConvexDecompositionParams::m_maxConvexHulls, "Maximum Hulls",
-                            "<span>Controls the maximum number of hulls to generate.</span>")
+                        ->DataElement(AZ_CRC_CE("MaxConvexHulls"), &ConvexDecompositionParams::m_maxConvexHulls, QT_TRANSLATE_NOOP("PhysX", "Maximum Hulls"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Controls the maximum number of hulls to generate.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
                             ->Attribute(AZ::Edit::Attributes::Max, 100000)
 
-                        ->DataElement(AZ_CRC_CE("MaxNumVerticesPerConvexHull"), &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull, "Maximum Vertices Per Hull",
-                            "<span>Controls the maximum number of triangles per convex hull.</span>")
+                        ->DataElement(AZ_CRC_CE("MaxNumVerticesPerConvexHull"), &ConvexDecompositionParams::m_maxNumVerticesPerConvexHull, QT_TRANSLATE_NOOP("PhysX", "Maximum Vertices Per Hull"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Controls the maximum number of triangles per convex hull.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 8)
                             ->Attribute(AZ::Edit::Attributes::Max, 2048)
 
-                        ->DataElement(AZ_CRC_CE("Resolution"), &ConvexDecompositionParams::m_resolution, "Resolution",
-                            "<span>Maximum number of voxels generated during the voxelization stage.</span>")
+                        ->DataElement(AZ_CRC_CE("Resolution"), &ConvexDecompositionParams::m_resolution, QT_TRANSLATE_NOOP("PhysX", "Resolution"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Maximum number of voxels generated during the voxelization stage.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 10000)
                             ->Attribute(AZ::Edit::Attributes::Max, 10000000)
                             ->Attribute(AZ::Edit::Attributes::Step, 10000)
 
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Advanced"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
-                        ->DataElement(AZ_CRC_CE("MinVolumePercentError"), &ConvexDecompositionParams::m_minVolumePercentError, "Minimum Volume % Per Hull",
-                            "<span>Controls the voxels within % of the volume of the hull is allowed.</span>")
+                        ->DataElement(AZ_CRC_CE("MinVolumePercentError"), &ConvexDecompositionParams::m_minVolumePercentError, QT_TRANSLATE_NOOP("PhysX", "Minimum Volume % Per Hull"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Controls the voxels within % of the volume of the hull is allowed.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                             ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                             ->Attribute(AZ::Edit::Attributes::Decimals, 4)
                             ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
 
-                        ->DataElement(AZ_CRC_CE("MaxRecursionDepth"), &ConvexDecompositionParams::m_maxRecursionDepth, "Max Recursion Depth",
-                            "<span>Controls the maximum recursion depth.</span>")
+                        ->DataElement(AZ_CRC_CE("MaxRecursionDepth"), &ConvexDecompositionParams::m_maxRecursionDepth, QT_TRANSLATE_NOOP("PhysX", "Max Recursion Depth"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Controls the maximum recursion depth.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 2)
                             ->Attribute(AZ::Edit::Attributes::Max, 64)
 
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ConvexDecompositionParams::m_shrinkWrap, "Shrink Wrap",
-                            "<span>Control whether to shrinkwrap the voxel positions to the source mesh on output</span>")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ConvexDecompositionParams::m_shrinkWrap, QT_TRANSLATE_NOOP("PhysX", "Shrink Wrap"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Control whether to shrinkwrap the voxel positions to the source mesh on output</span>"))
 
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ConvexDecompositionParams::m_fillMode, "Fill Mode",
-                            "<span>Select how the voxels as filled to create a solid object.</span>")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ConvexDecompositionParams::m_fillMode, QT_TRANSLATE_NOOP("PhysX", "Fill Mode"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Select how the voxels as filled to create a solid object.</span>"))
                             ->Attribute(
                                 AZ::Edit::Attributes::EnumValues,
                                 AZStd::vector<AZ::Edit::EnumConstant<FillMode>>{
-                                    AZ::Edit::EnumConstant<FillMode>(FillMode::FloodFill, "Flood fill"),
-                                    AZ::Edit::EnumConstant<FillMode>(FillMode::SurfaceOnly, "Surface only"),
-                                    AZ::Edit::EnumConstant<FillMode>(FillMode::RaycastFill, "Raycast fill"),
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::FloodFill, QT_TRANSLATE_NOOP("PhysX", "Flood fill")),
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::SurfaceOnly, QT_TRANSLATE_NOOP("PhysX", "Surface only")),
+                                    AZ::Edit::EnumConstant<FillMode>(FillMode::RaycastFill, QT_TRANSLATE_NOOP("PhysX", "Raycast fill")),
                                 })
 
-                        ->DataElement(AZ_CRC_CE("MinEdgeLength"), &ConvexDecompositionParams::m_minEdgeLength, "Max Edge Length",
-                            "<span>Once a voxel patch has an edge length of less than 4 on all 3 sides, we don't keep recursing.</span>")
+                        ->DataElement(AZ_CRC_CE("MinEdgeLength"), &ConvexDecompositionParams::m_minEdgeLength, QT_TRANSLATE_NOOP("PhysX", "Max Edge Length"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Once a voxel patch has an edge length of less than 4 on all 3 sides, we don't keep recursing.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
                             ->Attribute(AZ::Edit::Attributes::Max, 32);
                 }
@@ -562,7 +563,7 @@ namespace PhysX
                     editContext
                 )
                 {
-                    editContext->Class<MeshGroup>("PhysX Mesh group", "Configure PhysX mesh data exporting.")
+                    editContext->Class<MeshGroup>(QT_TRANSLATE_NOOP("PhysX", "PhysX Mesh group"), QT_TRANSLATE_NOOP("PhysX", "Configure PhysX mesh data exporting."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -570,48 +571,48 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/physx-tab/")
 
-                        ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, "Name PhysX Mesh",
-                            "<span>Name for the group. This name will also be used as a part of the name for the "
-                            "generated file.</span>")
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, QT_TRANSLATE_NOOP("PhysX", "Name PhysX Mesh"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Name for the group. This name will also be used as a part of the name for the "
+                            "generated file.</span>"))
 
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_nodeSelectionList, "Select meshes",
-                            "<span>Select the meshes to be included in the mesh group.</span>")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_nodeSelectionList, QT_TRANSLATE_NOOP("PhysX", "Select meshes"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Select the meshes to be included in the mesh group.</span>"))
                             ->Attribute("FilterName", "meshes")
                             ->Attribute("FilterType", AZ::SceneAPI::DataTypes::IMeshData::TYPEINFO_Uuid())
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnNodeSelectionChanged)
 
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshGroup::m_exportMethod, "Export As",
-                            "<span>The cooking method to be applied to this mesh group. For the asset to be usable as "
-                            "a rigid body, select \"Convex\" or \"Primitive\".</span>")
-                            ->EnumAttribute(MeshExportMethod::TriMesh, "Triangle Mesh")
-                            ->EnumAttribute(MeshExportMethod::Convex, "Convex")
-                            ->EnumAttribute(MeshExportMethod::Primitive, "Primitive")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshGroup::m_exportMethod, QT_TRANSLATE_NOOP("PhysX", "Export As"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>The cooking method to be applied to this mesh group. For the asset to be usable as "
+                            "a rigid body, select \"Convex\" or \"Primitive\".</span>"))
+                            ->EnumAttribute(MeshExportMethod::TriMesh, QT_TRANSLATE_NOOP("PhysX", "Triangle Mesh"))
+                            ->EnumAttribute(MeshExportMethod::Convex, QT_TRANSLATE_NOOP("PhysX", "Convex"))
+                            ->EnumAttribute(MeshExportMethod::Primitive, QT_TRANSLATE_NOOP("PhysX", "Primitive"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnExportMethodChanged)
 
-                        ->DataElement(AZ_CRC_CE("DecomposeMeshes"), &MeshGroup::m_decomposeMeshes, "Decompose Meshes",
-                            "<span>If enables, this option will apply the V-HACD algorithm to split each node "
+                        ->DataElement(AZ_CRC_CE("DecomposeMeshes"), &MeshGroup::m_decomposeMeshes, QT_TRANSLATE_NOOP("PhysX", "Decompose Meshes"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>If enables, this option will apply the V-HACD algorithm to split each node "
                             "into approximately convex parts. Each part will individually be exported as a convex "
-                            "collider using the parameters configured above.</span>")
+                            "collider using the parameters configured above.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetDecomposeMeshesVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnDecomposeMeshesChanged)
 
-                        ->DataElement(AZ_CRC_CE("TriangleMeshAssetParams"), &MeshGroup::m_triangleMeshAssetParams, "Triangle Mesh Asset Parameters",
-                            "<span>Configure the parameters controlling the exported triangle mesh asset.</span>")
+                        ->DataElement(AZ_CRC_CE("TriangleMeshAssetParams"), &MeshGroup::m_triangleMeshAssetParams, QT_TRANSLATE_NOOP("PhysX", "Triangle Mesh Asset Parameters"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Configure the parameters controlling the exported triangle mesh asset.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetExportAsTriMesh)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                        ->DataElement(AZ_CRC_CE("ConvexAssetParams"), &MeshGroup::m_convexAssetParams, "Convex Asset Parameters",
-                            "<span>Configure the parameters controlling the exported convex asset.</span>")
+                        ->DataElement(AZ_CRC_CE("ConvexAssetParams"), &MeshGroup::m_convexAssetParams, QT_TRANSLATE_NOOP("PhysX", "Convex Asset Parameters"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Configure the parameters controlling the exported convex asset.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetExportAsConvex)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                        ->DataElement(AZ_CRC_CE("PrimitiveAssetParams"), &MeshGroup::m_primitiveAssetParams, "Primitive Asset Parameters",
-                            "<span>Configure the parameters controlling the exported primitive asset.</span>")
+                        ->DataElement(AZ_CRC_CE("PrimitiveAssetParams"), &MeshGroup::m_primitiveAssetParams, QT_TRANSLATE_NOOP("PhysX", "Primitive Asset Parameters"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Configure the parameters controlling the exported primitive asset.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetExportAsPrimitive)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                        ->DataElement(AZ_CRC_CE("ConvexDecompositionParams"), &MeshGroup::m_convexDecompositionParams, "Decomposition Parameters",
-                            "<span>Configure the parameters controlling the approximate convex decomposition algorithm.</span>")
+                        ->DataElement(AZ_CRC_CE("ConvexDecompositionParams"), &MeshGroup::m_convexDecompositionParams, QT_TRANSLATE_NOOP("PhysX", "Decomposition Parameters"),
+                            QT_TRANSLATE_NOOP("PhysX", "<span>Configure the parameters controlling the approximate convex decomposition algorithm.</span>"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetDecomposeMeshes)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
@@ -619,7 +620,7 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_rules, "",
-                            "Add or remove rules to fine-tune the export process.")
+                            QT_TRANSLATE_NOOP("PhysX", "Add or remove rules to fine-tune the export process."))
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }

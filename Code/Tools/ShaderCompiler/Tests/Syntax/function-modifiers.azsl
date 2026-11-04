@@ -1,0 +1,3 @@
+inline void FuncI();
+static void FuncS();
+static inline void FuncSI();

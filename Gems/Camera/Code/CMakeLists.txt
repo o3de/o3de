@@ -68,8 +68,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::${gem_name}.Static
                 Gem::AtomToolsFramework.Static
-        RUNTIME_DEPENDENCIES
-            Legacy::EditorCommon
     )
 
     # tools and builders use the above module.

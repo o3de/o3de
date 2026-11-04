@@ -13,6 +13,7 @@
 #include <Shape/EditorShapeComponentConverters.h>
 #include <Shape/ShapeDisplay.h>
 #include <AzToolsFramework/ComponentModes/SphereComponentMode.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -41,7 +42,8 @@ namespace LmbrCentral
             {
                 editContext
                     ->Class<EditorSphereShapeComponent>(
-                        "Sphere Shape", "The Sphere Shape component creates a sphere around the associated entity")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Shape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The Sphere Shape component creates a sphere around the associated entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Sphere_Shape.svg")
@@ -53,16 +55,16 @@ namespace LmbrCentral
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorSphereShapeComponent::m_sphereShape,
-                        "Sphere Shape",
-                        "Sphere Shape Configuration")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Shape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Shape Configuration"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSphereShapeComponent::ConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorSphereShapeComponent::m_componentModeDelegate,
-                        "Component Mode",
-                        "Sphere Shape Component Mode")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Component Mode"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Shape Component Mode"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
                 ;
             }

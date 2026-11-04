@@ -17,7 +17,6 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QDockWidget>
 #include <QLabel>
 #include <QMenu>
@@ -27,7 +26,6 @@
 #include <QStackedLayout>
 #include <QVector>
 #include <QWindow>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 namespace AzQtComponents
 {
@@ -201,20 +199,10 @@ namespace AzQtComponents
     void TitleBar::handleMaximize()
     {
         QWidget* w = window();
-        if (isMaximized())
-        {
-            w->showNormal();
-        }
+        if (w->windowState() & Qt::WindowMaximized)
+            w->setWindowState(Qt::WindowNoState);
         else
-        {
-            w->showMaximized();
-
-            // Need to separately resize based on the available geometry for
-            // the screen because since floating windows are frameless, on
-            // Windows 10 they end up taking up the entire screen when maximized
-            // instead of respecting the available space (e.g. taskbar)
-            w->setGeometry(QApplication::desktop()->availableGeometry(w));
-        }
+            w->setWindowState(Qt::WindowMaximized);
     }
 
     void TitleBar::handleMinimize()
@@ -566,17 +554,6 @@ namespace AzQtComponents
         return -1;
     }
 
-    bool TitleBar::usesCustomTopBorderResizing() const
-    {
-#ifdef Q_OS_WIN
-        // On Win < 10 we're not overlapping the titlebar, removing it works fine there.
-        // On Win < 10 we use native resizing of the top border.
-        return QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10);
-#else
-        return true;
-#endif
-    }
-
     void TitleBar::checkEnableMouseTracking()
     {
         // We don't get a mouse release when detaching a dock widget, so much do it with a workaround
@@ -892,17 +869,11 @@ namespace AzQtComponents
             return false;
         }
 
-        return w && usesCustomTopBorderResizing() &&
-            w->minimumHeight() < w->maximumHeight() && !w->isMaximized();
+        return w && w->minimumHeight() < w->maximumHeight() && !w->isMaximized();
     }
 
     void TitleBar::updateMouseCursor(const QPoint& globalPos)
     {
-        if (!usesCustomTopBorderResizing())
-        {
-            return;
-        }
-
         bool usesResizeCursor = false;
         switch (cursor().shape()) {
         case Qt::SizeVerCursor:
@@ -998,12 +969,6 @@ namespace AzQtComponents
 
             handleMaximize();
             return;
-        }
-
-        // Workaround QTBUG-47543
-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10))
-        {
-            update();
         }
 
         if (m_pendingRepositioning)
@@ -1258,7 +1223,7 @@ namespace AzQtComponents
 
     int TitleBar::numButtons() const
     {
-        return m_buttons.size();
+        return static_cast<int>(m_buttons.size());
     }
 
     void TitleBar::setForceInactive(bool force)
@@ -1272,5 +1237,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_Titlebar.cpp"

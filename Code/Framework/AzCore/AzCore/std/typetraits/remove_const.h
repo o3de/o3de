@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/typetraits/config.h>
@@ -12,6 +13,5 @@
 namespace AZStd
 {
     using std::remove_const;
-    template<class T>
-    using remove_const_t = std::remove_const_t<T>;
+    using std::remove_const_t;
 }

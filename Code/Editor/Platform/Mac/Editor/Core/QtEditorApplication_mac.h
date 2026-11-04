@@ -20,8 +20,10 @@ namespace Editor
             : EditorQtApplication(argc, argv)
         {
         }
+        ~EditorQtApplicationMac() override;
 
         // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr * result) override;
     };
 } // namespace Editor

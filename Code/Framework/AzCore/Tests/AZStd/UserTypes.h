@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_UNITTEST_USERTYPES_H
-#define AZSTD_UNITTEST_USERTYPES_H
+
+#pragma once
 
 // enable checked iterators (in debug) to test. we can't really do this with AZCore since the lib is compiled without AZSTD_CHECKED_ITERATORS by default
 // define AZSTD_CHECKED_ITERATORS in the lib and then test
@@ -218,6 +218,3 @@ namespace UnitTestInternal
         bool m_assigned = false;
     };
 }
-
-#endif // AZSTD_UNITTEST_USERTYPES_H
-#pragma once

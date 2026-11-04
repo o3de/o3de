@@ -6,12 +6,13 @@
  *
  */
 
-#include <RecastNavigationSystemComponent.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+#include <Components/DetourCrowdNavigationComponent.h>
 #include <Components/DetourNavigationComponent.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <Components/RecastNavigationPhysXProviderComponent.h>
+#include <RecastNavigationSystemComponent.h>
 
 namespace RecastNavigation
 {
@@ -28,11 +29,14 @@ namespace RecastNavigation
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-                RecastNavigationSystemComponent::CreateDescriptor(),
-                DetourNavigationComponent::CreateDescriptor(),
-                RecastNavigationMeshComponent::CreateDescriptor(),
-                RecastNavigationPhysXProviderComponent::CreateDescriptor(),
+            m_descriptors.insert(
+                m_descriptors.end(),
+                {
+                    RecastNavigationSystemComponent::CreateDescriptor(),
+                    DetourCrowdNavigationComponent::CreateDescriptor(),
+                    DetourNavigationComponent::CreateDescriptor(),
+                    RecastNavigationMeshComponent::CreateDescriptor(),
+                    RecastNavigationPhysXProviderComponent::CreateDescriptor(),
                 });
         }
 

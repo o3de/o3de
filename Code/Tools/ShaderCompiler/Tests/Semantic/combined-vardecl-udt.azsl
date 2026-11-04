@@ -1,0 +1,6 @@
+static groupshared struct S
+{
+    bool b;
+} g_s;
+
+void f(S s) { s.b = g_s.b; }

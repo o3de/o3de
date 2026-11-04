@@ -5,18 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
+#include <AzCore/std/typetraits/config.h>
 
 namespace AZStd
 {
-    /// Implements the C++20 std::type_identity type trait
-    /// Note type_identity can be used to block template argument deduction
-    template <typename T>
-    struct type_identity
-    {
-        using type = T;
-    };
-
-    template <typename T>
-    using type_identity_t = typename type_identity<T>::type;
+    using std::type_identity;
+    using std::type_identity_t;
 }

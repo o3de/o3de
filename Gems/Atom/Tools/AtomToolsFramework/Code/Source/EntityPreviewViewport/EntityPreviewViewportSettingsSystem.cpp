@@ -26,6 +26,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -40,7 +41,7 @@ namespace AtomToolsFramework
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<EntityPreviewViewportSettingsSystem>("EntityPreviewViewportSettingsSystem", "Manages and serializes settings for the application viewport")
+                editContext->Class<EntityPreviewViewportSettingsSystem>(QT_TRANSLATE_NOOP("AtomToolsFramework", "EntityPreviewViewportSettingsSystem"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Manages and serializes settings for the application viewport"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

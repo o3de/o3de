@@ -9,6 +9,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -38,13 +39,13 @@ namespace AZ::RHI
                 editContext->Class<ShaderBuildArguments>("ShaderBuildArguments", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_generateDebugInfo, "Generate Debug Info", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_preprocessorArguments, "Preprocessor Arguments", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_azslcArguments, "Azslc Arguments", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_dxcArguments, "Dxc Arguments", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_spirvCrossArguments, "Spirv Cross Arguments", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalAirArguments, "Metal Air Arguments", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalLibArguments, "Metal Lib Arguments", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_generateDebugInfo, QT_TRANSLATE_NOOP("Atom::RHI", "Generate Debug Info"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_preprocessorArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Preprocessor Arguments"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_azslcArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Azslc Arguments"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_dxcArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Dxc Arguments"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_spirvCrossArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Spirv Cross Arguments"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalAirArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Metal Air Arguments"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalLibArguments, QT_TRANSLATE_NOOP("Atom::RHI", "Metal Lib Arguments"), "")
                     ;
             }
         }

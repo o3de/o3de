@@ -7,10 +7,14 @@
 #
 
 set(FILES
+    Include/RecastNavigation/DetourCrowdAgentParams.h
+    Include/RecastNavigation/DetourObstacleAvoidanceParams.h
     Include/RecastNavigation/NavMeshQuery.h
     Include/RecastNavigation/RecastHelpers.h
     Include/RecastNavigation/RecastSmartPointer.h
 
+    Include/RecastNavigation/DetourCrowdAgentBus.h
+    Include/RecastNavigation/DetourCrowdNavigationBus.h
     Include/RecastNavigation/DetourNavigationBus.h
     Include/RecastNavigation/RecastNavigationBus.h
     Include/RecastNavigation/RecastNavigationMeshBus.h

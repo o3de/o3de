@@ -167,7 +167,7 @@ public:
                         menu->addAction(noAction);
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 
@@ -444,7 +444,7 @@ void ViewportInteraction::EndReversibleAction()
 
 void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
 {
-    AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->localPos());
+    AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->position());
     m_startMouseDragPos = m_lastMouseDragPos = mousePosition;
     const bool ctrlKeyPressed = ev->modifiers().testFlag(Qt::ControlModifier);
 
@@ -594,7 +594,7 @@ const AZ::Uuid& ViewportInteraction::InitAndGetTransformComponentType()
 void ViewportInteraction::MouseMoveEvent(QMouseEvent* ev,
     const QTreeWidgetItemRawPtrQList& selectedItems)
 {
-    AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->localPos());
+    AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->position());
 
     if (m_spaceBarIsActive)
     {
@@ -660,7 +660,7 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
             (m_interactionMode == InteractionMode::MOVE || m_interactionMode == InteractionMode::ANCHOR)
             && (m_interactionType == InteractionType::DIRECT || m_interactionType == InteractionType::TRANSFORM_GIZMO))
         {
-            AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->localPos());
+            AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->position());
 
             bool ignoreClick = false;
             if (m_interactionType == InteractionType::TRANSFORM_GIZMO)
@@ -724,7 +724,7 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
     if (!m_spaceBarIsActive)
     {
         // Immediately update the interaction type and cursor (using the possibly new selection)
-        AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->localPos());
+        AZ::Vector2 mousePosition = QtHelpers::QPointFToVector2(ev->position());
         UpdateInteractionType(mousePosition,
             m_editorWindow->GetHierarchy()->selectedItems());
     }
@@ -1554,5 +1554,3 @@ void ViewportInteraction::UpdateCoordinateSystemToolbarSection()
     bool isMoveOrAnchorMode = m_interactionMode == InteractionMode::MOVE || m_interactionMode == InteractionMode::ANCHOR;
     m_editorWindow->GetCoordinateSystemToolbarSection()->SetIsEnabled(isMoveOrAnchorMode);
 }
-
-#include <moc_ViewportInteraction.cpp>

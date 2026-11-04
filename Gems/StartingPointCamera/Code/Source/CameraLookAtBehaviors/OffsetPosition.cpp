@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Camera
 {
@@ -27,10 +28,16 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<OffsetPosition>("OffsetPosition", "Offset the acquired position of the camera's current target")
+                editContext->Class<OffsetPosition>(
+                    QT_TRANSLATE_NOOP("Camera", "OffsetPosition"),
+                    QT_TRANSLATE_NOOP("Camera", "Offset the acquired position of the camera's current target"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &OffsetPosition::m_positionalOffset, "Positional Offset", "The vector offset from the current position")
-                    ->DataElement(0, &OffsetPosition::m_isRelativeOffset, "Offset Is Relative", "Uses world coordinates for the offset when false and local coordinates when true");
+                    ->DataElement(0, &OffsetPosition::m_positionalOffset,
+                        QT_TRANSLATE_NOOP("Camera", "Positional Offset"),
+                        QT_TRANSLATE_NOOP("Camera", "The vector offset from the current position"))
+                    ->DataElement(0, &OffsetPosition::m_isRelativeOffset,
+                        QT_TRANSLATE_NOOP("Camera", "Offset Is Relative"),
+                        QT_TRANSLATE_NOOP("Camera", "Uses world coordinates for the offset when false and local coordinates when true"));
             }
         }
     }

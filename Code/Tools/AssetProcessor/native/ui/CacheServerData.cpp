@@ -109,7 +109,7 @@ namespace AssetProcessor
             // rewrite the file contents
             file.resize(0);
             QTextStream stream(&file);
-            stream.setCodec("UTF-8");
+            stream.setEncoding(QStringConverter::Encoding::Utf8);
             stream << buffer.GetString();
 
             m_statusLevel = StatusLevel::Notice;

@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -56,23 +57,32 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<GesturesSystemComponent>("Gestures", "Interprets raw mouse/touch input in order to detect common gestures like drag, hold, swipe, etc.")
+                ec->Class<GesturesSystemComponent>(
+                    QT_TRANSLATE_NOOP("Gestures", "Gestures"),
+                    QT_TRANSLATE_NOOP("Gestures", "Interprets raw mouse/touch input in order to detect common gestures like drag, hold, swipe, etc."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &GesturesSystemComponent::m_doublePressConfig,
-                        "Double Press", "The config used to create the default double press gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Double Press"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default double press gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_dragConfig,
-                        "Drag", "The config used to create the default drag gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Drag"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default drag gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_holdConfig,
-                        "Hold", "The config used to create the default hold gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Hold"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default hold gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_pinchConfig,
-                        "Pinch", "The config used to create the default pinch gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Pinch"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default pinch gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_rotateConfig,
-                        "Rotate", "The config used to create the default rotate gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Rotate"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default rotate gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_swipeConfig,
-                        "Swipe", "The config used to create the default swipe gesture input channel.")
+                        QT_TRANSLATE_NOOP("Gestures", "Swipe"),
+                        QT_TRANSLATE_NOOP("Gestures", "The config used to create the default swipe gesture input channel."))
                     ->DataElement(0, &GesturesSystemComponent::m_customGestureConfigsByName,
-                        "Custom Gestures", "Custom gesture name/config pairs that will be used to create additional gesture input channels, in addition to the default gestures that are provided 'out of the box'.")
+                        QT_TRANSLATE_NOOP("Gestures", "Custom Gestures"),
+                        QT_TRANSLATE_NOOP("Gestures", "Custom gesture name/config pairs that will be used to create additional gesture input channels, in addition to the default gestures that are provided 'out of the box'."))
                 ;
             }
         }

@@ -40,7 +40,7 @@ namespace EMStudio
         NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, AZ::u16 portNr, GraphNode* sourceNode, AZ::u16 sourceOutputPortNr);
         virtual ~NodeConnection();
 
-        const QModelIndex& GetModelIndex() const { return m_modelIndex; }
+        const QPersistentModelIndex& GetModelIndex() const { return m_modelIndex; }
 
         virtual void Render(const QItemSelectionModel& selectionModel, QPainter& painter, QPen* pen, QBrush* brush, int32 stepSize, const QRect& visibleRect, float opacity, bool alwaysColor);
         virtual bool Intersects(const QRect& rect);

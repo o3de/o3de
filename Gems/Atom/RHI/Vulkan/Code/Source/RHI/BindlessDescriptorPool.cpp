@@ -93,7 +93,7 @@ namespace AZ::Vulkan
                 m_device->GetNativeDevice(), &layoutInfo, VkSystemAllocator::Get(), &m_descriptorSetLayout);
             if (result != VK_SUCCESS)
             {
-                AssertSuccess(result);
+                VK_RESULT_ASSERT(result);
                 return ConvertResult(result);
             }
 
@@ -106,7 +106,7 @@ namespace AZ::Vulkan
             result = m_device->GetContext().AllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
             if (result != VK_SUCCESS)
             {
-                AssertSuccess(result);
+                VK_RESULT_ASSERT(result);
                 return ConvertResult(result);
             }
         }

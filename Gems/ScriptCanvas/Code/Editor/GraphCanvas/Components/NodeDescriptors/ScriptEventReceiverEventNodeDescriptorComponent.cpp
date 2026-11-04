@@ -119,7 +119,7 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphScopedNodeId scopedNodeId(canvasId, m_ebusWrapper.m_scriptCanvasId);
             ScriptCanvas::EBusHandlerNodeRequestBus::Event(scopedNodeId, &ScriptCanvas::EBusHandlerNodeRequests::SetAddressId, AZStd::move(idDatum));
 
-            m_queuedId = AZStd::move(ScriptCanvas::Datum());
+            m_queuedId = ScriptCanvas::Datum();
         }
         else
         {

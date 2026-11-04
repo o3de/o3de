@@ -1,0 +1,29 @@
+enum Weekday {Monday = 0, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
+static const Weekday favouriteDay = Friday;
+
+enum class Season {Spring, Summer, Autumn, Winter};
+static const Season coming = Season::Summer;
+
+struct MyStruct
+{
+    enum Nested { Uno, Dos, Tres };
+};
+
+float4 PSMain() : SV_TARGET
+{
+    enum Number { One = 1, Two = 2, Three = 3 };
+
+    if (coming == Season::Summer)
+    {
+        return float4(1, 1, 1, 1) * favouriteDay;
+    }
+    else
+    {
+        return float4(0, 0, 0, 1) * One * MyStruct::Uno;;
+    }
+}
+
+
+
+
+

@@ -36,7 +36,7 @@ namespace Audio
             AZ::IO::Result result = fileIO->FindFiles(folderPath.data(), filter, findFilesCallback);
             if (result == AZ::IO::ResultCode::Success)
             {
-                return AZStd::move(foundFiles);
+                return foundFiles;
             }
         }
 

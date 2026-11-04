@@ -11,6 +11,7 @@
 #include "ScriptEventsBus.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEvents
 {
@@ -26,8 +27,10 @@ namespace ScriptEvents
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ScriptEventsAsset>("Script Events Asset", "")
-                    ->DataElement(0, &ScriptEventsAsset::m_definition, "Definition", "")
+                editContext->Class<ScriptEventsAsset>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "Script Events Asset"), "")
+                    ->DataElement(0, &ScriptEventsAsset::m_definition,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Definition"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

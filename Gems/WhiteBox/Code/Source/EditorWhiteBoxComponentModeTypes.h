@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/std/optional.h>
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <Viewport/WhiteBoxManipulatorBounds.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 
@@ -110,6 +114,21 @@ namespace WhiteBox
     {
         return m_closestVertexWithHandle.m_handle;
     }
+
+    //! Everything a sub-mode might need to handle a viewport mouse interaction, bundled into a
+    //! single context so every mode can share one HandleMouseInteraction signature. Some modes use
+    //! the precomputed edge/polygon/vertex hits; others (e.g. DrawShapeMode) use the raw world
+    //! transform and intersection cache. Built fresh per event, so reference members are safe.
+    struct ModeMouseInteraction
+    {
+        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& m_mouseInteraction;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+        AZ::Transform m_worldFromLocal;
+        const IntersectionAndRenderData& m_intersectionData;
+        AZStd::optional<EdgeIntersection> m_edgeIntersection;
+        AZStd::optional<PolygonIntersection> m_polygonIntersection;
+        AZStd::optional<VertexIntersection> m_vertexIntersection;
+    };
 
     //! Utility function to draw all edge handles in edgeBoundsWithHandle.
     //! Note: Any edges in excludedEdgeHandles will be filtered out and not drawn.

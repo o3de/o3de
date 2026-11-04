@@ -249,4 +249,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include <AtomToolsFramework/AssetSelection/moc_AssetSelectionComboBox.cpp>

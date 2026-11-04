@@ -205,7 +205,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                emit ShowToastNotification("Failed to copy URL to clipboard");
+                emit ShowToastNotification(tr("Failed to copy URL to clipboard"));
             }
         }
     }

@@ -100,7 +100,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             const VkResult result = device.GetContext().CreateDescriptorPool(
                 device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorPool);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return ConvertResult(result);
         }
@@ -132,7 +132,7 @@ namespace AZ
             {
                 return AZStd::make_pair(vkResult, nullptr);
             }
-            
+
             m_objects.insert(descriptorSets);
             return AZStd::make_pair(vkResult, descriptorSets);
         }

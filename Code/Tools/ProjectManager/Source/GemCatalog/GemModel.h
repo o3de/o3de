@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <GemCatalog/GemInfo.h>
 #include <TagWidget.h>
 #include <QAbstractItemModel>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
-#endif
 
 namespace O3DE::ProjectManager
 {

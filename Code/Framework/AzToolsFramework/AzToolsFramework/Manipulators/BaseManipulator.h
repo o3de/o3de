@@ -261,9 +261,6 @@ namespace AzToolsFramework
         //! Update the mouseOver state for this manipulator.
         void UpdateMouseOver(ManipulatorId manipulatorId);
 
-        //! Manage correctly ending the undo batch.
-        void EndUndoBatch();
-
         //! Record an action as having started.
         void BeginAction();
 

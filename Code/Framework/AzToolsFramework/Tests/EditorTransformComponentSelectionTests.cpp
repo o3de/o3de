@@ -18,7 +18,6 @@
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
@@ -194,7 +193,7 @@ namespace UnitTest
     {
         // setup a dummy widget and make it the active window to ensure focus in/out events are fired
         auto dummyWidget = AZStd::make_unique<QWidget>();
-        QApplication::setActiveWindow(dummyWidget.get());
+        dummyWidget->activateWindow();
 
         // note: it is important to make sure the focus widget is parented to the dummy widget to have focus in/out events fire
         auto focusWidget = AZStd::make_unique<UnitTest::FocusInteractionWidget>(dummyWidget.get());
@@ -368,14 +367,15 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
-        // note: entity1 is created in the fixture setup
-        AzToolsFramework::SelectEntity(m_entityId1);
-
+        // Note that creating entities currently selects them for convenience.  We may have to change that.
         AZ::EntityId entity2 = CreateDefaultEditorEntity("Entity2");
         AZ::EntityId entity3 = CreateDefaultEditorEntity("Entity3");
         AZ::EntityId entity4 = CreateDefaultEditorEntity("Entity4");
         AZ::EntityId entity5 = CreateDefaultEditorEntity("Entity5");
         AZ::EntityId entity6 = CreateDefaultEditorEntity("Entity6");
+
+        // note: entity1 is created in the fixture setup
+        AzToolsFramework::SelectEntity(m_entityId1);
 
         AzToolsFramework::SetEntityVisibility(entity2, false);
         AzToolsFramework::SetEntityLockState(entity3, true);
@@ -390,7 +390,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
-        const AzToolsFramework::EntityIdList expectedSelectedEntities = { entity4, entity5, entity6 };
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { GetRootInstanceEntityId(), entity4, entity5, entity6 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -420,7 +420,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
-        const AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId1, entity2, entity3, entity4 };
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { GetRootInstanceEntityId(), m_entityId1, entity2, entity3, entity4 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -1919,9 +1919,6 @@ namespace UnitTest
         EXPECT_THAT(transformMode(), EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
 
         auto wheelEventWidget = WheelEventWidget(m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId());
-        // attach the global event filter to the placeholder widget
-        AzQtComponents::GlobalEventFilter globalEventFilter(QApplication::instance());
-        wheelEventWidget.installEventFilter(&globalEventFilter);
 
         // example mouse wheel event (does not yet factor in position of mouse in relation to widget)
         auto wheelEvent = QWheelEvent(

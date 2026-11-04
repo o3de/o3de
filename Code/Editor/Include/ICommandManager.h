@@ -6,10 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_ICOMMANDMANAGER_H
-#define CRYINCLUDE_EDITOR_INCLUDE_ICOMMANDMANAGER_H
 #pragma once
+
 #include "Command.h"
 
 typedef void (* TPfnDeleter)(void*);
@@ -204,4 +202,3 @@ bool CommandManagerHelper::RegisterCommand(ICommandManager* pCmdMgr, const char*
 {
     return Private::RegisterCommand<AZStd::function<void(LIST(6, P))>, CCommand6<LIST(6, P)> >(pCmdMgr, module, name, description, example, functor);
 }
-#endif // CRYINCLUDE_EDITOR_INCLUDE_ICOMMANDMANAGER_H

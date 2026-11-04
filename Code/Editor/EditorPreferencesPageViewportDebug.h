@@ -10,6 +10,7 @@
 #include "Include/IPreferencesPage.h"
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <QIcon>
 
 namespace AZ
@@ -28,8 +29,8 @@ public:
     CEditorPreferencesPage_ViewportDebug();
     virtual ~CEditorPreferencesPage_ViewportDebug() = default;
 
-    virtual const char* GetCategory() override { return "Viewports"; }
-    virtual const char* GetTitle() override { return "Debug"; }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Debug"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}

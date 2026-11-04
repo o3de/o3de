@@ -9,7 +9,7 @@
 add_custom_command(TARGET LmbrCentral.Editor POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Mac/RPathChange.cmake"
             "$<TARGET_FILE_DIR:LmbrCentral.Editor>/lrelease"
-            @executable_path/../Frameworks
+            @loader_path/../lib
             @executable_path
     COMMENT "Patching lrelease..."
     VERBATIM

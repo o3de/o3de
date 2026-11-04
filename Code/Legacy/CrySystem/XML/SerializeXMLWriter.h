@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H
-#define CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H
 #pragma once
-
 
 #include <ISystem.h>
 #include <IXml.h>
@@ -133,5 +129,3 @@ private:
     bool IsDefaultValue( const T& v ) const { return false; };
     */
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_SERIALIZEXMLWRITER_H

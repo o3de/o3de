@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -16,7 +15,6 @@
 #include "Util/VariablePropertyType.h"
 #include "Controls/SplineCtrl.h"
 #include <QWidget>
-#endif
 
 class QLabel;
 class QLineEdit;

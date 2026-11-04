@@ -22,7 +22,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         // this method is required by Script Canvas, left intentionally blank to avoid copying m_SpawnableScriptMediator
         return *this;
     }
-    
+
     void SpawnNodeable::OnDeactivate()
     {
         m_spawnableScriptMediator.Clear();
@@ -32,9 +32,9 @@ namespace ScriptCanvas::Nodeables::Spawning
     void SpawnNodeable::OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList)
     {
         AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect(spawnTicket.GetId());
-        CallOnSpawnCompleted(spawnTicket, move(entityList));
+        CallOnSpawnCompleted(spawnTicket, AZStd::move(entityList));
     }
-    
+
     void SpawnNodeable::RequestSpawn(
         AzFramework::EntitySpawnTicket spawnTicket,
         AZ::EntityId parentId,

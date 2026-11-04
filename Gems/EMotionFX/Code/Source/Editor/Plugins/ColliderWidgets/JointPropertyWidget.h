@@ -8,7 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+
 #include <Editor/Plugins/ColliderWidgets/ClothJointWidget.h>
 #include <Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -16,8 +16,8 @@
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
+
 #include <QPushButton>
-#endif
 #include <QTreeWidget>
 #include <QStandardItem>
 

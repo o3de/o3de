@@ -1,0 +1,6 @@
+class A
+{
+    void M();
+    
+    void A::M() {}  // overqualification is tolerated
+};

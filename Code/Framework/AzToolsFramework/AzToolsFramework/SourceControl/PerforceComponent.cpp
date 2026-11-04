@@ -12,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/lock.h>
 
@@ -123,9 +124,10 @@ namespace AzToolsFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<PerforceComponent>(
-                    "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Perforce Connectivity"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Manages Perforce connectivity and executes Perforce commands."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                 ;
             }
         }
@@ -1404,20 +1406,20 @@ namespace AzToolsFramework
         {
         case PerforceJobRequest::PJR_Stat:
         {
-            resp.m_fileInfo = AZStd::move(GetFileInfo(request.m_requestPath.c_str()));
+            resp.m_fileInfo = GetFileInfo(request.m_requestPath.c_str());
             resp.m_succeeded = resp.m_fileInfo.m_status == SCS_OpSuccess;
         }
         break;
         case PerforceJobRequest::PJR_StatBulk:
         {
-            resp.m_bulkFileInfo = AZStd::move(GetBulkFileInfo(request.m_bulkFilePaths));
+            resp.m_bulkFileInfo = GetBulkFileInfo(request.m_bulkFilePaths);
             resp.m_succeeded = !resp.m_bulkFileInfo.empty();
         }
         break;
         case PerforceJobRequest::PJR_Edit:
         {
             resp.m_succeeded = RequestEdit(request.m_requestPath.c_str(), request.m_allowMultiCheckout);
-            resp.m_fileInfo = AZStd::move(GetFileInfo(request.m_requestPath.c_str()));
+            resp.m_fileInfo = GetFileInfo(request.m_requestPath.c_str());
         }
         break;
         case PerforceJobRequest::PJR_EditBulk:

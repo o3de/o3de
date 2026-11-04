@@ -94,4 +94,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <CommonWidgets/moc_JobWatcher.cpp>

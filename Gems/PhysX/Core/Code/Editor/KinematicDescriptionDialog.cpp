@@ -129,5 +129,3 @@ namespace PhysX
         }
     } // namespace Editor
 } // namespace PhysX
-
-#include <moc_KinematicDescriptionDialog.cpp>

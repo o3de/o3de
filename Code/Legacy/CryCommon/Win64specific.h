@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Specific to Win32 declarations, inline functions etc.
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_WIN64SPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_WIN64SPECIFIC_H
-#pragma once
 
 
 #define _CPU_AMD64
@@ -72,5 +69,3 @@ int64 CryGetTicksPerSec();
 #define TARGET_DEFAULT_ALIGN (0x8U)
 
 #define PLATFORM_64BIT
-
-#endif // CRYINCLUDE_CRYCOMMON_WIN64SPECIFIC_H

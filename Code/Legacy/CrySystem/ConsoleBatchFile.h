@@ -6,14 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Executes an ASCII batch file of console commands...
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_CONSOLEBATCHFILE_H
-#define CRYINCLUDE_CRYSYSTEM_CONSOLEBATCHFILE_H
-
-#pragma once
 
 struct IConsoleCmdArgs;
 struct IConsole;
@@ -28,5 +24,3 @@ private:
     static void ExecuteFileCmdFunc(IConsoleCmdArgs* args);
     static IConsole*        m_pConsole;
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_CONSOLEBATCHFILE_H

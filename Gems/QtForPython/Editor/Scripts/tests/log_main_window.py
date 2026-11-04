@@ -5,11 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# bit more complex example set to demo connecting O3DE tech to PySide2 widgets
+# bit more complex example set to demo connecting O3DE tech to PySide widgets
 import azlmbr.bus
-from PySide2 import QtWidgets
-from PySide2 import QtGui
-from shiboken2 import wrapInstance, getCppPointer
+from PySide6 import QtWidgets
+from PySide6 import QtGui
+from shiboken6 import wrapInstance, getCppPointer
 
 params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
 if(params is not None and params.mainWindowId != 0):

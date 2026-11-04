@@ -514,8 +514,8 @@ namespace AZ
                 m_revision++;
 
                 // Make sure the map entries are present so we don't have a race condition in MarkBlasInstance*
-                m_uncompactedBlasEnqueuedForDeletion.insert(deviceIndex);
-                m_blasEnqueuedForCompact.insert(deviceIndex);
+                m_uncompactedBlasEnqueuedForDeletion.try_emplace(deviceIndex);
+                m_blasEnqueuedForCompact.try_emplace(deviceIndex);
             }
 
             if (m_updatedFrameIndex == m_frameIndex)

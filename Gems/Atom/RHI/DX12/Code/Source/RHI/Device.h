@@ -29,7 +29,7 @@
 
 #define USE_AMD_D3D12MA
 #ifdef USE_AMD_D3D12MA
-#include <dx12ma/D3D12MemAlloc.h>
+#include <D3D12MemAlloc.h>
 
 AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
 AZ_DX12_REFCOUNTED(D3D12MA::Allocation);

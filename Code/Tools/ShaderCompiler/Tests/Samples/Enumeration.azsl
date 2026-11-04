@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+/*
+ * Demonstrates the syntax for enumerations
+ * Enumerations in AZSL follow the C++ standard: https://en.cppreference.com/w/cpp/language/enum
+ * One major difference is that explicit underlying types are not yet supported.
+ */
+ 
+// Unscoped enumerations
+enum Weekday {Monday = 0, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
+// The scope of the enumerators is on the same level as the enumeration
+static const Weekday FavouriteDay = Friday;
+
+// Scoped enumerations
+// enum class and enum struct are identical. They're both re-emitted as enum class
+enum class Season {Spring, Summer, Autumn, Winter};
+// The scope of the enumerators is within the enumeration
+static const Season IsComing = Season::Summer;
+
+// Unsupported
+// enum class ByteEnum : byte {Zero = 0, One, Two, Three};
+
+struct VertexInput  { float3 m_position : POSITION; };
+
+struct VertexOutput { float4 m_position : SV_Position; };
+
+VertexOutput MainVS(VertexInput input)
+{
+    VertexOutput output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+float4 MainPS() : SV_Target0
+{
+    float4 psColor = float4(0, 0, 0, 1);
+    switch (FavouriteDay)
+    {
+        case Monday:      psColor += float4(1, 0, 0, 0);    break;
+        case Tuesday:     psColor += float4(0, 1, 0, 0);    break;
+        case Wednesday:   psColor += float4(0, 0, 1, 0);    break;
+        case Thursday:    psColor += float4(1, 1, 0, 0);    break;
+        case Friday:      psColor += float4(1, 0, 1, 0);    break;
+        case Saturday:    psColor += float4(0, 1, 1, 0);    break;
+        case Sunday:      psColor += float4(1, 1, 1, 0);    break;
+    }
+
+    switch (IsComing)
+    {
+        case Season::Spring:   psColor += float4(1, 0, 0, 0);    break;
+        case Season::Summer:   psColor += float4(0, 1, 0, 0);    break;
+        case Season::Autumn:   psColor += float4(0, 0, 1, 0);    break;
+        case Season::Winter:   psColor += float4(0, 0, 0, 1);    break;
+    }
+    // The sample demonstrates switch case and enums, psColor doesn't need to make sense
+    return psColor;
+}

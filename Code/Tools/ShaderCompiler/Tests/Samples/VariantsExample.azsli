@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+/*
+ * Demonstrates one possible generated header which works with the shader code
+ *  generated from Variants.azsl
+ *
+ * Not all options need be defined.
+ * Run `azslc.exe Variants.azsl` for reference for the generated code and
+ * run `azslc.exe Variants.azsl --variants` for a list of options
+ */
+
+#define   Quality_OPTION_DEF              QualityT::Low
+#define   Color_OPTION_DEF                Green
+#define   UseGI_OPTION_DEF                false
+#define   IntOption_OPTION_DEF            100
+#define   FloatOption_OPTION_DEF          2.0
+#define   DoubleOption_OPTION_DEF         4.0
+#define   HalfOption_OPTION_DEF           1.0
+#define   UserDefinedOption_OPTION_DEF    { 16 , true }

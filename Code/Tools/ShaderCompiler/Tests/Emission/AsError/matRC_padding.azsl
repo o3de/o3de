@@ -1,0 +1,97 @@
+// This test case is used to validate that the exception code 131 is thrown.
+// Exception code 131 (IR_POTENTIAL_DX12_VS_VULKAN_ALIGNMENT_ERROR) means
+// that AZSLc detected data layout issues within struct, classes or SRGs
+// that are known to produce different layout data by DXC when using
+// the command line option: -fvk-use-dx-layout
+// See https://github.com/o3de/o3de-azslc/issues/8
+//
+// #EC 131
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct A
+{
+    struct SD2
+    {
+        int m_i0;
+        float3x3 m_mat1;
+        float2x2 m_mat2;
+        float m_f3;  //<-- Dummy float3 must be inserted before this variable.
+        float3x2 m_mat4;
+        float2 m_f5;  //<-- Dummy float3 must be inserted before this variable.
+        float4x2 m_mat6;
+        float2 m_f7;  //<-- Dummy float3 must be inserted before this variable.
+        float2x3 m_mat8;
+        float m_f9;  //<-- Dummy float2 must be inserted before this variable.
+        float3x3 m_mat10;
+        float m_f11;  //<-- Dummy float2 must be inserted before this variable.
+        float4x3 m_mat12;
+        float m_f13;  //<-- Dummy float2 must be inserted before this variable.
+    } m_d14;
+
+    float m_f15;
+    float2x2 m_mat16;
+};
+
+struct B
+{
+    float m_f17;
+    float3x2 m_mat18;
+};
+
+struct C
+{
+    float m_f19;
+    float4x2 m_mat20;
+};
+
+struct D
+{
+    float m_f21;
+    float2x3 m_mat22;
+};
+
+struct E
+{
+    float m_f23;
+    float3x3 m_mat24;
+};
+
+struct F
+{
+    float m_f25;
+    float4x3 m_mat26;
+};
+
+ShaderResourceGroup SRG1 : slot1
+{
+    A m_a27;
+    float2 m_f28; //<-- Dummy float3 must be inserted before this variable.
+    B m_b29;
+    uint2 m_u30; //<-- Dummy float3 must be inserted before this variable.
+    C m_c31;
+    bool m_b32; //<-- Dummy float3 must be inserted before this variable.
+
+    D m_d33;
+    int m_i34; //<-- Dummy float2 must be inserted before this variable.
+
+    E m_e35;
+    float2 m_f36;
+
+    F m_sf37;
+    uint m_u38; //<-- Dummy float2 must be inserted before this variable.
+
+    float3x3 m_srg_mat39;
+    float m_f40; //<-- Dummy float2 must be inserted before this variable.
+};
+
+float4 MainPS(float2 uv : TEXCOORD0) : SV_Target0
+{
+    float3x3 anotherMatrix;
+    float aFloat;
+    float4 diffuse = float4(SRG1::m_f40, 0, 0, 0);    
+    return diffuse;
+}

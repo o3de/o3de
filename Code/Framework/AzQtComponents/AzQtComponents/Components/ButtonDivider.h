@@ -8,12 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QFrame>
-#endif
-
-class QPainter;
 
 namespace AzQtComponents
 {

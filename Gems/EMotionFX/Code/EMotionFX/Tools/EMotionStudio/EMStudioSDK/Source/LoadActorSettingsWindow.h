@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 
 #include <MCore/Source/MemoryCategoriesCore.h>
@@ -17,7 +16,6 @@
 
 #include <QCheckBox>
 #include <QDialog>
-#endif
 
 
 namespace EMStudio

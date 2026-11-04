@@ -1,0 +1,13 @@
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup MySRG : freq
+{
+    void _f(int){}
+    void _f(float){}
+}
+
+float4 psmain() : SV_Target0
+{
+    #line 2
+    MySRG::_f(0);
+}

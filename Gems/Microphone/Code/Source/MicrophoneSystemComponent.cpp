@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "MicrophoneSystemComponent.h"
 
@@ -23,7 +24,9 @@ namespace Audio
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<MicrophoneSystemComponent>("Microphone", "Provides access to a connected Microphone Device to capture and read the data")
+                editContext->Class<MicrophoneSystemComponent>(
+                    QT_TRANSLATE_NOOP("Microphone", "Microphone"),
+                    QT_TRANSLATE_NOOP("Microphone", "Provides access to a connected Microphone Device to capture and read the data"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -282,7 +282,7 @@ namespace EMotionFX
         const QModelIndexList& modelIndices,
         const AZStd::function<void(PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo)>& copyFunc)
     {
-        QMenu* copyFromMenu = parentMenu->addMenu("Copy from existing colliders");
+        QMenu* copyFromMenu = parentMenu->addMenu(QObject::tr("Copy from existing colliders"));
 
         for (int i = 0; i < PhysicsSetup::ColliderConfigType::Unknown; ++i)
         {

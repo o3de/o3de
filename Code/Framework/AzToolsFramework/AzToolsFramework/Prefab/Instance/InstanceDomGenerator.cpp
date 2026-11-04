@@ -197,8 +197,27 @@ namespace AzToolsFramework
             }
             else
             {
+                // The focused or root instance may not have a registered template yet
+                // during transient states (for example, while generating undo nodes for
+                // an entity created before the level's root prefab template exists). Guard
+                // the lookup so it returns a null DOM instead of asserting and then
+                // dereferencing an empty template reference inside FindTemplateDom. Callers
+                // already tolerate a null output DOM (see
+                // PrefabPublicHandler::GenerateUndoNodesForEntityChangeAndUpdateCache,
+                // which skips when the before-state DOM is not a valid object).
+                const TemplateId focusedOrRootTemplateId = focusedOrRootInstance->GetTemplateId();
+                if (focusedOrRootTemplateId == InvalidTemplateId)
+                {
+                    AZ_Warning(
+                        "Prefab",
+                        false,
+                        "InstanceDomGenerator::GetEntityDomFromTemplate - "
+                        "The focused or root instance has no valid template yet. Output DOM will be null.");
+                    return;
+                }
+
                 // Retrieves the entity DOM from the template of the focused or root instance.
-                const PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId());
+                const PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootTemplateId);
                 const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedTemplateDom);
                 if (!entityDomFromTemplate)
                 {

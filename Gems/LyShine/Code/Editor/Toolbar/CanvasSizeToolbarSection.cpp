@@ -164,7 +164,7 @@ void CanvasSizeToolbarSection::InitWidgets(QToolBar* parent, bool addSeparator)
         m_lineEditCanvasHeight->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasHeight));
 
         // Delimit between width x height
-        m_labelCustomSizeDelimiter->setText("x");
+        m_labelCustomSizeDelimiter->setText(QObject::tr("x"));
 
         // Listen for changes to custom canvas size for width and height
         m_lineEditCanvasWidthConnection = QObject::connect(
@@ -478,7 +478,7 @@ void CanvasSizeToolbarSection::InitCanvasSizePresets()
             AZ_Assert(false, "Failed to parse embedded JSON");
         }
     }
-    m_canvasSizePresets.push_back(CanvasSizePresets("Other...", m_canvasSizePresets[0].width, m_canvasSizePresets[0].height));
+    m_canvasSizePresets.push_back(CanvasSizePresets(QObject::tr("Other..."), m_canvasSizePresets[0].width, m_canvasSizePresets[0].height));
 }
 
 int CanvasSizeToolbarSection::GetPresetIndexFromSize(AZ::Vector2 size)
@@ -532,7 +532,8 @@ ReferenceCanvasSizeToolbarSection::ReferenceCanvasSizeToolbarSection(QToolBar* p
 
     m_isChangeUndoable = true;
 
-    m_combobox->setToolTip(QString("Canvas size is used to determine scaling on larger (or smaller) screens if 'scale to device' is used"));
+    m_combobox->setToolTip(
+        QObject::tr("Canvas size is used to determine scaling on larger (or smaller) screens if 'scale to device' is used"));
 }
 
 void ReferenceCanvasSizeToolbarSection::SetCanvasSizeByComboBoxIndex()
@@ -580,7 +581,7 @@ PreviewCanvasSizeToolbarSection::PreviewCanvasSizeToolbarSection(QToolBar* paren
 {
     InitWidgets(parent, addSeparator);
 
-    m_combobox->setToolTip(QString("Preview what the canvas would look like on a screen/window/texture of this size."));
+    m_combobox->setToolTip(QObject::tr("Preview what the canvas would look like on a screen/window/texture of this size."));
 }
 
 void PreviewCanvasSizeToolbarSection::SetCanvasSizeByComboBoxIndex()
@@ -603,5 +604,5 @@ void PreviewCanvasSizeToolbarSection::OnComboBoxIndexChanged([[maybe_unused]] in
 void PreviewCanvasSizeToolbarSection::AddSpecialPresets()
 {
     // add a first entry for using whatever the viewport size is
-    m_canvasSizePresets.push_back(CanvasSizePresets("Use viewport size", 0, 0));
+    m_canvasSizePresets.push_back(CanvasSizePresets(QObject::tr("Use viewport size"), 0, 0));
 }

@@ -6,12 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : Apple specific declarations common amongst its products
-
-#ifndef CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H
-#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
@@ -170,8 +167,6 @@ typedef DWORD COLORREF;
 
 #if defined(IOS)
 typedef bool BOOL;
-#else
-typedef signed char BOOL;
 #endif
 
 typedef int32_t LONG;
@@ -336,6 +331,7 @@ enum
 
 #define _msize malloc_size
 
+#include <AzCore/base.h>
 
 struct _OVERLAPPED;
 
@@ -362,7 +358,7 @@ typedef struct _SECURITY_ATTRIBUTES
 {
     DWORD nLength;
     LPVOID lpSecurityDescriptor;
-    BOOL bInheritHandle;
+    AZ::u8 bInheritHandle;
 } SECURITY_ATTRIBUTES, * PSECURITY_ATTRIBUTES, * LPSECURITY_ATTRIBUTES;
 
 #ifdef __cplusplus
@@ -474,5 +470,3 @@ char (*RtlpNumberOf( T (&)[N] ))[N];
 #define SUCCEEDED(x) ((x) >= 0)
 #undef FAILED
 #define FAILED(x) (!(SUCCEEDED(x)))
-
-#endif // CRYINCLUDE_CRYCOMMON_APPLESPECIFIC_H

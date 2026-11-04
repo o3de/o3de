@@ -85,4 +85,3 @@ namespace AzToolsFramework
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
-#include "Thumbnails/moc_ThumbnailWidget.cpp"

@@ -150,4 +150,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyIntSliderCtrl.cpp"

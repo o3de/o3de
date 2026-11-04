@@ -13,6 +13,5 @@
 namespace AZStd
 {
     using std::is_pointer;
-    template<typename T>
-    inline constexpr bool is_pointer_v = std::is_pointer_v<T>;
+    using std::is_pointer_v;
 }

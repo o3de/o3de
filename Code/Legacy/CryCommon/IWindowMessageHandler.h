@@ -6,9 +6,7 @@
  *
  */
 
-
-#ifndef _CRY_WINDOW_MESSAGE_HANDLER_H_
-#define _CRY_WINDOW_MESSAGE_HANDLER_H_
+#pragma once
 
 #if defined(WIN32)
 #include "platform.h"
@@ -41,5 +39,4 @@ struct IWindowMessageHandler
 struct IWindowMessageHandler
 {
 };
-#endif
 #endif

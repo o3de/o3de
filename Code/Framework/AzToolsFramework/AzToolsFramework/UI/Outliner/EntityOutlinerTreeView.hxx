@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -19,9 +18,7 @@
 
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
-#endif
 
-#pragma once
 class QFocusEvent;
 class QMouseEvent;
 

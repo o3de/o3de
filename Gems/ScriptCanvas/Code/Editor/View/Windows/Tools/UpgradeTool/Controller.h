@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -20,7 +19,6 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 #include <QProgressBar>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QPushButton;
 class QTableWidgetItem;

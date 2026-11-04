@@ -8,13 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QLineEdit>
+
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#endif
 
 namespace AZ
 {

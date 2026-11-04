@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <PythonBindings.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

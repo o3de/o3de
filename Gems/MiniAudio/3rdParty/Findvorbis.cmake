@@ -17,27 +17,21 @@ endif()
 # vorbis depends on Ogg.
 find_package(Ogg)
 
-function(Getvorbis)
+block()
     # we intentionally open a new function scope here so that all variable SET is temporary and is discarded after the function ends.
     # this means we can set variables and when this function ends we only need to restore any variables that may have escaped the
     # scope, for example, CACHE variables.
 
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    include(FetchContent)
-
-    set(vorbis_GIT_REPO "https://github.com/xiph/vorbis.git")
-    set(vorbis_GIT_TAG "v1.3.7")
-    set(vorbis_GIT_HASH "0657aee69dec8508a0011f47f3b69d7538e9d262")  # better to use hashes for security
-    FetchContent_Declare(
-            vorbis
-            GIT_REPOSITORY ${vorbis_GIT_REPO}
-            GIT_TAG ${vorbis_GIT_HASH}
-            GIT_SHALLOW TRUE
-            EXCLUDE_FROM_ALL # this actually stops it from running its `install` commands, we need to handle the layout ourselves.
+    o3de_fetch_content(vorbis
+        VERSION "v1.3.7"
+        LICENSE "BSD-3-Clause"
+        URL "https://github.com/xiph/vorbis/archive/refs/tags/v1.3.7.tar.gz"
+        URL_HASH "270c76933d0934e42c5ee0a54a36280e2d87af1de3cc3e584806357e237afd13"
+        GIT "https://github.com/xiph/vorbis.git"
+        GIT_HASH "0657aee69dec8508a0011f47f3b69d7538e9d262"
+        EXCLUDE_FROM_ALL
     )
-
-    # please always be really clear about what third parties your gem uses.
-    message(STATUS "MiniAudio Gem uses ${vorbis_GIT_REPO} ${vorbis_GIT_TAG} (BSD-3-Clause)")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
     # Note that CMAKE_ARGS does NOT WORK for FetchContent_*, only ExternalProject.
@@ -49,7 +43,7 @@ function(Getvorbis)
     set(BUILD_SHARED_LIBS OFF)
     set(BUILD_FRAMEWORK OFF)
     set(INSTALL_CMAKE_PACKAGE_MODULE OFF)
-    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
     set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
     set(BUILD_TESTING OFF)
@@ -57,11 +51,7 @@ function(Getvorbis)
     # the below line is what actualy runs its CMakeLists.txt file and executes targets and so on:
     FetchContent_MakeAvailable(vorbis)
     set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
-endfunction()
-
-Getvorbis()
-# for extra safety, we'll remove the function from the global scope, so that it can't be called again.
-unset(Getvorbis)
+endblock()
 
 # Vorbis will show up in IDEs underneath the gem that imported it first:
 get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")

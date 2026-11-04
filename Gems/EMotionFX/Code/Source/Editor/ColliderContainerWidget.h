@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
@@ -20,9 +19,9 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
+
 #include <QPushButton>
 #include <QWidget>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)

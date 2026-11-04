@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_SHARED_ARRAY_H
-#define AZSTD_SMART_PTR_SHARED_ARRAY_H
+
+#pragma once
 
 //
 //  shared_array.hpp
@@ -145,6 +145,3 @@ namespace AZStd
         a.swap(b);
     }
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_SHARED_ARRAY_H
-#pragma once

@@ -61,4 +61,3 @@ namespace AZ
     }
 }
 
-#include <Handlers/ProcessingHandlers/moc_AsyncOperationProcessingHandler.cpp>

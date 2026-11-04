@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <Stars/StarsBus.h>
 
 namespace AZ::Render
 {
@@ -16,6 +17,7 @@ namespace AZ::Render
 
     class StarsSystemComponent
         : public AZ::Component
+        , protected StarsRequestBus::Handler
     {
     public:
         AZ_COMPONENT(StarsSystemComponent, "{ce10f0f9-5fe3-4376-8ccf-d56ec780005d}");
@@ -37,4 +39,4 @@ namespace AZ::Render
         AZ::Render::StarsAssetHandler* m_starsAssetHandler;
     };
 
-} // namespace AZ::Render 
+} // namespace AZ::Render

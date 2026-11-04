@@ -14,6 +14,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace PhysX
 {
@@ -62,10 +63,10 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ForceRegion>(
-                    "Force Region", "Applies forces on entities within a region.")
+                    QT_TRANSLATE_NOOP("PhysX", "Force Region"), QT_TRANSLATE_NOOP("PhysX", "Applies forces on entities within a region."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceRegion::m_forces, "Forces", "Forces acting in the region.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ForceRegion::m_forces, QT_TRANSLATE_NOOP("PhysX", "Forces"), QT_TRANSLATE_NOOP("PhysX", "Forces acting in the region."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

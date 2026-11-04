@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
@@ -18,7 +17,6 @@
 #include <QScopedPointer>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
-#endif
 
 namespace Ui
 {

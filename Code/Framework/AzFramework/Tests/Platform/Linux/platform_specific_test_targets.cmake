@@ -6,7 +6,7 @@
 #
 #
 
-if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
+if (PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
     # This library defines local implementations of all the used xcb functions,
     # in order to allow tests to run in the absence of a running X server.
     # These have to be in a separate library, so that the normal AzFramework

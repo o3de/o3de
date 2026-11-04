@@ -12,7 +12,6 @@
 #include <Source/LUA/CodeCompletion/LUACompletionModel.hxx>
 #include <Source/LUA/CodeCompletion/LUACompleter.hxx>
 
-#include <Source/LUA/moc_LUAEditorPlainTextEdit.cpp>
 #include <Source/LUA/LUAEditorView.hxx>
 #include "LUAEditorContextMessages.h"
 
@@ -24,6 +23,8 @@
 #include <QTextDocumentFragment>
 #include <QMimeData>
 #include <QClipboard>
+#include <QStringView>
+#include <QString>
 
 namespace LUAEditor
 {
@@ -64,7 +65,7 @@ namespace LUAEditor
 
     void LUAEditorPlainTextEdit::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        auto& mousePos = event->localPos();
+        auto mousePos = event->position();
 
         QTextBlock blockClicked;
         // any block could be hidden, so have to loop through to be sure
@@ -375,7 +376,7 @@ namespace LUAEditor
                 if (cursor.columnNumber() > 0)
                 {
                     QString text = block.text();
-                    QStringRef line = QStringRef(&text, 0, cursor.columnNumber());
+                    QStringView line = QStringView(text.data(), cursor.columnNumber());
 
                     // Count the number of leading whitespace characters
                     int offset = 0;
@@ -403,7 +404,7 @@ namespace LUAEditor
                     cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
                     int position = cursor.position();
 
-                    QStringRef line = QStringRef(&text, 0, position);
+                    QStringView line = QStringView(text.data(), position);
 
                     int offset = 0;
                     while (offset < line.size() && (line.at(offset) == ' ' || line.at(offset) == '\t')) { ++offset; }
@@ -455,7 +456,7 @@ namespace LUAEditor
                 if (m_useSpaces)
                 {
                     // Replace tabs with spaces and adjust position
-                    int tabs = text.count("\t");
+                    int tabs = static_cast<int>(text.count("\t"));
                     text.replace("\t", tabString);
                     position += tabs * (m_tabSize - 1);
                 }
@@ -517,18 +518,18 @@ namespace LUAEditor
 
                     QString text = cursor.block().text();
 
-                    if (text[columnNumber] != '\t' || text.midRef(columnNumber, m_tabSize) != tabString)
+                    if (text[columnNumber] != '\t' || text.mid(columnNumber, m_tabSize) != tabString)
                     {
                         if (columnNumber > 0 && text[columnNumber - 1] == '\t')
                         {
                             --columnNumber;
                             --position;
                         }
-                        else if (columnNumber > 0 && text.midRef(columnNumber - m_tabSize, m_tabSize) == tabString)
+                        else if (columnNumber > 0 && text.mid(columnNumber - m_tabSize, m_tabSize) == tabString)
                         {
-                            columnNumber -= tabString.length();
-                            position -= tabString.length();
-                            removeCount = tabString.length();
+                            columnNumber -= static_cast<int>(tabString.length());
+                            position -= static_cast<int>(tabString.length());
+                            removeCount = static_cast<int>(tabString.length());
                         }
                         else
                         {
@@ -605,8 +606,8 @@ namespace LUAEditor
 
         // lastIndexOf will return -1 if not found, so subtracting index of lastPeriod + 1, 
         // the math will always work regardless of whether the prefix contains a . or not
-        int lastPeriod = prefix.lastIndexOf('.');
-        int charactersToReplace = prefix.length() - (lastPeriod + 1);
+        int lastPeriod = static_cast<int>(prefix.lastIndexOf('.'));
+        int charactersToReplace = static_cast<int>(prefix.length()) - (lastPeriod + 1);
 
         cursor.setPosition(cursor.position() - charactersToReplace, QTextCursor::KeepAnchor);
         cursor.insertText(text);

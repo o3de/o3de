@@ -20,7 +20,7 @@ namespace AZ
         RPI::Ptr<LutGenerationPass> LutGenerationPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LutGenerationPass> pass = aznew LutGenerationPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
          LutGenerationPass::LutGenerationPass(const RPI::PassDescriptor& descriptor)

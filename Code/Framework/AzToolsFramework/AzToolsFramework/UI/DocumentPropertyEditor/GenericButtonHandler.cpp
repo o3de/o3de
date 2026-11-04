@@ -19,10 +19,14 @@ namespace AzToolsFramework
 
     void GenericButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
     {
-        using AZ::DocumentPropertyEditor::Nodes::GenericButton;
         // Cache the node so we can query OnActivate on it when we're pressed.
         m_node = node;
-        auto buttonText = GenericButton::ButtonText.ExtractFromDomNode(node).value_or("");
+    }
+
+    void GenericButtonHandler::RefreshUI()
+    {
+        using AZ::DocumentPropertyEditor::Nodes::GenericButton;
+        auto buttonText = GenericButton::ButtonText.ExtractFromDomNode(m_node).value_or("");
         setText(QString::fromUtf8(AZStd::string(buttonText).c_str()));
     }
 

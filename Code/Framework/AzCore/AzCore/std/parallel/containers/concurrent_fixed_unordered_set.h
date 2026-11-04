@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_PARALLEL_CONTAINERS_CONCURRENT_FIXED_UNORDERED_SET_H
-#define AZSTD_PARALLEL_CONTAINERS_CONCURRENT_FIXED_UNORDERED_SET_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/containers/internal/concurrent_hash_table.h>
 
@@ -156,6 +156,3 @@ namespace AZStd
         left.swap(right);
     }
 }
-
-#endif // AZSTD_PARALLEL_CONTAINERS_CONCURRENT_FIXED_UNORDERED_SET_H
-#pragma once

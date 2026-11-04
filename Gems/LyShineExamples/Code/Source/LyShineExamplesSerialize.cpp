@@ -13,6 +13,7 @@
 #include <LyShineExamples/UiCustomImageBus.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // NAMESPACE FUNCTIONS
@@ -86,12 +87,12 @@ namespace LyShineExamplesSerialize
                 if (ec)
                 {
                     auto editInfo = ec->Class<UiCustomImageInterface::UVRect>(0, "");
-                    editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "UVRect")
+                    editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, QT_TRANSLATE_NOOP("LyShineExamples", "UVRect"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_left, "Left", "The lower X UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_top, "Top", "The higher Y UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_right, "Right", "The higher X UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_bottom, "Bottom", "The lower Y UV coordinate.");
+                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_left, QT_TRANSLATE_NOOP("LyShineExamples", "Left"), QT_TRANSLATE_NOOP("LyShineExamples", "The lower X UV coordinate."));
+                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_top, QT_TRANSLATE_NOOP("LyShineExamples", "Top"), QT_TRANSLATE_NOOP("LyShineExamples", "The higher Y UV coordinate."));
+                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_right, QT_TRANSLATE_NOOP("LyShineExamples", "Right"), QT_TRANSLATE_NOOP("LyShineExamples", "The higher X UV coordinate."));
+                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_bottom, QT_TRANSLATE_NOOP("LyShineExamples", "Bottom"), QT_TRANSLATE_NOOP("LyShineExamples", "The lower Y UV coordinate."));
                 }
             }
 

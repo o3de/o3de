@@ -468,10 +468,10 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 
         size_t numTexturesUsedInFrame = m_texturesUsedInFrame.size();
         char buffer[200];
-        sprintf_s(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
+        azsprintf(buffer, "There are %zu unique UI textures rendered in this frame, the total texture area is %d (%d x %d), total data size is %d (%.2f MB)",
             numTexturesUsedInFrame, totalArea, xDim, yDim, totalDataSize, totalDataSizeMB);
         WriteLine(buffer, white);
-        sprintf_s(buffer, "Dimensions   Data Size              Format Texture name");
+        azsprintf(buffer, "Dimensions   Data Size              Format Texture name");
         WriteLine(buffer, blue);
 
         for (auto texture : textures)
@@ -501,7 +501,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
                 }
             }
 
-            sprintf_s(buffer, "%4u x %4u, %9u %19s %s",
+            azsprintf(buffer, "%4u x %4u, %9u %19s %s",
                 width, height, dataSize, AZ::RHI::ToString(imageDescriptor.m_format), displayName);
             WriteLine(buffer, white);
         }

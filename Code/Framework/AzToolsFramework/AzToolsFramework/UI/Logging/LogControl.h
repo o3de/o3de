@@ -9,14 +9,12 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include "LoggingCommon.h"
 
 #include <QWidget>
 #include <QString>
-#endif
 
 class QIcon;
 class QAction;

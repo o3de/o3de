@@ -31,7 +31,7 @@ namespace AZ
         RPI::Ptr<ReflectionScreenSpaceBlurPass> ReflectionScreenSpaceBlurPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ReflectionScreenSpaceBlurPass> pass = aznew ReflectionScreenSpaceBlurPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ReflectionScreenSpaceBlurPass::ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor)
@@ -161,7 +161,7 @@ namespace AZ
 
                 attachmentIndex++;
             }
- 
+
             // setup attachment bindings on horizontal blur child passes
             attachmentIndex = 0;
             for (auto& horizontalBlurChildPass : m_horizontalBlurChildPasses)
@@ -189,12 +189,12 @@ namespace AZ
             // get input attachment size
             RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
-        
+
             RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
             if (m_imageSize != size)
             {
                 m_imageSize = size;
-        
+
                 uint32_t mip = 1;
                 for (auto& ownedAttachment : m_ownedAttachments)
                 {
@@ -203,7 +203,7 @@ namespace AZ
                     mip++;
                 }
             }
-        
+
             ParentPass::FrameBeginInternal(params);
         }
     }   // namespace RPI

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
 #include <AzCore/std/functional.h>
@@ -17,7 +16,6 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QLayout>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 QT_FORWARD_DECLARE_CLASS(QAction)
@@ -149,7 +147,7 @@ namespace O3DE::ProjectManager
         void OpenAndroidProjectGenerator(const QString& projectPath);
 
     private:
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
 
         void ShowReadyState();

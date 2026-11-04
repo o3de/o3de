@@ -37,7 +37,7 @@ def NodePalette_SearchText_Deletion():
     :return: None
     """
 
-    from PySide2 import QtWidgets, QtTest, QtCore
+    from PySide6 import QtWidgets, QtTest, QtCore
 
     from utils import TestHelper as helper
 

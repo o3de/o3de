@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <AzCore/std/functional.h>
 #include <QSlider>
-#endif
 
 namespace AzQtComponents
 {

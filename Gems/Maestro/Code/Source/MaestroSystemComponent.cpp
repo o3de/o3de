@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <ISystem.h>
 
@@ -50,7 +51,9 @@ namespace Maestro
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MaestroSystemComponent>("Maestro", "Provides the Open 3D Engine Cinematics Service")
+                ec->Class<MaestroSystemComponent>(
+                    QT_TRANSLATE_NOOP("Maestro", "Maestro"),
+                    QT_TRANSLATE_NOOP("Maestro", "Provides the Open 3D Engine Cinematics Service"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

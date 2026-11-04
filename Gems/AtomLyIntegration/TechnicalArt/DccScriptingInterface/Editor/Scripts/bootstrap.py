@@ -84,12 +84,12 @@ import DccScriptingInterface.config as dccsi_core_config
 # note: if you used win_launch_wingide.bat, settings will be over populated
 # because of the .bat file env chain that includes active apps
 
-# note: initializing the config PySide2 access here may not be ideal
+# note: initializing the config PySide access here may not be ideal
 # it will set envars that may propagate, and have have the side effect
 # of interfering with apps like Wing because it is a Qt5 app and the
 # envars set cause a boot failure
 
-# if your tool is running inside of o3de you already have PySide2/Qt
+# if your tool is running inside of o3de you already have PySide/Qt
 
 # if you are launching a standalone tool that does need access,
 # that application will need to run and manage config on it's own
@@ -99,7 +99,7 @@ import DccScriptingInterface.config as dccsi_core_config
 # dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
 # for now, use the legacy code, until CoreConfig class is complete
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
-                                                       enable_o3de_pyside2=False,
+                                                       enable_o3de_pyside=False,
                                                        set_env=True)
 
 # configure basic logger
@@ -145,7 +145,7 @@ PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
 try:
     azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
 except Exception as e:
-    _LOGGER.error(f'O3DE Qt / PySide2 not available, exception: {e}')
+    _LOGGER.error(f'O3DE Qt / PySide not available, exception: {e}')
     raise e
 
 # debug logging, these are where Qt lives
@@ -153,14 +153,14 @@ params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapPa
 _LOGGER.debug(f'qtPluginsFolder: {params.qtPluginsFolder}')
 _LOGGER.debug(f'qtBinaryFolder: {params.qtBinaryFolder}')
 
-#PySide2 imports
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMenuBar, QMenu, QAction
-from PySide2 import QtGui
-from PySide2.QtCore import Slot, QObject, QUrl
-from shiboken2 import wrapInstance, getCppPointer
+#PySide imports
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import QMenuBar, QMenu
+from PySide6 import QtGui
+from PySide6.QtCore import Slot, QObject, QUrl
+from shiboken6 import wrapInstance, getCppPointer
 
-# additional DCCsi imports that utilize PySide2
+# additional DCCsi imports that utilize PySide
 from DccScriptingInterface.Editor.Scripts.ui import start_service
 from DccScriptingInterface.Editor.Scripts.ui import hook_register_action_sampleui
 
@@ -632,7 +632,7 @@ if __name__ == '__main__':
     if sys.platform.startswith('win'):
 
         if O3DE_EDITOR.stem.lower() == "editor":
-            # if _DCCSI_GDEBUG then run the pyside2 test
+            # if _DCCSI_GDEBUG then run the pyside test
             _settings = bootstrap_Editor(handler_action_manager)
 
         elif O3DE_EDITOR.stem.lower() == "materialeditor":
@@ -652,7 +652,7 @@ if __name__ == '__main__':
 
         elif O3DE_EDITOR.stem.lower() == "python":
             # in this case, we can re-use the editor settings
-            # which will init python and pyside2 access externally
+            # which will init python and pyside access externally
             _settings = bootstrap_Editor()
 
         else:

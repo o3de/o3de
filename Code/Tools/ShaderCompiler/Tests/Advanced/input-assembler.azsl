@@ -1,0 +1,99 @@
+//////////////////////////////////////////////////////////////////////////////////////
+struct VertexInput1  { 
+    float3 m_position : POSITION;
+    float  m_color[4] : COLOR;
+};
+
+struct VertexOutput1 { float4 m_position : SV_Position; };
+
+// MainVS1 should appear as a possible vs entry
+VertexOutput1 MainVS1(VertexInput1 input, uint vtxIndex : SV_VertexID)
+{
+    VertexOutput1 output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+struct VertexInput2  { 
+    float3 m_position : POSITION0;
+    float  m_color[4] : COLOR;
+    uint   m_bIndex   : BLENDINDICES;
+    float  m_bWeight  : BLENDWEIGHT;
+    float3 m_normal   : NORMAL3;
+    float3 m_tangent  : TANGENT6;
+    float3 m_bitangent: BINORMAL7;
+    uint   m_primId : SV_PrimitiveID;
+};
+
+struct VertexOutput2 { float4 m_position : SV_Position; };
+
+// MainVS2 should appear as a possible vs entry
+VertexOutput2 MainVS2(VertexInput2 input, uint vtxIndex : SV_VertexID, uint instId : SV_InstanceID)
+{
+    VertexOutput2 output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+struct VertexInput3  { 
+    float3 m_position : POSITION;
+    float  m_color[4] : COLOR;
+};
+
+struct VertexOutput3 { float4 m_position : SV_Position; };
+
+// float4 doesntHaveSemantic doesn't have a semantic so MainVS3 won't appear as a possible vs entry
+VertexOutput3 MainVS3(VertexInput3 input, uint vtxIndex : SV_VertexID, float4 doesntHaveSemantic)
+{
+    VertexOutput3 output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+
+/*
+ * Error: This shader is invalid, but AZSLc shouldn't crash trying to process it
+ */
+ 
+void MainVSInvalid(InvalidInputType input)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+struct IALayoutPart1
+{
+ float3 position : POSITION;
+};
+
+struct IALayoutPart2
+{
+ float4 color : COLOR;
+};
+
+struct VertexOutput4 { float4 m_position : SV_Position; };
+
+// MainVS4 uses distinct valid structs as parameters
+VertexOutput4 MainVS4(IALayoutPart1 input1, IALayoutPart2 input2)
+{
+    VertexOutput4 output;
+    output.m_position = float4(input1.position, 1.0);
+    return output;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+struct VertexInput5
+{
+ IALayoutPart1 iaPart1;
+ IALayoutPart2 iaPart2;
+};
+
+struct VertexOutput5 { float4 m_position : SV_Position; };
+
+// VertexInput5 is a struct of structs, which is not allowed so MainVS5 won't appear as a possible vs entry
+VertexOutput5 MainVS5(VertexInput5 input)
+{
+    VertexOutput5 output;
+    output.m_position = float4(input.iaPart1.position, 1.0);
+    return output;
+}

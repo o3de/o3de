@@ -424,7 +424,7 @@ namespace AzToolsFramework
         {
         public:
             DetachMenuActionWidget(QWidget* parent, const int& indentation, const AZStd::string& sliceAssetName, const bool& isLastAncestor);
-            void enterEvent(QEvent* event) override;
+            void enterEvent(QEnterEvent* event) override;
             void leaveEvent(QEvent* event) override;
 
         private:

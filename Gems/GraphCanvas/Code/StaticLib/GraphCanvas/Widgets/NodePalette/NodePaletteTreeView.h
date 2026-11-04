@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QTreeView>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#endif
 
 namespace GraphCanvas
 {

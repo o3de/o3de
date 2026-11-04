@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
+
 #include <QDialog>
-#endif
 
 
 // forward declarations

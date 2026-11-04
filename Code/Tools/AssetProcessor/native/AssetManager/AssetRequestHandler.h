@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "native/assetprocessor.h"
 #include "native/utilities/assetUtils.h"
 
@@ -16,11 +15,10 @@
 #include <QByteArray>
 #include <QHash>
 #include <QObject>
-#include <AzCore/Interface/Interface.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Asset/AssetSystemTypes.h>
 #include <connection/connectionManager.h>
-#endif
 
 namespace AzFramework
 {

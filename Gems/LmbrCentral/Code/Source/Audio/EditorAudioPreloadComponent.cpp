@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 
 namespace LmbrCentral
@@ -37,7 +38,9 @@ namespace LmbrCentral
                     ->Value("Manual", AudioPreloadComponent::LoadType::Manual)
                     ;
 
-                editContext->Class<EditorAudioPreloadComponent>("Audio Preload", "The Audio Preload component is used to load and unload soundbanks contained in Audio Translation Layer (ATL) preloads")
+                editContext->Class<EditorAudioPreloadComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Preload"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Preload component is used to load and unload soundbanks contained in Audio Translation Layer (ATL) preloads"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioPreload.svg")
@@ -50,8 +53,12 @@ namespace LmbrCentral
 
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/preload/")
 
-                    ->DataElement("AudioControl", &EditorAudioPreloadComponent::m_defaultPreload, "Preload Name", "The default ATL Preload control to use")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioPreloadComponent::m_loadType, "Load Type", "Automatically when the component activates/deactivates, or Manually at user's request")
+                    ->DataElement("AudioControl", &EditorAudioPreloadComponent::m_defaultPreload,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Preload Name"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL Preload control to use"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioPreloadComponent::m_loadType,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Load Type"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Automatically when the component activates/deactivates, or Manually at user's request"))
                     ;
             }
         }

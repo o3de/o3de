@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<ChromaticAberrationPass> ChromaticAberrationPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ChromaticAberrationPass> pass = aznew ChromaticAberrationPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ChromaticAberrationPass::ChromaticAberrationPass(const RPI::PassDescriptor& descriptor)

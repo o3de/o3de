@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef MACDOCKICONHANDLER_H
-#define MACDOCKICONHANDLER_H
+
+#pragma once
 
 #include <QObject>
 
@@ -30,5 +30,3 @@ private:
 
     DockIconClickEventHandler* m_dockIconClickEventHandler;
 };
-
-#endif // MACDOCKICONCLICKHANDLER_H

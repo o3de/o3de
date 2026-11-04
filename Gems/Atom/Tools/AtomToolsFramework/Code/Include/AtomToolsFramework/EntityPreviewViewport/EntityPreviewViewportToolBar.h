@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsNotificationBus.h>
 
 #include <QAction>
 #include <QToolBar>
-#endif
 
 namespace AtomToolsFramework
 {

@@ -117,6 +117,20 @@
             <Parameter Name="T"/>
         </Function>
         
+        <Function Name="SmoothCriticallyDamped">
+            <Parameter Name="From"/>
+            <Parameter Name="Rate"/>
+            <Parameter Name="DeltaTime"/>
+            <Parameter Name="Target"/>
+            <Parameter Name="SmoothTime"/>
+        </Function>
+        
+        <Function Name="SmoothStep">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
         <Function Name="ToAngleDegrees">
             <Parameter Name="Source"/>
         </Function>

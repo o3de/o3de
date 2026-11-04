@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_SYSTEMEVENTDISPATCHER_H
-#define CRYINCLUDE_CRYSYSTEM_SYSTEMEVENTDISPATCHER_H
 #pragma once
-
 
 #include <ISystem.h>
 #include <CryListenerSet.h>
@@ -49,5 +45,3 @@ private:
     TSystemEventQueue m_systemEventQueue;
     AZStd::recursive_mutex m_listenerRegistrationLock;
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_SYSTEMEVENTDISPATCHER_H

@@ -21,6 +21,19 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="targetRootLabel">
+     <property name="text">
+      <string>Target:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="targetRootCombo"/>
+   </item>
+   <item>
     <widget class="QLabel" name="filterLabel">
      <property name="text">
       <string>Filter:</string>

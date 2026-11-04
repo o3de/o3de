@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include <MCore/Source/RefCounted.h>
+
 #include <QDialog>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 

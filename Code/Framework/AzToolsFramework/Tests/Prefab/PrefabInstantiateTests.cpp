@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Utils/Utils.h>
+#include <AzTest/Utils.h>
 #include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
@@ -17,6 +19,39 @@ namespace UnitTest
         AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_FALSE(m_prefabSystemComponent->InstantiatePrefab(AzToolsFramework::Prefab::InvalidTemplateId));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(PrefabInstantiateTest, PrefabInstantiate_MissingPrefabFile_ReturnsFailureWithoutCrashing)
+    {
+        // Regression test for https://github.com/o3de/o3de/issues/7957: instantiating a prefab whose
+        // file cannot be loaded used to fall through into FindTemplateDom(InvalidTemplateId), which
+        // dereferences an empty optional and crashes the Editor. The loader reports the unreadable file
+        // with a single AZ_Error, which is the one suppressed trace expected below.
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AzToolsFramework::Prefab::InstantiatePrefabResult result = m_prefabPublicInterface->InstantiatePrefab(
+            "Prefabs/DoesNotExist.prefab", GetRootContainerEntityId(), AZ::Vector3());
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        ASSERT_FALSE(result.IsSuccess());
+        EXPECT_NE(result.GetError().find("could not be loaded"), AZStd::string::npos);
+    }
+
+    TEST_F(PrefabInstantiateTest, PrefabInstantiate_EmptyPrefabFile_ReturnsFailureWithoutCrashing)
+    {
+        // The corrupted-file case from https://github.com/o3de/o3de/issues/7957: a .prefab that exists but
+        // holds no JSON. LoadTemplateFromString reports the parse failure with one AZ_Error and returns
+        // InvalidTemplateId, after which the fall-through is the same as for a missing file.
+        AZ::Test::ScopedAutoTempDirectory tempDir;
+        const AZ::IO::Path emptyPrefabPath = tempDir.GetDirectoryAsPath() / "Empty.prefab";
+        ASSERT_TRUE(AZ::Utils::WriteFile("", emptyPrefabPath.Native()).IsSuccess());
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AzToolsFramework::Prefab::InstantiatePrefabResult result = m_prefabPublicInterface->InstantiatePrefab(
+            emptyPrefabPath.Native(), GetRootContainerEntityId(), AZ::Vector3());
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        ASSERT_FALSE(result.IsSuccess());
+        EXPECT_NE(result.GetError().find("could not be loaded"), AZStd::string::npos);
     }
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_NoNestingTemplate_InstantiateSucceeds)

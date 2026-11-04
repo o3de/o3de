@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 
 #include <AzFramework/Physics/NameConstants.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
 namespace PhysX
@@ -32,21 +33,21 @@ namespace PhysX
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_enabled,
-                        "Enable",
-                        "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled.")
+                        QT_TRANSLATE_NOOP("PhysX", "Enable"),
+                        QT_TRANSLATE_NOOP("PhysX", "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_damping,
-                        "Damping",
-                        "Higher damping values produce spongy contacts.")
+                        QT_TRANSLATE_NOOP("PhysX", "Damping"),
+                        QT_TRANSLATE_NOOP("PhysX", "Higher damping values produce spongy contacts."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &CompliantContactModeConfiguration::ReadOnlyProperties)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_stiffness,
-                        "Stiffness",
-                        "Higher stiffness values produce stiffer springs that behave more like a rigid contact. The higher the mass of the object, the higher the stiffness needs to be to reduce penetration.")
+                        QT_TRANSLATE_NOOP("PhysX", "Stiffness"),
+                        QT_TRANSLATE_NOOP("PhysX", "Higher stiffness values produce stiffer springs that behave more like a rigid contact. The higher the mass of the object, the higher the stiffness needs to be to reduce penetration."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &CompliantContactModeConfiguration::ReadOnlyProperties);
             }
@@ -82,33 +83,33 @@ namespace PhysX
                 editContext->Class<PhysX::MaterialConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "PhysX Material")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, "Static friction", "Friction coefficient when object is still")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, QT_TRANSLATE_NOOP("PhysX", "Static friction"), QT_TRANSLATE_NOOP("PhysX", "Friction coefficient when object is still"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, "Dynamic friction", "Friction coefficient when object is moving")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, QT_TRANSLATE_NOOP("PhysX", "Dynamic friction"), QT_TRANSLATE_NOOP("PhysX", "Friction coefficient when object is moving"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_restitution, "Restitution", "Restitution coefficient")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_restitution, QT_TRANSLATE_NOOP("PhysX", "Restitution"), QT_TRANSLATE_NOOP("PhysX", "Restitution coefficient"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &MaterialConfiguration::IsRestitutionReadOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_frictionCombine, "Friction combine", "How the friction is combined between colliding objects")
-                        ->EnumAttribute(CombineMode::Average, "Average")
-                        ->EnumAttribute(CombineMode::Minimum, "Minimum")
-                        ->EnumAttribute(CombineMode::Maximum, "Maximum")
-                        ->EnumAttribute(CombineMode::Multiply, "Multiply")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_restitutionCombine, "Restitution combine", "How the restitution is combined between colliding objects")
-                        ->EnumAttribute(CombineMode::Average, "Average")
-                        ->EnumAttribute(CombineMode::Minimum, "Minimum")
-                        ->EnumAttribute(CombineMode::Maximum, "Maximum")
-                        ->EnumAttribute(CombineMode::Multiply, "Multiply")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_frictionCombine, QT_TRANSLATE_NOOP("PhysX", "Friction combine"), QT_TRANSLATE_NOOP("PhysX", "How the friction is combined between colliding objects"))
+                        ->EnumAttribute(CombineMode::Average, QT_TRANSLATE_NOOP("PhysX", "Average"))
+                        ->EnumAttribute(CombineMode::Minimum, QT_TRANSLATE_NOOP("PhysX", "Minimum"))
+                        ->EnumAttribute(CombineMode::Maximum, QT_TRANSLATE_NOOP("PhysX", "Maximum"))
+                        ->EnumAttribute(CombineMode::Multiply, QT_TRANSLATE_NOOP("PhysX", "Multiply"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MaterialConfiguration::m_restitutionCombine, QT_TRANSLATE_NOOP("PhysX", "Restitution combine"), QT_TRANSLATE_NOOP("PhysX", "How the restitution is combined between colliding objects"))
+                        ->EnumAttribute(CombineMode::Average, QT_TRANSLATE_NOOP("PhysX", "Average"))
+                        ->EnumAttribute(CombineMode::Minimum, QT_TRANSLATE_NOOP("PhysX", "Minimum"))
+                        ->EnumAttribute(CombineMode::Maximum, QT_TRANSLATE_NOOP("PhysX", "Maximum"))
+                        ->EnumAttribute(CombineMode::Multiply, QT_TRANSLATE_NOOP("PhysX", "Multiply"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &MaterialConfiguration::IsRestitutionReadOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_density, "Density", "Material density")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_density, QT_TRANSLATE_NOOP("PhysX", "Density"), QT_TRANSLATE_NOOP("PhysX", "Material density"))
                         ->Attribute(AZ::Edit::Attributes::Min, &MaterialConfiguration::GetMinDensityLimit)
                         ->Attribute(AZ::Edit::Attributes::Max, &MaterialConfiguration::GetMaxDensityLimit)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetDensityUnit())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_compliantContactMode, "Compliant Contact Mode",
-                        "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_compliantContactMode, QT_TRANSLATE_NOOP("PhysX", "Compliant Contact Mode"),
+                        QT_TRANSLATE_NOOP("PhysX", "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &MaterialConfiguration::GetCompliantConstantModeVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &MaterialConfiguration::m_debugColor, "Debug Color", "Debug color to use for this material")
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &MaterialConfiguration::m_debugColor, QT_TRANSLATE_NOOP("PhysX", "Debug Color"), QT_TRANSLATE_NOOP("PhysX", "Debug color to use for this material"))
                     ;
             }
         }

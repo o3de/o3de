@@ -1,0 +1,5 @@
+"RaytracingAccelerationStructure RaySRG_Scene : register ( t0 , space0 ) ;"
+"RWTexture2D < float4 > RaySRG_RenderTarget : register ( u0 , space0 ) ;"
+"ConstantBuffer < :: RayGenConstantBuffer > RaySRG_g_rayGenCB : register ( b0 , space0 ) ;"
+"[ shader ( " miss " ) ]"
+"void MyMissShader ( inout :: RayPayload a_payload )"

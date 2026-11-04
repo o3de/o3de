@@ -392,10 +392,10 @@ namespace ScriptCanvasEditor
     
     void DataTypePaletteSortFilterProxyModel::SetFilter(const QString& filter)
     {
+        beginFilterChange();
         m_filter = filter;
         m_testRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
-        invalidateFilter();
-    }   
+        endFilterChange();
+    }
 }
 
-#include <Editor/View/Widgets/DataTypePalette/moc_DataTypePaletteModel.cpp>

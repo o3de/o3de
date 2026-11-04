@@ -43,8 +43,23 @@ namespace AZ
 
             AZStd::array<float, 3> m_decalColor = { { 1.0f, 1.0f, 1.0f } };
             float m_decalColorFactor = 1.0f;
+            // Distance from the camera beyond which the decal stops rendering. Zero means unlimited,
+            // which is both the default and the fail-safe value: a zero arriving here from a stale
+            // shader cache or an uninitialized path disables culling rather than culling everything.
+            // Do not use FLT_MAX as the sentinel -- squaring it for distance-squared compares overflows.
+            float m_maxDrawDistance = 0.0f;
+
+            // Unused. Pads out to the 96 bytes [[pad_to(16)]] gives the shader-side struct.
+            AZStd::array<float, 3> m_padding{};
+
             static constexpr uint32_t UnusedIndex = std::numeric_limits< uint32_t>::max();
         };
+
+        // This is uploaded as raw bytes, so it must match DecalStructures.azsli's Decal exactly. A
+        // mismatch makes the RHI reject the buffer every frame ("Buffer has stride size 84. SRG expects
+        // stride size 96") and no decals render at all. Change both together.
+        static_assert(
+            sizeof(DecalData) == 96, "DecalData must match the size of the Decal struct in DecalStructures.azsli");
 
         //! DecalFeatureProcessorInterface provides an interface to acquire, release, and update a decal. This is necessary for code outside of
         //! the Atom features gem to communicate with the DecalTextureArrayFeatureProcessor.
@@ -91,6 +106,9 @@ namespace AZ
 
             //! Sets the opacity of the decal normal map
             virtual void SetDecalNormalMapOpacity(DecalHandle handle, float opacity) = 0;
+
+            //! Sets the distance from the camera beyond which the decal stops rendering.
+            virtual void SetDecalMaxDrawDistance(DecalHandle handle, float maxDrawDistance) = 0;
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()

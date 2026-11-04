@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QAbstractItemModel>
 #include <QRegularExpression>
@@ -24,7 +23,6 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#endif
 
 namespace AzToolsFramework
 {

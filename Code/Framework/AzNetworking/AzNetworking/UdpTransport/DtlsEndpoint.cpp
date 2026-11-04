@@ -181,7 +181,8 @@ namespace AzNetworking
                 m_readBio = nullptr;
                 m_writeBio = nullptr;
                 m_state = HandshakeState::Failed;
-                connectResult = ConnectResult::Failed;
+                // Close() has just set m_sslSocket to nullptr: return before anything below dereferences it.
+                return ConnectResult::Failed;
             }
         }
 

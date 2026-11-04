@@ -851,7 +851,7 @@ namespace AzToolsFramework
                                 {
                                     if (componentEditor->IsSelected())
                                     {
-                                        auto components = componentEditor->GetComponents();
+                                        auto components = componentEditor->GetEntityComponentIdPairs();
 
                                         if (components.size() > 1)
                                         {
@@ -860,8 +860,7 @@ namespace AzToolsFramework
                                         }
 
                                         const auto& component = components.front();
-                                        prefabOverridePublicInterface->RevertComponentOverrides(
-                                            AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                                        prefabOverridePublicInterface->RevertComponentOverrides(component);
                                     }
 
                                     return true;
@@ -923,7 +922,7 @@ namespace AzToolsFramework
                                 {
                                     if (componentEditor->IsSelected())
                                     {
-                                        auto components = componentEditor->GetComponents();
+                                        auto components = componentEditor->GetEntityComponentIdPairs();
 
                                         if (components.size() > 1)
                                         {
@@ -932,8 +931,7 @@ namespace AzToolsFramework
                                         }
 
                                         const auto& component = components.front();
-                                        prefabOverridePublicInterface->ApplyComponentOverrides(
-                                                AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                                        prefabOverridePublicInterface->ApplyComponentOverrides(component);
                                     }
 
                                     return true;
@@ -1116,8 +1114,10 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
         {
-            // Focus on the root prefab (AZ::EntityId() will default to it)
-            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+            // Focus on the root prefab (AZ::EntityId() will default to it).
+            // We use the private interface, so that it does not try to create an undo batch for the focus change.
+            // Since play in editor is not an edit operation
+            s_prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::OnStopPlayInEditor()

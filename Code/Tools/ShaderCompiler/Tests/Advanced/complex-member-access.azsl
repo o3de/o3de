@@ -1,0 +1,38 @@
+class getter
+{
+    float2x2 fval();
+};
+
+float2x2 getter::fval()
+{
+    float2x2 mat = {1,0,0,1};
+    return mat;
+}
+
+class intermediate
+{
+    getter g1;
+    getter getgetter() { return g1; }
+};
+
+class interferer
+{
+    intermediate many[3];
+};
+
+interferer getinterferer() { interferer i; return i; }
+
+float2x2 fval()  // impostor to lead the compiler in difficulty
+{
+    return (float2x2)0;
+}
+
+void h()
+{
+    // create an expression with as much syntactic variety as possible
+    // to render difficult the job of finding what scope we should
+    // be looking into for fval.
+    // this ensures we're robust enough to track symbols to their real definition point.
+
+    float f = getinterferer().many[1].getgetter().fval()[0][0];
+}

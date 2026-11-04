@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
 #include <AzCore/Component/EntityId.h>
@@ -19,10 +18,10 @@
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
 #include <QScrollArea>
-#endif
 
 class EditorWindow;
 class PropertiesWidget;
+class UiComponentPaletteWidget;
 class QAction;
 class QCheckbox;
 class QLineEdit;
@@ -58,6 +57,9 @@ public:
 
     void SetSelectedEntityDisplayNameWidget(QLineEdit* selectedEntityDisplayNameWidget);
     void SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox);
+
+    //! Show the component palette popup for adding components to selected entities
+    void ShowComponentPalette();
 
 private:
     // A SharedComponentInfo represents one component
@@ -150,6 +152,7 @@ private:
     QAction* m_actionToCutComponents;
     QAction* m_actionToCopyComponents;
     QAction* m_actionToPasteComponents;
+    QAction* m_actionToDuplicateComponents;
 
     // We require an overlay widget to act as a canvas to draw on top of everything in the properties pane
     // so that we can draw outside of the component editors' bounds
@@ -173,4 +176,6 @@ private:
 
     // Global app serialization context, cached for internal usage during the life of the control.
     AZ::SerializeContext* m_serializeContext;
+
+    UiComponentPaletteWidget* m_componentPalette;
 };

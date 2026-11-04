@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #include <Editor/SkeletonModelJointWidget.h>
+
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 

@@ -633,7 +633,8 @@ namespace Maestro
                 continue;
             }
             
-            if (const int subKeyIdx = m_subTracks[i]->FindKey(time) >= 0)
+            const int subKeyIdx = m_subTracks[i]->FindKey(time);
+            if (subKeyIdx >= 0)
             {
                 m_subTracks[i]->RemoveKey(subKeyIdx);
             }

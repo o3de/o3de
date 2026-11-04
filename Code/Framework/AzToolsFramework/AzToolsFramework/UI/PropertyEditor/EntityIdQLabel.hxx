@@ -10,14 +10,12 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
 
 #include <QLabel>
-#endif
 
 
 class QSpinBox;

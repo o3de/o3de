@@ -53,9 +53,8 @@ namespace AZ
         bool AzslCompiler::Compile(const AZStd::string& compilerParams,
                                    const AZStd::string& outputFilePath) const
         {
-            // Shader compiler executable
-            AZStd::string azslcPath = "Builders/AZSLc/";
-            azslcPath += AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC;
+            // Relative executable paths are resolved from the engine binary directory, where runtime dependencies are staged.
+            AZStd::string azslcPath = AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC;
 
             if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
             {

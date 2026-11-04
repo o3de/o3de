@@ -55,4 +55,3 @@ AudioControls::IAudioSystemEditor* CImplementationManager::GetImplementation()
     return editor;
 }
 
-#include <Source/Editor/moc_ImplementationManager.cpp>

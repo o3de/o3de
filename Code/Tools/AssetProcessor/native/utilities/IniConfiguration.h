@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef INICONFIGURATION_H
-#define INICONFIGURATION_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QDir>
 #include <QString>
 #include <QCoreApplication>
-#endif
 
 /** Reads the bootstrap file for listening port
  */
@@ -36,5 +34,3 @@ private:
     quint16 m_listeningPort;
     QString m_userConfigFilePath;
 };
-
-#endif // INICONFIGURATION_H

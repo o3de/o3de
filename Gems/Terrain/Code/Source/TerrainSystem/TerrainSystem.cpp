@@ -144,7 +144,7 @@ void TerrainSystem::Deactivate()
 }
 
 void TerrainSystem::SetTerrainHeightBounds(const AzFramework::Terrain::FloatRange& heightRange)
-{   
+{
     m_requestedSettings.m_heightRange = heightRange;
     m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
 }
@@ -221,7 +221,7 @@ void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::V
     // Round the fractional part, then scale back down into world space.
     // Note that we use "floor(pos + 0.5f)" instead of round() because round() will round to the nearest even integer (banker's rounding)
     // on the 0.5 points instead of to the nearest integer biased away from 0 (symmetric arithmetic rounding), which is what we want.
-    // "floor(pos + 0.5f)" will round 1.5 -> 2, 2.5 -> 3, -1.5 -> -2, -2.5 -> -3, etc. 
+    // "floor(pos + 0.5f)" will round 1.5 -> 2, 2.5 -> 3, -1.5 -> -2, -2.5 -> -3, etc.
     // (i.e. don't use: outPosition = normalizedPosition.GetRound() * queryResolution;)
     outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
 }
@@ -386,7 +386,7 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZ::Aabb bounds;
-    
+
     // We use a sliding window here and update the window end for each
     // position that falls in the same area as the previous positions. This consumes lesser memory
     // than sorting the points into separate lists and handling putting them back together.
@@ -411,10 +411,10 @@ void TerrainSystem::MakeBulkQueries(
             {
                 size_t spanLength = (windowEnd - windowStart) + 1;
                 queryCallback(
-                    AZStd::span<const AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
-                    AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
-                    AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength),
-                    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>(outSurfaceWeights.begin() + windowStart, spanLength),
+                    AZStd::span(inPositions.data() + windowStart, spanLength),
+                    AZStd::span(outPositions.data() + windowStart, spanLength),
+                    AZStd::span(outTerrainExists.data() + windowStart, spanLength),
+                    AZStd::span(outSurfaceWeights.data() + windowStart, spanLength),
                     windowAreaId);
             }
 
@@ -426,7 +426,7 @@ void TerrainSystem::MakeBulkQueries(
     }
 }
 
-void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
+void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
     TERRAIN_PROFILE_FUNCTION_VERBOSE
@@ -650,7 +650,7 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
     return !terrainExists;
 }
 
-void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
+void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
     TERRAIN_PROFILE_FUNCTION_VERBOSE
@@ -943,11 +943,11 @@ void TerrainSystem::GetNormalsSynchronousBilinear(
         // of + shapes:
         //            10     11                normal0      normal1      normal2      normal3
         //              *---*                     7            8           10           11
-        //         6   7|   |8   9                *            *            *            *    
+        //         6   7|   |8   9                *            *            *            *
         //          *---*---*---*             2   |3  4    3   |4  5    6   |7  8    7   |8  9
         //          |   | x |   |             *---*---*    *---*---*    *---*---*    *---*---*
-        //          *---*---*---*                 |            |            |            |    
-        //         2   3|   |4   5                *            *            *            *    
+        //          *---*---*---*                 |            |            |            |
+        //         2   3|   |4   5                *            *            *            *
         //              *---*                     0            1            3            4
         //             0     1
         const AZ::Vector3 normal0 = CalculateNormal(2, 3, 4, 7, 0);
@@ -1302,7 +1302,7 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
                                     AzFramework::SurfaceData::SurfaceTagWeightComparator());
                             }
                         };
-    
+
     // This will be unused for surface weights. It's fine if it's empty.
     AZStd::vector<AZ::Vector3> outPositions;
     MakeBulkQueries(queryPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
@@ -1542,7 +1542,7 @@ void TerrainSystem::SubdivideRegionForJobs(
         int32_t yChoice = AZStd::min(numSamplesY / minXRowsNeeded, clampedMaxNumJobs / xChoice);
 
         // The maximum number of subdivisions in Y will decrease with increasing X subdivisions. If we've reached the point
-        // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions. 
+        // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions.
         if (yChoice == 0)
         {
             break;

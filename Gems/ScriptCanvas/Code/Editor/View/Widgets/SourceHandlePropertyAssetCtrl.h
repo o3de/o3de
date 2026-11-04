@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
 #include <QRegularExpression>
 
 #include <Core/Core.h>
-#endif
 
 namespace ScriptCanvasEditor
 {

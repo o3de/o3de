@@ -8,9 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <LinkWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -18,7 +18,6 @@
 #include <QVector>
 #include <QMap>
 #include <QPushButton>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
 

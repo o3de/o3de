@@ -1,0 +1,4 @@
+class A{};
+class B{};
+class C : A, B {};  // Semantic error 17: class C has multiple concrete bases. Only 1 concrete base allowed
+// #EC 17

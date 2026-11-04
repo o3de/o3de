@@ -1,0 +1,99 @@
+void fn(int i);
+
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+        enum class SpecMode { Gloss, Rough } m_spec;
+
+        class InClass
+        {
+            enum ICSpec { S_G, S_R };
+            bool Func(ICSpec a_spec){}
+            enum class ICSpec2 { G, R };
+            void Func2(ICSpec2 a_spec){}
+            enum ICSpec3 { G, R };
+            void Func3(ICSpec3 a_spec = G) {}
+            enum class ICSpec4 { G, R };
+            void Func4(ICSpec4 a_spec4) {}
+            void Func4(int) {}  // overload
+
+            int i() { return 2; }
+            void g(int p = i()) {}
+        };
+    };
+
+    TextureCube m_environmentMap;
+    Texture2D   tex;
+    Sampler     m_sampler {};
+    ConstantBuffer<InnerStruct> m_materialConstants;
+    float4      m_srgconstant1;
+
+    struct I4 { int4 m_i4; } m_srgconstant2;
+    StructuredBuffer<InnerStruct> m_structured1;
+    static const int s_defaultIndex = 1;
+
+    float4 GetDiffClrFromSB(int i = s_defaultIndex)
+    {
+        InnerStruct::SpecMode sm = InnerStruct::SpecMode::Rough;
+        bool same = sm == m_structured1[i].m_spec;
+        return m_structured1[i].m_diffuseColor;
+    }
+};
+
+static const int g_staticInitIsZero;
+enum Nums { Uno, Dos };
+
+MySRGOne::InnerStruct GetDiffuseHolderInCB(Nums n)
+{
+    struct Immediate {} im;
+    Nums n2 = Uno;
+    Nums n3 = n2;
+    MySRGOne::InnerStruct::SpecMode sm = MySRGOne::InnerStruct::SpecMode::Gloss;
+    bool same = sm == MySRGOne::m_materialConstants.m_spec;
+    return MySRGOne::m_materialConstants;
+}
+
+static enum GNums { Ein = 1, Dzwei = 2 } g_n = Ein;
+
+class SData
+{
+    float4 clr;
+    struct SDsub { int m_sub; } s;
+    static const Nums n = Dos;
+    enum SDNums { Un, Une = Un, Deux } n2;
+    static const enum class sc_SDNums { Un, Une = Un, Deux } s_n2 = sc_SDNums::Deux;
+};
+
+struct UV { float2 lay0; struct SubUV{float2 lay1;}; };
+float4 main(UV inp) : SV_Target0
+{
+    float4 diff = MySRGOne::m_materialConstants.m_diffuseColor + MySRGOne::m_structured1[0].m_diffuseColor;
+    diff += GetDiffuseHolderInCB(Uno).m_diffuseColor;
+    diff -= MySRGOne::GetDiffClrFromSB(1);
+    sampler s = MySRGOne::m_sampler;
+    SData d;
+    d.clr = MySRGOne::tex.Sample(s, inp.lay0) + MySRGOne::m_srgconstant1.rgba;
+    typeof(d.s.m_sub) isub = d.s.m_sub;
+    return float4(d.clr.rgb, MySRGOne::m_srgconstant2.m_i4.a);
+}
+
+enum class JNum { One, Two };
+void j(JNum n)
+{
+    int p = n + JNum::Two + JNum::One;
+}
+
+int ff()
+{return 4;}
+
+void gg(int i = ff())
+{
+    return;
+}

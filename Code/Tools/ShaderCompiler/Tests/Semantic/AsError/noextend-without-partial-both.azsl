@@ -1,0 +1,14 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroup MySrg : sem
+{
+};
+
+// try to extend, but not allowd
+ShaderResourceGroup MySrg
+{
+};
+// #EC 32  (ODR)

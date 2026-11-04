@@ -372,9 +372,9 @@ namespace ScriptCanvasEditor
 
         void GraphTabBar::mouseReleaseEvent(QMouseEvent* event)
         {
-            if (event->button() == Qt::MidButton)
+            if (event->button() == Qt::MiddleButton)
             {
-                int tabIndex = tabAt(event->localPos().toPoint());
+                int tabIndex = tabAt(event->position().toPoint());
 
                 if (tabIndex >= 0)
                 {
@@ -469,6 +469,5 @@ namespace ScriptCanvasEditor
             }
         }
 
-        #include <Editor/View/Widgets/moc_GraphTabBar.cpp>
     }
 }

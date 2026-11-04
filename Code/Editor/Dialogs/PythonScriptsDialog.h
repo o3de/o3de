@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Guid.h>
 
 #include <QWidget>
 #include <QString>
 #include <QScopedPointer>
-#endif
 
 namespace Ui {
     class CPythonScriptsDialog;

@@ -1,0 +1,3 @@
+// Keywords in attributes are currently not supported as they require some non-trivial modification of the lexer mode.
+[[void::always_inline, gnu::const, float]]
+

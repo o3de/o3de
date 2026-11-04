@@ -55,4 +55,3 @@ RadioButtonPage::~RadioButtonPage()
 {
 }
 
-#include "Gallery/moc_RadioButtonPage.cpp"

@@ -43,6 +43,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            3rdParty::meshoptimizer
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RHI.Public

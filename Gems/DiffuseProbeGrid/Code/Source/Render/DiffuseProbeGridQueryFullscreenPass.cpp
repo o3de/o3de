@@ -26,7 +26,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridQueryFullscreenPass> DiffuseProbeGridQueryFullscreenPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridQueryFullscreenPass> pass = aznew DiffuseProbeGridQueryFullscreenPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridQueryFullscreenPass::DiffuseProbeGridQueryFullscreenPass(const RPI::PassDescriptor& descriptor)

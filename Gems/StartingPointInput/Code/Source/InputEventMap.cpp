@@ -18,6 +18,7 @@
 
 #include <AzFramework/Input/Buses/Requests/InputDeviceRequestBus.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 using namespace AzFramework;
 
@@ -38,19 +39,29 @@ namespace StartingPointInput
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<InputEventMap>("InputEventMap", "Maps raw input to a game specific input event")
+                editContext->Class<InputEventMap>(
+                    QT_TRANSLATE_NOOP("StartingPointInput", "InputEventMap"),
+                    QT_TRANSLATE_NOOP("StartingPointInput", "Maps raw input to a game specific input event"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &InputEventMap::GetEditorText)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &InputEventMap::m_inputDeviceType, "Input Device Type", "The type of input device, ex keyboard")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &InputEventMap::m_inputDeviceType,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Input Device Type"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The type of input device, ex keyboard"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &InputEventMap::OnDeviceSelected)
                         ->Attribute(AZ::Edit::Attributes::StringList, &InputEventMap::GetInputDeviceTypes)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &InputEventMap::m_inputName, "Input Name", "The name of the input you want to hold ex. space")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &InputEventMap::m_inputName,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Input Name"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The name of the input you want to hold ex. space"))
                         ->Attribute(AZ::Edit::Attributes::StringList, &InputEventMap::GetInputNamesBySelectedDevice)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &InputEventMap::m_eventValueMultiplier, "Event value multiplier", "When the event fires, the value will be scaled by this multiplier")
+                    ->DataElement(0, &InputEventMap::m_eventValueMultiplier,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Event value multiplier"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "When the event fires, the value will be scaled by this multiplier"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &InputEventMap::m_deadZone, "Dead zone", "An event will only be sent out if the value is above this threshold")
+                    ->DataElement(0, &InputEventMap::m_deadZone,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Dead zone"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "An event will only be sent out if the value is above this threshold"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
             }
 
@@ -214,26 +225,38 @@ namespace StartingPointInput
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<ThumbstickInputEventMap>("ThumbstickInputEventMap", "Generate events from thumbstick input")
+                editContext->Class<ThumbstickInputEventMap>(
+                    QT_TRANSLATE_NOOP("StartingPointInput", "ThumbstickInputEventMap"),
+                    QT_TRANSLATE_NOOP("StartingPointInput", "Generate events from thumbstick input"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ThumbstickInputEventMap::GetEditorText)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_innerDeadZoneRadius, "Inner Dead Zone Radius", "The thumbstick axes vector (x,y) will be normalized between this value and Outer Dead Zone Radius")
+                    ->DataElement(0, &ThumbstickInputEventMap::m_innerDeadZoneRadius,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Inner Dead Zone Radius"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The thumbstick axes vector (x,y) will be normalized between this value and Outer Dead Zone Radius"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_outerDeadZoneRadius, "Outer Dead Zone Radius", "The thumbstick axes vector (x,y) will be normalized between Inner Dead Zone Radius and this value")
+                    ->DataElement(0, &ThumbstickInputEventMap::m_outerDeadZoneRadius,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Outer Dead Zone Radius"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The thumbstick axes vector (x,y) will be normalized between Inner Dead Zone Radius and this value"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_axisDeadZoneValue, "Axis Dead Zone Value", "The individual axis values will be normalized between this and 1.0f")
+                    ->DataElement(0, &ThumbstickInputEventMap::m_axisDeadZoneValue,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Axis Dead Zone Value"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The individual axis values will be normalized between this and 1.0f"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &ThumbstickInputEventMap::m_sensitivityExponent, "Sensitivity Exponent", "The sensitivity exponent to apply to the normalized thumbstick components")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ThumbstickInputEventMap::m_outputAxis, "Output Axis", "The axis value to output after peforming the dead-zone and sensitivity calculations")
+                    ->DataElement(0, &ThumbstickInputEventMap::m_sensitivityExponent,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Sensitivity Exponent"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The sensitivity exponent to apply to the normalized thumbstick components"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ThumbstickInputEventMap::m_outputAxis,
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Output Axis"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "The axis value to output after peforming the dead-zone and sensitivity calculations"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<OutputAxis>>
                         {
-                            AZ::Edit::EnumConstant<OutputAxis>(OutputAxis::X, "x"),
-                            AZ::Edit::EnumConstant<OutputAxis>(OutputAxis::Y, "y")
+                            AZ::Edit::EnumConstant<OutputAxis>(OutputAxis::X, QT_TRANSLATE_NOOP("StartingPointInput", "x")),
+                            AZ::Edit::EnumConstant<OutputAxis>(OutputAxis::Y, QT_TRANSLATE_NOOP("StartingPointInput", "y"))
                         })
                 ;
             }

@@ -128,6 +128,7 @@ namespace AudioControls
             m_connectionPropertiesWidget = nullptr;
         }
 
+        bool hideConnectionProperties = true;
         if (connection && connection->HasProperties())
         {
             if (IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl())
@@ -148,9 +149,12 @@ namespace AudioControls
                     {
                         connect(m_connectionPropertiesWidget, SIGNAL(PropertiesChanged()), this, SLOT(CurrentConnectionModified()));
                     }
+                    hideConnectionProperties = false;
                 }
             }
         }
+
+        m_connectionPropertiesFrame->setHidden(hideConnectionProperties);
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -217,7 +221,7 @@ namespace AudioControls
             messageBox.setDefaultButton(QMessageBox::Yes);
             messageBox.setWindowTitle("Audio Controls Editor");
             QList<QListWidgetItem*> selected = m_connectionList->selectedItems();
-            const int size = selected.length();
+            const int size = static_cast<int>(selected.length());
             if (size > 0)
             {
                 if (size == 1)
@@ -324,4 +328,3 @@ namespace AudioControls
 
 } // namespace AudioControls
 
-#include <Source/Editor/moc_QConnectionsWidget.cpp>

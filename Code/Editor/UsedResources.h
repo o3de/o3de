@@ -6,11 +6,9 @@
  *
  */
 
-
 #pragma once
+
 //! Class passed to resource gathering functions
-#ifndef CRYINCLUDE_EDITOR_USEDRESOURCES_H
-#define CRYINCLUDE_EDITOR_USEDRESOURCES_H
 
 #include "Include/EditorCoreAPI.h"
 
@@ -24,4 +22,3 @@ public:
 
     TResourceFiles files;
 };
-#endif // CRYINCLUDE_EDITOR_USEDRESOURCES_H

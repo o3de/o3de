@@ -167,7 +167,7 @@ namespace EMStudio
         const QByteArray windowLayout = GetMainWindow()->GetFancyDockingManager()->saveState();
 
         // Write the state data length.
-        const uint32 stateLength = windowLayout.size();
+        const uint32 stateLength = static_cast<uint32>(windowLayout.size());
         if (file.write((char*)&stateLength, sizeof(uint32)) == -1)
         {
             MCore::LogWarning("Failed to write main window state length to layout file '%s'", filename);

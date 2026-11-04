@@ -112,8 +112,8 @@ namespace AzQtComponents
 
     protected:
         friend class PaletteModel;
-        friend QDataStream& operator<<(QDataStream& out, const Palette& palette);
-        friend QDataStream& operator>>(QDataStream& in, Palette& palette);
+        friend AZ_QT_COMPONENTS_API QDataStream& operator<<(QDataStream& out, const Palette& palette);
+        friend AZ_QT_COMPONENTS_API QDataStream& operator>>(QDataStream& in, Palette& palette);
 
         //! Used by PaletteModel to insert potentially duplicate colors during drag & drop operations
         //! The reason is that the model sees two changes for an internal drag that repositions items:
@@ -126,8 +126,8 @@ namespace AzQtComponents
         AZ_POP_DISABLE_WARNING
     };
 
-    QDataStream& operator<<(QDataStream& out, const Palette& palette);
-    QDataStream& operator>>(QDataStream& in, Palette& palette);
+    AZ_QT_COMPONENTS_API QDataStream& operator<<(QDataStream& out, const Palette& palette);
+    AZ_QT_COMPONENTS_API QDataStream& operator>>(QDataStream& in, Palette& palette);
 } // namespace AzQtComponents
 
 Q_DECLARE_METATYPE(AzQtComponents::Palette)

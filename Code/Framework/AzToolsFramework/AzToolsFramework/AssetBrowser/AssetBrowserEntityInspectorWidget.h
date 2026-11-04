@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
@@ -16,6 +15,7 @@
 #include <AzQtComponents/Components/ExtendedLabel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>
+
 #include <QFormLayout>
 #include <QLabel>
 #include <QMainWindow>
@@ -23,7 +23,6 @@
 #include <QStackedLayout>
 #include <QStackedWidget>
 #include <QTreeWidget>
-#endif
 
 namespace AzToolsFramework
 {

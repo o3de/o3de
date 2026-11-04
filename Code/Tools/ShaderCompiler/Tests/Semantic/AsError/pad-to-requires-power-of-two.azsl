@@ -1,0 +1,24 @@
+// It is an error to request a non-power of two [[pad_to(N)]] if the next offset is smaller than
+// N.
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStruct
+{
+    float4 m_color;
+    [[pad_to(12)]] // #EC 134
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyStruct m_data;
+};
+
+float4 PSMain() : SV_Target0
+{
+    float4 color = DemoSrg::m_data.m_color;
+    return color;
+}

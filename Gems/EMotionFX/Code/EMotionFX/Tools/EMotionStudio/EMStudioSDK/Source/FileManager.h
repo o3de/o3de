@@ -8,27 +8,27 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "EMStudioConfig.h"
+
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <QObject>
-#include <QWidget>
-#include <QFileSystemWatcher>
+#include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
+#include <EMotionFX/Source/Actor.h>
+#include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MotionSet.h>
+#include <MCore/Source/StandardHeaders.h>
+
 #include <QDateTime>
 #include <QFileInfo>
-#include "EMStudioConfig.h"
-#include <MCore/Source/StandardHeaders.h>
-#include <AzCore/std/containers/vector.h>
-#include <EMotionFX/Source/MotionSet.h>
-#include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/AnimGraph.h>
-#include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
-#endif
+#include <QFileSystemWatcher>
+#include <QObject>
+#include <QWidget>
 
 
 namespace EMStudio

@@ -20,9 +20,9 @@ namespace AZ::Vulkan
 
     void RayTracingAccelerationStructure::Init(Device& device, const VkAccelerationStructureCreateInfoKHR& createInfo)
     {
-        VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
+        [[maybe_unused]] VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
             device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_accelerationStructure);
-        AssertSuccess(vkResult);
+        VK_RESULT_ASSERT(vkResult);
         DeviceObject::Init(device);
     }
 

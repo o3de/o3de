@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -32,25 +33,25 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<ShapeAreaFalloffGradientConfig>(
-                    "Shape Falloff Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Shape Falloff Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_shapeEntityId, "Shape Entity Id", "Entity with shape component to test distance against.")
+                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_shapeEntityId, QT_TRANSLATE_NOOP("GradientSignal", "Shape Entity Id"), QT_TRANSLATE_NOOP("GradientSignal", "Entity with shape component to test distance against."))
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ShapeAreaFalloffGradientConfig::m_falloffWidth, "Falloff Width", "Maximum distance used to calculate gradient in meters.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ShapeAreaFalloffGradientConfig::m_falloffWidth, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Width"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum distance used to calculate gradient in meters."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_falloffType, "Falloff Type", "Function for calculating falloff")
+                    ->DataElement(0, &ShapeAreaFalloffGradientConfig::m_falloffType, QT_TRANSLATE_NOOP("GradientSignal", "Falloff Type"), QT_TRANSLATE_NOOP("GradientSignal", "Function for calculating falloff"))
 
                     // Inner falloff isn't supported yet.
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::Inner, "Inner")
-                    ->EnumAttribute(FalloffType::Outer, "Outer")
+                    ->EnumAttribute(FalloffType::Outer, QT_TRANSLATE_NOOP("GradientSignal", "Outer"))
                     //->EnumAttribute(ShapeAreaFalloffGradientConfig::FalloffType::InnerOuter, "InnerOuter")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &ShapeAreaFalloffGradientConfig::m_is3dFalloff, "3D Falloff",
-                        "Either calculate the falloff in the XY plane or in 3D space.")
+                        AZ::Edit::UIHandlers::Default, &ShapeAreaFalloffGradientConfig::m_is3dFalloff, QT_TRANSLATE_NOOP("GradientSignal", "3D Falloff"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Either calculate the falloff in the XY plane or in 3D space."))
                     ;
             }
         }

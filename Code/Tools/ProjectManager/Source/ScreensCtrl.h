@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/std/containers/unordered_map.h>
+
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
 
 #include <QStackedWidget>
 #include <QStack>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QTabWidget)
 

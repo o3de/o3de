@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -22,24 +23,15 @@ namespace AZStd
 {
     // Everything unless specified is based on C++ 20 (lib.iterators).
 
-    /// Identifying tag for input iterators.
-    using input_iterator_tag = std::input_iterator_tag;
-    /// Identifying tag for output iterators.
-    using output_iterator_tag = std::output_iterator_tag;
-    /// Identifying tag for forward iterators.
-    using forward_iterator_tag = std::forward_iterator_tag;
-    /// Identifying tag for bidirectional iterators.
-    using bidirectional_iterator_tag = std::bidirectional_iterator_tag;
-    /// Identifying tag for random-access iterators.
-    using random_access_iterator_tag = std::random_access_iterator_tag;
-    /// Identifying tag for contagious iterators
-    struct contiguous_iterator_tag
-        : public random_access_iterator_tag {};
+    using std::input_iterator_tag;
+    using std::output_iterator_tag;
+    using std::forward_iterator_tag;
+    using std::bidirectional_iterator_tag;
+    using std::random_access_iterator_tag;
+    using std::contiguous_iterator_tag;
 
-
-    /// Add the default_sentinel struct from C++20
-    struct default_sentinel_t {};
-    inline constexpr default_sentinel_t default_sentinel{};
+    using std::default_sentinel_t;
+    using std::default_sentinel;
 }
 
 namespace AZStd::Internal
@@ -219,7 +211,7 @@ namespace AZStd
         template<class Iterator, class ConstIterator>
         inline Iterator ConstIteratorCast(ConstIterator& iter)
         {
-            static_assert((AZStd::is_base_of<ConstIterator, Iterator>::value), "For this cast to work Iterator should derive from ConstIterator");
+            static_assert(AZStd::is_base_of_v<ConstIterator, Iterator>, "For this cast to work Iterator should derive from ConstIterator");
             static_assert(sizeof(ConstIterator) == sizeof(Iterator), "For this cast to work ConstIterator and Iterator should be binarily identical");
             return *reinterpret_cast<Iterator*>(&iter);
         }

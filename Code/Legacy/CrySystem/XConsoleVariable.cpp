@@ -306,7 +306,7 @@ const char* CXConsoleVariableInt::GetString() const
 {
     static char szReturnString[256];
 
-    sprintf_s(szReturnString, "%d", GetIVal());
+    azsprintf(szReturnString, "%d", GetIVal());
     return szReturnString;
 }
 
@@ -346,7 +346,7 @@ const char* CXConsoleVariableIntRef::GetString() const
 {
     static char szReturnString[256];
 
-    sprintf_s(szReturnString, "%d", m_iValue);
+    azsprintf(szReturnString, "%d", m_iValue);
     return szReturnString;
 }
 
@@ -376,7 +376,7 @@ void CXConsoleVariableIntRef::Set(float f)
     }
 
     char sTemp[128];
-    sprintf_s(sTemp, "%g", f);
+    azsprintf(sTemp, "%g", f);
 
     if (m_pConsole->OnBeforeVarChange(this, sTemp))
     {
@@ -395,7 +395,7 @@ void CXConsoleVariableIntRef::Set(int i)
     }
 
     char sTemp[128];
-    sprintf_s(sTemp, "%d", i);
+    azsprintf(sTemp, "%d", i);
 
     if (m_pConsole->OnBeforeVarChange(this, sTemp))
     {
@@ -410,7 +410,7 @@ const char* CXConsoleVariableFloat::GetString() const
 {
     static char szReturnString[256];
 
-    sprintf_s(szReturnString, "%g", m_fValue); // %g -> "2.01",   %f -> "2.01000"
+    azsprintf(szReturnString, "%g", m_fValue); // %g -> "2.01",   %f -> "2.01000"
     return szReturnString;
 }
 
@@ -470,7 +470,7 @@ void CXConsoleVariableFloat::Set(int i)
     }
 
     char sTemp[128];
-    sprintf_s(sTemp, "%d", i);
+    azsprintf(sTemp, "%d", i);
 
     if (m_pConsole->OnBeforeVarChange(this, sTemp))
     {
@@ -485,7 +485,7 @@ const char* CXConsoleVariableFloatRef::GetString() const
 {
     static char szReturnString[256];
 
-    sprintf_s(szReturnString, "%g", m_fValue);
+    azsprintf(szReturnString, "%g", m_fValue);
     return szReturnString;
 }
 
@@ -521,7 +521,7 @@ void CXConsoleVariableFloatRef::Set(float f)
     }
 
     char sTemp[128];
-    sprintf_s(sTemp, "%g", f);
+    azsprintf(sTemp, "%g", f);
 
     if (m_pConsole->OnBeforeVarChange(this, sTemp))
     {
@@ -540,7 +540,7 @@ void CXConsoleVariableFloatRef::Set(int i)
     }
 
     char sTemp[128];
-    sprintf_s(sTemp, "%d", i);
+    azsprintf(sTemp, "%d", i);
 
     if (m_pConsole->OnBeforeVarChange(this, sTemp))
     {

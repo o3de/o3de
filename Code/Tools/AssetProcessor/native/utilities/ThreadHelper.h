@@ -5,19 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef THREADHELPER_H
-#define THREADHELPER_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QObject>
 #include <QMutex>
 #include <QMetaObject>
 #include <QWaitCondition>
-#include <functional>
 #include <QThread>
+
+#include <functional>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/functional.h>
-#endif
 
 // the Thread Helper exists to make it very easy to create a Qt object
 // inside a thread, in such a way that the entire construction of the object
@@ -134,6 +133,3 @@ Q_SIGNALS:
         FactoryFunctionType m_function;
     };
 }
-
-#endif // THREADHELPER_H
-

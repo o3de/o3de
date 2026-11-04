@@ -172,4 +172,3 @@ TableViewPage::~TableViewPage()
 {
 }
 
-#include "Gallery/moc_TableViewPage.cpp"

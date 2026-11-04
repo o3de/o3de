@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <AzCore/Math/Color.h>
-#endif
 
 namespace AzQtComponents
 {
@@ -88,3 +86,5 @@ namespace AzQtComponents
         float m_defaultV;
     };
 } // namespace AzQtComponents
+
+Q_DECLARE_METATYPE(AzQtComponents::ColorValidator)

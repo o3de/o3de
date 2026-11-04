@@ -319,5 +319,4 @@ namespace GraphCanvas
         Q_EMIT(OnTreeItemAdded(itemAdded));
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/moc_GraphCanvasTreeModel.cpp>
 }

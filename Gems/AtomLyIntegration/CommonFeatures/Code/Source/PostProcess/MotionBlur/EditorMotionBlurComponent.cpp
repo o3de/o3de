@@ -8,11 +8,24 @@
 
 #include <PostProcess/MotionBlur/EditorMotionBlurComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
     namespace Render
     {
+        using MotionBlurQualityComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<MotionBlur::SampleQuality>>;
+        static MotionBlurQualityComboBoxVec PopulateMotionBlurQualityList()
+        {
+            return MotionBlurQualityComboBoxVec
+            {
+                { MotionBlur::SampleQuality::Low, "Low" },
+                { MotionBlur::SampleQuality::Medium, "Medium" },
+                { MotionBlur::SampleQuality::High, "High" },
+                { MotionBlur::SampleQuality::Ultra, "Ultra" },
+            };
+        }
+
         void EditorMotionBlurComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
@@ -23,7 +36,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorMotionBlurComponent>("Motion Blur", "Controls the Motion Blur")
+                    editContext->Class<EditorMotionBlurComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Motion Blur"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Motion Blur"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -46,24 +59,23 @@ namespace AZ
 
                     editContext->Class<MotionBlurComponentConfig>("MotionBlurComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &MotionBlurComponentConfig::m_enabled, "Enable Motion Blur", "Enable Motion Blur.")
+                            Edit::UIHandlers::CheckBox, &MotionBlurComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Motion Blur"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Motion Blur."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MotionBlurComponentConfig::m_strength, "Strength", "Strength of the Effect")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MotionBlurComponentConfig::m_strength, QT_TRANSLATE_NOOP("AtomLyIntegration", "Strength"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Strength of the Effect"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 50.f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &MotionBlurComponentConfig::ArePropertiesReadOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &MotionBlurComponentConfig::m_sampleNumber, "Sample Number", "Number of Sample Points Per Pixel")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 50)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MotionBlurComponentConfig::m_sampleQuality, "Sample Quality", "Quality of the effect")
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &PopulateMotionBlurQualityList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &MotionBlurComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

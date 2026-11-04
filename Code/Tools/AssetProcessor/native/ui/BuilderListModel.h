@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
-#endif
 
 namespace AZ
 {

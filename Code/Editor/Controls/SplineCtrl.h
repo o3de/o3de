@@ -6,15 +6,10 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H
-#define CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <ISplines.h>
-#endif
 
 // Custom styles for this control.
 #define SPLINE_STYLE_NOGRID 0x0001
@@ -151,6 +146,3 @@ private:
 
     UpdateCallback m_updateCallback;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRL_H

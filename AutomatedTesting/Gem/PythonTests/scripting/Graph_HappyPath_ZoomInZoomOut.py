@@ -48,7 +48,7 @@ def Graph_HappyPath_ZoomInZoomOut():
 
     imports.init()
 
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
     import azlmbr.legacy.general as general
 
     import pyside_utils

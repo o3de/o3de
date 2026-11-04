@@ -22,8 +22,9 @@ define_property(TARGET PROPERTY ENTITLEMENT_FILE_PATH
 function(ly_apply_platform_properties target)
 
     set_target_properties(${target} PROPERTIES
-        BUILD_RPATH "@executable_path;@executable_path/../Frameworks"
-        INSTALL_RPATH "@executable_path;@executable_path/../Frameworks"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "@loader_path;@loader_path/../Frameworks"
+        INSTALL_RPATH_USE_LINK_PATH FALSE
     )
 
     get_property(is_imported TARGET ${target} PROPERTY IMPORTED)

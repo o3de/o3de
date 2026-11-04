@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #pragma once
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -43,19 +43,15 @@ namespace OpenParticle
 
         bool BuildInputStreamLayouts(const AZ::RPI::ShaderInputContract& contract);
 
-        void SetParticleStreamBufferView(const AZ::RHI::StreamBufferView& streamBufferView, size_t meshIndex);
-
         bool IsInputStreamLayoutsValid(size_t meshIndex) const;
 
         const AZ::RHI::InputStreamLayout& GetInputStreamLayout(size_t meshIndex) const;
 
+        const AZ::RPI::UvStreamTangentBitmask& GetUvStreamTangentBitmask(size_t meshIndex) const;
+
         const AZ::RPI::ModelLod::StreamBufferViewList& GetStreamBufferViewList(size_t meshIndex) const;
 
     private:
-        AZ::RPI::ShaderInputContract CheckMeshContract(const AZ::RPI::ShaderInputContract& contract);
-
-        bool SetMeshStreamBuffers();
-
         bool GetStreamsForMesh(
             AZ::RHI::InputStreamLayoutBuilder& layoutBuilder,
             AZ::RPI::UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
@@ -80,9 +76,9 @@ namespace OpenParticle
         AZ::Data::Instance<AZ::RPI::Model> m_modelInstance;
         AZ::Data::Instance<AZ::RPI::ModelLod> m_modelLod;
         size_t m_lodIndex = 0;
+        AZ::HashValue64 m_lastContractHash = AZ::HashValue64{ 0 };
         AZStd::vector<AZ::RHI::InputStreamLayout> m_inputStreamLayouts;
+        AZStd::vector<AZ::RPI::UvStreamTangentBitmask> m_uvStreamTangentBitmasks;
         AZStd::vector<AZ::RPI::ModelLod::StreamBufferViewList> m_streamBufferViews;
-        AZStd::vector<AZ::Data::Instance<AZ::RPI::Buffer>> m_buffers;
     };
 } // namespace OpenParticle
-

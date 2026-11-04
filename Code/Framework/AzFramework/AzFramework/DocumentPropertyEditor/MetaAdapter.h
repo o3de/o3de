@@ -27,6 +27,8 @@ namespace AZ::DocumentPropertyEditor
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string()) override;
 
+        void ExecuteQueuedReset() override;
+
     protected:
         // handlers for source adapter's messages
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, Dom::Value& value);
@@ -40,6 +42,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path GetRowPath(const Dom::Path& sourcePath) const;
 
         DocumentAdapter::ResetEvent::Handler m_resetHandler;
+        DocumentAdapter::ResetQueuedEvent::Handler m_resetQueuedHandler;
         ChangedEvent::Handler m_changedHandler;
         MessageEvent::Handler m_domMessageHandler;
 

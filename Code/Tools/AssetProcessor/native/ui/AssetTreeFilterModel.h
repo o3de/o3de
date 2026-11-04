@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <QSortFilterProxyModel>
-#endif
 
 class QRegularExpression;
 

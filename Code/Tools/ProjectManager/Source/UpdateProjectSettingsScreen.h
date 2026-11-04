@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ProjectSettingsScreen.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

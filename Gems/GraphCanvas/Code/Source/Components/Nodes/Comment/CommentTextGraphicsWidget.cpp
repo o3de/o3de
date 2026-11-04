@@ -476,5 +476,4 @@ namespace GraphCanvas
         }
     }
 
-#include <Source/Components/Nodes/Comment/moc_CommentTextGraphicsWidget.cpp>
 }

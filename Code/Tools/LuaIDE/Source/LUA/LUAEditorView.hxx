@@ -6,10 +6,8 @@
  *
  */
 
-#ifndef LUAEDITORVIEW_H
-#define LUAEDITORVIEW_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -18,9 +16,7 @@
 
 #include "LUAEditorContextInterface.h"
 #include "LUABreakpointTrackerMessages.h"
-#endif
 
-#pragma once
 
 class QWidget;
 class QFocusEvent;
@@ -230,5 +226,3 @@ namespace LUAEditor
     };
 
 };
-
-#endif //LUAEDITORVIEW_H

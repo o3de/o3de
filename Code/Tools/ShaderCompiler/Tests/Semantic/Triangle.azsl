@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ShaderResourceGroupSemantic BindingTrianglePerInstanceSRG
+{
+    FrequencyId = 0;
+
+    // Setting this to greater than 0 designates the SRG using this semantic as a
+    // ShaderVariantKey fallback. The choice of 128 bits is arbitrary and up to the
+    // user, but AZSLc will align it to 128 and error if the number of options exceeds
+    // the aligned budget. The value is intended as a limit for the number of options
+    // and is set by the shader author.
+    ShaderVariantFallback = 128;
+};   
+
+ShaderResourceGroup TrianglePerInstanceSRG : BindingTrianglePerInstanceSRG
+{
+    column_major float4x4 m_objectMatrix;
+}
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float4 m_color : COLOR0;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color : COLOR0;
+};
+
+option bool UseBGR = false;
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    OUT.m_position = mul(float4(vsInput.m_position, 1.0), TrianglePerInstanceSRG::m_objectMatrix);
+    OUT.m_color = vsInput.m_color;
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput vsOutput)
+{
+    PSOutput OUT;
+    
+    if (UseBGR)
+    {
+        OUT.m_color = vsOutput.m_color.bgra;
+    }   
+    else
+    {
+        OUT.m_color = vsOutput.m_color.rgba;
+    }
+
+    // Simple tonemapping:
+    OUT.m_color.rgb = pow(OUT.m_color.rgb, 1.0/2.2);
+    return OUT;
+}

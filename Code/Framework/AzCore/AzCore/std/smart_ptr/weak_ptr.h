@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_WEAK_PTR_H
-#define AZSTD_SMART_PTR_WEAK_PTR_H
+
+#pragma once
 
 //
 //  weak_ptr.hpp
@@ -191,6 +191,3 @@ namespace AZStd
         a.swap(b);
     }
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_WEAK_PTR_H
-#pragma once

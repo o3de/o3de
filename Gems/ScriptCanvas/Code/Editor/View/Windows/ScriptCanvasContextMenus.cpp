@@ -934,7 +934,5 @@ namespace ScriptCanvasEditor
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
-
-    #include "Editor/View/Windows/moc_ScriptCanvasContextMenus.cpp"
 }
 

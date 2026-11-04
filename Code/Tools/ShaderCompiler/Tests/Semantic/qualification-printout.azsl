@@ -1,0 +1,20 @@
+class A
+{
+    void MethodA();
+};
+
+class B
+{
+    class A
+    {
+        void MethodA();
+    };
+
+    void M()
+    {
+        A::MethodA();
+        __azslc_print_message("@check predicate ");  // notify the tester to wait for an expression
+        __azslc_print_symbol(A::MethodA, __azslc_prtsym_fully_qualified);
+        __azslc_print_message(" == /B/A/MethodA\n"); // the compiler will output this, so the tester script can use it as an assert.
+    }
+};

@@ -256,11 +256,11 @@ namespace Multiplayer
 
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
-            NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
+            NetworkInputSerializer inSerializer(buffer.data(), bufferSize);
             ISerializer& serializer = inSerializer;
             serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
-            NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
+            NetworkOutputSerializer outSerializer(buffer.data(), bufferSize);
 
             ReplicationRecord notifyRecord = currentRecord;
 

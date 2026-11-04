@@ -6,14 +6,11 @@
  *
  */
 
-#ifndef LUAEDITOR_LUAEditorDebuggerMessages_H
-#define LUAEDITOR_LUAEditorDebuggerMessages_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Script/ScriptContextDebug.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -104,5 +101,3 @@ namespace LUAEditor
     using LUAEditorDebuggerMessagesRequestBus = AZ::EBus<LUAEditorDebuggerMessages>;
 
 }
-
-#endif//LUAEDITOR_LUAEditorDebuggerMessages_H

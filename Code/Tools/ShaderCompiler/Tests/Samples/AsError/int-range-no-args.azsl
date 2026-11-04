@@ -1,0 +1,17 @@
+// Error: Option (Samples) must specify a range with exactly 2 values, min & max - [[range(min, max)]]
+[[range(8)]]
+option int Samples = 5;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Emitter Error 260: Option (optionName) must specify a range with exactly 2 values, min & max - [range(min, max)]!
+// #EC 260

@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CLIPBOARD_H
-#define CRYINCLUDE_EDITOR_CLIPBOARD_H
-
 #pragma once
 
 #include "Include/EditorCoreAPI.h"
@@ -59,6 +55,3 @@ private:
     QWidget* m_parent;
     QTimer m_putDebounce;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_CLIPBOARD_H

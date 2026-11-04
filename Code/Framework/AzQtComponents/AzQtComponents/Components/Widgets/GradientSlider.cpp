@@ -270,4 +270,3 @@ QBrush GradientSlider::gradientBrush() const
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_GradientSlider.cpp"

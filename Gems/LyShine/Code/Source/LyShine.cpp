@@ -72,6 +72,7 @@
 #include "World/UiCanvasAssetRefComponent.h"
 #include "World/UiCanvasProxyRefComponent.h"
 #include "World/UiCanvasOnMeshComponent.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 //! \brief Simple utility class for LyShine functionality in Lua.
 //!

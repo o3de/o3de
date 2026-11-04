@@ -13,9 +13,17 @@
 
 #include <Atom/Feature/RenderCommon.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
+#include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Image/ImageAsset.h>
+
+#include <AzCore/Asset/AssetManager.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 #include <particle/core/ParticleHelper.h>
 
@@ -72,6 +80,7 @@ namespace OpenParticle
 {
     ParticleSystem::~ParticleSystem()
     {
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         ClearAllLightEffects();
     }
 
@@ -156,7 +165,6 @@ namespace OpenParticle
     {
         if (!m_particleSystem || m_particleSystem->GetAllEmitters().size() == 0)
         {
-            AZ_Error("ParticleSystem", false, "particleSystem is unready!");
             return;
         }
 
@@ -179,7 +187,7 @@ namespace OpenParticle
             OpenParticleSystem::ParticleEditorRequestBus::BroadcastResult(
                     cameraTransform, &OpenParticleSystem::ParticleEditorRequestBus::Events::GetParticleEditorCameraTransform);
         }
-        m_particleSystem->UpdateWorldInfo(cameraTransform.m_transform, 
+        m_particleSystem->UpdateWorldInfo(cameraTransform.m_transform,
                                           m_rtConfig.m_followActiveCamera ? m_rtSysTransform : m_transform,
                                           -AZ::Vector3::CreateAxisY());
 
@@ -189,18 +197,19 @@ namespace OpenParticle
         {
             for (auto iter = m_diffuseMapInstances.begin(); iter != m_diffuseMapInstances.end();)
             {
-                if (iter->first >= m_particleSystem->GetAllEmitters().size())
+                auto emitterIt = m_particleSystem->GetAllEmitters().find(iter->first);
+                if (emitterIt == m_particleSystem->GetAllEmitters().end())
                 {
                     AZ_Error("ParticleSystem", false,
                         "The emitter index is out of range, it starts from 0, please check it again.");
                     m_diffuseMapInstances.erase(iter++);
                     continue;
                 }
-                auto& instance = m_emitterInstances[m_particleSystem->GetAllEmitters().at(iter->first)];
+                auto& instance = m_emitterInstances[emitterIt->second];
                 if (instance.m_material->CanCompile())
                 {
                     AZ::RPI::MaterialPropertyIndex materialPropertyIndex =
-                        instance.m_material->FindPropertyIndex(AZ::Name("general.DiffuseMap"));
+                        instance.m_material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
                     if (instance.m_material->SetPropertyValue(materialPropertyIndex, iter->second))
                     {
                         if (!instance.m_material->Compile())
@@ -308,74 +317,106 @@ namespace OpenParticle
                 if (emitter == nullptr) {
                     continue;
                 }
+                const AZ::u32 emitterId = emitter->GetEmitterId();
                 auto& instance = m_emitterInstances[emitter];
+
+                if (instance.m_needsPipelineRebuild)
+                {
+                    instance.TryRebuildPipeline();
+                }
+                if (instance.m_shaders.empty())
+                {
+                    continue;
+                }
+
+                DrawParam drawParam;
+                SimuCore::ParticleCore::DrawItem& item = drawParam.item;
+                emitter->Render(reinterpret_cast<AZ::u8*>(&driverWrap), world, item);
+
+                if (item.type == SimuCore::ParticleCore::RenderType::UNDEFINED || item.drawArgs.Empty())
+                {
+                    continue;
+                }
+                auto pipeline = m_particleFp->Fetch(GetPipelineKey(item.type));
+                if (pipeline == nullptr)
+                {
+                    continue;
+                }
+
+                if (emitter->HasLightModule())
+                {
+                    SetParticleLight(*emitter, item);
+                }
+
+                if (emitter->HasSkeletonModule())
+                {
+                    SetBoneAndVertexBuffer(*emitter);
+                }
+
                 for (auto& shader : instance.m_shaders)
                 {
-                    auto drawListTag = shader.first;
+                    auto drawListTag = shader.m_drawListTag;
                     if (!view->HasDrawListTag(drawListTag))
                     {
                         continue;
                     }
 
-                    auto& efd = instance.m_emitterForDrawPair[shader.second.get()];
-                    DrawParam drawParam;
-                    SimuCore::ParticleCore::DrawItem& item = drawParam.item;
-                    emitter->Render(reinterpret_cast<AZ::u8*>(&driverWrap), world, item);
-                    auto pipeline = m_particleFp->Fetch(GetPipelineKey(item.type));
-                    if (pipeline == nullptr || item.drawArgs.Empty())
-                    {
-                        ClearLightEffects(emitter->GetEmitterId());
-                        continue;
-                    }
-
-                    // Get light data
-                    if (emitter->HasLightModule())
-                    {
-                        SetParticleLight(*emitter, item);
-                    }
-
-                    if (emitter->HasSkeletonModule())
-                    {
-                        SetBoneAndVertexBuffer(*emitter);
-                    }
+                    auto& efd = instance.m_emitterForDrawPair[shader.m_drawKey];
 
                     {
                         AZ_PROFILE_SCOPE(AzCore, "ParticleSystem::shader compile");
                         AZ::RPI::ShaderOptionGroup& shaderOptions = efd.optionGroup;
                         SetOption(shaderOptions, item);
-                        auto variant = shader.second->GetVariant(shaderOptions.GetShaderVariantId());
+                        auto variant = shader.m_shader->GetVariant(shaderOptions.GetShaderVariantId());
 
-                        if (efd.variantKey.value != item.variantKey.value && efd.m_drawSrg &&
-                            efd.m_drawSrg->GetLayout()->HasShaderVariantKeyFallbackEntry())
+                        if (emitter->GetRenderType() != SimuCore::ParticleCore::RenderType::MESH)
                         {
-                            if (!variant.IsFullyBaked())
+                            if (efd.m_drawSrg && efd.m_variantKey.value == UINT64_MAX)
                             {
-                                efd.m_drawSrg->SetShaderVariantKeyFallbackValue(
-                                        shaderOptions.GetShaderVariantKeyFallbackValue());
+                                if (!variant.IsFullyBaked() &&
+                                    efd.m_drawSrg->GetLayout()->HasShaderVariantKeyFallbackEntry())
+                                {
+                                    efd.m_drawSrg->SetShaderVariantKeyFallbackValue(
+                                            shaderOptions.GetShaderVariantKeyFallbackValue());
+                                }
+                                efd.m_drawSrg->Compile();
+                                efd.m_variantKey.value = item.variantKey.value;
                             }
-                            efd.m_drawSrg->Compile();
-                            efd.variantKey.value = item.variantKey.value;
+                        else if (efd.m_variantKey.value != item.variantKey.value && efd.m_drawSrg &&
+                                efd.m_drawSrg->GetLayout()->HasShaderVariantKeyFallbackEntry())
+                            {
+                                if (!variant.IsFullyBaked())
+                                {
+                                    efd.m_drawSrg->SetShaderVariantKeyFallbackValue(
+                                            shaderOptions.GetShaderVariantKeyFallbackValue());
+                                }
+                                efd.m_drawSrg->Compile();
+                                efd.m_variantKey.value = item.variantKey.value;
+                            }
                         }
-                        drawParam.shader = shader.second;
+                        drawParam.shader = shader.m_shader;
                         drawParam.variant = variant;
                     }
                     if (emitter->GetRenderType() == SimuCore::ParticleCore::RenderType::MESH)
                     {
+                        if (!instance.m_model.GetModelLod())
+                        {
+                            continue;
+                        }
                         const auto meshCount = instance.m_model.GetMeshCount();
-                        if (!instance.m_model.BuildInputStreamLayouts(shader.second->GetInputContract()))
+                        if (!instance.m_model.BuildInputStreamLayouts(shader.m_shader->GetInputContract()))
                         {
                             continue;
                         }
 
                         for (auto it = 0; it < meshCount; ++it)
                         {
-                            RenderParticle(drawListTag, drawParam, instance, *view, it);
+                            RenderParticle(drawListTag, drawParam, instance, *view, shader.m_drawKey, emitterId, it);
                         }
                     }
                     else
                     {
-                        // sprite & ribbon
-                        RenderParticle(drawListTag, drawParam, instance, *view);
+                        RenderParticle(drawListTag, drawParam, instance, *view, shader.m_drawKey, emitterId);
                     }
                 }
             }
@@ -387,34 +428,83 @@ namespace OpenParticle
         AZStd::string path = mapPath + ".streamingimage";
         AZ::Data::AssetId mapAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(mapAssetId, &AZ::Data::AssetCatalogRequestBus::
-            Events::GetAssetIdByPath, path.c_str(), AZ::RPI::MaterialAsset::TYPEINFO_Uuid(), false);
-
-        if (!mapAssetId.IsValid())
+            Events::GetAssetIdByPath, path.c_str(), AZ::RPI::StreamingImageAsset::RTTI_Type(), false);
+        if (mapAssetId.IsValid())
         {
-            AZ_Error("ParticleSystem", false, "Failed to get the diffuse map's asset id.");
-            return;
-        }
-
-        AZ::Data::Asset<AZ::RPI::ImageAsset>  imageAsset = AZ::Data::Asset<AZ::RPI::ImageAsset>(
-            mapAssetId, azrtti_typeid<AZ::RPI::StreamingImageAsset>());
-
-        if (!imageAsset.IsReady())
-        {
-            imageAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(
-                imageAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
-            imageAsset.BlockUntilLoadComplete();
-            if (!imageAsset.IsReady())
+            auto streamingAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::StreamingImageAsset>(
+                mapAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            streamingAsset.BlockUntilLoadComplete();
+            if (!streamingAsset.IsReady())
             {
-                AZ_Error("ParticleSystem", false, "Failed to load the diffuse map.");
+                AZ_Error("ParticleSystem", false, "Failed to load the diffuse map: %s", path.c_str());
                 return;
             }
-        }
-        AZStd::any any;
-        any = imageAsset;
-        AZ::RPI::MaterialPropertyValue value = AZ::RPI::MaterialPropertyValue::FromAny(any);
-        m_diffuseMapInstances.emplace(emitterIndex, value);
 
-        m_changedDiffuseMap = true;
+            AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::StreamingImage::FindOrCreate(streamingAsset);
+            if (!image)
+            {
+                AZ_Error("ParticleSystem", false, "Failed to create Image instance from StreamingImageAsset: %s", path.c_str());
+                return;
+            }
+
+            AZStd::any any(image);
+            AZ::RPI::MaterialPropertyValue value = AZ::RPI::MaterialPropertyValue::FromAny(any);
+            m_diffuseMapInstances.emplace(emitterIndex, value);
+            m_changedDiffuseMap = true;
+        }
+        else
+        {
+            AZ_Warning("ParticleSystem", false, "Could not find asset ID for diffuse map: %s", path.c_str());
+        }
+    }
+
+
+    void ParticleSystem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+
+        if (!m_asset)
+        {
+            return;
+        }
+        auto& archive = m_asset->GetParticleArchive();
+        auto emitters = m_particleSystem ? m_particleSystem->GetAllEmitters() : decltype(m_particleSystem->GetAllEmitters()){};
+        for (auto& emitter : emitters)
+        {
+            auto& modelAsset = archive.m_emitterInfos[emitter.first].m_model;
+            if (modelAsset && modelAsset.GetId() == asset.GetId())
+            {
+                auto it = m_emitterInstances.find(emitter.second);
+                if (it != m_emitterInstances.end())
+                {
+                    AZ::Data::Asset<AZ::RPI::ModelAsset> typedAsset(asset);
+                    it->second.m_model.SetupModel(typedAsset, 0);
+                    if (typedAsset->IsReady())
+                    {
+                        AZ::Aabb aabb = typedAsset->GetAabb();
+                        emitter.second->SetAabbExtends(aabb.GetMax(), aabb.GetMin());
+                    }
+                }
+            }
+
+            auto& materialAsset = archive.m_emitterInfos[emitter.first].m_material;
+            if (materialAsset && materialAsset.GetId() == asset.GetId())
+            {
+                auto it = m_emitterInstances.find(emitter.second);
+                if (it != m_emitterInstances.end())
+                {
+                    AZ::Data::Asset<AZ::RPI::MaterialAsset> typedAsset(asset);
+                    it->second.Setup(typedAsset);
+
+                    AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
+                    if (it->second.m_objSrg != nullptr)
+                    {
+                        it->second.m_objSrg->SetConstant(objectIdIndex, m_objectId.GetIndex());
+                        it->second.m_objSrg->Compile();
+                    }
+                }
+            }
+        }
     }
 
     void ParticleSystem::SetBoneAndVertexBuffer(SimuCore::ParticleCore::ParticleEmitter& emitter)
@@ -676,39 +766,55 @@ namespace OpenParticle
     }
 
     void ParticleSystem::RenderParticle(const AZ::RHI::DrawListTag drawListTag, const DrawParam& drawParam,
-        EmitterInstance& instance, AZ::RPI::View& view, int meshIndex)
+        EmitterInstance& instance, AZ::RPI::View& view, const EmitterDrawKey& drawKey,
+        [[maybe_unused]] AZ::u32 emitterId, int meshIndex)
     {
         AZ_PROFILE_SCOPE(AzCore, "ParticleSystem::RenderParticle");
+
         if (!instance.m_objSrg)
         {
-            // note that sprite and mesh particles use the instance.m_objSrg, but the
-            // ribbon does not.
             if (drawParam.item.drawArgs.type == SimuCore::ParticleCore::DrawType::LINEAR)
             {
-                return; // this is a sprite particle
+                AZ_Warning("ParticleSystem", false,
+                    "Emitter %u: missing object SRG for sprite particle, draw skipped", emitterId);
+                return;
             }
             if (meshIndex >= 0)
             {
-                return; // this is a mesh particle.
+                AZ_Warning("ParticleSystem", false,
+                    "Emitter %u: missing object SRG for mesh particle, draw skipped", emitterId);
+                return;
             }
         }
 
-        auto& efd = instance.m_emitterForDrawPair[drawParam.shader.get()];
-        auto pipeline = m_particleFp->Fetch(GetPipelineKey(drawParam.item.type));
+        auto& efd = instance.m_emitterForDrawPair[drawKey];
+        if (!efd.m_drawSrg)
+        {
+            return;
+        }
+        auto pipelineKey = GetPipelineKey(drawParam.item.type);
+        auto pipeline = m_particleFp->Fetch(pipelineKey);
+
+        if (!pipeline)
+        {
+            return;
+        }
+
+        if (!drawParam.shader)
+        {
+            return;
+        }
+
         AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
         auto& shaderOptions = efd.optionGroup;
         drawParam.variant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptions);
         AZ::RHI::MergeStateInto(efd.states, pipelineStateDescriptor.m_renderStates);
 
-        auto buffer = reinterpret_cast<PtrHolder<AZ::RHI::Buffer>*>(drawParam.item.vertexBuffer.buffer.data.ptr);
-        AZ::RHI::StreamBufferView bufferView = {*buffer->ptr, drawParam.item.vertexBuffer.offset,
-            drawParam.item.vertexBuffer.size, drawParam.item.vertexBuffer.stride };
-
         auto& geometryView = efd.m_geometryView;
         geometryView.ClearStreamBufferViews();
 
-        if (meshIndex >= 0) { // mesh particle
-            instance.m_model.SetParticleStreamBufferView(bufferView, meshIndex);
+        if (meshIndex >= 0)
+        {
             if (!instance.m_model.IsInputStreamLayoutsValid(meshIndex))
             {
                 return;
@@ -718,7 +824,71 @@ namespace OpenParticle
                 geometryView.AddStreamBufferView(meshBufferView);
             }
             pipelineStateDescriptor.m_inputStreamLayout = instance.m_model.GetInputStreamLayout(meshIndex);
-        } else {
+
+            if (!efd.m_drawSrg)
+            {
+                return;
+            }
+
+            auto instanceBuffer = reinterpret_cast<PtrHolder<AZ::RHI::Buffer>*>(drawParam.item.instanceBuffer.buffer.data.ptr);
+            if (instanceBuffer == nullptr || instanceBuffer->ptr == nullptr || drawParam.item.instanceBuffer.stride == 0)
+            {
+                return;
+            }
+
+            AZ::RHI::ShaderInputNameIndex particleInstanceDataIndex("m_particleInstanceData");
+            const AZ::u32 instanceCount = drawParam.item.instanceBuffer.size / drawParam.item.instanceBuffer.stride;
+            const AZ::RHI::BufferViewDescriptor bufferViewDescriptor = AZ::RHI::BufferViewDescriptor::CreateStructured(
+                drawParam.item.instanceBuffer.offset / drawParam.item.instanceBuffer.stride,
+                instanceCount,
+                drawParam.item.instanceBuffer.stride);
+            AZ::RHI::ConstPtr<AZ::RHI::BufferView> bufferView = instanceBuffer->ptr->GetBufferView(bufferViewDescriptor);
+            if (!bufferView)
+            {
+                return;
+            }
+
+            const uint32_t uvBitmask = instance.m_model.GetUvStreamTangentBitmask(meshIndex).GetFullTangentBitmask();
+            AZ::RHI::ShaderInputNameIndex uvBitmaskIndex("m_uvStreamTangentBitmask");
+            efd.m_drawSrg->SetConstant(uvBitmaskIndex, uvBitmask);
+
+            if (!efd.m_drawSrg->SetBufferView(particleInstanceDataIndex, bufferView.get()))
+            {
+                return;
+            }
+
+            if (efd.m_variantKey.value == UINT64_MAX && efd.m_drawSrg)
+            {
+                efd.m_drawSrg->Compile();
+                efd.m_variantKey.value = drawParam.item.variantKey.value;
+            }
+            else if (efd.m_variantKey.value != drawParam.item.variantKey.value && efd.m_drawSrg &&
+                efd.m_drawSrg->GetLayout()->HasShaderVariantKeyFallbackEntry())
+            {
+                if (!drawParam.variant.IsFullyBaked())
+                {
+                    efd.m_drawSrg->SetShaderVariantKeyFallbackValue(
+                            shaderOptions.GetShaderVariantKeyFallbackValue());
+                }
+                efd.m_drawSrg->Compile();
+                efd.m_variantKey.value = drawParam.item.variantKey.value;
+            }
+        }
+        else
+        {
+            if (!drawParam.item.vertexBuffer.buffer.data.ptr)
+            {
+                return;
+            }
+
+            auto buffer = reinterpret_cast<PtrHolder<AZ::RHI::Buffer>*>(drawParam.item.vertexBuffer.buffer.data.ptr);
+            if (!buffer || !buffer->ptr)
+            {
+                return;
+            }
+
+            AZ::RHI::StreamBufferView bufferView = { *buffer->ptr, drawParam.item.vertexBuffer.offset,
+                drawParam.item.vertexBuffer.size, drawParam.item.vertexBuffer.stride };
             geometryView.AddStreamBufferView(bufferView);
             pipelineStateDescriptor.m_inputStreamLayout = pipeline->m_streamLayout;
         }
@@ -737,22 +907,22 @@ namespace OpenParticle
             geometryView.SetDrawArguments(linear);
             drawPacketBuilder.SetDrawInstanceArguments(instanceArguments);
             drawPacketBuilder.AddShaderResourceGroup(instance.m_objSrg->GetRHIShaderResourceGroup());
-            AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "srg nullptr");
-            AZ_Assert(efd.m_drawSrg->GetRHIShaderResourceGroup(), "srg nullptr");
+            AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "Emitter %u: obj SRG nullptr", emitterId);
+            AZ_Assert(efd.m_drawSrg->GetRHIShaderResourceGroup(), "Emitter %u: draw SRG nullptr", emitterId);
         }
         else
         {
             if (meshIndex >= 0)
-            { // mesh particle
+            {
                 const auto& mesh = instance.m_model.GetModelLod()->GetMeshes()[meshIndex];
-                instanceArguments.m_instanceCount = drawParam.item.drawArgs.linear.instanceCount;
+                instanceArguments.m_instanceCount = drawParam.item.drawArgs.indexed.instanceCount;
 
                 geometryView.SetDrawArguments(mesh.GetDrawArguments());
                 geometryView.SetIndexBufferView(mesh.GetIndexBufferView());
 
                 drawPacketBuilder.SetDrawInstanceArguments(instanceArguments);
                 drawPacketBuilder.AddShaderResourceGroup(instance.m_objSrg->GetRHIShaderResourceGroup());
-                AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "srg nullptr");
+                AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "Emitter %u: obj SRG nullptr", emitterId);
             }
             else
             { // ribbon particle
@@ -768,11 +938,17 @@ namespace OpenParticle
         }
         drawPacketBuilder.SetGeometryView(&geometryView);
         drawPacketBuilder.AddShaderResourceGroup(instance.m_material->GetRHIShaderResourceGroup());
-        AZ_Assert(instance.m_material->GetRHIShaderResourceGroup(), "srg nullptr");
+        AZ_Assert(instance.m_material->GetRHIShaderResourceGroup(), "Emitter %u: material SRG nullptr", emitterId);
 
         m_scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
+
         const AZ::RHI::PipelineState* pipelineState = drawParam.shader->AcquirePipelineState(pipelineStateDescriptor);
-        AZ_Assert(pipelineState, "pipeline nullptr");
+
+        if (!pipelineState)
+        {
+            AZ_Error("ParticleSystem", false, "Failed to acquire pipeline state from shader");
+            return;
+        }
 
         AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
@@ -851,13 +1027,33 @@ namespace OpenParticle
             efd.m_scene = m_scene;
             if (archive.m_emitterInfos[emitter.first].m_render.first == azrtti_typeid<SimuCore::ParticleCore::MeshConfig>())
             {
-                efd.m_model.SetupModel(archive.m_emitterInfos[emitter.first].m_model, 0);
-                AZ::Aabb aabb = archive.m_emitterInfos[emitter.first].m_model->GetAabb();
-                emitter.second->SetAabbExtends(aabb.GetMax(), aabb.GetMin());
+                auto& modelAsset = archive.m_emitterInfos[emitter.first].m_model;
+                if (modelAsset)
+                {
+                    if (modelAsset->IsReady())
+                    {
+                        efd.m_model.SetupModel(archive.m_emitterInfos[emitter.first].m_model, 0);
+                        AZ::Aabb aabb = modelAsset->GetAabb();
+                        emitter.second->SetAabbExtends(aabb.GetMax(), aabb.GetMin());
+                    }
+                    else
+                    {
+                        AZ::Data::AssetBus::MultiHandler::BusConnect(modelAsset.GetId());
+                    }
+                }
             }
 
             HandleSkeletonModel(*emitter.second);
-            efd.Setup(archive.m_emitterInfos[emitter.first].m_material);
+            auto& materialAsset = archive.m_emitterInfos[emitter.first].m_material;
+            if (materialAsset && materialAsset->IsReady())
+            {
+                efd.Setup(materialAsset);
+            }
+            else if (materialAsset)
+            {
+                AZ::Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
+            }
+
             AZ::RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
             if (efd.m_objSrg != nullptr)
             {
@@ -865,6 +1061,7 @@ namespace OpenParticle
                 efd.m_objSrg->Compile();
             }
         }
+
     }
 
     void ParticleSystem::HandleSkeletonModel(SimuCore::ParticleCore::ParticleEmitter& emitter)

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QSortFilterProxyModel>
 #include <QRegularExpression>
@@ -15,7 +14,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
-#endif
 
 namespace GraphCanvas
 {

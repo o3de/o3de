@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -37,12 +38,12 @@ namespace AZ
                 if (auto editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<MaterialAssignment>(
-                        "Material Assignment", "Material Assignment")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Assignment"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Assignment"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, "Material Asset", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, "Property Overrides", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Asset"), "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, QT_TRANSLATE_NOOP("AtomLyIntegration", "Property Overrides"), "")
                         ;
                 }
             }

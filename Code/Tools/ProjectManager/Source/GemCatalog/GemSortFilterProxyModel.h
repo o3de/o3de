@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Utilities/SelectionProxyModel.h>
 #include <GemCatalog/GemModel.h>
+
 #include <QSortFilterProxyModel>
 #include <QSet>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 

@@ -21,6 +21,7 @@ namespace WhiteBox
     class DefaultMode;
     class EdgeRestoreMode;
     class TransformMode;
+    class DrawShapeMode;
 
     //! The type of edge selection the component mode is in (either normal selection of
     //! 'user' edges or selection of all edges ('mesh') in restoration mode).
@@ -45,7 +46,8 @@ namespace WhiteBox
         constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
         constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
         constexpr static const char* const WhiteboxModeClusterManipulatorTooltip = "Switch to Manipulator mode";
-
+        constexpr static const char* const WhiteboxModeClusterDrawShapeTooltip = "Switch to Draw Shape mode";
+        
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
         EditorWhiteBoxComponentMode& operator=(EditorWhiteBoxComponentMode&&) = delete;
@@ -100,8 +102,9 @@ namespace WhiteBox
         //! Remove the Viewport UI cluster for sub mode selection.
         void RemoveSubModeSelectionCluster();
 
+        void EnterDrawShapeMode();
         //! The current set of 'sub' modes the white box component mode can be in.
-        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>> m_modes;
+        AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>, AZStd::unique_ptr<DrawShapeMode>> m_modes;
 
         //! The most up to date intersection and render data for the white box (edge and polygon bounds).
         AZStd::optional<IntersectionAndRenderData> m_intersectionAndRenderData;
@@ -122,6 +125,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ButtonId
             m_transformScaleButtonId; 
 
+        AzToolsFramework::ViewportUi::ButtonId m_drawShapeModeButtonId;
         //! Viewport UI cluster for changing sub mode.
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId;

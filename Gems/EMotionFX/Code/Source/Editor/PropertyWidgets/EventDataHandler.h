@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QComboBox>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -16,7 +15,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <EMotionFX/Source/EventData.h>
-#endif
 
 namespace EMotionFX
 {

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Object to house all the Qt Objects and behavior used in testing the script canvas node palette
 """
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtTest, QtCore
+from PySide6 import QtWidgets, QtTest, QtCore
 import pyside_utils
 from consts.scripting import (NODE_PALETTE_QT, TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, NODE_PALETTE_CLEAR_BUTTON_QT)
 from consts.general import (WAIT_TIME_SEC_1, WAIT_TIME_SEC_3)

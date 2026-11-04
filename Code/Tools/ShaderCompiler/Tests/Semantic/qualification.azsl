@@ -1,0 +1,36 @@
+class A
+{
+    class CinA
+    {
+        void MethodCinA();
+    };
+    
+    void MethodA()
+    {
+        CinA::MethodCinA();  // partially qualified symbol (we call those 'unqualified' in the compiler code)
+        A::CinA::MethodCinA();  // partially qualified symbol
+        ::A::CinA::MethodCinA();  // fully qualified symbol
+    }
+};
+
+class B
+{
+    void MethodA();
+
+    void MethodB()
+    {
+        A::MethodA();  // accessible because A is in scope
+        ::A::MethodA();  // not relative
+
+        A::CinA::MethodCinA();
+        ::A::CinA::MethodCinA();
+        
+        MethodA();  // refers to ::B::MethodA
+    }
+};
+
+void f()
+{
+    A::MethodA();
+    B::MethodA();
+}

@@ -96,7 +96,7 @@ echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
 popd
 
-:: We need to know where the engine 3rdParty folder is to add access for PySide2, etc
+:: We need to know where the engine 3rdParty folder is to add access for PySide, etc
 :: Adding 3rdParty location, default is something like c:\users\< user>\.o3de\3rdparty
 IF "%PATH_O3DE_3RDPARTY%"=="" (set "PATH_O3DE_3RDPARTY=%userprofile%\.o3de\3rdparty")
 echo     PATH_O3DE_3RDPARTY = %PATH_O3DE_3RDPARTY%

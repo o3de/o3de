@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/API/PythonLoader.h>
+
 #include <QCoreApplication>
+
 #include <PythonBindings.h>
 #include <Settings.h>
 #include <ProjectManagerWindow.h>
-#endif
 
 namespace AZ
 {

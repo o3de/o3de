@@ -73,16 +73,6 @@ function(_o3de_compiler_launcher)
         set(${out_path} "${resolved}" PARENT_SCOPE)
     endfunction()
 
-    # CMake does not natively initialize CMAKE_<LANG>_COMPILER_LAUNCHER from
-    # environment variables, so we do it here as a convenience.
-    foreach (cl_lang IN ITEMS ${supported_languages})
-        if (NOT DEFINED CMAKE_${cl_lang}_COMPILER_LAUNCHER
-            AND DEFINED ENV{CMAKE_${cl_lang}_COMPILER_LAUNCHER}
-            AND NOT "$ENV{CMAKE_${cl_lang}_COMPILER_LAUNCHER}" STREQUAL "")
-            set(CMAKE_${cl_lang}_COMPILER_LAUNCHER "$ENV{CMAKE_${cl_lang}_COMPILER_LAUNCHER}" CACHE STRING "")
-        endif ()
-    endforeach ()
-
     # Early return if no launcher is configured
     if (NOT CMAKE_C_COMPILER_LAUNCHER AND NOT CMAKE_CXX_COMPILER_LAUNCHER)
         message(VERBOSE "CompilerLauncher: Not configured")

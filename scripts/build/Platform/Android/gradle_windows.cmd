@@ -71,10 +71,10 @@ IF "%ANDROID_GRADLE_PLUGIN%" == "" (
 )
 
 
-REM Optionally override the version of the android NDK to use, otherwise default to 25
+REM Optionally override the version of the android NDK to use, otherwise default to 27
 IF "%ANDROID_NDK_VERSION%" == "" (
-    ECHO Using [default] Android NDK Version 25
-    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value ndk.version=25.*
+    ECHO Using [default] Android NDK Version 27
+    CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value ndk.version=27.*
 ) else (
     ECHO Using [default] Android NDK Version %ANDROID_NDK_VERSION%
     CALL %O3DE_PATH%\scripts\o3de.bat android-configure --set-value ndk.version=%ANDROID_NDK_VERSION%

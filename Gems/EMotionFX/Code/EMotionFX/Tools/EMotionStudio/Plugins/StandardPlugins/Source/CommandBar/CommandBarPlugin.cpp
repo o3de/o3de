@@ -66,7 +66,7 @@ namespace EMStudio
         m_lockDisabledIcon   = new QIcon(dataDir.filePath("Images/Icons/LockDisabled.svg"));
 
         m_commandEdit = new QLineEdit();
-        m_commandEdit->setPlaceholderText("Enter command");
+        m_commandEdit->setPlaceholderText(tr("Enter command"));
         connect(m_commandEdit, &QLineEdit::returnPressed, this, &CommandBarPlugin::OnEnter);
         m_commandEditAction = m_bar->addWidget(m_commandEdit);
 

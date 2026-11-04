@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "IEditor.h"
 #include <QDialog>
 #include <QPixmap>
 #include <QString>
-#endif
 
 namespace Ui
 {

@@ -8,6 +8,7 @@
 
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorHDRiSkyboxComponent>(
-                        "HDRi Skybox", "SkyBox component render the background of your scene with cubemap")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "HDRi Skybox"), QT_TRANSLATE_NOOP("AtomLyIntegration", "SkyBox component render the background of your scene with cubemap"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Environment")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -39,7 +40,7 @@ namespace AZ
                         "HDRiSkyboxComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRiSkyboxComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRiSkyboxComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -47,12 +48,12 @@ namespace AZ
                         "HDRiSkyboxComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HDRiSkyboxComponentConfig::m_cubemapAsset, "Cubemap Texture", "The texture used for cubemap rendering")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HDRiSkyboxComponentConfig::m_cubemapAsset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Cubemap Texture"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The texture used for cubemap rendering"))
                                 ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
                                 ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
-                                ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Cubemap Asset")
+                                ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, QT_TRANSLATE_NOOP("AtomLyIntegration", "Cubemap Asset"))
 
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRiSkyboxComponentConfig::m_exposure, "Exposure", "Exposure in stops")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRiSkyboxComponentConfig::m_exposure, QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure in stops"))
                                 ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
                                 ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
                                 ->Attribute(AZ::Edit::Attributes::Min, -20.0f)

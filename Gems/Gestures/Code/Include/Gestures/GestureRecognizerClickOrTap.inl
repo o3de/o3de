@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Time/ITime.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -29,23 +30,37 @@ inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* 
 
         if (AZ::EditContext* ec = serialize->GetEditContext())
         {
-            ec->Class<Config>("Click Or Tap Config", "Configuration values used to setup a gesture recognizer for clicks or taps.")
+            ec->Class<Config>(
+                QT_TRANSLATE_NOOP("Gestures", "Click Or Tap Config"),
+                QT_TRANSLATE_NOOP("Gestures", "Configuration values used to setup a gesture recognizer for clicks or taps."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Config::pointerIndex, "Pointer Index", "The pointer (button or finger) index to track.")
+                ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Config::pointerIndex,
+                    QT_TRANSLATE_NOOP("Gestures", "Pointer Index"),
+                    QT_TRANSLATE_NOOP("Gestures", "The pointer (button or finger) index to track."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 10)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minClicksOrTaps, "Min Clicks Or Taps", "The min number of clicks or taps required for the gesture to be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minClicksOrTaps,
+                    QT_TRANSLATE_NOOP("Gestures", "Min Clicks Or Taps"),
+                    QT_TRANSLATE_NOOP("Gestures", "The min number of clicks or taps required for the gesture to be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxSecondsHeld, "Max Seconds Held", "The max time in seconds allowed while held before the gesture stops being recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxSecondsHeld,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Seconds Held"),
+                    QT_TRANSLATE_NOOP("Gestures", "The max time in seconds allowed while held before the gesture stops being recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsMoved, "Max Pixels Moved", "The max distance in pixels allowed to move while held before the gesture stops being recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsMoved,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Pixels Moved"),
+                    QT_TRANSLATE_NOOP("Gestures", "The max distance in pixels allowed to move while held before the gesture stops being recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxSecondsBetweenClicksOrTaps, "Max Seconds Between Clicks Or Taps", "The max time in seconds allowed between clicks or taps before the gesture stops being recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxSecondsBetweenClicksOrTaps,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Seconds Between Clicks Or Taps"),
+                    QT_TRANSLATE_NOOP("Gestures", "The max time in seconds allowed between clicks or taps before the gesture stops being recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Config::IsMultiClickOrTap)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsBetweenClicksOrTaps, "Max Pixels Between Clicks Or Taps", "he max distance in pixels allowed between clicks or taps.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsBetweenClicksOrTaps,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Pixels Between Clicks Or Taps"),
+                    QT_TRANSLATE_NOOP("Gestures", "he max distance in pixels allowed between clicks or taps."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Config::IsMultiClickOrTap)
             ;

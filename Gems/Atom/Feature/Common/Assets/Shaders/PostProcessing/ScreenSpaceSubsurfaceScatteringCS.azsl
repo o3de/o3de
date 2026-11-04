@@ -202,6 +202,8 @@ void MainCS(
         );
     }
 
+    GroupMemoryBarrierWithGroupSync();
+
     // If current thread don't need further convolution then terminate and return
     // Case 1: factor < EPSILON, factor is zero so further computation is not necessary
     // Case 2: factor is nonzero but subsurface scattering is disabled at this pixel
@@ -210,8 +212,6 @@ void MainCS(
         PassSrg::m_outputTexture[dispatchID.xy] = float4(colorX.rgb, 0.0f);
         return;
     }
-
-    GroupMemoryBarrierWithGroupSync();
 
     //+--------------------------------------+
     //|  subsurface scattering preprocessing |

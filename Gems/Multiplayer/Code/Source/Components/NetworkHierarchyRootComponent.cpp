@@ -12,6 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
@@ -35,7 +36,8 @@ namespace Multiplayer
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<NetworkHierarchyRootComponent>(
-                    "Network Hierarchy Root", "Marks the entity as the root of an entity hierarchy.")
+                    QT_TRANSLATE_NOOP("Multiplayer", "Network Hierarchy Root"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "Marks the entity as the root of an entity hierarchy."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))

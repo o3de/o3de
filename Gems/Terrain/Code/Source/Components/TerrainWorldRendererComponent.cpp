@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
@@ -64,92 +65,114 @@ namespace Terrain
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<MeshConfiguration>("Mesh", "Settings related to rendering terrain meshes")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_renderDistance, "Mesh render distance", "The distance from the camera that terrain meshes will render.")
+                editContext->Class<MeshConfiguration>(
+                    QT_TRANSLATE_NOOP("Terrain", "Mesh"),
+                    QT_TRANSLATE_NOOP("Terrain", "Settings related to rendering terrain meshes"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_renderDistance,
+                        QT_TRANSLATE_NOOP("Terrain", "Mesh render distance"),
+                        QT_TRANSLATE_NOOP("Terrain", "The distance from the camera that terrain meshes will render."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_firstLodDistance, "First LOD distance", "The distance from the camera that the first Lod renders to. Subsequent LODs will be at double the distance from the previous LOD.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_firstLodDistance,
+                        QT_TRANSLATE_NOOP("Terrain", "First LOD distance"),
+                        QT_TRANSLATE_NOOP("Terrain", "The distance from the camera that the first Lod renders to. Subsequent LODs will be at double the distance from the previous LOD."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshConfiguration::m_clodEnabled, "Continuous LOD (CLOD)", "Enables the use of continuous level of detail, which smoothly blends geometry between terrain lods.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_clodDistance, "CLOD Distance", "Distance in meters over which the first lod will blend into the next lod. Subsequent lod blend distances will double with each lod for a consistent visual appearance.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshConfiguration::m_clodEnabled,
+                        QT_TRANSLATE_NOOP("Terrain", "Continuous LOD (CLOD)"),
+                        QT_TRANSLATE_NOOP("Terrain", "Enables the use of continuous level of detail, which smoothly blends geometry between terrain lods."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_clodDistance,
+                        QT_TRANSLATE_NOOP("Terrain", "CLOD Distance"),
+                        QT_TRANSLATE_NOOP("Terrain", "Distance in meters over which the first lod will blend into the next lod. Subsequent lod blend distances will double with each lod for a consistent visual appearance."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodDisabled)
                     ;
 
-                editContext->Class<DetailMaterialConfiguration>("Detail material", "Settings related to rendering detail surface materials.")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DetailMaterialConfiguration::m_useHeightBasedBlending, "Height based texture blending", "When turned on, detail materials will use the height texture to aid with blending.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_renderDistance, "Detail material render distance", "The distance from the camera that the detail material will render.")
+                editContext->Class<DetailMaterialConfiguration>(
+                    QT_TRANSLATE_NOOP("Terrain", "Detail material"),
+                    QT_TRANSLATE_NOOP("Terrain", "Settings related to rendering detail surface materials."))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DetailMaterialConfiguration::m_useHeightBasedBlending,
+                        QT_TRANSLATE_NOOP("Terrain", "Height based texture blending"),
+                        QT_TRANSLATE_NOOP("Terrain", "When turned on, detail materials will use the height texture to aid with blending."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_renderDistance,
+                        QT_TRANSLATE_NOOP("Terrain", "Detail material render distance"),
+                        QT_TRANSLATE_NOOP("Terrain", "The distance from the camera that the detail material will render."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance, "Detail material fade distance", "The distance over which the detail material will fade out into the macro material.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance,
+                        QT_TRANSLATE_NOOP("Terrain", "Detail material fade distance"),
+                        QT_TRANSLATE_NOOP("Terrain", "The distance over which the detail material will fade out into the macro material."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale, "Detail material scale", "The scale at which all detail materials are rendered at.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale,
+                        QT_TRANSLATE_NOOP("Terrain", "Detail material scale"),
+                        QT_TRANSLATE_NOOP("Terrain", "The scale at which all detail materials are rendered at."))
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ;
 
-                editContext->Class<ClipmapConfiguration>("Clipmap", "Settings related to clipmap rendering")
-                    ->GroupElementToggle("Clipmap Enabled", &ClipmapConfiguration::m_clipmapEnabled)
+                editContext->Class<ClipmapConfiguration>(
+                    QT_TRANSLATE_NOOP("Terrain", "Clipmap"),
+                    QT_TRANSLATE_NOOP("Terrain", "Settings related to clipmap rendering"))
+                    ->GroupElementToggle(QT_TRANSLATE_NOOP("Terrain", "Clipmap Enabled"), &ClipmapConfiguration::m_clipmapEnabled)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClipmapConfiguration::m_clipmapSize,
-                        "Clipmap image size",
-                        "The size of the clipmap image in each layer.")
+                        QT_TRANSLATE_NOOP("Terrain", "Clipmap image size"),
+                        QT_TRANSLATE_NOOP("Terrain", "The size of the clipmap image in each layer."))
                         ->EnumAttribute(ClipmapConfiguration::ClipmapSize2048, "2048")
                         ->EnumAttribute(ClipmapConfiguration::ClipmapSize1024, "1024")
                         ->EnumAttribute(ClipmapConfiguration::ClipmapSize512, "512")
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapMaxResolution,
-                        "Macro clipmap max resolution: texels/m",
-                        "The resolution of the highest resolution clipmap in the stack.")
+                        QT_TRANSLATE_NOOP("Terrain", "Macro clipmap max resolution: texels/m"),
+                        QT_TRANSLATE_NOOP("Terrain", "The resolution of the highest resolution clipmap in the stack."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapMaxResolution,
-                        "Detail clipmap max resolution: texels/m",
-                        "The resolution of the highest resolution clipmap in the stack.")
+                        QT_TRANSLATE_NOOP("Terrain", "Detail clipmap max resolution: texels/m"),
+                        QT_TRANSLATE_NOOP("Terrain", "The resolution of the highest resolution clipmap in the stack."))
                         ->Attribute(AZ::Edit::Attributes::Min, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 512.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 2048.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 4096.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapScaleBase,
-                        "Macro clipmap scale base",
-                        "The scale base between two adjacent clipmap layers. \n"
-                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times the area covered by the nth clipmap.")
+                        QT_TRANSLATE_NOOP("Terrain", "Macro clipmap scale base"),
+                        QT_TRANSLATE_NOOP("Terrain", "The scale base between two adjacent clipmap layers. \n"
+                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times the area covered by the nth clipmap."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.1f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapScaleBase,
-                        "Detail clipmap scale base",
-                        "The scale base between two adjacent clipmap layers. \n"
-                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times the area covered by the nth clipmap.")
+                        QT_TRANSLATE_NOOP("Terrain", "Detail clipmap scale base"),
+                        QT_TRANSLATE_NOOP("Terrain", "The scale base between two adjacent clipmap layers. \n"
+                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times the area covered by the nth clipmap."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.1f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapMarginSize,
-                        "Macro clipmap margin size: texels",
-                        "The margin of the clipmap beyond the visible data. Increasing the margins results in less frequent clipmap updates "
-                        "but also results in lower resolution clipmaps rendering closer to the camera.")
+                        QT_TRANSLATE_NOOP("Terrain", "Macro clipmap margin size: texels"),
+                        QT_TRANSLATE_NOOP("Terrain", "The margin of the clipmap beyond the visible data. Increasing the margins results in less frequent clipmap updates "
+                        "but also results in lower resolution clipmaps rendering closer to the camera."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1u)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 8u)
                         ->Attribute(AZ::Edit::Attributes::Max, 16u)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapMarginSize,
-                        "Detail clipmap margin size: texels",
-                        "The margin of the clipmap beyond the visible data. Increasing the margins results in less frequent clipmap updates "
-                        "but also results in lower resolution clipmaps rendering closer to the camera.")
+                        QT_TRANSLATE_NOOP("Terrain", "Detail clipmap margin size: texels"),
+                        QT_TRANSLATE_NOOP("Terrain", "The margin of the clipmap beyond the visible data. Increasing the margins results in less frequent clipmap updates "
+                        "but also results in lower resolution clipmaps rendering closer to the camera."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1u)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 8u)
@@ -157,16 +180,21 @@ namespace Terrain
                     // Note: m_extendedClipmapMarginSize, m_clipmapBlendSize won't be exposed because algorithm may change and we may not need them.
                     ;
 
-                editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
+                editContext->Class<TerrainWorldRendererConfig>(
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain World Renderer Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Enables terrain rendering"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_meshConfig, "Mesh configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_meshConfig,
+                        QT_TRANSLATE_NOOP("Terrain", "Mesh configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig, "Detail material configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig,
+                        QT_TRANSLATE_NOOP("Terrain", "Detail material configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_clipmapConfig, "Clipmap configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_clipmapConfig,
+                        QT_TRANSLATE_NOOP("Terrain", "Clipmap configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
             }

@@ -208,7 +208,7 @@ public:
             }
         }
 
-        SetSlotExecutionMap(AZStd::move(ScriptCanvas::SlotExecution::Map(AZStd::move(ins), {})));
+        SetSlotExecutionMap(ScriptCanvas::SlotExecution::Map(AZStd::move(ins), {}));
     }
 
     AZStd::vector<AZStd::unique_ptr<ScriptCanvas::Nodeable>> GetInitializationNodeables() const override
@@ -419,7 +419,7 @@ TEST_F(ScriptCanvasTestFixture, Overload_NodeableNode_NumberConnection)
     ScriptCanvas::Endpoint validStartEndpoint = validSlot->GetEndpoint();
 
     ScriptCanvas::Endpoint paramEndpoint = { nodeableNode->GetEntityId(), paramId };
-    TestConnectionBetween(validStartEndpoint, paramEndpoint);    
+    TestConnectionBetween(validStartEndpoint, paramEndpoint);
 
     EXPECT_TRUE(paramOneSlot->HasDisplayType());
     EXPECT_EQ(paramOneSlot->GetDisplayType(), ScriptCanvas::Data::Type::Number());

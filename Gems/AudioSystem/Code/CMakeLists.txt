@@ -228,7 +228,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzToolsFramework
                 Legacy::EditorCore
-                Legacy::EditorCommon
                 Gem::${gem_name}.API
                 Gem::${gem_name}.Editor.API
                 Legacy::CryCommon   # Temporary, needs to be removed

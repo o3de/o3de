@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/SelectionProxyModel.h>
 #include <Editor/SkeletonSortFilterProxyModel.h>
+
 #include <QAbstractItemView>
 #include <QWidget>
-#endif
 
 
 QT_FORWARD_DECLARE_CLASS(QLabel)

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef INCLUDE_FILEDATASOURCEBUS_H
-#define INCLUDE_FILEDATASOURCEBUS_H
+
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 
@@ -48,4 +48,3 @@ namespace CertificateManager
     
     using FileDataSourceConfigurationBus = AZ::EBus<FileDataSourceConfigurationRequest>;
 }
-#endif

@@ -9,6 +9,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Multiplayer/Session/SessionRequests.h>
 #include <Multiplayer/Session/SessionConfig.h>
 
@@ -28,17 +29,23 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CreateSessionRequest>("CreateSessionRequest", "The container for CreateSession request parameters")
+                editContext->Class<CreateSessionRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "CreateSessionRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for CreateSession request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CreateSessionRequest::m_creatorId,
-                        "CreatorId", "A unique identifier for a player or entity creating the session")
+                        QT_TRANSLATE_NOOP("Multiplayer", "CreatorId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for a player or entity creating the session"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CreateSessionRequest::m_sessionProperties,
-                        "SessionProperties", "A collection of custom properties for a session")
+                        QT_TRANSLATE_NOOP("Multiplayer", "SessionProperties"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A collection of custom properties for a session"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CreateSessionRequest::m_sessionName,
-                        "SessionName", "A descriptive label that is associated with a session")
+                        QT_TRANSLATE_NOOP("Multiplayer", "SessionName"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A descriptive label that is associated with a session"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CreateSessionRequest::m_maxPlayer,
-                        "MaxPlayer", "The maximum number of players that can be connected simultaneously to the session")
+                        QT_TRANSLATE_NOOP("Multiplayer", "MaxPlayer"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "The maximum number of players that can be connected simultaneously to the session"))
                     ;
             }
         }
@@ -58,17 +65,23 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SearchSessionsRequest>("SearchSessionsRequest", "The container for SearchSessions request parameters")
+                editContext->Class<SearchSessionsRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "SearchSessionsRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for SearchSessions request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsRequest::m_filterExpression,
-                        "FilterExpression", "String containing the search criteria for the session search")
+                        QT_TRANSLATE_NOOP("Multiplayer", "FilterExpression"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "String containing the search criteria for the session search"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsRequest::m_sortExpression,
-                        "SortExpression", "Instructions on how to sort the search results")
+                        QT_TRANSLATE_NOOP("Multiplayer", "SortExpression"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "Instructions on how to sort the search results"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsRequest::m_maxResult,
-                        "MaxResult", "The maximum number of results to return")
+                        QT_TRANSLATE_NOOP("Multiplayer", "MaxResult"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "The maximum number of results to return"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsRequest::m_nextToken,
-                        "NextToken", "A token that indicates the start of the next sequential page of results")
+                        QT_TRANSLATE_NOOP("Multiplayer", "NextToken"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A token that indicates the start of the next sequential page of results"))
                     ;
             }
         }
@@ -86,13 +99,17 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SearchSessionsResponse>("SearchSessionsResponse", "The container for SearchSession request results")
+                editContext->Class<SearchSessionsResponse>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "SearchSessionsResponse"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for SearchSession request results"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsResponse::m_sessionConfigs,
-                        "SessionConfigs", "A collection of sessions that match the search criteria and sorted in specific order")
+                        QT_TRANSLATE_NOOP("Multiplayer", "SessionConfigs"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A collection of sessions that match the search criteria and sorted in specific order"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SearchSessionsResponse::m_nextToken,
-                        "NextToken", "A token that indicates the start of the next sequential page of results")
+                        QT_TRANSLATE_NOOP("Multiplayer", "NextToken"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A token that indicates the start of the next sequential page of results"))
                     ;
             }
         }
@@ -111,15 +128,20 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<JoinSessionRequest>("JoinSessionRequest", "The container for JoinSession request parameters")
+                editContext->Class<JoinSessionRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "JoinSessionRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for JoinSession request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JoinSessionRequest::m_sessionId,
-                        "SessionId", "A unique identifier for the session")
+                        QT_TRANSLATE_NOOP("Multiplayer", "SessionId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for the session"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JoinSessionRequest::m_playerId,
-                        "PlayerId", "A unique identifier for a player. Player IDs are developer-defined")
+                        QT_TRANSLATE_NOOP("Multiplayer", "PlayerId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for a player. Player IDs are developer-defined"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JoinSessionRequest::m_playerData,
-                        "PlayerData", "Developer-defined information related to a player")
+                        QT_TRANSLATE_NOOP("Multiplayer", "PlayerData"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "Developer-defined information related to a player"))
                     ;
             }
         }

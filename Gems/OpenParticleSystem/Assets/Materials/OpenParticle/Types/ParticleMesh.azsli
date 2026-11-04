@@ -1,0 +1,176 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialInputs.azsli>
+#include <OpenParticle/ParticleMeshCommon.azsli>
+
+// LoadInstanceData / ComputeParticleWorldPosition (DrawSrg is declared in
+// ParticleMeshShaderSrgs.azsli, included before this file via materialShaderDefines)
+#include <OpenParticle/ParticleMeshHelpers.azsli>
+
+// ---------------------------------------------------------------------------
+// Per-pipeline-stage vertex / pixel shader implementations
+// ---------------------------------------------------------------------------
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    COMMON_OPTIONS_BASE_COLOR()
+    COMMON_OPTIONS_VERTEX_COLOR()
+    COMMON_OPTIONS_ROUGHNESS()
+    COMMON_OPTIONS_METALLIC()
+    COMMON_OPTIONS_SPECULAR_F0()
+    COMMON_OPTIONS_NORMAL()
+    COMMON_OPTIONS_CLEAR_COAT()
+    COMMON_OPTIONS_OCCLUSION()
+    COMMON_OPTIONS_EMISSIVE()
+    COMMON_OPTIONS_PARALLAX()
+
+    bool ShouldHandleParallax()   { return false; }
+    bool NeedsTangentFrame()      { return o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture); }
+
+    DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
+    }
+
+    #define EvaluateVertexGeometry EvaluateVertexGeometry_ParticleMesh
+
+    VsOutput EvaluateVertexGeometry_ParticleMesh(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {
+        ParticleMeshInstanceData instanceData = LoadInstanceData(SV.m_instanceId);
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        float3 worldPosition = ComputeParticleWorldPosition(IN.position, instanceData, objectToWorld);
+
+        VsOutput OUT;
+        OUT.position = mul(GetViewProjectionMatrix(SV), float4(worldPosition, 1.0));
+
+#if MATERIAL_USES_VERTEX_POSITIONWS
+        OUT.worldPosition = worldPosition;
+#endif
+
+#if MATERIAL_USES_VERTEX_UV
+        float3 uv0h = float3(IN.uv0, 1.0);
+        OUT.uvs[0] = float2(dot(params.m_uvMatrixRow0.xyz, uv0h), dot(params.m_uvMatrixRow1.xyz, uv0h));
+        OUT.uvs[1] = IN.uv1;
+#endif
+
+#if MATERIAL_USES_VERTEX_NORMAL
+        OUT.normal = IN.normal;
+#endif
+#if MATERIAL_USES_VERTEX_TANGENT
+        OUT.tangent = IN.tangent;
+#endif
+#if MATERIAL_USES_VERTEX_BITANGENT
+        OUT.bitangent = IN.bitangent;
+#endif
+
+#if MATERIAL_USES_VERTEX_COLOR
+        OUT.color0 = instanceData.m_color;
+#endif
+
+        OUT.m_instanceId = SV.m_instanceId;
+        return OUT;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
+
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    COMMON_OPTIONS_PARALLAX()
+
+    bool ShouldHandleParallax()   { return false; }
+    bool NeedsTangentFrame()      { return false; }
+
+    DepthResult GetDepth(const MaterialParameters params, Texture2D heightmap, sampler mapSampler, float2 uv, float2 uv_ddx, float2 uv_ddy)
+    {
+        return SampleDepthFromHeightmap(heightmap, mapSampler, uv, uv_ddx, uv_ddy);
+    }
+
+    #define EvaluateVertexGeometry EvaluateVertexGeometry_ParticleMesh
+
+    VsOutput EvaluateVertexGeometry_ParticleMesh(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {
+        ParticleMeshInstanceData instanceData = LoadInstanceData(SV.m_instanceId);
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        float3 worldPosition = ComputeParticleWorldPosition(IN.position, instanceData, objectToWorld);
+
+        VsOutput OUT;
+        OUT.position = mul(GetViewProjectionMatrix(SV), float4(worldPosition, 1.0));
+#if MATERIAL_USES_VERTEX_POSITIONWS
+        OUT.worldPosition = worldPosition;
+#endif
+        OUT.m_instanceId = SV.m_instanceId;
+        return OUT;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli>
+    #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
+
+    void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
+    {
+        GetAlphaAndClip(params, geoData.uvs);
+    }
+
+#else
+
+    // Depth-only and shadow passes: position transform only.
+    #define EvaluateVertexGeometry EvaluateVertexGeometry_ParticleMesh
+
+    VsOutput EvaluateVertexGeometry_ParticleMesh(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {
+        ParticleMeshInstanceData instanceData = LoadInstanceData(SV.m_instanceId);
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        float3 worldPosition = ComputeParticleWorldPosition(IN.position, instanceData, objectToWorld);
+
+        VsOutput OUT;
+        OUT.position = mul(GetViewProjectionMatrix(SV), float4(worldPosition, 1.0));
+        OUT.m_instanceId = SV.m_instanceId;
+        return OUT;
+    }
+
+#endif
+
+// ---------------------------------------------------------------------------
+// Motion vector pass
+// ---------------------------------------------------------------------------
+// Outputs motion vectors for temporal effects (motion blur, TAA).
+// Particles don't currently store previous-frame position data, so we output
+// zero-length motion vectors.  This satisfies the MainPipeline requirement
+// without visual artifacts.
+#if defined(MATERIALPIPELINE_USES_PREV_VERTEX_POSITION) && MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+
+    // Override the default EvaluateVertexGeometry (from the #else block above)
+    // so MeshMotionVector.azsli's VertexShader entry point resolves to our
+    // implementation that outputs worldPosition / worldPosPrev.
+    // The generic PixelShader in MeshMotionVector.azsli handles the rest.
+    #undef EvaluateVertexGeometry
+    #define EvaluateVertexGeometry EvaluateVertexGeometry_ParticleMeshMotion
+
+    VsOutput EvaluateVertexGeometry_ParticleMeshMotion(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {
+        ParticleMeshInstanceData instanceData = LoadInstanceData(SV.m_instanceId);
+        float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+        float3 worldPosition = ComputeParticleWorldPosition(IN.position, instanceData, objectToWorld);
+
+        VsOutput OUT;
+        OUT.position = mul(GetViewProjectionMatrix(SV), float4(worldPosition, 1.0));
+
+        // Motion vector pixel shader needs these unconditionally, even though
+        // MATERIAL_USES_VERTEX_POSITIONWS is 0 in the motion-vector pipeline.
+        OUT.worldPosition = worldPosition;
+        OUT.worldPosPrev  = worldPosition; // no previous-frame data for particles
+
+        OUT.m_instanceId = SV.m_instanceId;
+        return OUT;
+    }
+
+#endif

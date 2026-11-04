@@ -5,16 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <QSyntaxHighlighter>
 #include <QWidget>
-#endif
-
-#pragma once
 
 namespace Ui
 {

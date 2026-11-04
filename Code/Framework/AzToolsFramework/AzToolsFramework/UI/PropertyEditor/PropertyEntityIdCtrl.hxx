@@ -11,7 +11,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -19,8 +18,8 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <QWidget>
 #include <QIcon>
+
 #include "PropertyEditorAPI.h"
-#endif
 
 class QCheckBox;
 class QLineEdit;

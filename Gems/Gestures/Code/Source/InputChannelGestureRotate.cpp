@@ -7,6 +7,7 @@
  */
 
 #include "InputChannelGestureRotate.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -24,7 +25,9 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TypeAndConfig>("Rotate", "Gesture recognizer for rotations.")
+                ec->Class<TypeAndConfig>(
+                    QT_TRANSLATE_NOOP("Gestures", "Rotate"),
+                    QT_TRANSLATE_NOOP("Gestures", "Gesture recognizer for rotations."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

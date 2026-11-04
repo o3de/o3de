@@ -1,0 +1,4 @@
+rootconstant float s_objectMatrix[16]; // #EC 11
+rootconstant uint s_materialIndex[2]; // #EC 11
+
+// Semantic error #11: arrays can not be declared as rootconstants.

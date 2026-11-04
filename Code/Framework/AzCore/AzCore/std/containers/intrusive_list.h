@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_INTRUSIVE_LIST_H
-#define AZSTD_INTRUSIVE_LIST_H 1
+
+#pragma once
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
@@ -440,12 +440,12 @@ namespace AZStd
             return const_iterator(AZSTD_CHECKED_ITERATOR(const_iterator_impl, const_cast<this_type&>(*this).get_head()));
         }
         AZ_FORCE_INLINE reverse_iterator rbegin()
-        { 
+        {
             hook_node_ptr_type headHook = Hook::to_node_ptr(get_head());
             return reverse_iterator(AZSTD_CHECKED_ITERATOR(reverse_iterator<iterator>, headHook->m_prev));
         }
         AZ_FORCE_INLINE const_reverse_iterator rbegin() const
-        { 
+        {
             const hook_node_type* headHook = Hook::to_node_ptr(const_cast<this_type&>(*this).get_head());
             return const_reverse_iterator(AZSTD_CHECKED_ITERATOR(reverse_iterator<const_iterator>, headHook->m_prev));
         }
@@ -455,12 +455,12 @@ namespace AZStd
             return const_reverse_iterator(AZSTD_CHECKED_ITERATOR(reverse_iterator<const_iterator>, headHook->m_prev));
         }
         AZ_FORCE_INLINE reverse_iterator rend()
-        { 
+        {
             node_ptr_type head = get_head();
             return reverse_iterator(AZSTD_CHECKED_ITERATOR(reverse_iterator<iterator>, head));
         }
         AZ_FORCE_INLINE const_reverse_iterator rend() const
-        { 
+        {
             return const_reverse_iterator(AZSTD_CHECKED_ITERATOR(reverse_iterator<const_iterator>, const_cast<this_type&>(*this).get_head()));
         }
         const_reverse_iterator crend() const
@@ -1003,7 +1003,7 @@ namespace AZStd
          * So at this stage we consider the wasting a memory for a fake root node as the best solution, while we can debug the container.
          * This can change internally at any moment if needed, no interface change will occur.
          */
-        typename aligned_storage<sizeof(node_type), alignment_of<node_type>::value>::type m_root;
+        typename aligned_storage<sizeof(node_type), alignment_of_v<node_type>>::type m_root;
 
         inline node_ptr_type get_head() { return reinterpret_cast<node_ptr_type>(&m_root); }
 
@@ -1058,6 +1058,3 @@ namespace AZStd
         return !(&left == &right);
     }
 }
-
-#endif // AZSTD_INTRUSIVE_LIST_H
-#pragma once

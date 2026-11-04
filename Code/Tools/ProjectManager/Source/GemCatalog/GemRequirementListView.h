@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
 #include <QItemSelectionModel>
 #include <QListView>
-#endif
 
 namespace O3DE::ProjectManager
 {

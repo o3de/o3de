@@ -197,11 +197,11 @@ namespace O3DE::ProjectManager
         switch (status)
         {
         case GemSelected::Unselected:
-            return "Unselected";
+            return tr("Unselected");
         case GemSelected::Selected:
-            return "Selected";
+            return tr("Selected");
         default:
-            return "<Unknown Selection Status>";
+            return tr("<Unknown Selection Status>");
         }
     }
 
@@ -210,11 +210,11 @@ namespace O3DE::ProjectManager
         switch (status)
         {
         case GemActive::Inactive:
-            return "Inactive";
+            return tr("Inactive");
         case GemActive::Active:
-            return "Active";
+            return tr("Active");
         default:
-            return "<Unknown Active Status>";
+            return tr("<Unknown Active Status>");
         }
     }
     void GemSortFilterProxyModel::InvalidateFilter()

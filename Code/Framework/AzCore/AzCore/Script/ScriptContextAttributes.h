@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_CONTEXT_ATTRIBUTES_H
-#define AZCORE_SCRIPT_CONTEXT_ATTRIBUTES_H
+
+#pragma once
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Math/Crc.h>
@@ -111,6 +111,3 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(Script::Attributes::OperatorType, "{26B98C03-7E07-4E3E-9E31-03DA2168E896}");
     AZ_TYPE_INFO_SPECIALIZE(Script::Attributes::StorageType, "{57FED71F-B590-4002-9599-A48CB50B0F8E}");
 } // AZ
-
-
-#endif // AZCORE_SCRIPT_CONTEXT_ATTRIBUTES_H

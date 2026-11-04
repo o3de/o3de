@@ -24,8 +24,9 @@ namespace AssetBundler
 
     void AssetBundlerFileTableFilterModel::FilterChanged(const QString& newFilter)
     {
+        beginFilterChange();
         setFilterRegularExpression(newFilter.toLower());
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool AssetBundlerFileTableFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const

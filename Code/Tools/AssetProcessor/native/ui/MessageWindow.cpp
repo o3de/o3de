@@ -6,19 +6,19 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
-#include <ui/MessageWindow.h>
-#include <QWidget>
-#include <QDialog>
-#include <QStyle>
-#include <QDesktopServices>
-#include <QFile>
-#include <QUrl>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <native/assetprocessor.h>
+
+#include <QDesktopServices>
+#include <QDialog>
+#include <QFile>
 #include <QPushButton>
-#endif
+#include <QStyle>
+#include <QUrl>
+#include <QWidget>
+
+#include <ui/MessageWindow.h>
 
 MessageWindow::MessageWindow(QWidget* parent)
     : QDialog(parent), m_ui(new Ui::MessageWindow())

@@ -9,6 +9,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "EditorDebugDrawObbComponent.h"
 
@@ -29,16 +30,21 @@ namespace DebugDraw
             if (editContext)
             {
                 editContext->Class<EditorDebugDrawObbComponent>(
-                    "DebugDraw Obb", "Draws debug obb on the screen from this entity's location to specified end entity's location.")
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Obb"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Draws debug obb on the screen from this entity's location to specified end entity's location."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawObb.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawObb.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(0, &EditorDebugDrawObbComponent::m_element, "Obb element settings", "Settings for the obb element.")
+                    ->DataElement(0, &EditorDebugDrawObbComponent::m_element,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Obb element settings"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Settings for the obb element."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawObbComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorDebugDrawObbComponent::m_settings, "Visibility settings", "Common settings for DebugDraw components.")
+                    ->DataElement(0, &EditorDebugDrawObbComponent::m_settings,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Visibility settings"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawObbComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

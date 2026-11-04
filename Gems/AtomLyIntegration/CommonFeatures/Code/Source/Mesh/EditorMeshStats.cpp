@@ -12,6 +12,7 @@
 
 #include <Mesh/EditorMeshStats.h>
 #include <Mesh/EditorMeshStatsSerializer.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -27,12 +28,12 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorSubMeshStatsForLod>("EditorSubMeshStatsForLod", "")
+                    editContext->Class<EditorSubMeshStatsForLod>(QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorSubMeshStatsForLod"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_vertCount, "Vert Count", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_vertCount, QT_TRANSLATE_NOOP("AtomLyIntegration", "Vert Count"), "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_triCount, "Tri Count", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSubMeshStatsForLod::m_triCount, QT_TRANSLATE_NOOP("AtomLyIntegration", "Tri Count"), "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ;
                 }
@@ -54,16 +55,16 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorMeshStatsForLod>("EditorMeshStatsForLod", "")
+                    editContext->Class<EditorMeshStatsForLod>(QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMeshStatsForLod"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_meshCount, "Mesh Count", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_meshCount, QT_TRANSLATE_NOOP("AtomLyIntegration", "Mesh Count"), "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_vertCount, "Vert Count", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_vertCount, QT_TRANSLATE_NOOP("AtomLyIntegration", "Vert Count"), "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_triCount, "Tri Count", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_triCount, QT_TRANSLATE_NOOP("AtomLyIntegration", "Tri Count"), "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_subMeshStatsForLod, "Mesh Stats", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_subMeshStatsForLod, QT_TRANSLATE_NOOP("AtomLyIntegration", "Mesh Stats"), "")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ;
                 }
@@ -88,9 +89,9 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorMeshStats>(
-                        "EditorMeshStats", "")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMeshStats"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStats::m_meshStatsForLod, "Mesh Stats", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStats::m_meshStatsForLod, QT_TRANSLATE_NOOP("AtomLyIntegration", "Mesh Stats"), "")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

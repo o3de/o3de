@@ -403,4 +403,3 @@ namespace GraphCanvas
     }
 }
 
-#include <StaticLib/GraphCanvas/Widgets/AssetEditorToolbar/moc_AssetEditorToolbar.cpp>

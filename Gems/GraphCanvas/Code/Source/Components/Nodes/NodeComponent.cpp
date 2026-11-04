@@ -55,10 +55,10 @@ namespace GraphCanvas
             return;
         }
 
-        editContext->Class<NodeComponent>("Node", "The node's UI representation")
+        editContext->Class<NodeComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "Node"), QT_TRANSLATE_NOOP("GraphCanvas", "The node's UI representation"))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "Node's class attributes")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &NodeComponent::m_configuration, "Configuration", "This node's properties")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &NodeComponent::m_configuration, QT_TRANSLATE_NOOP("GraphCanvas", "Configuration"), QT_TRANSLATE_NOOP("GraphCanvas", "This node's properties"))
             ;
     }
 

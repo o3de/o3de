@@ -117,4 +117,3 @@ namespace ImageProcessingAtomEditor
         }
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_MipmapSettingWidget.cpp>

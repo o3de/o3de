@@ -7,19 +7,18 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QItemSelection>
 #include <QWidget>
 #include <QAbstractItemView>
 #include <QStyledItemDelegate>
-#endif
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 
 namespace AzQtComponents
 {

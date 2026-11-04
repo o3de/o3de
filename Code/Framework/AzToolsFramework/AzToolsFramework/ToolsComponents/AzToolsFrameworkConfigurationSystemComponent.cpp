@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -28,9 +29,10 @@ namespace AzToolsFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<AzToolsFrameworkConfigurationSystemComponent>(
-                    "AzToolsFramework Configuration Component", "System component responsible for configuring AzToolsFramework")
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "AzToolsFramework Configuration Component"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "System component responsible for configuring AzToolsFramework"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                     ;
             }
         }

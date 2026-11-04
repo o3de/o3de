@@ -1,0 +1,26 @@
+// This test lists all attributes that have special meaning in AZSL
+
+ShaderResourceGroupSemantic sem0 
+{
+    FrequencyId = 0;
+    ShaderVariantFallback = 128;
+};
+
+[sometag]
+ShaderResourceGroup SRG : sem0
+{
+    void SRGFunction() {}
+};
+
+[range(0, 10)]
+option int a = 6;
+
+// Global attributes will appear in the beginning of the file regardles of where they were declared
+[[global::output_format(0, "FMT_32_R")]]
+[[global::output_format(1, "FMT_32_GR")]]
+[[global::output_format(2, "FMT_32_AR")]]
+[[global::output_format(3, "FMT_32_ABGR")]]
+
+// Global attributes will appear in the beginning of the file regardles of where they were declared
+[[global::verbatim("#include \"header.azsli\"")]]
+[[global::verbatim("#define PLATFORM   DX12")]]

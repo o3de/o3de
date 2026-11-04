@@ -210,4 +210,3 @@ namespace ImageProcessingAtomEditor
         checkBox->setEnabled(!readOnly);
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_TexturePresetSelectionWidget.cpp>

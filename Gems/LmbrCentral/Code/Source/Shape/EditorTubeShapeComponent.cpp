@@ -16,6 +16,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Component/Component.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MathConversion.h>
 #include "ShapeDisplay.h"
 
@@ -35,7 +36,8 @@ namespace LmbrCentral
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorTubeShapeComponent>(
-                    "Tube Shape", "The Tube Shape component creates a spline around the associated entity")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Tube Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Tube Shape component creates a spline around the associated entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tube_Shape.svg")
@@ -43,11 +45,15 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/tube-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTubeShapeComponent::m_tubeShape, "TubeShape", "Tube Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTubeShapeComponent::m_tubeShape,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "TubeShape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Tube Shape Configuration"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTubeShapeComponent::ConfigurationChanged)
                         //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTubeShapeComponent::m_componentModeDelegate, "Component Mode", "Tube Component Mode")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTubeShapeComponent::m_componentModeDelegate,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Component Mode"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Tube Component Mode"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
             }

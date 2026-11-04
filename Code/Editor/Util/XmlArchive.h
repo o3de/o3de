@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Stores XML in MFC archive.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_XMLARCHIVE_H
-#define CRYINCLUDE_EDITOR_UTIL_XMLARCHIVE_H
-#pragma once
 
 
 #include "NamedData.h"
@@ -65,6 +62,3 @@ public:
     bool SaveToPak(const QString& levelPath, CPakFile& pakFile);
     bool LoadFromPak(const QString& levelPath, CPakFile& pakFile);
 };
-
-
-#endif // CRYINCLUDE_EDITOR_UTIL_XMLARCHIVE_H

@@ -8,17 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QWidget>
 #include <QList>
-#endif
 
 class QGridLayout;
 class QPushButton;
 class QButtonGroup;
-class QStringList;
 
 namespace AzQtComponents
 {

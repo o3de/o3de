@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MorphTarget.h>
 #include <EMotionFX/Source/MorphSetupInstance.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include "MorphTargetEditWindow.h"
+
 #include <QWidget>
 #include <QCheckBox>
-#endif
 
 
 namespace AzQtComponents

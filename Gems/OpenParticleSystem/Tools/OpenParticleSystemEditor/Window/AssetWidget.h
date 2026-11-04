@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <AzCore/Asset/AssetCommon.h>
-#endif
+
 #include <QWidget>
 
 namespace AzToolsFramework

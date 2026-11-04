@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
-#include <QDialog>
 #include <EMotionStudio/EMStudioSDK/Source/MotionEventPresetManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/EventDataEditor.h>
-#endif
+
+#include <QDialog>
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 

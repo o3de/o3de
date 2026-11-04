@@ -56,4 +56,3 @@ void ColorLabelPage::onColorChanged(const AZ::Color& color) const
     qDebug() << AzQtComponents::toQColor(color);
 }
 
-#include "Gallery/moc_ColorLabelPage.cpp"

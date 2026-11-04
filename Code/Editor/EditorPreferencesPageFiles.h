@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <QIcon>
 
 
@@ -29,8 +30,8 @@ public:
     CEditorPreferencesPage_Files();
     virtual ~CEditorPreferencesPage_Files() = default;
 
-    virtual const char* GetCategory() override { return "General Settings"; }
-    virtual const char* GetTitle() override { return "Files"; }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Files"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}

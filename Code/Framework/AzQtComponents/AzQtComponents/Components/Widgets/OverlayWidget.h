@@ -8,7 +8,6 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QWidget>
 #include <QStackedLayout>
@@ -16,7 +15,6 @@
 #include <QVector>
 #include <AzCore/std/functional.h>
 #include <QPointer>
-#endif
 
 class QDockWidget;
 

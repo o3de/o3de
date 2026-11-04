@@ -31,6 +31,7 @@
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 #include <UI/GradientPreviewDataWidget.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -83,7 +84,7 @@ namespace GradientSignal
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GradientSignalEditorSystemComponent>("GradientSignalEditorSystemComponent", "Handles registration of the gradient preview data widget handler")
+                editContext->Class<GradientSignalEditorSystemComponent>(QT_TRANSLATE_NOOP("GradientSignal", "GradientSignalEditorSystemComponent"), QT_TRANSLATE_NOOP("GradientSignal", "Handles registration of the gradient preview data widget handler"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

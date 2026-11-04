@@ -13,6 +13,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 
@@ -274,8 +275,18 @@ namespace AzToolsFramework
         inline ProjectedViewportRay ViewportScreenToWorldRay(
             const AzFramework::CameraState& cameraState, const AzFramework::ScreenPoint& screenPoint)
         {
-            const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
-            const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
+            const AZ::Vector2 ndcPosition = AzFramework::NdcFromScreenPoint(screenPoint, cameraState.m_viewportSize) * 2.0f - AZ::Vector2::CreateOne();
+            const AZ::Vector4 cameraSpacePositionH = AzFramework::InverseCameraProjection(cameraState) * AZ::Vector4(ndcPosition, -1.0f, 1.0f);
+            const AZ::Vector3 cameraSpacePosition = AZ::Vector3(cameraSpacePositionH) / cameraSpacePositionH.GetW();
+
+            const AZ::Matrix3x4 inverseCameraView = AzFramework::InverseCameraView(cameraState);
+            const AZ::Vector3 rayOrigin = inverseCameraView.TransformPoint(cameraSpacePosition);
+            AZ::Vector3 rayDirection = inverseCameraView.TransformVector(cameraSpacePosition).GetNormalizedSafe();
+            if (rayDirection.IsZero())
+            {
+                rayDirection = AZ::Vector3::CreateAxisZ();
+            }
+
             return ProjectedViewportRay{ rayOrigin, rayDirection };
         }
 

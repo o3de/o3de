@@ -6,9 +6,8 @@
  *
  */
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
-#endif
 
 class CTrackViewDoubleSpinBox
     : public AzQtComponents::DoubleSpinBox

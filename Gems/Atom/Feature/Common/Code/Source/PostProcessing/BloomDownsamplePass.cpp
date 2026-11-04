@@ -36,7 +36,7 @@ namespace AZ
         RPI::Ptr<BloomDownsamplePass> BloomDownsamplePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomDownsamplePass> pass = aznew BloomDownsamplePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BloomDownsamplePass::BloomDownsamplePass(const RPI::PassDescriptor& descriptor)
@@ -69,7 +69,7 @@ namespace AZ
                 outBinding.m_shaderInputName = Name{ AZStd::string::format("m_targetMipLevel%d", i) };
                 outBinding.m_slotType = RPI::PassSlotType::Output;
                 outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-                
+
                 // Set image view descriptor
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = i;
@@ -90,7 +90,7 @@ namespace AZ
 
         AZ::Vector4 BloomDownsamplePass::CalThresholdConstants()
         {
-            // These constants will be used in shader to compute a soft knee based threshold 
+            // These constants will be used in shader to compute a soft knee based threshold
             float x = m_threshold;
             float y = x * m_knee;
             float z = 2.0f * y;

@@ -736,4 +736,3 @@ void CLayoutWnd::OnFocusChanged(QWidget* /* oldWidget */, QWidget* newWidget)
     }
 }
 
-#include <moc_LayoutWnd.cpp>

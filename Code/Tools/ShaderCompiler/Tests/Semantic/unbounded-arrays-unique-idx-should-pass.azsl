@@ -1,0 +1,62 @@
+// This shader should pass whether --unique-idx is enabled or not.
+// It declares an unbounded array of type ByteAddressBuffer at the end of
+// the SRG. This case used to be bug in version 1.7.19 when using --unique-idx.
+// Since version 1.7.20, when using --unique-idx it should pass, with SRG1::m_meshBuffers
+// being the highest register index.
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStruct
+{
+    float3 m_a;
+};
+
+ShaderResourceGroup SRG1 : slot1
+{
+    Sampler m_bilinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Point;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+    
+    ConstantBuffer<MyStruct> m_data;
+    Texture2D<float4> m_probeIrradiance;
+    RWTexture2D<float4> m_probeRayTrace;
+    float m_ambientMultiplier;
+    
+    // directional Lights
+    struct DirectionalLight
+    {
+        float3 m_direction;
+    };
+    StructuredBuffer<DirectionalLight> m_directionalLights;
+
+    // diffuse IBL
+    Sampler m_diffuseEnvMapSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    
+    TextureCube m_diffuseEnvMap;
+    float4 m_iblOrientation;
+    
+    struct ClosestHitData
+    {
+        uint     m_indexOffset;
+    };
+   
+    ClosestHitData    m_closestHitData[2];
+
+    ByteAddressBuffer m_meshBuffers[];
+};

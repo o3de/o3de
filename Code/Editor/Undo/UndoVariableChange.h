@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_EDITOR_UNDO_UNDOVARIABLECHANGE_H
-#define CRYINCLUDE_EDITOR_UNDO_UNDOVARIABLECHANGE_H
+
 #pragma once
 
 #include "IUndoObject.h"
@@ -114,6 +113,3 @@ private:
 };
 // Confetti End
 ////////////////////////////////////////////////////////////////////////
-
-
-#endif // CRYINCLUDE_EDITOR_UNDO_UNDO_H

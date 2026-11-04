@@ -11,8 +11,8 @@
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
-DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
-DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
 
 namespace AzToolsFramework
 {

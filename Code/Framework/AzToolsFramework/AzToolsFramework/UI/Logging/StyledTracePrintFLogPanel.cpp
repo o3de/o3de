@@ -204,5 +204,4 @@ namespace AzToolsFramework
     } // namespace LogPanel
 } // namespace AzToolsFramework
 
-#include "UI/Logging/moc_StyledTracePrintFLogPanel.cpp"
 

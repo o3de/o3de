@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::critical(
                         nullptr,
-                        "Cannot add gem that isn't downloaded",
+                        tr("Cannot add gem that isn't downloaded"),
                         tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
                             .arg(GemModel::GetDisplayName(modelIndex)));
 
@@ -150,7 +150,7 @@ namespace O3DE::ProjectManager
             if (!result.IsSuccess())
             {
                 QMessageBox::critical(
-                    nullptr, "Failed to remove gem from project",
+                    nullptr, tr("Failed to remove gem from project"),
                     tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2")
                         .arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 

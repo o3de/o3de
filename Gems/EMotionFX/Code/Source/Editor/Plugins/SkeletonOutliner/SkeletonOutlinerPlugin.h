@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
@@ -18,8 +17,8 @@
 #include <Editor/SelectionProxyModel.h>
 #include <Editor/InspectorBus.h>
 #include <Editor/SkeletonSortFilterProxyModel.h>
+
 #include <QTreeView>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 

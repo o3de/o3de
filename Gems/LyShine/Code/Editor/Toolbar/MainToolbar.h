@@ -7,15 +7,14 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "CanvasSizeToolbarSection.h"
 #include "CoordinateSystemToolbarSection.h"
 #include "NewElementToolbarSection.h"
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 #include <QToolBar>
-#endif
 
 class EditorWindow;
 class QLabel;

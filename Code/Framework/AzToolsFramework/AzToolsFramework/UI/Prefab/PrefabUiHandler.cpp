@@ -25,7 +25,6 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QTreeView>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 namespace AzToolsFramework
 {

@@ -36,8 +36,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     from o3de import android, engine_properties, engine_template, gem_properties, \
         global_project, register, print_registration, get_registration, \
         enable_gem, disable_gem, project_properties, sha256, download, \
-        export_project, repo, repo_properties, \
-        upgrade_physx_gem
+        export_project, repo, repo_properties
     # Remove the temporarily added path
     sys.path = sys.path[1:]
 
@@ -88,10 +87,6 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
     # Android
     android.add_args(subparsers)
-
-    # upgrade physx gem
-    upgrade_physx_gem.add_args(subparsers)
-
 
 if __name__ == "__main__":
     # parse the command line args

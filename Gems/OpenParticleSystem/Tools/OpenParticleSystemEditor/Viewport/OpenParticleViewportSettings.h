@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ACES/Aces.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

@@ -305,7 +305,8 @@ namespace AZ
                 const ProductMeshContent& lodBufferContent,
                 BufferAssetView& outIndexBuffer,
                 AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
-                ModelLodAssetCreator& lodAssetCreator);
+                ModelLodAssetCreator& lodAssetCreator,
+                AZ::Aabb& subMeshAabb);
 
             //! Takes a ProductMeshView and the buffers that it is supposed to be a view
             //! into and adds that data as a Mesh onto the given ModelLodAssetCreator.
@@ -317,11 +318,13 @@ namespace AZ
                 const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
                 ModelAssetCreator& modelAssetCreator,
                 ModelLodAssetCreator& lodAssetCreator,
-                const MaterialAssetsByUid& materialAssetsByUid);
+                const MaterialAssetsByUid& materialAssetsByUid,
+                const AZ::Aabb& subMeshAabb);
 
             //! Takes in a pointer to data with a given element count and format and creates a BufferAsset.
             Outcome<Data::Asset<BufferAsset>> CreateTypedBufferAsset(
-                const void* data, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName);
+                const void* data, const size_t size, const size_t elementCount, RHI::Format format, const AZStd::string& bufferName,
+                const BufferAsset::CompressionFormat compressionFormat = BufferAsset::CompressionFormat::Uncompressed);
 
             //! Takes in a pointer to data and a size in bytes and creates a BufferAsset.
             Outcome<Data::Asset<BufferAsset>> CreateStructuredBufferAsset(
@@ -333,7 +336,8 @@ namespace AZ
 
             //! Takes in a pointer to data with a view descriptor count and format and creates a BufferAsset.
             Outcome<Data::Asset<BufferAsset>> CreateBufferAsset(
-                const void* data, const RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
+                const void* data, const size_t size, const RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName,
+                const BufferAsset::CompressionFormat compressionFormat = BufferAsset::CompressionFormat::Uncompressed);
 
 
             //! Helper method for CreateMesh.
@@ -357,14 +361,11 @@ namespace AZ
             //! Calculates the AABB of the SubMesh.
             //! This should be called when a position stream is added
             //! 
-            //! @param[in] bufferViewDesc The buffer view descriptor used to examine the given bufferAsset
-            //! and determine the range of the buffer to use to calculate the AABB from.
-            //! @param[in] bufferAsset The BufferAsset to calculate the AABB from. Expected to
-            //! be a Position stream
+            //! @param[in] positions the position stream of the buffer to use to calculate the AABB from.
             //! @param[out] aabb The AABB that encompasses the given stream
             //! @return True if the AABB was successfully calculated
-            static bool CalculateAABB(const RHI::BufferViewDescriptor& bufferViewDesc, const BufferAsset& bufferAsset, AZ::Aabb& aabb);
-            
+            static bool CalculateAABB(const AZStd::vector<float>& positions, AZ::Aabb& aabb);
+
             //! Helper method for CreateMesh. 
             //! Finds a buffer in the given streamBufferInfoList that matches the given stream id 
             //! and returns it as part of outStreamBufferInfo.
@@ -391,6 +392,8 @@ namespace AZ
             // NOTE: This is explicitly fetched from a filename. In the future, this should be fetched from the RPI system
             // configuration data.
             Data::AssetId m_systemInputAssemblyBufferPoolId;
+
+            bool m_modelCompressionEnabled = false;
 
             //! Calculates the world transform of the node given all of its parent nodes
             SceneAPI::DataTypes::MatrixType GetWorldTransform(const SceneAPI::Containers::SceneGraph& sceneGraph, SceneAPI::Containers::SceneGraph::NodeIndex node);

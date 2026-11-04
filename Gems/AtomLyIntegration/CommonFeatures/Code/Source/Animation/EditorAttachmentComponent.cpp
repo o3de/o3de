@@ -13,6 +13,7 @@
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -62,7 +63,7 @@ namespace AZ
                 {
                     editContext
                         ->Class<EditorAttachmentComponent>(
-                            "Attachment", "The Attachment component lets an entity attach to a bone on the skeleton of another entity")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Attachment"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The Attachment component lets an entity attach to a bone on the skeleton of another entity"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Attachment.svg")
@@ -72,42 +73,42 @@ namespace AZ
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
                             "https://www.o3de.org/docs/user-guide/components/reference/animation/attachment/")
-                        ->DataElement(0, &EditorAttachmentComponent::m_targetId, "Target entity", "Attach to this entity.")
+                        ->DataElement(0, &EditorAttachmentComponent::m_targetId, QT_TRANSLATE_NOOP("AtomLyIntegration", "Target entity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Attach to this entity."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(
-                            AZ::Edit::UIHandlers::ComboBox, &EditorAttachmentComponent::m_targetBoneName, "Joint name",
-                            "Attach to this joint on target entity.")
+                            AZ::Edit::UIHandlers::ComboBox, &EditorAttachmentComponent::m_targetBoneName, QT_TRANSLATE_NOOP("AtomLyIntegration", "Joint name"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Attach to this joint on target entity."))
                         ->Attribute(AZ::Edit::Attributes::StringList, &EditorAttachmentComponent::GetTargetBoneOptions)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetBoneChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_positionOffset, "Position offset", "Local position offset from target bone")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
+                            0, &EditorAttachmentComponent::m_positionOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Position offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local position offset from target bone"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AtomLyIntegration", "m"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_rotationOffset, "Rotation offset", "Local rotation offset from target bone")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                            0, &EditorAttachmentComponent::m_rotationOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Rotation offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local rotation offset from target bone"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AtomLyIntegration", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Min, -AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
-                        ->DataElement(0, &EditorAttachmentComponent::m_uniformScaleOffset, "Scale offset", "Local scale offset from target entity")
+                        ->DataElement(0, &EditorAttachmentComponent::m_uniformScaleOffset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Scale offset"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Local scale offset from target entity"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
                         ->DataElement(
-                            0, &EditorAttachmentComponent::m_attachedInitially, "Attached initially",
-                            "Whether to attach to target upon activation.")
+                            0, &EditorAttachmentComponent::m_attachedInitially, QT_TRANSLATE_NOOP("AtomLyIntegration", "Attached initially"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Whether to attach to target upon activation."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnAttachedInitiallyChanged)
                         ->DataElement(
-                            AZ::Edit::UIHandlers::ComboBox, &EditorAttachmentComponent::m_scaleSource, "Scaling",
-                            "How object scale should be determined. "
+                            AZ::Edit::UIHandlers::ComboBox, &EditorAttachmentComponent::m_scaleSource, QT_TRANSLATE_NOOP("AtomLyIntegration", "Scaling"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "How object scale should be determined. "
                             "Use world scale = Attached object is scaled in world space, Use target entity scale = Attached object adopts "
-                            "scale of target entity., Use target bone scale = Attached object adopts scale of target entity/joint.")
+                            "scale of target entity., Use target bone scale = Attached object adopts scale of target entity/joint."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnScaleSourceChanged)
-                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::WorldScale, "Use world scale")
-                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::TargetEntityScale, "Use target entity scale")
-                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::TargetBoneScale, "Use target bone scale");
+                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::WorldScale, QT_TRANSLATE_NOOP("AtomLyIntegration", "Use world scale"))
+                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::TargetEntityScale, QT_TRANSLATE_NOOP("AtomLyIntegration", "Use target entity scale"))
+                        ->EnumAttribute(AttachmentConfiguration::ScaleSource::TargetBoneScale, QT_TRANSLATE_NOOP("AtomLyIntegration", "Use target bone scale"));
                 }
             }
         }

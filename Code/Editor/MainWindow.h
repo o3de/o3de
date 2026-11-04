@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/Event.h>
@@ -30,7 +29,6 @@
 #include "IEditor.h"
 
 #include <Core/EditorActionsHandler.h>
-#endif
 
 class ActionManager;
 class AssetImporterManager;
@@ -97,10 +95,6 @@ class SANDBOX_API MainWindow
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
-
-#ifdef Q_OS_WIN
-    HWND GetNativeHandle();
-#endif // #ifdef Q_OS_WIN
 
     void Initialize();
 

@@ -97,10 +97,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 Legacy::CryCommon
-                Legacy::EditorCommon
                 Legacy::Editor.Headers
                 Gem::${gem_name}.Static
                 3rdParty::OpenMesh # Needs to be public, so that the below .Editor gem module includes the lib.
+                3rdParty::Manifold # CSG boolean operations (Api::ApplyMeshBoolean). Public for the same reason as OpenMesh.
     )
 
     target_compile_options(${gem_name}.Editor.Static ${O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION})

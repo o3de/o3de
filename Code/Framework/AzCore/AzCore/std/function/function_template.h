@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/function/function_base.h>
@@ -307,7 +308,7 @@ namespace AZStd
                 {
                     using RawFunctorObjType = AZStd::decay_t<FunctionObj>;
                     AZStd::allocator a;
-                    functor.obj_ptr = new (a.allocate(sizeof(RawFunctorObjType), AZStd::alignment_of<RawFunctorObjType>::value))RawFunctorObjType(AZStd::forward<FunctionObj>(f));
+                    functor.obj_ptr = new (a.allocate(sizeof(RawFunctorObjType), AZStd::alignment_of_v<RawFunctorObjType>))RawFunctorObjType(AZStd::forward<FunctionObj>(f));
                 }
                 template<typename FunctionObj, typename Allocator>
                 void
@@ -315,7 +316,7 @@ namespace AZStd
                 {
                     using RawFunctorObjType = AZStd::decay_t<FunctionObj>;
                     typedef functor_wrapper<RawFunctorObjType, Allocator> functor_wrapper_type;
-                    functor_wrapper_type* new_f = new (const_cast<Allocator&>(a).allocate(sizeof(functor_wrapper_type), AZStd::alignment_of<functor_wrapper_type>::value))functor_wrapper_type(AZStd::forward<FunctionObj>(f), a);
+                    functor_wrapper_type* new_f = new (const_cast<Allocator&>(a).allocate(sizeof(functor_wrapper_type), AZStd::alignment_of_v<functor_wrapper_type>))functor_wrapper_type(AZStd::forward<FunctionObj>(f), a);
                     functor.obj_ptr = new_f;
                 }
 
@@ -359,8 +360,8 @@ namespace AZStd
                     if (!AZStd::Internal::function_util::has_empty_target(&f.get()))
                     {
                         functor.obj_ref.obj_ptr = (void*)&f.get();
-                        functor.obj_ref.is_const_qualified = is_const<FunctionObj>::value;
-                        functor.obj_ref.is_volatile_qualified = AZStd::is_volatile<FunctionObj>::value;
+                        functor.obj_ref.is_const_qualified = is_const_v<FunctionObj>;
+                        functor.obj_ref.is_volatile_qualified = AZStd::is_volatile_v<FunctionObj>;
                         return true;
                     }
                     else
@@ -399,13 +400,17 @@ namespace AZStd
         // MSVC chokes if the following two constructors are collapsed into
         // one with a default parameter.
         template<typename Functor>
-        function_intermediate(Functor&& f, enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, function_intermediate>::value, int> = 0)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, function_intermediate>)
+        function_intermediate(Functor&& f)
             : function_base()
         {
             this->assign_to(AZStd::forward<Functor>(f));
         }
         template<typename Functor, typename Allocator>
-        function_intermediate(Functor&& f, Allocator a, enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, function_intermediate>::value, int> = 0)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, function_intermediate>)
+        function_intermediate(Functor&& f, Allocator a)
             : function_base()
         {
             this->assign_to_a(AZStd::forward<Functor>(f), a);
@@ -430,8 +435,9 @@ namespace AZStd
         R operator()(Args&&... args) const;
 
         template<typename Functor>
-        enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, function_intermediate>::value, function_intermediate&>
-        operator=(Functor&& f)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, function_intermediate>)
+        auto operator=(Functor&& f) -> function_intermediate&
         {
             this->clear();
             this->assign_to(AZStd::forward<Functor>(f));
@@ -625,11 +631,15 @@ namespace AZStd
         function()
             : base_type() {}
         template<typename Functor>
-        function(Functor&& f, enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, self_type>::value, int> = 0)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, self_type>)
+        function(Functor&& f)
             : base_type(AZStd::forward<Functor>(f))
         {}
         template<typename Functor, typename Allocator>
-        function(Functor&& f, const Allocator& a, enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, self_type>::value, int> = 0)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, self_type>)
+        function(Functor&& f, const Allocator& a)
             : base_type(AZStd::forward<Functor>(f), a)
         {}
 
@@ -656,8 +666,9 @@ namespace AZStd
         }
 
         template<typename Functor>
-        enable_if_t<!is_integral<Functor>::value && !is_same<remove_cvref_t<Functor>, self_type>::value, self_type&>
-        operator=(Functor&& f)
+            requires (!is_integral_v<Functor>)
+                && (!is_same_v<remove_cvref_t<Functor>, self_type>)
+        auto operator=(Functor&& f) -> self_type&
         {
             self_type(AZStd::forward<Functor>(f)).swap(*this);
             return *this;
@@ -689,6 +700,7 @@ namespace AZStd
     template<class R, class... ArgTypes>
     function(R(*)(ArgTypes...)) -> function<R(ArgTypes...)>;
 
-    template<class F, class = enable_if_t<AZStd::Internal::has_call_operator_v<F>>>
+    template<class F>
+        requires AZStd::Internal::has_call_operator_v<F>
     function(F) -> function<typename AZStd::Internal::function_object<F>::function_type>;
 } // end namespace AZStd

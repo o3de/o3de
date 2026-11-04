@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_OBJECT_STREAM_H
-#define AZCORE_OBJECT_STREAM_H
+
+#pragma once
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -255,6 +255,3 @@ namespace AZ
     }
 
 } // namespace AZ
-
-#endif  // AZCORE_OBJECT_STREAM_H
-#pragma once

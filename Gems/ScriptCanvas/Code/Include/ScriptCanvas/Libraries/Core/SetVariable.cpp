@@ -103,7 +103,7 @@ namespace ScriptCanvas
 
             bool SetVariableNode::RemoveVariableReferences(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds)
             {
-                // These nodes should just be deleted when the variable they reference is removed. Don't try to 
+                // These nodes should just be deleted when the variable they reference is removed. Don't try to
                 // update the variable they reference.
                 if (m_variableId.IsValid() && variableIds.count(m_variableId) > 0)
                 {
@@ -190,7 +190,7 @@ namespace ScriptCanvas
 
                         slotConfiguration.m_name = Data::GetName(varType);
                         slotConfiguration.SetConnectionType(ConnectionType::Input);
-                        slotConfiguration.ConfigureDatum(AZStd::move(Datum(varType, Datum::eOriginality::Copy)));
+                        slotConfiguration.ConfigureDatum(Datum(varType, Datum::eOriginality::Copy));
 
                         m_variableDataInSlotId = AddSlot(slotConfiguration);
                     }

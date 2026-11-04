@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ::RHI
 {
@@ -80,33 +81,33 @@ namespace AZ::RHI
                 editContext->Class<SamplerState>("SamplerState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyMax, "Anisotropy Max", "Clamping value used if anisotropic filtering is enabled")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyMax, QT_TRANSLATE_NOOP("Atom::RHI", "Anisotropy Max"), QT_TRANSLATE_NOOP("Atom::RHI", "Clamping value used if anisotropic filtering is enabled"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyEnable, "Anisotropy Enable", "Enable anisotropic filtering to reduce blur when sampling textures on surfaces at extreme angles")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMin, "Filter Min", "Minification filter used when sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Anisotropy Enable"), QT_TRANSLATE_NOOP("Atom::RHI", "Enable anisotropic filtering to reduce blur when sampling textures on surfaces at extreme angles"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMin, QT_TRANSLATE_NOOP("Atom::RHI", "Filter Min"), QT_TRANSLATE_NOOP("Atom::RHI", "Minification filter used when sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMag, "Filter Mag", "Magnification filter used when sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMag, QT_TRANSLATE_NOOP("Atom::RHI", "Filter Mag"), QT_TRANSLATE_NOOP("Atom::RHI", "Magnification filter used when sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMip, "Filter Mip", "Mipmap filter used when sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMip, QT_TRANSLATE_NOOP("Atom::RHI", "Filter Mip"), QT_TRANSLATE_NOOP("Atom::RHI", "Mipmap filter used when sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_reductionType, "Reduction Type", "Specifies the type of filter reduction")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_reductionType, QT_TRANSLATE_NOOP("Atom::RHI", "Reduction Type"), QT_TRANSLATE_NOOP("Atom::RHI", "Specifies the type of filter reduction"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ReductionType>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_comparisonFunc, "Comparison Func", "Function used to compare between texture samples")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_comparisonFunc, QT_TRANSLATE_NOOP("Atom::RHI", "Comparison Func"), QT_TRANSLATE_NOOP("Atom::RHI", "Function used to compare between texture samples"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressU, "Address U", "Specifies the method for addressing U texture coordinates outside of the 0 to 1 range")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressU, QT_TRANSLATE_NOOP("Atom::RHI", "Address U"), QT_TRANSLATE_NOOP("Atom::RHI", "Specifies the method for addressing U texture coordinates outside of the 0 to 1 range"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressV, "Address V", "Specifies the method for addressing V texture coordinates outside of the 0 to 1 range")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressV, QT_TRANSLATE_NOOP("Atom::RHI", "Address V"), QT_TRANSLATE_NOOP("Atom::RHI", "Specifies the method for addressing V texture coordinates outside of the 0 to 1 range"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressW, "Address W", "Specifies the method for addressing W texture coordinates outside of the 0 to 1 range")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_addressW, QT_TRANSLATE_NOOP("Atom::RHI", "Address W"), QT_TRANSLATE_NOOP("Atom::RHI", "Specifies the method for addressing W texture coordinates outside of the 0 to 1 range"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AddressMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMin, "Mip Lod Min", "Minimum mipmap level used for sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMin, QT_TRANSLATE_NOOP("Atom::RHI", "Mip Lod Min"), QT_TRANSLATE_NOOP("Atom::RHI", "Minimum mipmap level used for sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMax, "Mip Lod Max", "Maximum mipmap level used for sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodMax, QT_TRANSLATE_NOOP("Atom::RHI", "Mip Lod Max"), QT_TRANSLATE_NOOP("Atom::RHI", "Maximum mipmap level used for sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodBias, "Mip Lod Bias", "This value is added to the runtime selected mipmap level to adjust which mipmap is used for sampling textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_mipLodBias, QT_TRANSLATE_NOOP("Atom::RHI", "Mip Lod Bias"), QT_TRANSLATE_NOOP("Atom::RHI", "This value is added to the runtime selected mipmap level to adjust which mipmap is used for sampling textures"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_borderColor, "Border Color", "Border color used at the edges of sampled textures")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_borderColor, QT_TRANSLATE_NOOP("Atom::RHI", "Border Color"), QT_TRANSLATE_NOOP("Atom::RHI", "Border color used at the edges of sampled textures"))
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BorderColor>())
                     ;
             }

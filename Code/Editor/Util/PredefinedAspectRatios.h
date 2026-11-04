@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_PREDEFINEDASPECTRATIOS_H
-#define CRYINCLUDE_EDITOR_UTIL_PREDEFINEDASPECTRATIOS_H
 #pragma once
-
 
 #include <vector>
 
@@ -40,5 +36,3 @@ private:
     };
     std::vector< SAspectRatio > m_aspectRatios;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_PREDEFINEDASPECTRATIOS_H

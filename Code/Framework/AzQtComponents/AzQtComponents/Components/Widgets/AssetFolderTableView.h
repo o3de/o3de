@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 
 AZ_PUSH_DISABLE_WARNING(4244, "-Wunknown-warning-option")
 #include <AzQtComponents/Components/Widgets/TableView.h>
 AZ_POP_DISABLE_WARNING
-#endif
 
 namespace AzQtComponents
 {

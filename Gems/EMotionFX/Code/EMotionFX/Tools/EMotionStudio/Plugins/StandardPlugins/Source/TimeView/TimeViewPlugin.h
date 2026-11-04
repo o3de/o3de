@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformIncl.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -16,9 +15,9 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeTrack.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewShared.h>
+
 #include <QScrollArea>
 #include <QSplitter>
-#endif
 
 namespace EMStudio
 {
