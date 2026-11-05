@@ -17,6 +17,7 @@
 #include <cerrno>
 #include <cmath>
 #include <cstdlib>
+#include <numbers>
 
 namespace ScriptCanvas::Expression
 {
@@ -331,8 +332,8 @@ namespace ScriptCanvas::Expression
                         (token.m_text == "pi" || token.m_text == "e" || token.m_text == "true" || token.m_text == "false"))
                     {
                         token.m_kind = Kind::Number;
-                        token.m_value = token.m_text == "pi" ? AZStd::acos(-1.0)
-                            : token.m_text == "e"            ? AZStd::exp(1.0)
+                        token.m_value = token.m_text == "pi" ? std::numbers::pi
+                            : token.m_text == "e"            ? std::numbers::e
                             : token.m_text == "true"         ? 1.0
                                                              : 0.0;
                     }
