@@ -218,16 +218,9 @@ namespace AZ
         void DiffuseProbeGrid::SetMode(DiffuseProbeGridMode mode)
         {
             m_requestedMode = mode;
-            // Explicit software selection also permits real-time updates without hardware ray tracing.
-            if (mode == DiffuseProbeGridMode::AutoSelect)
-            {
-                m_mode = (IsDiffuseProbeGridSoftwareTracing() ||
-                    RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
-            }
-            else
-            {
-                m_mode = mode;
-            }
+            // Serialized component modes remain readable, but quality settings select the mode for every grid.
+            m_mode = GetDiffuseProbeGridMode() == DiffuseProbeGridMode::Baked ?
+                DiffuseProbeGridMode::Baked : DiffuseProbeGridMode::RealTime;
 
             m_updateTextures = true;
         }

@@ -228,16 +228,14 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
+            const auto qualityMode = GetDiffuseProbeGridMode();
             const bool softwareTracing = IsDiffuseProbeGridSoftwareTracing();
-            if (m_softwareTracingEnabled != softwareTracing)
+            if (m_qualityMode != qualityMode)
             {
-                m_softwareTracingEnabled = softwareTracing;
+                m_qualityMode = qualityMode;
                 for (const auto& grid : m_diffuseProbeGrids)
                 {
-                    if (grid->GetRequestedMode() == DiffuseProbeGridMode::AutoSelect)
-                    {
-                        SetMode(grid, DiffuseProbeGridMode::AutoSelect);
-                    }
+                    SetMode(grid, grid->GetRequestedMode());
                 }
                 UpdatePasses();
             }
@@ -395,7 +393,8 @@ namespace AZ
             m_visibleRealTimeDiffuseProbeGrids.clear();
             for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
             {
-                if (diffuseProbeGrid->GetIsVisible())
+                if (diffuseProbeGrid->GetIsVisible() &&
+                    (diffuseProbeGrid->GetMode() != DiffuseProbeGridMode::Baked || diffuseProbeGrid->HasValidBakedTextures()))
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime)
                     {

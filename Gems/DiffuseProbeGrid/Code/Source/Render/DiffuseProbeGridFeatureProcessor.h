@@ -237,7 +237,7 @@ namespace AZ
 
             // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
             SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
-            bool m_softwareTracingEnabled = false;
+            DiffuseProbeGridMode m_qualityMode = DiffuseProbeGridMode::RealTimeHardware;
             bool m_softwareResourcesActive = false;
             bool m_lowestLodSkinningEnabled = false;
             bool m_ssrRayTracingEnabled = false;

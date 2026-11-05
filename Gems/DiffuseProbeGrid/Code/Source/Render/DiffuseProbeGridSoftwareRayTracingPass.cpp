@@ -28,8 +28,8 @@
 #include <AzCore/std/limits.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 
-AZ_CVAR(AZ::CVarFixedString, r_diffuseGI_tracingBackend, "Hardware", nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Diffuse probe tracing backend: Auto, Hardware, or Software. Hardware preserves existing scene behavior.");
+AZ_CVAR(AZ::CVarFixedString, r_diffuseGI_mode, "Hardware", nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Project-wide diffuse GI mode: Hardware, Software, Baked, or Auto. Set through the quality registry.");
 
 AZ_CVAR(bool, r_diffuseGI_updateOffscreenSkinnedMeshes, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Update off-screen character poses and lowest-LOD skinning for hardware GI. Software tracing enables these updates automatically.");
@@ -82,16 +82,32 @@ namespace AZ::Render
         return false;
     }
 
+    DiffuseProbeGridMode GetDiffuseProbeGridMode()
+    {
+        const auto mode = static_cast<AZ::CVarFixedString>(r_diffuseGI_mode);
+        if (mode == "Software")
+        {
+            return DiffuseProbeGridMode::RealTimeSoftware;
+        }
+        if (mode == "Baked")
+        {
+            return DiffuseProbeGridMode::Baked;
+        }
+        if (mode == "Auto")
+        {
+            return DiffuseProbeGridMode::AutoSelect;
+        }
+        AZ_WarningOnce("DiffuseProbeGrid", mode == "Hardware",
+            "Invalid r_diffuseGI_mode; expected Hardware, Software, Baked, or Auto. Using Hardware.");
+        return DiffuseProbeGridMode::RealTimeHardware;
+    }
+
     bool IsDiffuseProbeGridSoftwareTracing()
     {
-        const auto backend = static_cast<AZ::CVarFixedString>(r_diffuseGI_tracingBackend);
-        if (backend == "Auto")
-        {
-            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices;
-        }
-        AZ_WarningOnce("DiffuseProbeGrid", backend == "Hardware" || backend == "Software",
-            "Invalid r_diffuseGI_tracingBackend; expected Auto, Hardware, or Software. Using Hardware.");
-        return backend == "Software";
+        const auto mode = GetDiffuseProbeGridMode();
+        return mode == DiffuseProbeGridMode::RealTimeSoftware ||
+            (mode == DiffuseProbeGridMode::AutoSelect &&
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices);
     }
 
     RPI::Ptr<DiffuseProbeGridSoftwareRayTracingPass> DiffuseProbeGridSoftwareRayTracingPass::Create(const RPI::PassDescriptor& descriptor)

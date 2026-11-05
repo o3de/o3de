@@ -1,0 +1,15 @@
+{
+    "O3DE": {
+        "Quality": {
+            "Groups": {
+                "q_graphics": {
+                    "Settings": {
+                        // Low, Medium, High, VeryHigh. Each entry accepts Hardware, Software, Baked, or Auto.
+                        // Hardware preserves the existing default budget. Projects may override this array.
+                        "r_diffuseGI_mode": [ "Hardware", "Hardware", "Hardware", "Hardware" ]
+                    }
+                }
+            }
+        }
+    }
+}
