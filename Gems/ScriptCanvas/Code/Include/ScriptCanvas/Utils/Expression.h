@@ -58,7 +58,7 @@ namespace ScriptCanvas::Expression
         }
     };
 
-    //! C++17. Numbers are doubles; comparisons/logical operators return 0 or 1.
+    //! Numbers are doubles; comparisons/logical operators return 0 or 1.
     //! Grouping: (), [], {}. Power: ^ or ** (right associative). Angles: radians.
     //! Constants: pi, e, true, false. Names are case sensitive.
     //! ?: is right associative, below ||, and evaluates only the selected branch.
