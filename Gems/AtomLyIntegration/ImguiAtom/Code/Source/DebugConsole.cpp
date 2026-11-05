@@ -20,11 +20,14 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/parallel/lock.h>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+
+#include <algorithm>
 
 using namespace AzFramework;
 
@@ -138,8 +141,19 @@ namespace AZ
 
         // Show a scrolling child region in which to display all debug log entires.
         const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
+        AZStd::unique_lock<AZStd::mutex> logLock(m_logMutex);
+        if (auto* logWindow = ImGui::FindWindowByID(m_logWindowId); logWindow && m_evictedLogHeight > 0 &&
+            (m_logSelection[0] != m_logSelection[1] || ImGui::GetActiveID() == logWindow->GetID("LogSelection")))
+        {
+            ImGui::SetNextWindowScroll(ImVec2(-1, AZStd::max(0.0f, logWindow->Scroll.y - m_evictedLogHeight)));
+        }
+        m_evictedLogHeight = 0;
         ImGui::BeginChild("DebugLogEntriesScrollBox", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
         {
+            m_logWindowId = ImGui::GetCurrentWindow()->ID;
+            m_logLineHeight = ImGui::GetTextLineHeight();
+            m_logItemSpacing = ImGui::GetStyle().ItemSpacing.y;
+            m_logOriginY = ImGui::GetCursorScreenPos().y;
             const auto& io = ImGui::GetIO();
             const ImGuiID selectionId = ImGui::GetID("LogSelection");
             const ImRect clip = ImGui::GetCurrentWindow()->InnerClipRect;
@@ -171,9 +185,9 @@ namespace AZ
                         const size_t lineEnd = static_cast<size_t>(newline - text.data());
                         const size_t to = lineEnd +
                             (newline != end || (&debugLogEntry != &m_debugLogEntires.back() && (text.empty() || text.back() != '\n')));
-                        const float height = text.empty() ? ImGui::GetStyle().ItemSpacing.y : ImGui::GetTextLineHeight();
+                        const float height = ImGui::GetTextLineHeight();
                         LogPosition cursor = m_logSelection[1];
-                        if (dragging)
+                        if (dragging && ImGui::IsMouseDown(0))
                         {
                             const char* hit = newline;
                             if (io.MousePos.y >= y && io.MousePos.y < y + height)
@@ -244,13 +258,15 @@ namespace AZ
             }
 
             // Scroll to the last debug log entry if needed.
-            if (m_forceScroll || (m_autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+            if (m_forceScroll ||
+                (m_autoScroll && !dragging && m_logSelection[0] == m_logSelection[1] && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
             {
                 ImGui::SetScrollHereY(1.0f);
                 m_forceScroll = false;
             }
         }
         ImGui::EndChild();
+        logLock.unlock();
 
         // Show a text input field.
         ImGui::Separator();
@@ -308,10 +324,18 @@ namespace AZ
 
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
+        AZStd::lock_guard<AZStd::mutex> logLock(m_logMutex);
         // Add the debug to our display, removing the oldest entry if we exceed the maximum.
         m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
         if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
+            const auto& removed = m_debugLogEntires.front().first;
+            // TextUnformatted's large-text path counts a trailing CR as another line.
+            const auto last = removed.size() > 2000 ? removed.size() - 1 : removed.find_last_not_of('\r');
+            const auto lines = std::count(removed.begin(), removed.end(), '\n') + (last == AZStd::string::npos || removed[last] != '\n');
+            const float nextY = IM_FLOOR(m_logOriginY + static_cast<float>(lines) * m_logLineHeight + m_logItemSpacing);
+            m_evictedLogHeight += nextY - m_logOriginY;
+            m_logOriginY = nextY;
             for (auto& endpoint : m_logSelection)
             {
                 endpoint = endpoint.first ? LogPosition{ endpoint.first - 1, endpoint.second } : LogPosition{};
@@ -341,8 +365,10 @@ namespace AZ
 
     void DebugConsole::ClearDebugLog()
     {
+        AZStd::lock_guard<AZStd::mutex> logLock(m_logMutex);
         m_debugLogEntires.clear();
         m_logSelection[0] = m_logSelection[1] = {};
+        m_evictedLogHeight = 0;
     }
 
     bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)

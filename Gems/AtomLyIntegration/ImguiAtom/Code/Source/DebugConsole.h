@@ -13,6 +13,7 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/string/string.h>
 
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -100,6 +101,12 @@ namespace AZ
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
         using LogPosition = AZStd::pair<size_t, size_t>;
         LogPosition m_logSelection[2]{}; //!< Selection endpoints: entry index and UTF-8 byte offset.
+        AZStd::mutex m_logMutex; //!< Protects log entries and selection state from concurrent logging.
+        float m_evictedLogHeight = 0.0f; //!< Pixel height removed since the previous frame.
+        float m_logLineHeight = 0.0f; //!< Most recently rendered text line height.
+        float m_logItemSpacing = 0.0f; //!< Most recently rendered entry spacing.
+        float m_logOriginY = 0.0f; //!< Screen position used to match ImGui's per-entry pixel rounding during eviction.
+        ImGuiID m_logWindowId = 0; //!< Log window whose scroll position follows retained selected text.
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
