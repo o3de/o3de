@@ -60,7 +60,8 @@ namespace ScriptCanvas::Expression
 
     //! Numbers are doubles; comparisons/logical operators return 0 or 1.
     //! Grouping: (), [], {}. Power: ^ or ** (right associative). Angles: radians.
-    //! Constants: pi, e, true, false. Names are case sensitive.
+    //! Constants: pi, e, true, false. Boolean constants are case insensitive.
+    //! Variable and function names are case sensitive. Leading empty () groups are ignored for legacy compatibility.
     //! ?: is right associative, below ||, and evaluates only the selected branch.
     //! Bind requires finite values for every variable, including both branches.
     //! shortcut: && and || evaluate both sides; add jumps if short-circuiting is needed.

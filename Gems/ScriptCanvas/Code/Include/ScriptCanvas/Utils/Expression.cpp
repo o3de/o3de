@@ -329,13 +329,14 @@ namespace ScriptCanvas::Expression
                         break;
                     }
                     if (token.m_kind == Kind::Name &&
-                        (token.m_text == "pi" || token.m_text == "e" || token.m_text == "true" || token.m_text == "false"))
+                        (token.m_text == "pi" || token.m_text == "e" || azstricmp(token.m_text.c_str(), "true") == 0 ||
+                         azstricmp(token.m_text.c_str(), "false") == 0))
                     {
                         token.m_kind = Kind::Number;
-                        token.m_value = token.m_text == "pi" ? std::numbers::pi
-                            : token.m_text == "e"            ? std::numbers::e
-                            : token.m_text == "true"         ? 1.0
-                                                             : 0.0;
+                        token.m_value = token.m_text == "pi"               ? std::numbers::pi
+                            : token.m_text == "e"                          ? std::numbers::e
+                            : azstricmp(token.m_text.c_str(), "true") == 0 ? 1.0
+                                                                           : 0.0;
                     }
                     else
                     {
@@ -375,6 +376,14 @@ namespace ScriptCanvas::Expression
                 needOperand = true;
                 break;
             case Kind::Close:
+                // The legacy parser permits leading empty () groups before the first operand.
+                if (needOperand && result.m_instructions.empty() && !frames.empty() && !frames.back().m_isFunction &&
+                    frames.back().m_bracket == "(" && token.m_text == ")" && stack.back().m_kind == Kind::Open)
+                {
+                    stack.pop_back();
+                    frames.pop_back();
+                    break;
+                }
                 if (needOperand || frames.empty() || !BracketsMatch(frames.back().m_bracket, token.m_text))
                 {
                     return { {}, "Invalid closing bracket" };

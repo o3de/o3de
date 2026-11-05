@@ -17,6 +17,7 @@ set(FILES
     Tests/Libraries/Math/ScriptCanvasUnitTest_Color.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_CRC.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_Expression.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_ExpressionEvaluator.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_MathFunctions.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_Matrix3x3.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_Matrix4x4.cpp
