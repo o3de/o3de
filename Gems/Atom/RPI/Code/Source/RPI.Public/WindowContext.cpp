@@ -159,7 +159,7 @@ namespace AZ
             RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
-                const RHI::ResultCode result = defaultSwapChain->TrySetVerticalSyncInterval(interval);
+                [[maybe_unused]] const RHI::ResultCode result = defaultSwapChain->TrySetVerticalSyncInterval(interval);
                 AZ_Error(
                     "WindowContext",
                     result == RHI::ResultCode::Success,
