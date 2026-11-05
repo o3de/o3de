@@ -6,9 +6,11 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/bit.h>
 #include <ScriptCanvas/Utils/Expression.h>
 
 #include <cctype>
+#include <cfenv>
 #include <cmath>
 #include <limits>
 #include <numbers>
@@ -615,6 +617,37 @@ namespace ScriptCanvasUnitTest
             ASSERT_TRUE(result) << result.m_error.c_str();
             EXPECT_EQ(result.m_value, expected);
         }
+    }
+
+    TEST_F(ExpressionEvaluatorTests, SubnormalLiteralsPreserveTheirBitsAndSign)
+    {
+        const ExpressionCase cases[] = {
+            { "1e-308", 1e-308 },
+            { "+1e-308", 1e-308 },
+            { "-1e-308", -1e-308 },
+            { "4.9406564584124654e-324", std::numeric_limits<double>::denorm_min() },
+            { "-4.9406564584124654e-324", -std::numeric_limits<double>::denorm_min() },
+            { "2.225073858507201e-308", AZStd::bit_cast<double>(AZ::u64{ 0x000fffffffffffff }) },
+            { "2.2250738585072012e-308", std::numeric_limits<double>::min() },
+        };
+        for (const auto& [source, expected] : cases)
+        {
+            SCOPED_TRACE(source);
+            const auto result = EvaluateSource(source);
+            ASSERT_TRUE(result) << result.m_error.c_str();
+            EXPECT_EQ(AZStd::bit_cast<AZ::u64>(result.m_value), AZStd::bit_cast<AZ::u64>(expected));
+        }
+    }
+
+    TEST_F(ExpressionEvaluatorTests, OverflowIsRejectedWithDownwardRounding)
+    {
+        const int previous = std::fegetround();
+        ASSERT_NE(previous, -1);
+        ASSERT_EQ(std::fesetround(FE_DOWNWARD), 0);
+        const auto result = Tokenize("1e999");
+        EXPECT_EQ(std::fesetround(previous), 0);
+        EXPECT_FALSE(result);
+        EXPECT_FALSE(result.m_error.empty());
     }
 
     TEST_F(ExpressionEvaluatorTests, BracedNamesPreserveWhitespacePunctuationAndConstantNames)

@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/math.h>
 #include <AzCore/std/utils.h>
 #include <cctype>
@@ -214,7 +215,9 @@ namespace ScriptCanvas::Expression
                 char* end = nullptr;
                 errno = 0;
                 const double value = std::strtod(begin, &end);
-                if (end == begin || errno == ERANGE || !std::isfinite(value) ||
+                // ERANGE can accompany a nonzero underflow result, including a rounded-up smallest normal double.
+                const bool rangeError = errno == ERANGE && (value == 0 || value > AZStd::numeric_limits<double>::min());
+                if (end == begin || rangeError || !std::isfinite(value) ||
                     (source[i] == '0' && i + 1 < source.size() && (source[i + 1] == 'x' || source[i + 1] == 'X')))
                 {
                     return { {}, "Invalid number at " + AZStd::string::format("%zu", i) };
