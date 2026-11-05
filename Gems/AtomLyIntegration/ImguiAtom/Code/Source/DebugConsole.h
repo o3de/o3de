@@ -98,8 +98,8 @@ namespace AZ
         void AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel);
 
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
-        using LogPosition = AZStd::pair<size_t, size_t>; // Entry index and UTF-8 byte offset.
-        LogPosition m_logSelection[2]{};
+        using LogPosition = AZStd::pair<size_t, size_t>;
+        LogPosition m_logSelection[2]{}; //!< Selection endpoints: entry index and UTF-8 byte offset.
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
