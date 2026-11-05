@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -15,6 +16,9 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
+#include <Render/DiffuseProbeGridTracing.h>
+#include <Render/DiffuseProbeGridSoftwareRayTracingPass.h>
+#include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
@@ -185,6 +189,18 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Deactivate()
         {
+            ReleaseSoftwareTracingResources();
+            m_softwareResourcesActive = false;
+
+            if (m_lowestLodSkinningEnabled)
+            {
+                if (auto* skinning = GetParentScene()->GetFeatureProcessor<SkinnedMeshFeatureProcessorInterface>())
+                {
+                    skinning->SetLowestLodSkinningEnabled(false);
+                }
+                m_lowestLodSkinningEnabled = false;
+            }
+
             if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 // GI is not supported on this platform
@@ -212,6 +228,40 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
+            const bool softwareTracing = IsDiffuseProbeGridSoftwareTracing();
+            if (m_softwareTracingEnabled != softwareTracing)
+            {
+                m_softwareTracingEnabled = softwareTracing;
+                for (const auto& grid : m_diffuseProbeGrids)
+                {
+                    if (grid->GetRequestedMode() == DiffuseProbeGridMode::AutoSelect)
+                    {
+                        SetMode(grid, DiffuseProbeGridMode::AutoSelect);
+                    }
+                }
+                UpdatePasses();
+            }
+
+            const bool hasRealTimeGrids = AZStd::any_of(m_diffuseProbeGrids.begin(), m_diffuseProbeGrids.end(),
+                [](const auto& grid) { return grid->GetMode() == DiffuseProbeGridMode::RealTime; });
+            const bool softwareResourcesActive = softwareTracing && hasRealTimeGrids;
+            const bool updateLowestLod = hasRealTimeGrids && (softwareTracing || IsDiffuseProbeGridOffscreenSkinningRequested()) &&
+                (softwareTracing || RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices);
+            if (m_softwareResourcesActive && !softwareResourcesActive)
+            {
+                ReleaseSoftwareTracingResources();
+            }
+            m_softwareResourcesActive = softwareResourcesActive;
+            if (updateLowestLod != m_lowestLodSkinningEnabled)
+            {
+                if (auto* skinning = GetParentScene()->GetFeatureProcessor<SkinnedMeshFeatureProcessorInterface>())
+                {
+                    skinning->SetLowestLodSkinningEnabled(updateLowestLod);
+                    m_lowestLodSkinningEnabled = updateLowestLod;
+                }
+            }
+
+
             AZ_PROFILE_SCOPE(AzRender, "DiffuseProbeGridFeatureProcessor: Simulate");
 
             // update pipeline states
@@ -498,7 +548,8 @@ namespace AZ
 
         bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
         {
-            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+            return AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED && (IsDiffuseProbeGridSoftwareTracing() ||
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices);
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -976,18 +1027,34 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::ReleaseSoftwareTracingResources()
+        {
+            auto* passSystem = RPI::PassSystemInterface::Get();
+            if (!passSystem || !GetParentScene())
+            {
+                return;
+            }
+            const auto filter = RPI::PassFilter::CreateWithPassName(Name("DiffuseProbeGridSoftwareRayTracingPass"), GetParentScene());
+            passSystem->ForEachPass(filter, [](RPI::Pass* pass)
+            {
+                if (auto* software = azrtti_cast<DiffuseProbeGridSoftwareRayTracingPass*>(pass))
+                {
+                    software->ReleaseResources();
+                }
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
+        }
+
         void DiffuseProbeGridFeatureProcessor::UpdatePasses()
         {
-            // disable the DiffuseProbeGridUpdatePass if the platform does not support raytracing
-            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
+            const bool enabled = IsDiffuseProbeGridSoftwareTracing() ||
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [enabled](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
-                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                    {
-                        pass->SetEnabled(false);
-                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                    });
-            }
+                pass->SetEnabled(enabled);
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
         }
 
         void DiffuseProbeGridFeatureProcessor::OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset)

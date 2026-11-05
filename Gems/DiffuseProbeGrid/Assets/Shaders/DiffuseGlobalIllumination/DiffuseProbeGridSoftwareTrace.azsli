@@ -1,0 +1,174 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+struct SoftwareTraceHit
+{
+    float distance;
+    float2 barycentrics;
+    uint instanceIndex;
+    uint triangleIndex;
+    bool found;
+};
+
+bool SoftwareIntersectBounds(float3 origin, float3 direction, SoftwareBvhBounds bounds, float minimum, float maximum)
+{
+    // Explicit parallel-axis handling avoids 0 * infinity NaNs at thin walls and AABB boundaries.
+    for (uint axis = 0; axis < 3; ++axis)
+    {
+        if (direction[axis] == 0.0f)
+        {
+            if (origin[axis] < bounds.minimum[axis] || origin[axis] > bounds.maximum[axis])
+            {
+                return false;
+            }
+        }
+        else
+        {
+            float a = (bounds.minimum[axis] - origin[axis]) / direction[axis];
+            float b = (bounds.maximum[axis] - origin[axis]) / direction[axis];
+            minimum = max(minimum, min(a, b));
+            maximum = min(maximum, max(a, b));
+            if (minimum > maximum)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool SoftwareIntersectTriangle(float3 origin, float3 direction, float3 a, float3 b, float3 c,
+    float minimum, inout SoftwareTraceHit hit)
+{
+    // Sheared, edge-function intersection uses the same arithmetic for shared edges, avoiding cracks between
+    // neighboring triangles that can become light leaks when rays originate close to a surface.
+    float3 absoluteDirection = abs(direction);
+    uint kz = absoluteDirection.x > absoluteDirection.y ? 0 : 1;
+    kz = absoluteDirection[kz] > absoluteDirection.z ? kz : 2;
+    if (direction[kz] == 0.0f)
+    {
+        return false;
+    }
+    uint kx = (kz + 1) % 3;
+    uint ky = (kx + 1) % 3;
+    if (direction[kz] < 0.0f)
+    {
+        uint temp = kx;
+        kx = ky;
+        ky = temp;
+    }
+    float sx = direction[kx] / direction[kz];
+    float sy = direction[ky] / direction[kz];
+    float sz = 1.0f / direction[kz];
+    a -= origin;
+    b -= origin;
+    c -= origin;
+    float2 ap = float2(a[kx] - sx * a[kz], a[ky] - sy * a[kz]);
+    float2 bp = float2(b[kx] - sx * b[kz], b[ky] - sy * b[kz]);
+    float2 cp = float2(c[kx] - sx * c[kz], c[ky] - sy * c[kz]);
+    precise float u = cp.x * bp.y - cp.y * bp.x;
+    precise float v = ap.x * cp.y - ap.y * cp.x;
+    precise float w = bp.x * ap.y - bp.y * ap.x;
+    if ((min(u, min(v, w)) < 0.0f && max(u, max(v, w)) > 0.0f))
+    {
+        return false;
+    }
+    float determinant = u + v + w;
+    if (determinant == 0.0f)
+    {
+        return false;
+    }
+    float distance = (u * (sz * a[kz]) + v * (sz * b[kz]) + w * (sz * c[kz])) / determinant;
+    if (!isfinite(distance) || distance < minimum || distance >= hit.distance)
+    {
+        return false;
+    }
+    hit.distance = distance;
+    hit.barycentrics = float2(v, w) / determinant;
+    hit.found = true;
+    return true;
+}
+
+SoftwareTraceHit SoftwareTrace(float3 origin, float3 direction, float minimum, float maximum, bool terminateOnHit)
+{
+    SoftwareTraceHit hit = (SoftwareTraceHit)0;
+    hit.distance = maximum;
+    if (PassSrg::m_instanceCount == 0)
+    {
+        return hit;
+    }
+    uint nodeIndex = 0;
+    uint end = PassSrg::m_nodes[PassSrg::m_tlasTopologyBase].escape;
+    while (nodeIndex < end)
+    {
+        SoftwareBvhNode node = PassSrg::m_nodes[PassSrg::m_tlasTopologyBase + nodeIndex];
+        SoftwareBvhBounds bounds = PassSrg::m_bounds[PassSrg::m_tlasBoundsBase + nodeIndex];
+        if (!SoftwareIntersectBounds(origin, direction, bounds, minimum, hit.distance))
+        {
+            nodeIndex = node.escape;
+            continue;
+        }
+        if (node.count == 0)
+        {
+            nodeIndex = node.first;
+            continue;
+        }
+        for (uint item = 0; item < node.count; ++item)
+        {
+            uint instanceIndex = PassSrg::m_primitiveIndices[PassSrg::m_tlasPrimitiveBase + node.first + item];
+            SoftwareBvhInstance instance = PassSrg::m_instances[instanceIndex];
+            MeshInfo mesh = (MeshInfo)0;
+            if (!GetMeshInfoEntry(int(instance.meshInfoIndex), mesh))
+            {
+                continue;
+            }
+            float4x4 objectToWorld = SceneSrg::GetObjectToWorldMatrix(mesh.m_objectIdForTransform);
+            float3x3 inverseLinear = transpose(SceneSrg::GetObjectToWorldInverseTransposeMatrix(mesh.m_objectIdForTransform));
+            float3 localOrigin = mul(inverseLinear, origin - float3(objectToWorld[0].w, objectToWorld[1].w, objectToWorld[2].w));
+            // Do not normalize: local and world rays must retain the same distance parameter under non-uniform scale.
+            float3 localDirection = mul(inverseLinear, direction);
+            uint localIndex = 0;
+            uint localEnd = PassSrg::m_nodes[instance.topologyBase].escape;
+            while (localIndex < localEnd)
+            {
+                SoftwareBvhNode localNode = PassSrg::m_nodes[instance.topologyBase + localIndex];
+                SoftwareBvhBounds localBounds = PassSrg::m_bounds[instance.boundsBase + localIndex];
+                if (!SoftwareIntersectBounds(localOrigin, localDirection, localBounds, minimum, hit.distance))
+                {
+                    localIndex = localNode.escape;
+                    continue;
+                }
+                if (localNode.count == 0)
+                {
+                    localIndex = localNode.first;
+                    continue;
+                }
+                for (uint primitive = 0; primitive < localNode.count; ++primitive)
+                {
+                    uint triangleIndex = PassSrg::m_primitiveIndices[instance.primitiveBase + localNode.first + primitive];
+                    uint3 indices = LoadIndex(mesh, triangleIndex);
+                    if (SoftwareIntersectTriangle(localOrigin, localDirection, LoadPosition(mesh, indices.x),
+                        LoadPosition(mesh, indices.y), LoadPosition(mesh, indices.z), minimum, hit))
+                    {
+                        hit.instanceIndex = instanceIndex;
+                        hit.triangleIndex = triangleIndex;
+                        if (terminateOnHit)
+                        {
+                            return hit;
+                        }
+                    }
+                }
+                localIndex = localNode.escape;
+            }
+        }
+        nodeIndex = node.escape;
+    }
+    return hit;
+}

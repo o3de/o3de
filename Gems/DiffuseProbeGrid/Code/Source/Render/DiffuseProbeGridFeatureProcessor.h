@@ -156,6 +156,7 @@ namespace AZ
             void AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName);
             void UpdatePipelineStates();
             void UpdatePasses();
+            void ReleaseSoftwareTracingResources();
 
             // loads the probe visualization model and creates the BLAS
             void OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset);
@@ -236,6 +237,9 @@ namespace AZ
 
             // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
             SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
+            bool m_softwareTracingEnabled = false;
+            bool m_softwareResourcesActive = false;
+            bool m_lowestLodSkinningEnabled = false;
             bool m_ssrRayTracingEnabled = false;
 
             // Shader that contains the scene and view SRGs for precompiled shaders
