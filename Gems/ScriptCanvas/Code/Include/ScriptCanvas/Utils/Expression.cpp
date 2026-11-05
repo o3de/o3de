@@ -25,7 +25,7 @@ namespace ScriptCanvas::Expression
         struct Operation
         {
             const char* m_name;
-            int m_precedence; // Zero denotes a named function.
+            int m_precedence; //!< Zero denotes a named function.
             int m_arity;
             double (*m_apply)(double, double);
         };

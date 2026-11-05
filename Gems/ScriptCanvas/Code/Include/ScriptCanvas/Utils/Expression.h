@@ -36,12 +36,12 @@ namespace ScriptCanvas::Expression
         Kind m_kind;
         AZStd::string m_text;
         double m_value = 0;
-        size_t m_index = 0; // Variable slot or forward jump target.
+        size_t m_index = 0; //!< Variable slot or forward jump target.
     };
 
     struct Program
     {
-        AZStd::vector<Token> m_instructions; // RPN plus forward jumps for ?:.
+        AZStd::vector<Token> m_instructions; //!< RPN plus forward jumps for ?:.
         AZStd::vector<AZStd::string> m_variables;
     };
 
@@ -58,14 +58,14 @@ namespace ScriptCanvas::Expression
         }
     };
 
-    // C++17. Numbers are doubles; comparisons/logical operators return 0 or 1.
-    // Grouping: (), [], {}. Power: ^ or ** (right associative). Angles: radians.
-    // Constants: pi, e, true, false. Names are case sensitive.
-    // ?: is right associative, below ||, and evaluates only the selected branch.
-    // Bind requires finite values for every variable, including both branches.
-    // shortcut: && and || evaluate both sides; add jumps if short-circuiting is needed.
-    // Errors are returned explicitly because the engine builds without exceptions.
-    // In braced-variable mode, {any pin name} is one variable, including constants.
+    //! C++17. Numbers are doubles; comparisons/logical operators return 0 or 1.
+    //! Grouping: (), [], {}. Power: ^ or ** (right associative). Angles: radians.
+    //! Constants: pi, e, true, false. Names are case sensitive.
+    //! ?: is right associative, below ||, and evaluates only the selected branch.
+    //! Bind requires finite values for every variable, including both branches.
+    //! shortcut: && and || evaluate both sides; add jumps if short-circuiting is needed.
+    //! Errors are returned explicitly because the engine builds without exceptions.
+    //! In braced-variable mode, {any pin name} is one variable, including constants.
     Result<AZStd::vector<Token>> Tokenize(const AZStd::string& source, bool bracedVariables = false);
     Result<Program> ShuntingYard(const AZStd::vector<Token>& tokens);
     Result<AZStd::vector<double>> Bind(const Program& expression, const Bindings& values);
