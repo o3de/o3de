@@ -15,6 +15,11 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
+#include <cmath>
+
+AZ_CVAR(bool, r_diffuseGI_stochasticProbeSampling, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Rotate non-fixed probe rays each frame to improve angular coverage without increasing the ray count.");
 
 namespace AZ
 {
@@ -103,7 +108,23 @@ namespace AZ
                 }
             }
 
-            m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            if (r_diffuseGI_stochasticProbeSampling && m_mode == DiffuseProbeGridMode::RealTime)
+            {
+                // Uniformly sample unit quaternions rather than Euler angles, which bias the ray distribution.
+                // The DDGI shaders leave relocation/classification rays fixed and rotate only the remaining rays.
+                const float u = m_random.GetRandomFloat();
+                const float phi = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float theta = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float xyRadius = std::sqrt(1.0f - u);
+                const float zwRadius = std::sqrt(u);
+                m_probeRayRotation = AZ::Quaternion(
+                    xyRadius * std::sin(phi), xyRadius * std::cos(phi),
+                    zwRadius * std::sin(theta), zwRadius * std::cos(theta));
+            }
+            else
+            {
+                m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            }
             m_frameUpdateIndex = (m_frameUpdateIndex + 1) % m_frameUpdateCount;
         }
 
