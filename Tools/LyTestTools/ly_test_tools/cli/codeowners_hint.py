@@ -220,6 +220,3 @@ def _main() -> int:
         else:
             print(args.default_alias)
         return 1
-
-    logger.error("Unexpected abnormal exit")
-    return -1

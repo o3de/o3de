@@ -61,7 +61,7 @@ namespace AZ::Debug
             startupInfo.cb = sizeof(startupInfo);
             PROCESS_INFORMATION processInfo = {nullptr};
 
-            wchar_t cmdline[MAX_PATH];
+            wchar_t cmdline[AZ_TRAIT_OS_MAX_PATH_LEN];
             swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
             bool success = ::CreateProcessW(
                 nullptr,        // No module name (use command line)
