@@ -446,39 +446,50 @@ void QtViewport::wheelEvent(QWheelEvent* event)
     event->accept();
 }
 
+#if AZ_TRAIT_OS_PLATFORM_APPLE
+
+static constexpr int s_VkControl = 0x11;
+static constexpr int s_VkMenu = 0x12;
+static constexpr int s_VkEscape = 0x1B;
+static constexpr int s_VkOEMComma = 0xBC;   // ',' any country
+static constexpr int s_VkOEMPeriod = 0xBE;   // '.' any country
+static constexpr int s_VkOEM3 = 0xC0;   // '`~' for US
+static constexpr int s_VkOEM4 = 0xDB;  //  '[{' for US
+static constexpr int s_VkOEM6 = 0xDD;  //  ']}' for US
+
+// nativeVirtualKey is always zero on macOS, therefore we
+// need to manually set the nativeKey based on the Qt key
+static int TranslateQtKeyToNativeKey(int qtKey, int defaultNativeKey)
+{
+    switch (qtKey)
+    {
+        case Qt::Key_Control:
+            return s_VkControl;
+        case Qt::Key_Alt:
+            return s_VkMenu;
+        case Qt::Key_QuoteLeft:
+            return s_VkOEM3;
+        case Qt::Key_BracketLeft:
+            return s_VkOEM4;
+        case Qt::Key_BracketRight:
+            return s_VkOEM6;
+        case Qt::Key_Comma:
+            return s_VkOEMComma;
+        case Qt::Key_Period:
+            return s_VkOEMPeriod;
+        case Qt::Key_Escape:
+            return s_VkEscape;
+        default:
+            return defaultNativeKey; // Return the default native key for unhandled keys
+    }
+}
+#endif // AZ_TRAIT_OS_PLATFORM_APPLE
+
 void QtViewport::keyPressEvent(QKeyEvent* event)
 {
     int nativeKey = event->nativeVirtualKey();
 #if AZ_TRAIT_OS_PLATFORM_APPLE
-    // nativeVirtualKey is always zero on macOS, therefore we
-    // need to manually set the nativeKey based on the Qt key
-    switch (event->key())
-    {
-        case Qt::Key_Control:
-            nativeKey = VK_CONTROL;
-            break;
-        case Qt::Key_Alt:
-            nativeKey = VK_MENU;
-            break;
-        case Qt::Key_QuoteLeft:
-            nativeKey = VK_OEM_3;
-            break;
-        case Qt::Key_BracketLeft:
-            nativeKey = VK_OEM_4;
-            break;
-        case Qt::Key_BracketRight:
-            nativeKey = VK_OEM_6;
-            break;
-        case Qt::Key_Comma:
-            nativeKey = VK_OEM_COMMA;
-            break;
-        case Qt::Key_Period:
-            nativeKey = VK_OEM_PERIOD;
-            break;
-        case Qt::Key_Escape:
-            nativeKey = VK_ESCAPE;
-            break;
-    }
+    nativeKey = TranslateQtKeyToNativeKey(event->key(), nativeKey);
 #endif
     OnKeyDown(nativeKey, 1, event->nativeModifiers());
 }
@@ -489,38 +500,10 @@ void QtViewport::keyReleaseEvent(QKeyEvent* event)
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     // nativeVirtualKey is always zero on macOS, therefore we
     // need to manually set the nativeKey based on the Qt key
-    switch (event->key())
-    {
-        case Qt::Key_Control:
-            nativeKey = VK_CONTROL;
-            break;
-        case Qt::Key_Alt:
-            nativeKey = VK_MENU;
-            break;
-        case Qt::Key_QuoteLeft:
-            nativeKey = VK_OEM_3;
-            break;
-        case Qt::Key_BracketLeft:
-            nativeKey = VK_OEM_4;
-            break;
-        case Qt::Key_BracketRight:
-            nativeKey = VK_OEM_6;
-            break;
-        case Qt::Key_Comma:
-            nativeKey = VK_OEM_COMMA;
-            break;
-        case Qt::Key_Period:
-            nativeKey = VK_OEM_PERIOD;
-            break;
-        case Qt::Key_Escape:
-            nativeKey = VK_ESCAPE;
-            break;
-    }
+    nativeKey = TranslateQtKeyToNativeKey(event->key(), nativeKey);
 #endif
     OnKeyUp(nativeKey, 1, event->nativeModifiers());
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::OnSetCursor()
