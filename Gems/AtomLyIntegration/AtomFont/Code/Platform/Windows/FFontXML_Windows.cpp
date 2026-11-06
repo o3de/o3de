@@ -17,7 +17,7 @@ namespace AtomFontInternal
 {
     void XmlFontShader::FoundElementImpl()
     {
-        wchar_t sysFontPathW[MAX_PATH];
+        wchar_t sysFontPathW[AZ_TRAIT_OS_MAX_PATH_LEN];
         if (SUCCEEDED(SHGetFolderPath(nullptr, CSIDL_FONTS, nullptr, SHGFP_TYPE_DEFAULT, sysFontPathW)))
         {
             const AZ::IO::PathView fontName = AZ::IO::PathView(m_strFontPath.c_str()).Filename();

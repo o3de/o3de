@@ -510,7 +510,7 @@ public:
 struct SharedData
 {
     bool raise = false;
-    char text[_MAX_PATH];
+    char text[AZ_TRAIT_OS_MAX_PATH_LEN];
 };
 /////////////////////////////////////////////////////////////////////////////
 // CTheApp::FirstInstance
@@ -539,7 +539,7 @@ bool CCryEditApp::FirstInstance(bool bForceNewInstance)
         if (m_bPreviewMode)
         {
             // IF in preview mode send this window copy data message to load new preview file.
-            azstrcpy(data->text, MAX_PATH, m_sPreviewFile);
+            azstrcpy(data->text, AZ_TRAIT_OS_MAX_PATH_LEN, m_sPreviewFile);
         }
         return false;
     }
@@ -851,7 +851,7 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
         if (!m_bRunPythonScript && IsPreviewableFileType(cmdInfo.m_strFileName.toUtf8().constData()))
         {
             m_bPreviewMode = true;
-            azstrncpy(m_sPreviewFile, _MAX_PATH, cmdInfo.m_strFileName.toUtf8().constData(), _MAX_PATH);
+            azstrncpy(m_sPreviewFile, AZ_TRAIT_OS_MAX_PATH_LEN, cmdInfo.m_strFileName.toUtf8().constData(), AZ_TRAIT_OS_MAX_PATH_LEN);
         }
     }
 
@@ -2099,7 +2099,7 @@ void CCryEditApp::EnableIdleProcessing()
     AZ_Assert(m_disableIdleProcessingCounter >= 0, "m_disableIdleProcessingCounter must be nonnegative");
 }
 
-bool CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
+bool CCryEditApp::OnIdle([[maybe_unused]] AZ::s64 lCount)
 {
     if (0 == m_disableIdleProcessingCounter)
     {
@@ -2565,8 +2565,8 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
-    //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
-    if (fullyQualifiedLevelName.length() >= _MAX_PATH-1)
+    //AZ_TRAIT_OS_MAX_PATH_LEN includes null terminator, so we actually want to cap at AZ_TRAIT_OS_MAX_PATH_LEN-1
+    if (fullyQualifiedLevelName.length() >= AZ_TRAIT_OS_MAX_PATH_LEN-1)
     {
         GetIEditor()->Notify(eNotify_OnEndCreate);
         return ECLR_MAX_PATH_EXCEEDED;
@@ -2777,7 +2777,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             "The fully-qualified path is made up of the project folder (\"%3\", %4 characters), the \"Levels\" sub-folder, a folder named for the level (\"%5\", %6 characters) and the level file (\"%7\", %8 characters), plus necessary separators.\n\n"
             "Please also note that on most platforms, individual components of the path (folder/file names can't exceed  approximately 255 characters)\n\n"
             "Click \"Copy to Clipboard\" to copy the fully-qualified name and close this message.")
-            .arg(_MAX_PATH - 1).arg(fullyQualifiedLevelName.size())
+            .arg(AZ_TRAIT_OS_MAX_PATH_LEN - 1).arg(fullyQualifiedLevelName.size())
             .arg(projectDirectory).arg(projectDirectory.size())
             .arg(elidedLevelName).arg(levelName.size())
             .arg(elidedLevelFileName).arg(info.fileName().size());
