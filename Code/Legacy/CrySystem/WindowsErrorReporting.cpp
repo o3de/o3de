@@ -22,7 +22,7 @@
 
 #include <DbgHelp.h>
 
-static WCHAR szPath[MAX_PATH + 1];
+static WCHAR szPath[AZ_TRAIT_OS_MAX_PATH_LEN + 1];
 static WCHAR szFR[] = L"\\System32\\FaultRep.dll";
 
 WCHAR* GetFullPathToFaultrepDll(void)
