@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include "ImportContextProvider.h"
-
 #include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SceneBuilder/ImportContexts/ImportContextProvider.h>
@@ -72,6 +71,8 @@ namespace AZ
                     AZ_UNUSED(fileExtension);
                     return true;
                 }
+
+                void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const override;
 
                 AZStd::unique_ptr<AZ::SDKScene::SceneWrapperBase> CreateSceneWrapper() const override
                 {

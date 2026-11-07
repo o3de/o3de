@@ -15,19 +15,6 @@
 #include <SceneAPI/SceneBuilder/SceneImportRequestHandler.h>
 
 #include <SceneAPI/SceneBuilder/SceneImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpBitangentStreamImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpColorStreamImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpCustomPropertyImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpMaterialImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpMeshImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpTangentStreamImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpTransformImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpUvMapImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpSkinImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpSkinWeightsImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpBoneImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpAnimationImporter.h>
-#include <SceneAPI/SceneBuilder/Importers/AssImpBlendShapeImporter.h>
 
 namespace AZ
 {
@@ -39,8 +26,6 @@ namespace AZ
 
             void Reflect(AZ::SerializeContext* /*context*/)
             {
-                // Descriptor registration is done in Reflect instead of Initialize because the ResourceCompilerScene initializes the libraries before
-                // there's an application.
                 using namespace AZ::SceneAPI;
                 using namespace AZ::SceneAPI::SceneBuilder;
 
@@ -49,21 +34,6 @@ namespace AZ
                     // Global importer and behavior
                     g_componentDescriptors.push_back(SceneBuilder::SceneImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(SceneImportRequestHandler::CreateDescriptor());
-
-                    // Node and attribute importers
-                    g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpColorStreamImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpMaterialImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpMeshImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpTangentStreamImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpTransformImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpUvMapImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpSkinImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpSkinWeightsImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpBoneImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpAnimationImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpBlendShapeImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(AssImpCustomPropertyImporter::CreateDescriptor());
 
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
@@ -80,7 +50,7 @@ namespace AZ
             void Activate()
             {
             }
-            
+
             void Deactivate()
             {
             }

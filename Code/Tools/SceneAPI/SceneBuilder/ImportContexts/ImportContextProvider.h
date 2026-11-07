@@ -11,6 +11,7 @@
 #include "ImportContexts.h"
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SDKWrapper/NodeWrapper.h>
@@ -73,7 +74,8 @@ namespace AZ
             //! @note Ensure your Component inherits from SceneCore::SceneSystemComponent.
             //!       This is a different hierarchy than regular SystemComponents.
             //!
-            //! @see AssImpImportContextProvider.h for reference implementation.
+            //! @see Gems/AssImp Code/SceneAPI/SceneBuilder/ImportContexts/AssImpImportContextProvider.h
+            //!      for a reference implementation.
             struct ImportContextProvider
             {
                 AZ_RTTI(ImportContextProvider, "{5df22f6c-8a43-417d-b735-9d9d7d069efc}");
@@ -122,6 +124,14 @@ namespace AZ
 
                 //! Checks if this provider can handle the given file extension
                 virtual bool CanHandleExtension(AZStd::string_view fileExtension) const = 0;
+
+                //! Inserts the file extensions this provider supports into the given set. The SceneAPI
+                //! unions the extensions of all registered providers to advertise which source formats
+                //! can be processed (for example, asset builder job patterns).
+                virtual void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const
+                {
+                    AZ_UNUSED(extensions);
+                }
 
                 //! Get a descriptive name for Context Provider
                 virtual AZStd::string GetImporterName() const { return "Unknown Importer"; }
