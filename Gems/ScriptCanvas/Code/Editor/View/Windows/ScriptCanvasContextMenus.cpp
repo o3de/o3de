@@ -77,8 +77,8 @@ namespace ScriptCanvasEditor
             const AZ::EntityId scriptCanvasNodeId = userData && userData->is<AZ::EntityId>()
                 ? *AZStd::any_cast<AZ::EntityId>(userData)
                 : AZ::EntityId();
-            return scriptCanvasNodeId.IsValid() &&
-                AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Nodes::Core::Reroute>(scriptCanvasNodeId);
+            return scriptCanvasNodeId.IsValid()
+                && AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Nodes::Core::Reroute>(scriptCanvasNodeId);
         }
 
         bool CanDissolveRerouteNode(const GraphCanvas::NodeId& nodeId)
@@ -108,6 +108,7 @@ namespace ScriptCanvasEditor
                 hasConnectedInput = hasConnectedInput || connectionType == GraphCanvas::ConnectionType::CT_Input;
                 hasConnectedOutput = hasConnectedOutput || connectionType == GraphCanvas::ConnectionType::CT_Output;
             }
+
             return hasConnectedInput && hasConnectedOutput;
         }
 
@@ -167,6 +168,7 @@ namespace ScriptCanvasEditor
             {
                 return selectedConnections;
             }
+
             return { targetConnectionId };
         }
 
@@ -273,6 +275,7 @@ namespace ScriptCanvasEditor
                         endpoints.m_sourceEndpoint,
                         endpoints.m_targetEndpoint);
                 }
+
                 return false;
             }
 

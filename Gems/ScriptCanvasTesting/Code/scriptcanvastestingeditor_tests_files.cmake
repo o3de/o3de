@@ -18,6 +18,7 @@ set(FILES
     Tests/ScriptCanvasTestingTest.cpp
     Tests/ScriptCanvas_ContainerSupport.cpp
     Tests/ScriptCanvas_Core.cpp
+    Tests/ScriptCanvas_Reroute.cpp
     Tests/ScriptCanvas_EventHandlers.cpp
     Tests/ScriptCanvas_FileHandling.cpp
     Tests/ScriptCanvas_Math.cpp

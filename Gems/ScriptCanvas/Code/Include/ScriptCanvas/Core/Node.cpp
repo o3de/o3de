@@ -2939,59 +2939,79 @@ namespace ScriptCanvas
         return connectedNodes;
     }
 
+    namespace
+    {
+        EndpointsResolved ResolveRerouteEndpoints(const EndpointsResolved& endpoints, bool includeDisabledNodes)
+        {
+            EndpointsResolved resolved;
+            AZStd::unordered_set<Endpoint> visited;
+            AZStd::function<void(const Node*, const Slot*)> visit;
+            visit = [&](const Node* node, const Slot* slot)
+            {
+                if (!node || !slot || !visited.insert(slot->GetEndpoint()).second)
+                {
+                    return;
+                }
+
+                if (!includeDisabledNodes && !node->IsNodeEnabled())
+                {
+                    return;
+                }
+
+                if (!node->IsConnectionTransparentForTranslation())
+                {
+                    resolved.emplace_back(node, slot);
+                    return;
+                }
+
+                for (const Slot& oppositeSlot : node->GetSlots())
+                {
+                    if (!slot->GetDescriptor().CanConnectTo(oppositeSlot.GetDescriptor()))
+                    {
+                        continue;
+                    }
+
+                    if (includeDisabledNodes)
+                    {
+                        if (const Graph* graph = node->GetGraph())
+                        {
+                            for (const Endpoint& endpoint : graph->GetConnectedEndpoints(oppositeSlot.GetEndpoint()))
+                            {
+                                if (const Node* connectedNode = graph->FindNode(endpoint.GetNodeId()))
+                                {
+                                    visit(connectedNode, connectedNode->GetSlot(endpoint.GetSlotId()));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (const auto& [connectedNode, connectedSlot] : node->GetConnectedNodes(oppositeSlot))
+                        {
+                            visit(connectedNode, connectedSlot);
+                        }
+                    }
+                }
+            };
+
+            for (const auto& [node, slot] : endpoints)
+            {
+                visit(node, slot);
+            }
+
+            return resolved;
+        }
+    }
+
     EndpointsResolved Node::GetConnectedNodesForTranslation(const Slot& slot) const
     {
         AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesForTranslation");
+        return ResolveRerouteEndpoints(GetConnectedNodes(slot), false);
+    }
 
-        EndpointsResolved resolvedNodes;
-        AZStd::unordered_set<Endpoint> visitedEndpoints;
-        visitedEndpoints.insert(Endpoint(GetEntityId(), slot.GetId()));
-
-        AZStd::function<void(const Node*, const Slot*)> resolveEndpoint;
-        resolveEndpoint = [&resolvedNodes, &visitedEndpoints, &resolveEndpoint](const Node* node, const Slot* endpointSlot)
-        {
-            if (!node || !endpointSlot)
-            {
-                return;
-            }
-
-            const Endpoint endpoint(node->GetEntityId(), endpointSlot->GetId());
-            if (!visitedEndpoints.insert(endpoint).second)
-            {
-                return;
-            }
-
-            if (!node->IsConnectionTransparentForTranslation())
-            {
-                resolvedNodes.emplace_back(node, endpointSlot);
-                return;
-            }
-
-            CombinedSlotType oppositeSlotType = CombinedSlotType::None;
-            if (endpointSlot->IsData())
-            {
-                oppositeSlotType = endpointSlot->IsInput() ? CombinedSlotType::DataOut : CombinedSlotType::DataIn;
-            }
-            else if (endpointSlot->IsExecution())
-            {
-                oppositeSlotType = endpointSlot->IsInput() ? CombinedSlotType::ExecutionOut : CombinedSlotType::ExecutionIn;
-            }
-
-            for (const Slot* oppositeSlot : node->GetSlotsByType(oppositeSlotType))
-            {
-                for (const EndpointResolved& connectedEndpoint : node->GetConnectedNodes(*oppositeSlot))
-                {
-                    resolveEndpoint(connectedEndpoint.first, connectedEndpoint.second);
-                }
-            }
-        };
-
-        for (const EndpointResolved& connectedEndpoint : GetConnectedNodes(slot))
-        {
-            resolveEndpoint(connectedEndpoint.first, connectedEndpoint.second);
-        }
-
-        return resolvedNodes;
+    EndpointsResolved Node::GetNonTransparentEndpoints(const Slot& slot) const
+    {
+        return ResolveRerouteEndpoints({{this, &slot}}, true);
     }
 
     AZStd::vector<AZStd::pair<Node*, const SlotId>> Node::ModConnectedNodes(const Slot& slot) const

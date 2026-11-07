@@ -689,6 +689,9 @@ namespace ScriptCanvas
         //! Resolves connections while bypassing nodes that are transparent to translation.
         EndpointsResolved GetConnectedNodesForTranslation(const Slot& slot) const;
 
+        //! Resolves a slot through reroutes, including disabled nodes whose connection contracts still apply.
+        EndpointsResolved GetNonTransparentEndpoints(const Slot& slot) const;
+
         AZStd::vector<const Slot*> GetEventSlots() const;
 
         bool ValidateNode(ValidationResults& validationResults);
