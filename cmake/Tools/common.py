@@ -80,7 +80,7 @@ class LmbrCmdError(Exception):
 def read_project_name_from_project_json(project_path):
     project_name = None
     try:
-        with (pathlib.Path(project_path) / 'project.json').open('r') as project_file:
+        with (pathlib.Path(project_path) / 'project.json').open('r', encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS) as project_file:
             project_json = json.load(project_file)
             project_name = project_json['project_name']
     except OSError as os_error:
@@ -129,7 +129,7 @@ def get_config_file_values(config_file_path, keys_to_extract):
     @return: Dictionary of keys and its values (for matched keys)
     """
     result_map = {}
-    with open(config_file_path, 'r') as config_file:
+    with open(config_file_path, 'r', encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS) as config_file:
         bootstrap_contents = config_file.read()
 
         for search_key in keys_to_extract:
@@ -153,7 +153,7 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
         raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
 
     result_map = {}
-    with open(bootstrap_file, 'r') as f:
+    with open(bootstrap_file, 'r', encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS) as f:
         try:
             json_data = json.load(f)
         except Exception as e:
@@ -185,7 +185,7 @@ def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
                            ERROR_CODE_FILE_NOT_FOUND)
 
     parser = configparser.ConfigParser()
-    parser.read([ap_config_file])
+    parser.read([ap_config_file], encoding=DEFAULT_TEXT_READ_ENCODING)
     if parser.has_option('Platforms', bootstrap_asset_type):
         enabled_value = parser.get('Platforms', bootstrap_asset_type)
     else:
@@ -460,7 +460,7 @@ class PlatformSettings(object):
             raise LmbrCmdError(f"Invalid build directory {build_dir}. Missing 'platform.settings'.")
 
         config = configparser.ConfigParser()
-        config.read(platform_last_file)
+        config.read(platform_last_file, encoding=DEFAULT_TEXT_READ_ENCODING)
 
         # Look up the general common settings across all platforms
         projects_str = config['settings']['game_projects']
@@ -645,7 +645,7 @@ def get_cmake_dependency_modules(build_dir_path, target, module_type):
         if not cmake_dep_path.is_file():
             return dep_modules
 
-        with cmake_dep_path.open() as cmake_dep_json_file:
+        with cmake_dep_path.open(encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS) as cmake_dep_json_file:
             cmake_dep_json = json.load(cmake_dep_json_file)
 
         test_module_items = cmake_dep_json['Amazon'][module_type]
@@ -674,7 +674,7 @@ def get_test_module_registry(build_dir_path):
     try:
         unit_test_module_path = build_dir_path / 'unit_test_modules.json'
 
-        with unit_test_module_path.open() as unit_test_json_file:
+        with unit_test_module_path.open(encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS) as unit_test_json_file:
             unit_test_json = json.load(unit_test_json_file)
 
         test_module_items = unit_test_json['Amazon']
