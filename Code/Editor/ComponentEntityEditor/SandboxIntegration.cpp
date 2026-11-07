@@ -141,6 +141,9 @@ SandboxIntegrationManager::SandboxIntegrationManager()
     // Create the PrefabIntegrationManager, which initializes prefab-related operations.
     m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
 
+    // Create the EntityPresetsIntegrationManager, which puts the entity presets into the context menus.
+    m_entityPresetsIntegrationManager = aznew AzToolsFramework::EntityPresetsIntegrationManager();
+
     // Connect to the Action Manager Registration bus to correctly register actions, menus, toolbars etc.
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 }
@@ -150,6 +153,9 @@ SandboxIntegrationManager::~SandboxIntegrationManager()
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+
+    delete m_entityPresetsIntegrationManager;
+    m_entityPresetsIntegrationManager = nullptr;
 
     delete m_prefabIntegrationManager;
     m_prefabIntegrationManager = nullptr;
