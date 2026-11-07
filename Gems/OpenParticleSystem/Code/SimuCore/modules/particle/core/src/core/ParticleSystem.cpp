@@ -236,7 +236,7 @@ namespace SimuCore::ParticleCore {
             }
             for (auto& idx : lod.emitterIndexes) {
                 auto iter = allEmitters.find(idx);
-                if (iter != allEmitters.end()) {
+                if (iter != allEmitters.end() && !iter->second->GetEmitterConfig()->disabled) {
                     (void)renderSortInfo.emplace_back(iter->second, iter->second->GetRenderSort());
                 }
             }
@@ -245,6 +245,9 @@ namespace SimuCore::ParticleCore {
 
         if (lods.size() == 0) {
             for (auto emitter : allEmitters) {
+                if (emitter.second->GetEmitterConfig()->disabled) {
+                    continue;
+                }
                 (void)renderSortInfo.emplace_back(emitter.second, emitter.second->GetRenderSort());
             }
         }
@@ -291,10 +294,16 @@ namespace SimuCore::ParticleCore {
         for (AZ::u32 tickIndex = 0; tickIndex < warmUp->tickCount; tickIndex++) {
             AZStd::unordered_map<AZ::u32, float> dts;
             for (auto emitter : allEmitters) {
+                if (emitter.second->GetEmitterConfig()->disabled) {
+                    continue;
+                }
                 (void)dts.emplace(emitter.first, emitter.second->Simulate(warmUp->tickDelta));
             }
 
             for (auto& emitter : allEmitters) {
+                if (emitter.second->GetEmitterConfig()->disabled) {
+                    continue;
+                }
                 if (dts[emitter.first] > 0.0f) {
                     emitter.second->Tick(dts[emitter.first]);
                 }

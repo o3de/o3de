@@ -252,7 +252,11 @@ namespace AZ
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
 
             // Build newly added Blas instances
-            auto& toBuildList = rayTracingFeatureProcessor->GetBlasBuildList(context.GetDeviceIndex());
+            RayTracingFeatureProcessor::BlasBuildList toBuildList;
+            {
+                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                toBuildList.swap(rayTracingFeatureProcessor->GetBlasBuildList(context.GetDeviceIndex()));
+            }
             for (auto assetId : toBuildList)
             {
                 auto it = blasInstances.find(assetId);
@@ -301,7 +305,6 @@ namespace AZ
                     blasInstance.m_blasBuilt |= RHI::MultiDevice::DeviceMask(1 << context.GetDeviceIndex());
                 }
             }
-            toBuildList.clear();
 
             // Build, update, or rebuild skinned mesh Blas instances
             for (auto assetId : rayTracingFeatureProcessor->GetSkinnedMeshBlasList())
@@ -356,7 +359,11 @@ namespace AZ
             context.GetCommandList()->BuildClusterBottomLevelAccelerationStructures(changedClusterBlasList);
 
             // Compact Blas instances
-            auto& toCompactList = rayTracingFeatureProcessor->GetBlasCompactionList(context.GetDeviceIndex());
+            RayTracingFeatureProcessor::BlasBuildList toCompactList;
+            {
+                AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
+                toCompactList.swap(rayTracingFeatureProcessor->GetBlasCompactionList(context.GetDeviceIndex()));
+            }
             for (auto assetId : toCompactList)
             {
                 auto it = blasInstances.find(assetId);
@@ -377,7 +384,6 @@ namespace AZ
                 AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
                 rayTracingFeatureProcessor->MarkBlasInstanceAsCompactionEnqueued(context.GetDeviceIndex(), assetId);
             }
-            toCompactList.clear();
 
             // build the TLAS object
             context.GetCommandList()->BuildTopLevelAccelerationStructure(

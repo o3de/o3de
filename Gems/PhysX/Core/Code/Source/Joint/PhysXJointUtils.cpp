@@ -131,6 +131,7 @@ namespace PhysX::Utils
         {
             return;
         }
+        PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
 
         if (!properties.m_isLimited)
         {
@@ -162,6 +163,7 @@ namespace PhysX::Utils
         {
             return;
         }
+        PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
 
         if (!properties.m_isLimited)
         {
@@ -191,6 +193,7 @@ namespace PhysX::Utils
         {
             return;
         }
+        PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
 
         if (!properties.m_isLimited)
         {
@@ -219,6 +222,7 @@ namespace PhysX::Utils
         {
             return;
         }
+        PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
 
         nativeJoint->setMotion(physx::PxD6Axis::eY, physx::PxD6Motion::eLOCKED);
         nativeJoint->setMotion(physx::PxD6Axis::eZ, physx::PxD6Motion::eLOCKED);
@@ -263,7 +267,8 @@ namespace PhysX::Utils
                 return nullptr;
             }
 
-            PHYSX_SCENE_WRITE_LOCK(actorData.parentActor->getScene());
+            // Either actor may be null (attached to the world), so take the scene from the other one.
+            PHYSX_SCENE_WRITE_LOCK(actorData.childActor ? actorData.childActor->getScene() : actorData.parentActor->getScene());
 
             const physx::PxTransform parentWorldTransform =
                 actorData.parentActor ? actorData.parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
@@ -335,13 +340,12 @@ namespace PhysX::Utils
             const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
                 configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
-            {
-                PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                joint = physx::PxFixedJointCreate(
-                    PxGetPhysics(),
-                    actorData.parentActor, PxMathConvert(parentLocalTM),
-                    actorData.childActor, PxMathConvert(childLocalTM));
-            }
+            // Creating the joint adds it to the actors' scene, so the lock covers it and the setup below.
+            PHYSX_SCENE_WRITE_LOCK(actorData.childActor->getScene());
+            joint = physx::PxFixedJointCreate(
+                PxGetPhysics(),
+                actorData.parentActor, PxMathConvert(parentLocalTM),
+                actorData.childActor, PxMathConvert(childLocalTM));
 
             InitializeGenericProperties(
                 configuration.m_genericProperties,
@@ -370,12 +374,11 @@ namespace PhysX::Utils
             const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
                 configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
-            {
-                PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                joint = physx::PxSphericalJointCreate(PxGetPhysics(),
-                    actorData.parentActor, PxMathConvert(parentLocalTM),
-                    actorData.childActor, PxMathConvert(childLocalTM));
-            }
+            // Creating the joint adds it to the actors' scene, so the lock covers it and the setup below.
+            PHYSX_SCENE_WRITE_LOCK(actorData.childActor->getScene());
+            joint = physx::PxSphericalJointCreate(PxGetPhysics(),
+                actorData.parentActor, PxMathConvert(parentLocalTM),
+                actorData.childActor, PxMathConvert(childLocalTM));
 
             InitializeSphericalLimitProperties(configuration.m_limitProperties, joint);
             InitializeGenericProperties(
@@ -405,12 +408,11 @@ namespace PhysX::Utils
             const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
                 configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
-            {
-                PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                joint = physx::PxRevoluteJointCreate(PxGetPhysics(),
-                    actorData.parentActor, PxMathConvert(parentLocalTM),
-                    actorData.childActor, PxMathConvert(childLocalTM));
-            }
+            // Creating the joint adds it to the actors' scene, so the lock covers it and the setup below.
+            PHYSX_SCENE_WRITE_LOCK(actorData.childActor->getScene());
+            joint = physx::PxRevoluteJointCreate(PxGetPhysics(),
+                actorData.parentActor, PxMathConvert(parentLocalTM),
+                actorData.childActor, PxMathConvert(childLocalTM));
 
             InitializeRevoluteLimitProperties(configuration.m_limitProperties, joint);
             InitializeGenericProperties(
@@ -447,19 +449,18 @@ namespace PhysX::Utils
                 configuration.m_childLocalRotation, configuration.m_childLocalPosition);
             physx::PxJoint* joint = nullptr;
 
+            // Creating the joint adds it to the actors' scene, so the lock covers it and the setup below.
+            PHYSX_SCENE_WRITE_LOCK(actorData.childActor->getScene());
+
             // If drive is enabled, create D6 joint.
             if (configuration.m_motorProperties.m_useMotor)
             {
-                physx::PxD6Joint* joint_d6;
-                {
-                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint_d6 = physx::PxD6JointCreate(
-                        PxGetPhysics(),
-                        actorData.parentActor,
-                        PxMathConvert(parentLocalTM),
-                        actorData.childActor,
-                        PxMathConvert(childLocalTM));
-                }
+                physx::PxD6Joint* joint_d6 = physx::PxD6JointCreate(
+                    PxGetPhysics(),
+                    actorData.parentActor,
+                    PxMathConvert(parentLocalTM),
+                    actorData.childActor,
+                    PxMathConvert(childLocalTM));
                 InitializePrismaticLimitD6Properties(configuration.m_limitProperties, joint_d6);
                 physx::PxD6JointDrive drive(0.0f , PX_MAX_F32, configuration.m_motorProperties.m_driveForceLimit, true);
                 joint_d6->setDrive(physx::PxD6Drive::eX, drive);
@@ -468,16 +469,12 @@ namespace PhysX::Utils
             }
             else
             {
-                physx::PxPrismaticJoint* joint_prismatic;
-                {
-                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint_prismatic = physx::PxPrismaticJointCreate(
-                        PxGetPhysics(),
-                        actorData.parentActor,
-                        PxMathConvert(parentLocalTM),
-                        actorData.childActor,
-                        PxMathConvert(childLocalTM));
-                }
+                physx::PxPrismaticJoint* joint_prismatic = physx::PxPrismaticJointCreate(
+                    PxGetPhysics(),
+                    actorData.parentActor,
+                    PxMathConvert(parentLocalTM),
+                    actorData.childActor,
+                    PxMathConvert(childLocalTM));
                 InitializePrismaticLimitProperties(configuration.m_limitProperties, joint_prismatic);
                 joint = static_cast<physx::PxJoint*>(joint_prismatic);
             }

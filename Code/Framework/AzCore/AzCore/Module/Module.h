@@ -30,6 +30,7 @@ namespace AZ
      */
     class AZCORE_API Module
     {
+        friend class ModuleManager;
     public:
         AZ_RTTI(Module, "{59682E0E-731F-4361-BC0B-039BC5376CA1}");
         AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator);

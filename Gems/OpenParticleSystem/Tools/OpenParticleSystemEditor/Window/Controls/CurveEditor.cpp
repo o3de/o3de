@@ -159,6 +159,10 @@ namespace OpenParticleSystemEditor
             m_layout.addWidget(preset);
             connect(preset, &PresetCurveWidget::OnClicked, this, [this, preset]()
                 {
+                    if (m_currentCurve == nullptr)
+                    {
+                        return;
+                    }
                     m_currentCurve->keyPoints.clear();
                     m_currentCurve->keyPoints.emplace_back(preset->m_start);
                     m_currentCurve->keyPoints.emplace_back(preset->m_stop);
@@ -240,8 +244,11 @@ namespace OpenParticleSystemEditor
 
     void CurveEditor::SetCurrentCurve(int index)
     {
-        if (index == 0 || index > m_distribution->curves.size())
+        if (!m_distribution || index <= 0 || index > m_distribution->curves.size())
         {
+            m_currentCurve = nullptr;
+            m_currentKeyIndex = -1;
+            update();
             return;
         }
         m_currentCurve = m_distribution->curves[index - 1];
@@ -351,6 +358,11 @@ namespace OpenParticleSystemEditor
         // draw grids
         DrawGrid(painter);
 
+        if (m_currentCurve == nullptr)
+        {
+            return;
+        }
+
         // draw keys
         QPen pen(Qt::red);
         QPen unselectedPen = QPen(Qt::gray);
@@ -398,7 +410,7 @@ namespace OpenParticleSystemEditor
 
     void CurveEditor::mouseMoveEvent(QMouseEvent* event)
     {
-        if (m_buttonPressed)
+        if (m_buttonPressed && m_currentCurve)
         {
             auto localPos = event->pos();
             UpdateCurveKey(localPos);
@@ -409,6 +421,12 @@ namespace OpenParticleSystemEditor
 
     void CurveEditor::mousePressEvent(QMouseEvent* event)
     {
+        if (m_currentCurve == nullptr)
+        {
+            QWidget::mousePressEvent(event);
+            return;
+        }
+
         QPoint currPos = event->pos();
         time_t index = 0;
         for (auto iter = m_currentCurve->keyPoints.begin(); iter != m_currentCurve->keyPoints.end(); iter++, index++)
@@ -479,6 +497,11 @@ namespace OpenParticleSystemEditor
 
     void CurveEditor::AddKey(QPoint pos)
     {
+        if (m_currentCurve == nullptr)
+        {
+            return;
+        }
+
         QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
         auto keyNew = ToKeyPoint(pt, OpenParticle::KeyPointInterpMode::CUBIC_IN);
         m_currentCurve->keyPoints.emplace_back(keyNew);
@@ -575,7 +598,7 @@ namespace OpenParticleSystemEditor
     {
         if (m_buttonPressed)
         {
-            if (m_buttonDragged)
+            if (m_buttonDragged && m_currentCurve)
             {
                 m_buttonDragged = false;
 
@@ -615,6 +638,11 @@ namespace OpenParticleSystemEditor
 
     void CurveEditor::UpdateCurveKey(QPointF pos)
     {
+        if (m_currentCurve == nullptr)
+        {
+            return;
+        }
+
         size_t index = 0;
         for (auto iter = m_currentCurve->keyPoints.begin(); iter != m_currentCurve->keyPoints.end(); iter++, index++)
         {

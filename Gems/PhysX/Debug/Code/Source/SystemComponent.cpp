@@ -363,10 +363,11 @@ namespace PhysXDebug
     }
 #endif // IMGUI_ENABLED
 
+    //! The returned buffer is rewritten when the scene fetches simulation results,
+    //! so the caller has to keep the scene locked for read while using it.
     static const physx::PxRenderBuffer& GetRenderBuffer(physx::PxScene* physxScene)
     {
         AZ_PROFILE_FUNCTION(Physics);
-        PHYSX_SCENE_READ_LOCK(physxScene);
         return physxScene->getRenderBuffer();
     }
 
@@ -526,6 +527,7 @@ namespace PhysXDebug
     void SystemComponent::GatherBuffers()
     {
         physx::PxScene* physxScene = GetCurrentPxScene();
+        PHYSX_SCENE_READ_LOCK(physxScene);
         const physx::PxRenderBuffer& rb = GetRenderBuffer(physxScene);
         GatherLines(rb);
         GatherTriangles(rb);

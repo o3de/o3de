@@ -102,6 +102,13 @@ namespace Maestro
         }
     }
 
+    void CAnimScreenFaderNode::Shutdown()
+    {
+        using namespace AnimScreenFaderNodeHelper;
+        s_screenFaderNodeParamsInitialized = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_screenFaderNodeParams);
+    }
+
     void CAnimScreenFaderNode::Animate(SAnimContext& ac)
     {
         const auto nScreenFaderTracksNumber = static_cast<unsigned int>(m_tracks.size());

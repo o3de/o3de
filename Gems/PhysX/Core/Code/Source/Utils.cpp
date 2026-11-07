@@ -300,14 +300,14 @@ namespace PhysX
             desc.samples.data = physxSamples.data();
             desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
-            // Modify the heightfield samples
-            constexpr bool shrinkBounds = false;
-            pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
-
-            // Lock the scene and modify the heightfield shape in the scene.
+            // Lock the scene, then modify the heightfield samples and the heightfield shape in the scene.
+            // The samples are read by the simulation, so they can't be modified outside the lock.
             // (If only the heightfield is modified, the shape won't get refreshed with the new data)
             {
                 PHYSX_SCENE_WRITE_LOCK(pxScene);
+
+                constexpr bool shrinkBounds = false;
+                pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
 
                 physx::PxHeightFieldGeometry hfGeom;
                 pxShape->getHeightFieldGeometry(hfGeom);
@@ -1852,6 +1852,8 @@ namespace PhysX
                 userData->Invalidate();
             }
 
+            // Releasing an actor that is still in a scene removes it from that scene.
+            PHYSX_SCENE_WRITE_LOCK(actor->getScene());
             actor->release();
         };
 

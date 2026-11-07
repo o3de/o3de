@@ -313,10 +313,12 @@ namespace OpenParticle
             world.emitterTransform = m_transform;
 
             auto emitters = m_particleSystem->GetVisibleEmitters();
+            m_drawOrder = 0;
             for (auto emitter : emitters) {
                 if (emitter == nullptr) {
                     continue;
                 }
+                ++m_drawOrder;
                 const AZ::u32 emitterId = emitter->GetEmitterId();
                 auto& instance = m_emitterInstances[emitter];
 
@@ -972,7 +974,9 @@ namespace OpenParticle
         if (drawPacket != nullptr)
         {
             m_drawPacket.emplace_back(drawPacket);
-            view.AddDrawPacket(drawPacket.get());
+            // every draw item used to share one depth, so equal emitters were drawn in an order that changed from frame to frame;
+            // a depth that drops with the emitter's sort order keeps later emitters on top, and stays nearer than any other object
+            view.AddDrawPacket(drawPacket.get(), -0.001f * static_cast<float>(m_drawOrder));
         }
     }
 

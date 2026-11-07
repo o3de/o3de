@@ -368,8 +368,11 @@ namespace OpenParticle
             m_distribution.GetDistributionIndex(emitterInfo->m_eventModules);
             m_distribution.GetDistributionIndex(emitterInfo->m_renderConfig);
         }
-        m_distribution.SortDistributionIndex();
+        // Turned off modules leave the list first, so the numbering of the rest matches the list again before it is made exact.
         m_distribution.RebuildDistribution();
+        m_distribution.NormalizeCurves();
+        m_distribution.NormalizeRandoms();
+        m_distribution.SortDistributionIndex();
         m_distribution.RebuildDistributionIndex();
     }
 
@@ -841,11 +844,30 @@ namespace OpenParticle
             module.second = &moduleList.back();
             break;
         case DetailConstant::RENDER_TYPE:
+        {
+            // Stash and release the renderer's curves/randoms like a removed module, or its stale indexes outlive the list entries.
+            StashDistribution(emitterInfo->m_renderConfig, detailInfo, className, moduleName);
+            DistInfos distInfos;
+            DataConvertor::GetDistIndex(emitterInfo->m_renderConfig, distInfos);
+            for (auto& info : distInfos.randomIndexInfos)
+            {
+                m_distribution.stashedRandomIndexes.emplace_back(info.distIndex);
+                info.distIndex = 0;
+            }
+            for (auto& info : distInfos.curveIndexInfos)
+            {
+                m_distribution.stashedCurveIndexes.emplace_back(info.distIndex);
+                info.distIndex = 0;
+            }
+            DataConvertor::UpdateDistIndex(emitterInfo->m_renderConfig, distInfos);
+
             module.first = false;
             moduleList.emplace_back(emitterInfo->m_renderConfig);
             module.second = &moduleList.back();
             emitterInfo->m_renderConfig.clear();
+            UpdateDistributionIndexes();
             break;
+        }
         case DetailConstant::EMITTER_EMIT:
             RemoveDetailModule(detailInfo, className, moduleName, emitterInfo->m_emitModules);
             break;
@@ -867,6 +889,8 @@ namespace OpenParticle
     {
         UpdateRandomIndexes();
         UpdateCurveIndexes();
+        // Drop the removed randoms and curves now (the caches keep them) so the next removal does not apply this shift a second time
+        m_distribution.RebuildDistribution();
     }
 
     void ParticleSourceData::UpdateRandomIndexes()
@@ -880,6 +904,8 @@ namespace OpenParticle
             UpdateRandomIndexes(emitterInfo->m_spawnModules);
             UpdateRandomIndexes(emitterInfo->m_updateModules);
             UpdateRandomIndexes(emitterInfo->m_eventModules);
+            // The renderer settings hold distributions too (a ribbon's width), and have to follow the list like the modules do.
+            UpdateRandomIndexes(emitterInfo->m_renderConfig);
         }
     }
 
@@ -894,48 +920,59 @@ namespace OpenParticle
             UpdateCurveIndexes(emitterInfo->m_spawnModules);
             UpdateCurveIndexes(emitterInfo->m_updateModules);
             UpdateCurveIndexes(emitterInfo->m_eventModules);
+            UpdateCurveIndexes(emitterInfo->m_renderConfig);
         }
     }
 
     void ParticleSourceData::UpdateRandomIndexes(AZStd::list<AZStd::any>& list)
     {
         // refresh indexes of other item in list
+        for (auto& any : list)
+        {
+            UpdateRandomIndexes(any);
+        }
+    }
+
+    void ParticleSourceData::UpdateRandomIndexes(AZStd::any& any)
+    {
         for (auto removedIndex : m_distribution.stashedRandomIndexes)
         {
-            for (auto& any : list)
+            DistInfos distInfosToRefresh;
+            DataConvertor::GetDistIndex(any, distInfosToRefresh);
+            for (auto& info : distInfosToRefresh.randomIndexInfos)
             {
-                DistInfos distInfosToRefresh;
-                DataConvertor::GetDistIndex(any, distInfosToRefresh);
-                for (auto& info : distInfosToRefresh.randomIndexInfos)
+                if (info.distIndex > removedIndex)
                 {
-                    if (info.distIndex > removedIndex)
-                    {
-                        info.distIndex -= 1;
-                    }
+                    info.distIndex -= 1;
                 }
-                DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
             }
+            DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
         }
     }
 
     void ParticleSourceData::UpdateCurveIndexes(AZStd::list<AZStd::any>& list)
     {
         // refresh indexes of other item in list
+        for (auto& any : list)
+        {
+            UpdateCurveIndexes(any);
+        }
+    }
+
+    void ParticleSourceData::UpdateCurveIndexes(AZStd::any& any)
+    {
         for (auto removedIndex : m_distribution.stashedCurveIndexes)
         {
-            for (auto& any : list)
+            DistInfos distInfosToRefresh;
+            DataConvertor::GetDistIndex(any, distInfosToRefresh);
+            for (auto& info : distInfosToRefresh.curveIndexInfos)
             {
-                DistInfos distInfosToRefresh;
-                DataConvertor::GetDistIndex(any, distInfosToRefresh);
-                for (auto& info : distInfosToRefresh.curveIndexInfos)
+                if (info.distIndex > removedIndex)
                 {
-                    if (info.distIndex > removedIndex)
-                    {
-                        info.distIndex -= 1;
-                    }
+                    info.distIndex -= 1;
                 }
-                DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
             }
+            DataConvertor::UpdateDistIndex(any, distInfosToRefresh);
         }
     }
 
@@ -1578,6 +1615,13 @@ namespace OpenParticle
         AZStd::invoke(fn, destEmitter->m_emitModules);
         AZStd::invoke(fn, destEmitter->m_updateModules);
         AZStd::invoke(fn, destEmitter->m_eventModules);
+        // The render config (a ribbon's width, for one) holds distributions too.
+        DataConvertor::GetDistIndex(destEmitter->m_renderConfig, distInfos);
+        if (!distInfos.randomIndexInfos.empty() || !distInfos.curveIndexInfos.empty())
+        {
+            modulesWithDist.emplace_back(&destEmitter->m_renderConfig);
+            distInfos.Clear();
+        }
         for (auto& module : modulesWithDist)
         {
             StashDistribution(*module, destDetail, "className", "moduleName");
@@ -1618,12 +1662,14 @@ namespace OpenParticle
             auto cacheInterface = AZ::Interface<DistributionCacheInterface>::Get();
             if (cacheInterface)
             {
-                AZStd::vector<RandomData> popRandom;
-                AZStd::vector<CurveData> popCurve;
+                // Per module and per param: modules share param names (sizeObject), so leftovers wrote one module's indexes into another or added a random twice
+                DistInfos moduleDistInfos;
                 AZStd::vector<AZ::TypeId> paramIds;
                 DataConvertor::GetParamId(*module, paramIds);
                 for (auto& paramId : paramIds)
                 {
+                    AZStd::vector<RandomData> popRandom;
+                    AZStd::vector<CurveData> popCurve;
                     auto key = cacheInterface->GetKey(sourceDetail, "className", "moduleName", paramId);
                     cacheInterface->PopDistributionRandom(key, popRandom);
                     for (auto& randomInfo : popRandom)
@@ -1632,7 +1678,7 @@ namespace OpenParticle
 
                         AddRandom(*randomInfo.second);
                         randomInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.randoms.size());
-                        distInfos.randomIndexInfos.emplace_back(randomInfo.first);
+                        moduleDistInfos.randomIndexInfos.emplace_back(randomInfo.first);
                     }
 
                     cacheInterface->PopDistributionCurve(key, popCurve);
@@ -1642,10 +1688,10 @@ namespace OpenParticle
 
                         AddCurve(*curveInfo.second);
                         curveInfo.first.distIndex = static_cast<AZ::u32>(m_distribution.curves.size());
-                        distInfos.curveIndexInfos.emplace_back(curveInfo.first);
+                        moduleDistInfos.curveIndexInfos.emplace_back(curveInfo.first);
                     }
                 }
-                DataConvertor::UpdateDistIndex(*module, distInfos);
+                DataConvertor::UpdateDistIndex(*module, moduleDistInfos);
             }
         }
 
@@ -1704,6 +1750,13 @@ namespace OpenParticle
         AZStd::invoke(fn, destEmitter->m_emitModules);
         AZStd::invoke(fn, destEmitter->m_updateModules);
         AZStd::invoke(fn, destEmitter->m_eventModules);
+        // The render config (a ribbon's width, for one) holds distributions too; without this the copy shares the source's curve and the file fails to build.
+        DataConvertor::GetDistIndex(destEmitter->m_renderConfig, distInfos);
+        if (!distInfos.randomIndexInfos.empty() || !distInfos.curveIndexInfos.empty())
+        {
+            modulesWithDist.emplace_back(&destEmitter->m_renderConfig);
+            distInfos.Clear();
+        }
 
         CopyDistributions(modulesWithDist);
     }

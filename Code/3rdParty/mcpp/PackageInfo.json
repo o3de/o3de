@@ -1,0 +1,12 @@
+{
+    "PackageName": "mcpp",
+    "Version": "2.7.2",
+    "URL": "https://github.com/o3de/mcpp",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/o3de/mcpp/archive/c8da19d04e248b129bfd90a4fd7882585148e4e5.tar.gz",
+        "Revision": "c8da19d04e248b129bfd90a4fd7882585148e4e5",
+        "SHA256": "b5b4face7d46a0ba74f97680814c1e714d2b729db74961b89dadc59e97c3c48d"
+    }
+}

@@ -119,9 +119,8 @@ namespace EMStudio
             m_selectedSet = nullptr;
         }
 
+        // SetSelectedSet already rebuilds both windows; a second pass would refill the motion table again.
         SetSelectedSet(m_selectedSet);
-        m_motionSetManagementWindow->ReInit();
-        m_motionSetWindow->ReInit();
     }
 
     void MotionSetsWindowPlugin::SetSelectedSet(EMotionFX::MotionSet* motionSet, bool clearSelectionUpfront)

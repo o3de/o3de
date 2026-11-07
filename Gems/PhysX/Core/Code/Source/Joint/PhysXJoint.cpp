@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/Joint/PhysXJointUtils.h>
 #include <PhysX/MathConversion.h>
+#include <PhysX/PhysXLocks.h>
 
 namespace PhysX
 {
@@ -47,6 +48,7 @@ namespace PhysX
             return false;
         }
 
+        PHYSX_SCENE_WRITE_LOCK(childActor ? childActor->getScene() : parentActor->getScene());
         m_pxJoint->setActors(parentActor, childActor);
         return true;
     }
@@ -176,11 +178,13 @@ namespace PhysX
         const AZ::u32 radialSubdivisionsClamped = AZ::GetClamp(radialSubdivisions, 1u, 4u);
 
         const physx::PxD6Joint* joint = static_cast<physx::PxD6Joint*>(m_pxJoint.get());
+        PHYSX_SCENE_READ_LOCK(joint->getScene());
         const AZ::Quaternion parentLocalRotation = PxMathConvert(joint->getLocalPose(physx::PxJointActorIndex::eACTOR0).q);
         const AZ::Quaternion parentWorldRotation = parentBody ? parentBody->GetOrientation() : AZ::Quaternion::CreateIdentity();
         const AZ::Quaternion childLocalRotation = PxMathConvert(joint->getLocalPose(physx::PxJointActorIndex::eACTOR1).q);
         const AZ::Quaternion childWorldRotation = childBody ? childBody->GetOrientation() : AZ::Quaternion::CreateIdentity();
 
+        // The swing and twist angles are computed from the current poses of the joint's actors.
         const float swingAngleY = joint->getSwingYAngle();
         const float swingAngleZ = joint->getSwingZAngle();
         const float swingLimitY = joint->getSwingLimit().yAngle;

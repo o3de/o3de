@@ -45,7 +45,7 @@ def SanitizeTargetName(targetName):
 def ParseInputFile(inputFilePath):
     result = []
     if inputFilePath:
-        with open(inputFilePath, 'r') as file:
+        with open(inputFilePath, 'r', encoding='utf-8') as file:
             # input files are expected to be separated by semicolon at first line
             inputFileContent = file.readline()
             inputFiles = inputFileContent.strip().split(";")

@@ -456,7 +456,7 @@ ILINE int32 iszero(f64 x)
 }
 ILINE int32 iszero(int32 x) {   return -(x >> 31 ^ (x - 1) >> 31); }
 #if defined(PLATFORM_64BIT) && !defined(__clang__)
-ILINE int64 iszero(__int64 x) { return -(x >> 63 ^ (x - 1) >> 63); }
+ILINE int64 iszero(int64 x) { return -(x >> 63 ^ (x - 1) >> 63); }
 #endif
 #if defined(PLATFORM_64BIT) && defined(__clang__) && !defined(LINUX)
 ILINE int64 iszero(int64_t x) { return -(x >> 63 ^ (x - 1) >> 63); }

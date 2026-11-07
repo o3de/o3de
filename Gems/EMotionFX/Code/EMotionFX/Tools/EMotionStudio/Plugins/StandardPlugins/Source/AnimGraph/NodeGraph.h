@@ -15,6 +15,7 @@
 
 #include <QColor>
 #include <QFont>
+#include <QLine>
 #include <QPen>
 #include <QTextOption>
 #include <QTimer>
@@ -243,8 +244,11 @@ namespace EMStudio
         size_t                      m_waypointIndex;
         AZStd::vector<AZ::Vector2>  m_waypointOldValues;
 
+        static constexpr qreal      s_minSubgridPixelSpacing = 6.0; // closer sub grid lines are not drawn
         QPen                        m_subgridPen;
         QPen                        m_gridPen;
+        AZStd::vector<QLine>        m_subgridLines; // per-frame scratch, kept to avoid reallocating
+        AZStd::vector<QLine>        m_gridLines;
 
         // Overlay drawing
         QFont                       m_font;

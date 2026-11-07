@@ -187,6 +187,13 @@ namespace Maestro
         }
     }
 
+    void CAnimSceneNode::Shutdown()
+    {
+        using namespace AnimSceneNodeHelper;
+        s_nodeParamsInitialized = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_nodeParams);
+    }
+
     void CAnimSceneNode::CreateDefaultTracks()
     {
         CreateTrack(AnimParamType::Camera);

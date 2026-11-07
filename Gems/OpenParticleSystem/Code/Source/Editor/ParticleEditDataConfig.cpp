@@ -150,7 +150,8 @@ namespace OpenParticle
                 ->Field("startTime", &OpenParticle::EmitterConfig::startTime)
                 ->Field("localSpace", &OpenParticle::EmitterConfig::localSpace)
                 ->Field("duration", &OpenParticle::EmitterConfig::duration)
-                ->Field("loop", &OpenParticle::EmitterConfig::loop);
+                ->Field("loop", &OpenParticle::EmitterConfig::loop)
+                ->Field("enabled", &OpenParticle::EmitterConfig::enabled);
 
             serializeContext->Class<OpenParticle::SingleBurst>()
                 ->Version(0)
@@ -546,6 +547,9 @@ namespace OpenParticle
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &OpenParticle::EmitterConfig::enabled, QT_TRANSLATE_NOOP("OpenParticleSystem", "Enabled"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Unchecked keeps the emitter in the particle but stops it simulating and drawing."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::type, QT_TRANSLATE_NOOP("OpenParticleSystem", "Simulate Type"),
                         QT_TRANSLATE_NOOP("OpenParticleSystem", "The simulation type of the emitter."))

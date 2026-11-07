@@ -409,6 +409,8 @@ namespace OpenParticle
 
         void UpdateRandomIndexes(AZStd::list<AZStd::any>& list);
         void UpdateCurveIndexes(AZStd::list<AZStd::any>& list);
+        void UpdateRandomIndexes(AZStd::any& module);
+        void UpdateCurveIndexes(AZStd::any& module);
 
         void SetEventHandler(bool unSelect = false, AZStd::string emitterName = "");
     };

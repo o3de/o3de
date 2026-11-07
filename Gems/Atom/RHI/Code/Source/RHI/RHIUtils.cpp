@@ -18,6 +18,8 @@
 #include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Utils/Utils.h>
 
 static constexpr char GraphicsDevModeSetting[] = "/O3DE/Atom/RHI/GraphicsDevMode";
@@ -164,8 +166,8 @@ namespace AZ::RHI
 
     const AZ::Name& GetDefaultSupervariantNameWithNoFloat16Fallback()
     {
-        const static AZ::Name DefaultSupervariantName{ "" };
-        const static AZ::Name NoFloat16SupervariantName{ "NoFloat16" };
+        const static AZ::Name& DefaultSupervariantName = AZ_NAME_LITERAL("");
+        const static AZ::Name& NoFloat16SupervariantName = AZ_NAME_LITERAL("NoFloat16");
         return GetRHIDevice()->GetFeatures().m_float16 ? DefaultSupervariantName : NoFloat16SupervariantName;
     }
 

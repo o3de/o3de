@@ -319,6 +319,81 @@ namespace UnitTest
         }
     }
 
+    class SharedDescriptorComponent
+        : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(SharedDescriptorComponent, "{5D9B1AC9-983A-45FA-99B0-2AC1A07ADF2F}")
+
+        void Activate() override {}
+        void Deactivate() override {}
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<SharedDescriptorComponent, AZ::Component>();
+            }
+        }
+    };
+
+    // Like a gem's runtime and Editor modules, both list the same component
+    class SharedDescriptorModule
+        : public Module
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(SharedDescriptorModule, AZ::SystemAllocator)
+
+        SharedDescriptorModule()
+        {
+            m_descriptors.insert(m_descriptors.end(), {
+                SharedDescriptorComponent::CreateDescriptor(),
+            });
+        }
+    };
+
+    TEST_F(ModuleManager, SharedDescriptorIsOwnedByTheModuleThatCreatedIt)
+    {
+        ComponentApplication app;
+
+        ComponentApplication::Descriptor appDesc;
+        ComponentApplication::StartupParameters startupParams;
+        AZ::Module* creator = nullptr;
+        startupParams.m_createStaticModulesCallback = [&creator](AZStd::vector<AZ::Module*>& modulesOut)
+        {
+            creator = new SharedDescriptorModule();
+            modulesOut.push_back(creator);
+            modulesOut.push_back(new SharedDescriptorModule());
+        };
+        startupParams.m_loadSettingsRegistry = false;
+        app.Create(appDesc, startupParams);
+
+        AZ::ComponentDescriptor* sharedDescriptor = nullptr;
+        ComponentDescriptorBus::EventResult(
+            sharedDescriptor, azrtti_typeid<SharedDescriptorComponent>(), &ComponentDescriptorBus::Events::GetDescriptor);
+        ASSERT_NE(nullptr, sharedDescriptor);
+
+        // Every module releases the descriptors it lists, so a second listing releases this one twice
+        int listings = 0;
+        const AZ::Module* owner = nullptr;
+        ModuleManagerRequestBus::Broadcast(&ModuleManagerRequestBus::Events::EnumerateModules, [&](const ModuleData& moduleData)
+        {
+            for (AZ::ComponentDescriptor* descriptor : moduleData.GetModule()->GetComponentDescriptors())
+            {
+                if (descriptor == sharedDescriptor)
+                {
+                    ++listings;
+                    owner = moduleData.GetModule();
+                }
+            }
+            return true;
+        });
+        EXPECT_EQ(1, listings);
+        EXPECT_EQ(creator, owner);
+
+        app.Destroy();
+    }
+
 
 // the following tests only run on the following platforms which support module loading and unloading
 // as these platforms expand we can always use traits to include the ones that can do so:

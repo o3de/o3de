@@ -55,6 +55,12 @@ namespace Maestro
         }
     }
 
+    void CCommentNode::Shutdown()
+    {
+        s_nodeParamsInit = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_nodeParameters);
+    }
+
     void CCommentNode::Animate([[maybe_unused]] SAnimContext& ac)
     {
         // It's only for valid operation of key time editing.

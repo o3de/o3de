@@ -190,13 +190,13 @@ namespace PhysX
             AzPhysics::SceneQueryHit closestHit;
             float closestHitDistance = FLT_MAX;
 
-            int numShapes = actor->getNbShapes();
-            AZStd::vector<physx::PxShape*> shapes(numShapes);
-            actor->getShapes(shapes.data(), numShapes);
-
             {
                 physx::PxScene* scene = actor->getScene();
                 PHYSX_SCENE_READ_LOCK(scene);
+
+                int numShapes = actor->getNbShapes();
+                AZStd::vector<physx::PxShape*> shapes(numShapes);
+                actor->getShapes(shapes.data(), numShapes);
 
                 const physx::PxTransform actorTransform = actor->getGlobalPose();
                 for (physx::PxShape* shape : shapes)

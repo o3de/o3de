@@ -206,6 +206,7 @@ namespace EMStudio
 
     void MotionExtractionWindow::UpdateInterface()
     {
+        GetCommandManager()->GetCurrentSelection().MakeValid();
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
 
         // Check if there actually is any motion selected.

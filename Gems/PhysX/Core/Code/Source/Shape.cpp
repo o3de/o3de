@@ -248,6 +248,7 @@ namespace PhysX
     {
         if (m_pxShape)
         {
+            PHYSX_SCENE_WRITE_LOCK(GetScene());
             m_pxShape->setName(name);
         }
     }
@@ -281,11 +282,13 @@ namespace PhysX
 
     float Shape::GetRestOffset() const
     {
+        PHYSX_SCENE_READ_LOCK(GetScene());
         return m_pxShape->getRestOffset();
     }
 
     float Shape::GetContactOffset() const
     {
+        PHYSX_SCENE_READ_LOCK(GetScene());
         return m_pxShape->getContactOffset();
     }
 
@@ -298,6 +301,8 @@ namespace PhysX
                 restOffset, contactOffset);
             return;
         }
+
+        PHYSX_SCENE_WRITE_LOCK(GetScene());
         m_pxShape->setRestOffset(restOffset);
     }
 
@@ -316,6 +321,8 @@ namespace PhysX
                 contactOffset, restOffset);
             return;
         }
+
+        PHYSX_SCENE_WRITE_LOCK(GetScene());
         m_pxShape->setContactOffset(contactOffset);
     }
 
@@ -336,6 +343,7 @@ namespace PhysX
 
     bool Shape::IsTrigger() const
     {
+        PHYSX_SCENE_READ_LOCK(GetScene());
         if (m_pxShape->getFlags() & physx::PxShapeFlag::eTRIGGER_SHAPE)
         {
             return true;

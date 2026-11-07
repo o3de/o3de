@@ -189,6 +189,18 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string("Cannot add agent: dtCrowd::addAgent failed."));
         }
 
+        // An agent that is not close to the navigation mesh is added in the invalid state, in which it never moves.
+        const dtCrowdAgent* crowdAgent = m_crowd->getAgent(crowdIndex);
+        if (!crowdAgent || crowdAgent->state == DT_CROWDAGENT_STATE_INVALID)
+        {
+            m_crowd->removeAgent(crowdIndex);
+            return AZ::Failure(AZStd::string::format(
+                "Cannot add agent: position (%.2f, %.2f, %.2f) is not close to the navigation mesh.",
+                worldPosition.GetX(),
+                worldPosition.GetY(),
+                worldPosition.GetZ()));
+        }
+
         m_agentEntityToCrowdIndex.emplace(agentEntityId, static_cast<AZ::u32>(crowdIndex));
         return AZ::Success();
     }

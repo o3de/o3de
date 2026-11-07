@@ -345,6 +345,11 @@ void MainWindow::SystemTick()
     }
 }
 
+void MainWindow::OpenAssetImporter()
+{
+    m_assetImporterManager->Exec();
+}
+
 void MainWindow::OnOpenAssetImporterManager(const QStringList& dragAndDropFileList)
 {
     m_assetImporterManager->Exec(dragAndDropFileList);

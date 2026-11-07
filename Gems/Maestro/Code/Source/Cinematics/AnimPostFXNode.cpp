@@ -212,6 +212,12 @@ namespace Maestro
         }
     }
 
+    void CAnimPostFXNode::Shutdown()
+    {
+        s_initialized = false;
+        s_fxNodeDescriptions.clear();
+    }
+
     /*static*/ CFXNodeDescription* CAnimPostFXNode::GetFXNodeDescription(AnimNodeType nodeType)
     {
         CFXNodeDescription* retDescription = nullptr;
