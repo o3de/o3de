@@ -26,6 +26,7 @@ set(FILES
     Editor/Animation/UiAnimViewDialog.cpp
     Editor/Animation/UiAnimViewDialog.h
     Editor/Animation/UiAnimViewDialog.qrc
+    Editor/Animation/UiAnimViewResource.h
     Editor/Animation/UiAnimViewDopeSheetBase.cpp
     Editor/Animation/UiAnimViewDopeSheetBase.h
     Editor/Animation/UiAnimViewEventNode.cpp

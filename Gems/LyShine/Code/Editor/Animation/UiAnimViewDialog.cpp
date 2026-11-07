@@ -16,6 +16,7 @@
 
 #include "EditorDefs.h"
 #include "Editor/Resource.h"
+#include "UiAnimViewResource.h"
 
 #include "UiAnimViewDialog.h"
 

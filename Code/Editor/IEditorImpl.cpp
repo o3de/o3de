@@ -30,8 +30,9 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 // AzToolsFramework
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/API/EditorSequenceSystemLifecycle.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
@@ -42,8 +43,6 @@
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "LevelIndependentFileMan.h"
-#include "TrackView/TrackViewSequenceManager.h"
-#include "AnimationContext.h"
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
@@ -59,6 +58,7 @@
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
+#include "Undo/Undo.h"
 
 static CCryEditDoc * theDocument;
 #include <QMimeData>
@@ -86,8 +86,6 @@ CEditorImpl::CEditorImpl()
     , m_pDisplaySettings(nullptr)
     , m_bSelectionLocked(true)
     , m_pGameEngine(nullptr)
-    , m_pAnimationContext(nullptr)
-    , m_pSequenceManager(nullptr)
     , m_pToolBoxManager(nullptr)
     , m_pMusicManager(nullptr)
     , m_pErrorReport(nullptr)
@@ -119,10 +117,6 @@ CEditorImpl::CEditorImpl()
     m_pViewManager = new CViewManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pSequenceManager = new CTrackViewSequenceManager;
-
-    m_pAnimationContext = new CAnimationContext;
-
     DetectVersion();
     RegisterTools();
 
@@ -179,7 +173,6 @@ CEditorImpl::~CEditorImpl()
 
     SAFE_DELETE(m_pViewManager)
 
-    SAFE_DELETE(m_pAnimationContext) // relies on undo manager
     SAFE_DELETE(m_pUndoManager)
 
     if (m_pDisplaySettings)
@@ -225,7 +218,10 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
 
     m_templateRegistry.LoadTemplates("Editor");
 
-    m_pAnimationContext->Init();
+    if (auto* sequenceSystem = AzToolsFramework::IEditorSequenceSystemLifecycle::Get())
+    {
+        sequenceSystem->OnEditorGameEngineAttached();
+    }
 }
 
 void CEditorImpl::RegisterTools()
@@ -495,11 +491,6 @@ void CEditorImpl::UpdateViews(int flags, const AZ::Aabb* updateRegion)
     {
         m_pViewManager->SetUpdateRegion(prevRegion);
     }
-}
-
-void CEditorImpl::ReloadTrackView()
-{
-    Notify(eNotify_OnReloadTrackView);
 }
 
 void CEditorImpl::ResetViews()
@@ -938,21 +929,6 @@ float CEditorImpl::GetConsoleVar(const char* var)
         return ivar->GetFVal();
     }
     return 0;
-}
-
-CAnimationContext* CEditorImpl::GetAnimation()
-{
-    return m_pAnimationContext;
-}
-
-CTrackViewSequenceManager* CEditorImpl::GetSequenceManager()
-{
-    return m_pSequenceManager;
-}
-
-ITrackViewSequenceManager* CEditorImpl::GetSequenceManagerInterface()
-{
-    return GetSequenceManager();
 }
 
 void CEditorImpl::StartLevelErrorReportRecording()

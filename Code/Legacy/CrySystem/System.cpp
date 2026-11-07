@@ -24,6 +24,7 @@
 #include <CryCommon/MiniQueue.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
+#include <AzFramework/API/SequenceSystemLifecycle.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzCore/Debug/Profiler.h>
@@ -33,7 +34,6 @@
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzCore/Interface/Interface.h>
 
 AZ_DEFINE_BUDGET(CrySystem);
 
@@ -114,7 +114,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
 
 #include <IRenderer.h>
-#include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
 
@@ -154,16 +153,6 @@ SSystemCVars g_cvars;
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
-
-namespace
-{
-    float GetMovieFrameDeltaTime()
-    {
-        // Use GetRealTickDeltaTimeUs for CryMovie, because it should not be affected by pausing game time
-        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
-        return AZ::TimeUsToSeconds(delta);
-    }
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
@@ -239,8 +228,6 @@ CSystem::CSystem()
 #endif
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
-
-    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +303,10 @@ void CSystem::ShutDown()
     // we'd previously broadcast OnCrySystemInitialized
     if (m_bInitializedSuccessfully)
     {
+        if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
+        {
+            sequenceSystem->OnSystemShutdown();
+        }
         EBUS_EVENT(CrySystemEventBus, OnCrySystemShutdown, *this);
     }
 
@@ -664,10 +655,12 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         return false;
     }
 
-    // Run movie system pre-update
     if (!bNoUpdate)
     {
-        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), true);
+        if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
+        {
+            sequenceSystem->OnPreUpdate((updateFlags & ESYSUPDATE_EDITOR) != 0);
+        }
     }
 
     return !IsQuitting();
@@ -680,10 +673,12 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     const double updateStartTimeSec = AZ::TimeMsToSecondsDouble(updateStartTimeMs);
     const CTimeValue updateStart(updateStartTimeSec);
 
-    // Run movie system post-update
     if (!m_bNoUpdate)
     {
-        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), false);
+        if (auto* sequenceSystem = AzFramework::ISequenceSystemLifecycle::Get())
+        {
+            sequenceSystem->OnPostUpdate((updateFlags & ESYSUPDATE_EDITOR) != 0);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -768,33 +763,6 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
     }
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
-{
-    if (!m_movieSystem)
-    {
-        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
-    }
-    if (m_movieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
-    {
-        float fMovieFrameTime = fFrameTime;
-
-        if (fMovieFrameTime > g_cvars.sys_maxTimeStepForMovieSystem)
-        {
-            fMovieFrameTime = g_cvars.sys_maxTimeStepForMovieSystem;
-        }
-
-        if (bPreUpdate)
-        {
-            m_movieSystem->PreUpdate(fMovieFrameTime);
-        }
-        else
-        {
-            m_movieSystem->PostUpdate(fMovieFrameTime);
-        }
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 // XML stuff
