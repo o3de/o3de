@@ -1,0 +1,14 @@
+set(FILES
+    Include/SceneColorView/CaptureSize.h
+    Include/SceneColorView/Configuration.h
+    Source/Configuration.cpp
+    Source/SceneColorViewFeatureProcessor.h
+    Source/SceneColorViewFeatureProcessor.cpp
+    Source/SceneColorViewCapturePass.h
+    Source/SceneColorViewCapturePass.cpp
+    Source/SceneColorViewSystemComponent.h
+    Source/SceneColorViewSystemComponent.cpp
+    Source/SceneColorViewComponent.h
+    Source/SceneColorViewComponent.cpp
+    Source/SceneColorViewModule.h
+)
