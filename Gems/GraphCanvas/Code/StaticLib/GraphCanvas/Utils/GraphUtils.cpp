@@ -1445,6 +1445,9 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
         bool allowNode = false;
+        spliceConfiguration.m_splicedSourceEndpoint = {};
+        spliceConfiguration.m_splicedTargetEndpoint = {};
+
         if (nodeId.IsValid() && connectionId.IsValid())
         {
             GraphId graphId;
@@ -1495,9 +1498,14 @@ namespace GraphCanvas
                         }
                     }
                 }
-                // If we failed to make it, restore the previous connection
-                else if (!allowNode)
+                allowNode = spliceConfiguration.m_splicedSourceEndpoint.IsValid()
+                    && spliceConfiguration.m_splicedTargetEndpoint.IsValid();
+                if (!allowNode)
                 {
+                    SceneRequestBus::Event(graphId, &SceneRequests::Delete, config.m_createdConnections);
+                    spliceConfiguration.m_splicedSourceEndpoint = {};
+                    spliceConfiguration.m_splicedTargetEndpoint = {};
+
                     SceneRequestBus::Event(graphId, &SceneRequests::CreateConnectionBetween, connectionSourceEndpoint, connectionTargetEndpoint);
                 }
             }
