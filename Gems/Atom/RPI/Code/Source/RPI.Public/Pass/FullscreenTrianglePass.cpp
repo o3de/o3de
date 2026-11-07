@@ -248,7 +248,7 @@ namespace AZ
             AZ_Assert(outputAttachment->GetAttachmentType() == RHI::AttachmentType::Image,
                 "[FullscreenTrianglePass %s] output of FullScreenTrianglePass must be an image", GetPathName().GetCStr());
 
-            RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size targetImageSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             m_viewportState.m_maxX = static_cast<float>(targetImageSize.m_width);
             m_viewportState.m_maxY = static_cast<float>(targetImageSize.m_height);
