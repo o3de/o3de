@@ -823,6 +823,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorActorPhysicsSetup());
         RegisterChunkProcessor(aznew ChunkProcessorActorSimulatedObjectSetup());
         RegisterChunkProcessor(aznew ChunkProcessorMeshAsset());
+        RegisterChunkProcessor(aznew ChunkProcessorActorSocketSetup());
 
         // Motion file format
         RegisterChunkProcessor(aznew ChunkProcessorMotionInfo());

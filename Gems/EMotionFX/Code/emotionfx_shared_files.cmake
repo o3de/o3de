@@ -26,6 +26,8 @@ set(FILES
     Source/Integration/Assets/AnimGraphAsset.h
     Source/Integration/Components/ActorComponent.h
     Source/Integration/Components/ActorComponent.cpp
+    Source/Integration/Components/ActorSocketQueries.h
+    Source/Integration/Components/ActorSocketQueries.cpp
     Source/Integration/Components/AnimAudioComponent.h
     Source/Integration/Components/AnimAudioComponent.cpp
     Source/Integration/Components/AnimGraphComponent.h

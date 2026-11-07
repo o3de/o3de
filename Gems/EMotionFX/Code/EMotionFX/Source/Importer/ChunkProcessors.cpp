@@ -58,6 +58,7 @@
 #include <EMotionFX/Source/Importer/ActorFileFormat.h>
 #include <EMotionFX/Source/TwoStringEventData.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SocketSetup.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
 #include <EMotionFX/Source/MotionData/UniformMotionData.h>
 #include <EMotionFX/Source/MotionData/NonUniformMotionData.h>
@@ -839,6 +840,44 @@ namespace EMotionFX
         if (resultSimulatedObjectSetup)
         {
             actor->SetSimulatedObjectSetup(AZStd::shared_ptr<EMotionFX::SimulatedObjectSetup>(resultSimulatedObjectSetup));
+        }
+
+        return true;
+    }
+
+    //=================================================================================================
+
+    bool ChunkProcessorActorSocketSetup::Process(MCore::File* file, Importer::ImportParameters& importParams)
+    {
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
+
+        AZ::u32 bufferSize;
+        file->Read(&bufferSize, sizeof(AZ::u32));
+        MCore::Endian::ConvertUnsignedInt32(&bufferSize, endianType);
+
+        AZStd::vector<AZ::u8> buffer;
+        buffer.resize(bufferSize);
+        file->Read(&buffer[0], bufferSize);
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!serializeContext)
+        {
+            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+            return false;
+        }
+
+        AZ::ObjectStream::FilterDescriptor loadFilter(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
+        EMotionFX::SocketSetup* resultSocketSetup = AZ::Utils::LoadObjectFromBuffer<EMotionFX::SocketSetup>(buffer.data(), buffer.size(), serializeContext, loadFilter);
+        if (resultSocketSetup)
+        {
+            // The nodes chunk is written before this one, so the skeleton is complete here.
+            if (!resultSocketSetup->ResolveJointIndices(*actor->GetSkeleton()))
+            {
+                AZ_Warning("EMotionFX", false, "Actor '%s' has sockets whose parent joint is missing from the skeleton.", actor->GetName());
+            }
+            actor->SetSocketSetup(AZStd::shared_ptr<EMotionFX::SocketSetup>(resultSocketSetup));
         }
 
         return true;
