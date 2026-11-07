@@ -61,6 +61,11 @@ namespace AZ::RHI
         if (resultCode == ResultCode::Success)
         {
             m_descriptor = descriptor;
+            if (descriptor.m_verticalSyncInterval > GetMaximumVerticalSyncInterval())
+            {
+                Shutdown();
+                return ResultCode::Unimplemented;
+            }
             // Overwrite descriptor dimensions with the native ones (the ones assigned by the platform) returned by InitInternal.
             m_descriptor.m_dimensions = nativeDimensions;
 
@@ -152,11 +157,27 @@ namespace AZ::RHI
 
     void DeviceSwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
     {
+        [[maybe_unused]] const ResultCode result = TrySetVerticalSyncInterval(verticalSyncInterval);
+        AZ_Warning(
+            "DeviceSwapChain",
+            result == ResultCode::Success,
+            "Cannot honor VSync interval %u (native maximum %u).",
+            verticalSyncInterval,
+            GetMaximumVerticalSyncInterval());
+    }
+
+    ResultCode DeviceSwapChain::TrySetVerticalSyncInterval(uint32_t verticalSyncInterval)
+    {
+        if (verticalSyncInterval > GetMaximumVerticalSyncInterval())
+        {
+            return ResultCode::Unimplemented;
+        }
         uint32_t previousVsyncInterval = m_descriptor.m_verticalSyncInterval;
 
         m_descriptor.m_verticalSyncInterval = verticalSyncInterval;
 
         SetVerticalSyncIntervalInternal(previousVsyncInterval);
+        return ResultCode::Success;
     }
 
     const AttachmentId& DeviceSwapChain::GetAttachmentId() const

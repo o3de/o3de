@@ -26,6 +26,10 @@ namespace AZ
             static RHI::Ptr<SwapChain> Create();
 
             Device& GetDevice() const;
+            uint32_t GetMaximumVerticalSyncInterval() const override
+            {
+                return 4;
+            }
 
         private:
             SwapChain() = default;
