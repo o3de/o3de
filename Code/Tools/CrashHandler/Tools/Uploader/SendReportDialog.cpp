@@ -9,7 +9,9 @@
 #include "SendReportDialog.h"
 #include "UI/ui_submit_report.h"
 
+#include <QDesktopServices>
 #include <QLabel>
+#include <QUrl>
 
 namespace CrashUploader
 {
@@ -23,23 +25,58 @@ namespace CrashUploader
 
         if (manualReport)
         {
-            ui->question_label->setText("Would you like to manually report the issue ?");
+            ui->comment_prompt_label->setText("Would you like to manually report the issue?");
         }
+
+        connect(ui->diagnostics_label, &QLabel::linkActivated, this, [this](const QString&)
+        {
+            if (!m_reportDirectory.isEmpty())
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(m_reportDirectory));
+            }
+        });
+
+        connect(ui->send_close_button, &QPushButton::clicked, this, [this]()
+        {
+            m_wantsRestart = false;
+            accept();
+        });
+
+        connect(ui->send_restart_button, &QPushButton::clicked, this, [this]()
+        {
+            m_wantsRestart = true;
+            accept();
+        });
     }
 
     SendReportDialog::~SendReportDialog()
     {
     }
 
-    void SendReportDialog::SetReportText(const QString& reportText)
+    void SendReportDialog::SetReportDirectory(const QString& reportDirectory)
     {
-        ui->dump_label->setText(reportText);
+        m_reportDirectory = reportDirectory;
+    }
+
+    void SendReportDialog::SetSummaryText(const QString& summaryText)
+    {
+        ui->summary_edit->setPlainText(summaryText);
     }
 
     void SendReportDialog::SetApplicationName(const char* applicationName)
     {
         QString errorString{ applicationName };
-        errorString += " has encountered a fatal error.  We're sorry for the inconvenience.";
-        ui->label->setText(errorString);
+        errorString += " has crashed";
+        ui->header_label->setText(errorString);
+    }
+
+    QString SendReportDialog::GetUserComments() const
+    {
+        return ui->comments_edit->toPlainText();
+    }
+
+    bool SendReportDialog::WantsContact() const
+    {
+        return ui->contact_checkbox->isChecked();
     }
 }
