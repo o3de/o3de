@@ -64,7 +64,7 @@ namespace OpenParticle
         AZ::Data::Instance<ParticleSystem> m_particleInstance;
         AZ::EntityId m_entityId;
         AZ::Render::TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
-        AZ::Transform m_transform;
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         DriverWrap m_driver;
         bool m_visible = true;
         bool m_enable = true;
