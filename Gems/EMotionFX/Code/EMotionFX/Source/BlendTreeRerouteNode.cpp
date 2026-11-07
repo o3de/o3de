@@ -54,8 +54,7 @@ namespace EMotionFX
 
     bool BlendTreeRerouteNode::InitAfterLoading(AnimGraph* animGraph)
     {
-        // Configure the ports from the deserialized type before the base class restores
-        // each connection's pointer into its target input port.
+        // Restore typed ports before the base class reconnects deserialized inputs.
         ConfigurePorts();
 
         if (!AnimGraphNode::InitAfterLoading(animGraph))
@@ -71,9 +70,10 @@ namespace EMotionFX
     void BlendTreeRerouteNode::Reinit()
     {
         const bool portsNeedReconfiguration =
-            m_inputPorts.empty() || m_outputPorts.empty() ||
-            m_inputPorts[INPUTPORT_VALUE].m_compatibleTypes[0] != m_dataTypeId ||
-            m_outputPorts[OUTPUTPORT_VALUE].m_compatibleTypes[0] != m_dataTypeId;
+            m_inputPorts.empty()
+            || m_outputPorts.empty()
+            || m_inputPorts[INPUTPORT_VALUE].m_compatibleTypes[0] != m_dataTypeId
+            || m_outputPorts[OUTPUTPORT_VALUE].m_compatibleTypes[0] != m_dataTypeId;
 
         if (portsNeedReconfiguration)
         {
@@ -100,21 +100,32 @@ namespace EMotionFX
 
     AnimGraphPose* BlendTreeRerouteNode::GetMainOutputPose(AnimGraphInstance* animGraphInstance) const
     {
-        return GetHasOutputPose() ? GetOutputPose(animGraphInstance, OUTPUTPORT_VALUE)->GetValue() : nullptr;
+        if (GetHasOutputPose())
+        {
+            return GetOutputPose(animGraphInstance, OUTPUTPORT_VALUE)->GetValue();
+        }
+
+        return nullptr;
     }
 
     void BlendTreeRerouteNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
         AnimGraphNode* sourceNode = GetInputNode(INPUTPORT_VALUE);
+        UpdateIncomingNode(animGraphInstance, sourceNode, timePassedInSeconds);
+
+        if (!GetHasOutputPose())
+        {
+            UpdateOutputValue(animGraphInstance);
+        }
+
         if (!sourceNode)
         {
             uniqueData->Clear();
             return;
         }
 
-        UpdateIncomingNode(animGraphInstance, sourceNode, timePassedInSeconds);
-        if (sourceNode->GetHasOutputPose())
+        if (GetHasOutputPose())
         {
             uniqueData->Init(animGraphInstance, sourceNode);
         }
@@ -123,35 +134,35 @@ namespace EMotionFX
     void BlendTreeRerouteNode::Output(AnimGraphInstance* animGraphInstance)
     {
         AnimGraphNode* sourceNode = GetInputNode(INPUTPORT_VALUE);
-        if (GetHasOutputPose())
-        {
-            if (!sourceNode)
-            {
-                RequestPoses(animGraphInstance);
-                AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_VALUE)->GetValue();
-                outputPose->InitFromBindPose(animGraphInstance->GetActorInstance());
-                return;
-            }
-
-            OutputIncomingNode(animGraphInstance, sourceNode);
-            RequestPoses(animGraphInstance);
-            AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_VALUE)->GetValue();
-            *outputPose = *sourceNode->GetMainOutputPose(animGraphInstance);
-            return;
-        }
-
-        MCore::Attribute* outputValue = GetOutputAttribute(animGraphInstance, OUTPUTPORT_VALUE);
-        if (!sourceNode)
-        {
-            if (outputValue && m_defaultValue)
-            {
-                outputValue->InitFrom(m_defaultValue);
-            }
-            return;
-        }
-
         OutputIncomingNode(animGraphInstance, sourceNode);
-        MCore::Attribute* inputValue = GetInputAttribute(animGraphInstance, INPUTPORT_VALUE);
+
+        if (!GetHasOutputPose())
+        {
+            UpdateOutputValue(animGraphInstance);
+            return;
+        }
+
+        RequestPoses(animGraphInstance);
+        AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_VALUE)->GetValue();
+        if (sourceNode)
+        {
+            *outputPose = *GetInputPose(animGraphInstance, INPUTPORT_VALUE)->GetValue();
+        }
+        else
+        {
+            outputPose->InitFromBindPose(animGraphInstance->GetActorInstance());
+        }
+    }
+
+    void BlendTreeRerouteNode::UpdateOutputValue(AnimGraphInstance* animGraphInstance)
+    {
+        MCore::Attribute* outputValue = GetOutputAttribute(animGraphInstance, OUTPUTPORT_VALUE);
+        const MCore::Attribute* inputValue = GetInputAttribute(animGraphInstance, INPUTPORT_VALUE);
+        if (!inputValue)
+        {
+            inputValue = m_defaultValue;
+        }
+
         if (outputValue && inputValue)
         {
             outputValue->InitFrom(inputValue);

@@ -62,6 +62,7 @@ set(FILES
     Tests/BlendSpaceTests.cpp
     Tests/BlendTreeBlendNNodeTests.cpp
     Tests/BlendTreeFloatConstantNodeTests.cpp
+    Tests/BlendTreeRerouteNodeTests.cpp
     Tests/BlendTreeFloatConditionNodeTests.cpp
     Tests/BlendTreeFloatMath1NodeTests.cpp
     Tests/BlendTreeFootIKNodeTests.cpp

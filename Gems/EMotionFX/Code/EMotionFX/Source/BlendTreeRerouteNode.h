@@ -57,6 +57,7 @@ namespace EMotionFX
 
     private:
         void ConfigurePorts();
+        void UpdateOutputValue(AnimGraphInstance* animGraphInstance);
         void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
         void Output(AnimGraphInstance* animGraphInstance) override;
 
