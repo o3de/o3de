@@ -1,0 +1,250 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{4DFBF17F-52A4-42AA-A639-0E48AA81307A}",
+        "category": "Material Inputs",
+        "title": "Color Ramp Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Maps a scalar input onto a four stop gradient. Every stop colour and position is exposed as a material property, so the gradient can be retuned on a finished material without regenerating shaders. Stop positions are expected in ascending order; the interpolation clamps rather than erroring if they are not.",
+        "settings": {
+            "instructions": [
+                "SLOTTYPE(outColor) outColor = params.inColor1;",
+                "outColor = lerp(outColor, params.inColor2, saturate(((float)inT - params.inPosition1) / max(params.inPosition2 - params.inPosition1, 0.0001)));",
+                "outColor = lerp(outColor, params.inColor3, saturate(((float)inT - params.inPosition2) / max(params.inPosition3 - params.inPosition2, 0.0001)));",
+                "outColor = lerp(outColor, params.inColor4, saturate(((float)inT - params.inPosition3) / max(params.inPosition4 - params.inPosition3, 0.0001)));"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Ramp Name",
+                "description": "Name of the material type group that will hold this ramp's eight properties. Every Color Ramp Input node in a graph needs its own group name, otherwise the stops of one ramp collide with another's and get renamed with a numeric suffix.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "colorRamp"
+                }
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Unused by this node. Stop properties take their names from the slot settings below, and the group name above is what distinguishes one ramp from another.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description of what this ramp does and how it should be used.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inColor1",
+                "displayName": "Color 1",
+                "description": "Colour at the first stop.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [0.0, 0.0, 0.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 1"]
+                }
+            },
+            {
+                "name": "inPosition1",
+                "displayName": "Position 1",
+                "description": "Position of the first stop along the ramp.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Position 1"]
+                }
+            },
+            {
+                "name": "inColor2",
+                "displayName": "Color 2",
+                "description": "Colour at the second stop.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [0.8, 0.1, 0.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 2"]
+                }
+            },
+            {
+                "name": "inPosition2",
+                "displayName": "Position 2",
+                "description": "Position of the second stop along the ramp.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.3330000042915344
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Position 2"]
+                }
+            },
+            {
+                "name": "inColor3",
+                "displayName": "Color 3",
+                "description": "Colour at the third stop.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 0.75, 0.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 3"]
+                }
+            },
+            {
+                "name": "inPosition3",
+                "displayName": "Position 3",
+                "description": "Position of the third stop along the ramp.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.6669999957084656
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Position 3"]
+                }
+            },
+            {
+                "name": "inColor4",
+                "displayName": "Color 4",
+                "description": "Colour at the fourth stop.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Color 4"]
+                }
+            },
+            {
+                "name": "inPosition4",
+                "displayName": "Position 4",
+                "description": "Position of the fourth stop along the ramp.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "settings": {
+                    "materialPropertyConnectionType": ["ShaderInput"],
+                    "materialPropertySrgMember": ["STANDARD_SRG_MEMBER"],
+                    "materialPropertyName": ["Position 4"]
+                }
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inT",
+                "displayName": "T",
+                "description": "Scalar position along the ramp. Values outside the range of the stop positions clamp to the first or last stop colour.",
+                "supportedDataTypeRegex": "(bool|int|uint|float)",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "RGBA colour sampled from the ramp at T.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color"
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "Red channel of the ramp colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "Green channel of the ramp colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "Blue channel of the ramp colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "Alpha channel of the ramp colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

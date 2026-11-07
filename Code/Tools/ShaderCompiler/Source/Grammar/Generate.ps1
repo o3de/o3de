@@ -131,9 +131,10 @@ try
     Invoke-Antlr -Grammar (Split-Path $lexerGrammar -Leaf)
     Invoke-Antlr -Grammar (Split-Path $parserGrammar -Leaf) -lib $grammarDirectory
     $generatedSourceFiles | ForEach-Object { Format-GeneratedSource -SourceFile $_ }
-    Get-ChildItem -LiteralPath $grammarDirectory -File
-        | Where-Object Extension -In ".interp", ".tokens"
-        | Remove-Item -Force
+    # Trailing pipes, not leading ones: a line-leading '|' needs PowerShell 7 and is a parse error in Windows PowerShell 5.1.
+    Get-ChildItem -LiteralPath $grammarDirectory -File |
+        Where-Object Extension -In ".interp", ".tokens" |
+        Remove-Item -Force
 }
 finally
 {

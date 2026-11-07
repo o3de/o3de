@@ -99,6 +99,27 @@ namespace AtomToolsFramework
         return AssetStatusReporterState::Invalid;
     }
 
+    AZStd::string AssetStatusReporterSystem::GetStatusMessage(const AZ::Uuid& requestId) const
+    {
+        AZStd::scoped_lock lock(m_requestMutex);
+        for (const auto& reporterTable : { &m_activeReporterTable, &m_inactiveReporterTable })
+        {
+            if (auto reporterIt = AZStd::find_if(
+                    reporterTable->begin(),
+                    reporterTable->end(),
+                    [&requestId](const auto& reporterPair)
+                    {
+                        return reporterPair.first == requestId;
+                    });
+                reporterIt != reporterTable->end())
+            {
+                return reporterIt->second->GetCurrentStatusMessage();
+            }
+        }
+
+        return {};
+    }
+
     void AssetStatusReporterSystem::Update()
     {
         AZStd::scoped_lock lock(m_requestMutex);

@@ -77,6 +77,9 @@ namespace AZ
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             } m_runtimeControls;
 
+            //! Shader collection name that RenderPipelineDescriptor::m_materialPipelineTag looks up; empty means the file stem.
+            AZStd::string m_materialPipelineTag;
+
             AZStd::vector<ShaderTemplate> m_shaderTemplates;
 
             // A list of members to be added to the Object SRG. For example, writing:
