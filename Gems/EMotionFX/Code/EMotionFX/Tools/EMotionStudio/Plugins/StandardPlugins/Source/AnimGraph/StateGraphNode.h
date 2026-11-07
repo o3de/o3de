@@ -92,8 +92,14 @@ namespace EMStudio
         static void RenderInterruptedTransitions(QPainter& painter, EMStudio::AnimGraphModel& animGraphModel, EMStudio::NodeGraph& nodeGraph);
 
     private:
-        void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, const EMotionFX::AnimGraphStateTransition* transition,
-            QPainter* painter, QPen* pen, QBrush* brush, const QPoint* points, size_t pointCount);
+        void RenderConditionsAndActions(
+            EMotionFX::AnimGraphInstance* animGraphInstance,
+            const EMotionFX::AnimGraphStateTransition* transition,
+            QPainter* painter,
+            QPen* pen,
+            QBrush* brush,
+            const QPoint* points,
+            size_t pointCount);
 
         const EMotionFX::AnimGraphStateTransition* GetTransition() const;
         void CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const;

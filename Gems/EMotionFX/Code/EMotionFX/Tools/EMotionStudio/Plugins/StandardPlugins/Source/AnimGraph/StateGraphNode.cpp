@@ -40,10 +40,10 @@ namespace EMStudio
             }
         }
 
-        // Length of the path segment ending at points[index].
         float SegmentLength(const QPoint* points, size_t index)
         {
-            return AZ::Vector2(aznumeric_cast<float>(points[index].x() - points[index - 1].x()),
+            return AZ::Vector2(
+                aznumeric_cast<float>(points[index].x() - points[index - 1].x()),
                 aznumeric_cast<float>(points[index].y() - points[index - 1].y())).GetLength();
         }
 
@@ -58,8 +58,7 @@ namespace EMStudio
             float totalLength = 0.0f;
             for (size_t i = 1; i < pointCount; ++i)
             {
-                totalLength += AZ::Vector2(aznumeric_cast<float>(points[i].x() - points[i - 1].x()),
-                    aznumeric_cast<float>(points[i].y() - points[i - 1].y())).GetLength();
+                totalLength += SegmentLength(points, i);
             }
 
             if (totalLength < MCore::Math::epsilon)
@@ -283,8 +282,14 @@ namespace EMStudio
         }
     }
 
-    void StateConnection::RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, const EMotionFX::AnimGraphStateTransition* transition,
-        QPainter* painter, QPen* pen, QBrush* brush, const QPoint* points, size_t pointCount)
+    void StateConnection::RenderConditionsAndActions(
+        EMotionFX::AnimGraphInstance* animGraphInstance,
+        const EMotionFX::AnimGraphStateTransition* transition,
+        QPainter* painter,
+        QPen* pen,
+        QBrush* brush,
+        const QPoint* points,
+        size_t pointCount)
     {
         // disable the dash pattern in case the transition is disabled
         pen->setStyle(Qt::SolidLine);
@@ -560,13 +565,21 @@ namespace EMStudio
         // Clip the outer segments against the state rects so the path starts and ends on the node borders.
         double realX, realY;
         const QPoint firstFar = outPoints[1];
-        if (NodeGraph::LineIntersectsRect(sourceRect, aznumeric_cast<float>(outPoints.front().x()), aznumeric_cast<float>(outPoints.front().y()), aznumeric_cast<float>(firstFar.x()), aznumeric_cast<float>(firstFar.y()), &realX, &realY))
+        if (NodeGraph::LineIntersectsRect(
+            sourceRect,
+            aznumeric_cast<float>(outPoints.front().x()), aznumeric_cast<float>(outPoints.front().y()),
+            aznumeric_cast<float>(firstFar.x()), aznumeric_cast<float>(firstFar.y()),
+            &realX, &realY))
         {
             outPoints.front() = QPoint(aznumeric_cast<int>(realX), aznumeric_cast<int>(realY));
         }
 
         const QPoint lastNear = outPoints[outPoints.size() - 2];
-        if (NodeGraph::LineIntersectsRect(targetRect, aznumeric_cast<float>(lastNear.x()), aznumeric_cast<float>(lastNear.y()), aznumeric_cast<float>(outPoints.back().x()), aznumeric_cast<float>(outPoints.back().y()), &realX, &realY))
+        if (NodeGraph::LineIntersectsRect(
+            targetRect,
+            aznumeric_cast<float>(lastNear.x()), aznumeric_cast<float>(lastNear.y()),
+            aznumeric_cast<float>(outPoints.back().x()), aznumeric_cast<float>(outPoints.back().y()),
+            &realX, &realY))
         {
             outPoints.back() = QPoint(aznumeric_cast<int>(realX), aznumeric_cast<int>(realY));
         }
@@ -824,27 +837,27 @@ namespace EMStudio
                         continue;
                     }
 
-                    // Map the blend weight, which runs along the whole path, into this segment.
-                    const float localWeight = (weightDistance - distanceBefore) / segmentLength;
-                    const float localFade = fadeDistance / segmentLength;
-                    distanceBefore += segmentLength;
-
-                    // Every later segment is fully faded out, so there is nothing left to draw.
-                    if (localWeight <= 0.0f)
+                    if (distanceBefore >= weightDistance + fadeDistance)
                     {
                         break;
                     }
 
-                    QLinearGradient gradient(points[i - 1], points[i]);
+                    const QPointF start(points[i - 1]);
+                    const QPointF segmentDirection = (QPointF(points[i]) - start) / segmentLength;
+
+                    // Padded gradient ends keep completed segments solid and carry the fade across bends.
+                    QLinearGradient gradient(
+                        start + segmentDirection * (weightDistance - distanceBefore),
+                        start + segmentDirection * (weightDistance + fadeDistance - distanceBefore));
                     gradient.setColorAt(0.0, activeColor);
-                    gradient.setColorAt(MCore::Clamp(localWeight, 0.0f, 1.0f), activeColor);
-                    gradient.setColorAt(MCore::Clamp(localWeight + localFade, 0.0f, 1.0f), transparent);
                     gradient.setColorAt(1.0, transparent);
 
                     painter.setBrush(gradient);
                     pen.setBrush(gradient);
                     painter.setPen(pen);
                     painter.drawLine(points[i - 1], points[i]);
+
+                    distanceBefore += segmentLength;
                 }
             }
 

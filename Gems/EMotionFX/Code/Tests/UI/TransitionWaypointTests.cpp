@@ -16,6 +16,8 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/StateGraphNode.h>
 #include <QApplication>
 #include <QFocusEvent>
+#include <QImage>
+#include <QPainter>
 
 namespace EMotionFX
 {
@@ -144,4 +146,31 @@ namespace EMotionFX
         EXPECT_FALSE(m_nodeGraph->GetIsRepositioningWaypoint());
     }
 
+}
+
+static QImage RenderRoutedTransition(float weight)
+{
+    QImage image(140, 140, QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    QBrush brush(Qt::transparent);
+    QPen pen(Qt::transparent);
+    const QPoint points[] = {QPoint(10, 20), QPoint(110, 20), QPoint(110, 120)};
+
+    EMStudio::StateConnection::RenderTransition(painter, brush, pen, points, 3, QColor(Qt::transparent), QColor(Qt::green), false, false, true, weight, false, true);
+    painter.end();
+
+    return image;
+}
+
+TEST(TransitionWaypointRendering, CompletedSegmentsStayOpaque)
+{
+    const QImage image = RenderRoutedTransition(0.75f);
+    EXPECT_EQ(image.pixelColor(60, 20).alpha(), 255);
+}
+
+TEST(TransitionWaypointRendering, FadeContinuesAcrossWaypoint)
+{
+    const QImage image = RenderRoutedTransition(0.45f);
+    EXPECT_GT(image.pixelColor(110, 25).alpha(), 0);
 }
