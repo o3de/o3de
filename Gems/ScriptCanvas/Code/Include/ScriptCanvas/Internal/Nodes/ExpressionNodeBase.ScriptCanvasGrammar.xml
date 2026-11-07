@@ -5,13 +5,14 @@
         QualifiedName="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
         PreferredClassName="ExpressionNodeBase"
         Uuid="{797C800D-8C96-4675-B5B5-2A321AC09433}"
+        Version="1"
+        VersionConverter="VersionConverter"
         BaseClass="True"
         Category="Internal"
         DynamicSlotOrdering="True"
         Description="Base class for any node that wants to evaluate user given expressions.">
         <In Name="In" Description="Input signal"/>
         <SerializedProperty Name="m_format" />
-        <SerializedProperty Name="m_expressionTree" />
         <SerializedProperty Name="m_isInError" />
         <EditProperty UiHandler="AZ::Edit::UIHandlers::Default" FieldName="m_format" Name="Expression" Description="The expression string; Any word within {} will create a data pin on the node.">
             <EditAttribute Key="AZ::Edit::Attributes::StringLineEditingCompleteNotify" Value="&amp;ExpressionNodeBase::SignalFormatChanged"/>
