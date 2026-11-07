@@ -24,6 +24,7 @@
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <Utils.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
 
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -281,6 +282,29 @@ namespace PhysXEditorTests
         AZStd::unique_ptr<NiceMock<UnitTest::MockPhysXHeightfieldProvider>> m_editorMockShapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockPhysXHeightfieldProvider>> m_gameMockShapeRequests;
     };
+
+    TEST_F(PhysXEditorHeightfieldFixture, EditorCameraCollidesWithHeightfieldWhenEnabled)
+    {
+        auto* provider = AZ::Interface<Camera::EditorCameraCollisionInterface>::Get();
+        ASSERT_NE(provider, nullptr);
+        AzPhysics::RayCastRequest request;
+        request.m_start = AZ::Vector3(1.25f, 2.25f, 10.0f);
+        request.m_direction = -AZ::Vector3::CreateAxisZ();
+        request.m_distance = 20.0f;
+        AzPhysics::SceneQueryHit hit;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            hit, m_editorEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::RayCast, request);
+        ASSERT_TRUE(hit);
+
+        const AZ::Vector3 from = hit.m_position + hit.m_normal * 2.0f;
+        const AZ::Vector3 target = hit.m_position - hit.m_normal * 0.5f;
+        provider->SetCameraCollisionEnabled(true);
+        const auto result = provider->ConstrainCameraMovement(from, target);
+        EXPECT_GE((result - hit.m_position).Dot(hit.m_normal), 0.249f);
+        EXPECT_FALSE(result.IsClose(from));
+        provider->SetCameraCollisionEnabled(false);
+        EXPECT_TRUE(provider->ConstrainCameraMovement(from, target).IsClose(target));
+    }
 
     TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentDependenciesSatisfiedEntityIsValid)
     {
