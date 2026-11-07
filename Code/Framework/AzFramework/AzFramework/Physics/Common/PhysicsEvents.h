@@ -105,8 +105,19 @@ namespace AzPhysics
         //! This will not trigger if the scene if not Enabled (Scene::IsEnabled() returns true).
         //! When triggered the event will send a handle to the Scene that triggers the event and the delta time in seconds used to step this update.
         //! @note This may fire multiple times per frame.
+        //! @note With SystemConfiguration::m_runSimulationInThread this is signaled on the simulation thread, once per
+        //! step, so handlers must be thread-safe and touch physics only. Use OnSceneSimulationSynchronizedWithTickEvent
+        //! for handlers that reach entities, the renderer, scripting or any other main-thread system.
         using OnSceneSimulationFinishEvent = AZ::OrderedEvent<AzPhysics::SceneHandle, float>;
         using OnSceneSimulationFinishHandler = AZ::OrderedEventHandler<AzPhysics::SceneHandle, float>;
+
+        //! Event triggers on the main thread once per tick, with the accumulated time delta.
+        //! It is used when physical simulation results need to be consumed on the main thread (e.g. transform graphics entities).
+        //! When physical simulation is run on the main thread (default approach in PhysX gem), it is the same as OnSceneSimulationFinish.
+        //! When the physical simulation is free-running in a background thread at a high rate,
+        //! this event is signaled in synchronization with the main thread, with the delta time accumulated.
+        using OnSceneSimulationSynchronizedWithTickEvent = AZ::OrderedEvent<AzPhysics::SceneHandle, float>;
+        using OnSceneSimulationSynchronizedWithTickHandler = AZ::OrderedEventHandler<AzPhysics::SceneHandle, float>;
 
         //! Event triggers during the Scene::FinishSimulation call before the OnSceneSimulationFinishEvent for a scene
         //! and only if the SceneConfiguration::m_enableActiveActors is true.
