@@ -30,6 +30,9 @@
 #include <EMotionFX/Source/MotionData/NonUniformMotionData.h>
 #include <Tests/JackGraphFixture.h>
 #include <Tests/TestAssetCode/TestMotionAssets.h>
+#include <limits>
+#include <cmath>
+#include <EMotionFX/Source/ActorInstance.h>
 
 
 namespace EMotionFX
@@ -339,6 +342,78 @@ namespace EMotionFX
         EXPECT_EQ(m_animGraphInstance->GetEventBuffer().GetNumEvents(), 0);
     }
     
+    class MotionExtractionSamplingFixture : public MotionExtractionFixtureBase
+    {
+    public:
+        void ConstructGraph() override
+        {
+            MotionExtractionFixtureBase::ConstructGraph();
+            m_motionNode->SetLoop(false);
+        }
+    };
+
+    TEST_F(MotionExtractionSamplingFixture, SampledRangeMatchesRuntimeExtractionWithoutChangingPlayback)
+    {
+        Evaluate(0.01f); // Consume the runtime's one-time first-frame correction.
+        MotionInstance* motion = m_motionNode->FindMotionInstance(m_animGraphInstance);
+        ASSERT_NE(motion, nullptr);
+        const AZ::Quaternion startRotation = m_actorInstance->GetLocalSpaceTransform().m_rotation;
+        Evaluate(0.1f);
+        const float previous = motion->GetLastCurrentTime();
+        const float current = motion->GetCurrentTime();
+        const auto loops = motion->GetNumCurrentLoops();
+        const Transform runtime = m_actorInstance->GetTrajectoryDeltaTransform();
+        Transform sampled;
+        ASSERT_TRUE(motion->SampleMotionExtractionDelta(previous, current, startRotation, sampled));
+        EXPECT_TRUE(sampled.m_position.IsClose(runtime.m_position, 0.0001f));
+        EXPECT_GT(fabsf(sampled.m_rotation.Dot(runtime.m_rotation)), 0.999999f);
+        EXPECT_FLOAT_EQ(motion->GetLastCurrentTime(), previous);
+        EXPECT_FLOAT_EQ(motion->GetCurrentTime(), current);
+        EXPECT_EQ(motion->GetNumCurrentLoops(), loops);
+        EXPECT_TRUE(m_actorInstance->GetTrajectoryDeltaTransform().m_position.IsClose(runtime.m_position));
+    }
+
+    TEST_F(MotionExtractionSamplingFixture, ExactSubrangesComposeToTheOriginalInterval)
+    {
+        Evaluate(0.01f);
+        MotionInstance* motion = m_motionNode->FindMotionInstance(m_animGraphInstance);
+        ASSERT_NE(motion, nullptr);
+        const float start = motion->GetCurrentTime();
+        const float middle = motion->GetDuration() * 0.4f;
+        const float end = motion->GetDuration() * 0.8f;
+        ASSERT_LT(start, middle);
+        Transform fullPose = m_actorInstance->GetLocalSpaceTransform();
+        fullPose.m_rotation = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f));
+        EMFX_SCALECODE(fullPose.m_scale = AZ::Vector3(2.0f);)
+        Transform splitPose = fullPose;
+        Transform delta;
+        ASSERT_TRUE(motion->SampleMotionExtractionDelta(start, end, fullPose.m_rotation, delta));
+        ActorInstance::ApplyMotionExtractionDelta(fullPose, delta);
+        ASSERT_TRUE(motion->SampleMotionExtractionDelta(start, middle, splitPose.m_rotation, delta));
+        ActorInstance::ApplyMotionExtractionDelta(splitPose, delta);
+        ASSERT_TRUE(motion->SampleMotionExtractionDelta(middle, end, splitPose.m_rotation, delta));
+        ActorInstance::ApplyMotionExtractionDelta(splitPose, delta);
+        EXPECT_TRUE(splitPose.m_position.IsClose(fullPose.m_position, 0.001f));
+        EXPECT_GT(fabsf(splitPose.m_rotation.Dot(fullPose.m_rotation)), 0.999999f);
+    }
+
+    TEST_F(MotionExtractionSamplingFixture, SamplerRejectsInvalidRangesAndDisabledExtraction)
+    {
+        Evaluate(0.01f);
+        MotionInstance* motion = m_motionNode->FindMotionInstance(m_animGraphInstance);
+        ASSERT_NE(motion, nullptr);
+        Transform delta;
+        const auto rotation = AZ::Quaternion::CreateIdentity();
+        EXPECT_FALSE(motion->SampleMotionExtractionDelta(-0.1f, 0.1f, rotation, delta));
+        EXPECT_FALSE(motion->SampleMotionExtractionDelta(0.2f, 0.1f, rotation, delta));
+        EXPECT_FALSE(motion->SampleMotionExtractionDelta(0.0f, motion->GetDuration() + 1.0f, rotation, delta));
+        EXPECT_FALSE(motion->SampleMotionExtractionDelta(0.0f, std::numeric_limits<float>::quiet_NaN(), rotation, delta));
+        EXPECT_TRUE(motion->SampleMotionExtractionDelta(0.1f, 0.1f, rotation, delta));
+        EXPECT_TRUE(delta.m_position.IsClose(AZ::Vector3::CreateZero()));
+        motion->SetMotionExtractionEnabled(false);
+        EXPECT_FALSE(motion->SampleMotionExtractionDelta(0.0f, 0.1f, rotation, delta));
+    }
+
     INSTANTIATE_TEST_SUITE_P(MotionExtraction_OutputTests,
         MotionExtractionFixture,
         ::testing::Combine(
