@@ -67,6 +67,8 @@ namespace ImageProcessingAtom
         //pixel format for image which only contains alpha channel. this is for if we need to save alpha channel into a separate image
         EPixelFormat m_pixelFormatAlpha = EPixelFormat::ePixelFormat_A8;
         bool m_discardAlpha = false;
+        bool m_alphaDilate = false;
+        bool m_alphaEdgeDarken = false;
 
         // Resolution related settings
 
