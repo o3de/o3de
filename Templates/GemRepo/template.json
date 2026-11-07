@@ -4,7 +4,7 @@
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "display_name": "GemRepo Template",
-    "summary": "A Gem Repository that contains a single Gem.",
+    "summary": "A Gem Repository for a single Gem.",
     "canonical_tags": [
         "Gem",
         "Repo"
@@ -15,13 +15,20 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
-            "file": "gem.json",
+            "file": "repo.json",
             "isTemplated": true
         },
         {
-            "file": "repo.json",
-            "isTemplated": true
+            "file": ".github/workflows/update-remote-repo.yml",
+            "isTemplated": false
         }
     ],
-    "createDirectories": []
+    "createDirectories": [
+        {
+            "dir": ".github"
+        },
+        {
+            "dir": ".github/workflows"
+        }
+    ]
 }
