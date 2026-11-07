@@ -110,7 +110,14 @@ namespace AZ
                 // UINT presentFlags = (m_isTearingSupported && !m_isInFullScreenExclusiveState) ? DXGI_PRESENT_ALLOW_TEARING : 0;
                 HRESULT hresult = m_swapChain->Present(GetDescriptor().m_verticalSyncInterval, 0);
 
-                GetDevice().AssertSuccess(hresult);
+                if (!GetDevice().AssertSuccess(hresult))
+                {
+                    // A failed Present (e.g. DXGI_ERROR_DEVICE_REMOVED) may have already run
+                    // Device::OnDeviceRemoved()'s cleanup by this point, which can invalidate swapchain
+                    // image state. Don't touch GetImageCount()/advance the index on top of that -- matches
+                    // ResizeInternal()'s handling of the same AssertSuccess() failure case below.
+                    return GetCurrentImageIndex();
+                }
 
                 return (GetCurrentImageIndex() + 1) % GetImageCount();
             }
