@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 import platform
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 from setuptools.command.develop import develop
 from setuptools.command.build_py import build_py
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         version="1.0.0",
         description='O3DE editor Python bindings test tools',
         long_description=long_description,
-        packages=find_packages(where='Tools', exclude=['tests']),
+        packages=find_namespace_packages(include=['editor_python_test_tools', 'editor_python_test_tools.*', 'consts', 'consts.*']),
         install_requires=[
             "ly_test_tools"
         ],

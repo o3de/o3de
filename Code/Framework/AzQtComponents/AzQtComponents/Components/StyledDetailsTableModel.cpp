@@ -6,7 +6,7 @@
  *
  */
 
-#include <qglobal.h> // For Q_OS_WIN
+#include <QtGlobal> // For Q_OS_WIN
 
 #include <AzQtComponents/Components/StyledDetailsTableModel.h>
 

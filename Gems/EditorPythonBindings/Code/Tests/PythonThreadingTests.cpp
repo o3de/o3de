@@ -83,6 +83,38 @@ namespace UnitTest
     //////////////////////////////////////////////////////////////////////////
     // tests
 
+    TEST_F(PythonThreadingTest, PythonInterface_ExecuteWithLock_FromNativeThread)
+    {
+        AZ::Entity entity;
+        Activate(entity);
+        m_commandRegistrationBusSupression = AZStd::make_unique<CommandRegistrationBusSupression>();
+        auto python = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        ASSERT_NE(nullptr, python);
+        ASSERT_TRUE(python->StartPython());
+        EXPECT_FALSE(PyGILState_Check());
+
+        AZStd::thread worker([python]()
+        {
+            python->ExecuteWithLock([python]()
+            {
+                EXPECT_TRUE(PyGILState_Check());
+                python->ExecuteWithLock([]()
+                {
+                    EXPECT_NO_THROW(pybind11::exec("assert 40 + 2 == 42"));
+                });
+            });
+            EXPECT_TRUE(python->TryExecuteWithLock([]()
+            {
+                EXPECT_TRUE(PyGILState_Check());
+            }));
+        });
+        worker.join();
+
+        EXPECT_FALSE(PyGILState_Check());
+        entity.Deactivate();
+        EXPECT_FALSE(Py_IsInitialized());
+    }
+
     TEST_F(PythonThreadingTest, PythonInterface_ThreadLogic_Runs)
     {
         enum class LogTypes
@@ -136,8 +168,11 @@ namespace UnitTest
 
                 EXPECT_EQ(42, result);
             };
-            AZStd::thread theThread(threadCallback);
-            theThread.join();
+            {
+                pybind11::gil_scoped_release release;
+                AZStd::thread theThread(threadCallback);
+                theThread.join();
+            }
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -182,8 +217,11 @@ namespace UnitTest
 
                 EXPECT_EQ(0, result);
             };
-            AZStd::thread theThread(threadCallback);
-            theThread.join();
+            {
+                pybind11::gil_scoped_release release;
+                AZStd::thread theThread(threadCallback);
+                theThread.join();
+            }
 
             // the Python script above raises an exception which causes two AZ_Error() message lines:
             // "Python callback threw an exception NotImplementedError : boom At : <string>(6) : on_notification"

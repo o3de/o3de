@@ -83,7 +83,7 @@ public:
         Disconnected, Connected, Connecting
     };
 
-    Q_ENUMS(ConnectionStatus)
+    Q_ENUM(ConnectionStatus)
 
     void Activate(qintptr socketDescriptor);
 
