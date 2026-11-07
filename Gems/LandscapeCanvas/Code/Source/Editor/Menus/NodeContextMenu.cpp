@@ -77,6 +77,7 @@ namespace LandscapeCanvasEditor
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -90,6 +91,7 @@ namespace LandscapeCanvasEditor
             {
                 return selectedConnections;
             }
+
             return { targetConnectionId };
         }
 
@@ -128,6 +130,7 @@ namespace LandscapeCanvasEditor
                 hasConnectedInput = hasConnectedInput || connectionType == GraphCanvas::ConnectionType::CT_Input;
                 hasConnectedOutput = hasConnectedOutput || connectionType == GraphCanvas::ConnectionType::CT_Output;
             }
+
             return hasConnectedInput && hasConnectedOutput;
         }
     } // namespace
@@ -213,6 +216,7 @@ namespace LandscapeCanvasEditor
                     endpoints.m_sourceEndpoint,
                     endpoints.m_targetEndpoint);
             }
+
             return false;
         }
 
@@ -330,6 +334,7 @@ namespace LandscapeCanvasEditor
             {
                 continue;
             }
+
             vegetationEntityIdsToSelect.push_back(baseNodePtr->GetVegetationEntityId());
         }
 

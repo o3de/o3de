@@ -65,6 +65,7 @@
 #include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
+#include <Editor/Core/ConnectionReconciliation.h>
 #include <Editor/Core/Core.h>
 #include <Editor/Core/GraphContext.h>
 #include <Editor/Menus/LayerExtenderContextMenu.h>
@@ -137,55 +138,6 @@ namespace LandscapeCanvasEditor
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
     static const char* InputBoundsEntityIdElementName = "InputBounds";
     static const char* EntityIdListElementName = "element";
-
-    struct ResolvedConnectionSource
-    {
-        GraphModel::NodePtr m_node;
-        GraphModel::SlotPtr m_slot;
-    };
-
-    bool IsVisualOnlyNode(const GraphModel::NodePtr& node)
-    {
-        const auto* baseNode = node ? azrtti_cast<const LandscapeCanvas::BaseNode*>(node.get()) : nullptr;
-        return baseNode && baseNode->IsVisualOnly();
-    }
-
-    ResolvedConnectionSource ResolveConnectionSource(
-        const GraphModel::SlotPtr& sourceSlot, GraphModel::NodePtrList visitedNodes = {})
-    {
-        if (!sourceSlot)
-        {
-            return {};
-        }
-
-        GraphModel::NodePtr sourceNode = sourceSlot->GetParentNode();
-        if (!IsVisualOnlyNode(sourceNode))
-        {
-            return { sourceNode, sourceSlot };
-        }
-
-        if (AZStd::find(visitedNodes.begin(), visitedNodes.end(), sourceNode) != visitedNodes.end())
-        {
-            return {};
-        }
-        visitedNodes.push_back(sourceNode);
-
-        GraphModel::SlotPtr inputSlot = sourceNode->GetSlot(LandscapeCanvas::RerouteNode::IN_SLOT_ID);
-        if (!inputSlot)
-        {
-            return {};
-        }
-
-        for (const GraphModel::ConnectionPtr& connection : inputSlot->GetConnections())
-        {
-            if (connection && connection->GetTargetSlot() == inputSlot)
-            {
-                return ResolveConnectionSource(connection->GetSourceSlot(), AZStd::move(visitedNodes));
-            }
-        }
-
-        return {};
-    }
 
     static IEditor* GetLegacyEditor()
     {
@@ -829,6 +781,7 @@ namespace LandscapeCanvasEditor
             {
                 continue;
             }
+
             vegetationEntityIdsToSelect.insert(baseNodePtr->GetVegetationEntityId());
         }
 
@@ -892,6 +845,7 @@ namespace LandscapeCanvasEditor
             {
                 continue;
             }
+
             AZ::EntityId entityId = baseNodePtr->GetVegetationEntityId();
 
             entitiesToDuplicate.push_back(entityId);
@@ -1555,6 +1509,7 @@ namespace LandscapeCanvasEditor
         {
             return;
         }
+
         int elementIndexToModify = GetInboundDataSlotIndex(targetNode, dataType, targetSlot);
         if (elementIndexToModify == InvalidSlotIndex)
         {
@@ -1814,6 +1769,7 @@ namespace LandscapeCanvasEditor
         {
             return;
         }
+
         visitedNodes.push_back(rerouteNode);
 
         GraphModel::SlotPtr outputSlot = rerouteNode->GetSlot(LandscapeCanvas::RerouteNode::OUT_SLOT_ID);
@@ -2204,58 +2160,9 @@ namespace LandscapeCanvasEditor
         GraphCanvas::GraphId graphId = GetGraphId(node->GetGraph());
         ParseNodeConnections(graphId, node, expectedConnections);
 
-        // Iterate through the input data slots on this node to check for
-        // existing connections that satisfy our expected connections, and to
-        // remove any current connections that aren't in our expected list.
-        for (auto slotPair : node->GetSlots())
+        for (const auto& connection : ReconcileConnections(node, expectedConnections))
         {
-            GraphModel::SlotPtr slot = slotPair.second;
-
-            // We only care about input data slots because those are the only slots
-            // that could be modified when a Component on an Entity is changed,
-            // which is what triggers OnEntityComponentPropertyChanged
-            if (!slot->Is(GraphModel::SlotDirection::Input, GraphModel::SlotType::Data))
-            {
-                continue;
-            }
-
-            // If there aren't any connections to this slot, we can skip it
-            auto slotConnections = slot->GetConnections();
-            if (slotConnections.empty())
-            {
-                continue;
-            }
-
-            // Input data slots will only have one connection
-            GraphModel::ConnectionPtr connection = *slotConnections.begin();
-
-            // Check if this connection matches one in our list of expected connections
-            bool matchesExisting = false;
-            for (auto it = expectedConnections.begin(); it != expectedConnections.end(); ++it)
-            {
-                auto sourceNode = it->first.first;
-                auto sourceSlot = it->first.second;
-                auto targetNode = it->second.first;
-                auto targetSlot = it->second.second;
-
-                // If we found a matching connection, then remove it from our list of expected
-                // so we don't have to process it after we are done checking all the slots
-                // on the node
-                const ResolvedConnectionSource actualSource = ResolveConnectionSource(connection->GetSourceSlot());
-                if (sourceNode == actualSource.m_node && sourceSlot == actualSource.m_slot &&
-                    targetNode == connection->GetTargetNode() && targetSlot == connection->GetTargetSlot())
-                {
-                    matchesExisting = true;
-                    expectedConnections.erase(it);
-                    break;
-                }
-            }
-
-            // If this connection doesn't match an expected connection, then it needs to be removed
-            if (!matchesExisting)
-            {
-                GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::RemoveConnection, connection);
-            }
+            GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::RemoveConnection, connection);
         }
 
         // For the remaining expected connections, this means they didn't exist already,

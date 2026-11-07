@@ -28,6 +28,7 @@
 #include <GraphModel/Integration/EditorMainWindow.h>
 
 // LandscapeCanvas
+#include <Editor/Core/ConnectionReconciliation.h>
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
 
 namespace AzToolsFramework
@@ -253,8 +254,6 @@ namespace LandscapeCanvasEditor
         };
 
         using EntityComponentCallback = AZStd::function<void(const AZ::EntityId& entityId, AZ::Component* component, bool isDisabled)>;
-        using NodeSlotPair = AZStd::pair<GraphModel::NodePtr, GraphModel::SlotPtr>;
-        using ConnectionsList = AZStd::vector<AZStd::pair<NodeSlotPair, NodeSlotPair>>;
         void UpdateEntityIdNodeMap(GraphCanvas::GraphId, GraphModel::NodePtr node);
         EntityIdNodeMap* GetEntityIdNodeMap(GraphCanvas::GraphId, GraphModel::NodePtr node);
         void ParseNodeConnections(GraphCanvas::GraphId graphId, GraphModel::NodePtr node, ConnectionsList& connections);

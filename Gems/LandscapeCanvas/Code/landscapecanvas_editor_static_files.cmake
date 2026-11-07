@@ -12,6 +12,8 @@ set(FILES
     Source/LandscapeCanvasSystemComponent.h
     Source/Editor/MainWindow.cpp
     Source/Editor/MainWindow.h
+    Source/Editor/Core/ConnectionReconciliation.cpp
+    Source/Editor/Core/ConnectionReconciliation.h
     Source/Editor/Core/Core.h
     Source/Editor/Core/DataTypes.h
     Source/Editor/Core/GraphContext.cpp
