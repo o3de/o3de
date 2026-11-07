@@ -481,7 +481,8 @@ namespace ScriptCanvas
     {
         // Don't allow VariableId's to be variable references.
         return m_dataType == DataType::Data
-            && GetDataType() != Data::Type::BehaviorContextObject(GraphScopedVariableId::TYPEINFO_Uuid());
+            && GetDataType() != Data::Type::BehaviorContextObject(GraphScopedVariableId::TYPEINFO_Uuid())
+            && (!m_node || !m_node->IsConnectionTransparentForTranslation());
     }
 
     bool Slot::CanConvertToReference(bool isNewSlot) const
@@ -949,9 +950,14 @@ namespace ScriptCanvas
         ScriptCanvas::ModifiableDatumView datumView;
         GetNode()->ModifyUnderlyingSlotDatum(GetId(), datumView);
 
-        bool isVisible = !IsConnected() && datumView.GetDataType().IsValid();
-
-        datumView.SetVisibility(isVisible ? AZ::Edit::PropertyVisibility::ShowChildrenOnly : AZ::Edit::PropertyVisibility::Hide);
+        if (datumView.GetDataType().IsValid() && GetNode()->GetConnectedNodesForTranslation(*this).empty())
+        {
+            datumView.SetVisibility(AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        }
+        else
+        {
+            datumView.SetVisibility(AZ::Edit::PropertyVisibility::Hide);
+        }
     }
 
     TransientSlotIdentifier Slot::GetTransientIdentifier() const

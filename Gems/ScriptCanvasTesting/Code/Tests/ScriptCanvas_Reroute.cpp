@@ -32,6 +32,32 @@ protected:
     }
 };
 
+TEST_F(RerouteTestFixture, DataReroutePinsCannotBecomeReferences)
+{
+    using namespace ScriptCanvas;
+
+    CreateGraph();
+    auto* source = CreateConfigurableNode();
+    const Slot* output = source->AddTestingSlot(DataSlotConfiguration(Data::Type::Number(), "Out", ConnectionType::Output));
+    auto* reroute = CreateReroute(Nodes::Core::Reroute::Mode::Data);
+
+    for (const char* name : {"In", "Out"})
+    {
+        Slot* slot = reroute->GetSlot(reroute->GetSlotId(name));
+        EXPECT_FALSE(slot->CanConvertTypes());
+        EXPECT_FALSE(slot->CanConvertToReference());
+        EXPECT_FALSE(slot->CanConvertToReference(true));
+        EXPECT_FALSE(slot->ConvertToReference());
+        EXPECT_FALSE(slot->IsVariableReference());
+    }
+
+    ASSERT_TRUE(m_graph->ConnectByEndpoint(output->GetEndpoint(), {reroute->GetEntityId(), reroute->GetSlotId("In")}));
+    Slot* rerouteOutput = reroute->GetSlot(reroute->GetSlotId("Out"));
+    EXPECT_EQ(rerouteOutput->GetDataType(), Data::Type::Number());
+    EXPECT_FALSE(rerouteOutput->CanConvertToReference());
+    EXPECT_FALSE(rerouteOutput->ConvertToReference());
+}
+
 TEST_F(RerouteTestFixture, ExecutionRerouteResolvesFanout)
 {
     using namespace ScriptCanvas;

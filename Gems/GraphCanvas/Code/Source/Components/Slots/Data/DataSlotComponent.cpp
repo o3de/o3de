@@ -196,25 +196,14 @@ namespace GraphCanvas
     {
         SlotComponent::AddConnectionId(connectionId, endpoint);
 
-        if (m_dataSlotType == DataSlotType::Value)
-        {
-            NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, true);
-        }
-        else if (m_dataSlotType == DataSlotType::Reference)
-        {
-            NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, false);
-        }
-        else
-        {
-            NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, HasConnections());
-        }
+        UpdatePropertyDisplayState();
     }
 
     void DataSlotComponent::RemoveConnectionId(const AZ::EntityId& connectionId, const Endpoint& endpoint)
     {
         SlotComponent::RemoveConnectionId(connectionId, endpoint);
 
-        NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, HasConnections());
+        UpdatePropertyDisplayState();
     }
 
     void DataSlotComponent::SetNode(const AZ::EntityId& nodeId)
@@ -294,7 +283,13 @@ namespace GraphCanvas
         }
         else if (DataSlotUtils::IsValueDataSlotType(m_dataSlotType))
         {
-            NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, HasConnections());
+            bool connected = HasConnections();
+            if (connected)
+            {
+                GraphModelRequestBus::EventResult(
+                    connected, GetScene(), &GraphModelRequests::IsSlotConnected, Endpoint(GetNode(), GetEntityId()));
+            }
+            NodePropertyRequestBus::Event(GetEntityId(), &NodePropertyRequests::SetDisabled, connected);
         }
     }
 

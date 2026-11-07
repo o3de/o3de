@@ -14,6 +14,9 @@
 #include <GraphCanvas/Editor/GraphModelBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Utils/GraphUtils.h>
+#include <GraphCanvas/Widgets/NodePropertyBus.h>
+#include <ScriptCanvas/GraphCanvas/MappingBus.h>
+#include <ScriptCanvas/Libraries/Core/Reroute.h>
 #include <QApplication>
 
 namespace
@@ -115,7 +118,34 @@ namespace
         GraphCanvas::Endpoint m_output;
     };
 
+    class PropertyDisplayState : public GraphCanvas::NodePropertyRequestBus::Handler
+    {
+    public:
+        explicit PropertyDisplayState(const GraphCanvas::SlotId& slot)
+        {
+            GraphCanvas::NodePropertyRequestBus::EventResult(
+                m_display, slot, &GraphCanvas::NodePropertyRequests::GetNodePropertyDisplay);
+            BusConnect(slot);
+        }
 
+        void SetNodePropertyDisplay(GraphCanvas::NodePropertyDisplay* display) override { m_display = display; }
+        GraphCanvas::NodePropertyDisplay* GetNodePropertyDisplay() const override { return m_display; }
+        void SetDisabled(bool disabled) override { m_disabled = disabled; }
+
+        GraphCanvas::NodePropertyDisplay* m_display = nullptr;
+        bool m_disabled = true;
+    };
+
+    GraphCanvas::Endpoint MapEndpoint(const ScriptCanvas::Endpoint& endpoint)
+    {
+        using namespace ScriptCanvasEditor;
+        GraphCanvas::NodeId node;
+        SceneMemberMappingRequestBus::EventResult(
+            node, endpoint.GetNodeId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+        GraphCanvas::SlotId slot;
+        SlotMappingRequestBus::EventResult(slot, endpoint.GetNodeId(), &SlotMappingRequests::MapToGraphCanvasId, endpoint.GetSlotId());
+        return {node, slot};
+    }
 }
 
 class RerouteSplicingTest : public ScriptCanvasTests::ScriptCanvasTestFixture
@@ -221,6 +251,120 @@ protected:
     AZStd::unique_ptr<AZ::Entity> m_scene;
     SplicingModel m_model;
 };
+
+TEST_F(RerouteSplicingTest, UnfinishedRerouteChainShowsFallbackAcrossDisconnectAndReconnect)
+{
+    using namespace ScriptCanvas;
+
+    auto data = ScriptCanvasEditor::EditorGraph::Create();
+    ASSERT_TRUE(data);
+    auto* graph = data->m_scriptCanvasEntity->FindComponent<ScriptCanvasEditor::EditorGraph>();
+    ASSERT_NE(graph, nullptr);
+    auto addNode = [&]()
+    {
+        auto* entity = aznew AZ::Entity("ConfigurableNode");
+        auto* node = entity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
+        entity->Init();
+        EXPECT_TRUE(graph->AddNode(node->GetEntityId()));
+        return node;
+    };
+    auto* source = addNode();
+    const Slot* output = source->AddTestingSlot(DataSlotConfiguration(Data::Type::Number(), "Out", ConnectionType::Output));
+    AZStd::vector<Slot*> inputs;
+    for (int i = 0; i < 2; ++i)
+    {
+        auto* target = addNode();
+        inputs.push_back(target->AddTestingSlot(DataSlotConfiguration(Data::Type::Number(), "In", ConnectionType::Input)));
+        ModifiableDatumView datum;
+        ASSERT_TRUE(inputs.back()->FindModifiableDatumView(datum));
+        datum.SetAs<Data::NumberType>(42.0);
+    }
+
+    AZStd::vector<Nodes::Core::Reroute*> reroutes;
+    for (int i = 0; i < 3; ++i)
+    {
+        auto* entity = aznew AZ::Entity("Reroute");
+        auto* reroute = entity->CreateComponent<Nodes::Core::Reroute>();
+        entity->Init();
+        ASSERT_TRUE(graph->AddNode(reroute->GetEntityId()));
+        reroutes.push_back(reroute);
+    }
+
+    const Endpoint firstInput(reroutes[0]->GetEntityId(), reroutes[0]->GetSlotId("In"));
+    const Endpoint firstOutput(reroutes[0]->GetEntityId(), reroutes[0]->GetSlotId("Out"));
+    const Endpoint secondInput(reroutes[1]->GetEntityId(), reroutes[1]->GetSlotId("In"));
+    const Endpoint secondOutput(reroutes[1]->GetEntityId(), reroutes[1]->GetSlotId("Out"));
+    ASSERT_TRUE(graph->ConnectByEndpoint(firstOutput, secondInput));
+    for (const Slot* input : inputs)
+    {
+        ASSERT_TRUE(graph->ConnectByEndpoint(secondOutput, input->GetEndpoint()));
+    }
+    ASSERT_TRUE(graph->ConnectByEndpoint(output->GetEndpoint(), {reroutes[2]->GetEntityId(), reroutes[2]->GetSlotId("In")}));
+
+    graph->CreateGraphCanvasScene();
+    const auto scene = graph->GetGraphCanvasGraphId();
+    ASSERT_TRUE(scene.IsValid());
+    QApplication::processEvents();
+
+    PropertyDisplayState firstState(MapEndpoint(inputs[0]->GetEndpoint()).GetSlotId());
+    PropertyDisplayState secondState(MapEndpoint(inputs[1]->GetEndpoint()).GetSlotId());
+    ASSERT_NE(firstState.m_display, nullptr);
+    ASSERT_NE(secondState.m_display, nullptr);
+
+    auto expectFallback = [&](bool visible)
+    {
+        for (Slot* input : inputs)
+        {
+            const auto canvasEndpoint = MapEndpoint(input->GetEndpoint());
+            EXPECT_EQ(graph->IsSlotConnected(canvasEndpoint), !visible);
+            EXPECT_EQ(input->GetNode()->GetConnectedNodesForTranslation(*input).empty(), visible);
+            ModifiableDatumView datum;
+            ASSERT_TRUE(input->FindModifiableDatumView(datum));
+            EXPECT_EQ(*datum.GetAs<Data::NumberType>(), 42.0);
+            AZ::Crc32 expectedVisibility = AZ::Edit::PropertyVisibility::Hide;
+            if (visible)
+            {
+                expectedVisibility = AZ::Edit::PropertyVisibility::ShowChildrenOnly;
+            }
+            EXPECT_EQ(datum.GetVisibility(), expectedVisibility);
+        }
+        EXPECT_EQ(firstState.m_disabled, !visible);
+        EXPECT_EQ(secondState.m_disabled, !visible);
+    };
+
+    auto connect = [&](const Endpoint& from, const Endpoint& to)
+    {
+        GraphCanvas::ConnectionId id;
+        GraphCanvas::SceneRequestBus::EventResult(
+            id, scene, &GraphCanvas::SceneRequests::CreateConnectionBetween, MapEndpoint(from), MapEndpoint(to));
+        return id;
+    };
+
+    for (Slot* input : inputs)
+    {
+        input->UpdateDatumVisibility();
+        GraphCanvas::DataSlotRequestBus::Event(
+            MapEndpoint(input->GetEndpoint()).GetSlotId(), &GraphCanvas::DataSlotRequests::UpdatePropertyDisplayState);
+    }
+    expectFallback(true);
+    GraphCanvas::ConnectionId upstream = connect(output->GetEndpoint(), firstInput);
+    ASSERT_TRUE(upstream.IsValid());
+    expectFallback(false);
+
+    GraphCanvas::SceneRequestBus::Event(scene, &GraphCanvas::SceneRequests::Delete, AZStd::unordered_set<AZ::EntityId>{upstream});
+    expectFallback(true);
+
+    upstream = connect(output->GetEndpoint(), firstInput);
+    ASSERT_TRUE(upstream.IsValid());
+    expectFallback(false);
+
+    const auto canvasOutput = MapEndpoint({reroutes[2]->GetEntityId(), reroutes[2]->GetSlotId("Out")});
+    bool canConvert = true;
+    GraphCanvas::DataSlotRequestBus::EventResult(canConvert, canvasOutput.GetSlotId(), &GraphCanvas::DataSlotRequests::CanConvertToReference, false);
+    EXPECT_FALSE(canConvert);
+    EXPECT_FALSE(graph->CanPromoteToVariable(canvasOutput));
+    EXPECT_FALSE(graph->PromoteToVariableAction(canvasOutput, false));
+}
 
 TEST_F(RerouteSplicingTest, PartialInsertionRestoresOriginalConnection)
 {
