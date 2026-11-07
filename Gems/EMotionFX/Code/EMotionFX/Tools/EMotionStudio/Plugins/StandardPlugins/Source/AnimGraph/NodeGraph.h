@@ -85,13 +85,14 @@ namespace EMStudio
         bool GetReplaceTransitionValid() const                              { return m_replaceTransitionValid; }
         void RenderReplaceTransition(QPainter& painter);
 
-        bool GetIsRepositioningWaypoint() const                             { return (m_waypointConnection != nullptr); }
-        NodeConnection* GetRepositionedWaypointConnection() const           { return m_waypointConnection; }
-        size_t GetRepositionedWaypointIndex() const                         { return m_waypointIndex; }
+        bool GetIsRepositioningWaypoint() const { return (m_waypointConnection != nullptr); }
+        NodeConnection* GetRepositionedWaypointConnection() const { return m_waypointConnection; }
+        size_t GetRepositionedWaypointIndex() const { return m_waypointIndex; }
         const AZStd::vector<AZ::Vector2>& GetRepositionedWaypointOldValues() const { return m_waypointOldValues; }
 
         void StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints);
         void StopRepositionWaypoint();
+        void CancelRepositionWaypoint();
 
         GraphNode* GetCreateConnectionNode() const;
         NodeConnection* GetRelinkConnection()                  { return m_relinkConnection; }

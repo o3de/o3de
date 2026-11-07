@@ -174,6 +174,7 @@ namespace EMStudio
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
+
         bool CanInsertWaypointOnSelectedTransitions() const;
         void InsertWaypointOnSelectedTransitions();
         void InsertTransitionWaypoint(StateConnection* connection, const QPoint& position);
@@ -181,9 +182,9 @@ namespace EMStudio
         void RemoveAllTransitionWaypoints(StateConnection* connection);
         bool CanRemoveWaypointFromSelectedTransitions() const;
         void RemoveWaypointFromSelectedTransitions();
+
         bool CanDissolveSelectedRerouteNodes() const;
         void DissolveSelectedRerouteNodes();
-        void InsertRerouteOnConnection(NodeConnection* connection);
         bool CanInsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections) const;
         void InsertRerouteOnConnections(const AZStd::vector<NodeConnection*>& connections, const QPoint& position);
         bool CanDissolveRerouteNode(EMotionFX::AnimGraphNode* node) const;

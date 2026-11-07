@@ -828,25 +828,11 @@ namespace EMotionFX
         m_waypoints = waypoints;
     }
 
-    void AnimGraphStateTransition::InsertWaypoint(size_t index, const AZ::Vector2& position)
-    {
-        const size_t clampedIndex = index < m_waypoints.size() ? index : m_waypoints.size();
-        m_waypoints.insert(m_waypoints.begin() + clampedIndex, position);
-    }
-
     void AnimGraphStateTransition::SetWaypoint(size_t index, const AZ::Vector2& position)
     {
         if (index < m_waypoints.size())
         {
             m_waypoints[index] = position;
-        }
-    }
-
-    void AnimGraphStateTransition::RemoveWaypoint(size_t index)
-    {
-        if (index < m_waypoints.size())
-        {
-            m_waypoints.erase(m_waypoints.begin() + index);
         }
     }
 

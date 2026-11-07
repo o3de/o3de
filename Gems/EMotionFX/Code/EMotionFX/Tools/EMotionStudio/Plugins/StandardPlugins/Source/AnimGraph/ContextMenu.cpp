@@ -383,8 +383,10 @@ namespace EMStudio
                 }
             }
 
-            if (actionFilter.m_editNodes && actionFilter.m_delete && !inReferenceGraph &&
-                CanDissolveRerouteNode(animGraphNode))
+            if (actionFilter.m_editNodes
+                && actionFilter.m_delete
+                && !inReferenceGraph
+                && CanDissolveRerouteNode(animGraphNode))
             {
                 QAction* dissolveAction = menu->addAction(tr("Dissolve"));
                 connect(

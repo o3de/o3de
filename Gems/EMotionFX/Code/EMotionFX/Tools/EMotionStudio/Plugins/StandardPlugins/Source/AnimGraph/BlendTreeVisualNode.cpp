@@ -564,6 +564,7 @@ namespace EMStudio
             {
                 portColor = portColor.lighter(140);
             }
+
             painter.setPen(borderColor);
             painter.setBrush(portColor);
             painter.drawEllipse(port.GetRect());

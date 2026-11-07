@@ -211,12 +211,10 @@ namespace EMotionFX
         int32 GetVisualEndOffsetY() const;
 
         // Visual-only bend points in graph space, ordered from the source to the target state.
-        const AZStd::vector<AZ::Vector2>& GetWaypoints() const                                  { return m_waypoints; }
-        size_t GetNumWaypoints() const                                                          { return m_waypoints.size(); }
+        const AZStd::vector<AZ::Vector2>& GetWaypoints() const { return m_waypoints; }
+        size_t GetNumWaypoints() const { return m_waypoints.size(); }
         void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints);
-        void InsertWaypoint(size_t index, const AZ::Vector2& position);
         void SetWaypoint(size_t index, const AZ::Vector2& position);
-        void RemoveWaypoint(size_t index);
 
         EExtractionMode GetExtractionMode() const;
         void SetExtractionMode(EExtractionMode mode);

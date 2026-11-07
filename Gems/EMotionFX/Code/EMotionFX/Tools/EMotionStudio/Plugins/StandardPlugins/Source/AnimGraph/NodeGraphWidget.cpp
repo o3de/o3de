@@ -146,6 +146,11 @@ namespace EMStudio
 
         if (m_activeGraph)
         {
+            if (m_activeGraph->GetIsRepositioningWaypoint())
+            {
+                m_activeGraph->CancelRepositionWaypoint();
+                m_leftMousePressed = false;
+            }
             m_activeGraph->StopCreateConnection();
             m_activeGraph->StopRelinkConnection();
             m_activeGraph->StopReplaceTransitionHead();
@@ -1578,6 +1583,12 @@ namespace EMStudio
         m_controlPressed = false;
         m_altPressed     = false;
         releaseKeyboard();
+
+        if (m_activeGraph && m_activeGraph->GetIsRepositioningWaypoint())
+        {
+            m_activeGraph->CancelRepositionWaypoint();
+            m_leftMousePressed = false;
+        }
 
         if (m_activeGraph && m_activeGraph->GetIsCreatingConnection())
         {

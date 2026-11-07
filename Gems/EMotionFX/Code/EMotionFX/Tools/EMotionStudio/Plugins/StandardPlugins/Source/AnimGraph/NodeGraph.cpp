@@ -1599,6 +1599,21 @@ namespace EMStudio
         m_waypointOldValues.clear();
     }
 
+    void NodeGraph::CancelRepositionWaypoint()
+    {
+        if (m_waypointConnection)
+        {
+            auto* transition = m_waypointConnection->GetModelIndex()
+                .data(AnimGraphModel::ROLE_TRANSITION_POINTER)
+                .value<EMotionFX::AnimGraphStateTransition*>();
+            if (transition)
+            {
+                transition->SetWaypoints(m_waypointOldValues);
+            }
+        }
+        StopRepositionWaypoint();
+    }
+
     // reset members
     void NodeGraph::StopRelinkConnection()
     {
@@ -1990,6 +2005,8 @@ namespace EMStudio
 
     void NodeGraph::OnRowsAboutToBeRemoved(const QModelIndexList& modelIndexes)
     {
+        CancelRepositionWaypoint();
+
         for (const QModelIndex& modelIndex : modelIndexes)
         {
             const AnimGraphModel::ModelItemType itemType = modelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
@@ -2047,6 +2064,12 @@ namespace EMStudio
 
     void NodeGraph::OnDataChanged(const QModelIndex& modelIndex, const QVector<int>& roles)
     {
+        if (m_waypointConnection && m_waypointConnection->GetModelIndex() == modelIndex)
+        {
+            // Keep the command's new values instead of restoring the drag preview over an undo.
+            StopRepositionWaypoint();
+        }
+
         const AnimGraphModel::ModelItemType itemType = modelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
         switch (itemType)
         {
