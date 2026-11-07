@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -396,60 +397,85 @@ namespace GraphModelIntegration
 
         inputSlot = node->GetSlot(slotNames[0]);
         outputSlot = node->GetSlot(slotNames[1]);
-        return inputSlot && outputSlot && inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
-            outputSlot->GetSlotDirection() == GraphModel::SlotDirection::Output;
+        return inputSlot
+            && outputSlot
+            && inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input
+            && outputSlot->GetSlotDirection() == GraphModel::SlotDirection::Output;
     }
 
     GraphModel::DataTypePtr GraphController::GetEffectiveDataType(GraphModel::ConstSlotPtr slot) const
     {
-        if (!slot)
+        AZStd::unordered_set<const GraphModel::Slot*> visited;
+        while (slot && visited.insert(slot.get()).second)
         {
-            return {};
-        }
+            GraphModel::ConstSlotPtr inputSlot;
+            GraphModel::ConstSlotPtr outputSlot;
+            GraphModel::ConstSlotPtr sourceSlot;
+            bool connected = false;
 
-        GraphModel::ConstSlotPtr inputSlot;
-        GraphModel::ConstSlotPtr outputSlot;
-        if (GetDataTypePassthroughSlots(slot->GetParentNode(), inputSlot, outputSlot) &&
-            (slot == inputSlot || slot == outputSlot))
-        {
-            for (const auto& connection : inputSlot->GetConnections())
+            if (GetDataTypePassthroughSlots(slot->GetParentNode(), inputSlot, outputSlot)
+                && (slot == inputSlot || slot == outputSlot))
             {
-                if (connection->GetTargetSlot() == inputSlot)
+                for (const auto& connection : inputSlot->GetConnections())
                 {
-                    return GetEffectiveDataType(connection->GetSourceSlot());
+                    if (connection->GetTargetSlot() == inputSlot)
+                    {
+                        sourceSlot = connection->GetSourceSlot();
+                        connected = true;
+                        break;
+                    }
                 }
             }
+
+            if (!connected)
+            {
+                return slot->GetDataType();
+            }
+
+            slot = sourceSlot;
         }
 
-        return slot->GetDataType();
+        return {};
     }
 
     bool GraphController::IsDataTypeSupportedByPassthroughOutputs(
         GraphModel::ConstNodePtr node, GraphModel::DataTypePtr dataType) const
     {
-        GraphModel::ConstSlotPtr inputSlot;
-        GraphModel::ConstSlotPtr outputSlot;
-        if (!dataType || !GetDataTypePassthroughSlots(node, inputSlot, outputSlot))
+        if (!dataType)
         {
             return false;
         }
 
-        for (const auto& connection : outputSlot->GetConnections())
+        AZStd::vector<GraphModel::ConstNodePtr> pending{node};
+        AZStd::unordered_set<const GraphModel::Node*> visited;
+        while (!pending.empty())
         {
-            const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot();
-            GraphModel::ConstSlotPtr nestedInputSlot;
-            GraphModel::ConstSlotPtr nestedOutputSlot;
-            if (targetSlot && GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot) &&
-                targetSlot == nestedInputSlot)
+            node = pending.back();
+            pending.pop_back();
+
+            GraphModel::ConstSlotPtr inputSlot;
+            GraphModel::ConstSlotPtr outputSlot;
+            if (!visited.insert(node.get()).second
+                || !GetDataTypePassthroughSlots(node, inputSlot, outputSlot))
             {
-                if (!IsDataTypeSupportedByPassthroughOutputs(targetSlot->GetParentNode(), dataType))
+                return false;
+            }
+
+            for (const auto& connection : outputSlot->GetConnections())
+            {
+                const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot();
+                GraphModel::ConstSlotPtr nestedInputSlot;
+                GraphModel::ConstSlotPtr nestedOutputSlot;
+                if (targetSlot
+                    && GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot)
+                    && targetSlot == nestedInputSlot)
+                {
+                    pending.push_back(targetSlot->GetParentNode());
+                }
+                else if (!targetSlot || !targetSlot->IsSupportedDataType(dataType))
                 {
                     return false;
                 }
-            }
-            else if (!targetSlot || !targetSlot->IsSupportedDataType(dataType))
-            {
-                return false;
             }
         }
 
@@ -465,25 +491,40 @@ namespace GraphModelIntegration
             return;
         }
 
+        AZ::Uuid typeId;
         if (const GraphModel::DataTypePtr dataType = GetEffectiveDataType(outputSlot))
         {
-            const AZ::Uuid typeId = dataType->GetTypeUuid();
+            typeId = dataType->GetTypeUuid();
+        }
+
+        AZStd::vector<GraphModel::ConstNodePtr> pending{node};
+        AZStd::unordered_set<const GraphModel::Node*> visited;
+        while (!pending.empty())
+        {
+            node = pending.back();
+            pending.pop_back();
+
+            if (!visited.insert(node.get()).second
+                || !GetDataTypePassthroughSlots(node, inputSlot, outputSlot))
+            {
+                continue;
+            }
+
             GraphCanvas::DataSlotRequestBus::Event(
                 m_elementMap.Find(inputSlot), &GraphCanvas::DataSlotRequests::SetDataTypeId, typeId);
             GraphCanvas::DataSlotRequestBus::Event(
                 m_elementMap.Find(outputSlot), &GraphCanvas::DataSlotRequests::SetDataTypeId, typeId);
 
-            // Passthroughs can chain, so refresh downstream pins to reflect the upstream type even if wired before connecting.
             for (const auto& connection : outputSlot->GetConnections())
             {
                 if (const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot())
                 {
                     GraphModel::ConstSlotPtr nestedInputSlot;
                     GraphModel::ConstSlotPtr nestedOutputSlot;
-                    if (GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot) &&
-                        targetSlot == nestedInputSlot)
+                    if (GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot)
+                        && targetSlot == nestedInputSlot)
                     {
-                        UpdateDataTypePassthroughDisplay(targetSlot->GetParentNode());
+                        pending.push_back(targetSlot->GetParentNode());
                     }
                 }
             }
@@ -495,7 +536,11 @@ namespace GraphModelIntegration
         using namespace GraphModel;
 
         GraphCanvas::SlotConfiguration slotConfig;
-        slotConfig.m_name = !slot->GetDisplayName().empty() ? slot->GetDisplayName() : slot->GetName();
+        slotConfig.m_name = slot->GetDisplayName();
+        if (slotConfig.m_name.empty())
+        {
+            slotConfig.m_name = slot->GetName();
+        }
         slotConfig.m_tooltip = slot->GetDescription();
         slotConfig.m_connectionType = ToGraphCanvasConnectionType(slot->GetSlotDirection());
         slotConfig.m_slotGroup = ToGraphCanvasSlotGroup(slot->GetSlotType());
@@ -509,7 +554,10 @@ namespace GraphModelIntegration
             {
                 GraphCanvas::DataSlotConfiguration dataConfig(slotConfig);
                 dataConfig.m_dataSlotType = GraphCanvas::DataSlotType::Value;
-                dataConfig.m_typeId = GetEffectiveDataType(slot)->GetTypeUuid();
+                if (const DataTypePtr dataType = GetEffectiveDataType(slot))
+                {
+                    dataConfig.m_typeId = dataType->GetTypeUuid();
+                }
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
                     graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, dataConfig);
             }
@@ -1376,32 +1424,31 @@ namespace GraphModelIntegration
 
     bool GraphController::CheckForLoopback(GraphModel::NodePtr sourceNode, GraphModel::NodePtr targetNode) const
     {
-        // TODO: In the future, we could add support here for the client to choose if
-        // loopbacks should be supported or not.
-
-        // If at any point the target and source nodes are the same,
-        // then we've detected a connection loop
-        if (targetNode == sourceNode)
+        AZStd::vector<GraphModel::NodePtr> pending{sourceNode};
+        AZStd::unordered_set<const GraphModel::Node*> visited;
+        while (!pending.empty())
         {
-            return true;
-        }
+            sourceNode = pending.back();
+            pending.pop_back();
 
-        for (auto slotIt : sourceNode->GetSlots())
-        {
-            GraphModel::SlotPtr slot = slotIt.second;
-
-            // We only care about input slots because we are crawling upstream
-            if (slot->GetSlotDirection() != GraphModel::SlotDirection::Input)
+            if (!sourceNode || !visited.insert(sourceNode.get()).second)
             {
                 continue;
             }
 
-            // Check for loopback on any of the connected input slots
-            for (GraphModel::ConnectionPtr connection : slot->GetConnections())
+            if (sourceNode == targetNode)
             {
-                if (CheckForLoopback(connection->GetSourceNode(), targetNode))
+                return true;
+            }
+
+            for (const auto& [slotId, slot] : sourceNode->GetSlots())
+            {
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
                 {
-                    return true;
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        pending.push_back(connection->GetSourceNode());
+                    }
                 }
             }
         }
@@ -1430,13 +1477,8 @@ namespace GraphModelIntegration
         GraphModel::DataTypePtr targetSlotDataType = targetSlot->GetDataType();
         if (sourceSlotDataType == nullptr && targetSlotDataType == nullptr)
         {
-            // If both data types are null, this means the slots are both event types,
-            // so this is considered valid
-            AZ_Assert(
-                sourceSlot->GetSlotType() == GraphModel::SlotType::Event, "Source slot has a null data type but is not an Event type slot");
-            AZ_Assert(
-                targetSlot->GetSlotType() == GraphModel::SlotType::Event, "Target slot has a null data type but is not an Event type slot");
-            dataTypesMatch = true;
+            dataTypesMatch = sourceSlot->GetSlotType() == GraphModel::SlotType::Event
+                && targetSlot->GetSlotType() == GraphModel::SlotType::Event;
         }
         else if (sourceSlotDataType == nullptr || targetSlotDataType == nullptr)
         {
@@ -1450,9 +1492,9 @@ namespace GraphModelIntegration
 
             GraphModel::ConstSlotPtr passthroughInputSlot;
             GraphModel::ConstSlotPtr passthroughOutputSlot;
-            if (dataTypesMatch &&
-                GetDataTypePassthroughSlots(targetSlot->GetParentNode(), passthroughInputSlot, passthroughOutputSlot) &&
-                targetSlot == passthroughInputSlot)
+            if (dataTypesMatch
+                && GetDataTypePassthroughSlots(targetSlot->GetParentNode(), passthroughInputSlot, passthroughOutputSlot)
+                && targetSlot == passthroughInputSlot)
             {
                 dataTypesMatch = IsDataTypeSupportedByPassthroughOutputs(targetSlot->GetParentNode(), sourceSlotDataType);
             }
