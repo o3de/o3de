@@ -91,3 +91,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 endif()
+
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME ${gem_name}.SoftwareTests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE diffuseprobegrid_software_tests_files.cmake
+        INCLUDE_DIRECTORIES PRIVATE Source
+        BUILD_DEPENDENCIES PRIVATE AZ::AzCore AZ::AzTest
+    )
+    ly_add_googletest(NAME Gem::${gem_name}.SoftwareTests)
+endif()

@@ -59,7 +59,9 @@ namespace AZ
             m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
             // load Srg layout
-            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+            const auto passLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+            m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), passLayout->GetName());
 
             // retrieve the number of threads per thread group from the shader
             const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
@@ -224,19 +226,20 @@ namespace AZ
                 // update DiffuseProbeGrid-specific bindings
                 diffuseProbeGrid->UpdateQuerySrg(m_shader, m_srgLayout);
 
-                // bind query buffer
-                RHI::ShaderInputBufferIndex bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_irradianceQueries"));
-                RHI::Ptr<RHI::Buffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
-                RHI::BufferViewDescriptor bufferViewDescriptor = diffuseProbeGridFeatureProcessor->GetQueryBufferViewDescriptor();
-                diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, buffer->GetBufferView(bufferViewDescriptor).get());
-
-                // bind output UAV
-                bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_output"));
-                const RHI::BufferView* bufferView = context.GetBufferView(AZ::Name(m_outputBufferAttachmentId.GetCStr()), RHI::ScopeAttachmentUsage::Shader);
-                diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, bufferView);
-
-                diffuseProbeGrid->GetQuerySrg()->Compile();
+                if (!diffuseProbeGrid->GetQuerySrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetQuerySrg()->Compile();
+                }
             }
+
+            // Query positions and results are pass inputs; the grid textures/constants belong to ObjectSrg.
+            const auto queryIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(Name("m_irradianceQueries"));
+            m_shaderResourceGroup->SetBufferView(queryIndex, diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer()->GetBufferView(
+                diffuseProbeGridFeatureProcessor->GetQueryBufferViewDescriptor()).get());
+            const auto outputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(Name("m_output"));
+            m_shaderResourceGroup->SetBufferView(outputIndex,
+                context.GetBufferView(m_outputBufferAttachmentId, RHI::ScopeAttachmentUsage::Shader));
+            m_shaderResourceGroup->Compile();
         }
 
         void DiffuseProbeGridQueryPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
@@ -251,6 +254,8 @@ namespace AZ
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
 
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup();
+                commandList->SetShaderResourceGroupForDispatch(
+                    *m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
                 RHI::DeviceDispatchItem dispatchItem;

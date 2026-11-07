@@ -21,6 +21,7 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRelocationPass.h>
+#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -87,8 +88,14 @@ namespace AZ
                 return false;
             }
 
+            if (IsDiffuseProbeGridSoftwareTracing() && !IsDiffuseProbeGridSoftwareTracingReady(*this))
+            {
+                return false;
+            }
+
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
+            if (!IsDiffuseProbeGridSoftwareTracing() &&
+                (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount()))
             {
                 // empty scene
                 return false;
@@ -102,7 +109,8 @@ namespace AZ
             }
 
             // check TLAS version
-            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            uint32_t rayTracingDataRevision = !IsDiffuseProbeGridSoftwareTracing() && rayTracingFeatureProcessor ?
+                rayTracingFeatureProcessor->GetRevision() : m_rayTracingDataRevision;
             if (rayTracingDataRevision != m_rayTracingDataRevision)
             {
                 return true;
@@ -125,10 +133,12 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
+            AZ_Assert(IsDiffuseProbeGridSoftwareTracing() || rayTracingFeatureProcessor,
+                "Hardware probe relocation requires the RayTracingFeatureProcessor");
 
             // reset the relocation iterations on the grids if the TLAS was updated
-            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            uint32_t rayTracingDataRevision = !IsDiffuseProbeGridSoftwareTracing() && rayTracingFeatureProcessor ?
+                rayTracingFeatureProcessor->GetRevision() : m_rayTracingDataRevision;
             if (rayTracingDataRevision != m_rayTracingDataRevision)
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())

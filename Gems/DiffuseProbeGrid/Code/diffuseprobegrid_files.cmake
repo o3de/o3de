@@ -25,6 +25,13 @@ set(FILES
     Source/Components/DiffuseProbeGridSystemComponent.cpp
     Source/Render/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/Render/DiffuseGlobalIlluminationFeatureProcessor.h
+    Source/Render/DiffuseProbeGridSoftwareScene.cpp
+    Source/Render/DiffuseProbeGridSoftwareScene.h
+    Source/Render/DiffuseProbeGridTracing.h
+    Source/Render/DiffuseProbeGridSoftwareRayTracingPass.cpp
+    Source/Render/DiffuseProbeGridSoftwareRayTracingPass.h
+    Source/Render/DiffuseProbeGridSoftwareBvh.cpp
+    Source/Render/DiffuseProbeGridSoftwareBvh.h
     Source/Render/DiffuseProbeGrid.cpp
     Source/Render/DiffuseProbeGrid.h
     Source/Render/DiffuseProbeGridBlendDistancePass.cpp

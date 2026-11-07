@@ -1744,6 +1744,17 @@ namespace AZ
             return meshDrawPacket.GetDrawSrg(drawItemIndex);
         }
 
+        void MeshFeatureProcessor::EnumerateRayTracingMeshes(const AZStd::function<void(ModelDataInstanceInterface&)>& visitor)
+        {
+            for (auto& modelData : m_modelData)
+            {
+                if (modelData.m_model && modelData.m_flags.m_visible && modelData.m_descriptor.m_isRayTracingEnabled)
+                {
+                    visitor(modelData);
+                }
+            }
+        }
+
         const RHI::Ptr<MeshInfoEntry> MeshFeatureProcessor::GetMeshInfoEntry(const MeshInfoHandle handle)
         {
             return m_meshInfoManager.GetMeshInfoEntry(handle);
