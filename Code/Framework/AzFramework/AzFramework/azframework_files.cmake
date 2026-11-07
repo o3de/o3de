@@ -357,6 +357,10 @@ set(FILES
     Physics/ClassConverters.h
     Physics/WindBus.cpp
     Physics/WindBus.h
+    Physics/Wheel.cpp
+    Physics/Wheel.h
+    Physics/Vehicle.cpp
+    Physics/Vehicle.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessCommon_fwd.h
