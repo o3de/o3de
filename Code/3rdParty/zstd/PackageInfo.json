@@ -1,0 +1,12 @@
+{
+    "PackageName": "zstd",
+    "Version": "1.5.7",
+    "URL": "https://github.com/facebook/zstd",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz",
+        "Revision": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+        "SHA256": "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+    }
+}

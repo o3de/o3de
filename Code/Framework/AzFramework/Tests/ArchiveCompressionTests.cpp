@@ -85,6 +85,43 @@ namespace UnitTest
         EXPECT_TRUE(IsPackValid(testArchivePath.c_str()));
     }
 
+    TEST_P(ArchiveCompressionTestFixture, ZstdCompressedFiles_RoundTripAfterReopeningArchive)
+    {
+        const char* archivePath = "@usercache@/zstd-archive-test.pak";
+        auto* archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        ASSERT_NE(nullptr, archive);
+
+        AZStd::vector<uint8_t> expected(65536);
+        AZStd::vector<uint8_t> actual(expected.size());
+        for (size_t index = 0; index < expected.size(); ++index)
+        {
+            expected[index] = static_cast<uint8_t>((index * 13 + index / 311) % 251);
+        }
+        const size_t fileSizes[] = { 0, 1, 777, expected.size() };
+
+        auto pak = archive->OpenArchive(archivePath, {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        ASSERT_NE(nullptr, pak);
+        for (size_t size : fileSizes)
+        {
+            const auto name = AZ::StringFunc::Path::FixedString::format("zstd-%zu.dat", size);
+            ASSERT_EQ(0, pak->UpdateFile(name, expected.data(), size, AZ::IO::INestedArchive::METHOD_COMPRESS, AZStd::get<2>(GetParam()), CompressionCodec::Codec::ZSTD));
+        }
+        pak.reset();
+        ASSERT_TRUE(IsPackValid(archivePath));
+
+        pak = archive->OpenArchive(archivePath, {}, AZStd::get<0>(GetParam()));
+        ASSERT_NE(nullptr, pak);
+        for (size_t size : fileSizes)
+        {
+            const auto name = AZ::StringFunc::Path::FixedString::format("zstd-%zu.dat", size);
+            const auto file = pak->FindFile(name);
+            ASSERT_NE(nullptr, file);
+            EXPECT_EQ(size, pak->GetFileSize(file));
+            ASSERT_EQ(0, pak->ReadFile(file, actual.data()));
+            EXPECT_EQ(0, memcmp(expected.data(), actual.data(), size));
+        }
+    }
+
     TEST_P(ArchiveCompressionTestFixture, TestArchivePacking_CompressionFullArchive_PackIsValid)
     {
         // ------------ BASIC TEST:  Create archive full of standard sizes (including 0)   ----------------
