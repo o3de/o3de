@@ -133,6 +133,12 @@ def edit_project_props(proj_path: pathlib.Path = None,
     :param remove_engine_api_dependencies: Version specifiers to remove from 'engine_api_dependencies'
     :param replace_engine_api_dependencies: Version specifiers to replace 'engine_api_dependencies' with
     """
+    if proj_name and not proj_path:
+        proj_path = manifest.get_registered(project_name=proj_name)
+        if not proj_path:
+            logger.error(f'Could not find project {proj_name}')
+            return 1
+
     proj_json = get_project_props(proj_name, proj_path, user)
 
     if not proj_json and not user:
