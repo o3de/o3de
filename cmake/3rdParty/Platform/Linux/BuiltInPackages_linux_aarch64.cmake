@@ -15,4 +15,4 @@ ly_associate_package(PACKAGE_NAME OpenSSL-3.6.3-rev1-linux-aarch64              
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.8.2505.1-o3de-rev3-linux-aarch64 TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 7cb521963ae5f4fcd2c488c0ddf8cddc2aeebe3dd37e48a528d87cb541b2f511)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev2-linux-aarch64                     TARGETS ISPCTexComp                 PACKAGE_HASH c29aafa32f13839a394424cf674b5cdb323fab22bcca43c38b43adfe13fc415c)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux-aarch64         TARGETS vulkan-validationlayers     PACKAGE_HASH e67a15a95e14397ccdffd70d17f61079e5720fea22b0d21e135497312419a23f)
-ly_associate_package(PACKAGE_NAME pyside6-6.12.0-py3.14-rev1-linux-aarch64                   TARGETS pyside6                     PACKAGE_HASH bdc7b777e1f1cfdfe7bb2a947c62d06b7044df475af58a2ef1b55e87961e560a)
+ly_associate_package(PACKAGE_NAME pyside6-6.12.0-py3.15-rev1-linux-aarch64                   TARGETS pyside6                     PACKAGE_HASH 7c326cf4778e86f700e9cd39aaf16aa25504f510b80d463daf15dc882c646ed0)

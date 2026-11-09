@@ -9,21 +9,21 @@
 # Setup the Python global variables and download and associate python to the correct package
 
 # Python package info
-ly_set(LY_PYTHON_VERSION 3.14.9)
-ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.14)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.14.9-rev1-linux)
-ly_set(LY_PYTHON_PACKAGE_HASH 110b92daaf25eebee4853a3596c87134735fc8c014211cb10c87cdb9728167dc)
+ly_set(LY_PYTHON_VERSION 3.15.2)
+ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.15)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev1-linux)
+ly_set(LY_PYTHON_PACKAGE_HASH b531cb8ac9acca947dbf4ecdc1552c3fdc5de3d4477c51f31f65d219e9c01fed)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "python/bin")
 ly_set(LY_PYTHON_LIB_PATH "python/lib")
 ly_set(LY_PYTHON_EXECUTABLE "python")
-ly_set(LY_PYTHON_SHARED_LIB "libpython3.14.so.1.0")
+ly_set(LY_PYTHON_SHARED_LIB "libpython3.15.so.1.0")
 
 # Python venv relative paths
 ly_set(LY_PYTHON_VENV_BIN_PATH "bin")
 ly_set(LY_PYTHON_VENV_LIB_PATH "lib")
-ly_set(LY_PYTHON_VENV_SITE_PACKAGES "${LY_PYTHON_VENV_LIB_PATH}/python3.14/site-packages")
+ly_set(LY_PYTHON_VENV_SITE_PACKAGES "${LY_PYTHON_VENV_LIB_PATH}/python3.15/site-packages")
 ly_set(LY_PYTHON_VENV_PYTHON "${LY_PYTHON_VENV_BIN_PATH}/python")
 
 function(ly_post_python_venv_install venv_path)
