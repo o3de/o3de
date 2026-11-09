@@ -9,10 +9,10 @@
 # Setup the Python global variables and download and associate python to the correct package
 
 # Python package info
-ly_set(LY_PYTHON_VERSION 3.14.9)
-ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.14)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.14.9-rev1-windows)
-ly_set(LY_PYTHON_PACKAGE_HASH 2fa922b213cb39654f38777a7d80929f3ca20e668a0941c4c108bcd61af62612)
+ly_set(LY_PYTHON_VERSION 3.15.2)
+ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.15)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev1-windows)
+ly_set(LY_PYTHON_PACKAGE_HASH 6a923f3bf90b32f7afb72fe87832388c201db595019a7c7dcf21ebdecd7f5a02)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "python")
