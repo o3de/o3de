@@ -207,7 +207,8 @@ namespace AZ
             }
         }
 
-        void TransformServiceFeatureProcessor::SetTransformForId(ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
+        void TransformServiceFeatureProcessor::SetTransformForId(
+            ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale, AZStd::string_view debugName)
         {
             AZ_Error("TransformServiceFeatureProcessor", m_isWriteable, "Transform data cannot be written to during this phase");
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to set the transform for an invalid handle.");
@@ -218,7 +219,20 @@ namespace AZ
                 matrix3x4.StoreToRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
 
                 // Inverse transpose to take the non-uniform scale out of the transform for usage with normals.
-                matrix3x4.GetInverseFull().GetTranspose3x3().StoreToRowMajorFloat12(m_objectToWorldInverseTransposeTransforms.at(id.GetIndex()).m_transform);
+                const auto inverse = matrix3x4.TryToInverseFull();
+                AZ_Warning(
+                    "TransformServiceFeatureProcessor",
+                    inverse.has_value(),
+                    "Cannot invert transform for object %u %s, uniform scale %f, non-uniform scale (%f, %f, %f)",
+                    id.GetIndex(),
+                    AZ_STRING_ARG(debugName),
+                    transform.GetUniformScale(),
+                    nonUniformScale.GetX(),
+                    nonUniformScale.GetY(),
+                    nonUniformScale.GetZ());
+                // Shaders use only the 3x3 part, so fall back to identity normals when the transform is singular.
+                const auto inverseTranspose = inverse.has_value() ? inverse->GetTranspose3x3() : AZ::Matrix3x4::CreateIdentity();
+                inverseTranspose.StoreToRowMajorFloat12(m_objectToWorldInverseTransposeTransforms.at(id.GetIndex()).m_transform);
                 m_deviceBufferNeedsUpdate = true;
             }
         }

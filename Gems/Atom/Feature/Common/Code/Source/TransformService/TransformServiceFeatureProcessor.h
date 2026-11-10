@@ -45,7 +45,7 @@ namespace AZ
             ObjectId ReserveObjectId() override;
             void ReleaseObjectId(ObjectId& id) override;
             void SetTransformForId(ObjectId id, const AZ::Transform& transform,
-                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
+                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne(), AZStd::string_view debugName = {}) override;
             AZ::Transform GetTransformForId(ObjectId id) const override;
             AZ::Vector3 GetNonUniformScaleForId(ObjectId id) const override;
 
