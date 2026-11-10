@@ -433,7 +433,10 @@ namespace AZ
         // calculate the determinant
         const float determinant = result.m_rows[0].Dot3(GetColumn(0));
 
-        if (!AZ::IsClose(determinant, 0.0f, Constants::FloatEpsilon))
+        // For a uniform scale s the determinant is s^3, so this threshold allows uniform scales down to about 0.0001.
+        constexpr float MinUniformScale = 0.0001f;
+        constexpr float MinDeterminant = MinUniformScale * MinUniformScale * MinUniformScale;
+        if (!AZ::IsClose(determinant, 0.0f, MinDeterminant))
         {
             float determinantInv = 1.0f / determinant;
             result.m_rows[0] *= determinantInv;
