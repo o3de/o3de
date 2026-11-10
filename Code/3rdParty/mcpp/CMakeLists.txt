@@ -8,10 +8,10 @@
 o3de_fetch_content(mcpp
     VERSION "2.7.2"
     LICENSE "BSD-2-Clause AND (Apache-2.0 OR MIT)"
-    URL "https://github.com/o3de/mcpp/archive/c8da19d04e248b129bfd90a4fd7882585148e4e5.tar.gz"
-    URL_HASH "b5b4face7d46a0ba74f97680814c1e714d2b729db74961b89dadc59e97c3c48d"
+    URL "https://github.com/o3de/mcpp/archive/ea985ce7beb7d3f750f1a7a3f452568bae06b2e7.tar.gz"
+    URL_HASH "1129651b911761c137f720ef574fc65d9e8b63556db056c6b40d85426f285213"
     GIT "https://github.com/o3de/mcpp.git"
-    GIT_HASH "c8da19d04e248b129bfd90a4fd7882585148e4e5"
+    GIT_HASH "ea985ce7beb7d3f750f1a7a3f452568bae06b2e7"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(mcpp)
