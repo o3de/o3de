@@ -20,14 +20,17 @@ endif()
 # and allows us not to have to save and restore anything.
 
 block()
+    set(ASSIMP_VERSION "v6.0.6")
+    set(ASSIMP_URL_HASH "5f7ed412b76575621df0525a762b31da5874afff352b3a890c6308db4ac7204c")
+    set(ASSIMP_GIT_HASH "a79ff6bbce54d3e01186a918dc6374ed55317426")
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
     o3de_fetch_content(assimp
-        VERSION "v6.0.4"
+        VERSION ${ASSIMP_VERSION}
         LICENSE "Custom BSD-3-Clause"
-        URL "https://github.com/assimp/assimp/archive/e0b52347c6e52de2827ec957a9ebf00ce3c54f79.tar.gz"
-        URL_HASH "00e4bf0b9d9d8e9b346fa3dd859c3ce5f3438451822d5933c07f65a76fc04745"
+        URL "https://github.com/assimp/assimp/archive/${ASSIMP_VERSION}.tar.gz"
+        URL_HASH ${ASSIMP_URL_HASH}
         GIT "https://github.com/assimp/assimp.git"
-        GIT_HASH "e0b52347c6e52de2827ec957a9ebf00ce3c54f79"
+        GIT_HASH ${ASSIMP_GIT_HASH}
         PATCH_FILES "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch"
         EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
@@ -44,6 +47,7 @@ block()
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
     # The rest of these are all specific settings that come from Assimp's CMakeLists.txt files.
+    set(ASSIMP_BUILD_MINIZIP ON) # Necessary for building on Linux
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
     set(ASSIMP_BUILD_TESTS OFF)
     set(ASSIMP_BUILD_USD_IMPORTER ON)
