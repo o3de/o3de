@@ -8,6 +8,7 @@
 
 #include <PythonProxyBus.h>
 
+#include <EditorPythonBindings/EditorPythonBindingsBus.h>
 #include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonTypeCasters.h>
 
@@ -92,6 +93,7 @@ namespace EditorPythonBindings
         }
 
         class PythonProxyNotificationHandler final
+            : private EditorPythonBindingsNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PythonProxyNotificationHandler, AZ::SystemAllocator);
@@ -115,10 +117,19 @@ namespace EditorPythonBindings
 
                 AZ_Assert(behaviorEBusEntry->second, "A null EBus:%s is in the Behavior Context!", behaviorEBusEntry->first.c_str());
                 m_ebus = behaviorEBusEntry->second;
+                BusConnect();
             }
 
             ~PythonProxyNotificationHandler()
             {
+                BusDisconnect();
+                Disconnect();
+            }
+
+            void OnPreFinalize() override
+            {
+                // Callbacks may own this handler, so keep it alive until Disconnect returns.
+                const pybind11::object owner = pybind11::cast(this, pybind11::return_value_policy::reference);
                 Disconnect();
             }
 

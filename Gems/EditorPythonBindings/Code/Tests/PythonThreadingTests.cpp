@@ -181,6 +181,7 @@ namespace UnitTest
 
         e.Deactivate();
         EXPECT_EQ(1, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::RanInThread)]);
+        EXPECT_FALSE(PythonThreadNotificationBus::HasHandlers());
     }
 
     TEST_F(PythonThreadingTest, PythonInterface_ThreadLogic_HandlesPythonException)
@@ -223,10 +224,8 @@ namespace UnitTest
                 theThread.join();
             }
 
-            // the Python script above raises an exception which causes two AZ_Error() message lines:
-            // "Python callback threw an exception NotImplementedError : boom At : <string>(6) : on_notification"
-            // "Python callback threw an exception TypeError : 'NoneType' object is not callable At : <string>(7) : on_notification"
-            AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+            // Only the deliberate callback exception should be reported.
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -234,6 +233,31 @@ namespace UnitTest
         }
 
         e.Deactivate();
+        EXPECT_FALSE(PythonThreadNotificationBus::HasHandlers());
+    }
+
+    TEST_F(PythonThreadingTest, PythonInterface_CallbackCycle_DisconnectedBeforeFinalization)
+    {
+        PythonThreadNotificationBusHandler pythonThreadNotificationBusHandler;
+        pythonThreadNotificationBusHandler.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        pybind11::exec(
+            "import azlmbr.test\n"
+            "def create_handler():\n"
+            "    handler = azlmbr.test.PythonThreadNotificationBusHandler()\n"
+            "    handler.connect()\n"
+            "    def on_notification(args):\n"
+            "        return args[0] + handler.is_connected()\n"
+            "    handler.add_callback('OnNotification', on_notification)\n"
+            "create_handler()\n");
+
+        EXPECT_TRUE(PythonThreadNotificationBus::HasHandlers());
+        e.Deactivate();
+        EXPECT_FALSE(PythonThreadNotificationBus::HasHandlers());
     }
 
     TEST_F(PythonThreadingTest, PythonInterface_DebugTrace_CallsOnTick)
