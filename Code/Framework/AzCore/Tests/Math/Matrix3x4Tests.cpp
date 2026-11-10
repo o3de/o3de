@@ -727,6 +727,18 @@ namespace UnitTest
         EXPECT_THAT((inverse * matrix), IsClose(AZ::Matrix3x4::Identity()));
     }
 
+    TEST_P(Matrix3x4InvertFullFixture, TryToInverseFull)
+    {
+        const AZ::Matrix3x4 matrix = GetParam();
+        const AZStd::optional<AZ::Matrix3x4> inverse = matrix.TryToInverseFull();
+        ASSERT_TRUE(inverse.has_value());
+        const AZ::Vector3 vector(0.9f, 3.2f, -1.4f);
+        EXPECT_THAT((*inverse * matrix) * vector, IsClose(vector));
+        EXPECT_THAT((matrix * *inverse) * vector, IsClose(vector));
+        EXPECT_THAT((*inverse * matrix), IsClose(AZ::Matrix3x4::Identity()));
+        EXPECT_THAT(*inverse, IsClose(matrix.GetInverseFull()));
+    }
+
     INSTANTIATE_TEST_SUITE_P(MATH_Matrix3x4, Matrix3x4InvertFullFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
 
     TEST(MATH_Matrix3x4, GetInverseFullSingularMatrix)
@@ -752,6 +764,24 @@ namespace UnitTest
         EXPECT_THAT(inverse.GetRow(0), IsClose(AZ::Vector4(-61.5111237f, 5.37747292e-06f, 0.0f, 0.0f)));
         EXPECT_THAT(inverse.GetRow(1), IsClose(AZ::Vector4(2.35056820e-13f, 2.68873646e-06f, 61.5111237f, 0.0f)));
         EXPECT_THAT(inverse.GetRow(2), IsClose(AZ::Vector4(5.37747292e-06f, 61.5111237f, -2.68873646e-06f, 0.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TryToInverseFullWithTranslation)
+    {
+        const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateTranslation(AZ::Vector3(2.3f, -5.2f, 0.7f)) *
+            AZ::Matrix3x4::CreateRotationX(2.2f) * AZ::Matrix3x4::CreateScale(AZ::Vector3(-2.4f, -0.3f, -1.7f));
+        const AZStd::optional<AZ::Matrix3x4> inverse = matrix.TryToInverseFull();
+        ASSERT_TRUE(inverse.has_value());
+        const AZ::Vector3 vector(0.9f, 3.2f, -1.4f);
+        EXPECT_THAT((*inverse * matrix) * vector, IsClose(vector));
+        EXPECT_THAT((matrix * *inverse) * vector, IsClose(vector));
+        EXPECT_THAT((*inverse * matrix), IsClose(AZ::Matrix3x4::Identity()));
+    }
+
+    TEST(MATH_Matrix3x4, TryToInverseFullSingularMatrix)
+    {
+        const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromValue(1.4f);
+        EXPECT_FALSE(matrix.TryToInverseFull().has_value());
     }
 
     using Matrix3x4InvertFastFixture = ::testing::TestWithParam<AZ::Matrix3x4>;

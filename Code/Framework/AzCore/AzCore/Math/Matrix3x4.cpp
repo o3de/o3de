@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Math/Matrix3x4.h>
 
 namespace AZ
 {
@@ -417,8 +417,19 @@ namespace AZ
         return result;
     }
 
-
     Matrix3x4 Matrix3x4::GetInverseFull() const
+    {
+        if (const auto inverse = TryToInverseFull(); inverse.has_value())
+        {
+            return *inverse;
+        }
+
+        AZ_Warning("Matrix3x4", false, "GetInverseFull could not calculate inverse as determinant was zero");
+        // Same fallback as before: identity 3x3 part with the translation inverted.
+        return CreateTranslation(-GetTranslation());
+    }
+
+    AZStd::optional<Matrix3x4> Matrix3x4::TryToInverseFull() const
     {
         Matrix3x4 result;
 
@@ -447,22 +458,14 @@ namespace AZ
                 determinantInv * (GetElement(1, 0) * GetElement(2, 1) - GetElement(1, 1) * GetElement(2, 0)),
                 determinantInv * (GetElement(2, 0) * GetElement(0, 1) - GetElement(2, 1) * GetElement(0, 0)),
                 determinantInv * (GetElement(0, 0) * GetElement(1, 1) - GetElement(0, 1) * GetElement(1, 0)),
-                0.0f
-            );
+                0.0f);
+            const Vector3& translation = GetTranslation();
+            result.SetElement(0, 3, -result.m_rows[0].Dot3(translation));
+            result.SetElement(1, 3, -result.m_rows[1].Dot3(translation));
+            result.SetElement(2, 3, -result.m_rows[2].Dot3(translation));
+            return result;
         }
-        else
-        {
-            AZ_Warning("Matrix3x4", false, "GetInverseFull could not calculate inverse as determinant was zero");
-            result = CreateIdentity();
-        }
-
-        // translation
-        const Vector3& translation = GetTranslation();
-        result.SetElement(0, 3, -result.m_rows[0].Dot3(translation));
-        result.SetElement(1, 3, -result.m_rows[1].Dot3(translation));
-        result.SetElement(2, 3, -result.m_rows[2].Dot3(translation));
-
-        return result;
+        return AZStd::nullopt;
     }
 
 

@@ -1286,7 +1286,8 @@ namespace AZ
                     }
                 }
 
-                m_transformService->SetTransformForId(modelData.m_objectId, transform, nonUniformScale);
+                m_transformService->SetTransformForId(
+                    modelData.m_objectId, transform, nonUniformScale, modelData.m_originalModelAsset.GetHint());
 
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
