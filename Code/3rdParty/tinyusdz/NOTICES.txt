@@ -1,0 +1,54 @@
+TinyUSDZ third-party notices from revision 6050eef932f7d2788656d63297aa488fb0961ed1.
+License texts are also retained in the installed headers and Notices directory.
+
+### Third party licenses
+
+* pxrUSD : Apache 2.0 license. https://github.com/PixarAnimationStudios/USD
+* OpenSubdiv : Apache 2.0 license. https://github.com/PixarAnimationStudios/OpenSubdiv
+* lz4 : BSD-2 license. http://www.lz4.org
+* cnpy(uncompressed ZIP decode/encode code) : MIT license https://github.com/rogersce/cnpy
+* tinyexr: BSD license.
+* tinyobjloader: MIT license.
+* tinygltf: MIT license.
+* tinycolorio: MIT license. https://github.com/syoyo/tinycolorio
+* stb_image, stb_image_resize, stb_image_write, stb_truetype: public domain. 
+* dr_libs: public domain. https://github.com/mackron/dr_libs
+* miniaudio: public domain or MIT no attribution. https://github.com/dr-soft/miniaudio
+* SDL2 : zlib license. https://www.libsdl.org/index.php
+* optional-lite: BSL 1.0 license. https://github.com/martinmoene/optional-lite
+* expected-lite: BSL 1.0 license. https://github.com/martinmoene/expected-lite
+* mapbox/earcut.hpp: ISC license. https://github.com/mapbox/earcut.hpp
+* par_shapes.h generate parametric surfaces and other simple shapes: MIT license https://github.com/prideout/par
+* MaterialX: Apache 2.0 license. https://github.com/AcademySoftwareFoundation/MaterialX
+* string_id: zlib license. https://github.com/foonathan/string_id
+* cityhash: MIT license. https://github.com/google/cityhash
+* fast_float: Apache 2.0/MIT dual license. https://github.com/fastfloat/fast_float
+* jsteeman/atoi: Apache 2.0 license. https://github.com/jsteemann/atoi
+* formatxx: unlicense. https://github.com/seanmiddleditch/formatxx
+* ubench.h: Unlicense. https://github.com/sheredom/ubench.h
+* thelink2012/any : BSL-1.0 license. https://github.com/thelink2012/any
+* simple_match : BSL-1.0 license. https://github.com/jbandela/simple_match
+* nanobind : BSD-3 license. https://github.com/wjakob/nanobind
+* pybind11 : BSD-3 license. https://github.com/pybind/pybind11
+* pystring : BSD-3 license. https://github.com/imageworks/pystring
+* gulrak/filesytem : MIT license. https://github.com/gulrak/filesystem
+* p-ranav/glob : MIT license. https://github.com/p-ranav/glob
+* linalg.h : Unlicense. https://github.com/sgorsten/linalg
+* mapbox/eternal: ISC License. https://github.com/mapbox/eternal
+* bvh: MIT license. https://github.com/madmann91/bvh
+* dtoa_milo.h: MIT License. https://github.com/miloyip/dtoa-benchmark
+* jeaiii/itoa: MIT License. https://github.com/jeaiii/itoa
+* alac: Apache 2.0 License. https://macosforge.github.io/alac/
+* OpenFBX: MIT License. https://github.com/nem0/OpenFBX
+* floaxie: Apache 2.0 License. https://github.com/aclex/floaxie
+* boost math sin_pi/cos_pi: BSL 1.0 License. https://www.boost.org/
+* Vulkan: MIT License. https://github.com/SaschaWillems/Vulkan
+* Metal.cpp: Apache 2.0 License. https://github.com/bkaradzic/metal-cpp https://developer.apple.com/metal/cpp/
+* sRGB transform: MIT license. https://www.nayuki.io/page/srgb-transform-library
+* virtualGizmo3D: BSD-2 license. https://github.com/BrutPitt/virtualGizmo3D
+* nanozlib: Apache 2.0 license. https://github.com/lighttransport/nanozlib
+* lz4.py: MIT license. https://github.com/SE2Dev/PyCoD/blob/master/_lz4.py
+* pugixml: MIT license. https://github.com/zeux/pugixml
+* nanoflann: 2-clause BSD license. https://github.com/jlblancoc/nanoflann
+* tinymeshutils: MIT license. https://github.com/syoyo/tinymeshutils
+* criterion(for benchmark): MIT license. https://github.com/p-ranav/criterion

@@ -1,0 +1,12 @@
+{
+    "PackageName": "zip",
+    "Version": "0.3.15+miniz.3.1.2",
+    "URL": "https://github.com/kuba--/zip",
+    "License": "Unlicense AND MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/kuba--/zip/archive/f57d98fbaa774c73de650fde16a9b5f8a92743ea.tar.gz",
+        "Revision": "f57d98fbaa774c73de650fde16a9b5f8a92743ea",
+        "SHA256": "196c62409ab47fdf42d398dea389f1df03a43e38fb63052131c790ac29b4affe"
+    }
+}
