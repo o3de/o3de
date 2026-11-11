@@ -41,31 +41,41 @@ namespace AZ
 
     bool ConsoleNameMatches(AZStd::string_view name, AZStd::string_view text)
     {
-        const AZStd::string glob = AZStd::string("*") + AZStd::string(text) + "*";
-        size_t n = 0, g = 0, star = 0, starName = 0;
-        while (n < name.size())
+        // Wildcard match anywhere in the name, ignoring case: `*` matches any run of characters, `?` matches one.
+        // The pattern is wrapped in `*` so the text can match anywhere in the name.
+        const AZStd::string pattern = AZStd::string("*") + AZStd::string(text) + "*";
+        size_t nameIndex = 0;
+        size_t patternIndex = 0;
+        size_t lastStarPatternIndex = 0;
+        size_t lastStarNameIndex = 0;
+        while (nameIndex < name.size())
         {
-            if (g < glob.size() && glob[g] == '*')
+            const bool havePatternChar = patternIndex < pattern.size();
+            if (havePatternChar && pattern[patternIndex] == '*')
             {
-                star = g++;
-                starName = n;
+                // Remember the star, and first try matching it against nothing.
+                lastStarPatternIndex = patternIndex++;
+                lastStarNameIndex = nameIndex;
             }
-            else if (g < glob.size() && (glob[g] == '?' || tolower(static_cast<unsigned char>(glob[g])) == tolower(static_cast<unsigned char>(name[n]))))
+            else if (havePatternChar && (pattern[patternIndex] == '?' ||
+                tolower(static_cast<unsigned char>(pattern[patternIndex])) == tolower(static_cast<unsigned char>(name[nameIndex]))))
             {
-                ++g;
-                ++n;
+                ++patternIndex;
+                ++nameIndex;
             }
             else
             {
-                g = star + 1; // glob starts with `*`, so there is always a star to retry from
-                n = ++starName;
+                // Mismatch: let the last star swallow one more name character and retry after it.
+                // The pattern starts with `*`, so there is always a star to fall back to.
+                patternIndex = lastStarPatternIndex + 1;
+                nameIndex = ++lastStarNameIndex;
             }
         }
-        while (g < glob.size() && glob[g] == '*')
+        while (patternIndex < pattern.size() && pattern[patternIndex] == '*')
         {
-            ++g;
+            ++patternIndex;
         }
-        return g == glob.size();
+        return patternIndex == pattern.size();
     }
 
     //! One `?` reply line, `  name = value - help`, printed whatever the logger's level.
