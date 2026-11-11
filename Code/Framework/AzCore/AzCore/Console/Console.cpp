@@ -7,7 +7,9 @@
  */
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/Console/ConsoleSearch.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Locale.h>
@@ -35,6 +37,15 @@ namespace AZ
         }
 
         return count;
+    }
+
+    //! Prints console replies that the person asked for, independent of the logger's level.
+    static void PrintConsoleReply(const AZStd::vector<AZStd::string>& lines)
+    {
+        for (const AZStd::string& line : lines)
+        {
+            Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s\n", line.c_str());
+        }
     }
 
     Console::Console()
@@ -111,6 +122,29 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+        // CryEngine and Unreal console conventions: `?text` lists the commands and cvars matching text
+        // (`?` alone lists all of them), and `cvar ?` prints that cvar's value and help. A command still
+        // receives `?` as an ordinary argument.
+        if (!command.empty() && command.front() == '?')
+        {
+            AZStd::string query(command.substr(1));
+            for (AZStd::string_view argument : commandArgs)
+            {
+                query += ' ';
+                query.append(argument.data(), argument.size());
+            }
+            PrintConsoleReply(FormatConsoleSearch(*this, query));
+            return AZ::Success();
+        }
+        if (commandArgs.size() == 1 && commandArgs.front() == "?")
+        {
+            if (const ConsoleFunctorBase* functor = FindCommand(command); functor != nullptr && IsConsoleCvar(*functor))
+            {
+                PrintConsoleReply(FormatConsoleHelp(*functor));
+                return AZ::Success();
+            }
+        }
+
         if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
         {
             // If the command could not be dispatched at this time add it to the deferred commands queue

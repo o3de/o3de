@@ -24,8 +24,11 @@
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzCore/Console/ConsoleSearch.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/sort.h>
 #include <AzCore/Serialization/Locale.h>
 #include <AzCore/Time/ITime.h>
 
@@ -1471,11 +1474,11 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
             AZ::StringFunc::TrimWhiteSpace(sCommand, true, true);
 
             //////////////////////////////////////////
-            // Search for CVars
-            if (sCommand.length() > 1 && sCommand[0] == '?')
+            // Search for commands and cvars: `?text`, `? text` and `?` alone (everything), as in the AZ console.
+            if (!sCommand.empty() && sCommand[0] == '?')
             {
-                sTemp = sCommand.substr(1);
-                FindVar(sTemp.c_str());
+                AZ::StringFunc::TrimWhiteSpace(sTemp, true, true);
+                FindVar(sTemp.c_str() + 1);
                 continue;
             }
         }
@@ -2416,23 +2419,77 @@ size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, con
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::FindVar(const char* substr)
 {
-    AZStd::vector<AZStd::string_view> cmds;
-    size_t cmdCount = GetSortedVars(cmds);
-
-    for (size_t i = 0; i < cmdCount; i++)
+    // `?text` ranks with the AZ console's matcher and prints its line format (AzCore/Console/ConsoleSearch.h) over both
+    // consoles: the AZ console's commands and cvars (it mirrors the legacy cvars) and the legacy commands and cvars it
+    // does not hold. Name subsequences count only when nothing else matches, as in the AZ console.
+    struct SearchMatch
     {
-        if (AZ::StringFunc::Find(cmds[i], substr) != AZStd::string::npos)
+        int m_score;
+        AZStd::string m_name;
+        AZStd::string m_line;
+    };
+    const AZ::ConsoleSearchTerms terms(substr);
+    AZ::IConsole* azConsole = AZ::Interface<AZ::IConsole>::Get();
+    AZStd::vector<SearchMatch> matches;
+    const auto add = [&terms, &matches](AZStd::string_view name, const char* value, AZStd::string_view help, bool allowSubsequence)
+    {
+        const int score = terms.Rank(name, help, allowSubsequence);
+        if (score != AZ::ConsoleSearchTerms::NoMatch)
         {
-            ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i].data());
-            if (pCvar)
+            matches.push_back({ score, AZStd::string(name), AZ::FormatConsoleSearchLine(name, value, help) });
+        }
+    };
+    const auto azHolds = [azConsole](AZStd::string_view name)
+    {
+        return azConsole != nullptr && azConsole->HasCommand(name, AZ::ConsoleFunctorFlags::Null);
+    };
+    const auto collect = [&](bool allowSubsequence)
+    {
+        if (azConsole != nullptr)
+        {
+            azConsole->VisitRegisteredFunctors([&add, allowSubsequence](AZ::ConsoleFunctorBase* functor)
             {
-                DisplayVarValue(pCvar);
-            }
-            else
+                if ((functor->GetFlags() & AZ::ConsoleFunctorFlags::IsInvisible) != AZ::ConsoleFunctorFlags::Null)
+                {
+                    return;
+                }
+                AZ::CVarFixedString value;
+                const bool cvar = AZ::IsConsoleCvar(*functor);
+                if (cvar && functor->GetValue(value) != AZ::GetValueResult::Success)
+                {
+                    value.clear();
+                }
+                add(functor->GetName(), cvar ? value.c_str() : nullptr, functor->GetDesc() ? functor->GetDesc() : "", allowSubsequence);
+            });
+        }
+        for (const auto& [name, variable] : m_mapVariables)
+        {
+            if ((variable->GetFlags() & VF_INVISIBLE) == 0 && !azHolds(name))
             {
-                ConsoleLogInputResponse("    $3%.*s $6(Command)", aznumeric_cast<int>(cmds[i].size()), cmds[i].data());
+                add(name, variable->GetString(), variable->GetHelp() ? variable->GetHelp() : "", allowSubsequence);
             }
         }
+        for (const auto& [name, command] : m_mapCommands)
+        {
+            if ((command.m_nFlags & VF_INVISIBLE) == 0 && !azHolds(name))
+            {
+                add(name, nullptr, command.m_sHelp, allowSubsequence);
+            }
+        }
+    };
+    collect(false);
+    if (matches.empty() && !terms.IsEmpty())
+    {
+        collect(true);
+    }
+    AZStd::sort(matches.begin(), matches.end(), [](const SearchMatch& left, const SearchMatch& right)
+    {
+        return left.m_score != right.m_score ? left.m_score > right.m_score : azstricmp(left.m_name.c_str(), right.m_name.c_str()) < 0;
+    });
+    ConsoleLogInputResponse("%s", AZ::FormatConsoleSearchHeader(substr, matches.size()).c_str());
+    for (const SearchMatch& match : matches)
+    {
+        ConsoleLogInputResponse("%s", match.m_line.c_str());
     }
 }
 
