@@ -8,12 +8,10 @@
 
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/Task/Internal/WorkStealingDeque.h>
 
-#include <AzCore/std/containers/queue.h>
-#include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzCore/std/parallel/exponential_backoff.h>
-#include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
@@ -96,13 +94,6 @@ namespace AZ
             return remaining;
         }
 
-        struct QueueStatus
-        {
-            AZStd::atomic<uint16_t> head;
-            AZStd::atomic<uint16_t> tail;
-            AZStd::atomic<uint16_t> reserve;
-        };
-
         // The Task Queue is a lock free 4-priority queue. Its basic operation is as follows:
         // Each priority level is associated with a different queue, corresponding to the maximum size of a uint16_t.
         // Each queue is implemented as a ring buffer, and a 64 bit atomic maintains the following state per queue:
@@ -112,9 +103,6 @@ namespace AZ
         class TaskQueue final
         {
         public:
-            // Preallocating upfront allows us to reserve slots to insert tasks without locks.
-            // Each thread allocated by the task manager consumes ~2 MB.
-            constexpr static uint16_t MaxQueueSize = 0xffff;
             constexpr static uint8_t PriorityLevelCount = static_cast<uint8_t>(TaskPriority::PRIORITY_COUNT);
 
             TaskQueue() = default;
@@ -122,79 +110,30 @@ namespace AZ
             TaskQueue& operator=(const TaskQueue&) = delete;
 
             void Enqueue(Task* task);
-            Task* TryDequeue();
+            Task* TryDequeue(uint8_t priority);
+            Task* TrySteal(uint8_t priority);
 
         private:
-            QueueStatus m_status[PriorityLevelCount] = {};
-            Task* m_queues[PriorityLevelCount][MaxQueueSize] = {};
+            WorkStealingDeque m_queues[PriorityLevelCount];
+            mutable AZStd::shared_mutex m_mutex; // WSQ is SPMC
         };
 
         void TaskQueue::Enqueue(Task* task)
         {
             uint8_t priority = task->GetPriorityNumber();
-            QueueStatus& status = m_status[priority];
-
-            AZStd::exponential_backoff backoff;
-            while (true)
-            {
-                uint16_t reserve = status.reserve.load();
-                uint16_t head = status.head.load();
-
-                // Enqueuing is done in two phases because we cannot atomically write the task to the slot we reserve
-                // and simulataneously publish the fact that the slot is now available.
-                if (reserve != head - 1)
-                {
-                    // Try to reserve a slot
-                    if (status.reserve.compare_exchange_weak(reserve, reserve + 1))
-                    {
-                        m_queues[priority][reserve] = task;
-
-                        uint16_t expectedReserve = reserve;
-
-                        // Increment the tail to advertise the new task
-                        while (!status.tail.compare_exchange_weak(expectedReserve, reserve + 1))
-                        {
-                            expectedReserve = reserve;
-                        }
-
-                        return;
-                    }
-
-                    // We failed to reserve a slot, try again
-                }
-                else
-                {
-                    backoff.wait();
-                }
-            }
+            AZStd::unique_lock lock(m_mutex);
+            m_queues[priority].Enqueue(task);
         }
 
-        Task* TaskQueue::TryDequeue()
+        Task* TaskQueue::TryDequeue(uint8_t priority)
         {
-            for (size_t priority = 0; priority != PriorityLevelCount; ++priority)
-            {
-                QueueStatus& status = m_status[priority];
-                while (true)
-                {
-                    uint16_t head = status.head.load();
-                    uint16_t tail = status.tail.load();
-                    if (head == tail)
-                    {
-                        // Queue empty
-                        break;
-                    }
-                    else
-                    {
-                        Task* task = m_queues[priority][status.head];
-                        if (status.head.compare_exchange_weak(head, head + 1))
-                        {
-                            return task;
-                        }
-                    }
-                }
-            }
+            AZStd::shared_lock lock(m_mutex);
+            return m_queues[priority].TryDequeue();
+        }
 
-            return nullptr;
+        Task* TaskQueue::TrySteal(uint8_t priority)
+        {
+            return m_queues[priority].TrySteal();
         }
 
         class TaskWorker
@@ -207,13 +146,13 @@ namespace AZ
                 m_executor = &executor;
 
                 m_threadName = AZStd::string::format("TaskWorker %u", id);
+                m_id = id;
                 AZStd::thread_desc desc = {};
                 desc.m_name = m_threadName.c_str();
                 if (affinitize)
                 {
                     desc.m_cpuId = 1 << id;
                 }
-                m_active.store(true, AZStd::memory_order_release);
 
                 m_thread = AZStd::thread{ desc,
                                           [this, &initSemaphore]
@@ -242,42 +181,86 @@ namespace AZ
 
             void Join()
             {
-                m_active.store(false, AZStd::memory_order_release);
-                m_semaphore.release();
                 m_thread.join();
             }
 
             void Enqueue(Task* task)
             {
                 m_queue.Enqueue(task);
-
-                m_semaphore.release();
+                
+                ++m_executor->m_taskCount;
+                m_executor->m_taskCount.notify_one();
             }
 
             const char* GetThreadName() {return m_threadName.c_str();}
 
         private:
+            Task* GetTask()
+            {
+                // steal task from higher priority before popping lower priority tasks
+                for (uint8_t priority = 0; priority < TaskQueue::PriorityLevelCount; priority++)
+                {
+                    Task* task = m_queue.TryDequeue(priority);
+
+                    if (task)
+                    {
+                        return task;
+                    }
+
+                    for (uint32_t i = 1; i < m_executor->m_threadCount; i++)
+                    {
+                        task = m_executor->m_workers[(i + m_id) % m_executor->m_threadCount].m_queue.TrySteal(priority);
+
+                        if (task)
+                        {
+                            return task;
+                        }
+                    }
+                }
+                return nullptr;
+            }
+
             void Run()
             {
-                while (m_active)
+                while (m_executor->m_active)
                 {
-                    m_semaphore.acquire();
+                    m_executor->m_taskCount.wait(0);
 
-                    if (!m_active)
+                    if (!m_executor->m_active)
                     {
                         return;
                     }
 
-                    Task* task = m_queue.TryDequeue();
-                    while (task)
+                    Task* task = GetTask();
+                    if (task == nullptr)
+                    {
+                        continue;
+                    }
+
+                    do
                     {
                         task->Invoke();
+                        Task* next = nullptr;
+
                         // Decrement counts for all task successors
                         for (size_t j = 0; j != task->m_outboundLinkCount; ++j)
                         {
                             Task* successor = task->m_graph->m_successors[task->m_successorOffset + j];
                             if (--successor->m_dependencyCount == 0)
                             {
+                                // retain a successor with highest priority (no less than that of the current task), enqueue the others
+                                // higher priority number is lower
+                                if (next == nullptr && successor->GetPriorityNumber() <= task->GetPriorityNumber())
+                                {
+                                    next = successor;
+                                    continue;
+                                }
+                                else if (next && successor->GetPriorityNumber() < next->GetPriorityNumber())
+                                {
+                                    m_executor->Submit(*next);
+                                    next = successor;
+                                    continue;
+                                }
                                 m_executor->Submit(*successor);
                             }
                         }
@@ -287,16 +270,22 @@ namespace AZ
                         {
                             m_executor->ReleaseGraph();
                         }
+                        task = next;
+                    } while (task);
 
-                        task = m_queue.TryDequeue();
+                    if (m_executor->m_taskCount.fetch_sub(1) == 1)
+                    {
+                        if (m_executor->m_finishTasksBeforeQuit)
+                        {
+                            m_executor->m_taskCount.notify_all();
+                        }
                     }
                 }
             }
 
             AZStd::thread m_thread;
-            AZStd::atomic<bool> m_active;
             AZStd::atomic<bool> m_enabled = true;
-            AZStd::binary_semaphore m_semaphore;
+            uint32_t m_id;
 
             ::AZ::TaskExecutor* m_executor;
             TaskQueue m_queue;
@@ -370,8 +359,9 @@ namespace AZ
         }
     }
 
-    TaskExecutor::TaskExecutor(uint32_t threadCount)
+    TaskExecutor::TaskExecutor(uint32_t threadCount, bool finishTasksBeforeQuit)
         : m_eventTracker(this)
+        , m_finishTasksBeforeQuit(finishTasksBeforeQuit)
     {
         // TODO: Configure thread count + affinity based on configuration
         m_threadCount = threadCount == 0 ? AZStd::thread::hardware_concurrency() : threadCount;
@@ -380,6 +370,7 @@ namespace AZ
 
         AZStd::semaphore initSemaphore;
 
+        m_active.store(true, AZStd::memory_order_release);
         for (uint32_t i = 0; i != m_threadCount; ++i)
         {
             new (m_workers + i) Internal::TaskWorker{};
@@ -394,6 +385,16 @@ namespace AZ
 
     TaskExecutor::~TaskExecutor()
     {
+        if (m_finishTasksBeforeQuit)
+        {
+            while (const auto count = m_taskCount.load()) {
+                m_taskCount.wait(count);
+            }
+        }
+        m_active.store(false, AZStd::memory_order_release);
+        m_taskCount += m_threadCount;
+        m_taskCount.notify_all();
+
         for (size_t i = 0; i != m_threadCount; ++i)
         {
             m_workers[i].Join();
@@ -451,6 +452,12 @@ namespace AZ
 
     void TaskExecutor::Submit(Internal::Task& task)
     {
+        // Prefer submitting in the current task worker queue for sake of cache locality
+        if (Internal::TaskWorker::t_worker)
+        {
+            Internal::TaskWorker::t_worker->Enqueue(&task);
+            return;
+        }
         // TODO: Something more sophisticated is likely needed here.
         // First, we are completely ignoring affinity.
         // Second, some heuristics on core availability will help distribute work more effectively

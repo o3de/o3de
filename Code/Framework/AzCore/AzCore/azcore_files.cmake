@@ -723,6 +723,7 @@ set(FILES
     Task/Internal/Task.inl
     Task/Internal/Task.h
     Task/Internal/TaskConfig.h
+    Task/Internal/WorkStealingDeque.h
     Task/TaskDescriptor.h
     Task/TaskExecutor.cpp
     Task/TaskExecutor.h
