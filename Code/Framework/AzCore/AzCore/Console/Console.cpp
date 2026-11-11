@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Console/Console.h>
-#include <AzCore/Console/ConsoleSearch.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
@@ -20,6 +19,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/sort.h>
 #include <cctype>
 
 namespace AZ
@@ -39,13 +39,48 @@ namespace AZ
         return count;
     }
 
-    //! Prints console replies that the person asked for, independent of the logger's level.
-    static void PrintConsoleReply(const AZStd::vector<AZStd::string>& lines)
+    bool ConsoleNameMatches(AZStd::string_view name, AZStd::string_view text)
     {
-        for (const AZStd::string& line : lines)
+        const AZStd::string glob = AZStd::string("*") + AZStd::string(text) + "*";
+        size_t n = 0, g = 0, star = 0, starName = 0;
+        while (n < name.size())
         {
-            Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s\n", line.c_str());
+            if (g < glob.size() && glob[g] == '*')
+            {
+                star = g++;
+                starName = n;
+            }
+            else if (g < glob.size() && (glob[g] == '?' || tolower(static_cast<unsigned char>(glob[g])) == tolower(static_cast<unsigned char>(name[n]))))
+            {
+                ++g;
+                ++n;
+            }
+            else
+            {
+                g = star + 1; // glob starts with `*`, so there is always a star to retry from
+                n = ++starName;
+            }
         }
+        while (g < glob.size() && glob[g] == '*')
+        {
+            ++g;
+        }
+        return g == glob.size();
+    }
+
+    //! One `?` reply line, `  name = value - help`, printed whatever the logger's level.
+    static void PrintConsoleEntry(const ConsoleFunctorBase& functor)
+    {
+        AZStd::string line = AZStd::string::format("  %s", functor.GetName());
+        if (CVarFixedString value; functor.GetValue(value) == GetValueResult::Success)
+        {
+            line = line + " = " + value.c_str();
+        }
+        if (functor.GetDesc() && functor.GetDesc()[0])
+        {
+            line = line + " - " + functor.GetDesc();
+        }
+        Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s\n", line.c_str());
     }
 
     Console::Console()
@@ -122,25 +157,33 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        // CryEngine and Unreal console conventions: `?text` lists the commands and cvars matching text
-        // (`?` alone lists all of them), and `cvar ?` prints that cvar's value and help. A command still
-        // receives `?` as an ordinary argument.
+        // `?text` (or `? text`) lists the visible commands and cvars whose name matches text (ConsoleNameMatches); `?`
+        // lists all. `cvar ?` prints that cvar. A command still receives `?` as an ordinary argument.
         if (!command.empty() && command.front() == '?')
         {
-            AZStd::string query(command.substr(1));
-            for (AZStd::string_view argument : commandArgs)
+            const AZStd::string_view text = command.size() > 1 ? command.substr(1) : commandArgs.empty() ? AZStd::string_view() : commandArgs.front();
+            AZStd::vector<ConsoleFunctorBase*> matches;
+            VisitRegisteredFunctors([text, &matches](ConsoleFunctorBase* functor)
             {
-                query += ' ';
-                query.append(argument.data(), argument.size());
+                if ((functor->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::Null &&
+                    ConsoleNameMatches(functor->GetName(), text))
+                {
+                    matches.push_back(functor);
+                }
+            });
+            AZStd::sort(matches.begin(), matches.end(), [](auto* l, auto* r) { return azstricmp(l->GetName(), r->GetName()) < 0; });
+            Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "?%.*s: %zu matches\n", AZ_STRING_ARG(text), matches.size());
+            for (const ConsoleFunctorBase* functor : matches)
+            {
+                PrintConsoleEntry(*functor);
             }
-            PrintConsoleReply(FormatConsoleSearch(*this, query));
             return AZ::Success();
         }
         if (commandArgs.size() == 1 && commandArgs.front() == "?")
         {
-            if (const ConsoleFunctorBase* functor = FindCommand(command); functor != nullptr && IsConsoleCvar(*functor))
+            if (const ConsoleFunctorBase* functor = FindCommand(command); functor && !functor->GetTypeId().IsNull())
             {
-                PrintConsoleReply(FormatConsoleHelp(*functor));
+                PrintConsoleEntry(*functor);
                 return AZ::Success();
             }
         }

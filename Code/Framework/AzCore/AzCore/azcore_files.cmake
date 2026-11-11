@@ -77,8 +77,6 @@ set(FILES
     Console/ConsoleFunctor.cpp
     Console/ConsoleFunctor.h
     Console/ConsoleFunctor.inl
-    Console/ConsoleSearch.cpp
-    Console/ConsoleSearch.h
     Console/ConsoleTypeHelpers.h
     Console/ConsoleTypeHelpers.inl
     Console/IConsole.h

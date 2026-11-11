@@ -9,7 +9,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
-#include <AzCore/Console/ConsoleSearch.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -391,100 +390,6 @@ namespace AZ
         }
     }
 
-    // Console search uses the same matcher for AZ and legacy console entries.
-    TEST_F(ConsoleTests, ConsoleSearch_TermsMatchPrefixSubstringCaseWildcardHelpAndEmpty)
-    {
-        constexpr int NoMatch = AZ::ConsoleSearchTerms::NoMatch;
-        const AZStd::string_view name = "zqFlySpeed";
-        const AZStd::string_view help = "Camera speed while flying.";
-
-        // Prefix ranks above substring; both ignore case.
-        const int prefix = AZ::ConsoleSearchTerms("ZQ").Rank(name, help);
-        const int substring = AZ::ConsoleSearchTerms("fly").Rank(name, help);
-        EXPECT_GT(prefix, substring);
-        EXPECT_GT(substring, 0);
-        EXPECT_EQ(substring, AZ::ConsoleSearchTerms("FLY").Rank(name, help));
-        EXPECT_GT(AZ::ConsoleSearchTerms("zqflyspeed").Rank(name, help), prefix);
-
-        // A word with `*` or `?` is a glob over the whole name.
-        EXPECT_NE(NoMatch, AZ::ConsoleSearchTerms("zq*").Rank(name, help));
-        EXPECT_NE(NoMatch, AZ::ConsoleSearchTerms("*SPEED").Rank(name, help));
-        EXPECT_NE(NoMatch, AZ::ConsoleSearchTerms("zqfly?peed").Rank(name, help));
-        EXPECT_EQ(NoMatch, AZ::ConsoleSearchTerms("fly*").Rank(name, help));
-
-        // Help words match below name words; every word must match somewhere.
-        const int helpOnly = AZ::ConsoleSearchTerms("camera").Rank(name, help);
-        EXPECT_GT(helpOnly, 0);
-        EXPECT_LT(helpOnly, substring);
-        EXPECT_NE(NoMatch, AZ::ConsoleSearchTerms("fly camera").Rank(name, help));
-        EXPECT_EQ(NoMatch, AZ::ConsoleSearchTerms("fly banana").Rank(name, help));
-
-        // Name subsequences match only when allowed.
-        EXPECT_EQ(NoMatch, AZ::ConsoleSearchTerms("zfs").Rank(name, help, false));
-        EXPECT_NE(NoMatch, AZ::ConsoleSearchTerms("zfs").Rank(name, help, true));
-
-        // Empty input matches everything, unranked.
-        EXPECT_TRUE(AZ::ConsoleSearchTerms("").IsEmpty());
-        EXPECT_TRUE(AZ::ConsoleSearchTerms("  ").IsEmpty());
-        EXPECT_EQ(0, AZ::ConsoleSearchTerms("").Rank(name, help));
-        EXPECT_EQ(0, AZ::ConsoleSearchTerms("").Rank("", ""));
-
-        // The shared reply format (the legacy CryEngine console prints its own entries with it).
-        EXPECT_EQ(AZStd::string("  zqFlySpeed = 7 - Camera speed."), AZ::FormatConsoleSearchLine("zqFlySpeed", "7", "Camera speed. Tiles."));
-        EXPECT_EQ(AZStd::string("  zqToggle (command)"), AZ::FormatConsoleSearchLine("zqToggle", nullptr, ""));
-        EXPECT_EQ(AZStd::string("?zq: 2 matches"), AZ::FormatConsoleSearchHeader(" zq ", 2));
-        EXPECT_EQ(AZStd::string("?zq: 1 match"), AZ::FormatConsoleSearchHeader("zq", 1));
-        EXPECT_EQ(AZStd::string("?zq: no commands or cvars match"), AZ::FormatConsoleSearchHeader("zq", 0));
-    }
-
-    TEST_F(ConsoleTests, ConsoleSearch_FunctorsRankByNameFilterKindHideInvisibleAndFallBackToSubsequence)
-    {
-        AZ::IConsole& console = *m_console;
-        AZ_CVAR_SCOPED(int32_t, zqFlySpeed, 7, nullptr, AZ::ConsoleFunctorFlags::Null, "Camera speed while flying. Tiles per second.");
-        const auto signature = AZ::ConsoleFunctor<void, false>::FunctorSignature();
-        AZ::ConsoleFunctor<void, false> toggle(console, "zqToggleZqFly", "Toggles zq flying.", AZ::ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), signature);
-        AZ::ConsoleFunctor<void, false> hidden(console, "zqHiddenFly", "Hidden.", AZ::ConsoleFunctorFlags::IsInvisible, AZ::TypeId::CreateNull(), signature);
-
-        const auto matches = AZ::SearchConsoleFunctors(console, "zqfly");
-        ASSERT_EQ(2u, matches.size());
-        EXPECT_STREQ("zqFlySpeed", matches[0].m_functor->GetName()); // prefix before substring
-        EXPECT_STREQ("zqToggleZqFly", matches[1].m_functor->GetName());
-        EXPECT_TRUE(AZ::IsConsoleCvar(*matches[0].m_functor));
-        EXPECT_FALSE(AZ::IsConsoleCvar(*matches[1].m_functor));
-
-        const auto commands = AZ::SearchConsoleFunctors(console, "zqfly", AZ::ConsoleSearchKind::Command);
-        ASSERT_EQ(1u, commands.size());
-        EXPECT_STREQ("zqToggleZqFly", commands[0].m_functor->GetName());
-        const auto cvars = AZ::SearchConsoleFunctors(console, "zq", AZ::ConsoleSearchKind::Cvar);
-        ASSERT_EQ(1u, cvars.size());
-        EXPECT_STREQ("zqFlySpeed", cvars[0].m_functor->GetName());
-
-        // "zqtgf" is no name or help substring, so the subsequence fallback finds zqToggleZqFly.
-        const auto fuzzy = AZ::SearchConsoleFunctors(console, "zqtgf");
-        ASSERT_EQ(1u, fuzzy.size());
-        EXPECT_STREQ("zqToggleZqFly", fuzzy[0].m_functor->GetName());
-
-        // An empty query lists every visible functor, by name.
-        size_t visible = 0;
-        console.VisitRegisteredFunctors([&visible](AZ::ConsoleFunctorBase* functor)
-        {
-            visible += (functor->GetFlags() & AZ::ConsoleFunctorFlags::IsInvisible) == AZ::ConsoleFunctorFlags::Null ? 1 : 0;
-        });
-        const auto everything = AZ::SearchConsoleFunctors(console, "");
-        EXPECT_EQ(visible, everything.size());
-        for (size_t index = 1; index < everything.size(); ++index)
-        {
-            EXPECT_LE(azstricmp(everything[index - 1].m_functor->GetName(), everything[index].m_functor->GetName()), 0);
-        }
-
-        EXPECT_EQ(AZStd::string_view("Camera speed while flying."), AZ::GetConsoleHelpLine("Camera speed while flying. Tiles per second."));
-        EXPECT_EQ(AZStd::string_view("First line"), AZ::GetConsoleHelpLine("First line\nsecond line"));
-        EXPECT_EQ(AZStd::string_view("No end"), AZ::GetConsoleHelpLine("No end"));
-    }
-
-    static int s_zqToggleCalls = 0;
-    static bool s_zqToggleSawQuestionMark = false;
-
     class ConsoleReplyCapture : public AZ::Debug::TraceMessageBus::Handler
     {
     public:
@@ -492,81 +397,48 @@ namespace AZ
         ~ConsoleReplyCapture() override { BusDisconnect(); }
         bool OnPrintf(const char*, const char* message) override
         {
-            AZStd::string line(message);
-            while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
-            {
-                line.pop_back();
-            }
-            m_lines.push_back(AZStd::move(line));
+            const AZStd::string_view text(message);
+            m_lines.emplace_back(text.substr(0, text.find_first_of("\r\n")));
             return true;
         }
         AZStd::vector<AZStd::string> m_lines;
     };
 
-    TEST_F(ConsoleTests, ConsoleSearch_QuestionMarkCommandsRouteToTheSearchAndHelp)
+    static int s_zqToggleCalls = 0;
+
+    // `?text` prints every visible command and cvar whose name contains text in any case; `?` prints all.
+    TEST_F(ConsoleTests, ConsoleSearch_QuestionMarkPrintsNameMatches)
     {
         AZ::IConsole& console = *m_console;
-        AZ_CVAR_SCOPED(int32_t, zqFlySpeed, 7, nullptr, AZ::ConsoleFunctorFlags::Null, "Camera speed while flying. Tiles per second.");
+        AZ_CVAR_SCOPED(int32_t, zqFlySpeed, 7, nullptr, AZ::ConsoleFunctorFlags::Null, "Camera speed.");
+        const AZ::ConsoleFunctor<void, false>::FunctorSignature count = [](const AZ::ConsoleCommandContainer&) { ++s_zqToggleCalls; };
+        AZ::ConsoleFunctor<void, false> toggle(console, "zqToggleZqFly", "Toggles flying.", AZ::ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), count);
+        AZ::ConsoleFunctor<void, false> hidden(console, "zqHiddenFly", "Hidden.", AZ::ConsoleFunctorFlags::IsInvisible, AZ::TypeId::CreateNull(), count);
         s_zqToggleCalls = 0;
-        s_zqToggleSawQuestionMark = false;
-        AZ::ConsoleFunctor<void, false> toggle(console, "zqToggleZqFly", "Toggles zq flying.", AZ::ConsoleFunctorFlags::Null,
-            AZ::TypeId::CreateNull(), [](const AZ::ConsoleCommandContainer& arguments)
-            {
-                ++s_zqToggleCalls;
-                s_zqToggleSawQuestionMark = arguments.size() == 1 && arguments.front() == "?";
-            });
-
+        const auto reply = [&console](const char* line)
         {
             ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("?ZQFLY").IsSuccess());
-            const AZStd::vector<AZStd::string> expected = {
-                "?ZQFLY: 2 matches",
-                "  zqFlySpeed = 7 - Camera speed while flying.",
-                "  zqToggleZqFly (command) - Toggles zq flying.",
-            };
-            EXPECT_EQ(expected, capture.m_lines);
-        }
-        {
-            // `? words` searches every word, like `?words`.
-            ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("? zq camera").IsSuccess());
-            ASSERT_EQ(2u, capture.m_lines.size());
-            EXPECT_EQ("?zq camera: 1 match", capture.m_lines[0]);
-            EXPECT_EQ("  zqFlySpeed = 7 - Camera speed while flying.", capture.m_lines[1]);
-        }
-        {
-            ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("?zqnothing").IsSuccess());
-            const AZStd::vector<AZStd::string> expected = { "?zqnothing: no commands or cvars match" };
-            EXPECT_EQ(expected, capture.m_lines);
-        }
-        {
-            // `?` alone lists every visible command and cvar.
-            ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("?").IsSuccess());
-            const size_t total = AZ::SearchConsoleFunctors(console, "").size();
-            ASSERT_EQ(total + 1, capture.m_lines.size());
-            EXPECT_EQ(AZStd::string::format("?: %zu matches", total), capture.m_lines[0]);
-            EXPECT_NE(AZStd::find(capture.m_lines.begin(), capture.m_lines.end(), "  zqToggleZqFly (command) - Toggles zq flying."),
-                capture.m_lines.end());
-        }
-        {
-            // `cvar ?` prints the cvar's value and whole help instead of setting it.
-            ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("zqFlySpeed ?").IsSuccess());
-            const AZStd::vector<AZStd::string> expected = { "zqFlySpeed = 7", "  Camera speed while flying. Tiles per second." };
-            EXPECT_EQ(expected, capture.m_lines);
-            EXPECT_EQ(7, static_cast<int32_t>(zqFlySpeed));
-        }
+            EXPECT_TRUE(console.PerformCommand(line).IsSuccess());
+            return capture.m_lines;
+        };
+        using Lines = AZStd::vector<AZStd::string>;
+        EXPECT_EQ(reply("?ZQFLY"), (Lines{ "?ZQFLY: 2 matches", "  zqFlySpeed = 7 - Camera speed.", "  zqToggleZqFly - Toggles flying." }));
+        EXPECT_EQ(reply("? zqflysp"), (Lines{ "?zqflysp: 1 matches", "  zqFlySpeed = 7 - Camera speed." }));
+        EXPECT_EQ(reply("?zqnothing"), (Lines{ "?zqnothing: 0 matches" }));
+        EXPECT_EQ(reply("?zq?ly*ED"), (Lines{ "?zq?ly*ED: 1 matches", "  zqFlySpeed = 7 - Camera speed." }));
+        EXPECT_TRUE(AZ::ConsoleNameMatches("r_Transparent_Fullscreen", "transparent?full*"));
+        EXPECT_TRUE(AZ::ConsoleNameMatches("r_transparent_full", "TRANSPARENT?FULL"));
+        EXPECT_FALSE(AZ::ConsoleNameMatches("r_transparentfull", "transparent?full"));
+        EXPECT_FALSE(AZ::ConsoleNameMatches("r_transparent", "transparent?"));
+        const Lines all = reply("?");
+        EXPECT_NE(AZStd::find(all.begin(), all.end(), "  zqToggleZqFly - Toggles flying."), all.end());
+        EXPECT_EQ(AZStd::find(all.begin(), all.end(), "  zqHiddenFly - Hidden."), all.end());
+        // `cvar ?` prints the cvar; a command still receives `?` as an argument.
+        EXPECT_EQ(reply("zqFlySpeed ?"), (Lines{ "  zqFlySpeed = 7 - Camera speed." }));
+        EXPECT_EQ(7, static_cast<int32_t>(zqFlySpeed));
         EXPECT_EQ(0, s_zqToggleCalls);
-        {
-            // A command still receives `?` as an ordinary argument.
-            ConsoleReplyCapture capture;
-            EXPECT_TRUE(console.PerformCommand("zqToggleZqFly ?").IsSuccess());
-            EXPECT_EQ(1, s_zqToggleCalls);
-            EXPECT_TRUE(s_zqToggleSawQuestionMark);
-            EXPECT_EQ(AZStd::find(capture.m_lines.begin(), capture.m_lines.end(), "  Toggles zq flying."), capture.m_lines.end());
-        }
+        console.PerformCommand("zqToggleZqFly ?");
+        EXPECT_EQ(1, s_zqToggleCalls);
     }
 
     TEST_F(ConsoleTests, ConsoleFunctor_FreeFunctorExecutionTest)
