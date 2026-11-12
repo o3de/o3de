@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/std/optional.h>
 
 namespace AZ
 {
@@ -291,6 +292,12 @@ namespace AZ
         //! This function works for any matrix, even if they have scaling or skew.
         //! If the 3x3 part of the matrix is orthogonal then \ref GetInverseFast is much faster.
         [[nodiscard]] Matrix3x4 GetInverseFull() const;
+
+        //! Gets the inverse of the transformation represented by the matrix.
+        //! This function works for any matrix, even if they have scaling or skew.
+        //! It resturns nullopt when determinant is close to zero.
+        //! If the 3x3 part of the matrix is orthogonal then \ref GetInverseFast is much faster.
+        [[nodiscard]] AZStd::optional<Matrix3x4> TryToInverseFull() const;
 
         //! Inverts the transformation represented by the matrix.
         //! This function works for any matrix, even if they have scaling or skew.
