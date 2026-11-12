@@ -189,13 +189,35 @@ namespace AZ::RHI
         return resultCode;
     }
 
+    uint32_t SwapChain::GetMaximumVerticalSyncInterval() const
+    {
+        return m_deviceObjects.empty() ? 0 : GetDeviceSwapChain()->GetMaximumVerticalSyncInterval();
+    }
+
     void SwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
     {
-        IterateObjects<DeviceSwapChain>([verticalSyncInterval]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+        [[maybe_unused]] const ResultCode result = TrySetVerticalSyncInterval(verticalSyncInterval);
+        AZ_Warning(
+            "SwapChain",
+            result == ResultCode::Success,
+            "Cannot honor VSync interval %u (native maximum %u).",
+            verticalSyncInterval,
+            GetMaximumVerticalSyncInterval());
+    }
+
+    ResultCode SwapChain::TrySetVerticalSyncInterval(uint32_t verticalSyncInterval)
+    {
+        if (m_deviceObjects.empty())
         {
-            deviceSwapChain->SetVerticalSyncInterval(verticalSyncInterval);
-        });
+            return ResultCode::InvalidOperation;
+        }
+        const ResultCode result = GetDeviceSwapChain()->TrySetVerticalSyncInterval(verticalSyncInterval);
+        if (result != ResultCode::Success)
+        {
+            return result;
+        }
         m_descriptor.m_verticalSyncInterval = verticalSyncInterval;
+        return ResultCode::Success;
     }
 
     const AttachmentId& SwapChain::GetAttachmentId() const
