@@ -417,7 +417,7 @@ namespace AZ::Render
         m_gradientPass->AdoptOutputImages(m_diffuseImage, m_specularImage);
 
         // Push current gradient state into the pass before it starts running.
-        m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
+        m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_faceResolution);
         m_gradientPass->SetDetailLayer(m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
         m_gradientPass->SetSpecularLayer(m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
         m_gradientPass->SetEnabled(m_enabled);
@@ -568,29 +568,30 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::WriteSceneSrgFromPass()
     {
-        auto diffuseImage  = m_gradientPass->GetDiffuseImage();
-        auto specularImage = m_gradientPass->GetSpecularImage();
-        if (!diffuseImage || !specularImage)
+        // Take the pass's outputs only once they have been written. Before that they have no contents
+        // and have not been transitioned for sampling, so keep publishing the previous pair, which
+        // also lets a resolution change swap over without a flash.
+        //
+        // Caching them also lets them outlive the pass. A pass-tree rebuild discards the pass and we
+        // host a replacement; EnsurePass hands these back to it. The size is re-checked on adoption,
+        // so a resolution change simply allocates a new pair rather than reusing a mismatched one.
+        if (m_gradientPass->HasWrittenOutputs())
         {
-            // The pass has not produced its output images yet -- BuildInternal has not run, because
-            // the pass was only just injected and has not been built into the tree.
+            m_diffuseImage  = m_gradientPass->GetDiffuseImage();
+            m_specularImage = m_gradientPass->GetSpecularImage();
+        }
+
+        if (!m_diffuseImage || !m_specularImage)
+        {
+            // Nothing written yet, so the IBL feature processor's values stay in the slots.
             return;
         }
 
         // Write the gradient cubemaps to their respective IBL slots. This runs on the render
         // thread after all Simulate() jobs have completed, so there is no race with the IBL FP.
-        // The cubemap SRV (default view set at image creation) is used for sampling. In I.1 the
-        // two images hold identical gradient data; later phases composite distinct detail and
-        // specular layers so the diffuse and specular slots diverge.
-
-        // Cache the pass's outputs so they outlive it. A pass-tree rebuild discards the pass and we
-        // host a replacement; EnsurePass hands these back to it. The size is re-checked on adoption,
-        // so a resolution change simply allocates a new pair rather than reusing a mismatched one.
-        m_diffuseImage  = diffuseImage;
-        m_specularImage = specularImage;
-
-        m_sceneSrg->SetImageView(m_specularEnvMapIndex, specularImage->GetImageView());
-        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  diffuseImage->GetImageView());
+        // The cubemap SRV (default view set at image creation) is used for sampling.
+        m_sceneSrg->SetImageView(m_specularEnvMapIndex, m_specularImage->GetImageView());
+        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  m_diffuseImage->GetImageView());
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
@@ -621,7 +622,7 @@ namespace AZ::Render
         }
         else if (m_gradientPass)
         {
-            m_gradientPass->SetGradientColors(low, mid, high, m_exposure, m_faceResolution);
+            m_gradientPass->SetGradientColors(low, mid, high, m_faceResolution);
         }
     }
 
@@ -629,15 +630,12 @@ namespace AZ::Render
     {
         m_exposure = exposureStops;
 
+        // The cubemaps hold unexposed values in both modes. The IBL samplers apply exposure once,
+        // through the scene SRG's m_iblExposure, so an exposure change never rewrites a cubemap.
         // Static: exposure is pushed to the IBL FP from Simulate(), and only while we own
         // the slots -- so a foreign IBL's exposure is never disturbed, and the floor value
         // (~2^-20) reads as effectively black without conflicting with other lighting.
-        // Dynamic: update the live compute pass.
-        if (m_updateMode == UpdateMode::Dynamic && m_gradientPass)
-        {
-            // Push full color state (exposure is embedded in the shader SRG).
-            m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
-        }
+        // Dynamic: exposure is written to the scene SRG from Render().
     }
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
@@ -691,7 +689,7 @@ namespace AZ::Render
             // Dynamic mode: push the new resolution to the live pass, which reallocates its
             // output cubemap (GradientGICubemapPass::SetGradientColors queues a pass rebuild
             // when the face size changes).
-            m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
+            m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_faceResolution);
         }
     }
 

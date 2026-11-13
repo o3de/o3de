@@ -11,9 +11,11 @@
 #include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
+#include <Atom/RHI/ScopeProducerFunction.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -72,14 +74,13 @@ namespace AZ::Render
 
     void GradientGICubemapPass::SetGradientColors(
         const Color& low, const Color& mid, const Color& high,
-        float exposure, uint32_t faceSize)
+        uint32_t faceSize)
     {
         const bool faceSizeChanged = (faceSize != m_faceSize);
 
         m_lowColor  = low;
         m_midColor  = mid;
         m_highColor = high;
-        m_exposure  = exposure;
         m_faceSize  = faceSize;
         m_dirty     = true;
 
@@ -188,8 +189,9 @@ namespace AZ::Render
         // unwritten cubemap to the scene. Otherwise allocate a fresh pair.
         if (!OutputImagesMatchFaceSize())
         {
-            m_diffuseImage  = CreateOutputCubemap("GradientGI_Diffuse");
-            m_specularImage = CreateOutputCubemap("GradientGI_Specular");
+            m_diffuseImage   = CreateOutputCubemap("GradientGI_Diffuse");
+            m_specularImage  = CreateOutputCubemap("GradientGI_Specular");
+            m_outputsWritten = false;
         }
 
         if (!m_diffuseImage || !m_specularImage)
@@ -201,6 +203,15 @@ namespace AZ::Render
             return;
         }
 
+        // ---- Empty scope that transitions the outputs for sampling after a write ----
+        m_sampleAccessScope = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
+            RHI::ScopeId(AZStd::string::format("%s.SampleAccess", GetPathName().GetCStr())),
+            [this](RHI::FrameGraphInterface frameGraph) { DeclareSampleAccess(frameGraph); },
+            [](const RHI::FrameGraphCompileContext&) {},
+            [](const RHI::FrameGraphExecuteContext&) {},
+            RHI::HardwareQueueClass::Graphics,
+            RPI::Pass::GetDeviceIndex());
+
         m_dirty = true;
     }
 
@@ -210,6 +221,15 @@ namespace AZ::Render
     {
         m_diffuseImage  = diffuse;
         m_specularImage = specular;
+
+        // The feature processor only caches outputs that have been written. BuildInternal clears
+        // this again if the face size no longer matches and it has to allocate a new pair.
+        m_outputsWritten = m_diffuseImage && m_specularImage;
+    }
+
+    bool GradientGICubemapPass::HasWrittenOutputs() const
+    {
+        return m_outputsWritten;
     }
 
     bool GradientGICubemapPass::OutputImagesMatchFaceSize() const
@@ -357,14 +377,39 @@ namespace AZ::Render
     }
 
     // =========================================================================
-    // SetupFrameGraphDependencies -- import image and declare UAV scope each frame
+    // FrameBeginInternal -- decide whether this frame writes the outputs
+    // =========================================================================
+
+    void GradientGICubemapPass::FrameBeginInternal(FramePrepareParams params)
+    {
+        // Latched here, on the main thread, so the scopes, SRG and dispatch of this frame all agree.
+        // The resources are checked too, because the feature processor can re-enable a pass whose
+        // BuildInternal failed.
+        const bool canWrite = m_pipelineState && m_passSrg && m_diffuseImage && m_specularImage && m_sampleAccessScope;
+        m_writeThisFrame = m_dirty && canWrite;
+
+        RPI::RenderPass::FrameBeginInternal(params);
+
+        if (m_writeThisFrame)
+        {
+            params.m_frameGraphBuilder->ImportScopeProducer(*m_sampleAccessScope);
+
+            m_dirty          = false;
+            m_outputsWritten = true;
+        }
+    }
+
+    // =========================================================================
+    // SetupFrameGraphDependencies -- import images and declare UAV scope on write frames
     // =========================================================================
 
     void GradientGICubemapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
         RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
 
-        if (!m_diffuseImage || !m_specularImage)
+        // Nothing to write this frame: stay out of the frame graph, so the outputs rest in the
+        // shader-read layout left by the sample access scope.
+        if (!m_writeThisFrame)
         {
             return;
         }
@@ -396,6 +441,30 @@ namespace AZ::Render
         declareUav(m_specularImage);
     }
 
+    void GradientGICubemapPass::DeclareSampleAccess(RHI::FrameGraphInterface frameGraph)
+    {
+        // The frame graph only transitions an image for scopes that declare it, and a scene SRG
+        // binding declares nothing. Reading the outputs here, after the UAV scope, leaves them in the
+        // layout the IBL samplers expect and puts the write-to-read barrier in place for them.
+        auto declareRead = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
+        {
+            RHI::ImageScopeAttachmentDescriptor readDesc;
+            readDesc.m_attachmentId = image->GetAttachmentId();
+            readDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
+                RHI::Format::Unknown,
+                /*mipSliceMin=*/0,
+                /*mipSliceMax=*/0,
+                /*arraySliceMin=*/0,
+                /*arraySliceMax=*/5);
+            readDesc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
+
+            frameGraph.UseShaderAttachment(readDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::AnyGraphics);
+        };
+
+        declareRead(m_diffuseImage);
+        declareRead(m_specularImage);
+    }
+
     // =========================================================================
     // CompileResources -- bind SRG constants and UAV image view
     // =========================================================================
@@ -407,13 +476,12 @@ namespace AZ::Render
             return;
         }
 
-        if (m_dirty)
+        if (m_writeThisFrame)
         {
             // ---- Bind gradient color constants ----
             const auto lowIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
             const auto midIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
             const auto highIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
-            const auto expIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_exposure"));
             const auto sizeIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
             const auto diffIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputDiffuse"));
             const auto specIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputSpecular"));
@@ -421,7 +489,6 @@ namespace AZ::Render
             m_passSrg->SetConstant(lowIdx,  AZ::Vector3(m_lowColor.GetR(),  m_lowColor.GetG(),  m_lowColor.GetB()));
             m_passSrg->SetConstant(midIdx,  AZ::Vector3(m_midColor.GetR(),  m_midColor.GetG(),  m_midColor.GetB()));
             m_passSrg->SetConstant(highIdx, AZ::Vector3(m_highColor.GetR(), m_highColor.GetG(), m_highColor.GetB()));
-            m_passSrg->SetConstant(expIdx,  m_exposure);
             m_passSrg->SetConstant(sizeIdx, m_faceSize);
 
             // ---- Bind the UAV image views from the frame graph (2DArray, not cubemap) ----
@@ -458,12 +525,12 @@ namespace AZ::Render
     }
 
     // =========================================================================
-    // BuildCommandListInternal -- dispatch compute when dirty
+    // BuildCommandListInternal -- dispatch compute on write frames
     // =========================================================================
 
     void GradientGICubemapPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
     {
-        if (!m_dirty || !m_pipelineState || !m_passSrg)
+        if (!m_writeThisFrame || !m_pipelineState || !m_passSrg)
         {
             return;
         }
@@ -492,7 +559,8 @@ namespace AZ::Render
         context.GetCommandList()->Submit(
             dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
 
-        m_dirty = false;
+        // One dispatch per frame, even if the scope is ever split across command lists.
+        m_writeThisFrame = false;
     }
 
 } // namespace AZ::Render

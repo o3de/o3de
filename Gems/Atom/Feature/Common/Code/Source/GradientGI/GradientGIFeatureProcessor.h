@@ -258,7 +258,8 @@ namespace AZ::Render
         // discarding a pass every frame; cleared whenever the scene's pipelines change.
         RPI::RenderPipelineId m_failedHostPipelineId;
 
-        // Output cubemaps produced by the compute pass, cached here so they survive the pass.
+        // Output cubemaps produced by the compute pass, cached here so they survive the pass. Only
+        // ever holds images that have been written, so what we bind to the scene SRG is always valid.
         // A pipeline pass-tree rebuild discards the injected pass and we host a replacement; handing
         // these to it means no reallocation and no black frame while the first dispatch lands.
         Data::Instance<RPI::AttachmentImage> m_diffuseImage;

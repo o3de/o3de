@@ -12,7 +12,8 @@
 // Compute shader that generates a procedural tri-band gradient cubemap for
 // ambient GI. Each texel's world-space
 // direction determines how far between Low (nadir), Mid (horizon), and
-// High (zenith) colors it sits, then the result is exposure-scaled.
+// High (zenith) colors it sits. Texels hold the unexposed gradient: exposure
+// is applied once, by the IBL samplers, through the scene SRG's m_iblExposure.
 //
 // Dispatch: (ceil(faceSize/8), ceil(faceSize/8), 6)
 //   Group size [numthreads(8, 8, 1)]
@@ -38,9 +39,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float3 m_lowColor;      // nadir  (-Y)
     float3 m_midColor;      // horizon (equator)
     float3 m_highColor;     // zenith (+Y)
-
-    // Exposure in EV stops; applied as pow(2, m_exposure) multiplier
-    float m_exposure;
 
     // Cubemap face resolution in pixels
     uint m_faceSize;
@@ -202,9 +200,6 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
         specularColor = lerp(color, blended, saturate(PassSrg::m_specularStrength));
     }
 
-    // Apply exposure (EV stops) to each output independently.
-    float expScale = pow(2.0f, PassSrg::m_exposure);
-
-    PassSrg::m_outputDiffuse[uint3(x, y, face)]  = float4(color * expScale, 1.0f);
-    PassSrg::m_outputSpecular[uint3(x, y, face)] = float4(specularColor * expScale, 1.0f);
+    PassSrg::m_outputDiffuse[uint3(x, y, face)]  = float4(color, 1.0f);
+    PassSrg::m_outputSpecular[uint3(x, y, face)] = float4(specularColor, 1.0f);
 }
