@@ -45,7 +45,7 @@ def Debugger_HappyPath_TargetMultipleEntities():
 
     :return: None
     """
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
     from PySide6.QtCore import Qt
     import azlmbr.legacy.general as general
     import azlmbr.math as math
@@ -97,7 +97,7 @@ def Debugger_HappyPath_TargetMultipleEntities():
         sc.findChild(QtWidgets.QDockWidget, "LoggingWindow") is None
         or not sc.findChild(QtWidgets.QDockWidget, "LoggingWindow").isVisible()
     ):
-        action = pyside_utils.find_child_by_pattern(sc, {"text": "Debugging", "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(sc, {"text": "Debugging", "type": QtGui.QAction})
         action.trigger()
     logging_window = sc.findChild(QtWidgets.QDockWidget, "LoggingWindow")
 

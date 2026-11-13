@@ -19,7 +19,7 @@ def Scene_Settings_Procedural_Mesh_Groups_Test():
         import asyncio
         from editor_python_test_tools.utils import Report
         import PySide6
-        from PySide6 import QtWidgets
+        from PySide6 import QtGui, QtWidgets
         import azlmbr.bus as bus
         import azlmbr.legacy.general as general
         import ly_test_tools.o3de.pipeline_utils as utils
@@ -114,7 +114,7 @@ def Scene_Settings_Procedural_Mesh_Groups_Test():
             
         general.idle_wait_frames(PAUSE_TIME_IN_FRAMES)
         # Clear unsaved changes and wait briefly so that the window will close without issues
-        clear_unsaved_changes_action = widget_main_window.findChild(QtWidgets.QAction, "m_actionClearUnsavedChanges")
+        clear_unsaved_changes_action = widget_main_window.findChild(QtGui.QAction, "m_actionClearUnsavedChanges")
         clear_unsaved_changes_action.trigger()
 
         # Wait a little longer than normal to make sure the unsaved settings are actually cleared
