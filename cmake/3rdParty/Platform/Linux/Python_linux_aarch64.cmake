@@ -11,8 +11,8 @@
 # Python package info
 ly_set(LY_PYTHON_VERSION 3.15.2)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.15)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev1-linux-aarch64)
-ly_set(LY_PYTHON_PACKAGE_HASH 19d4e723ba46d1f0e7e7948f43476178fe46ce31c548b9f34ab10bb37f33bb90)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev2-linux-aarch64)
+ly_set(LY_PYTHON_PACKAGE_HASH 57c2312ea42767e217f962d8b4a0ef6c7840616779a680a6aa0afdb5bb126832)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "python/bin")
