@@ -39,6 +39,16 @@ namespace AZ
 #undef POST_PROCESS_MEMBER
         }
 
+        void PostProcessSettings::Reset()
+        {
+            // Auto-gen clearing of all sub-setting members
+#define POST_PROCESS_MEMBER(ClassName, MemberName)                                                      \
+            MemberName = nullptr;                                                                       \
+
+#include <Atom/Feature/PostProcess/PostProcessSettings.inl>
+#undef POST_PROCESS_MEMBER
+        }
+
         void PostProcessSettings::ApplySettingsTo(PostProcessSettings* target, float blendFactor) const
         {
             if (target == nullptr)
