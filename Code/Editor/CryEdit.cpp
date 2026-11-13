@@ -27,6 +27,7 @@ AZ_POP_DISABLE_WARNING
 #include "CryEdit.h"
 
 // Qt
+#include <QApplication>
 #include <QCommandLineParser>
 #include <QSharedMemory>
 #include <QSystemSemaphore>
@@ -40,6 +41,7 @@ AZ_POP_DISABLE_WARNING
 #include <QDialogButtonBox>
 #include <QUrlQuery>
 #include <QThread>
+#include <QWidget>
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
@@ -2799,6 +2801,35 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnNewComponent()
 {
+    // The Class Wizard uses a modeless PySide6 window, so a second action
+    // invocation must not execute ClassWizard.py again while it is open.
+    // Guard reentrant calls that can occur while the first window is starting.
+    static bool s_isLaunchingClassWizard = false;
+    if (s_isLaunchingClassWizard)
+    {
+        return;
+    }
+    const QScopedValueRollback<bool> launchGuard(s_isLaunchingClassWizard, true);
+
+    // Keep the original wizard in focus instead of creating another instance.
+    // An invisible window is closing and must not be re-shown before deletion.
+    for (QWidget* window : QApplication::topLevelWidgets())
+    {
+        if (window->objectName() == QStringLiteral("O3DEClassCreationWizard"))
+        {
+            if (window->isVisible())
+            {
+                if (window->isMinimized())
+                {
+                    window->showNormal();
+                }
+                window->raise();
+                window->activateWindow();
+            }
+            return;
+        }
+    }
+
     AZ::IO::FixedMaxPath enginePath = AZ::Utils::GetEnginePath();
     AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
     AZ::IO::FixedMaxPath scriptPath = enginePath / "Tools" / "ClassCreationWizard" / "ClassWizard.py";
