@@ -25,12 +25,18 @@ namespace CrashUploader
         SendReportDialog(bool manualReport, QWidget* parent = nullptr);
         ~SendReportDialog() override;
 
-        void SetReportText(const QString& reportPath);
+        void SetReportDirectory(const QString& reportDirectory);
+        void SetSummaryText(const QString& summaryText);
         void SetApplicationName(const char* appName);
+
+        QString GetUserComments() const;
+        bool WantsRestart() const { return m_wantsRestart; }
 
     private:
         QScopedPointer<Ui::SendReportDialog> ui;
         bool m_manualReport = false;
+        bool m_wantsRestart = false;
+        QString m_reportDirectory;
     };
 
 }

@@ -25,6 +25,8 @@
 #include <base/logging.h>
 #include <string>
 
+#include <CrashSupport.h>
+
 namespace O3de
 {
     bool CheckConfirmation(const crashpad::CrashReportDatabase::Report& report);
@@ -46,7 +48,19 @@ namespace O3de
         virtual bool AddAttachments(crashpad::HTTPMultipartBuilder& builder);
         virtual bool UpdateHttpTransport(std::unique_ptr<crashpad::HTTPTransport>& httpTransport, const std::string& baseURL);
 
-        static const char* GetLogFileName() { return "CrashUploaderLog.txt"; }
+        // Absolute path next to the handler executable - a bare relative filename resolves
+        // against whatever cwd the handler process happened to inherit, which makes this
+        // log nearly impossible to find after the fact.
+        static const char* GetLogFileName()
+        {
+            static const std::string logPath = []()
+            {
+                std::string folder;
+                ::CrashHandler::GetExecutableFolder(folder);
+                return folder + "CrashUploaderLog.txt";
+            }();
+            return logPath.c_str();
+        }
 
         // base/logging.h::LogMessageHandlerFunction
         static bool DoLogging(logging::LogSeverity severity,

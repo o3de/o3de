@@ -14,12 +14,17 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/string/string.h>
 
 #include <QOperatingSystemVersion>
 #include <QString>
 
 namespace CrashHandler
 {
+    // Per-project override, e.g. AutomatedTesting/Registry/crash_handler.setreg
+    static const char* settingKey_crashReportingUrl = "/O3DE/CrashReporting/Url";
+    static const char* settingKey_crashReportingToken = "/O3DE/CrashReporting/SubmissionToken";
 
     void ToolsCrashHandler::InitCrashHandler(const std::string& moduleTag, const std::string& devRoot, const std::string& crashUrl, const std::string& crashToken, const std::string& handlerFolder, const CrashHandlerAnnotations& baseAnnotations, const CrashHandlerArguments& arguments)
     {
@@ -29,6 +34,14 @@ namespace CrashHandler
 
     std::string ToolsCrashHandler::GetCrashSubmissionURL() const
     {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZStd::string url;
+            if (settingsRegistry->Get(url, settingKey_crashReportingUrl) && !url.empty())
+            {
+                return url.c_str();
+            }
+        }
 #if defined(CRASH_HANDLER_URL)
         return MAKE_DEFINE_STRING(CRASH_HANDLER_URL);
 #else
@@ -38,6 +51,15 @@ namespace CrashHandler
 
     std::string ToolsCrashHandler::GetCrashSubmissionToken() const
     {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZStd::string submissionToken;
+            if (settingsRegistry->Get(submissionToken, settingKey_crashReportingToken) && !submissionToken.empty())
+            {
+                return submissionToken.c_str();
+            }
+        }
+
         std::string configToken = GetConfigSubmissionToken();
         if (configToken.length())
         {
