@@ -72,9 +72,13 @@ class KeystoreGenerator(ThreadedLambda):
             timeOutSeconds=10,
         )
 
+        java_home = os.getenv("JAVA_HOME")
+        keytool = "keytool"
+        if java_home:
+            keytool = os.path.join(java_home, "bin", "keytool.exe" if os.name == "nt" else "keytool")
         self._keystoreCreateCmd = SubprocessRunner(
             [
-                "keytool",
+                keytool,
                 "-genkey",
                 "-keystore",
                 ks.keystore_file,
