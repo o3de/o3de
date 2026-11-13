@@ -294,7 +294,7 @@ bool ConnectionWorker::NegotiateDirect(bool initiate)
     // Skip the process Id validation during negotiation if the identifier is UNITTEST
     if (engineInfo.m_identifier != "UNITTEST")
     {
-        if (strncmp(engineInfo.m_negotiationInfoMap[NegotiationInfo_ProcessId].c_str(), processId, strlen(processId)) == 0)
+        if (engineInfo.m_negotiationInfoMap[NegotiationInfo_ProcessId] == AZ::OSString(processId))
         {
             Q_EMIT ErrorMessage("Attempted to negotiate with self");
             QTimer::singleShot(0, this, SLOT(DisconnectSockets()));
