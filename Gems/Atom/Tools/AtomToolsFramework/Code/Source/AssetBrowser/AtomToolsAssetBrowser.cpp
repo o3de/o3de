@@ -132,6 +132,7 @@ namespace AtomToolsFramework
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
             // The asset browser model notifications are sent before the model is updated.
             // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
+            m_selectTimer.start();
             AZ::SystemTickBus::Handler::BusConnect();
         }
     }
@@ -418,6 +419,15 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowser::OnSystemTick()
     {
         if (!ValidateDocumentPath(m_pathToSelect))
+        {
+            AZ::SystemTickBus::Handler::BusDisconnect();
+            m_pathToSelect.clear();
+            return;
+        }
+
+        // Stop retrying a path that the asset browser never lists
+        constexpr qint64 SelectEntriesTimeoutMs = 10000;
+        if (m_selectTimer.hasExpired(SelectEntriesTimeoutMs))
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_pathToSelect.clear();
