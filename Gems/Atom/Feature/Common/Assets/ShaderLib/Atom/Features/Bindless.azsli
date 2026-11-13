@@ -37,27 +37,27 @@ partial ShaderResourceGroup Bindless : SRG_Bindless
 
     Texture2D<float4> GetTexture2D(uint index)
     {
-        return m_Texture2D[index];
+        return m_Texture2D[NonUniformResourceIndex(index)];
     }
 
     RWTexture2D<float4> GetRWTexture2D(uint index)
     {
-        return m_RWTexture2D[index];
+        return m_RWTexture2D[NonUniformResourceIndex(index)];
     }
 
     ByteAddressBuffer GetByteAddressBuffer(uint index)
     {
-        return m_ByteAddressBuffer[index];
+        return m_ByteAddressBuffer[NonUniformResourceIndex(index)];
     }
 
     RWByteAddressBuffer GetRWByteAddressBuffer(uint index)
     {
-        return m_RWByteAddressBuffer[index];
+        return m_RWByteAddressBuffer[NonUniformResourceIndex(index)];
     }
 
     TextureCube GetTextureCube(uint index)
     {
-        return m_TextureCube[index];
+        return m_TextureCube[NonUniformResourceIndex(index)];
     }
 
 };
