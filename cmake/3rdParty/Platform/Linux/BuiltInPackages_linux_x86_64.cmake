@@ -8,7 +8,7 @@
 
 # this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Linux.
 
-ly_associate_package(PACKAGE_NAME qt-6.12.0-rev1-linux                              TARGETS Qt                          PACKAGE_HASH ea077eddba28edf4c803fac8e9afd4a1113d007d5fa29906e0ac3765867a6f0c)
+ly_associate_package(PACKAGE_NAME qt-6.12.0-rev4-linux                              TARGETS Qt                          PACKAGE_HASH 0057a242154417c9e99d7162b46eb8a27a02fb786ed96e6410acf3b2294e0aa0)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev2-linux         TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH c8a9f1d9d6c9f8c3defdbc3761ba391d175b1cb62a70473183af1eaeaef70c36)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev4-linux                          TARGETS OpenEXR Imath               PACKAGE_HASH fcbac68cfb4e3b694580bc3741443e111aced5f08fde21a92e0c768e8803c7af)
 ly_associate_package(PACKAGE_NAME OpenSSL-3.6.3-rev1-linux                          TARGETS OpenSSL                     PACKAGE_HASH 24fbf89977f7976ad0e5893877732fe069a5afcb9d5a2e7c75156b248475da5b)
