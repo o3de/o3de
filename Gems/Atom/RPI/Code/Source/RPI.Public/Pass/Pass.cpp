@@ -716,7 +716,7 @@ namespace AZ
             if (desc.m_lifetime == RHI::AttachmentLifetimeType::Imported)
             {
                 attachment->m_path = desc.m_name;
-                if (attachment->m_descriptor.m_type == RHI::AttachmentType::Buffer)
+                if (attachment->m_descriptor.type() == RHI::AttachmentType::Buffer)
                 {
                     Data::Asset<BufferAsset> bufferAsset = AssetUtils::LoadAssetById<BufferAsset>(desc.m_assetRef.m_assetId, AssetUtils::TraceLevel::None);
 
@@ -731,7 +731,7 @@ namespace AZ
                         }
                     }
                 }
-                else if (attachment->m_descriptor.m_type == RHI::AttachmentType::Image)
+                else if (attachment->m_descriptor.type() == RHI::AttachmentType::Image)
                 {
                     Data::Asset<AttachmentImageAsset> imageAsset = AssetUtils::LoadAssetById<AttachmentImageAsset>(desc.m_assetRef.m_assetId, AssetUtils::TraceLevel::None);
 
@@ -1030,7 +1030,7 @@ namespace AZ
             {
                 if (attachment->m_lifetime == RHI::AttachmentLifetimeType::Transient)
                 {
-                    switch (attachment->m_descriptor.m_type)
+                    switch (attachment->m_descriptor.type())
                     {
                     case RHI::AttachmentType::Image:
                         attachmentDatabase.CreateTransientImage(attachment->GetTransientImageDescriptor());
@@ -1713,7 +1713,7 @@ namespace AZ
 
             // update the image attachment descriptor to sync up size and format
             attachment->Update(true);
-            RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
+            RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
 
             // The Format Source had no valid attachment
             if (imageDesc.m_format == RHI::Format::Unknown)
@@ -1948,10 +1948,10 @@ namespace AZ
                     stringOutput += " (";
 
                     // Images will have the format: AttachmentName (Image, 1920, 1080)
-                    if (binding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Image)
+                    if (binding.GetAttachment()->m_descriptor.type() == RHI::AttachmentType::Image)
                     {
                         stringOutput += "Image";
-                        RHI::ImageDescriptor& desc = binding.GetAttachment()->m_descriptor.m_image;
+                        RHI::ImageDescriptor& desc = binding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image;
                         uint32_t dimensions = static_cast<uint32_t>(desc.m_dimension);
                         for (uint32_t i = 0; i < dimensions; ++i)
                         {
@@ -1973,10 +1973,10 @@ namespace AZ
                         }
                     }
                     // Buffers will have the format: AttachmentName (Buffer, 4092 bytes)
-                    else if (binding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Buffer)
+                    else if (binding.GetAttachment()->m_descriptor.type() == RHI::AttachmentType::Buffer)
                     {
                         stringOutput += "Buffer, ";
-                        stringOutput += AZStd::to_string(binding.GetAttachment()->m_descriptor.m_buffer.m_byteCount);
+                        stringOutput += AZStd::to_string(binding.GetAttachment()->m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_byteCount);
                         stringOutput += " bytes";
                     }
 

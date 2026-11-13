@@ -65,7 +65,7 @@ namespace AZ
                 RHI::Size lutSize{ lutResolution * lutResolution, lutResolution, 1 };
 
                 RPI::Ptr<RPI::PassAttachment> attachment = FindOwnedAttachment(Name{ "ColorGradingLut" });
-                RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
+                RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
                 imageDescriptor.m_size = lutSize;
                 SetViewportScissorFromImageSize(lutSize);
             }

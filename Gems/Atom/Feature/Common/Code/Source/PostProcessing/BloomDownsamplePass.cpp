@@ -122,7 +122,7 @@ namespace AZ
 
             RHI::Size sourceImageSize;
             RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
-            sourceImageSize = inputAttachment->m_descriptor.m_image.m_size;
+            sourceImageSize = inputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             // Update shader constant
             m_shaderResourceGroup->SetConstant(m_sourceImageTexelSizeInputIndex, AZ::Vector2(1.0f / static_cast<float>(sourceImageSize.m_width), 1.0f / static_cast<float>(sourceImageSize.m_height)));
