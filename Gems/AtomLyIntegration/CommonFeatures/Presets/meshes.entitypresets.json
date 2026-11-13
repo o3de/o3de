@@ -1,0 +1,67 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Mesh (Empty)",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Ground Plane 512x512m",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/groundplane/groundplane_512x512m.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Ground Plane 4x4m",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/shaderball/ground_plane_4x4m.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Shaderball 1m",
+                "category": "Meshes",
+                "components": [
+                    {
+                        "component": "Mesh",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Model Asset",
+                                "type": "asset",
+                                "value": "objects/shaderball/shaderball_default_1m.fbx.azmodel"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

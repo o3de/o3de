@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QLineEdit>
 #include <QPainter>
 #include <QPainterPath>
 #include <QStyle>
@@ -2200,6 +2201,17 @@ namespace AzToolsFramework
         painter->drawEllipse(readOnlyRect.center(), s_readOnlyRadius, s_readOnlyRadius);
         s_readOnlyIcon.paint(painter, readOnlyRect);
         painter->restore();
+    }
+
+    void EntityOutlinerItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+    {
+        QStyledItemDelegate::setEditorData(editor, index);
+
+        // Select the whole name, since a rename usually replaces it.
+        if (auto* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            lineEdit->selectAll();
+        }
     }
 
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
