@@ -1,0 +1,177 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{222B29DB-6544-41D1-8BDF-733ED8BCFFE5}",
+        "category": "Functions",
+        "title": "Gradient",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Blends between two colours across a coordinate. Wire the coordinate that should drive the blend into T: the V output of a UV node for a gradient across the texture layout, or the Z output of a Position or World Position node for one that runs up the object or up the world, since O3DE is Z up. Start and End say where along that coordinate the blend begins and finishes; outside them the result clamps to the end colours. Swapping the two colours reverses the gradient.",
+        "settings": {
+            "instructions": [
+                "SLOTTYPE(outT) outT = saturate(((float)inT - (float)inStart) / max((float)inEnd - (float)inStart, 0.0001));",
+                "outT = inSmooth ? (outT * outT * (3.0 - 2.0 * outT)) : outT;",
+                "SLOTTYPE(outColor) outColor = lerp(inColorStart, inColorEnd, outT);"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inT",
+                "displayName": "T",
+                "description": "Coordinate that drives the blend. UV V runs from 0 at the top of the texture layout to 1 at the bottom. Object and world Z run upwards, so a gradient driven by Z reads the opposite way round to one driven by V.",
+                "supportedDataTypeRegex": "(bool|int|uint|float)",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inStart",
+                "displayName": "Start",
+                "description": "Value of T where the gradient begins. Below this the result is the start colour. Leave this at 0 and End at 1 for a UV driven gradient; for object space on the preview shapes the model spans roughly -0.5 to 0.5, so -0.5 and 0.5 cover it.",
+                "supportedDataTypeRegex": "(bool|int|uint|float)",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inEnd",
+                "displayName": "End",
+                "description": "Value of T where the gradient finishes. Above this the result is the end colour. Setting End below Start does not flip the gradient, it collapses it; swap the two colours instead.",
+                "supportedDataTypeRegex": "(bool|int|uint|float)",
+                "defaultDataType": "float",
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inColorStart",
+                "displayName": "Start Color",
+                "description": "Colour at and before Start. With UV V driving T this is the colour at the top.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [0.0, 0.0, 0.0, 1.0]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inColorEnd",
+                "displayName": "End Color",
+                "description": "Colour at and after End. With UV V driving T this is the colour at the bottom.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color",
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [1.0, 1.0, 1.0, 1.0]
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inSmooth",
+                "displayName": "Smooth",
+                "description": "Ease the blend in and out at both ends instead of running linearly. This is the same curve as smoothstep.",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "The blended colour.",
+                "supportedDataTypeRegex": "color",
+                "defaultDataType": "color"
+            },
+            {
+                "name": "outT",
+                "displayName": "Factor",
+                "description": "The blend factor itself, clamped to 0 at Start and 1 at End, after the Smooth curve is applied. Useful for driving something else with the same falloff, such as alpha or a mask.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float"
+            },
+            {
+                "name": "outR",
+                "displayName": "R",
+                "description": "Red channel of the blended colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.r;"
+                    ]
+                }
+            },
+            {
+                "name": "outG",
+                "displayName": "G",
+                "description": "Green channel of the blended colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.g;"
+                    ]
+                }
+            },
+            {
+                "name": "outB",
+                "displayName": "B",
+                "description": "Blue channel of the blended colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.b;"
+                    ]
+                }
+            },
+            {
+                "name": "outA",
+                "displayName": "A",
+                "description": "Alpha channel of the blended colour.",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = outColor.a;"
+                    ]
+                }
+            }
+        ]
+    }
+}

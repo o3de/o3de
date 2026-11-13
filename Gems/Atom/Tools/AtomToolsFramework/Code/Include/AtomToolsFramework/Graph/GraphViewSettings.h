@@ -12,6 +12,11 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
+namespace GraphCanvas
+{
+    class GraphCanvasMimeEvent;
+}
+
 namespace AtomToolsFramework
 {
     // Settings for initializing graph canvas and node palettes
@@ -77,6 +82,11 @@ namespace AtomToolsFramework
         AZStd::string m_nodeSaveIdentifier;
         // Callback function used to create node palette items
         AZStd::function<GraphCanvas::GraphCanvasTreeItem*(const AZ::Crc32&)> m_createNodeTreeItemsFn;
+        // Optional action for creating and splicing a tool-specific node onto an existing connection.
+        AZStd::string m_createSplicingNodeActionName;
+        AZStd::function<GraphCanvas::GraphCanvasMimeEvent*()> m_createSplicingNodeMimeEventFn;
+        // Optional widget-local shortcut for standalone tools that do not host the Editor Action Manager.
+        AZStd::string m_createSplicingNodeShortcut;
 
         // Settings related to Basic movement and selection
         double m_snapDistance = 20.0;

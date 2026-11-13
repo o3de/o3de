@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
@@ -27,6 +28,7 @@
 #include <GraphCanvas/Components/Nodes/NodeLayoutBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h>
+#include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
 #include <GraphCanvas/Components/Slots/Extender/ExtenderSlotBus.h>
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
@@ -57,16 +59,31 @@ namespace GraphModelIntegration
     // Helpers static function definitions
     AZStd::string Helpers::GetTitlePaletteOverride(void* nodePtr, const AZ::TypeId& typeId)
     {
+        return GetStringAttribute(nodePtr, typeId, Attributes::TitlePaletteOverride);
+    }
+
+    AZStd::string Helpers::GetNodeStyleOverride(void* nodePtr, const AZ::TypeId& typeId)
+    {
+        return GetStringAttribute(nodePtr, typeId, Attributes::NodeStyleOverride);
+    }
+
+    AZStd::string Helpers::GetDataTypePassthrough(void* nodePtr, const AZ::TypeId& typeId)
+    {
+        return GetStringAttribute(nodePtr, typeId, Attributes::DataTypePassthrough);
+    }
+
+    AZStd::string Helpers::GetStringAttribute(void* nodePtr, const AZ::TypeId& typeId, const AZ::Crc32& attributeId)
+    {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
 
-        AZStd::string paletteOverride;
+        AZStd::string attributeValue;
 
         const AZ::SerializeContext::ClassData* derivedClassData = serializeContext->FindClassData(typeId);
         if (!derivedClassData)
         {
-            return paletteOverride;
+            return attributeValue;
         }
 
         // Use the EnumHierarchy API to retrive a list of TypeIds that this class derives from,
@@ -77,8 +94,7 @@ namespace GraphModelIntegration
             derivedClassData->m_azRtti->EnumHierarchy(&RttiEnumHierarchyHelper, &typeIds);
         }
 
-        // Look through all the derived TypeIds to see if the TitlePaletteOverride attribute
-        // was set in the EditContext at any level
+        // Look through all the derived TypeIds to see if the attribute was set in the EditContext at any level.
         for (auto currentTypeId : typeIds)
         {
             auto classData = serializeContext->FindClassData(currentTypeId);
@@ -89,17 +105,17 @@ namespace GraphModelIntegration
                     const AZ::Edit::ElementData* elementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
                     if (elementData)
                     {
-                        if (auto titlePaletteAttribute = elementData->FindAttribute(Attributes::TitlePaletteOverride))
+                        if (auto stringAttribute = elementData->FindAttribute(attributeId))
                         {
-                            AZ::AttributeReader nameReader(nodePtr, titlePaletteAttribute);
-                            nameReader.Read<AZStd::string>(paletteOverride);
+                            AZ::AttributeReader nameReader(nodePtr, stringAttribute);
+                            nameReader.Read<AZStd::string>(attributeValue);
                         }
                     }
                 }
             }
         }
 
-        return paletteOverride;
+        return attributeValue;
     }
 
     void Helpers::RttiEnumHierarchyHelper(const AZ::TypeId& typeId, void* userData)
@@ -358,6 +374,123 @@ namespace GraphModelIntegration
         GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::SignalLoadEnd);
     }
 
+    bool GraphController::GetDataTypePassthroughSlots(
+        GraphModel::ConstNodePtr node, GraphModel::ConstSlotPtr& inputSlot, GraphModel::ConstSlotPtr& outputSlot) const
+    {
+        inputSlot.reset();
+        outputSlot.reset();
+
+        if (!node)
+        {
+            return false;
+        }
+
+        const AZStd::string slotPair =
+            Helpers::GetDataTypePassthrough(const_cast<GraphModel::Node*>(node.get()), azrtti_typeid(node.get()));
+        AZStd::vector<AZStd::string> slotNames;
+        AZ::StringFunc::Tokenize(slotPair.c_str(), slotNames, '|');
+        if (slotNames.size() != 2)
+        {
+            return false;
+        }
+
+        inputSlot = node->GetSlot(slotNames[0]);
+        outputSlot = node->GetSlot(slotNames[1]);
+        return inputSlot && outputSlot && inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
+            outputSlot->GetSlotDirection() == GraphModel::SlotDirection::Output;
+    }
+
+    GraphModel::DataTypePtr GraphController::GetEffectiveDataType(GraphModel::ConstSlotPtr slot) const
+    {
+        if (!slot)
+        {
+            return {};
+        }
+
+        GraphModel::ConstSlotPtr inputSlot;
+        GraphModel::ConstSlotPtr outputSlot;
+        if (GetDataTypePassthroughSlots(slot->GetParentNode(), inputSlot, outputSlot) &&
+            (slot == inputSlot || slot == outputSlot))
+        {
+            for (const auto& connection : inputSlot->GetConnections())
+            {
+                if (connection->GetTargetSlot() == inputSlot)
+                {
+                    return GetEffectiveDataType(connection->GetSourceSlot());
+                }
+            }
+        }
+
+        return slot->GetDataType();
+    }
+
+    bool GraphController::IsDataTypeSupportedByPassthroughOutputs(
+        GraphModel::ConstNodePtr node, GraphModel::DataTypePtr dataType) const
+    {
+        GraphModel::ConstSlotPtr inputSlot;
+        GraphModel::ConstSlotPtr outputSlot;
+        if (!dataType || !GetDataTypePassthroughSlots(node, inputSlot, outputSlot))
+        {
+            return false;
+        }
+
+        for (const auto& connection : outputSlot->GetConnections())
+        {
+            const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot();
+            GraphModel::ConstSlotPtr nestedInputSlot;
+            GraphModel::ConstSlotPtr nestedOutputSlot;
+            if (targetSlot && GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot) &&
+                targetSlot == nestedInputSlot)
+            {
+                if (!IsDataTypeSupportedByPassthroughOutputs(targetSlot->GetParentNode(), dataType))
+                {
+                    return false;
+                }
+            }
+            else if (!targetSlot || !targetSlot->IsSupportedDataType(dataType))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void GraphController::UpdateDataTypePassthroughDisplay(GraphModel::ConstNodePtr node) const
+    {
+        GraphModel::ConstSlotPtr inputSlot;
+        GraphModel::ConstSlotPtr outputSlot;
+        if (!GetDataTypePassthroughSlots(node, inputSlot, outputSlot))
+        {
+            return;
+        }
+
+        if (const GraphModel::DataTypePtr dataType = GetEffectiveDataType(outputSlot))
+        {
+            const AZ::Uuid typeId = dataType->GetTypeUuid();
+            GraphCanvas::DataSlotRequestBus::Event(
+                m_elementMap.Find(inputSlot), &GraphCanvas::DataSlotRequests::SetDataTypeId, typeId);
+            GraphCanvas::DataSlotRequestBus::Event(
+                m_elementMap.Find(outputSlot), &GraphCanvas::DataSlotRequests::SetDataTypeId, typeId);
+
+            // A passthrough can feed another passthrough. Refresh the chain so every pin reflects the
+            // upstream type even when the chain was wired before its first input was connected.
+            for (const auto& connection : outputSlot->GetConnections())
+            {
+                if (const GraphModel::ConstSlotPtr targetSlot = connection->GetTargetSlot())
+                {
+                    GraphModel::ConstSlotPtr nestedInputSlot;
+                    GraphModel::ConstSlotPtr nestedOutputSlot;
+                    if (GetDataTypePassthroughSlots(targetSlot->GetParentNode(), nestedInputSlot, nestedOutputSlot) &&
+                        targetSlot == nestedInputSlot)
+                    {
+                        UpdateDataTypePassthroughDisplay(targetSlot->GetParentNode());
+                    }
+                }
+            }
+        }
+    }
+
     AZ::Entity* GraphController::CreateSlotUi(GraphModel::SlotPtr slot, AZ::EntityId nodeUiId)
     {
         using namespace GraphModel;
@@ -377,7 +510,7 @@ namespace GraphModelIntegration
             {
                 GraphCanvas::DataSlotConfiguration dataConfig(slotConfig);
                 dataConfig.m_dataSlotType = GraphCanvas::DataSlotType::Value;
-                dataConfig.m_typeId = slot->GetDataType()->GetTypeUuid();
+                dataConfig.m_typeId = GetEffectiveDataType(slot)->GetTypeUuid();
                 GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
                     graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, dataConfig);
             }
@@ -418,19 +551,19 @@ namespace GraphModelIntegration
         using namespace GraphModel;
 
         // Create the node...
-        const char* nodeStyle = "";
+        const AZStd::string nodeStyle = Helpers::GetNodeStyleOverride(node.get(), azrtti_typeid(node.get()));
         const AZ::Entity* graphCanvasNode = nullptr;
         const NodeType& nodeType = node->GetNodeType();
         switch (nodeType)
         {
         case NodeType::GeneralNode:
             GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
-                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle);
+                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle.c_str());
             break;
 
         case NodeType::WrapperNode:
             GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
-                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateWrapperNodeAndActivate, nodeStyle);
+                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateWrapperNodeAndActivate, nodeStyle.c_str());
             break;
         }
 
@@ -944,12 +1077,16 @@ namespace GraphModelIntegration
     {
         if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
         {
-            GraphControllerNotificationBus::Event(
-                m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
+            const GraphModel::NodePtr sourceNode = connection->GetSourceNode();
+            const GraphModel::NodePtr targetNode = connection->GetTargetNode();
             GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
             GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
             m_graph->RemoveConnection(connection);
             m_elementMap.Remove(connection);
+            UpdateDataTypePassthroughDisplay(sourceNode);
+            UpdateDataTypePassthroughDisplay(targetNode);
+            GraphControllerNotificationBus::Event(
+                m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
         }
     }
 
@@ -1176,6 +1313,8 @@ namespace GraphModelIntegration
         }
 
         GraphModel::ConnectionPtr connection = m_graph->AddConnection(sourceSlot, targetSlot);
+        UpdateDataTypePassthroughDisplay(sourceSlot->GetParentNode());
+        UpdateDataTypePassthroughDisplay(targetSlot->GetParentNode());
         GraphControllerNotificationBus::Event(
             m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, connection);
         GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
@@ -1288,7 +1427,7 @@ namespace GraphModelIntegration
         }
 
         bool dataTypesMatch = false;
-        GraphModel::DataTypePtr sourceSlotDataType = sourceSlot->GetDataType();
+        GraphModel::DataTypePtr sourceSlotDataType = GetEffectiveDataType(sourceSlot);
         GraphModel::DataTypePtr targetSlotDataType = targetSlot->GetDataType();
         if (sourceSlotDataType == nullptr && targetSlotDataType == nullptr)
         {
@@ -1309,6 +1448,15 @@ namespace GraphModelIntegration
         {
             // The source slot data type must be supported by the target slot
             dataTypesMatch = targetSlot->IsSupportedDataType(sourceSlotDataType);
+
+            GraphModel::ConstSlotPtr passthroughInputSlot;
+            GraphModel::ConstSlotPtr passthroughOutputSlot;
+            if (dataTypesMatch &&
+                GetDataTypePassthroughSlots(targetSlot->GetParentNode(), passthroughInputSlot, passthroughOutputSlot) &&
+                targetSlot == passthroughInputSlot)
+            {
+                dataTypesMatch = IsDataTypeSupportedByPassthroughOutputs(targetSlot->GetParentNode(), sourceSlotDataType);
+            }
         }
 
         return dataTypesMatch && !CheckForLoopback(sourceSlot->GetParentNode(), targetSlot->GetParentNode());

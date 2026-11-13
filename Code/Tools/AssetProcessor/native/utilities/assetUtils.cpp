@@ -64,6 +64,15 @@
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
+
+    // Backoff for cache file replacement retries: the first remove usually just races a queued streamer FlushCache, so start short.
+    static const unsigned int g_RetryWaitIntervalMin = 5;
+
+    static unsigned int NextRetryWaitInterval(unsigned int currentInterval)
+    {
+        const unsigned int nextInterval = currentInterval * 2;
+        return (nextInterval < g_RetryWaitInterval) ? nextInterval : g_RetryWaitInterval;
+    }
     // This is because Qt has to init random number gen on each thread.
     AZ_THREAD_LOCAL bool g_hasInitializedRandomNumberGenerator = false;
 
@@ -79,6 +88,7 @@ namespace AssetUtilsInternal
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
+        unsigned int retryWaitInterval = AssetUtilsInternal::g_RetryWaitIntervalMin;
         QElapsedTimer timer;
         timer.start();
         do
@@ -102,7 +112,8 @@ namespace AssetUtilsInternal
                     if (waitTimeInSeconds != 0)
                     {
                         //Sleep only for non zero waitTime
-                        QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                        QThread::msleep(retryWaitInterval);
+                        retryWaitInterval = AssetUtilsInternal::NextRetryWaitInterval(retryWaitInterval);
                     }
                     continue;
                 }
@@ -134,7 +145,8 @@ namespace AssetUtilsInternal
                 if (waitTimeInSeconds != 0)
                 {
                     //Sleep only for non zero waitTime
-                    QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
+                    QThread::msleep(retryWaitInterval);
+                    retryWaitInterval = AssetUtilsInternal::NextRetryWaitInterval(retryWaitInterval);
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout

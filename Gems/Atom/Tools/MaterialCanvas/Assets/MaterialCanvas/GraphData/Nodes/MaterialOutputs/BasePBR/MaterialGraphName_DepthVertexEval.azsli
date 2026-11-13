@@ -38,14 +38,21 @@ float4 GenerateWorldPosition(
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangentWS;
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    // Object-space position times the entity's world scale (object-to-world column lengths): rotates with the entity, no stretching.
+    const float3x3 o2wScale = transpose((float3x3)objectToWorld);
+    const float3 objectScale = float3(length(o2wScale[0]), length(o2wScale[1]), length(o2wScale[2]));
+    const float3 O3DE_MC_LOCAL_POSITION = position * objectScale;
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
 
     // placeholder to keep MaterialParams from being compiled out when iterating on graphs
     const int materialType = params.m_materialType;
 
+    // No derivatives in the vertex stage: CS_SAMPLERS makes texture nodes use SampleLevel (outside BEGIN/END so it's preserved).
+    #define CS_SAMPLERS
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
+    #undef CS_SAMPLERS
 
     #undef O3DE_MC_UV
 
