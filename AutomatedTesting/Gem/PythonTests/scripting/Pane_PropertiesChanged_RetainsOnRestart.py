@@ -56,7 +56,7 @@ def Pane_PropertiesChanged_RetainsOnRestart():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide6 import QtCore, QtWidgets
+    from PySide6 import QtCore, QtGui, QtWidgets
     from PySide6.QtCore import Qt
 
     # Constants
@@ -68,7 +68,7 @@ def Pane_PropertiesChanged_RetainsOnRestart():
     DOCKAREA = Qt.TopDockWidgetArea  # Preferred top area since no widget is docked on top
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from PySide6 import QtWidgets, QtTest
+from PySide6 import QtGui, QtTest, QtWidgets
 from PySide6.QtCore import Qt
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
@@ -64,7 +64,7 @@ class Node_HappyPath_DuplicateNode:
     # Function for entering and executing a string command in the Command Line Tool (SC > Tools > Command Line)
     def run_command_line_input(self, sc_editor, sc_editor_main_window, command_str):
         command_line_action = pyside_utils.find_child_by_pattern(
-            sc_editor_main_window, {"objectName": "action_ViewCommandLine", "type": QtWidgets.QAction}
+            sc_editor_main_window, {"objectName": "action_ViewCommandLine", "type": QtGui.QAction}
         )
         command_line_action.trigger()
         command_line_textbox = sc_editor.findChild(QtWidgets.QLineEdit, "commandText")

@@ -8,7 +8,7 @@ Object to house all the Qt Objects and behavior used in testing the asset editor
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtCore, QtGui, QtWidgets
 import pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
@@ -188,7 +188,7 @@ class QtPyAssetEditor(QtPyCommon):
         """
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", file_path)
         action = pyside_utils.find_child_by_pattern(self.menu_bar,
-                                                    {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
+                                                    {"type": QtGui.QAction, "iconText": SAVE_STRING})
 
         assert action is not None, "Unable to complete save action. Filepath may be invalid."
 

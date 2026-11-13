@@ -30,7 +30,6 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
 
     # Preconditions
     import os
-    from PySide6 import QtWidgets
     from editor_python_test_tools.utils import Report
     import pyside_utils
     import scripting_utils.scripting_tools as tools

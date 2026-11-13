@@ -44,7 +44,7 @@ def Pane_HappyPath_DocksProperly():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide6 import QtCore, QtWidgets
+    from PySide6 import QtCore, QtGui, QtWidgets
     from PySide6.QtCore import Qt
 
     PANE_WIDGET = "NodePalette"  # Chosen most commonly used pane
@@ -52,7 +52,7 @@ def Pane_HappyPath_DocksProperly():
     DOCKED = True
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

@@ -38,7 +38,7 @@ def Pane_Undocked_ClosesSuccessfully():
     :return: None
     """
 
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
 
     # Helper imports
     from utils import Report
@@ -51,7 +51,7 @@ def Pane_Undocked_ClosesSuccessfully():
     TEST_PANE = "NodePalette"  # Chosen most commonly used pane
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

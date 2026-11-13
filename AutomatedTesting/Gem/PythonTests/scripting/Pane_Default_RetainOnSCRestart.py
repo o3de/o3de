@@ -49,7 +49,7 @@ def Pane_Default_RetainOnSCRestart():
     """
 
     # Pyside imports
-    from PySide6 import QtCore, QtWidgets
+    from PySide6 import QtCore, QtGui, QtWidgets
     from PySide6.QtCore import Qt
 
     # Helper imports
@@ -67,7 +67,7 @@ def Pane_Default_RetainOnSCRestart():
     DOCKAREA = Qt.TopDockWidgetArea  # Preferred top area since no widget is docked on top
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

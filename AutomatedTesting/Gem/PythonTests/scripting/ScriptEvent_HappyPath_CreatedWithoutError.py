@@ -53,7 +53,7 @@ def CreateScriptEventFile():
     import azlmbr.bus as bus
 
     # Pyside imports
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
 
     GENERAL_WAIT = 1.0  # seconds
 
@@ -75,7 +75,7 @@ def CreateScriptEventFile():
     menu_bar = asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
     # 3) Create new Script Event Asset
-    action = pyside_utils.find_child_by_pattern(menu_bar, {"type": QtWidgets.QAction, "text": "Script Events"})
+    action = pyside_utils.find_child_by_pattern(menu_bar, {"type": QtGui.QAction, "text": "Script Events"})
     action.trigger()
     result = helper.wait_for_condition(
         lambda: container.findChild(QtWidgets.QFrame, "Events") is not None, 3 * GENERAL_WAIT

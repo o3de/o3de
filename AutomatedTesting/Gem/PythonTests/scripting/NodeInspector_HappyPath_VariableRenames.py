@@ -43,7 +43,7 @@ def NodeInspector_HappyPath_VariableRenames():
 
     :return: None
     """
-    from PySide6 import QtWidgets, QtCore, QtTest
+    from PySide6 import QtCore, QtGui, QtTest, QtWidgets
     from PySide6.QtCore import Qt
 
     import pyside_utils
@@ -55,7 +55,7 @@ def NodeInspector_HappyPath_VariableRenames():
 
     def open_tool(sc, dock_widget_name, pane_name):
         if sc.findChild(QtWidgets.QDockWidget, dock_widget_name) is None:
-            action = pyside_utils.find_child_by_pattern(sc, {"text": pane_name, "type": QtWidgets.QAction})
+            action = pyside_utils.find_child_by_pattern(sc, {"text": pane_name, "type": QtGui.QAction})
             action.trigger()
         tool = sc.findChild(QtWidgets.QDockWidget, dock_widget_name)
         return tool
@@ -76,7 +76,7 @@ def NodeInspector_HappyPath_VariableRenames():
     node_inspector = open_tool(sc, "NodeInspector", "Node Inspector")
 
     # 5) Create new graph and a new variable in Variable manager
-    action = pyside_utils.find_child_by_pattern(sc, {"objectName": "action_New_Script", "type": QtWidgets.QAction})
+    action = pyside_utils.find_child_by_pattern(sc, {"objectName": "action_New_Script", "type": QtGui.QAction})
     action.trigger()
     graph_vars = variable_manager.findChild(QtWidgets.QTableView, "graphVariables")
     add_button = variable_manager.findChild(QtWidgets.QPushButton, "addButton")

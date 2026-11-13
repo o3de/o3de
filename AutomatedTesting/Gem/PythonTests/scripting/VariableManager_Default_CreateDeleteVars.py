@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from PySide6 import QtWidgets, QtTest, QtCore
+from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_MANAGER_UI,
@@ -59,12 +59,12 @@ class VariableManager_Default_CreateDeleteVars:
 
         # 3) Open Variable Manager if not opened already
         if sc.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT) is None:
-            action = pyside_utils.find_child_by_pattern(sc, {"text": VARIABLE_MANAGER_UI, "type": QtWidgets.QAction})
+            action = pyside_utils.find_child_by_pattern(sc, {"text": VARIABLE_MANAGER_UI, "type": QtGui.QAction})
             action.trigger()
         variable_manager = sc.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
 
         # 4) Create Graph
-        action = pyside_utils.find_child_by_pattern(sc, {"objectName": "action_New_Script", "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(sc, {"objectName": "action_New_Script", "type": QtGui.QAction})
         action.trigger()
 
         # Keep a handle of the created variables for verification

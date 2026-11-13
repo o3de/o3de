@@ -39,7 +39,7 @@ def TestNodePaletteHappyPathCanSelectNode():
         """
 
     # Pre conditions
-    from PySide6 import QtWidgets as qtwidgets
+    from PySide6 import QtGui, QtWidgets
     from editor_python_test_tools.utils import Report
     import azlmbr.legacy.general as general
     import pyside_utils
@@ -54,15 +54,15 @@ def TestNodePaletteHappyPathCanSelectNode():
 
     # 2) Get the SC window object and get a handle on the Node Palette
     editor_window = pyside_utils.get_editor_main_window()
-    sc = editor_window.findChild(qtwidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    if sc.findChild(qtwidgets.QDockWidget, NODE_PALETTE_QT) is None:
+    sc = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+    if sc.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
         action = pyside_utils.find_child_by_pattern(sc, {"text": NODE_PALETTE_UI,
-                                                         "type": qtwidgets.QAction})
+                                                         "type": QtGui.QAction})
         action.trigger()
-    node_palette = sc.findChild(qtwidgets.QDockWidget, NODE_PALETTE_QT)
+    node_palette = sc.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
 
     # 3) Get a handle on the node palette's tree of nodes then expand the QTView tree object
-    node_palette_tree_view = node_palette.findChild(qtwidgets.QTreeView, TREE_VIEW_QT)
+    node_palette_tree_view = node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
     node_palette_tree_view.expandAll()
 
     # 4) Scroll down to the category we are looking for and verify we can click on it
