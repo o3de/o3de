@@ -203,6 +203,7 @@ set(FILES
     Include/ScriptCanvas/Variable/VariableCore.cpp
     Include/ScriptCanvas/Variable/VariableData.cpp
     Include/ScriptCanvas/Utils/DataUtils.cpp
+    Include/ScriptCanvas/Utils/Expression.cpp
     Include/ScriptCanvas/Utils/NodeUtils.cpp
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp

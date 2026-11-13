@@ -257,24 +257,13 @@ namespace ScriptCanvas
             ParsingMetaDataCPP::PostParseExecutionTreeBodyFormatString(model, format);
         }
 
-        void MathExpressionMetaData::PostParseExecutionTreeBody(AbstractCodeModel&, ExecutionTreePtr expression)
+        void MathExpressionMetaData::PostParseExecutionTreeBody(AbstractCodeModel& model, ExecutionTreePtr expression)
         {
             using namespace ParsingMetaDataCPP;
 
             auto mathNode = azrtti_cast<const Nodes::Math::MathExpression*>(expression->GetId().m_node);
-            auto rawString = mathNode->GetRawFormat();
             const auto& slotIdsByName = mathNode->GetSlotsByName();
-            AZStd::vector<AZStd::pair<size_t, SlotId>> positionsAndSlotIds = ParsePositionsAndSlotIds(slotIdsByName, rawString);
-
-            // convert the expression string to C++ / Lua math friendly format
-            AZStd::string expressionString(rawString);
-
-            // replace script canvas format variables with a place holder for future input
-            for (const auto& nameAndSlotId : slotIdsByName)
-            {
-                auto replaceString = AZStd::string::format("{%s}", nameAndSlotId.first.c_str());
-                ReplaceInPlace(expressionString, replaceString, "@");
-            }
+            const auto& parsed = mathNode->GetExpression();
 
             // store the old input by slot id
             AZStd::unordered_map<SlotId, ExecutionInput> oldInput;
@@ -284,15 +273,21 @@ namespace ScriptCanvas
                 oldInput.emplace(input.m_slot->GetId(), input);
             }
 
-            // rewrite the input so that it can appear with repeats and in usage order
+            // Bind each distinct pin once, in the evaluator's variable order.
             expression->ClearInput();
 
-            for (auto andSlotId : positionsAndSlotIds)
+            for (const auto& variable : parsed.m_variables)
             {
-                expression->AddInput(oldInput[andSlotId.second]);
+                const auto slot = slotIdsByName.find(variable);
+                if (slot == slotIdsByName.end() || oldInput.find(slot->second) == oldInput.end())
+                {
+                    model.AddError(expression, aznew Internal::ParseError(mathNode->GetEntityId(), "Expression input pin is missing"));
+                    return;
+                }
+                expression->AddInput(oldInput.at(slot->second));
             }
 
-            m_expressionString = expressionString;
+            m_expressionString = mathNode->GetRawFormat();
         }
 
     }

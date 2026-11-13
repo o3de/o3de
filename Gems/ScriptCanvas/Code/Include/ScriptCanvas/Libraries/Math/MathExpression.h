@@ -38,8 +38,6 @@ namespace ScriptCanvas
                     return AZ::Success(GetSlotsByType(targetSlotType));
                 }
 
-                ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString) override;
-
                 AZStd::string GetExpressionSeparator() const override;
             };
         }
