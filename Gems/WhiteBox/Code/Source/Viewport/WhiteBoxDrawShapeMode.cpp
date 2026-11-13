@@ -20,6 +20,8 @@
 #include "Util/WhiteBoxMeshUtil.h"
 
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/MathStringConversions.h>
@@ -1408,7 +1410,10 @@ namespace WhiteBox
                 m_height = 0.f;
                 if (CurrentShape() == DrawShapeType::Plane)
                 {
-                    CommitBox(worldFromLocal);
+                    if (!CurrentParametric() || !CommitParametricLayer(worldFromLocal, LayerCombineMode::Separate))
+                    {
+                        CommitBox(worldFromLocal);
+                    }
                     Cancel();
                     return true;
                 }
@@ -1448,23 +1453,7 @@ namespace WhiteBox
                     return false;
                 }
 
-                if (m_carveMode)
-                {
-                    // Ctrl + draw = CSG boolean. Pull direction decides:
-                    // pull in -> carve (subtract), pull out -> add (union).
-                    BooleanAtPolygon(worldFromLocal, m_height);
-                }
-                else if (CurrentMergeUnion())
-                {
-                    // Merge Draw Shape toggle: always CSG-union the shape into the mesh so
-                    // the result is a clean watertight manifold (no overlapping geometry).
-                    BooleanAtPolygon(worldFromLocal, m_height, true);
-                }
-                else
-                {
-                    CommitBox(worldFromLocal);
-                }
-
+                CommitDrawnShape(worldFromLocal);
                 m_state = DrawState::Idle;
                 return true;
             }
@@ -1548,6 +1537,123 @@ namespace WhiteBox
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity,
             m_entityComponentIdPair.GetEntityId());
+    }
+
+    void DrawShapeMode::CommitDrawnShape(const AZ::Transform& worldFromLocal)
+    {
+        if (CurrentParametric())
+        {
+            // Carve / Merge become the layer's combine mode.
+            LayerCombineMode combineMode = LayerCombineMode::Separate;
+            if (m_carveMode)
+            {
+                combineMode = m_height < 0.0f ? LayerCombineMode::Subtract : LayerCombineMode::Union;
+            }
+            else if (CurrentMergeUnion())
+            {
+                combineMode = LayerCombineMode::Union;
+            }
+            if (CommitParametricLayer(worldFromLocal, combineMode))
+            {
+                return;
+            }
+        }
+
+        if (m_carveMode)
+        {
+            // Ctrl + draw = CSG boolean. Pull in -> carve (subtract), pull out -> add (union).
+            BooleanAtPolygon(worldFromLocal, m_height);
+        }
+        else if (CurrentMergeUnion())
+        {
+            // Merge Draw Shape toggle: always CSG-union the shape into the mesh.
+            BooleanAtPolygon(worldFromLocal, m_height, true);
+        }
+        else
+        {
+            CommitBox(worldFromLocal);
+        }
+    }
+
+    bool DrawShapeMode::CommitParametricLayer(const AZ::Transform& worldFromLocal, const LayerCombineMode combineMode)
+    {
+        EditorWhiteBoxComponent* component = FindWhiteBoxComponent(m_entityComponentIdPair);
+        const DrawShapeType shape = CurrentShape();
+        if (component == nullptr || shape == DrawShapeType::Polygon)
+        {
+            return false;
+        }
+
+        AZ::Vector3 right, fwd, up;
+        Detail::BasisFromNormal(m_surfaceNormal, right, fwd, up);
+        const AZ::Vector3 drag = m_worldP1 - m_worldP0;
+        AZ::Vector3 uAxis = right * drag.Dot(right);
+        AZ::Vector3 vAxis = fwd * drag.Dot(fwd);
+        if (uAxis.GetLength() < 0.0001f || vAxis.GetLength() < 0.0001f ||
+            (shape != DrawShapeType::Plane && AZStd::abs(m_height) < 0.0001f))
+        {
+            return false;
+        }
+        if (uAxis.Cross(vAxis).Dot(up) < 0.f)
+        {
+            AZStd::swap(uAxis, vAxis);
+        }
+        const AZ::Vector3 center = m_worldP0 + (uAxis + vAxis) * 0.5f;
+        if (shape == DrawShapeType::Staircase)
+        {
+            Detail::ApplyStairRotation(uAxis, vAxis, CurrentStairInfo().m_rotation);
+        }
+
+        // Parametric shapes are built X = width, Y = depth, Z = height, so the footprint axes are the rotation.
+        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
+        AZ::Vector3 axisX = localFromWorld.TransformVector(uAxis);
+        AZ::Vector3 axisY = localFromWorld.TransformVector(vAxis);
+        AZ::Vector3 axisZ = localFromWorld.TransformVector(up).GetNormalizedSafe();
+        AZ::Vector3 position = localFromWorld.TransformPoint(center);
+        const float height = localFromWorld.TransformVector(up * m_height).GetLength();
+
+        EditorWhiteBoxComponent::ShapeParams params;
+        params.m_shape = shape;
+        params.m_width = axisX.GetLength();
+        params.m_depth = axisY.GetLength();
+        params.m_height = shape == DrawShapeType::Plane ? 0.01f : height;
+        params.m_sides = CurrentSides();
+        params.m_holeRatio = CurrentHoleRatio();
+        params.m_tubeSides = CurrentTubeSides();
+        const DrawStairInfo stair = CurrentStairInfo();
+        params.m_steps = stair.m_steps;
+        params.m_stepsByHeight = stair.m_byHeight;
+        params.m_stepHeight = stair.m_stepHeight;
+
+        axisX.NormalizeSafe();
+        axisY.NormalizeSafe();
+        // Undo a stair-rotation mirror; stairs are symmetric across X.
+        if (axisX.Cross(axisY).Dot(axisZ) < 0.0f)
+        {
+            axisX = -axisX;
+        }
+        if (m_height < 0.0f)
+        {
+            const bool upright = shape == DrawShapeType::Room || shape == DrawShapeType::Door ||
+                shape == DrawShapeType::CircularStairs;
+            if (upright)
+            {
+                position -= axisZ * height; // always upright, based on the lower plane
+            }
+            else
+            {
+                // Pulled inward: flip about Y so stairs still descend along Y.
+                axisX = -axisX;
+                axisZ = -axisZ;
+            }
+        }
+
+        const AZ::Quaternion rotation =
+            AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromColumns(axisX, axisY, axisZ)).GetNormalized();
+        component->AddParametricShapeLayer(params, position, rotation.GetEulerDegrees(), combineMode);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityComponentIdPair.GetEntityId());
+        return true;
     }
 
     // Apply a CSG boolean using a cutter prism built from the drawn footprint
@@ -1742,19 +1848,7 @@ namespace WhiteBox
             return;
         }
 
-        // Ctrl gates the boolean; the sign of the depth picks add vs carve.
-        if (m_carveMode)
-        {
-            BooleanAtPolygon(m_worldFromLocal, m_height);
-        }
-        else if (CurrentMergeUnion())
-        {
-            BooleanAtPolygon(m_worldFromLocal, m_height, true);
-        }
-        else
-        {
-            CommitBox(m_worldFromLocal);
-        }
+        CommitDrawnShape(m_worldFromLocal);
         m_state = DrawState::Idle;
     }
 
@@ -2374,6 +2468,12 @@ namespace WhiteBox
         const float rise = AZStd::abs(m_height);
         const int derived = aznumeric_cast<int>(std::lround(rise / stair.m_stepHeight));
         return AZ::GetClamp(derived, 1, 256);
+    }
+
+    bool DrawShapeMode::CurrentParametric() const
+    {
+        const EditorWhiteBoxComponent* component = FindWhiteBoxComponent(m_entityComponentIdPair);
+        return component != nullptr && component->GetDrawParametric();
     }
 
     bool DrawShapeMode::CurrentCarve() const

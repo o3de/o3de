@@ -424,6 +424,45 @@ namespace WhiteBox
         return m_activeLayerIndex;
     }
 
+    int EditorWhiteBoxComponent::AddParametricShapeLayer(
+        const ShapeParams& params, const AZ::Vector3& position, const AZ::Vector3& rotationDegrees,
+        const LayerCombineMode combineMode)
+    {
+        AzToolsFramework::ScopedUndoBatch undoBatch("Draw Parametric Shape");
+        SerializeWhiteBox(); // commit the current layer
+
+        WhiteBoxLayer layer;
+        layer.m_name =
+            AZStd::string::format("%s %d", Detail::DrawShapeName(params.m_shape), static_cast<int>(m_layers.size()) + 1);
+        layer.m_id = AllocLayerId();
+        layer.m_parametric = true;
+        layer.m_combineMode = combineMode;
+        layer.m_position = position;
+        layer.m_rotation = rotationDegrees;
+        m_layers.push_back(AZStd::move(layer));
+
+        const int index = static_cast<int>(m_layers.size()) - 1;
+        StoreLayerShapeParams(index, params); // clamps
+        const ShapeParams stored = GetLayerShapeParams(index);
+        const Api::WhiteBoxMeshPtr mesh = BuildParametricShapeMesh(
+            stored.m_shape, stored.m_width, stored.m_depth, stored.m_height, stored.m_sides, stored.m_steps,
+            stored.m_wallThickness, stored.m_cavityGap, stored.m_floor, stored.m_ceiling, stored.m_doorFrame,
+            stored.m_archHeight, stored.m_innerRadius, stored.m_sweepAngle, stored.m_stepsByHeight,
+            stored.m_stepHeight, stored.m_holeRatio, stored.m_tubeSides);
+        Api::WriteMesh(*mesh, m_layers[index].m_freeformData);
+
+        m_activeLayerIndex = index;
+        m_layerRuntime.m_lastCount = static_cast<int>(m_layers.size());
+        LoadActiveLayer();
+        m_layerRuntime.m_lastSignature = LayerSignature();
+        RebuildWhiteBox();
+        RefreshComponentMode();
+        undoBatch.MarkEntityDirty(GetEntityId());
+        EditorWhiteBoxComponentNotificationBus::Event(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()), &EditorWhiteBoxComponentNotificationBus::Events::OnLayerStructureChanged);
+        return index;
+    }
+
     EditorWhiteBoxComponent::ShapeParams EditorWhiteBoxComponent::GetLayerShapeParams(const int index) const
     {
         ShapeParams params;

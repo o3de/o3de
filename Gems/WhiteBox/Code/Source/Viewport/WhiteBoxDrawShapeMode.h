@@ -23,6 +23,7 @@
 
 namespace WhiteBox
 {
+    enum class LayerCombineMode; // EditorWhiteBoxComponent.h
 
     //! DrawShapeMode implements Lumberyard-style click-drag-release-pull shape drawing
     //! inside the White Box component mode.
@@ -133,6 +134,10 @@ namespace WhiteBox
         bool m_carveMode = false;   // set on first click if Ctrl is held
         //! Stamp the current drawn AABB into the white box mesh and record an undo batch.
         void CommitBox(const AZ::Transform& worldFromLocal);
+        //! Commit the pulled shape as a parametric layer, a boolean or plain geometry.
+        void CommitDrawnShape(const AZ::Transform& worldFromLocal);
+        //! Add the drawn shape as a parametric layer. False for a freeform polygon or a degenerate shape.
+        bool CommitParametricLayer(const AZ::Transform& worldFromLocal, LayerCombineMode combineMode);
 
         //! Cancel draw and return to Idle, discarding any in-progress shape.
         void Cancel();
@@ -166,6 +171,7 @@ namespace WhiteBox
         bool CurrentCarve() const;
         //! Whether the component's "Merge Draw Shape (Union)" toggle is active.
         bool CurrentMergeUnion() const;
+        bool CurrentParametric() const;
 
         //! Whether the component's "Unit Cube Stamp" mode is active.
         bool UnitCubeMode() const;

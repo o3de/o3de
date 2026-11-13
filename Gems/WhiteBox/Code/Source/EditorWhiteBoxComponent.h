@@ -281,6 +281,8 @@ namespace WhiteBox
         void SetDrawCarve(bool carve) { m_drawShapeData.m_carve = carve; }
         void SetDrawMergeUnion(bool mergeUnion) { m_drawShapeData.m_mergeUnion = mergeUnion; }
         void SetDrawPolygonExtrude(bool extrude) { m_drawShapeData.m_polygonExtrude = extrude; }
+        bool GetDrawParametric() const { return m_drawShapeData.m_parametric; }
+        void SetDrawParametric(bool parametric) { m_drawShapeData.m_parametric = parametric; }
 
         // Unit Cube Stamp settings.
         void SetDrawUnitCube(bool unitCube) { m_drawShapeData.m_unitCube = unitCube; }
@@ -377,6 +379,10 @@ namespace WhiteBox
         };
         //! Append a new PARAMETRIC layer generating @p shape (made active). Returns its index.
         int AddParametricShapeLayer(DrawShapeType shape);
+        //! Append an active parametric layer placed in entity-local space. Returns its index.
+        int AddParametricShapeLayer(
+            const ShapeParams& params, const AZ::Vector3& position, const AZ::Vector3& rotationDegrees,
+            LayerCombineMode combineMode);
         bool IsLayerParametric(int index) const
         {
             return index >= 0 && index < GetLayerCount() && m_layers[index].m_parametric;
@@ -630,6 +636,7 @@ namespace WhiteBox
             bool m_carve = false;           //!< Draw acts as a CSG boolean (same as holding Ctrl).
             bool m_polygonExtrude = false; //!< Pull a solid from a closed freeform outline before committing.
             bool m_mergeUnion = false;      //!< Committing a drawn shape CSG-unions it into the mesh.
+            bool m_parametric = false;      //!< Drawn shapes become parametric layers.
             bool m_unitCube = false;        //!< Draw mode click-stamps grid-snapped cubes.
             float m_unitCubeSize = 1.0f;    //!< Desired world-space size of the next stamped cube.
             bool m_unitCubeShowGrid = true; //!< Show the per-cube grid in the stamp ghost preview.

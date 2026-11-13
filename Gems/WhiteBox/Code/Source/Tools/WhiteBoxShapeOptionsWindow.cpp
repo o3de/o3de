@@ -154,7 +154,12 @@ namespace WhiteBox
         m_polygonExtrude = new QCheckBox(tr("Extrude after closing"), this);
         m_polygonExtrude->setToolTip(tr(
             "Close the polygon, then move the mouse or type a depth. Click or press Enter to finish; Esc cancels."));
+        m_parametric = new QCheckBox(tr("Parametric layer"), this);
+        m_parametric->setToolTip(tr(
+            "Each drawn shape becomes its own parametric layer, editable in the pane's Selected Layer. "
+            "Carve and Merge become the layer's Subtract / Union combine mode."));
         toggles->addWidget(m_polygonExtrude);
+        toggles->addWidget(m_parametric);
         toggles->addWidget(m_stepsByHeight);
         toggles->addWidget(m_cubeShowGrid);
         toggles->addWidget(m_carve);
@@ -176,6 +181,7 @@ namespace WhiteBox
         connect(m_carve, &QCheckBox::toggled, this, apply);
         connect(m_mergeUnion, &QCheckBox::toggled, this, apply);
         connect(m_polygonExtrude, &QCheckBox::toggled, this, apply);
+        connect(m_parametric, &QCheckBox::toggled, this, apply);
 
         RefreshValues();
     }
@@ -204,6 +210,7 @@ namespace WhiteBox
         m_stepHeightRow.SetVisible(stair && byHeight);
         m_stepsByHeight->setVisible(stair);
         m_polygonExtrude->setVisible(!cubeStamp && shape == DrawShapeType::Polygon);
+        m_parametric->setVisible(!cubeStamp && shape != DrawShapeType::Polygon);
         const bool polygon = !cubeStamp && shape == DrawShapeType::Polygon;
         const bool booleanAvailable = !polygon || m_polygonExtrude->isChecked();
         m_carve->setVisible(shape != DrawShapeType::Plane || cubeStamp);
@@ -239,7 +246,7 @@ namespace WhiteBox
             const QSignalBlocker sidesBlock(m_sides), tubeBlock(m_tubeSides), stepsBlock(m_steps);
             const QSignalBlocker holeBlock(m_holeRatio), stepHeightBlock(m_stepHeight);
             const QSignalBlocker byHeightBlock(m_stepsByHeight), carveBlock(m_carve), mergeBlock(m_mergeUnion);
-            const QSignalBlocker polygonExtrudeBlock(m_polygonExtrude);
+            const QSignalBlocker polygonExtrudeBlock(m_polygonExtrude), parametricBlock(m_parametric);
             m_sides->setValue(component->GetDrawSides());
             m_tubeSides->setValue(component->GetDrawTubeSides());
             m_holeRatio->setValue(component->GetDrawHoleRatio());
@@ -249,6 +256,7 @@ namespace WhiteBox
             m_carve->setChecked(component->GetDrawCarve());
             m_mergeUnion->setChecked(component->GetDrawMergeUnion());
             m_polygonExtrude->setChecked(component->GetDrawPolygonExtrude());
+            m_parametric->setChecked(component->GetDrawParametric());
             m_cubeSize->setValue(component->GetDrawUnitCubeSize());
             m_cubeShowGrid->setChecked(component->GetDrawUnitCubeShowGrid());
         }
@@ -282,6 +290,7 @@ namespace WhiteBox
             component->SetDrawCarve(m_carve->isChecked());
             component->SetDrawMergeUnion(m_mergeUnion->isChecked());
             component->SetDrawPolygonExtrude(m_polygonExtrude->isChecked());
+            component->SetDrawParametric(m_parametric->isChecked());
 
             DrawStairInfo stair = component->GetDrawStairInfo();
             stair.m_steps = m_steps->value();
