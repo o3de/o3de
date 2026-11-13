@@ -31,10 +31,11 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
+            3rdParty::Qt::UiTools
+            3rdParty::Qt::Widgets
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            3rdParty::Qt::Widgets
             Gem::EditorPythonBindings.Static
     RUNTIME_DEPENDENCIES
         3rdParty::pyside6

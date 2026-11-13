@@ -25,12 +25,12 @@ namespace QtForPython
 #if defined(O3DE_PYSIDE6_SHARED_LIBRARY_NAME)
     const char* s_libPysideLibraryFile = O3DE_PYSIDE6_SHARED_LIBRARY_NAME;
 #else
-    const char* s_libPysideLibraryFile = "libpyside6.abi3.so.6.10";
+    const char* s_libPysideLibraryFile = "libpyside6.abi3.so.6.12";
 #endif
 #if defined(O3DE_SHIBOKEN6_SHARED_LIBRARY_NAME)
     const char* s_libShibokenLibraryFile = O3DE_SHIBOKEN6_SHARED_LIBRARY_NAME;
 #else
-    const char* s_libShibokenLibraryFile = "libshiboken6.abi3.so.6.10";
+    const char* s_libShibokenLibraryFile = "libshiboken6.abi3.so.6.12";
 #endif
     const char* s_libQtTestLibraryFile = "libQt6Test.so.6";
 
