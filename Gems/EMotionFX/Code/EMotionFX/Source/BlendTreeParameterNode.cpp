@@ -9,10 +9,14 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <EMotionFX/Source/EventManager.h>
+#include <EMotionFX/Source/Parameter/Vector3Parameter.h>
+#include <EMotionFX/Source/Transform.h>
+#include <MCore/Source/AttributeVector3.h>
 
 
 namespace EMotionFX
@@ -142,7 +146,9 @@ namespace EMotionFX
             const uint32 numParameters = static_cast<uint32>(m_outputPorts.size());
             for (uint32 i = 0; i < numParameters; ++i)
             {
-                GetOutputValue(animGraphInstance, i)->InitFrom(animGraphInstance->GetParameterValue(i));
+                MCore::Attribute* outputValue = GetOutputValue(animGraphInstance, i);
+                outputValue->InitFrom(animGraphInstance->GetParameterValue(i));
+                ConvertToWorldSpace(animGraphInstance, i, outputValue);
             }
         }
         else
@@ -151,9 +157,33 @@ namespace EMotionFX
             const size_t parameterCount = m_parameterIndices.size();
             for (size_t i = 0; i < parameterCount; ++i)
             {
-                GetOutputValue(animGraphInstance, static_cast<AZ::u32>(i))->InitFrom(animGraphInstance->GetParameterValue(m_parameterIndices[i]));
+                MCore::Attribute* outputValue = GetOutputValue(animGraphInstance, static_cast<AZ::u32>(i));
+                outputValue->InitFrom(animGraphInstance->GetParameterValue(m_parameterIndices[i]));
+                ConvertToWorldSpace(animGraphInstance, m_parameterIndices[i], outputValue);
             }
         }
+    }
+
+
+    void BlendTreeParameterNode::ConvertToWorldSpace(const AnimGraphInstance* animGraphInstance, size_t parameterIndex, MCore::Attribute* value) const
+    {
+        if (value->GetType() != MCore::AttributeVector3::TYPE_ID)
+        {
+            return;
+        }
+        const Vector3Parameter* parameter = azrtti_cast<const Vector3Parameter*>(m_animGraph->FindValueParameter(parameterIndex));
+        if (!parameter || parameter->GetSpace() != Vector3Parameter::Space::Local)
+        {
+            return;
+        }
+
+        // Build the world transform here, as the actor instance only refreshes its own after the anim graph update.
+        const ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
+        Transform worldTransform = actorInstance->GetLocalSpaceTransform();
+        worldTransform.Multiply(actorInstance->GetParentWorldSpaceTransform());
+
+        MCore::AttributeVector3* vectorValue = static_cast<MCore::AttributeVector3*>(value);
+        vectorValue->SetValue(worldTransform.TransformPoint(vectorValue->GetValue()));
     }
 
 

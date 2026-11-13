@@ -42,6 +42,7 @@ namespace EMStudio
     private:
         void OnValueChanged();
         void ToggleTranslationGizmo();
+        void UpdateManipulatorSpace();
 
         AZ::Vector3 GetMinValue() const;
         AZ::Vector3 GetMaxValue() const;
