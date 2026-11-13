@@ -106,32 +106,6 @@ namespace AZ::RPI
             return result;
         }
 
-        template<>
-        bool GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            auto result = GetShaderParameterData<uint32_t>(index, deviceIndex);
-            AZ_Assert(result == 0 || result == 1, "GetShaderParameterData: GPU Boolean contains illegal value %d", result);
-            if (result == 0)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        template<>
-        Matrix3x3 GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            auto result = GetShaderParameterData<AZStd::array<float, 9>>(index, deviceIndex);
-            return Matrix3x3::CreateFromRowMajorFloat9(result.data());
-        }
-
-        template<>
-        Matrix4x4 GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            auto result = GetShaderParameterData<AZStd::array<float, 16>>(index, deviceIndex);
-            return Matrix4x4::CreateFromRowMajorFloat16(result.data());
-        }
-
         template<typename T, unsigned int N, AZStd::enable_if_t<N <= 4, bool> = true>
         T GetVectorShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex = 0) const
         {
@@ -142,37 +116,6 @@ namespace AZ::RPI
                 vectorResult.SetElement(ele, result[ele]);
             }
             return vectorResult;
-        }
-
-        template<>
-        Vector2 GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            return GetVectorShaderParameterData<Vector2, 2>(index, deviceIndex);
-        }
-
-        template<>
-        Vector3 GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            return GetVectorShaderParameterData<Vector3, 3>(index, deviceIndex);
-        }
-
-        template<>
-        Vector4 GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            return GetVectorShaderParameterData<Vector4, 4>(index, deviceIndex);
-        }
-
-        template<>
-        Color GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            return GetVectorShaderParameterData<Color, 4>(index, deviceIndex);
-        }
-
-        template<>
-        RHI::SamplerState GetShaderParameterData(const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
-        {
-            auto samplerIndex = GetShaderParameterData<uint32_t>(index, deviceIndex);
-            return GetSharedSamplerState(samplerIndex);
         }
 
         AZStd::span<const uint8_t> GetRawBufferParameterData(
@@ -204,5 +147,71 @@ namespace AZ::RPI
         // keep a reference to the registered non-bindless textures, if AZ_TRAIT_REGISTER_TEXTURES_PER_MATERIAL is defined
         AZStd::unordered_map<MaterialShaderParameterLayout::Index, int32_t> m_materialTextureIndices;
     };
+
+    // Template specialization implementations - moved outside class for GCC 14 C++20 compliance
+    template<>
+    inline bool MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        auto result = GetShaderParameterData<uint32_t>(index, deviceIndex);
+        AZ_Assert(result == 0 || result == 1, "GetShaderParameterData: GPU Boolean contains illegal value %d", result);
+        if (result == 0)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    template<>
+    inline Matrix3x3 MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        auto result = GetShaderParameterData<AZStd::array<float, 9>>(index, deviceIndex);
+        return Matrix3x3::CreateFromRowMajorFloat9(result.data());
+    }
+
+    template<>
+    inline Matrix4x4 MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        auto result = GetShaderParameterData<AZStd::array<float, 16>>(index, deviceIndex);
+        return Matrix4x4::CreateFromRowMajorFloat16(result.data());
+    }
+
+    template<>
+    inline Vector2 MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        return GetVectorShaderParameterData<Vector2, 2>(index, deviceIndex);
+    }
+
+    template<>
+    inline Vector3 MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        return GetVectorShaderParameterData<Vector3, 3>(index, deviceIndex);
+    }
+
+    template<>
+    inline Vector4 MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        return GetVectorShaderParameterData<Vector4, 4>(index, deviceIndex);
+    }
+
+    template<>
+    inline Color MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        return GetVectorShaderParameterData<Color, 4>(index, deviceIndex);
+    }
+
+    template<>
+    inline RHI::SamplerState MaterialShaderParameter::GetShaderParameterData(
+        const MaterialShaderParameterLayout::Index& index, const uint32_t deviceIndex) const
+    {
+        auto samplerIndex = GetShaderParameterData<uint32_t>(index, deviceIndex);
+        return GetSharedSamplerState(samplerIndex);
+    }
 
 } // namespace AZ::RPI
