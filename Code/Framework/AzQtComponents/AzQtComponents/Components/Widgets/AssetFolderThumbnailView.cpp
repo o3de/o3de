@@ -1062,7 +1062,7 @@ namespace AzQtComponents
     {
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
-        ClearQueuedMouseEvent();
+        ResetDragState();
         m_queuedMouseEvent = event->clone();
     }
 
@@ -1072,6 +1072,13 @@ namespace AzQtComponents
         bool forceUpdate = false;
 
         m_mousePosition = event->pos();
+
+        // A queued press is only valid while a button is held.
+        // Native drag sessions can consume the release event.
+        if (m_queuedMouseEvent && event->buttons() == Qt::NoButton)
+        {
+            ResetDragState();
+        }
 
         if (m_queuedMouseEvent && !m_isDragSelectActive)
         {
@@ -1112,13 +1119,17 @@ namespace AzQtComponents
             ProcessQueuedMousePressedEvent(m_queuedMouseEvent);
         }
 
-        ClearQueuedMouseEvent();
+        ResetDragState();
 
+        QAbstractItemView::mouseReleaseEvent(event);
+    }
+
+    void AssetFolderThumbnailView::ResetDragState()
+    {
+        ClearQueuedMouseEvent();
         m_previousSelection.clear();
         m_selectionUpdater->stop();
         m_isDragSelectActive = false;
-
-        QAbstractItemView::mouseReleaseEvent(event);
     }
 
     void AssetFolderThumbnailView::SelectAllEntitiesInSelectionRect()

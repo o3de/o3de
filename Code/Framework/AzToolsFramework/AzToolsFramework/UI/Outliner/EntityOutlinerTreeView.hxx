@@ -76,6 +76,7 @@ namespace AzToolsFramework
         void timerEvent(QTimerEvent* event) override;
     private:
         void ClearQueuedMouseEvent();
+        void ResetDragState();
         void ProcessQueuedMousePressedEvent(QMouseEvent* event);
 
         void SelectAllEntitiesInSelectionRect();
