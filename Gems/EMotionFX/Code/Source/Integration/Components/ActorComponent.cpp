@@ -23,6 +23,7 @@
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 
 #include <Integration/Components/ActorComponent.h>
+#include <Integration/Components/ActorSocketQueries.h>
 #include <Integration/Rendering/RenderBackendManager.h>
 
 #include <EMotionFX/Source/Transform.h>
@@ -188,8 +189,20 @@ namespace EMotionFX
             if (behaviorContext)
             {
                 behaviorContext->EBus<ActorComponentRequestBus>("ActorComponentRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Event("GetJointIndexByName", &ActorComponentRequestBus::Events::GetJointIndexByName)
                     ->Event("GetJointTransform", &ActorComponentRequestBus::Events::GetJointTransform)
+                    ->Event("GetNumSockets", &ActorComponentRequestBus::Events::GetNumSockets)
+                    ->Event("GetSocketName", &ActorComponentRequestBus::Events::GetSocketName)
+                    ->Event("GetSocketIndexByName", &ActorComponentRequestBus::Events::GetSocketIndexByName)
+                    ->Event("GetSocketTransform", &ActorComponentRequestBus::Events::GetSocketTransform)
+                    ->Event("GetSocketForward", &ActorComponentRequestBus::Events::GetSocketForward)
+                    ->Event("GetSocketTransformByName", &ActorComponentRequestBus::Events::GetSocketTransformByName)
+                    ->Event("GetSocketForwardByName", &ActorComponentRequestBus::Events::GetSocketForwardByName)
+                    ->Event("GetSocketBindTransform", &ActorComponentRequestBus::Events::GetSocketBindTransform)
+                    ->Event("GetSocketBindTransformByName", &ActorComponentRequestBus::Events::GetSocketBindTransformByName)
+                    ->Event("GetSocketTransformFromEntity", &ActorComponentRequestBus::Events::GetSocketTransformFromEntity)
+                    ->Event("GetSocketTransformFromEntityByName", &ActorComponentRequestBus::Events::GetSocketTransformFromEntityByName)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)
                     ->Event("DetachFromEntity", &ActorComponentRequestBus::Events::DetachFromEntity)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
@@ -910,6 +923,61 @@ namespace EMotionFX
             }
 
             return nullptr;
+        }
+
+        size_t ActorComponent::GetNumSockets() const
+        {
+            return SocketQueries::GetNumSockets(m_actorInstance.get());
+        }
+
+        AZStd::string ActorComponent::GetSocketName(size_t socketIndex) const
+        {
+            return SocketQueries::GetSocketName(m_actorInstance.get(), socketIndex);
+        }
+
+        size_t ActorComponent::GetSocketIndexByName(const char* name) const
+        {
+            return SocketQueries::GetSocketIndexByName(m_actorInstance.get(), name);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransform(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketTransform(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Vector3 ActorComponent::GetSocketForward(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketForward(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransformByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketTransformByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Vector3 ActorComponent::GetSocketForwardByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketForwardByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketBindTransform(size_t socketIndex, Space space) const
+        {
+            return SocketQueries::GetSocketBindTransform(m_actorInstance.get(), *GetEntity(), socketIndex, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketBindTransformByName(const char* name, Space space) const
+        {
+            return SocketQueries::GetSocketBindTransformByName(m_actorInstance.get(), *GetEntity(), name, space);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransformFromEntity(size_t socketIndex) const
+        {
+            return SocketQueries::GetSocketTransformFromEntity(m_actorInstance.get(), *GetEntity(), socketIndex);
+        }
+
+        AZ::Transform ActorComponent::GetSocketTransformFromEntityByName(const char* name) const
+        {
+            return SocketQueries::GetSocketTransformFromEntityByName(m_actorInstance.get(), *GetEntity(), name);
         }
 
         // The entity has attached to the target.
