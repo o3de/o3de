@@ -24,6 +24,7 @@ namespace AZ
             {
                 behaviorContext->Class<ScriptExecutionContext>()
                     ->Method("GetLightingModelName", &ScriptExecutionContext::GetLightingModelName)
+                    ->Method("GetBuildSetting", &ScriptExecutionContext::GetBuildSetting)
                     ->Method("IncludeAllShaders", &ScriptExecutionContext::IncludeAllShaders)
                     ->Method("ExcludeAllShaders", &ScriptExecutionContext::ExcludeAllShaders)
                     ->Method("IncludeShader", &ScriptExecutionContext::IncludeShader)
@@ -124,6 +125,20 @@ namespace AZ
         AZStd::string MaterialPipelineScriptRunner::ScriptExecutionContext::GetLightingModelName() const
         {
             return m_materialType.m_lightingModel;
+        }
+
+        AZStd::string MaterialPipelineScriptRunner::ScriptExecutionContext::GetBuildSetting(
+            const char* name, const char* defaultValue) const
+        {
+            const AZStd::string fallback = (defaultValue != nullptr) ? AZStd::string(defaultValue) : AZStd::string{};
+
+            if (name == nullptr)
+            {
+                return fallback;
+            }
+
+            const auto settingIter = m_materialType.m_buildSettings.find(name);
+            return (settingIter != m_materialType.m_buildSettings.end()) ? settingIter->second : fallback;
         }
 
         MaterialPipelineScriptRunner::MaterialPipelineScriptRunner() = default;
