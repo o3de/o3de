@@ -193,6 +193,38 @@ namespace WhiteBox
             return icon;
         }
 
+        //! A square with an arrow leaving its corner, for Export Layer To Entity.
+        QPixmap ExportPixmap(const QColor& color)
+        {
+            QPixmap pixmap(16, 16);
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setPen(QPen(color, 1.2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            painter.setBrush(Qt::NoBrush);
+            QPainterPath box;
+            box.moveTo(7.0, 4.0);
+            box.lineTo(3.5, 4.0);
+            box.quadTo(2.5, 4.0, 2.5, 5.0);
+            box.lineTo(2.5, 12.5);
+            box.quadTo(2.5, 13.5, 3.5, 13.5);
+            box.lineTo(11.0, 13.5);
+            box.quadTo(12.0, 13.5, 12.0, 12.5);
+            box.lineTo(12.0, 9.0);
+            painter.drawPath(box);
+            painter.drawLine(QPointF(7.0, 9.0), QPointF(13.5, 2.5));
+            painter.drawLine(QPointF(9.0, 2.5), QPointF(13.5, 2.5));
+            painter.drawLine(QPointF(13.5, 2.5), QPointF(13.5, 7.0));
+            return pixmap;
+        }
+
+        QIcon MakeExportIcon(const QColor& normal, const QColor& accent)
+        {
+            QIcon icon(ExportPixmap(normal));
+            icon.addPixmap(ExportPixmap(accent), QIcon::Active);
+            return icon;
+        }
+
         //! Layer buttons painted explicitly (the tool-button style can drop their borders), from the palette.
         class LayerToolButton : public QToolButton
         {
@@ -958,6 +990,11 @@ namespace WhiteBox
         auto* duplicateLayerButton = new LayerToolButton(&MakeDuplicateIcon);
         duplicateLayerButton->setToolTip(tr("Duplicate the selected layer, geometry and settings alike."));
         buttonRow->addWidget(duplicateLayerButton);
+        auto* exportLayerButton = new LayerToolButton(&MakeExportIcon);
+        exportLayerButton->setToolTip(
+            tr("Move the selected layer to a new entity with the same transform and settings. "
+               "Shift+click to copy it instead."));
+        buttonRow->addWidget(exportLayerButton);
         auto* moveUpButton = makeToolButton(QString(QChar(0x2191)), moveTip);
         auto* moveDownButton = makeToolButton(QString(QChar(0x2193)), moveTip);
         buttonRow->addStretch();
@@ -1330,6 +1367,25 @@ namespace WhiteBox
                 ModifyComponent(
                     "White Box Duplicate Layer",
                     [](EditorWhiteBoxComponent* c) { c->DuplicateActiveLayer(); });
+            });
+        connect(exportLayerButton, &QAbstractButton::clicked, this,
+            [this]()
+            {
+                const int row = m_layerList->currentRow();
+                if (row < 0 || CurrentComponent() == nullptr)
+                {
+                    return;
+                }
+                const bool keepInSource = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+                AZStd::string error;
+                const AZ::EntityId newEntityId = ExportWhiteBoxLayerToEntity(m_currentEntityId, row, keepInSource, error);
+                if (!newEntityId.IsValid())
+                {
+                    QMessageBox::warning(this, tr("Export Layer To Entity"), QString::fromUtf8(error.c_str()));
+                    RefreshFromComponent();
+                    return;
+                }
+                SetCurrentEntity(newEntityId);
             });
         connect(moveUpButton, &QAbstractButton::clicked, this,
             [this]()

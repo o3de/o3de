@@ -17,6 +17,7 @@
 #include "Util/WhiteBoxVoxelUtil.h"
 #include "Viewport/WhiteBoxShapeBuilders.h"
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -777,6 +778,46 @@ namespace WhiteBox
         RefreshComponentMode();
         undoBatch.MarkEntityDirty(GetEntityId());
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    EditorWhiteBoxComponent* EditorWhiteBoxComponent::CloneWithSingleLayer(const int index)
+    {
+        if (index < 0 || index >= GetLayerCount() || AssetInUse())
+        {
+            return nullptr;
+        }
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        if (serializeContext == nullptr)
+        {
+            return nullptr;
+        }
+
+        SerializeWhiteBox(); // flush the active layer's working mesh
+        EditorWhiteBoxComponent* clone = serializeContext->CloneObject(this);
+        if (clone == nullptr)
+        {
+            return nullptr;
+        }
+        clone->SetId(AZ::InvalidComponentId);
+
+        WhiteBoxLayer layer = m_layers[index];
+        clone->m_layers.clear();
+        clone->m_layers.push_back(AZStd::move(layer));
+        clone->m_activeLayerIndex = 0;
+        clone->m_whiteBoxData = clone->m_layers[0].m_freeformData;
+
+        // The live boolean and global-target state belong to the original entity; cutter/exclude flags carry over.
+        clone->m_boolean.m_sourceEntity = AZ::EntityId();
+        clone->m_boolean.m_live = false;
+        clone->m_boolean.m_affectActiveOnly = false;
+        clone->m_globalBooleanActive = false;
+
+        // Cached render data/bakes are the original's combined result; the copy rebuilds its own.
+        clone->m_renderDataBlob.clear();
+        clone->m_bakedDataBlob.clear();
+        clone->m_physicsBaked = false;
+        return clone;
     }
 
     AZ::Crc32 EditorWhiteBoxComponent::OnDeleteLayer()

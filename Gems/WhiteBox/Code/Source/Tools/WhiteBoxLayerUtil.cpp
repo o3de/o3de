@@ -15,10 +15,13 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
 namespace WhiteBox
 {
@@ -166,5 +169,156 @@ namespace WhiteBox
             });
 
         return childId;
+    }
+
+    static AZ::Entity* FindEditorEntity(const AZ::EntityId entityId)
+    {
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        return entity;
+    }
+
+    //! Undoably add a heap-allocated component to @p entityId; frees it on failure.
+    static bool AddExistingComponent(const AZ::EntityId entityId, AZ::Component* component, AZStd::string& error)
+    {
+        AZ::Component* const components[] = { component };
+        AzToolsFramework::EntityCompositionRequests::AddExistingComponentsOutcome outcome =
+            AZ::Failure(AZStd::string("no entity composition handler"));
+        AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+            outcome, &AzToolsFramework::EntityCompositionRequests::AddExistingComponentsToEntityById, entityId,
+            AZStd::span<AZ::Component* const>(components));
+        if (!outcome.IsSuccess())
+        {
+            error = outcome.GetError();
+            if (component->GetEntity() == nullptr)
+            {
+                delete component;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    AZ::EntityId ExportWhiteBoxLayerToEntity(
+        const AZ::EntityId sourceEntityId, const int layerIndex, const bool keepInSource, AZStd::string& error)
+    {
+        AZ::Entity* sourceEntity = FindEditorEntity(sourceEntityId);
+        EditorWhiteBoxComponent* source =
+            sourceEntity != nullptr ? sourceEntity->FindComponent<EditorWhiteBoxComponent>() : nullptr;
+        if (source == nullptr)
+        {
+            error = "The entity has no White Box component.";
+            return AZ::EntityId();
+        }
+        if (source->AssetInUse())
+        {
+            error = "This mesh lives in a shared White Box asset, which has no layers.";
+            return AZ::EntityId();
+        }
+        if (layerIndex < 0 || layerIndex >= source->GetLayerCount())
+        {
+            error = "Select a layer to export.";
+            return AZ::EntityId();
+        }
+
+        // Entity reactivation and layer removal must not happen under component mode.
+        namespace Cmf = AzToolsFramework::ComponentModeFramework;
+        Cmf::ComponentModeSystemRequestBus::Broadcast(&Cmf::ComponentModeSystemRequests::EndComponentMode);
+
+        AzToolsFramework::ScopedUndoBatch undoBatch("Export White Box Layer To Entity");
+
+        // Removal below goes through the active layer.
+        if (source->GetActiveLayerIndex() != layerIndex)
+        {
+            source->SetActiveLayer(layerIndex);
+        }
+        const AZStd::string layerName = source->GetLayerMeta(layerIndex).m_name;
+
+        EditorWhiteBoxComponent* whiteBoxCopy = source->CloneWithSingleLayer(layerIndex);
+        if (whiteBoxCopy == nullptr)
+        {
+            error = "Could not copy the layer.";
+            return AZ::EntityId();
+        }
+
+        // Same parent and local transform, so the geometry stays in place.
+        AZ::EntityId parentId;
+        AZ::TransformBus::EventResult(parentId, sourceEntityId, &AZ::TransformBus::Events::GetParentId);
+        AZ::Transform localTM = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(localTM, sourceEntityId, &AZ::TransformBus::Events::GetLocalTM);
+
+        AZ::EntityId newEntityId;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            newEntityId, &AzToolsFramework::ToolsApplicationRequests::CreateNewEntity, parentId);
+        AZ::Entity* newEntity = FindEditorEntity(newEntityId);
+        if (newEntity == nullptr)
+        {
+            delete whiteBoxCopy;
+            error = "Could not create the entity.";
+            return AZ::EntityId();
+        }
+        newEntity->SetName(layerName.empty() ? AZStd::string("White Box Layer") : layerName);
+        AZ::TransformBus::Event(newEntityId, &AZ::TransformBus::Events::SetLocalTM, localTM);
+
+        // Non-uniform scale is a separate component; copy it or the shape changes.
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, sourceEntityId, &AZ::NonUniformScaleRequests::GetScale);
+        if (!nonUniformScale.IsClose(AZ::Vector3::CreateOne()))
+        {
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome scaleOutcome =
+                AZ::Failure(AZStd::string("uninitialized"));
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+                scaleOutcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+                AzToolsFramework::EntityIdList{ newEntityId },
+                AZ::ComponentTypeList{ azrtti_typeid<AzToolsFramework::Components::EditorNonUniformScaleComponent>() });
+            AZ::NonUniformScaleRequestBus::Event(newEntityId, &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+        }
+
+        if (!AddExistingComponent(newEntityId, whiteBoxCopy, error))
+        {
+            error = "Could not add the White Box component: " + error;
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::DeleteEntityById, newEntityId);
+            return AZ::EntityId();
+        }
+        whiteBoxCopy->RebuildWhiteBox();
+
+        // Clone the collider so its settings (physics material, layer) come along.
+        if (const auto* sourceCollider = sourceEntity->FindComponent<EditorWhiteBoxColliderComponent>())
+        {
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(
+                serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+            if (serializeContext != nullptr)
+            {
+                if (auto* colliderCopy = serializeContext->CloneObject(sourceCollider))
+                {
+                    colliderCopy->SetId(AZ::InvalidComponentId);
+                    AZStd::string colliderError;
+                    if (!AddExistingComponent(newEntityId, colliderCopy, colliderError))
+                    {
+                        AZ_Warning("WhiteBox", false, "Export Layer: could not copy the White Box Collider (%s).",
+                            colliderError.c_str());
+                    }
+                }
+            }
+        }
+
+        if (!keepInSource)
+        {
+            source->DeleteActiveLayer();
+        }
+        undoBatch.MarkEntityDirty(sourceEntityId);
+        undoBatch.MarkEntityDirty(newEntityId);
+
+        // Select once the entity has settled; the pane follows the selection.
+        AZ::TickBus::QueueFunction(
+            [newEntityId]()
+            {
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities,
+                    AzToolsFramework::EntityIdList{ newEntityId });
+            });
+        return newEntityId;
     }
 } // namespace WhiteBox
