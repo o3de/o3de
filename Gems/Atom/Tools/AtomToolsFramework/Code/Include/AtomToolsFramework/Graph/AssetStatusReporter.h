@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
@@ -34,6 +35,10 @@ namespace AtomToolsFramework
         AZStd::string GetCurrentPath() const;
 
     private:
+        AssetStatusReporterState GetCurrentStateUnlocked() const;
+        const char* GetCurrentStateNameUnlocked() const;
+
+        mutable AZStd::mutex m_mutex;
         AZStd::vector<AZStd::string> m_sourcePaths;
         size_t m_index = {};
         bool m_failed = {};
