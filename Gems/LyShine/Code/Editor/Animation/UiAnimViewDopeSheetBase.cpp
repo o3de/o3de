@@ -2368,17 +2368,17 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
             && abs(x - prevKeyPixel) < 2)
         {
             // If multiple keys on the same time.
-            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_02.png"));
+            painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/UiAnimView/trackview_keys_02.png"));
         }
         else
         {
             if (keyHandle.IsSelected())
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_01.png"));
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/UiAnimView/trackview_keys_01.png"));
             }
             else
             {
-                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/Trackview/trackview_keys_00.png"));
+                painter->drawPixmap(QPoint(x - 6, rect.top() + 2), QPixmap(":/UiAnimView/trackview_keys_00.png"));
             }
         }
 
@@ -2446,7 +2446,7 @@ void CUiAnimViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CUiAnim
         if (keyNode->getAttr("time", time))
         {
             int x = TimeToClient(time + timeOffset);
-            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/Trackview/trackview_keys_03.png"));
+            painter->drawPixmap(QPoint(x - 6, trackRect.top() + 2), QPixmap(":/UiAnimView/trackview_keys_03.png"));
             painter->drawLine(x, m_rcClient.top(), x, m_rcClient.bottom());
         }
     }
@@ -2899,9 +2899,9 @@ void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUp
     int x;
 
     x = TimeToClient(m_timeMarked.start);
-    painter->drawPixmap(QPoint(x, m_rcTimeline.bottom() - 9), QPixmap(":/Trackview/marker/bmp00016_01.png"));
+    painter->drawPixmap(QPoint(x, m_rcTimeline.bottom() - 9), QPixmap(":/UiAnimView/marker/bmp00016_01.png"));
     x = TimeToClient(m_timeMarked.end);
-    painter->drawPixmap(QPoint(x - 7, m_rcTimeline.bottom() - 9), QPixmap(":/Trackview/marker/bmp00016_00.png"));
+    painter->drawPixmap(QPoint(x - 7, m_rcTimeline.bottom() - 9), QPixmap(":/UiAnimView/marker/bmp00016_00.png"));
 
     painter->setPen(redpen);
     x = TimeToClient(m_currentTime);

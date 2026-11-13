@@ -11,7 +11,7 @@
 #include <AzCore/PlatformDef.h>
 
 #include <ISystem.h>
-#include "Include/SandboxAPI.h"
+#include <SandboxAPI.h>
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 
@@ -26,8 +26,6 @@ class QMainWindow;
 struct QMetaObject;
 
 class CCryEditDoc;
-class CAnimationContext;
-class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
 class CMusicManager;
@@ -111,7 +109,6 @@ enum EEditorNotifyEvent
 
     // UI events.
     eNotify_OnUpdateViewports,         // Sent when editor needs to update data in the viewports.
-    eNotify_OnReloadTrackView,         // Sent when editor needs to update the track view.
     eNotify_OnSplashScreenCreated,     // Sent when the editor splash screen was created.
     eNotify_OnSplashScreenDestroyed,   // Sent when the editor splash screen was destroyed.
 
@@ -296,39 +293,6 @@ struct IMainStatusBar
     virtual QWidget* GetItem(QString indicatorName) = 0;
 };
 
-// forward declaration
-struct IAnimSequence;
-class CTrackViewSequence;
-
-//! Interface to expose TrackViewSequenceManager functionality to SequenceComponent
-struct ITrackViewSequenceManager
-{
-    virtual IAnimSequence* OnCreateSequenceObject(QString name, bool isLegacySequence = true, AZ::EntityId entityId = AZ::EntityId()) = 0;
-
-    //! Notifies of the delete of a sequence entity OR legacy sequence object
-    //! @param entityId The Sequence Component Entity Id OR the legacy sequence object Id packed in the lower 32-bits, as returned from IAnimSequence::GetSequenceEntityId()
-    virtual void OnDeleteSequenceEntity(const AZ::EntityId& entityId) = 0;
-
-    //! Get the first sequence with the given name. They may be more than one sequence with this name.
-    //! Only intended for use with scripting or other cases where a user provides a name.
-    virtual CTrackViewSequence* GetSequenceByName(QString name) const = 0;
-
-    //! Get the sequence with the given EntityId. For legacy support, legacy sequences can be found by giving
-    //! the sequence ID in the lower 32 bits of the EntityId.
-    virtual CTrackViewSequence* GetSequenceByEntityId(const AZ::EntityId& entityId) const = 0;
-
-    virtual void OnCreateSequenceComponent(AZStd::intrusive_ptr<IAnimSequence>& sequence) = 0;
-
-    virtual void OnSequenceActivated(const AZ::EntityId& entityId) = 0;
-    virtual void OnSequenceDeactivated(const AZ::EntityId& entityId) = 0;
-};
-
-//! Interface to expose TrackViewSequence functionality to SequenceComponent
-struct ITrackViewSequence
-{
-    virtual void Load() = 0;
-};
-
 //! Interface to permit usage of editor functionality inside the plugin
 struct IEditor
 {
@@ -438,9 +402,6 @@ struct IEditor
     //! Notify all views that data is changed.
     virtual void UpdateViews(int flags = 0xFFFFFFFF, const AZ::Aabb* updateRegion = nullptr) = 0;
     virtual void ResetViews() = 0;
-    //! Update information in track view dialog.
-    virtual void ReloadTrackView() = 0;
-
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
@@ -496,12 +457,6 @@ struct IEditor
     virtual bool ClearLastUndoSteps(int steps) = 0;
     //! Clear all current Redo steps in the undo stack
     virtual bool ClearRedoStack() = 0;
-    //! Retrieve current animation context.
-    virtual CAnimationContext* GetAnimation() = 0;
-    //! Retrieve sequence manager
-    virtual CTrackViewSequenceManager* GetSequenceManager() = 0;
-    virtual ITrackViewSequenceManager* GetSequenceManagerInterface() = 0;
-
     //! Returns external tools manager.
     virtual CToolBoxManager* GetToolBoxManager() = 0;
     //! Get global Error Report instance.
@@ -537,4 +492,3 @@ struct IInitializeUIInfo
 };
 
 AZ_DECLARE_BUDGET(Editor);
-
