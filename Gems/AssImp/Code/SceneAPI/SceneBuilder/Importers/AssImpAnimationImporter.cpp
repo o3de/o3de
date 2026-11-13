@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AssImpTypeConverter.h>
+#include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <AzCore/Serialization/SerializeContext.h>

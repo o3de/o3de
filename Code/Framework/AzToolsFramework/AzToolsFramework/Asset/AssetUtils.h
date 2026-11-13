@@ -20,6 +20,7 @@ namespace AzToolsFramework::AssetUtils
 {
     static constexpr const char* AssetImporterSettingsKey{ "/O3DE/SceneAPI/AssetImporter" };
     static constexpr const char* AssetImporterSupportedFileTypeKey{ "SupportedFileTypeExtensions" };
+    static constexpr const char* AssetImporterProviderFileTypesKey{ "/O3DE/SceneAPI/ImportProviderFileTypeExtensions" };
 
     //! Reads the "/Amazon/AssetProcessor/Settings/Platforms" entry from the settings registry
     //! to retrieve all enabled platforms

@@ -5,18 +5,10 @@
         {
             "AssetImporter":
             {
-                "SupportedFileTypeExtensions":
-                [
-                    ".fbx",
-                    ".stl",
-                    ".gltf",
-                    ".glb",
-                    ".usd",
-                    ".usda",
-                    ".usdz",
-                    ".usdc",
-                    ".obj"
-                ]
+                // Scene import provider gems (such as AssImp) publish the extensions they import under
+                // "/O3DE/SceneAPI/ImportProviderFileTypeExtensions/<ProviderName>". A
+                // "SupportedFileTypeExtensions" array can still be added here to register additional
+                // source file extensions; they are routed to whichever provider accepts them.
             },
             "MaterialConverter": 
             {

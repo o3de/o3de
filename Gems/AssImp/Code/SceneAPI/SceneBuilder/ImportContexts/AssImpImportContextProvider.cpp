@@ -8,7 +8,10 @@
 
 #include "AssImpImportContextProvider.h"
 #include <SceneAPI/SceneBuilder/ImportContexts/AssImpImportContexts.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 namespace AZ
 {
@@ -17,6 +20,35 @@ namespace AZ
         namespace SceneBuilder
         {
             AssImpImportContextProvider::~AssImpImportContextProvider() = default;
+
+            void AssImpImportContextProvider::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const
+            {
+                auto* settingsRegistry = AZ::SettingsRegistry::Get();
+                if (!settingsRegistry)
+                {
+                    return;
+                }
+
+                const auto extensionsKey = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%s/%s", AzToolsFramework::AssetUtils::AssetImporterProviderFileTypesKey, GetImporterName().c_str());
+
+                auto collectExtension = [settingsRegistry, &extensions](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+                {
+                    if (AZStd::string extension; settingsRegistry->Get(extension, visitArgs.m_jsonKeyPath))
+                    {
+                        extensions.insert(AZStd::move(extension));
+                    }
+                    return AZ::SettingsRegistryInterface::VisitResponse::Continue;
+                };
+
+                if (!AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, collectExtension, extensionsKey))
+                {
+                    AZ_Warning(
+                        "AssImp", false,
+                        "No AssImp file extensions found at '%s'. AssImp will not advertise any scene formats.",
+                        extensionsKey.c_str());
+                }
+            }
 
             AZStd::shared_ptr<NodeEncounteredContext> AssImpImportContextProvider::CreateNodeEncounteredContext(
                 Containers::Scene& scene,

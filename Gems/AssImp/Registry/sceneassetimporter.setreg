@@ -1,0 +1,26 @@
+{
+    "O3DE":
+    {
+        "SceneAPI":
+        {
+            // Source file extensions imported through AssImp. This list is read by the AssImp import context
+            // provider (Scene Builder job patterns and load checks) and by the Asset Processor (.assetinfo
+            // metadata mapping), so both always agree. Projects can override this array to narrow or extend it.
+            "ImportProviderFileTypeExtensions":
+            {
+                "AssImp":
+                [
+                    ".fbx",
+                    ".stl",
+                    ".gltf",
+                    ".glb",
+                    ".usd",
+                    ".usda",
+                    ".usdz",
+                    ".usdc",
+                    ".obj"
+                ]
+            }
+        }
+    }
+}

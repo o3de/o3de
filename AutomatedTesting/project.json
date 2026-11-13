@@ -12,6 +12,7 @@
     ],
     "gem_names": [
         "Archive",
+        "AssImp",
         "Atom",
         "AtomTressFX",
         "Atom_TestData",

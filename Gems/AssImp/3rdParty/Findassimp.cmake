@@ -60,7 +60,7 @@ block()
     find_package(ZLIB REQUIRED)
 
     # Include compiler settings for Assimp libraries based on compiler
-    include(Platform/Common/${PAL_TRAIT_COMPILER_ID}/PAL_assimp_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/PAL_assimp_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
 
     # Clear some specific O3DE's CXX_FLAGS before building Assimp, then restore them after
     # (disabling them via target_compile_options() is not enough)

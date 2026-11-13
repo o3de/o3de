@@ -36,6 +36,7 @@ namespace AZ
                 void RegisterContextProvider(ImportContextProvider* provider) override;
                 void UnregisterContextProvider(ImportContextProvider* provider) override;
                 ImportContextProvider* SelectImportProvider(AZStd::string_view fileExtension) const override;
+                void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) const override;
 
             private:
                 AZStd::vector<AZStd::unique_ptr<ImportContextProvider>> m_importContextProviders;
