@@ -12,12 +12,40 @@
 #include "NodeGraph.h"
 #include <MCore/Source/LogManager.h>
 
+#include <QColor>
+
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the anim graph node base: port highlight, base and visualize colours, border, fill, text, arrow, shadow.
+    // Each was a literal at the line it cites. GraphNode.h holds the two the header sets.
+    //////////////////////////////////////////////////////////////////////////
+    namespace GraphNodeFlat
+    {
+        constexpr QColor PortHighlight(255, 128, 0);                   // GraphNode.cpp:19 TOKENIZE: GraphNodePortHighlight
+        constexpr QColor PortHighlightBackground(128, 64, 0);          // GraphNode.cpp:20 TOKENIZE: GraphNodePortHighlightBackground
+        constexpr QColor Base(74, 63, 238);                            // GraphNode.cpp:28 TOKENIZE: GraphNodeBase
+        constexpr QColor Visualize(0, 255, 0);                         // GraphNode.cpp:29 TOKENIZE: GraphNodeVisualize
+        constexpr QColor SelectedBorder(255, 128, 0);                  // GraphNode.cpp:354 TOKENIZE: GraphNodeSelectedBorder
+        // QColor::fromRgbF is not constexpr. GraphNode.cpp:366 TOKENIZE: GraphNodeSelectedFill
+        const QColor SelectedFill = QColor::fromRgbF(0.93f, 0.547f, 0.0f, 1.0f);
+        // QColor::fromRgbF is not constexpr. GraphNode.cpp:376 TOKENIZE: GraphNodeDisabledFill
+        const QColor DisabledFill = QColor::fromRgbF(0.3f, 0.3f, 0.3f, 1.0f);
+        const QColor EnabledText(Qt::white);                           // GraphNode.cpp:391 TOKENIZE: GraphNodeEnabledText
+        constexpr QColor DisabledText(100, 100, 100);                  // GraphNode.cpp:395 TOKENIZE: GraphNodeDisabledText
+        constexpr QColor InfoText(255, 128, 0);                        // GraphNode.cpp:450 TOKENIZE: GraphNodeInfoText
+        const QColor ArrowOutline(Qt::black);                          // GraphNode.cpp:556 TOKENIZE: GraphNodeArrowOutline
+        constexpr QColor ArrowFill(175, 175, 175);                     // GraphNode.cpp:557 TOKENIZE: GraphNodeArrowFill
+        constexpr QColor Shadow(0, 0, 0, 70);                          // GraphNode.cpp:675 TOKENIZE: GraphNodeShadow
+        const QColor VisualizeBorder(Qt::black);                       // GraphNode.cpp:739 TOKENIZE: GraphNodeVisualizeBorder
+        constexpr QColor VisualizeHighlightedBorder(255, 128, 0);      // GraphNode.cpp:746 TOKENIZE: GraphNodeVisualizeHighlightedBorder
+        constexpr QColor VisualizeSelectedFill(255, 128, 0);           // GraphNode.cpp:753 TOKENIZE: GraphNodeVisualizeSelectedFill
+    } // namespace GraphNodeFlat
+
     // statics
-    QColor GraphNode::s_portHighlightColo   = QColor(255, 128, 0);
-    QColor GraphNode::s_portHighlightBGColor = QColor(128, 64, 0);
+    QColor GraphNode::s_portHighlightColo   = GraphNodeFlat::PortHighlight;
+    QColor GraphNode::s_portHighlightBGColor = GraphNodeFlat::PortHighlightBackground;
 
 
     // constructor
@@ -25,8 +53,8 @@ namespace EMStudio
         : m_modelIndex(modelIndex)
     {
         m_rect                   = QRect(0, 0, 200, 128);
-        m_baseColor              = QColor(74, 63, 238);
-        m_visualizeColor         = QColor(0, 255, 0);
+        m_baseColor              = GraphNodeFlat::Base;
+        m_visualizeColor         = GraphNodeFlat::Visualize;
         m_opacity                = 1.0f;
         m_finalRect              = m_rect;
         m_isDeletable            = true;
@@ -351,7 +379,7 @@ namespace EMStudio
 
         if (isSelected)
         {
-            borderColor.setRgb(255, 128, 0);
+            borderColor = GraphNodeFlat::SelectedBorder;
 
             if (m_parentGraph->GetScale() > 0.75f)
             {
@@ -363,7 +391,7 @@ namespace EMStudio
         QColor bgColor;
         if (isSelected)
         {
-            bgColor.setRgbF(0.93f, 0.547f, 0.0f, 1.0f); //  rgb(72, 63, 238)
+            bgColor = GraphNodeFlat::SelectedFill; //  rgb(72, 63, 238)
         }
         else // not selected
         {
@@ -373,7 +401,7 @@ namespace EMStudio
             }
             else
             {
-                bgColor.setRgbF(0.3f, 0.3f, 0.3f, 1.0f);
+                bgColor = GraphNodeFlat::DisabledFill;
             }
         }
 
@@ -388,11 +416,11 @@ namespace EMStudio
         {
             if (m_isEnabled)
             {
-                textColor = Qt::white;
+                textColor = GraphNodeFlat::EnabledText;
             }
             else
             {
-                textColor = QColor(100, 100, 100);
+                textColor = GraphNodeFlat::DisabledText;
             }
         }
         else
@@ -447,7 +475,7 @@ namespace EMStudio
 
                 // draw the info text
                 CalcInfoTextRect(textRect);
-                painter.setPen(QColor(255, 128, 0));
+                painter.setPen(GraphNodeFlat::InfoText);
                 painter.setFont(m_infoTextFont);
                 painter.drawText(textRect, m_elidedNodeInfo, m_textOptionsCenterHv);
 
@@ -553,8 +581,8 @@ namespace EMStudio
             }
             else
             {
-                painter.setPen(Qt::black);
-                painter.setBrush(QColor(175, 175, 175));
+                painter.setPen(GraphNodeFlat::ArrowOutline);
+                painter.setBrush(GraphNodeFlat::ArrowFill);
             }
 
             if (m_isCollapsed == false)
@@ -672,7 +700,7 @@ namespace EMStudio
 
         painter.setOpacity(opacityFactor);
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(0, 0, 0, 70));
+        painter.setBrush(GraphNodeFlat::Shadow);
 
         // normal
         if (m_isCollapsed == false)
@@ -736,21 +764,21 @@ namespace EMStudio
         QColor vizBackGround = bgColor2.lighter(110);
         if (m_visualize)
         {
-            vizBorder = Qt::black;
+            vizBorder = GraphNodeFlat::VisualizeBorder;
         }
         else
         {
             vizBorder = bgColor.darker(180);
         }
 
-        painter.setPen(m_visualizeHighlighted ? QColor(255, 128, 0) : vizBorder);
+        painter.setPen(m_visualizeHighlighted ? GraphNodeFlat::VisualizeHighlightedBorder : vizBorder);
         if (!GetIsSelected())
         {
             painter.setBrush(m_visualize ? m_visualizeColor : vizBackGround);
         }
         else
         {
-            painter.setBrush(m_visualize ? QColor(255, 128, 0) : bgColor);
+            painter.setBrush(m_visualize ? GraphNodeFlat::VisualizeSelectedFill : bgColor);
         }
 
         painter.drawRect(m_visualizeRect);

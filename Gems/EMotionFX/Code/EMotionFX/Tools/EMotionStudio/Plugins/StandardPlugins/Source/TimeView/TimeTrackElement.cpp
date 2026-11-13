@@ -11,6 +11,7 @@
 #include "TimeTrack.h"
 #include <QPainter>
 #include <QPaintEvent>
+#include <QColor>
 #include <MysticQt/Source/MysticQtConfig.h>
 
 #include <MCore/Source/LogManager.h>
@@ -19,10 +20,21 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time track elements paint with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TimeTrackElementFlat
+    {
+        constexpr QColor Text(30, 30, 30);              // TimeTrackElement.cpp:23 TOKENIZE: TimeTrackElementText
+        constexpr QColor HighlightedText(0, 0, 0);      // TimeTrackElement.cpp:24 TOKENIZE: TimeTrackElementHighlightedText
+        constexpr QColor Highlight(255, 128, 0);        // TimeTrackElement.cpp:25 TOKENIZE: TimeTrackElementHighlight
+        constexpr QColor Border(30, 30, 30);            // TimeTrackElement.cpp:95 TOKENIZE: TimeTrackElementBorder
+    } // namespace TimeTrackElementFlat
+
     // statics
-    QColor TimeTrackElement::s_textColor             = QColor(30, 30, 30);
-    QColor TimeTrackElement::s_highlightedTextColor  = QColor(0, 0, 0);
-    QColor TimeTrackElement::s_highlightedColor      = QColor(255, 128, 0);
+    QColor TimeTrackElement::s_textColor             = TimeTrackElementFlat::Text;
+    QColor TimeTrackElement::s_highlightedTextColor  = TimeTrackElementFlat::HighlightedText;
+    QColor TimeTrackElement::s_highlightedColor      = TimeTrackElementFlat::Highlight;
     int32  TimeTrackElement::s_tickHalfWidth         = 7;
 
     // constructor
@@ -92,7 +104,7 @@ namespace EMStudio
         QRect rect(startX, startY, width + 1, height);
 
         QColor color        = m_color;
-        QColor borderColor(30, 30, 30);
+        QColor borderColor(TimeTrackElementFlat::Border);
         QColor textColor    = s_textColor;
         if (m_isSelected)
         {

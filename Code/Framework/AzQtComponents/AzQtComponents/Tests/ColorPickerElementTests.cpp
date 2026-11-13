@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ColorPickerElements.h>
+#include <AzQtComponents/Components/Elements/ControlElements.h>
 #include <AzQtComponents/Components/Elements/PropertyEditorElements.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Style.h>
@@ -93,6 +94,19 @@ namespace AzQtComponents
 
         private:
             const char* m_className;
+        };
+
+        //! A label that answers inherits() for QTipLabel (the class of a tooltip is private to Qt): the matchers ask for no more
+        class TipStandIn
+            : public QLabel
+        {
+        public:
+            using QLabel::QLabel;
+
+            void* qt_metacast(const char* name) override
+            {
+                return qstrcmp(name, "QTipLabel") == 0 ? static_cast<void*>(this) : QLabel::qt_metacast(name);
+            }
         };
 
         const char* const PickerClass = "AzQtComponents::ColorPicker";
@@ -339,7 +353,9 @@ namespace AzQtComponents
                 m_style = AZStd::make_unique<Style>(QStyleFactory::create(QStringLiteral("Fusion")));
                 TextElement::installClassFonts();
 
-                // Registered once for the process, as the application does from Style::polish(QApplication*)
+                // Registered once for the process, in the order the application does from Style::polish(QApplication*): the small
+                // controls' rows first, which the picker's rows are outranked by where both reach (the labels of a message box)
+                ControlElements::registerGlobal();
                 ColorPickerElements::registerGlobal();
                 PropertyEditorElements::registerGlobal();
 
@@ -1222,6 +1238,11 @@ namespace AzQtComponents
             }
             EXPECT_EQ(elementOf(makeLabel(header, "Icon", "text")), QStringLiteral("Global.Box.CardHeaderIconInPicker"));
             EXPECT_EQ(elementOf(makeLabel(header, "WarningIcon", "text")), QStringLiteral("Global.Box.CardHeaderWarningIconInPicker"));
+
+            // a tooltip is no label of the picker: the sheet names a QTipLabel QToolTip alone, so `AzQtComponents--ColorPicker QLabel`
+            // never reached the tip of a widget in the picker, and its box is ToolTip.qss's (and the card header's padding), Style's
+            EXPECT_EQ(elementOf(new TipStandIn(QStringLiteral("tip"), picker)), QString());
+            EXPECT_EQ(elementOf(new TipStandIn(QStringLiteral("tip"), header)), QString());
 
             // the frames: the grid, the preview and the swatch anywhere (ColorPicker.qss:102-105 names no ancestor), the swatch of a color
             // label as the later, more specific rule of ColorLabel.qss:16-25 has it

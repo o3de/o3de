@@ -25,6 +25,7 @@
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneUI/SceneUIFlatSheet.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
 
@@ -42,6 +43,8 @@ namespace AZ
                 , m_capSize(100)
             {
                 ui->setupUi(this);
+                SceneUIFlatSheet::StyleManifestPageHeader(ui->header);
+                SceneUIFlatSheet::StyleAddButton(ui->m_addButton);
 
                 m_propertyEditor = new AzToolsFramework::ReflectedPropertyEditor(nullptr);
                 m_propertyEditor->Setup(context, this, true, 250);

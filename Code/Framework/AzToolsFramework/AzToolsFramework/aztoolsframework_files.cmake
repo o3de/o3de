@@ -760,6 +760,7 @@ set(FILES
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
+    AssetBrowser/AssetBrowserFlatValues.h
     AssetBrowser/AssetBrowserListModel.cpp
     AssetBrowser/AssetBrowserListModel.h
     AssetBrowser/AssetBrowserTableViewProxyModel.cpp
@@ -1041,6 +1042,7 @@ set(FILES
     UI/Outliner/EntityOutlinerDisplayOptionsMenu.cpp
     UI/Outliner/EntityOutlinerFlatSheet.h
     UI/Outliner/EntityOutlinerFlatSheet.cpp
+    UI/Outliner/EntityOutlinerFlatValues.h
     UI/Outliner/EntityOutlinerTreeView.hxx
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx

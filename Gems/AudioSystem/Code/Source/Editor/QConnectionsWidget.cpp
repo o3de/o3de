@@ -24,12 +24,24 @@
 
 namespace AudioControls
 {
+    //===========================================================================================//
+    // CONNECTIONS LIST COLOURS (the text of a connection row: control not found, localized)
+    // LocalizedText is the same purpose and value as the middleware control list's (QSimpleAudioControlListWidget.cpp:44).
+    // NotFoundText has the value of that list's unassigned text (:43) but paints another purpose: a connection row whose
+    // middleware control is missing (a placeholder), so it carries a marker of its own.
+    //===========================================================================================//
+    namespace QConnectionsWidgetFlat
+    {
+        constexpr QColor NotFoundText(0xf3, 0x81, 0x1d);  // QConnectionsWidget.cpp:31. TOKENIZE: AudioConnectionNotFoundText
+        constexpr QColor LocalizedText(0x42, 0x85, 0xf4); // QConnectionsWidget.cpp:32. TOKENIZE: AudioControlLocalizedText
+    } // namespace QConnectionsWidgetFlat
+
     //-------------------------------------------------------------------------------------------//
     QConnectionsWidget::QConnectionsWidget(QWidget* parent)
         : QWidget(parent)
         , m_control(nullptr)
-        , m_notFoundColor(QColor(0xf3, 0x81, 0x1d))
-        , m_localizedColor(QColor(0x42, 0x85, 0xf4))
+        , m_notFoundColor(QConnectionsWidgetFlat::NotFoundText)
+        , m_localizedColor(QConnectionsWidgetFlat::LocalizedText)
     {
         setupUi(this);
 

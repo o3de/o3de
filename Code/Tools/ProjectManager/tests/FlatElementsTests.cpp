@@ -85,6 +85,23 @@ namespace O3DE::ProjectManager
             return new W(parent);
         }
 
+        //! The class name of the Project Manager's window, which the sheet is set on (Application.cpp:246-249)
+        constexpr const char* WindowClassName = "O3DE::ProjectManager::ProjectManagerWindow";
+
+        //! A window that Qt takes for the Project Manager's: the matchers ask for it by its class name, as the selectors do, and the real
+        //! window is built from the Python bindings and the screens of the whole application
+        class ProjectManagerWindowStandIn
+            : public QMainWindow
+        {
+        public:
+            using QMainWindow::QMainWindow;
+
+            void* qt_metacast(const char* name) override
+            {
+                return qstrcmp(name, WindowClassName) == 0 ? this : QMainWindow::qt_metacast(name);
+            }
+        };
+
         QWidget* CreateByClassName(const QString& className, QWidget* parent)
         {
             using Creator = QWidget* (*)(QWidget*);
@@ -106,6 +123,7 @@ namespace O3DE::ProjectManager
                 { QStringLiteral("QTabBar"), &Create<QTabBar> },
                 { QStringLiteral("QTableWidget"), &Create<QTableWidget> },
                 { QStringLiteral("QWidget"), &Create<QWidget> },
+                { QString::fromLatin1(WindowClassName), &Create<ProjectManagerWindowStandIn> },
             };
             const auto creator = creators.constFind(className);
             return creator == creators.constEnd() ? nullptr : (*creator)(parent);
@@ -193,9 +211,10 @@ namespace O3DE::ProjectManager
 
         const BoxCase BoxCases[] = {
             // ---- The window and the widgets of no particular place
+            // `QProgressBar` (ProjectManager.qss:772-776) is a rule of the window's sheet: the bars below the window
             { "ProgressBar",
-              "QWidget#GemCatalogCartOverlayGemDownloadHeader > QWidget#GemCatalogCartOverlayGemDownloadBG > "
-              "QProgressBar#DownloadProgressBar" },
+              "O3DE::ProjectManager::ProjectManagerWindow > QWidget#GemCatalogCartOverlayGemDownloadHeader > "
+              "QWidget#GemCatalogCartOverlayGemDownloadBG > QProgressBar#DownloadProgressBar" },
             { "ScreensCtrl", "QFrame > QMainWindow > QWidget#ScreensCtrl" },
             { "MainWindow", "QFrame > QMainWindow" },
 
@@ -348,6 +367,10 @@ namespace O3DE::ProjectManager
         // ------------------------------------------------------------------------------
 
         const BoxCase BoxTrickyCases[] = {
+            // ---- progress bars: any depth below the window (`QProgressBar`, a rule of the window's sheet)
+            { "ProgressBar", "O3DE::ProjectManager::ProjectManagerWindow > QWidget > QProgressBar" },
+            { "ProgressBar", "O3DE::ProjectManager::ProjectManagerWindow > QDialog > QProgressBar" },
+
             // ---- start and projects titles
             { "StartTitle", "QWidget#firstTimeContent > QLabel#titleLabel" },
             { "ProjectsTitle", "QWidget#projectsContent > QFrame > QLabel#titleLabel" },
@@ -756,7 +779,7 @@ namespace O3DE::ProjectManager
             { "FormRow", "max 890,-1" },
             { "FormTagFieldWizard", "padding 6,0,10,2; max 840,-1" },
             { "FormTagField", "margin 50,0,0,0; padding 6,0,10,2; max 840,-1" },
-            { "FormTagChip", "padding 7,2,5,2" },
+            { "FormTagChip", "padding 7,2,5,2; spacing 0" },
             { "FormTitle", "margin 50,24,0,10" },
 
             // ---- The create-a-gem wizard
@@ -1060,8 +1083,8 @@ namespace O3DE::ProjectManager
             { "CartDownloadList", "idle", "fill solid #ff444444" },
             { "CartDownloadHeader", "idle", "fill solid #ff333333" },
             { "GemList", "idle", "fill solid #ff333333" },
-            // The fill of these two is the inline sheet of GemListHeaderWidget (GemListHeaderWidget.cpp:28), `background-color: #333333`
-            // for its whole subtree, which the sheets' cascade does not know.
+            // The fill of these two is the inline sheet of GemListHeaderWidget (GemListHeaderWidget.cpp:31), `background-color: #333333`
+            // for its whole subtree, which the sheets' cascade does not know (the elements carry it: FlatElements.cpp, GemListHeaderFill).
             { "GemListCount", "idle", "fill solid #ff333333" },
             { "GemListRefreshButton", "idle", "fill solid #ff333333; image :/Refresh.svg" },
             { "GemListRefreshButton", "hover", "fill solid #ff333333; image :/Refresh_Hover.svg" },
@@ -1561,6 +1584,35 @@ namespace O3DE::ProjectManager
         }
     }
 
+    TEST_F(FlatElementsTests, BoxElements_TheProgressBarOfTheModuleIsTheOneOfTheBarsBelowTheWindowOnly)
+    {
+        // The bar of a dialog with no parent (ProjectUtils::ExecuteCommandResultModalDialog) is outside the window the sheet is set on
+        // (Application.cpp:246-249): it met the application's rules only, so it is not the module's: it keeps the Global element, and
+        // its grey track (Style::polish(QApplication*) registers the Global elements in the flattened GUI, not in this process)
+        for (const char* chain : { "QProgressBar",
+                                   "QWidget > QProgressBar",
+                                   "QDialog > QProgressBar",
+                                   "QFrame > QMainWindow > QWidget > QProgressBar",
+                                   "QWidget#GemCatalogCartOverlayGemDownloadBG > QProgressBar#DownloadProgressBar" })
+        {
+            FlatElementsTestsInternal::WidgetChain widgets(chain);
+            AzQtComponents::BoxElement::resolve(widgets.Leaf());
+            const AzQtComponents::BoxElement* element = AzQtComponents::BoxElement::forWidget(widgets.Leaf());
+            EXPECT_FALSE(element && QByteArray(element->m_name).startsWith("ProjectManager.")) << chain;
+        }
+
+        // Below the window, at any depth, the module's element
+        for (const char* chain : { "O3DE::ProjectManager::ProjectManagerWindow > QProgressBar",
+                                   "O3DE::ProjectManager::ProjectManagerWindow > QWidget > QDialog > QWidget > QProgressBar" })
+        {
+            FlatElementsTestsInternal::WidgetChain widgets(chain);
+            AzQtComponents::BoxElement::resolve(widgets.Leaf());
+            const AzQtComponents::BoxElement* element = AzQtComponents::BoxElement::forWidget(widgets.Leaf());
+            ASSERT_NE(element, nullptr) << chain;
+            EXPECT_STREQ(element->m_name, "ProjectManager.Box.ProgressBar") << chain;
+        }
+    }
+
     TEST_F(FlatElementsTests, BoxElements_EveryElementCarriesTheBoxOfItsNativeWidget)
     {
         for (const FlatElementsTestsInternal::ElementCase& elementCase : FlatElementsTestsInternal::ElementCases)
@@ -1824,6 +1876,59 @@ namespace O3DE::ProjectManager
         const IndicatorElement* checkElement = IndicatorElement::forWidget(check.Leaf());
         ASSERT_NE(checkElement, nullptr);
         EXPECT_FALSE(checkElement->m_hidden);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Indicators: the check box of a tag chip ends in the mark of its rule (ProjectManager.qss:242-247)
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(FlatElementsTests, IndicatorElements_TheTagChipsEndInTheMarkOfTheirRuleAndNoOtherCheckBoxHasIt)
+    {
+        using AzQtComponents::IndicatorElement;
+
+        // The chips as the form makes them (QWidget#formLineEditWidget > QFrame#formTagField > QCheckBox) and below the field at any depth
+        for (const char* chain : { "QWidget#formLineEditWidget > QFrame#formTagField > QCheckBox",
+                                   "QFrame#formTagField > QCheckBox",
+                                   "QStackedWidget#createAGemRHS > QWidget > QFrame#formTagField > QWidget > QCheckBox" })
+        {
+            FlatElementsTestsInternal::WidgetChain widgets(chain);
+            const IndicatorElement* element = IndicatorElement::forWidget(widgets.Leaf());
+            ASSERT_NE(element, nullptr) << chain;
+            EXPECT_STREQ(element->m_name, "ProjectManager.Indicator.FormTagChip") << chain;
+            EXPECT_FALSE(element->m_hidden) << chain;
+
+            // ProjectManager.qss:244-246 and CheckBox.qss:25-27: the image of the rule in every state, in the box of 10px by 16px with 3px
+            // of padding to its left and 2px of margin around it, 17px by 20px
+            EXPECT_STREQ(element->m_image, ":/X.svg") << chain;
+            EXPECT_EQ(element->m_imageSize, QSize(10, 16)) << chain;
+            EXPECT_EQ(element->m_margin, 2) << chain;
+            EXPECT_EQ(element->m_focusImageSize, element->m_imageSize) << chain;
+            EXPECT_EQ(element->m_focusMargin, element->m_margin) << chain;
+            EXPECT_EQ(element->m_padding, QMargins(3, 0, 0, 0)) << chain;
+            EXPECT_EQ(element->boxSize(), QSize(17, 20)) << chain;
+        }
+
+        // Where the box sits: the mark lies at the end of a right to left chip, 3px of padding between the margin and the image
+        FlatElementsTestsInternal::WidgetChain chip("QFrame#formTagField > QCheckBox");
+        const IndicatorElement* element = IndicatorElement::forWidget(chip.Leaf());
+        ASSERT_NE(element, nullptr);
+        EXPECT_EQ(element->imageRect(QRect(0, 0, 100, 28), false, Qt::RightToLeft), QRect(100 - 17 + 2 + 3, 4 + 2, 10, 16));
+        EXPECT_EQ(element->imageRect(QRect(0, 0, 100, 28), true, Qt::RightToLeft), QRect(100 - 17 + 2 + 3, 4 + 2, 10, 16));
+        EXPECT_EQ(element->imageRect(QRect(0, 0, 100, 28), false, Qt::LeftToRight), QRect(2 + 3, 4 + 2, 10, 16));
+
+        // Any other check box keeps the Global indicator, with the images of the style
+        for (const char* chain : { "QWidget > QCheckBox",
+                                   "QFrame#formTagFieldOther > QCheckBox",
+                                   "QWidget#createAGemLHS > QCheckBox" })
+        {
+            FlatElementsTestsInternal::WidgetChain widgets(chain);
+            const IndicatorElement* other = IndicatorElement::forWidget(widgets.Leaf());
+            ASSERT_NE(other, nullptr) << chain;
+            EXPECT_FALSE(QByteArray(other->m_name).startsWith("ProjectManager.")) << chain;
+            EXPECT_STREQ(other->m_image, "") << chain;
+            EXPECT_EQ(other->m_padding, QMargins()) << chain;
+            EXPECT_EQ(other->boxSize(), QSize(20, 20)) << chain;
+        }
     }
 
     // ----------------------------------------------------------------------------------

@@ -83,7 +83,7 @@ namespace AssetBundler
             .m_name = "AssetBundler.Text.ActiveProjectLabel",
             .m_family = "Amazon Ember Light",
             .m_pixelSize = 18,
-            .m_color = QColor(0xFF, 0xFF, 0xFF),
+            .m_color = QColor(0xFF, 0xFF, 0xFF),   // BaseStyleSheet.qss:18
         };
 
         // ------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ namespace AssetBundler
 
         //! `QFrame#fileTableFrame, QFrame#fileContentsFrame { border: 1px solid #1B1B1B }` (AssetBundler.qss:36), a border of their
         //! own (QRenderRule::hasNativeBorder, qstylesheetstyle.cpp:511-514), over the panel fill (BaseStyleSheet.qss:47), and
-        //! `QFrame#fileTableFrame { margin-right: 10px }` (:40)
+        //! `QFrame#fileTableFrame { margin-right: 10px }` (AssetBundler.qss:39-41)
         const BoxElement FileTableFrame{
             .m_name = "AssetBundler.Box.FileTableFrame",
             .m_margin = QMargins(0, 0, 10, 0),

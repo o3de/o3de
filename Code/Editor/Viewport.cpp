@@ -37,6 +37,18 @@
 #undef LoadCursor
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+//  VIEWPORT COLOURS
+//
+//  The base fill of the viewport widget, named so the legacy and the flattened GUI read one value. A named namespace, not an
+//  anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace QtViewportFlat
+{
+    // Viewport.cpp:296 (the base fill of the whole client area, normally covered by the render overlay). TOKENIZE: ViewportBaseFill
+    constexpr QColor BaseFill(0xf0, 0xf0, 0xf0);
+} // namespace QtViewportFlat
+
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
@@ -293,7 +305,7 @@ void QtViewport::paintEvent([[maybe_unused]] QPaintEvent* event)
     QPainter painter(this);
 
     // Fill the entire client area
-    painter.fillRect(rect(), QColor(0xf0, 0xf0, 0xf0));
+    painter.fillRect(rect(), QtViewportFlat::BaseFill);
 }
 
 //////////////////////////////////////////////////////////////////////////

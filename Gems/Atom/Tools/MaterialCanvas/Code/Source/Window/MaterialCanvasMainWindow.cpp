@@ -6,6 +6,7 @@
  *
  */
 
+#include <AtomToolsFramework/Graph/GraphView.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -113,6 +114,7 @@ namespace MaterialCanvas
         }
 
         // Set up style sheet to fix highlighting in the node palette
+        AtomToolsFramework::GraphView::RegisterFlatSheet();
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/GraphView/GraphView.qss"));
 
         OnDocumentOpened(AZ::Uuid::CreateNull());

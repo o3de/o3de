@@ -24,10 +24,13 @@ class IXMLDOMDocumentPtr; // Needed for settings.h
 class CXTPDockingPaneLayout; // Needed for settings.h
 #include <Settings.h>
 
+#include <QColor>
 #include <QScrollArea>
+#include <QTreeView>
 
 #include <AssetImporter/ActionOutput.h>
 #include <AssetImporter/AssetImporterDocument.h>
+#include <AssetImporter/AssetImporterFlatSheet.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
@@ -35,6 +38,8 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzQtComponents/Components/Elements/ItemViewElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyledDetailsTableModel.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -54,6 +59,95 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 
 const char* AssetImporterWindow::s_documentationWebAddress = "https://www.o3de.org/docs/user-guide/assets/scene-settings/";
 const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D2E1-BFD2-4FFA-BB5B-CC0FA389A5D3}");
+
+// ----------------------------------------------------------------------------------
+// Flattened GUI: the check boxes of the importer's trees
+//
+// AssetImporterWindow.qss, which the window sets on itself, styled the check box of every item of the trees below it (QTreeView::
+// indicator: the "Select nodes" trees of the node pickers, SceneGraphWidget's m_selectionTree). The legacy GUI sets that sheet in
+// Init; the flattened GUI sets none, and this element draws the check boxes (RegisterElements). Over the application sheet's rules
+// for them (CheckBox.qss:23-73, TableView.qss:78-85) the window's sheet leaves, in each state of an item (the box is always 12 x 12
+// and the margin-left -3 of a tree's, with the line of the state around it):
+//
+//   unchecked, indeterminate  line 1px #CCCCCC (:10); no fill; the stock image of the state (CheckBox.qss:30-33, :60-63)
+//   checked                   no line (:19); fill #4285F4 (:16); no image: the url of :17 loads nothing
+//   hovered (any check state) line 1px white (:24), over the two above; the fill of the check state; no image (:29, :34)
+//   disabled                  line 1px #666666 (:39), over the three above; the fill and image of the check state, and the stock
+//                             -disabled image where it declares none (CheckBox.qss:40-43, :70-73)
+//
+// The three PNGs the sheet names (:Icons/CheckMark_Checked.png, CheckMark_Hover.png, CheckMark_Unchecked_Hover.png) are in no .qrc of
+// the engine. A declared image that does not load is a declared image all the same (QRenderRule's image, with a null icon), which
+// outranks the application sheet's image of the state and paints nothing: a checked box shows no tick, in both GUIs.
+//
+// The first rule of the sheet (QPushButton#m_deleteButton, :1-4) reaches no widget: the importer's only m_deleteButton is a
+// QToolButton (HeaderWidget.ui:86), which a QPushButton selector does not match. It has no element.
+//
+// Which trees are below the window is the parent chain's to say, in both GUIs alike (the sheet reached the descendants of the window,
+// and the matcher reads the same chain). The "Select nodes" tree is the breakout widget of an overlay layer, which puts it into a
+// dialog parented on the topmost ancestor of the overlay (OverlayWidgetLayer.cpp:57, :83-91): the window only where the window is
+// the topmost widget, else the widget above it (the Editor's main window, when the importer is docked), and then the tree has the
+// application sheet's check box in the legacy GUI as in this one (I.3n2 fix report, open item 8).
+// ----------------------------------------------------------------------------------
+
+//! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+//! where anonymous namespaces merge.
+namespace AssetImporterWindowFlatInternal
+{
+    //! The check boxes of the importer's trees: the rule's box and its states, over the stock check box (ItemViewElement::m_check).
+    //! Each value is the sheet's line (AssetImporterWindow.qss, as it is before the flattening); the margin-left of -3 is the tree
+    //! element's (TableView.qss:84), which a module's element leaves to the Global one.
+    const AzQtComponents::ItemViewElement ImporterTree{
+        .m_name = "Editor.ItemView.ImporterTree",
+        // width: 12px; height: 12px (AssetImporterWindow.qss:6-12, :8-9). TOKENIZE: ImporterCheckSize
+        .m_indicatorSize = QSize(12, 12),
+        .m_check = {
+            // border-radius: 2px (AssetImporterWindow.qss:11, :18). TOKENIZE: ImporterCheckRadius
+            .m_radius = 2,
+            .m_faces = {
+                // border: 1px solid rgb(204, 204, 204) (AssetImporterWindow.qss:10). TOKENIZE: ImporterCheckLine
+                { .m_states = 0, .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(204, 204, 204) } },
+                // background-color: rgb(66, 133, 244) (AssetImporterWindow.qss:14-20, :16); image: url(:Icons/CheckMark_Checked.png),
+                // which loads nothing (:17); border: 0px (:19). TOKENIZE: ImporterCheckFill
+                { .m_states = AzQtComponents::ItemViewElement::Checked,
+                  .m_face = { .m_borderWidth = 0, .m_fill = QColor(66, 133, 244), .m_image = "" } },
+                // border: 1px solid white (AssetImporterWindow.qss:22-25, :24), over :checked's by the order of the rules.
+                // TOKENIZE: ImporterCheckHoverLine
+                { .m_states = AzQtComponents::ItemViewElement::Hover,
+                  .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(255, 255, 255) } },
+                // border: 1px solid rgb(102, 102, 102) (AssetImporterWindow.qss:37-40, :39), the last of the three of one weight.
+                // TOKENIZE: ImporterCheckDisabledLine
+                { .m_states = AzQtComponents::ItemViewElement::Disabled,
+                  .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(102, 102, 102) } },
+                // image: url(:Icons/CheckMark_Hover.png) (AssetImporterWindow.qss:27-30, :29, :checked:hover) and
+                // url(:Icons/CheckMark_Unchecked_Hover.png) (AssetImporterWindow.qss:32-35, :34, :!checked:hover): two rules of a higher
+                // weight, which together reach every check state, load nothing
+                { .m_states = AzQtComponents::ItemViewElement::Hover, .m_face = { .m_image = "" } },
+            },
+        },
+    };
+
+    //! A tree below the importer's window: QTreeView::indicator reached the check boxes of every QTreeView, and class derived from
+    //! it, below the window that carried the sheet, whatever it is named (the window's overlay layers and child dialogs included)
+    bool isImporterTree(const QWidget* widget)
+    {
+        return AzQtComponents::Selectors::withinClass(widget, "AssetImporterWindow");
+    }
+} // namespace AssetImporterWindowFlatInternal
+
+namespace AssetImporterFlatSheet
+{
+    void RegisterElements()
+    {
+        static bool registered = false;
+        if (registered)
+        {
+            return;
+        }
+        registered = true;
+        namespace Flat = AssetImporterWindowFlatInternal;
+        AzQtComponents::ItemViewElement::registerElement(&Flat::ImporterTree, &QTreeView::staticMetaObject, &Flat::isImporterTree);
+    }
+} // namespace AssetImporterFlatSheet
 
 AssetImporterWindow::AssetImporterWindow()
     : AssetImporterWindow(nullptr)
@@ -147,16 +241,25 @@ void AssetImporterWindow::Init()
     AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
 
-    // Load the style sheets
-    AzQtComponents::StylesheetPreprocessor styleSheetProcessor(nullptr);
-
-    auto mainWindowQSSPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
-    mainWindowQSSPath /= "Editor/Styles/AssetImporterWindow.qss";
-    mainWindowQSSPath.MakePreferred();
-    QFile mainWindowStyleSheetFile(mainWindowQSSPath.c_str());
-    if (mainWindowStyleSheetFile.open(QFile::ReadOnly))
+    // Load the style sheets. The legacy GUI reads the sheet of the window and sets it on the window; the flattened GUI sets none, and
+    // the element of RegisterElements draws what it gave the check boxes of the trees
+    if (AzQtComponents::StyleManager::stylesheetsDisabled())
     {
-        setStyleSheet(styleSheetProcessor.ProcessStyleSheet(mainWindowStyleSheetFile.readAll()));
+        AssetImporterFlatSheet::RegisterElements();
+    }
+    else
+    {
+        AzQtComponents::StylesheetPreprocessor styleSheetProcessor(nullptr);
+
+        auto mainWindowQSSPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
+        mainWindowQSSPath /= "Editor/Styles/AssetImporterWindow.qss";
+        mainWindowQSSPath.MakePreferred();
+        QFile mainWindowStyleSheetFile(mainWindowQSSPath.c_str());
+        if (mainWindowStyleSheetFile.open(QFile::ReadOnly))
+        {
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                this, styleSheetProcessor.ProcessStyleSheet(mainWindowStyleSheetFile.readAll()));
+        }
     }
 
     ui->setupUi(this);

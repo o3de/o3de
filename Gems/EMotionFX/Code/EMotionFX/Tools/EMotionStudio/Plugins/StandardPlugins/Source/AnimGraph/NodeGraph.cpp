@@ -23,8 +23,38 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ZoomableLineEdit.h>
 
+#include <QColor>
+
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the anim graph canvas: the debug info overlay, connection values, entry point, titlebar, grid, the
+    // connection and transition drag lines and the group names. Each was a literal at the line it cites.
+    // NodeGraph.h holds the error blink.
+    //////////////////////////////////////////////////////////////////////////
+    namespace NodeGraphFlat
+    {
+        constexpr QColor DebugBackground(0, 0, 0);                 // NodeGraph.cpp:233 (alpha at use) TOKENIZE: NodeGraphDebugBackground
+        const QColor DebugBorder(Qt::black);                       // NodeGraph.cpp:235 TOKENIZE: NodeGraphDebugBorder
+        constexpr QColor DebugTextHighlighted(0, 255, 0);          // NodeGraph.cpp:238 TOKENIZE: NodeGraphDebugTextHighlighted
+        constexpr QColor DebugText(255, 255, 0);                   // NodeGraph.cpp:238 TOKENIZE: NodeGraphDebugText
+        constexpr QColor ConnectionValueBackground(30, 30, 30);    // NodeGraph.cpp:465 TOKENIZE: NodeGraphConnectionValueBackground
+        const QColor ConnectionValueBorder(Qt::black);             // NodeGraph.cpp:469 TOKENIZE: NodeGraphConnectionValueBorder
+        constexpr QColor EntryPoint(150, 150, 150);                // NodeGraph.cpp:491 TOKENIZE: NodeGraphEntryPoint
+        constexpr QColor TitlebarBackground(0, 0, 0);              // NodeGraph.cpp:824 TOKENIZE: NodeGraphTitlebarBackground
+        constexpr QColor TitlebarText(233, 233, 233);              // NodeGraph.cpp:832 TOKENIZE: NodeGraphTitlebarText
+        constexpr QColor Grid(61, 61, 61);                         // NodeGraph.cpp:1007 (alpha at use) TOKENIZE: NodeGraphGrid
+        constexpr QColor Subgrid(55, 55, 55);                      // NodeGraph.cpp:1008 (alpha at use) TOKENIZE: NodeGraphSubgrid
+        constexpr QColor TransitionHeadTail(0, 255, 0);            // NodeGraph.cpp:1598 TOKENIZE: NodeGraphTransitionHeadTail
+        constexpr QColor ConnectionHelperLine(100, 100, 100);      // NodeGraph.cpp:1655, :1730 TOKENIZE: NodeGraphConnectionHelperLine
+        constexpr QColor ConnectionDragValid(0, 255, 0);           // NodeGraph.cpp:1698, :1796 TOKENIZE: NodeGraphConnectionDragValid
+        constexpr QColor ConnectionDragInvalid(255, 0, 0);         // NodeGraph.cpp:1702, :1800 TOKENIZE: NodeGraphConnectionDragInvalid
+        constexpr QColor ConnectionDragFree(255, 255, 0);          // NodeGraph.cpp:1707, :1805 TOKENIZE: NodeGraphConnectionDragFree
+        constexpr QColor VirtualFinalNodeBorder(0, 255, 0);        // NodeGraph.cpp:2417 TOKENIZE: NodeGraphVirtualFinalNodeBorder
+        // The group name text was AZ::Colors::Black converted with ToQColor
+        constexpr QColor GroupNameText(0, 0, 0);                   // NodeGraph.cpp:2585 TOKENIZE: NodeGraphGroupNameText
+    } // namespace NodeGraphFlat
+
     static const int sGroupRectContentPadding = 10;
     static const int sGroupRectTextHPadding = 8;
     static const int sGroupRectTextVPadding = 8;
@@ -230,12 +260,15 @@ namespace EMStudio
                 const QRect& nodeRect = graphNode->GetFinalRect();
                 const QRect textRect(nodeRect.center().x() - rectWidth / 2, nodeRect.center().y() - requiredHeight / 2, rectWidth, requiredHeight);
                 const uint32 alpha = (graphNode->GetIsHighlighted()) ? 225 : 175;
-                const QColor backgroundColor(0, 0, 0, alpha);
+                QColor backgroundColor = NodeGraphFlat::DebugBackground;
+                backgroundColor.setAlpha(alpha);
                 painter.setBrush(backgroundColor);
-                painter.setPen(Qt::black);
+                painter.setPen(NodeGraphFlat::DebugBorder);
                 painter.drawRect(textRect);
 
-                const QColor textColor = graphNode->GetIsHighlighted() ? QColor(0, 255, 0) : QColor(255, 255, 0);
+                using NodeGraphFlat::DebugText;
+                using NodeGraphFlat::DebugTextHighlighted;
+                const QColor textColor = graphNode->GetIsHighlighted() ? DebugTextHighlighted : DebugText;
                 painter.setPen(textColor);
                 painter.setFont(m_font);
 
@@ -462,11 +495,11 @@ namespace EMStudio
                         textPosition.setY(textPosition.y() - 1);
                         textPosition.setX(textPosition.x() + 2);
 
-                        const QColor backgroundColor(30, 30, 30);
+                        const QColor backgroundColor(NodeGraphFlat::ConnectionValueBackground);
 
                         // draw the background rect for the text
                         painter.setBrush(backgroundColor);
-                        painter.setPen(Qt::black);
+                        painter.setPen(NodeGraphFlat::ConnectionValueBorder);
                         painter.drawRect(textRect);
 
                         // draw the text
@@ -488,7 +521,7 @@ namespace EMStudio
         }
 
         QPen oldPen = painter.pen();
-        QColor color(150, 150, 150);
+        QColor color(NodeGraphFlat::EntryPoint);
         QPen newPen(color);
         newPen.setWidth(3);
         painter.setBrush(color);
@@ -821,7 +854,7 @@ namespace EMStudio
         painter.resetTransform();
 
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(0, 0, 0));
+        painter.setBrush(NodeGraphFlat::TitlebarBackground);
         painter.setOpacity(0.25f);
         const QPoint upperLeft(0, 0);
         const QPoint bottomRight(width, 24);
@@ -829,7 +862,7 @@ namespace EMStudio
         painter.drawRect(titleRect);
 
         painter.setOpacity(1.0f);
-        painter.setPen(QColor(233, 233, 233));
+        painter.setPen(NodeGraphFlat::TitlebarText);
         painter.setFont(m_font);
         painter.drawText(titleRect, text, QTextOption(Qt::AlignCenter));
 
@@ -1004,8 +1037,12 @@ namespace EMStudio
         // The lines are drawn 1 px wide in screen space, so fade them by the zoom to match the old scaled hairlines.
         const qreal zoom = m_transform.m11();
         const int32 screenAlpha = aznumeric_cast<int32>(alpha * MCore::Clamp<float>(aznumeric_cast<float>(zoom), 0.0f, 1.0f));
-        m_gridPen.setColor(QColor(61, 61, 61, screenAlpha));
-        m_subgridPen.setColor(QColor(55, 55, 55, screenAlpha));
+        QColor gridColor = NodeGraphFlat::Grid;
+        gridColor.setAlpha(screenAlpha);
+        m_gridPen.setColor(gridColor);
+        QColor subgridColor = NodeGraphFlat::Subgrid;
+        subgridColor.setAlpha(screenAlpha);
+        m_subgridPen.setColor(subgridColor);
 
         // The sub grid is skipped once its lines get so dense they would only tint the whole background.
         const int32 majorSpacing = 100;
@@ -1595,7 +1632,7 @@ namespace EMStudio
     void NodeGraph::RenderReplaceTransition(QPainter& painter)
     {
         // prepare the Qt painter
-        QColor headTailColor(0, 255, 0);
+        QColor headTailColor(NodeGraphFlat::TransitionHeadTail);
         painter.setPen(headTailColor);
         painter.setBrush(headTailColor);
         const uint32 circleRadius = 4;
@@ -1652,7 +1689,7 @@ namespace EMStudio
             QPoint          end             = m_graphWidget->GetMousePos();
 
             QPen pen;
-            pen.setColor(QColor(100, 100, 100));
+            pen.setColor(NodeGraphFlat::ConnectionHelperLine);
             pen.setStyle(Qt::DotLine);
             painter.setPen(pen);
             painter.setBrush(Qt::NoBrush);
@@ -1695,16 +1732,16 @@ namespace EMStudio
             {
                 if (m_conIsValid)
                 {
-                    painter.setPen(QColor(0, 255, 0));
+                    painter.setPen(NodeGraphFlat::ConnectionDragValid);
                 }
                 else
                 {
-                    painter.setPen(QColor(255, 0, 0));
+                    painter.setPen(NodeGraphFlat::ConnectionDragInvalid);
                 }
             }
             else
             {
-                painter.setPen(QColor(255, 255, 0));
+                painter.setPen(NodeGraphFlat::ConnectionDragFree);
             }
 
             // render the smooth line towards the mouse cursor
@@ -1727,7 +1764,7 @@ namespace EMStudio
         QPoint end;
 
         QPen pen;
-        pen.setColor(QColor(100, 100, 100));
+        pen.setColor(NodeGraphFlat::ConnectionHelperLine);
         pen.setStyle(Qt::DotLine);
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
@@ -1793,16 +1830,16 @@ namespace EMStudio
         {
             if (m_conIsValid)
             {
-                painter.setPen(QColor(0, 255, 0));
+                painter.setPen(NodeGraphFlat::ConnectionDragValid);
             }
             else
             {
-                painter.setPen(QColor(255, 0, 0));
+                painter.setPen(NodeGraphFlat::ConnectionDragInvalid);
             }
         }
         else
         {
-            painter.setPen(QColor(255, 255, 0));
+            painter.setPen(NodeGraphFlat::ConnectionDragFree);
         }
 
         // render the smooth line towards the mouse cursor
@@ -2414,7 +2451,7 @@ namespace EMStudio
                 if (virtualFinalNode != blendTree->GetFinalNode())
                 {
                     GraphNode* virtualFinalGraphNode = FindGraphNode(virtualFinalNode);
-                    virtualFinalGraphNode->SetBorderColor(QColor(0, 255, 0));
+                    virtualFinalGraphNode->SetBorderColor(NodeGraphFlat::VirtualFinalNodeBorder);
                 }
             }
         }
@@ -2582,7 +2619,7 @@ namespace EMStudio
                     GraphNode::RenderText(
                         painter,
                         nodeGroup->GetName(),
-                        AzQtComponents::ToQColor(AZ::Colors::Black),
+                        NodeGraphFlat::GroupNameText,
                         m_groupFont,
                         *m_groupFontMetrics,
                         Qt::AlignLeft,

@@ -37,8 +37,9 @@ namespace AzQtComponents
     //! to no styling. Passthrough LOOKS like plain Fusion: it is a measuring instrument, not a theme.
     //!
     //! Qt cannot switch the inline sheets off (QWidget::setStyleSheet is not virtual), so noop removes them in two ways:
-    //!  - setInlineStyleSheet, for the sites that make a sheet in every selection (a card header, a vector label, a prefab label):
-    //!    the call does nothing at noop and passthrough, and the widget never gets a QStyleSheetStyle;
+    //!  - setInlineStyleSheet, for the sites that make a sheet in every selection (the labels of PrefabOverrideLabelHandler and
+    //!    CompactPrefabOverrideLabelHandler): the call does nothing at noop and passthrough, and the widget never gets a
+    //!    QStyleSheetStyle;
     //!  - an application wide event filter for every other site (.ui files, gems, tools): it clears the sheet a widget carries when
     //!    the widget is polished for the first time, and, a moment after it happened, the sheet a polished widget was given later.
     //!    What stays is the QStyleSheetStyle made when the sheet was set, until the filter clears it. The filter also takes the mark of
@@ -54,6 +55,11 @@ namespace AzQtComponents
     //!  - at noop and passthrough, when the dynamic property "_o3de_perf_snapshot" of the application is set to a tag (the property
     //!    GuiPerfCounters reads), one line, cumulative:
     //!        GuiPerfFloor: v=1 tag=<tag> rung=<noop|passthrough> stripped=<n> stripped_late=<n> helper_skipped=<n>
+    //!  - at any rung, when O3DE_UI_SHEET_CENSUS is set to anything but "0": one line for every inline sheet the GUI sets, the first
+    //!    time a widget of that place has it (once per carrier and sheet text). In the flattened GUI this is the list of the sheets
+    //!    the flattening has still to convert. The carrier is the widget and three of its parents, as "Class#objectName", and the
+    //!    sheet's white space is collapsed:
+    //!        GuiPerfFloor: v=1 sheet=<n> | <carrier> < <parent> < ... | <sheet>
     class AZ_QT_COMPONENTS_API GuiPerfFloor
     {
     public:
@@ -112,6 +118,13 @@ namespace AzQtComponents
 
         static bool isInstalled();
 
+        //! Installs the census of inline sheets (initialize does it when O3DE_UI_SHEET_CENSUS asks). It goes in after the filter that
+        //! clears the sheets, so that Qt asks it first and it still sees the sheet. The application owns it; a second call does
+        //! nothing.
+        static void installSheetCensus(QApplication* application);
+
+        static bool isSheetCensusInstalled();
+
         // ------------------------------------------------------------------------------
         // Reading
         // ------------------------------------------------------------------------------
@@ -138,6 +151,9 @@ namespace AzQtComponents
         //! "GuiPerfFloor: v=1 tag=<tag> rung=<rung> stripped=<n> stripped_late=<n> helper_skipped=<n>"
         static QString formatSnapshotLine(const QString& tag, Rung rung, const Counts& values);
 
+        //! "GuiPerfFloor: v=1 sheet=<index> | <carrier> | <sheet>", the sheet's white space collapsed and cut at 400 characters
+        static QString formatSheetLine(int index, const QString& carrier, const QString& sheet);
+
         // ------------------------------------------------------------------------------
         // Test seams
         // ------------------------------------------------------------------------------
@@ -145,7 +161,7 @@ namespace AzQtComponents
         //! Makes rung() answer with this rung, whatever the flags and variables say
         static void setRungForTesting(Rung rung);
 
-        //! Forgets the rung and the counts: the next rung() reads the flags and variables again
+        //! Forgets the rung, the counts and the sheets the census has written: the next rung() reads the flags and variables again
         static void resetForTesting();
 
         //! While set, the lines are appended to the list instead of being written to the log

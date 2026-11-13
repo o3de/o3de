@@ -23,11 +23,19 @@
 
 namespace AudioControls
 {
+    //===========================================================================================//
+    // INSPECTOR PANEL COLOURS (the scope drop-down entry of a level that is referenced but not found)
+    //===========================================================================================//
+    namespace InspectorPanelFlat
+    {
+        constexpr QColor ScopeNotFoundText(255, 128, 128); // InspectorPanel.cpp:30. TOKENIZE: AudioInspectorScopeNotFoundText
+    } // namespace InspectorPanelFlat
+
     //-------------------------------------------------------------------------------------------//
     CInspectorPanel::CInspectorPanel(CATLControlsModel* atlControlsModel)
         : m_atlControlsModel(atlControlsModel)
         , m_selectedType(eACET_NUM_TYPES)
-        , m_notFoundColor(QColor(255, 128, 128))
+        , m_notFoundColor(InspectorPanelFlat::ScopeNotFoundText)
         , m_allControlsSameType(true)
     {
         AZ_Assert(m_atlControlsModel, "CInspectorPanel - The ATL Controls model is null!");

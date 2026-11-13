@@ -57,6 +57,15 @@ namespace AzQtComponents
     namespace ComboBoxFlat
     {
         // ------------------------------------------------------------------------------
+        // The Config defaults of ComboBox::defaultConfig: ComboBoxConfig.ini holds no line, so these are the live values of the legacy
+        // GUI. The flattened GUI reads PlaceholderText in the polish (ComboBox::polish) as the legacy GUI does, and replaces it for the
+        // line edit of the combo box as the sheet's palette did (applySheetPlaceholder); FramelessText only where no element draws the
+        // combo box (drawComboBox and drawComboBoxLabel hand it to ComboBoxFlat::elementOf first).
+        // ------------------------------------------------------------------------------
+        constexpr QColor PlaceholderText(0x99, 0x99, 0x99);  // ComboBox.cpp:423. TOKENIZE: ComboBoxPlaceholderText
+        constexpr QColor FramelessText(0xFF, 0xFF, 0xFF);    // ComboBox.cpp:424 (Qt::white). TOKENIZE: ComboBoxFramelessText
+
+        // ------------------------------------------------------------------------------
         // The look of a combo box: ComboBox.qss over the entry field (Foundations::Field). The rule is computed for each state
         // (QStyleSheetStyle::renderRule) and the later of two rules of equal specificity wins a property: :hover (:22-29), :focus and an
         // open popup (:31-42), [HasError=true] (:44-51), :disabled (:53-57). The face of a state is therefore the idle one with what its
@@ -126,6 +135,27 @@ namespace AzQtComponents
         {
             const BoxElement* resolved = BoxElement::forWidget(widget);
             return resolved ? resolved : (qobject_cast<const QComboBox*>(widget) ? lookOf(widget) : nullptr);
+        }
+
+        // ------------------------------------------------------------------------------
+        // The placeholder of the line edit of an editable combo box. The sheet gave the line edit the palette of the combo box's rule
+        // (QStyleSheetStyle::setPalette sets it on the widget and on the widget inside, embeddedWidget), where
+        // QRenderRule::configurePalette makes the placeholder of the rule's `color` at half its alpha, in each colour group by the rule
+        // of its state: the enabled rule for Active and Inactive (BaseStyleSheet.qss:77 `color: black`, which the palette of the combo
+        // box carries as the text of the field), the :disabled rule for Disabled (ComboBox.qss:56 `color: #999999`). That runs after
+        // the polish of the style (QStyleSheetStyle::polish), so it replaced the colour that ComboBox::polish gave the line edit each
+        // time the combo box was polished; a line edit polished after its combo box took the colour of the config back (LineEdit::polish:
+        // the sheet styles no line edit inside a combo box). The text roles of the combo box are those colours
+        // (applyFlattenedTextEntryPalette), and a text element with a colour of its own applies its colour last (TextElement::applyColor).
+        // ------------------------------------------------------------------------------
+        void applySheetPlaceholder(QPalette& lineEdit, const QPalette& comboBox)
+        {
+            for (const QPalette::ColorGroup group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
+            {
+                QColor placeholder = comboBox.color(group, QPalette::Text);
+                placeholder.setAlpha((placeholder.alpha() + 1) / 2);       // QRenderRule::configurePalette: half the alpha of the colour
+                lineEdit.setColor(group, QPalette::PlaceholderText, placeholder);
+            }
         }
     } // namespace ComboBoxFlat
 
@@ -420,8 +450,8 @@ namespace AzQtComponents
     {
         Config config;
 
-        config.placeHolderTextColor = QColor("#999999");
-        config.framelessTextColor = QColor(Qt::white);
+        config.placeHolderTextColor = ComboBoxFlat::PlaceholderText;
+        config.framelessTextColor = ComboBoxFlat::FramelessText;
         config.errorImage = QStringLiteral(":/stylesheet/img/UI20/lineedit-error.svg");
         config.errorImageSize = {16, 16};
         config.errorImageSpacing = 4;
@@ -489,6 +519,10 @@ namespace AzQtComponents
 #if !defined(AZ_PLATFORM_LINUX)
                 pal.setColor(QPalette::PlaceholderText, config.placeHolderTextColor);
 #endif //!defined(AZ_PLATFORM_LINUX)
+                if (StyleManager::stylesheetsDisabled())
+                {
+                    ComboBoxFlat::applySheetPlaceholder(pal, comboBox->palette());
+                }
                 le->setPalette(pal);
             }
 

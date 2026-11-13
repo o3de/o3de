@@ -20,9 +20,12 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QToolButton>
+#include <QColor>
 #include <MysticQt/Source/MysticQtConfig.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/Source/Recorder.h>
+#include "../../../../EMStudioSDK/Source/EMStudioFlatSheet.h"
+#include "../../../../EMStudioSDK/Source/EMStudioFlatValues.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
@@ -222,6 +225,7 @@ namespace EMStudio
         m_track              = timeTrack;
         m_trackIndex         = trackIndex;
 
+        m_nameEdit->setObjectName(EMStudioFlat::InputFieldName);
         m_nameEdit->setVisible(false);
         m_nameEdit->setFrame(false);
 
@@ -234,7 +238,9 @@ namespace EMStudio
         }
         else
         {
-            m_nameEdit->setStyleSheet("background-color: rgb(70, 70, 70);");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                m_nameEdit, QStringLiteral("background-color: %1;").arg(EMStudioFlatValues::DisabledNameEdit.name()));
+            EMStudioFlat::SetStateTag(m_nameEdit, EMStudioFlat::DisabledTrackTag, true);
             m_enabledCheckbox->setCheckState(Qt::Unchecked);
         }
 
@@ -336,7 +342,7 @@ namespace EMStudio
         }
         else
         {
-            m_nameEdit->setStyleSheet("");
+            GetManager()->SetWidgetAsValidInput(m_nameEdit);
         }
     }
 

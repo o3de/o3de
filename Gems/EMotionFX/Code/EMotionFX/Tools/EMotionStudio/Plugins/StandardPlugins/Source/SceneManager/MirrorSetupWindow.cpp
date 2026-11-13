@@ -21,6 +21,7 @@
 #include <QLineEdit>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QColor>
 #include <QTableWidgetItem>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/NodeMap.h>
@@ -38,6 +39,17 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the node map save notification texts: the word that says the save worked or failed.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace MirrorSetupWindowFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);    // MirrorSetupWindow.cpp:972 TOKENIZE: MirrorSetupSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);    // MirrorSetupWindow.cpp:967 TOKENIZE: MirrorSetupSaveFailureText
+    } // namespace MirrorSetupWindowFlat
+
     // constructor
     MirrorSetupWindow::MirrorSetupWindow(QWidget* parent, SceneManagerPlugin* plugin)
         : QDialog(parent)
@@ -964,12 +976,14 @@ namespace EMStudio
         if (map->Save(filename.c_str(), MCore::Endian::ENDIAN_LITTLE) == false)
         {
             AZ_Warning("EMotionFX", false, "Failed to save node map file '%s', is it maybe in use or is the location read only?", filename.c_str());
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, "Node map <font color=red>failed</font> to save");
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
+                QString("Node map <font color=%1>failed</font> to save").arg(MirrorSetupWindowFlat::SaveFailureText.name()));
         }
         else
         {
             MCore::LogInfo("Saving of node map successfully completed");
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, "Node map <font color=green>successfully</font> saved");
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
+                QString("Node map <font color=%1>successfully</font> saved").arg(MirrorSetupWindowFlat::SaveSuccessText.name()));
         }
 
         map->Destroy();

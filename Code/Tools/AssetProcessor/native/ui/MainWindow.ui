@@ -1330,9 +1330,6 @@
                     <bold>true</bold>
                    </font>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true">font: bold;</string>
-                  </property>
                   <property name="text">
                    <string>Name</string>
                   </property>
@@ -1388,9 +1385,6 @@
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="styleSheet">
-                     <string notr="true">font: bold;</string>
-                    </property>
                     <property name="text">
                      <string>Version Number</string>
                     </property>
@@ -1418,9 +1412,6 @@
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="styleSheet">
-                     <string notr="true">font: bold;</string>
-                    </property>
                     <property name="text">
                      <string>Fingerprint</string>
                     </property>
@@ -1438,9 +1429,6 @@
                       <bold>true</bold>
                      </font>
                     </property>
-                    <property name="styleSheet">
-                     <string notr="true">font: bold;</string>
-                    </property>
                     <property name="text">
                      <string>Type</string>
                     </property>
@@ -1457,9 +1445,6 @@
                       <italic>false</italic>
                       <bold>true</bold>
                      </font>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">font: bold;</string>
                     </property>
                     <property name="text">
                      <string>BusID</string>
@@ -1615,9 +1600,6 @@
             </item>
             <item>
              <widget class="Line" name="line_2">
-              <property name="styleSheet">
-               <string notr="true">background-color: #616161;</string>
-              </property>
               <property name="frameShadow">
                <enum>QFrame::Sunken</enum>
               </property>
@@ -1763,9 +1745,6 @@
             </item>
             <item>
              <widget class="Line" name="line">
-              <property name="styleSheet">
-               <string notr="true">background-color: #616161;</string>
-              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -1896,9 +1875,6 @@
             </item>
             <item>
              <widget class="Line" name="line_3">
-              <property name="styleSheet">
-               <string notr="true">background-color: #616161;</string>
-              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -2047,9 +2023,6 @@
                 <height>0</height>
                </size>
               </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: #616161;</string>
-              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -2197,9 +2170,6 @@
                 <width>0</width>
                 <height>0</height>
                </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: #616161;</string>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>

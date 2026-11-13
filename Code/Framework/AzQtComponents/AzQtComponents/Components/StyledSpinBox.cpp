@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/StyledSpinBox.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <math.h>
 
@@ -382,12 +383,14 @@ namespace AzQtComponents
         if (globalWidth - spinBoxTopLeftGlobal.x() < sliderDefaultWidth)
         {
             int offset = sliderDefaultWidth - width();
-            m_slider->setStyleSheet("background: transparent; border-image: url(:/stylesheet/img/styledspinbox-bg-right.png);");
+            StyleManager::setLegacyStyleSheet(
+                m_slider, QStringLiteral("background: transparent; border-image: url(:/stylesheet/img/styledspinbox-bg-right.png);"));
             m_slider->setGeometry(spinBoxTopLeftGlobal.x() - offset, spinBoxTopLeftGlobal.y() + height(), sliderDefaultWidth, sliderDefaultHeight);
         }
         else
         {
-            m_slider->setStyleSheet("background: transparent; border-image: url(:/stylesheet/img/styledspinbox-bg-left.png);");
+            StyleManager::setLegacyStyleSheet(
+                m_slider, QStringLiteral("background: transparent; border-image: url(:/stylesheet/img/styledspinbox-bg-left.png);"));
             m_slider->setGeometry(spinBoxTopLeftGlobal.x(), spinBoxTopLeftGlobal.y() + height(), sliderDefaultWidth, sliderDefaultHeight);
         }
     }

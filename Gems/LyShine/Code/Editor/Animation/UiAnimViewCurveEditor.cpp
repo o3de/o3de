@@ -20,6 +20,33 @@
 
 #include <QtUtil.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The curve editor's curve colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace UiAnimViewCurveEditorFlat
+{
+    // UiAnimViewCurveEditor.cpp:236 (the colour of a sub-track whose index is not 0 to 3). TOKENIZE: CurveAxisFallback
+    constexpr QColor AxisFallback(255, 0, 0);
+
+    // UiAnimViewCurveEditor.cpp:240, :258 (the X curve). TOKENIZE: CurveAxisX
+    constexpr QColor AxisX(255, 0, 0);
+
+    // UiAnimViewCurveEditor.cpp:243, :259 (the Y curve). TOKENIZE: CurveAxisY
+    constexpr QColor AxisY(0, 255, 0);
+
+    // UiAnimViewCurveEditor.cpp:246, :260 (the Z curve). TOKENIZE: CurveAxisZ
+    constexpr QColor AxisZ(0, 0, 255);
+
+    // UiAnimViewCurveEditor.cpp:249 (the W curve). TOKENIZE: CurveAxisW
+    constexpr QColor AxisW(255, 255, 0);
+
+    // UiAnimViewCurveEditor.cpp:261 (the fourth curve of a multi-curve track, pink "so you know it's wrong"). TOKENIZE: CurveAxisUnknown
+    constexpr QColor AxisUnknown(255, 0, 255);
+} // namespace UiAnimViewCurveEditorFlat
+
 #define IDC_TRACKVIEWGRAPH_CURVE 1
 #define IDC_TIMELINE             2
 
@@ -233,20 +260,20 @@ void CUiAnimViewCurveEditor::AddSpline(CUiAnimViewTrack* pTrack)
 
     if (subTrackIndex >= 0)
     {
-        QColor trackColor = QColor(255, 0, 0);
+        QColor trackColor = UiAnimViewCurveEditorFlat::AxisFallback;
         switch (subTrackIndex)
         {
         case 0:
-            trackColor = QColor(255, 0, 0);
+            trackColor = UiAnimViewCurveEditorFlat::AxisX;
             break;
         case 1:
-            trackColor = QColor(0, 255, 0);
+            trackColor = UiAnimViewCurveEditorFlat::AxisY;
             break;
         case 2:
-            trackColor = QColor(0, 0, 255);
+            trackColor = UiAnimViewCurveEditorFlat::AxisZ;
             break;
         case 3:
-            trackColor = QColor(255, 255, 0);
+            trackColor = UiAnimViewCurveEditorFlat::AxisW;
             break;
         }
 
@@ -255,10 +282,10 @@ void CUiAnimViewCurveEditor::AddSpline(CUiAnimViewTrack* pTrack)
     else
     {
         QColor    afColorArray[4];
-        afColorArray[0] = QColor(255, 0, 0);
-        afColorArray[1] = QColor(0, 255, 0);
-        afColorArray[2] = QColor(0, 0, 255);
-        afColorArray[3] = QColor(255, 0, 255); //Pink... so you know it's wrong if you see it.
+        afColorArray[0] = UiAnimViewCurveEditorFlat::AxisX;
+        afColorArray[1] = UiAnimViewCurveEditorFlat::AxisY;
+        afColorArray[2] = UiAnimViewCurveEditorFlat::AxisZ;
+        afColorArray[3] = UiAnimViewCurveEditorFlat::AxisUnknown; //Pink... so you know it's wrong if you see it.
 
         m_ui->m_wndSpline->AddSpline(pTrack->GetSpline(), pTrack, afColorArray);
     }

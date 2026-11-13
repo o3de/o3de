@@ -44,4 +44,38 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomToolsFramework.Editor
             Gem::AtomLyIntegration_CommonFeatures.Editor
     )
+
+    # The twins of the flattened GUI (ParticleEditorFlat): the editor's real widgets under Qt's style sheet style and under the flattened
+    # Style, side by side (AzQtComponents Tests/SheetTwins.h). The two forms that the widgets include (ui_*.h) are made for this target too:
+    # the generated headers are private to the target that makes them.
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_target(
+            NAME OpenParticleSystemEditor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            OUTPUT_NAME OpenParticleSystemEditor.Tests.Gem
+            AUTOUIC
+            FILES_CMAKE
+                openparticlesystemeditor_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    .
+                    OpenParticleSystemEditor
+                    OpenParticleSystemEditor/Window
+                    OpenParticleSystemEditor/Viewport
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    3rdParty::Qt::Test
+                    AZ::AzTest
+                    AZ::AzCoreTestCommon
+                    AZ::AzQtComponents
+                    AZ::AzToolsFramework
+                    Gem::OpenParticleSystemEditor
+                    Gem::OpenParticleSystem.Editor.Static
+        )
+
+        ly_add_googletest(
+            NAME Gem::OpenParticleSystemEditor.Tests
+            LABELS REQUIRES_tiaf
+        )
+    endif()
 endif()

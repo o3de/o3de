@@ -19,6 +19,7 @@
 
 #include <QClipboard>
 #include <QCloseEvent>
+#include <QColor>
 #include <QDesktopServices>
 #include <QInputDialog>
 #include <QMenu>
@@ -30,6 +31,16 @@
 
 namespace AtomToolsFramework
 {
+    //=========================================================================
+    // ATOM TOOLS MAIN WINDOW COLOURS (the text of the status bar message)
+    //=========================================================================
+    namespace AtomToolsMainWindowFlat
+    {
+        constexpr QColor StatusMessageText(255, 255, 255); // AtomToolsMainWindow.cpp:193. TOKENIZE: AtomToolsStatusMessageText
+        constexpr QColor StatusWarningText(255, 255, 0);   // AtomToolsMainWindow.cpp:198. TOKENIZE: AtomToolsStatusWarningText
+        constexpr QColor StatusErrorText(255, 0, 0);       // AtomToolsMainWindow.cpp:203. TOKENIZE: AtomToolsStatusErrorText
+    } // namespace AtomToolsMainWindowFlat
+
     AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent)
         : Base(parent)
         , m_toolId(toolId)
@@ -190,17 +201,23 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::SetStatusMessage(const AZStd::string& message)
     {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message.c_str()));
+        m_statusMessage->setText(QString("<font color=\"%1\">%2</font>")
+                                     .arg(AtomToolsMainWindowFlat::StatusMessageText.name())
+                                     .arg(message.c_str()));
     }
 
     void AtomToolsMainWindow::SetStatusWarning(const AZStd::string& message)
     {
-        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message.c_str()));
+        m_statusMessage->setText(QString("<font color=\"%1\">%2</font>")
+                                     .arg(AtomToolsMainWindowFlat::StatusWarningText.name())
+                                     .arg(message.c_str()));
     }
 
     void AtomToolsMainWindow::SetStatusError(const AZStd::string& message)
     {
-        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message.c_str()));
+        m_statusMessage->setText(QString("<font color=\"%1\">%2</font>")
+                                     .arg(AtomToolsMainWindowFlat::StatusErrorText.name())
+                                     .arg(message.c_str()));
     }
 
     void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)

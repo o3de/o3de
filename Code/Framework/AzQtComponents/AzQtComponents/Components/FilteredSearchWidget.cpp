@@ -8,6 +8,8 @@
 
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
@@ -60,7 +62,10 @@ namespace AzQtComponents
     const char* const s_tagText = "tagText";
     const char* const s_tagIcon = "tagIcon";
 
+    // The filter menu's colours, read by FilteredSearchItemDelegate and, through GetBackgroundColor and GetSeparatorColor, by
+    // EntityOutlinerSearchWidget.cpp. FilteredSearchWidget.cpp:64. TOKENIZE: FilteredSearchFilterHighlight
     const QString BackgroundColor{ "#565A5B" };
+    // FilteredSearchWidget.cpp:65. TOKENIZE: FilteredSearchMenuSeparatorLine
     const QString SeparatorColor{ "#606060" };
 
     SelectionCountButton::SelectionCountButton(QWidget* parent)
@@ -1409,7 +1414,11 @@ namespace AzQtComponents
     void FilteredSearchWidget::OnSearchContextMenu(const QPoint& pos)
     {
         QMenu* menu = m_ui->textSearch->createStandardContextMenu();
-        menu->setStyleSheet("background-color: #333333");
+
+        // The fill the menu gave itself, `menu->setStyleSheet("background-color: #333333")` (the form before the flattening): the legacy
+        // GUI sets it as before. The flattened GUI sets none, and the menu is marked for the element that draws it (MenuElement)
+        MenuElement::setFilledPopupSheet(menu, QStringLiteral("background-color: ") + Foundations::Low.name());
+
         menu->exec(m_ui->textSearch->mapToGlobal(pos));
         delete menu;
     }
@@ -1492,7 +1501,7 @@ namespace AzQtComponents
 
         if (StyleManager::stylesheetsDisabled())
         {
-            // FilteredSearchWidget.qss: #assetTypeSelector { qproperty-icon: filter.svg }
+            // FilteredSearchWidget.qss:21-24 #assetTypeSelector { qproperty-icon: filter.svg }
             // TOKENIZE: FilterIcon
             filteredSearchWidget->m_ui->assetTypeSelector->setIcon(QIcon(QStringLiteral(":/stylesheet/img/UI20/filter.svg")));
         }

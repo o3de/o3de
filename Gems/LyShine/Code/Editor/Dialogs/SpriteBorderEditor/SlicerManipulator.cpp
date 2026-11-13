@@ -14,6 +14,24 @@
 #include <QGraphicsScene>
 #include <QPainter>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The slicer manipulator's line colours, named so the legacy and the flattened GUI read one value. A named namespace, not an
+//  anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SlicerManipulatorFlat
+{
+    // SlicerManipulator.cpp:57, :162 (the front line of a slice, white while the mouse is away). TOKENIZE: SlicerLineFront
+    const QColor LineFront(Qt::white);
+
+    // SlicerManipulator.cpp:58 (the back line of a slice, drawn under the front line). TOKENIZE: SlicerLineBack
+    const QColor LineBack(Qt::black);
+
+    // SlicerManipulator.cpp:155 (the front line of a slice while the mouse is over it). TOKENIZE: SlicerLineHover
+    const QColor LineHover(Qt::yellow);
+} // namespace SlicerManipulatorFlat
+
 #define UICANVASEDITOR_DRAW_SELECTABLE_AREA_OF_SLICERMANIPULATOR (0)
 #define UICANVASEDITOR_ARBITRARILY_LARGE_NUMBER (10000.0f)
 #define UICANVASEDITOR_MANIPULATOR_GRASPABLE_THICKNESS_IN_PIXELS (24)
@@ -54,8 +72,8 @@ SlicerManipulator::SlicerManipulator(
         true); // This allows using the CTRL key to select multiple manipulators and move them simultaneously.
     setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
-    m_penFront.setColor(Qt::white);
-    m_penBack.setColor(Qt::black);
+    m_penFront.setColor(SlicerManipulatorFlat::LineFront);
+    m_penBack.setColor(SlicerManipulatorFlat::LineBack);
 
     m_penFront.setWidthF(2.0f * UICANVASEDITOR_SLICERMANIPULATOR_DRAW_HALF_WIDTH);
     m_penBack.setWidthF(2.0f * UICANVASEDITOR_SLICERMANIPULATOR_DRAW_HALF_WIDTH);
@@ -152,13 +170,13 @@ QVariant SlicerManipulator::itemChange(GraphicsItemChange change, const QVariant
 void SlicerManipulator::hoverEnterEvent([[maybe_unused]] QGraphicsSceneHoverEvent* event)
 {
     setCursor(m_isVertical ? Qt::SizeHorCursor : Qt::SizeVerCursor);
-    m_penFront.setColor(Qt::yellow);
+    m_penFront.setColor(SlicerManipulatorFlat::LineHover);
     update();
 }
 
 void SlicerManipulator::hoverLeaveEvent([[maybe_unused]] QGraphicsSceneHoverEvent* event)
 {
     setCursor(Qt::ArrowCursor);
-    m_penFront.setColor(Qt::white);
+    m_penFront.setColor(SlicerManipulatorFlat::LineFront);
     update();
 }

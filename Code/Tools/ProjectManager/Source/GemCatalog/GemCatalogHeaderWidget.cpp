@@ -7,6 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogHeaderWidget.h>
+#include <FlatValues.h>
 #include <TagWidget.h>
 
 #include <AzCore/std/functional.h>
@@ -625,7 +626,7 @@ namespace O3DE::ProjectManager
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setPen(Qt::NoPen);
-        painter.fillPath(trianglePath, QBrush(QColor("#555555")));
+        painter.fillPath(trianglePath, QBrush(FlatValues::CartFill));
     }
 
 } // namespace O3DE::ProjectManager

@@ -41,6 +41,14 @@
 
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // GRAPH VALIDATION COLOURS (the red glow of a validation error highlight)
+    //=========================================================================
+    namespace GraphValidationDockWidgetFlat
+    {
+        const QColor ValidationGlow(Qt::red); // GraphValidationDockWidget.cpp:53. TOKENIZE: ScriptCanvasValidationGlow
+    } // namespace GraphValidationDockWidgetFlat
+
     /////////////////////////////////////
     // HighlightElementValidationEffect
     /////////////////////////////////////
@@ -50,7 +58,7 @@ namespace ScriptCanvasEditor
         m_templateConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         m_templateConfiguration.m_pen = QPen();
-        m_templateConfiguration.m_pen.setBrush(Qt::red);
+        m_templateConfiguration.m_pen.setBrush(GraphValidationDockWidgetFlat::ValidationGlow);
         m_templateConfiguration.m_pen.setWidth(5);
 
         m_templateConfiguration.m_zValue = 0;

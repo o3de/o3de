@@ -7,6 +7,8 @@
  */
 
 #include "CommandBarPlugin.h"
+#include "../../../../EMStudioSDK/Source/EMStudioFlatSheet.h"
+#include "../../../../EMStudioSDK/Source/EMStudioFlatValues.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <MCore/Source/LogManager.h>
 #include <AzQtComponents/Components/Widgets/Slider.h>
@@ -17,6 +19,7 @@
 #include <QAction>
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QColor>
 
 namespace EMStudio
 {
@@ -71,6 +74,7 @@ namespace EMStudio
         m_commandEditAction = m_bar->addWidget(m_commandEdit);
 
         m_resultEdit = new QLineEdit();
+        m_resultEdit->setObjectName(EMStudioFlat::ResultEditName);
         m_resultEdit->setReadOnly(true);
         m_commandResultAction = m_bar->addWidget(m_resultEdit);
 
@@ -90,7 +94,9 @@ namespace EMStudio
         m_progressText = new QLabel();
         m_progressText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_progressText->setAlignment(Qt::AlignRight);
-        m_progressText->setStyleSheet("padding-right: 1px; color: rgb(140, 140, 140);");
+        m_progressText->setObjectName(EMStudioFlat::ProgressTextName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_progressText, QString("padding-right: 1px; color: %1;").arg(EMStudioFlatValues::ProgressText.name()));
         m_progressTextAction = m_bar->addWidget(m_progressText);
         m_progressTextAction->setVisible(false);
 
@@ -98,7 +104,8 @@ namespace EMStudio
         m_progressBar->setRange(0, 100);
         m_progressBar->setValue(0);
         m_progressBar->setMaximumWidth(300);
-        m_progressBar->setStyleSheet("padding-right: 2px;");
+        m_progressBar->setObjectName(EMStudioFlat::ProgressBarName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_progressBar, "padding-right: 2px;");
         m_progressBarAction = m_bar->addWidget(m_progressBar);
         m_progressBarAction->setVisible(false);
 
@@ -163,13 +170,19 @@ namespace EMStudio
         if (success == false)
         {
             MCore::LogError(resultString.c_str());
-            m_resultEdit->setStyleSheet("color: red;");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                m_resultEdit, QString("color: %1;").arg(EMStudioFlatValues::ResultErrorText.name()));
+            EMStudioFlat::SetStateTag(m_resultEdit, EMStudioFlat::ResultSuccessTag, false);
+            EMStudioFlat::SetStateTag(m_resultEdit, EMStudioFlat::ResultErrorTag, true);
             m_resultEdit->setText(resultString.c_str());
             m_resultEdit->setToolTip(resultString.c_str());
         }
         else // no error
         {
-            m_resultEdit->setStyleSheet("color: rgb(0,255,0);");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                m_resultEdit, QString("color: %1;").arg(EMStudioFlatValues::ResultSuccessText.name()));
+            EMStudioFlat::SetStateTag(m_resultEdit, EMStudioFlat::ResultErrorTag, false);
+            EMStudioFlat::SetStateTag(m_resultEdit, EMStudioFlat::ResultSuccessTag, true);
             m_resultEdit->setText(resultString.c_str());
         }
 

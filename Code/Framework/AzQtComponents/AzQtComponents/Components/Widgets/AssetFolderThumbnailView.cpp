@@ -96,6 +96,18 @@ namespace
 
 namespace AzQtComponents
 {
+    //! The paint values of the thumbnail view that the flattened GUI owns; the header holds the drag selection colours of the same
+    //! namespace. The Config colours (defaultConfig) are read from AssetFolderThumbnailViewConfig.ini and stay where they are.
+    namespace AssetFolderThumbnailViewFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The thumbnails: what the delegate and the drag image paint outside the Config
+        // ------------------------------------------------------------------------------
+        constexpr QColor StatusSquare(0x22, 0x22, 0x22);  // AssetFolderThumbnailView.cpp:192, :1469. TOKENIZE: ThumbnailStatusSquare
+        constexpr QColor ItemRichText(0xFF, 0xFF, 0xFF);  // AssetFolderThumbnailView.cpp:235 (white). TOKENIZE: ThumbnailItemRichText
+        constexpr QColor DragStack(0x55, 0x55, 0x55);     // AssetFolderThumbnailView.cpp:1415. TOKENIZE: ThumbnailDragStack
+    } // namespace AssetFolderThumbnailViewFlat
+
     static void paintExpandButton(QPainter* painter, const QRect& rect, bool closed, const AssetFolderThumbnailView::Config::ExpandButton& config)
     {
         // rectangle
@@ -189,7 +201,7 @@ namespace AzQtComponents
             if (index.data(Qt::StatusTipRole).isValid())
             {
                 painter->setPen(Qt::NoPen);
-                painter->setBrush(QColor::fromRgb(0x22, 0x22, 0x22));
+                painter->setBrush(AssetFolderThumbnailViewFlat::StatusSquare);
                 painter->drawRect(rect.right() - aznumeric_cast<int>(config.borderThickness) + 1 - 16, rect.top() + aznumeric_cast<int>(config.borderThickness), 16, 16);
             }
 
@@ -232,7 +244,7 @@ namespace AzQtComponents
 
                 textDoc.setDefaultFont(option.font);
 
-                textDoc.setDefaultStyleSheet("body {color: white}");
+                textDoc.setDefaultStyleSheet("body {color: " + AssetFolderThumbnailViewFlat::ItemRichText.name() + "}");
 
                 textDoc.setHtml("<body align='" + alignment + "'>" + index.data().toString() + "</span> </body>");
                 painter->translate(textRect.topLeft());
@@ -1412,7 +1424,7 @@ namespace AzQtComponents
         }
         
         // Paint additional rectangles under the top one to signify multiple selection.
-        painter.setBrush(QColor("#555")); // TODO - move to const members
+        painter.setBrush(AssetFolderThumbnailViewFlat::DragStack); // TODO - move to const members
 
         if (indexList.size() > 2)
         {
@@ -1466,7 +1478,7 @@ namespace AzQtComponents
             if (index.data(Qt::StatusTipRole).isValid())
             {
                 painter.setPen(Qt::NoPen);
-                painter.setBrush(QColor::fromRgb(0x22, 0x22, 0x22));
+                painter.setBrush(AssetFolderThumbnailViewFlat::StatusSquare);
                 painter.drawRect(rect.right() - aznumeric_cast<int>(config.borderThickness) + 1 - 16, rect.top() + aznumeric_cast<int>(config.borderThickness), 16, 16);
             }
         }

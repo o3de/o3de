@@ -18,6 +18,17 @@
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! The tint an icon button lays over its icon to highlight it, named, so the legacy and the flattened GUI read one value. A named
+    //! namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace IconButtonFlatInternal
+    {
+        constexpr QColor HighlightTint(250, 250, 250, 180);   // IconButton.cpp:66. TOKENIZE: IconButtonHighlightTint
+    }
+
     void IconButton::enterEvent(QEnterEvent *event)
     {
         // do not update the button if it is disabled
@@ -63,7 +74,7 @@ namespace AzToolsFramework
                 QPainter pixmapPainter;
                 pixmapPainter.begin(&m_highlightedIconPixmap);
                 pixmapPainter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-                pixmapPainter.fillRect(m_highlightedIconPixmap.rect(), QColor(250, 250, 250, 180));
+                pixmapPainter.fillRect(m_highlightedIconPixmap.rect(), IconButtonFlatInternal::HighlightTint);
                 pixmapPainter.end();
             }
         }

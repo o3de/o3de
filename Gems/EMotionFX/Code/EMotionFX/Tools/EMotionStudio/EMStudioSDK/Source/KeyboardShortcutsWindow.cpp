@@ -20,7 +20,10 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QSettings>
+#include <QColor>
 
+#include "EMStudioFlatSheet.h"
+#include "EMStudioFlatValues.h"
 #include "EMStudioManager.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
@@ -353,6 +356,7 @@ namespace EMStudio
         QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(m_key);
 
         m_label = new QLabel(keyText);
+        m_label->setObjectName(EMStudioFlat::ShortcutLabelName);
         m_label->setAlignment(Qt::AlignHCenter);
         QFont font = m_label->font();
         font.setPointSize(14);
@@ -361,6 +365,7 @@ namespace EMStudio
         layout->addWidget(m_label);
 
         m_conflictKeyLabel = new QLabel("");
+        m_conflictKeyLabel->setObjectName(EMStudioFlat::ShortcutLabelName);
         m_conflictKeyLabel->setAlignment(Qt::AlignHCenter);
         layout->addWidget(m_conflictKeyLabel);
 
@@ -407,15 +412,20 @@ namespace EMStudio
         if (m_conflictAction == nullptr || m_conflictAction == m_orgAction)
         {
             m_okButton->setToolTip("");
-            m_label->setStyleSheet("");
-            m_conflictKeyLabel->setStyleSheet("");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_label, QString());
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_conflictKeyLabel, QString());
+            EMStudioFlat::SetStateTag(m_label, EMStudioFlat::ConflictTag, false);
+            EMStudioFlat::SetStateTag(m_conflictKeyLabel, EMStudioFlat::ConflictTag, false);
             m_conflictKeyLabel->setText("");
             m_conflictDetected = false;
         }
         else
         {
-            m_label->setStyleSheet("color: rgb(244, 156, 28);");
-            m_conflictKeyLabel->setStyleSheet("color: rgb(244, 156, 28);");
+            const QString conflictSheet = QString("color: %1;").arg(EMStudioFlatValues::ConflictText.name());
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_label, conflictSheet);
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_conflictKeyLabel, conflictSheet);
+            EMStudioFlat::SetStateTag(m_label, EMStudioFlat::ConflictTag, true);
+            EMStudioFlat::SetStateTag(m_conflictKeyLabel, EMStudioFlat::ConflictTag, true);
 
             m_conflictDetected = true;
 

@@ -11,6 +11,8 @@
 #include <Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
 
+#include <QColor>
+
 namespace Physics
 {
     class CharacterColliderNodeConfiguration;
@@ -18,6 +20,14 @@ namespace Physics
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colour the hit detection card underlines itself with. It was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace HitDetectionJointWidgetFlat
+    {
+        inline const QColor Underline{ "#4A90E2" };   // HitDetectionJointWidget.h:38 TOKENIZE: HitDetectionCardUnderline
+    } // namespace HitDetectionJointWidgetFlat
+
     class AddColliderButton;
     class ColliderContainerWidget;
 
@@ -35,7 +45,7 @@ namespace EMotionFX
         }
         QColor GetColor() const override
         {
-            return QColor{ "#4A90E2" };
+            return HitDetectionJointWidgetFlat::Underline;
         }
 
     public slots:

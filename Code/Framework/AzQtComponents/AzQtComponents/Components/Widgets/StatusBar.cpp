@@ -18,6 +18,17 @@
 namespace AzQtComponents
 {
 
+//! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+//! with others into one translation unit, where anonymous namespaces merge.
+namespace StatusBarFlat
+{
+    // ------------------------------------------------------------------------------
+    // The Config defaults of StatusBar::defaultConfig: StatusBarConfig.ini holds no line, so these are the live values of both rungs
+    // ------------------------------------------------------------------------------
+    constexpr QColor PanelFill(0x44, 0x44, 0x44);   // StatusBar.cpp:36. TOKENIZE: StatusBarPanelFill
+    constexpr QColor TopLine(0x11, 0x11, 0x11);     // StatusBar.cpp:37. TOKENIZE: StatusBarTopLine
+} // namespace StatusBarFlat
+
 StatusBar::Config StatusBar::loadConfig(QSettings& settings)
 {
     Config config = defaultConfig();
@@ -33,8 +44,8 @@ StatusBar::Config StatusBar::defaultConfig()
 {
     Config config;
 
-    config.backgroundColor = QColor(QStringLiteral("#444444"));
-    config.borderColor = QColor(QStringLiteral("#111111"));
+    config.backgroundColor = StatusBarFlat::PanelFill;
+    config.borderColor = StatusBarFlat::TopLine;
     config.borderWidth = 2;
 
     return config;

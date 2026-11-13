@@ -32,6 +32,7 @@
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
@@ -71,6 +72,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     , m_pRecentList(nullptr)
 {
     ui->setupUi(this);
+
+    // The sheet the form gave the divider at the foot of the body (line_4, WelcomeScreenDialog.ui:613 before the flattening), for the
+    // legacy GUI only: the flattened GUI sets none, and the element of EditorFlatSheet (WelcomeDivider) draws what it drew.
+    // TOKENIZE: WelcomeDividerLine
+    StyleManager::setLegacyStyleSheet(ui->line_4, QStringLiteral("color: \"black\""));
 
     // Set the project preview image
     QString projectPreviewPath = QDir(AZ::Utils::GetProjectPath().c_str()).filePath("preview.png");

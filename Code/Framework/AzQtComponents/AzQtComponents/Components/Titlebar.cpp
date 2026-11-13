@@ -1188,7 +1188,10 @@ namespace AzQtComponents
                 if (StyleManager::stylesheetsDisabled())
                 {
                     // Footprints + icon sizes from TitleBar.qss per context (the qss
-                    // min/max width/height + qproperty-iconSize rules)
+                    // min/max width/height + qproperty-iconSize rules):
+                    //   #tabButtons: TitleBar.qss:59-67 (26px, icon 14)
+                    //   drawSimple:  TitleBar.qss:69-77 (24px, icon 14)
+                    //   otherwise:   TitleBar.qss:44-52 (32px, icon 16)
                     if (container == m_tabButtonsContainer)
                     {
                         button->setFixedSize(26, 26);
@@ -1229,17 +1232,17 @@ namespace AzQtComponents
             return;
         }
 
-        // TitleBar.qss:11-12, :20-23: base/tab-bar background #111111; drawSimple #222222 with a 3px #111111 bottom border (torn-off floating
-        // dock widgets: `border-bottom` over the `border: none` of :15-18). The sheet drew the border antialiased (QRenderRule::drawBorder,
-        // qstylesheetstyle.cpp:1282-1285): at a fractional device ratio the edge row of the 3px blends (n2 Gallery 25_styled-dock-widget,
-        // dock1 floating: rows 36-39 #111111, row 40 #191919, the last half row of the border over the #222222 fill, not a fifth full row), as
-        // BoxElement::drawFrame draws it.
-        // TOKENIZE: TitleBarSimpleFill, TitleBarFill, TitleBarSimpleAccent
+        // TitleBar.qss:11-12, :20-23: base/tab-bar background #111111; drawSimple #222222 with a 3px #111111 bottom border (torn-off
+        // floating dock widgets: `border-bottom` over the `border: none` of :15-18). The sheet drew the border antialiased
+        // (QRenderRule::drawBorder): at a fractional device ratio the edge row of the 3px blends, the last half row of the border over
+        // the #222222 fill and not a further full row, as BoxElement::drawFrame draws it.
+        // TOKENIZE: TitleBarSimpleFill, TitleBarFill
         QPainter painter(this);
         const QColor background = drawSimple() ? QColor(0x22, 0x22, 0x22) : QColor(0x11, 0x11, 0x11);
         BoxElement::Edges edges;
         if (drawSimple())
         {
+            // TitleBar.qss:23 `border-bottom: 3px solid #111111`. TOKENIZE: TitleBarSimpleAccent
             edges.m_bottom = { 3, QColor(0x11, 0x11, 0x11) };
         }
         BoxElement::drawFrame(&painter, rect(), QBrush(background), edges, BoxElement::Radii());

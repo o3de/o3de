@@ -38,6 +38,17 @@ namespace AzToolsFramework
             explicit AssetBrowserEntityInspectorWidget(QWidget *parent = nullptr);
             ~AssetBrowserEntityInspectorWidget();
 
+            //! Flattened GUI: the elements that draw the preview image's dark fill and the two buttons above it, which the legacy GUI
+            //! draws with the sheets the constructor gives them (AssetBrowserEntityInspectorWidget.cpp). The first inspector built in
+            //! the flattened GUI registers them, once.
+            static void RegisterFlatElements();
+
+            //! Gives the two buttons that switch the inspector between the asset's details and its scene settings their look, as the
+            //! constructor does (it makes this one call, and so does a test). The legacy GUI sets each the sheet it always had (through
+            //! StyleManager::setLegacyStyleSheet); the flattened GUI sets none, tags each button for its element and registers the
+            //! elements.
+            static void StyleSwitchButtons(QPushButton* details, QPushButton* sceneSettings);
+
             void InitializeDatabase();
 
             //////////////////////////////////////////////////////////////////////////

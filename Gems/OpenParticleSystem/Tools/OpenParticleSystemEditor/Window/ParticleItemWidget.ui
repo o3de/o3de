@@ -55,14 +55,6 @@
         <height>30</height>
        </size>
       </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: qlineargradient(spread:pad, x1:0, x2:0, y1:0, y2:1, stop:0 rgba(223, 169, 112, 255), stop:1 rgba(217, 141, 50, 255));
-border-top-left-radius: 8px;
-border-top-right-radius: 8px;
-border-bottom-left-radius: 1px;
-border-bottom-right-radius: 1px;
-</string>
-      </property>
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
         <widget class="QToolButton" name="toolButton">
@@ -115,12 +107,6 @@ border-bottom-right-radius: 1px;
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">
-               QCheckBox::indicator:unchecked{image: url(:/Gallery/Asset_File.svg);}
-               QCheckBox::indicator:checked{image: url(:/Gallery/Favorite_File.svg);}
-             </string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -136,10 +122,6 @@ border-bottom-right-radius: 1px;
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
          </property>
          <property name="text">
           <string/>
@@ -159,10 +141,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_25">
        <item>
@@ -194,10 +172,6 @@ border-radius: 1px;</string>
         <height>30</height>
        </size>
       </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
-      </property>
       <layout class="QHBoxLayout" name="horizontalLayout_24">
        <item>
         <widget class="QToolButton" name="toolButton_20">
@@ -225,10 +199,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -244,10 +214,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_17">
        <item>
@@ -276,10 +242,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -295,10 +257,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_18">
        <item>
@@ -327,10 +285,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -352,10 +306,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_19">
        <item>
@@ -384,10 +334,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -403,10 +349,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_26">
        <item>
@@ -435,10 +377,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -454,10 +392,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_20">
        <item>
@@ -486,10 +420,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -505,10 +435,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_21">
        <item>
@@ -537,10 +463,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -556,10 +478,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_27">
        <item>
@@ -588,10 +506,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -607,10 +521,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_22">
        <item>
@@ -639,10 +549,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -658,10 +564,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_28">
        <item>
@@ -690,10 +592,6 @@ border-radius: 1px;</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
-         </property>
          <property name="text">
           <string/>
          </property>
@@ -709,10 +607,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
         <width>16777215</width>
         <height>30</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #474747;
-border-radius: 1px;</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_23">
        <item>
@@ -740,10 +634,6 @@ border-radius: 1px;</string>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}
-QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}</string>
          </property>
          <property name="text">
           <string/>
@@ -777,9 +667,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
      <height>474</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
-   </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
    </property>
@@ -792,9 +679,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
      <width>2</width>
      <height>474</height>
     </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
    </property>
    <property name="orientation">
     <enum>Qt::Vertical</enum>
@@ -809,9 +693,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
      <height>2</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
-   </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
@@ -824,9 +705,6 @@ QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}
      <width>207</width>
      <height>2</height>
     </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">order-top: 1px solid yellow; background-color: yellow; </string>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>

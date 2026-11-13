@@ -115,7 +115,8 @@ namespace AzQtComponents
         //! and none at the sides (ColorPicker.qss:87-88 $line.surface.idle.style.Alt1), filled between. A class tag stands in for the
         //! class name in a match (QStyleSheetStyleSelector::attributeValue), so BaseStyleSheet.qss's `.QFrame[frameShape]` fill never
         //! reached it. Its box is the two lines. The sheet drew it once, with the styled background (QStyleSheetStyle::drawControl
-        //! draws no CE_ShapedFrame for a border of the rule's own).
+        //! draws no CE_ShapedFrame for a border of the rule's own). Its container, .HorizontalSeparatorContainer, is transparent
+        //! (ColorPicker.qss:92-95): a plain QWidget, nothing to carry.
         const BoxElement PickerSeparator{
             .m_name = "Global.Box.PickerSeparator",
             .m_nativeBorder = false,
@@ -210,10 +211,17 @@ namespace AzQtComponents
             return Selectors::withinClass(widget, "AzQtComponents::ColorLabel");
         }
 
-        //! A label of the picker whose box another rule gives: a tier of Text.qss (`.Headline`, `.Title`, ... outrank the picker's two
-        //! type names: its margin above and below stays), or the icons of a card header (their ids outrank both: PropertyEditorElements)
+        //! A label of the picker whose box another rule gives: a tooltip (a QTipLabel is a QLabel, but the sheet names it QToolTip
+        //! alone, QStyleSheetStyleSelector::nodeNames, so the picker's `QLabel` never reached the tip of a widget in the picker: its
+        //! box is ToolTip.qss's and, below a card header, the header's padding, both Style's), a tier of Text.qss (`.Headline`, `.Title`,
+        //! ... outrank the picker's two type names: its margin above and below stays), or the icons of a card header (their ids outrank
+        //! both: PropertyEditorElements)
         bool hasOtherLabelBox(const QWidget* widget)
         {
+            if (widget->inherits("QTipLabel"))
+            {
+                return true;
+            }
             for (const char* tier : { "Headline", "Title", "Subtitle", "Menu", "Label", "Paragraph", "Tooltip", "Button" })
             {
                 if (Selectors::tagged(widget, tier))

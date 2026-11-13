@@ -19,6 +19,18 @@
 #include <QPalette>
 #include <QWidget>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The find-entity list's text colour, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace FindEntityItemModelFlat
+{
+    // FindEntityItemModel.cpp:162 (the text of an entry that does not match the filter). TOKENIZE: FindEntityNotMatchedText
+    constexpr QColor NotMatchedText(130, 130, 130);
+} // namespace FindEntityItemModelFlat
+
 FindEntityItemModel::FindEntityItemModel(QObject* parent)
     : QAbstractItemModel(parent)
     , m_entityFilteredState()
@@ -159,7 +171,7 @@ QVariant FindEntityItemModel::DataForName(const QModelIndex& index, int role) co
 
     case Qt::ForegroundRole:
         {
-            const QColor notMatchedTextColor(130, 130, 130);
+            const QColor notMatchedTextColor(FindEntityItemModelFlat::NotMatchedText);
 
             // We use the parent's palette because the GUI Application palette is returning the wrong colors
             auto parentWidgetPtr = static_cast<QWidget*>(QObject::parent());

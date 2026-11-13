@@ -12,6 +12,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QColor>
 #include <QKeyEvent>
 #include <QGraphicsItem>
 #include <QGraphicsSceneEvent>
@@ -59,6 +60,18 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // SCENE COMPONENT COLOURS (the pulse a splice leaves behind)
+    //=========================================================================
+    namespace SceneComponentFlat
+    {
+        // SceneComponent.cpp:531, :891, :953, :4476, :4492, :4583 (the pulse of an accepted splice). TOKENIZE: ScenePulseAccepted
+        constexpr QColor PulseAccepted(255, 255, 255);
+
+        // SceneComponent.cpp:4481, :4498, :4587 (the pulse of a refused splice). TOKENIZE: ScenePulseRefused
+        constexpr QColor PulseRefused(255, 0, 0);
+    } // namespace SceneComponentFlat
+
     ////////////////
     // SceneHelper
     ////////////////
@@ -528,7 +541,7 @@ namespace GraphCanvas
 
                             AnimatedPulseConfiguration pulseConfiguration;
 
-                            pulseConfiguration.m_drawColor = QColor(255, 255, 255);
+                            pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;
                             pulseConfiguration.m_durationSec = 0.35f;
                             pulseConfiguration.m_enableGradient = true;
 
@@ -888,7 +901,7 @@ namespace GraphCanvas
                 AnimatedPulseConfiguration pulseConfiguration;
                 pulseConfiguration.m_durationSec = 0.5;
                 pulseConfiguration.m_enableGradient = true;
-                pulseConfiguration.m_drawColor = QColor(255, 255, 255);
+                pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;
 
                 QGraphicsItem* rootItem = nullptr;
                 SceneMemberUIRequestBus::EventResult(rootItem, nodeGroup, &SceneMemberUIRequests::GetRootGraphicsItem);
@@ -950,7 +963,7 @@ namespace GraphCanvas
                 pulseConfiguration.m_durationSec = 0.5;
                 pulseConfiguration.m_enableGradient = true;
                 pulseConfiguration.m_zValue = maxZValue + 1;
-                pulseConfiguration.m_drawColor = QColor(255, 255, 255);
+                pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;
 
                 SceneRequestBus::Event(GetSceneId(), &SceneRequests::CreatePulseAroundArea, boundingRect, 3, pulseConfiguration);
 
@@ -4473,12 +4486,12 @@ namespace GraphCanvas
                     if (GraphUtils::SpliceSubGraphOntoConnection(m_selectedSubGraph, m_spliceTarget))
                     {
                         m_forceDragReleaseUndo = true;
-                        pulseConfiguration.m_drawColor = QColor(255, 255, 255);                        
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;                        
                         StartNudging(m_selectedSubGraph.m_containedNodes);
                     }
                     else
                     {
-                        pulseConfiguration.m_drawColor = QColor(255, 0, 0);
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseRefused;
                     }
                 }
                 else
@@ -4489,13 +4502,13 @@ namespace GraphCanvas
                     if (GraphUtils::SpliceNodeOntoConnection(m_pressedEntity, m_spliceTarget, spliceConfig))
                     {
                         m_forceDragReleaseUndo = true;
-                        pulseConfiguration.m_drawColor = QColor(255, 255, 255);
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;
 
                         StartNudging(m_selectedSubGraph.m_containedNodes);
                     }
                     else
                     {
-                        pulseConfiguration.m_drawColor = QColor(255, 0, 0);
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseRefused;
                     }
                 }
             }
@@ -4580,11 +4593,11 @@ namespace GraphCanvas
                     if (!connectableEndpoints.empty() && GraphUtils::CreateConnectionsBetween(connectableEndpoints, m_spliceTarget, config))
                     {
                         m_forceDragReleaseUndo = true;
-                        pulseConfiguration.m_drawColor = QColor(255, 255, 255);
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseAccepted;
                     }
                     else
                     {
-                        pulseConfiguration.m_drawColor = QColor(255, 0, 0);
+                        pulseConfiguration.m_drawColor = SceneComponentFlat::PulseRefused;
                     }
                 }
             }

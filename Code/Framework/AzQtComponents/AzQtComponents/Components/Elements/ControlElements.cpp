@@ -10,25 +10,34 @@
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/Widgets/Internal/OverlayWidgetLayer.h>
+#include <AzQtComponents/Components/Widgets/Slider.h>
 
+#include <QAbstractAnimation>
 #include <QBrush>
 #include <QColor>
 #include <QDockWidget>
 #include <QFrame>
+#include <QGroupBox>
 #include <QHashFunctions>
 #include <QIcon>
+#include <QLabel>
 #include <QMargins>
 #include <QPainter>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QRect>
 #include <QSize>
 #include <QString>
 #include <QStyleOption>
 #include <QStyleOptionButton>
+#include <QStyleOptionProgressBar>
 #include <QToolBar>
 #include <QToolButton>
+#include <QTransform>
 #include <QVariant>
 #include <QWidget>
 
@@ -44,6 +53,15 @@ namespace AzQtComponents
         // ---- The buttons beside a dock's tabs
         constexpr QMargins TabButtonsMargin(0, 0, 0, 3);            // TitleBar.qss:56 $space.surface.idle.margin-bottom.Alt1
         const QColor TitleBarFill = Foundations::Clear;             // TitleBar.qss:28 $fill.surface.idle.Clear
+
+        // ---- The minimize, maximize and close buttons of a tab widget's action toolbar (a tabbed floating window)
+        // TitleBar.qss:100 rgba(255,255,255,0.1): Qt reads an alpha of 1 or less as a fraction and truncates it, 0.1 * 255 = 25
+        // (QCss::parseColorValue). TOKENIZE: WindowButtonHoverFill
+        const QColor WindowButtonHoverFill(255, 255, 255, 25);
+        const QColor WindowCloseHoverFill(0xB8, 0x0D, 0x1C);        // TitleBar.qss:104 TOKENIZE: WindowCloseHoverFill
+        constexpr const char* WindowMinimizeIcon = ":/Application/titlebar-minimize.svg";   // TitleBar.qss:134 TOKENIZE: WindowMinimizeIcon
+        constexpr const char* WindowMaximizeIcon = ":/Application/titlebar-maximize.svg";   // TitleBar.qss:119 TOKENIZE: WindowMaximizeIcon
+        constexpr const char* WindowCloseIcon = ":/Application/titlebar-close.svg";         // TitleBar.qss:109 TOKENIZE: WindowCloseIcon
 
         // ---- The close button of a filter tag
         const QColor CloseTagFill = Foundations::Clear;             // FilteredSearchWidget.qss:42 $fill.button.idle.fill.Clear
@@ -99,6 +117,39 @@ namespace AzQtComponents
         const BoxElement::Edge EditableBreadCrumbsLine{ 1, QColor(0x2F, 0x2F, 0x2F) };
         constexpr int EditableBreadCrumbsRadius = 2;                // BreadCrumbs.qss:36 $radius.bar.editable
 
+        // ---- The button of breadcrumbs that shows the path that does not fit them
+        // BreadCrumbs.qss:22 qproperty-icon. TOKENIZE: BreadCrumbsMenuIcon
+        constexpr const char* BreadCrumbsMenuIcon = ":/Breadcrumb/img/UI20/Breadcrumb/dot-dot-dot_with_arrow.svg";
+        // BreadCrumbs.qss:23 qproperty-iconSize. TOKENIZE: BreadCrumbsMenuIconSize
+        constexpr QSize BreadCrumbsMenuIconSize(22, 11);
+
+        // ---- The labels of a message box: the padding that keeps the text and the icon off the border of the box
+        // The margin above and below every label has (Text.qss:93-94) and the fill (BaseStyleSheet.qss:17) are the foundations'
+        // (Foundations::Label::MarginV, Foundations::Surface::Fill), which the elements below restate
+        // MessageBox.qss:13-15 padding-top, padding-right, padding-bottom. TOKENIZE: MessageBoxTextPadding
+        constexpr QMargins MessageBoxTextPadding(0, 20, 20, 20);
+        // MessageBox.qss:20-21 padding-left, padding-top. TOKENIZE: MessageBoxIconPadding
+        constexpr QMargins MessageBoxIconPadding(20, 20, 0, 0);
+
+        // ---- The tool tip of a slider: its offset from the pointer, added to SliderConfig.ini's (Slider::ShowValueToolTip)
+        // Slider.qss:12-13 qproperty-toolTipOffsetX, -Y. TOKENIZE: HorizontalSliderToolTipOffset
+        constexpr int HorizontalSliderToolTipOffsetX = -8;
+        constexpr int HorizontalSliderToolTipOffsetY = -16;
+        // Slider.qss:18-19 qproperty-toolTipOffsetX, -Y. TOKENIZE: VerticalSliderToolTipOffset
+        constexpr int VerticalSliderToolTipOffsetX = 8;
+        constexpr int VerticalSliderToolTipOffsetY = -24;
+
+        // ---- The progress bar: a square track, a flat chunk, and no text
+        const QColor ProgressTrackFill(0x9A, 0x9A, 0x9A);           // ProgressBar.qss:14 background. TOKENIZE: ProgressTrackFill
+        const QColor ProgressChunkFill(0x1E, 0x70, 0xEB);           // ProgressBar.qss:23 background. TOKENIZE: ProgressChunkFill
+        // ProgressBar.qss:18 qproperty-textVisible. TOKENIZE: ProgressTextVisible
+        constexpr bool ProgressTextVisible = false;
+        //! The busy chunk moves 8px every step of the sheet style's animation, which runs at the common style's 30 frames a second
+        //! (QStyleSheetStyle::drawControl, CE_ProgressBarContents, and QCommonStylePrivate::animationFps)
+        constexpr int BusyStepPixels = 8;
+        constexpr double BusyStepMilliseconds = 1000.0 / 30.0;
+        constexpr const char* BusyAnimationName = "_o3de_progressBusy";
+
         // ------------------------------------------------------------------------------
         // Elements
         // ------------------------------------------------------------------------------
@@ -114,10 +165,46 @@ namespace AzQtComponents
             },
         };
 
+        //! `AzQtComponents--TabWidget QToolButton#minimizeButton { qproperty-icon }` and `QToolButton#minimizeButton:hover`: the minimize
+        //! button the action toolbar of a tab widget makes for the action of its floating window (TabWidgetActionToolBar), which has no
+        //! icon of its own. The sheet set the icon at polish, over the action's. The hover fill is painted at PE_Widget: the toolbar
+        //! forces the styled background of its buttons (TabWidgetActionToolBar.cpp), and the fill is the state's, enabled and under the
+        //! pointer, whether the button is pressed or not. The rule `QToolButton#minimizeButton:hover` reaches no other tool button of
+        //! the name: they have no styled background, so the rule paints nothing there (the Style draws a tool button's background in
+        //! no state).
+        const BoxElement TabWidgetMinimizeButton{
+            .m_name = "Global.Box.TabWidget.MinimizeButton",
+            .m_stateFaces = { { BoxElement::Hover, { .m_fill = QBrush(WindowButtonHoverFill) } } },
+            .m_properties = {
+                { "icon", QString(WindowMinimizeIcon) },
+            },
+        };
+
+        //! `AzQtComponents--TabWidget QToolButton#maximizeButton { qproperty-icon }` and `QToolButton#maximizeButton:hover`: as the
+        //! minimize button above, for the maximize action
+        const BoxElement TabWidgetMaximizeButton{
+            .m_name = "Global.Box.TabWidget.MaximizeButton",
+            .m_stateFaces = { { BoxElement::Hover, { .m_fill = QBrush(WindowButtonHoverFill) } } },
+            .m_properties = {
+                { "icon", QString(WindowMaximizeIcon) },
+            },
+        };
+
+        //! `AzQtComponents--TabWidget QToolButton#closeButton { qproperty-icon }` and `QToolButton#closeButton:hover`: as the minimize
+        //! button above, for the close action, whose hover fill is red. The close button of a console's find bar below a tab widget (a
+        //! console docked as a tab) is reached by the icon rule too, and has no styled background to paint the hover fill on.
+        const BoxElement TabWidgetCloseButton{
+            .m_name = "Global.Box.TabWidget.CloseButton",
+            .m_stateFaces = { { BoxElement::Hover, { .m_fill = QBrush(WindowCloseHoverFill) } } },
+            .m_properties = {
+                { "icon", QString(WindowCloseIcon) },
+            },
+        };
+
         //! `AzQtComponents--FilterCriteriaButton QPushButton#closeTag`, and the same rule of FilterTextButton: a flat button with the close
         //! glyph, no margin or padding (FilteredSearchWidget.qss:43-44 $space.button.idle.margin.Alt1 $space.button.idle.padding.Alt1),
         //! and no border: every push button of the search widget has `border: none` (FilteredSearchWidget.qss:18
-        //! $line.button.idle.style.Alt1)
+        //! $line.button.idle.style.Alt1). The rule of FilterTextButton has the same values (FilteredSearchWidget.qss:90-101)
         const BoxElement CloseTag{
             .m_name = "Global.Box.CloseTag",
             .m_hasBox = true,
@@ -185,6 +272,199 @@ namespace AzQtComponents
                 .m_edges = { EditableBreadCrumbsLine, EditableBreadCrumbsLine, EditableBreadCrumbsLine, EditableBreadCrumbsLine },
             },
         };
+
+        //! `AzQtComponents--BreadCrumbs #MenuButton { qproperty-icon; qproperty-iconSize }`: the button at the left of breadcrumbs that
+        //! opens the menu of the path, shown while the path is wider than they are (BreadCrumbs::resizeEvent). The sheet gave it the
+        //! dots with an arrow, 22 x 11, at polish (QStyleSheetStyle::setProperties). The rule has no box and no fill: the button
+        //! is the component's own.
+        const BoxElement BreadCrumbsMenuButton{
+            .m_name = "Global.Box.BreadCrumbsMenuButton",
+            .m_properties = {
+                { "icon", QString(BreadCrumbsMenuIcon) },
+                { "iconSize", BreadCrumbsMenuIconSize },
+            },
+        };
+
+        //! `QMessageBox QLabel#qt_msgbox_label { padding-top; padding-right; padding-bottom }`: the text of a message box, 20px in from
+        //! the border of the box above, at the right and below (the icon's padding keeps it off the left). The label keeps the margin
+        //! above and below that every label has (Text.qss:93-94) and its transparent background (BaseStyleSheet.qss:17): an element is
+        //! the whole definition of its widget's box, so it restates them.
+        const BoxElement MessageBoxText{
+            .m_name = "Global.Box.MessageBoxText",
+            .m_margin = QMargins(0, Foundations::Label::MarginV, 0, Foundations::Label::MarginV),
+            .m_padding = MessageBoxTextPadding,
+            .m_idle = {
+                .m_fill = QBrush(Foundations::Surface::Fill),
+            },
+        };
+
+        //! `QMessageBox QLabel#qt_msgboxex_icon_label { padding-left; padding-top }`: the icon of a message box, 20px in from the border
+        //! of the box at the left and above. The label's margin and background as above.
+        const BoxElement MessageBoxIcon{
+            .m_name = "Global.Box.MessageBoxIcon",
+            .m_margin = QMargins(0, Foundations::Label::MarginV, 0, Foundations::Label::MarginV),
+            .m_padding = MessageBoxIconPadding,
+            .m_idle = {
+                .m_fill = QBrush(Foundations::Surface::Fill),
+            },
+        };
+
+        //! The text of a message box below a color picker (ColorPicker::done, its import and export errors and the question to close a
+        //! palette ask with the picker as the parent): `AzQtComponents--ColorPicker QLabel { margin: 0px }` (ColorPicker.qss:48) has
+        //! two type names, more than Text.qss:93-94's `QLabel`, so the label has no margin above and below. The padding of
+        //! MessageBox.qss outranks the picker's `padding: 0px` (ColorPicker.qss:47), which only the left of the text label is left to.
+        const BoxElement MessageBoxTextInColorPicker{
+            .m_name = "Global.Box.MessageBoxTextInColorPicker",
+            .m_padding = MessageBoxTextPadding,
+            .m_idle = {
+                .m_fill = QBrush(Foundations::Surface::Fill),
+            },
+        };
+
+        //! The icon of a message box below a color picker: no margin, as the text above
+        const BoxElement MessageBoxIconInColorPicker{
+            .m_name = "Global.Box.MessageBoxIconInColorPicker",
+            .m_padding = MessageBoxIconPadding,
+            .m_idle = {
+                .m_fill = QBrush(Foundations::Surface::Fill),
+            },
+        };
+
+        //! `AzQtComponents--Slider.HorizontalSlider { qproperty-toolTipOffsetX; qproperty-toolTipOffsetY }`: the tip of the value of a
+        //! horizontal slider, 8px left of the pointer and 16px higher than the offset of SliderConfig.ini puts it, set at polish
+        //! (QStyleSheetStyle::setProperties) over the offset the slider has (0, 0)
+        const BoxElement HorizontalSliderToolTip{
+            .m_name = "Global.Box.HorizontalSliderToolTip",
+            .m_properties = {
+                { "toolTipOffsetX", HorizontalSliderToolTipOffsetX },
+                { "toolTipOffsetY", HorizontalSliderToolTipOffsetY },
+            },
+        };
+
+        //! `AzQtComponents--Slider.VerticalSlider { qproperty-toolTipOffsetX; qproperty-toolTipOffsetY }`: the tip of a vertical slider,
+        //! 8px right and 24px above the offset of SliderConfig.ini
+        const BoxElement VerticalSliderToolTip{
+            .m_name = "Global.Box.VerticalSliderToolTip",
+            .m_properties = {
+                { "toolTipOffsetX", VerticalSliderToolTipOffsetX },
+                { "toolTipOffsetY", VerticalSliderToolTipOffsetY },
+            },
+        };
+
+        //! `QProgressBar { border: 0px transparent #000000; border-radius: 0px; background: #9A9A9A; qproperty-textVisible: False }`: the
+        //! track of every progress bar, square and borderless (ProgressBar.qss:12-13), drawn by the sheet at CE_ProgressBarGroove, and the
+        //! text a bar hides when it is polished (the height, 5px, is ProgressBarConfig.ini's, and the 1px font TextElement's). The chunk
+        //! has no element of its own: ProgressChunkFill is drawn by drawProgressBar for every bar, as ProjectManager.qss:778-780 repeats.
+        const BoxElement ProgressBarTrack{
+            .m_name = "Global.Box.ProgressBar",
+            // ProgressBar.qss:12-13 border, border-radius: none, square. TOKENIZE: ProgressTrackBorder
+            .m_nativeBorder = false,
+            .m_idle = {
+                .m_fill = QBrush(ProgressTrackFill),
+            },
+            .m_properties = {
+                { "textVisible", ProgressTextVisible },
+            },
+        };
+
+        //! `* { background-color: transparent; color: white; font-family: "Open Sans"; font-weight: 400 }` on a group box that no rule of
+        //! a module reaches (BaseStyleSheet.qss:15-21): a background, a palette and a font of its own are enough for the sheet style to
+        //! draw it through the sheet and never leave it to the base style (QStyleSheetStyle::drawComplexControl, CC_GroupBox), which
+        //! keeps the frame out of the rect of the title and centers the title in it. BoxElement::drawGroupBox does that for any group
+        //! box under an element, so the element is the clear fill and the border of the style alone: no box, so the base style sizes the
+        //! contents (QStyleSheetStyle::subControlRect, SC_GroupBoxFrame and SC_GroupBoxContents). The colour and the font are the
+        //! palette's and TextElement's. A group box with a rule of its own has the element of its module first.
+        const BoxElement PlainGroupBox{
+            .m_name = "Global.Box.GroupBox",
+            .m_idle = {
+                .m_fill = QBrush(Foundations::Surface::Fill),       // BaseStyleSheet.qss:17. TOKENIZE: GroupBoxFill
+            },
+        };
+
+        //! `QFrame#icon_frame { background-color }` of the toast (ToastNotification.ui:59 before the flattening): the frame at the left of
+        //! the toast that holds its icon, a lighter block on the toast. The sheet had no selector, so it also reached the icon label
+        //! inside the frame, which the label's own sheet cancelled (a transparent fill); an element does not cascade to the label, so
+        //! the label has none to cancel. The toast sets no tooltip.
+        const BoxElement ToastIconFrame{
+            .m_name = "Global.Box.ToastIconFrame",
+            .m_idle = {
+                .m_fill = QBrush(ControlElements::ToastIconFrameFill),
+            },
+        };
+
+        //! `background-color:rgba(0, 0, 0, 179)` of an overlay layer that dims (OverlayWidgetLayer.cpp:35 LayerStyle, set at :69 and
+        //! :103 before the flattening): a translucent black over what the layer covers. The sheet had no selector, so the fill is also
+        //! that of the widgets below the layer, which stack their own over it (the elements below: the labels, the frames of the layer's
+        //! own form and the tips). Another class below the layer, such as the buttons AddButtons makes in m_controls, has no element.
+        const BoxElement OverlayLayer{
+            .m_name = "Global.Box.OverlayLayer",
+            .m_idle = {
+                .m_fill = QBrush(ControlElements::OverlayDimFill),
+            },
+        };
+
+        //! A label below a layer that dims: the centre widget of the layer, in both places the importer shows one. The label keeps the
+        //! margin above and below that every label has (Text.qss:93-94), which an element restates as it is the whole definition of its
+        //! widget's box.
+        const BoxElement OverlayLayerLabel{
+            .m_name = "Global.Box.OverlayLayerLabel",
+            .m_margin = QMargins(0, Foundations::Label::MarginV, 0, Foundations::Label::MarginV),
+            .m_idle = {
+                .m_fill = QBrush(ControlElements::OverlayDimFill),
+            },
+        };
+
+        //! The frames (QFrame::StyledPanel) of the layer's own form, below a layer that dims when it has no centre widget (m_center and
+        //! m_controls, OverlayWidgetLayer.ui): the fill of the layer over the panel fill of every frame (BaseStyleSheet.qss:41-48, the
+        //! fill at :47). The style draws the line of the frame over the palette of the fill, as the sheet style did.
+        const BoxElement OverlayLayerFrame{
+            .m_name = "Global.Box.OverlayLayerFrame",
+            .m_idle = {
+                .m_fill = QBrush(ControlElements::OverlayDimFill),
+            },
+        };
+
+        //! The tip of a widget below a layer that dims: the sheet had no selector, so it reached the tip of every widget it was set on
+        //! and below (a tip is resolved through the widget it is shown for), and the layer's fill outranks ToolTip.qss's black
+        const ToolTipElement OverlayLayerToolTip{
+            .m_name = "Global.ToolTip.OverlayLayer",
+            .m_fill = ControlElements::OverlayDimFill,
+        };
+
+        // ------------------------------------------------------------------------------
+        // Helpers: the toast and the overlay layer
+        // ------------------------------------------------------------------------------
+
+        //! `#icon_frame` below the toast, the way ToastNotification.ui names it
+        bool isToastIconFrame(const QWidget* widget)
+        {
+            return Selectors::named(widget, "icon_frame") && Selectors::withinClass(widget, "AzQtComponents::ToastNotification");
+        }
+
+        //! A layer that dims: OverlayWidgetLayer tags it where the legacy GUI sets the sheet
+        bool isDimmingLayer(const QWidget* widget)
+        {
+            return Selectors::tagged(widget, ControlElements::OverlayDimmedTag);
+        }
+
+        bool belowDimmingLayer(const QWidget* widget)
+        {
+            return Selectors::withinTagged(widget, ControlElements::OverlayDimmedTag);
+        }
+
+        //! A label below a layer that dims, a tip excluded: Qt makes the tip a child of the widget it is shown for where it can (not on
+        //! Windows), and the sheet's `QLabel` never reached it (a tip matches the type selector `QToolTip` alone,
+        //! QStyleSheetStyleSelector::nodeNames), its fill is the tip element's
+        bool isLabelBelowDimmingLayer(const QWidget* widget)
+        {
+            return belowDimmingLayer(widget) && !ToolTipElement::isToolTip(widget);
+        }
+
+        //! m_center and m_controls, the frames of the layer's own form, below a layer that dims
+        bool isLayerFormFrame(const QWidget* widget)
+        {
+            return (Selectors::named(widget, "m_center") || Selectors::named(widget, "m_controls")) && belowDimmingLayer(widget);
+        }
 
         // ------------------------------------------------------------------------------
         // Helpers: the handle of a toolbar
@@ -343,6 +623,24 @@ namespace AzQtComponents
             return widget->inherits("AzQtComponents::BreadCrumbs") && Selectors::hasProperty(widget, "editable", "true");
         }
 
+        //! `AzQtComponents--BreadCrumbs #MenuButton`
+        bool isMenuButtonOfBreadCrumbs(const QWidget* widget)
+        {
+            return Selectors::named(widget, "MenuButton") && Selectors::withinClass(widget, "AzQtComponents::BreadCrumbs");
+        }
+
+        //! `QMessageBox QLabel#name`: the label Qt names so in every message box
+        bool isLabelOfMessageBox(const QWidget* widget, const char* name)
+        {
+            return Selectors::named(widget, name) && Selectors::withinClass(widget, "QMessageBox");
+        }
+
+        //! `AzQtComponents--ColorPicker QLabel`: the message boxes of the picker are asked with the picker as their parent
+        bool isBelowColorPicker(const QWidget* widget)
+        {
+            return Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
+        }
+
         //! `AzQtComponents--TitleBar[drawAsTabBar="true"] W`
         bool inTitleBarDrawnAsTabBar(const QWidget* widget)
         {
@@ -356,6 +654,14 @@ namespace AzQtComponents
             return false;
         }
 
+        //! `AzQtComponents--TabWidget QToolButton#name`, less the dock bar buttons: they draw their glyph from the style whatever their
+        //! icon property is (DockBarButton::paintEvent), and the hover fill of the ones in a tab is the tab element's
+        bool isWindowButtonOfTabWidget(const QWidget* widget, const char* name)
+        {
+            return Selectors::named(widget, name) && !widget->inherits("AzQtComponents::DockBarButton")
+                && Selectors::withinClass(widget, "AzQtComponents::TabWidget");
+        }
+
         //! `AzQtComponents--FilterCriteriaButton QPushButton#closeTag`, and the rule of FilterTextButton that repeats it
         bool inFilterTag(const QWidget* widget)
         {
@@ -367,6 +673,80 @@ namespace AzQtComponents
         bool inMainWindowOutsideDockMainWindow(const QWidget* widget)
         {
             return Selectors::withinClass(widget, "MainWindow") && !Selectors::withinClass(widget, "AzQtComponents::DockMainWindow");
+        }
+
+        // ------------------------------------------------------------------------------
+        // Helpers: the busy progress bar (QStyleSheetStyle::drawControl, CE_ProgressBarContents)
+        // ------------------------------------------------------------------------------
+
+        //! What moves the chunk of a bar with neither a range nor a value: an animation that runs while the bar is drawn busy, a child
+        //! of the bar. It repaints the bar every step, and stops once the bar is hidden.
+        class BusyAnimation
+            : public QAbstractAnimation
+        {
+        public:
+            explicit BusyAnimation(QWidget* bar)
+                : QAbstractAnimation(bar)
+                , m_bar(bar)
+            {
+                setObjectName(QString::fromLatin1(BusyAnimationName));
+            }
+
+            int duration() const override
+            {
+                return -1;          // runs until it is stopped
+            }
+
+            //! The step of the animation: the chunk is that many steps along
+            int step() const
+            {
+                return static_cast<int>(currentTime() / BusyStepMilliseconds);
+            }
+
+        protected:
+            void updateCurrentTime(int) override
+            {
+                if (!m_bar->isVisible())
+                {
+                    stop();
+                }
+                else if (const int now = step(); now != m_step)
+                {
+                    m_step = now;
+                    m_bar->update();
+                }
+            }
+
+        private:
+            QWidget* m_bar;
+            int m_step = 0;
+        };
+
+        //! The animation of a bar, if it has one
+        QAbstractAnimation* busyAnimationOf(const QWidget* bar)
+        {
+            return bar->findChild<QAbstractAnimation*>(QString::fromLatin1(BusyAnimationName), Qt::FindDirectChildrenOnly);
+        }
+
+        //! The step a busy bar draws: the animation starts when the bar is first drawn busy (step 0) and runs on
+        int busyStepOf(const QWidget* bar)
+        {
+            QAbstractAnimation* animation = busyAnimationOf(bar);
+            if (!animation)
+            {
+                animation = new BusyAnimation(const_cast<QWidget*>(bar));
+            }
+            if (animation->state() != QAbstractAnimation::Running)
+            {
+                animation->start();
+            }
+            return static_cast<BusyAnimation*>(animation)->step();
+        }
+
+        //! A bar with a value draws no animation: the one it had is gone, and starts again from step 0 when it is busy once more
+        void stopBusyAnimation(const QWidget* bar)
+        {
+            delete busyAnimationOf(bar);
         }
     } // namespace ControlElementsInternal
 
@@ -396,6 +776,59 @@ namespace AzQtComponents
         BoxElement::registerElement(&ToolBarExtension, &QToolButton::staticMetaObject,
             [](const QWidget* w) { return Selectors::named(w, "qt_toolbar_ext_button") && w->inherits("QToolBarExtension"); }, global);
         BoxElement::registerElement(&BreadCrumbsEditable, &QFrame::staticMetaObject, &isEditableBreadCrumbs, global);
+        BoxElement::registerElement(&TabWidgetMinimizeButton, &QToolButton::staticMetaObject,
+            [](const QWidget* w) { return isWindowButtonOfTabWidget(w, "minimizeButton"); }, global);
+        BoxElement::registerElement(&TabWidgetMaximizeButton, &QToolButton::staticMetaObject,
+            [](const QWidget* w) { return isWindowButtonOfTabWidget(w, "maximizeButton"); }, global);
+        BoxElement::registerElement(&TabWidgetCloseButton, &QToolButton::staticMetaObject,
+            [](const QWidget* w) { return isWindowButtonOfTabWidget(w, "closeButton"); }, global);
+        BoxElement::registerElement(&BreadCrumbsMenuButton, &QToolButton::staticMetaObject, &isMenuButtonOfBreadCrumbs, global);
+
+        // The labels of a message box below a color picker first: the picker's rule for its labels outranks Text.qss's margin
+        BoxElement::registerElement(&MessageBoxTextInColorPicker, &QLabel::staticMetaObject,
+            [](const QWidget* w) { return isLabelOfMessageBox(w, "qt_msgbox_label") && isBelowColorPicker(w); }, global);
+        BoxElement::registerElement(&MessageBoxIconInColorPicker, &QLabel::staticMetaObject,
+            [](const QWidget* w) { return isLabelOfMessageBox(w, "qt_msgboxex_icon_label") && isBelowColorPicker(w); }, global);
+        BoxElement::registerElement(&MessageBoxText, &QLabel::staticMetaObject,
+            [](const QWidget* w) { return isLabelOfMessageBox(w, "qt_msgbox_label"); }, global);
+        BoxElement::registerElement(&MessageBoxIcon, &QLabel::staticMetaObject,
+            [](const QWidget* w) { return isLabelOfMessageBox(w, "qt_msgboxex_icon_label"); }, global);
+
+        // The sliders of Slider.qss. Slider::polish tags a slider with its orientation, and the elements are resolved at the end of
+        // Style::polish, so the tag is known then
+        BoxElement::registerElement(&HorizontalSliderToolTip, &Slider::staticMetaObject,
+            [](const QWidget* w) { return Selectors::tagged(w, "HorizontalSlider"); }, global);
+        BoxElement::registerElement(&VerticalSliderToolTip, &Slider::staticMetaObject,
+            [](const QWidget* w) { return Selectors::tagged(w, "VerticalSlider"); }, global);
+
+        // The track and the hidden text of every progress bar (ProgressBar.qss:10-19); a module's element for its bars comes first
+        BoxElement::registerElement(&ProgressBarTrack, &QProgressBar::staticMetaObject, [](const QWidget*) { return true; }, global);
+
+        // Every group box that no module's element covers (BaseStyleSheet.qss:15-21)
+        BoxElement::registerElement(&PlainGroupBox, &QGroupBox::staticMetaObject, [](const QWidget*) { return true; }, global);
+
+        // The icon frame of the toast (ToastNotification.ui:59 before the flattening)
+        BoxElement::registerElement(&ToastIconFrame, &QFrame::staticMetaObject, &isToastIconFrame, global);
+    }
+
+    void ControlElements::registerOverlayLayer()
+    {
+        using namespace ControlElementsInternal;
+
+        static bool registered = false;
+        if (registered)
+        {
+            return;
+        }
+        registered = true;
+
+        // The sheet of an overlay layer that dims (OverlayWidgetLayer.cpp:35, :69, :103 before the flattening): the layer, the labels
+        // and the frames of its own form below it, and the tips of the widgets below it
+        const ElementScope global = ElementScope::Global;
+        BoxElement::registerElement(&OverlayLayer, &Internal::OverlayWidgetLayer::staticMetaObject, &isDimmingLayer, global);
+        BoxElement::registerElement(&OverlayLayerLabel, &QLabel::staticMetaObject, &isLabelBelowDimmingLayer, global);
+        BoxElement::registerElement(&OverlayLayerFrame, &QFrame::staticMetaObject, &isLayerFormFrame, global);
+        ToolTipElement::registerElement(&OverlayLayerToolTip, &Internal::OverlayWidgetLayer::staticMetaObject, &isDimmingLayer, global);
     }
 
     // ----------------------------------------------------------------------------------
@@ -410,7 +843,10 @@ namespace AzQtComponents
         {
             return false;
         }
-        const BoxElement& panel = inMainWindowOutsideDockMainWindow(widget) ? ToolBarPanelUnderMainWindow : ToolBarPanel;
+        // A module's rules for the toolbars below a window (`EditorWindow QToolBar` in Editor.qss) are an element of the toolbar, which
+        // draws what the sheet's rules of the toolbar drew, those of ToolBar.qss included
+        const BoxElement* own = BoxElement::forWidget(widget);
+        const BoxElement& panel = own ? *own : (inMainWindowOutsideDockMainWindow(widget) ? ToolBarPanelUnderMainWindow : ToolBarPanel);
         return panel.draw(painter, option, widget);
     }
 
@@ -638,6 +1074,127 @@ namespace AzQtComponents
         if (const BoxElement* frame = BoxElement::forWidget(widget))
         {
             frame->draw(painter, option, widget);
+        }
+        return true;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Progress bars
+    // ----------------------------------------------------------------------------------
+
+    QVector<QRect> ControlElements::progressChunkRects(const QStyleOptionProgressBar* option, const QRect& contents, int busyStep)
+    {
+        using namespace ControlElementsInternal;
+
+        QVector<QRect> chunks;
+
+        // A vertical bar is laid out as a horizontal one turned by 90 degrees, and each rect is turned back
+        const qint64 minimum = option->minimum;
+        const qint64 maximum = option->maximum;
+        const qint64 progress = option->progress;
+        const bool vertical = !option->state.testFlag(QStyle::State_Horizontal);
+        QTransform turn;
+        QRect rect = contents;
+        if (vertical)
+        {
+            rect = QRect(rect.y(), rect.x(), rect.height(), rect.width());
+            turn.rotate(90);
+            turn.translate(0, -(rect.height() + rect.y() * 2));
+        }
+
+        // The chunk grows from the left (the right in a right to left layout and in a vertical bar, which grows upwards), and an
+        // inverted bar from the other edge
+        bool reverse = (!vertical && option->direction == Qt::RightToLeft) || vertical;
+        if (option->invertedAppearance)
+        {
+            reverse = !reverse;
+        }
+        const bool noRange = minimum == maximum;
+        const double fillRatio = noRange ? 0.5 : double(progress - minimum) / double(maximum - minimum);
+        const int chunkWidth = static_cast<int>(rect.width() * fillRatio);
+        if (chunkWidth <= 0)
+        {
+            return chunks;
+        }
+        const auto place = [&](int x)
+        {
+            return turn.mapRect(QRectF(x, rect.y(), chunkWidth, rect.height())).toRect();
+        };
+
+        if (minimum == 0 && maximum == 0)
+        {
+            // Busy: a chunk of half the bar moves along it, and the part beyond the far edge comes in again at the near one
+            int chunkCount = 1;
+            const int offset = (busyStep * BusyStepPixels) % rect.width();
+            int x = reverse ? rect.left() + rect.width() - offset - chunkWidth : rect.x() + offset;
+            while (chunkCount > 0)
+            {
+                chunks.append(place(x));
+                x += reverse ? -chunkWidth : chunkWidth;
+                if (reverse ? x < rect.left() : x > rect.right())
+                {
+                    break;
+                }
+                --chunkCount;
+            }
+            x = reverse ? rect.right() - (rect.left() - x - chunkWidth) : rect.left() + (x - rect.right() - chunkWidth);
+            while (chunkCount > 0)
+            {
+                chunks.append(place(x));
+                x += reverse ? -chunkWidth : chunkWidth;
+                --chunkCount;
+            }
+        }
+        else
+        {
+            chunks.append(place(reverse ? rect.left() + rect.width() - chunkWidth : rect.x()));
+        }
+        return chunks;
+    }
+
+    bool ControlElements::drawProgressBar(
+        const QStyle* style, const QStyleOptionProgressBar* option, QPainter* painter, const QWidget* widget)
+    {
+        using namespace ControlElementsInternal;
+
+        const BoxElement* track = (StyleManager::stylesheetsDisabled() && qobject_cast<const QProgressBar*>(widget))
+            ? BoxElement::forWidget(widget) : nullptr;
+        if (!track)
+        {
+            return false;
+        }
+
+        // QCommonStyle::drawControl, CE_ProgressBar: the groove, the contents and the label, each in the rect of its sub-element. The
+        // sheet's are the rule's border rect and contents rect, and it draws the groove in the border rect of the border rect.
+        QStyleOptionProgressBar groove(*option);
+        groove.rect = track->borderRect(option);
+        groove.rect = track->borderRect(&groove);
+        track->draw(painter, &groove, widget);
+
+        // The chunk, the rule of ::chunk (a background): flat rects clipped to the contents
+        const QRect contents = track->contentsRect(option, widget);
+        const bool busy = option->minimum == 0 && option->maximum == 0;
+        const int busyStep = busy ? busyStepOf(widget) : 0;
+        if (!busy)
+        {
+            stopBusyAnimation(widget);
+        }
+        painter->save();
+        painter->setClipRect(contents);
+        for (const QRect& chunk : progressChunkRects(option, contents, busyStep))
+        {
+            BoxElement::drawFrame(painter, chunk, QBrush(ProgressChunkFill), BoxElement::Edges(), BoxElement::Radii());
+        }
+        painter->restore();
+
+        // The label of a bar that shows its text, in the colour of the text and not that of the chunk (SE_ProgressBarLabel: the text
+        // aligned in the bar's rect)
+        if (option->textVisible)
+        {
+            const QRect label = QStyle::alignedRect(
+                Qt::LeftToRight, option->textAlignment, option->fontMetrics.size(0, option->text), option->rect);
+            style->drawItemText(painter, label, option->textAlignment | Qt::TextSingleLine, option->palette,
+                option->state.testFlag(QStyle::State_Enabled), option->text, QPalette::Text);
         }
         return true;
     }

@@ -23,6 +23,15 @@
 
 namespace ShaderManagementConsole
 {
+    //=========================================================================
+    // SHADER OPTION TABLE COLOURS (the header text of a shader option that the material options hint names)
+    //=========================================================================
+    namespace ShaderManagementConsoleTableViewFlat
+    {
+        // ShaderManagementConsoleTableView.cpp:231. TOKENIZE: ShaderMaterialOptionHeaderText
+        constexpr QColor MaterialOptionHeaderText = QColorConstants::Yellow;
+    } // namespace ShaderManagementConsoleTableViewFlat
+
     template<typename BaseWidget>
     struct FocusOutConfigurable : public BaseWidget
     {
@@ -228,7 +237,7 @@ namespace ShaderManagementConsole
             if (m_shaderVariantListSourceData.m_materialOptionsHint.find(shaderOptionDescriptor.GetName()) !=
                 m_shaderVariantListSourceData.m_materialOptionsHint.end())
             {
-                tableItem->setForeground(QColorConstants::Yellow);
+                tableItem->setForeground(ShaderManagementConsoleTableViewFlat::MaterialOptionHeaderText);
             }
             setHorizontalHeaderItem(column, tableItem);
         }

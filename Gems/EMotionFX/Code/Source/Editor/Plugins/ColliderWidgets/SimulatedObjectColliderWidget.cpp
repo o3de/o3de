@@ -12,6 +12,7 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
@@ -53,7 +54,8 @@ namespace EMotionFX
 
             ownershipLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
             QLabel* tempLabel = new QLabel(tr("Part of Simulated Objects"));
-            tempLabel->setStyleSheet("font-weight: bold;");
+            tempLabel->setObjectName(EMStudioFlat::BoldLabelName);
+            AzQtComponents::StyleManager::setLegacyStyleSheet(tempLabel, "font-weight: bold;");
             ownershipLayout->addWidget(tempLabel);
 
             ownershipLayout->addSpacerItem(new QSpacerItem(44, 0, QSizePolicy::Fixed));
@@ -75,7 +77,8 @@ namespace EMotionFX
 
             collideWithLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
             QLabel* tempLabel = new QLabel(tr("Collide with Simulated Objects"));
-            tempLabel->setStyleSheet("font-weight: bold;");
+            tempLabel->setObjectName(EMStudioFlat::BoldLabelName);
+            AzQtComponents::StyleManager::setLegacyStyleSheet(tempLabel, "font-weight: bold;");
             collideWithLayout->addWidget(tempLabel);
 
             collideWithLayout->addSpacerItem(new QSpacerItem(13, 0, QSizePolicy::Fixed));

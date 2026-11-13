@@ -75,9 +75,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="m_addObjectButton">
-          <property name="styleSheet">
-           <string notr="true">padding: 6px;</string>
-          </property>
           <property name="text">
            <string>Add Object</string>
           </property>

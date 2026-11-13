@@ -8,6 +8,8 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemListHeaderWidget.h>
+#include <FlatValues.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/TagSelector.h>
 #include <QAbstractItemModel>
 #include <QItemSelectionModel>
@@ -25,7 +27,10 @@ namespace O3DE::ProjectManager
         vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
-        setStyleSheet("background-color: #333333;");
+        // The legacy GUI's sheet, which has no selector and so reaches every widget in the header; the flattened GUI sets none and
+        // its elements carry the fill (FlatElements.cpp, GemListHeader)
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this,
+            QString("background-color: %1;").arg(FlatValues::GemListHeaderFill.name()));
 
         vLayout->addSpacing(13);
 

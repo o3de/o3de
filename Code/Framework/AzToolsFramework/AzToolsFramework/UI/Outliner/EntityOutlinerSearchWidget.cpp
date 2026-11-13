@@ -79,7 +79,12 @@ namespace AzToolsFramework
         if (index >= 0 && index < aznumeric_cast<int>(EntityOutlinerSearchWidget::GlobalSearchCriteria::FirstRealFilter))
         {
             QLabel* icon = new QLabel(this);
-            icon->setStyleSheet(m_tagLabel->styleSheet() + "border: 0px; background-color: transparent;");
+
+            // The icon of a chip has no border and no fill of its own. The legacy GUI sets that as a sheet of the label; the flattened
+            // GUI sets none: the labels of a chip have no margin, padding or fill (FilteredSearchWidget.qss:50-55, carried by
+            // Style::subElementRect for the labels of a FilterCriteriaButton), and a label draws no border by itself.
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                icon, m_tagLabel->styleSheet() + "border: 0px; background-color: transparent;");
             icon->setPixmap(EntityOutlinerIcons::GetInstance().GetIcon(index).pixmap(10, 10));
             m_frameLayout->insertWidget(0, icon);
         }

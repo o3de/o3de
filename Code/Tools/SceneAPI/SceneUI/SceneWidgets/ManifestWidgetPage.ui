@@ -40,9 +40,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="styleSheet">
-      <string notr="true">QFrame {border-top: 1px transparent; padding-top: 6px; border-bottom: 1px solid #000000; padding-bottom: 6px}</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -75,9 +72,6 @@
           <width>250</width>
           <height>16777215</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">padding-left: 12px; padding-right: 12px;</string>
         </property>
         <property name="text">
          <string>Add another</string>

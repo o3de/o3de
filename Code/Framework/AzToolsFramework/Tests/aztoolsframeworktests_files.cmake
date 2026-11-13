@@ -187,12 +187,18 @@ set(FILES
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityOutlinerFlatSheetTests.cpp
+    UI/EntityPropertyEditorFlatSheetTests.cpp
     UI/EntityPropertyEditorInterruptibleLoadTests.cpp
     UI/EntityPropertyEditorLayoutTests.cpp
     UI/EntityPropertyEditorLazyCardsTests.cpp
+    UI/EntityPropertyEditorPaletteTests.cpp
     UI/EntityPropertyEditorTestFixture.h
     UI/EntityPropertyEditorTests.cpp
+    UI/ProgressShieldFlatSheetTests.cpp
     UI/PropertyAssetCtrlTests.cpp
+    UI/PropertyRowSceneSettingsFlatSheetTests.cpp
+    UI/ViewportUiFlatSheetTests.cpp
+    UI/AssetBrowserFlatSheetTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp

@@ -18,16 +18,26 @@
 #include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
+#include <QColor>
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the joint limit optimization notification texts. Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace JointLimitOptimizerFlat
+    {
+        constexpr QColor FailureText(255, 0, 0);    // JointLimitOptimizer.cpp:30, :40, :66, :141 TOKENIZE: JointLimitOptimizerFailureText
+    } // namespace JointLimitOptimizerFlat
+
     void OptimizeJointLimits(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         if (!physicsSetupManipulatorData.m_actor || !physicsSetupManipulatorData.m_node ||
             !physicsSetupManipulatorData.m_jointConfiguration)
         {
             EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
-                EMStudio::NotificationWindow::TYPE_ERROR, "Joint limit optimization <font color=red>failed</font>");
+                EMStudio::NotificationWindow::TYPE_ERROR,
+                QString("Joint limit optimization <font color=%1>failed</font>").arg(JointLimitOptimizerFlat::FailureText.name()));
             return;
         }
 
@@ -37,7 +47,8 @@ namespace EMotionFX
         {
             EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
                 EMStudio::NotificationWindow::TYPE_ERROR,
-                "Joint limit optimization <font color=red>failed</font> due to missing physics joint interface");
+                QString("Joint limit optimization <font color=%1>failed</font> due to missing physics joint interface")
+                    .arg(JointLimitOptimizerFlat::FailureText.name()));
             return;
         }
 
@@ -63,7 +74,8 @@ namespace EMotionFX
         {
             EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
                 EMStudio::NotificationWindow::TYPE_ERROR,
-                "Computing initial configuration for joint limit optimization <font color=red>failed</font>");
+                QString("Computing initial configuration for joint limit optimization <font color=%1>failed</font>")
+                    .arg(JointLimitOptimizerFlat::FailureText.name()));
             return;
         }
 
@@ -138,7 +150,8 @@ namespace EMotionFX
         if (!optimizedJointLimit)
         {
             EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
-                EMStudio::NotificationWindow::TYPE_ERROR, "Joint limit optimization <font color=red>failed</font>");
+                EMStudio::NotificationWindow::TYPE_ERROR,
+                QString("Joint limit optimization <font color=%1>failed</font>").arg(JointLimitOptimizerFlat::FailureText.name()));
             return;
         }
 

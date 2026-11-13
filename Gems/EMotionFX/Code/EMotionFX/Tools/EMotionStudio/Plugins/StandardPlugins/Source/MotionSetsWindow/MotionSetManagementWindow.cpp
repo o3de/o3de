@@ -10,6 +10,7 @@
 #include "AzCore/std/iterator.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <EMotionFX/Source/MotionManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
@@ -21,6 +22,7 @@
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/LogManager.h>
 #include <QAction>
+#include <QColor>
 #include <QContextMenuEvent>
 #include <QHeaderView>
 #include <QLabel>
@@ -33,6 +35,17 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the motion set save notification texts: the word that says the save worked or failed.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace MotionSetManagementWindowFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);    // MotionSetManagementWindow.cpp:969 TOKENIZE: MotionSetManagementSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);    // MotionSetManagementWindow.cpp:964 TOKENIZE: MotionSetManagementSaveFailureText
+    } // namespace MotionSetManagementWindowFlat
+
     MotionSetManagementRemoveMotionsFailedWindow::MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions)
         : QDialog(parent)
     {
@@ -125,6 +138,7 @@ namespace EMStudio
 
         // add the line edit
         m_lineEdit = new QLineEdit();
+        m_lineEdit->setObjectName(EMStudioFlat::InputFieldName);
         connect(m_lineEdit, &QLineEdit::textEdited, this, &MotionSetManagementRenameWindow::TextEdited);
         layout->addWidget(m_lineEdit);
 
@@ -163,7 +177,7 @@ namespace EMStudio
         else if (text == m_motionSet->GetName())
         {
             m_okButton->setEnabled(true);
-            m_lineEdit->setStyleSheet("");
+            GetManager()->SetWidgetAsValidInput(m_lineEdit);
         }
         else
         {
@@ -188,7 +202,7 @@ namespace EMStudio
 
             // no duplicate name found
             m_okButton->setEnabled(true);
-            m_lineEdit->setStyleSheet("");
+            GetManager()->SetWidgetAsValidInput(m_lineEdit);
         }
     }
 
@@ -961,12 +975,14 @@ namespace EMStudio
             if (!GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, 
-                    AZStd::string::format("MotionSet <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                    AZStd::string::format("MotionSet <font color=%s>failed</font> to save<br/><br/>%s",
+                        MotionSetManagementWindowFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
             }
             else
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, 
-                    "MotionSet <font color=green>successfully</font> saved");
+                    QString("MotionSet <font color=%1>successfully</font> saved")
+                        .arg(MotionSetManagementWindowFlat::SaveSuccessText.name()));
             }
         }
     }

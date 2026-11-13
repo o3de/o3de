@@ -16,4 +16,7 @@ set(FILES
     tests/UtilsTests.cpp
     tests/TextOverflowTests.cpp
     tests/FlatElementsTests.cpp
+    tests/FlatSheetTests.cpp
+    tests/FlatSheetTests.qrc
+    tests/GemRequirementListFlatSheetTests.cpp
 )

@@ -223,7 +223,7 @@ bool GUIApplicationManager::Run()
     wrapper->enableSaveRestoreGeometry(GetOrganizationName(), GetApplicationName(), "MainWindow", restoreOnFirstShow);
 
     // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget, which is the next line
-    // (the window sets it on its detail panels later, in MainWindow::Activate, MainWindow.cpp:432-434)
+    // (the window sets it on its detail panels later, in MainWindow::Activate)
     AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:AssetProcessor.qss"), &AssetProcessor::RegisterFlatElements);
     AzQtComponents::StyleManager::setStyleSheet(m_mainWindow, QStringLiteral("style:AssetProcessor.qss"));
 

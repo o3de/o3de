@@ -903,11 +903,24 @@ namespace AzQtComponents
         return isWin10() ? (Qt::FramelessWindowHint | Qt::WindowMaximizeButtonHint) : Qt::CustomizeWindowHint;
     }
 
+    //! Everything private to this file that the flattened GUI reads as well. A named namespace, not an anonymous one: a unity build joins
+    //! this file with others into one translation unit, where anonymous namespaces merge.
+    namespace WindowDecorationWrapperFlatInternal
+    {
+        //! The line WindowDecorationWrapper::drawFrame draws around the window. WindowDecorationWrapper.cpp:910.
+        //! TOKENIZE: WindowDecorationFrameLine
+        constexpr QColor FrameLine(33, 34, 35);
+
+        //! `AzQtComponents--WindowDecorationWrapper { border: 1px solid black }` (WindowDecorationWrapper.qss:11): the colour of the
+        //! gutter that paintEvent fills in the flattened GUI. TOKENIZE: WindowDecorationBorder
+        const QColor Border(Qt::black);
+    } // namespace WindowDecorationWrapperFlatInternal
+
     void WindowDecorationWrapper::drawFrame(const QStyleOption *option, QPainter *painter, const QWidget *widget)
     {
         Q_UNUSED(widget);
         painter->save();
-        painter->setPen(QColor(33, 34, 35));
+        painter->setPen(WindowDecorationWrapperFlatInternal::FrameLine);
         painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
         painter->restore();
     }
@@ -926,7 +939,7 @@ namespace AzQtComponents
         // wide as the gutter they leave (150%: 2px on the left, 1px on the right; a stroked rectangle left it 1px
         // and one pixel inside)
         QPainter painter(this);
-        const QColor black(Qt::black);
+        const QColor black(WindowDecorationWrapperFlatInternal::Border);
         painter.fillRect(QRect(0, 0, width(), FrameWidth), black);
         painter.fillRect(QRect(0, height() - FrameWidth, width(), FrameWidth), black);
         painter.fillRect(QRect(0, 0, FrameWidth, height()), black);

@@ -9,6 +9,7 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
+#include <QColor>
 #include <QLabel>
 
 class QShowEvent;
@@ -19,6 +20,16 @@ class QResizeEvent;
 
 namespace AzQtComponents
 {
+    //! The paint values of the eliding label that the flattened GUI owns. A named namespace, not an anonymous one: a unity build joins the
+    //! files of a target into one translation unit, where anonymous namespaces merge.
+    namespace ElidingLabelFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The filter highlight: the rect behind the filter text (ElidingLabel::paintEvent)
+        // ------------------------------------------------------------------------------
+        inline constexpr QColor FilterHighlight(0x70, 0x70, 0x70);  // ElidingLabel.h:136. TOKENIZE: ElidingLabelFilterHighlight
+    } // namespace ElidingLabelFlat
+
     //! Extends the QLabel widget to automatically elide the label text with an
     //! ellipsis (...) if it doesn't fit within the width of the widget.
     //! On hover, a tooltip will show the full label text, plus an optional description.
@@ -133,7 +144,7 @@ namespace AzQtComponents
     private:
         void elide();
 
-        const QColor backgroundColor{ "#707070" };
+        const QColor backgroundColor = ElidingLabelFlat::FilterHighlight;
 
         QString m_text;
         QString m_elidedText;

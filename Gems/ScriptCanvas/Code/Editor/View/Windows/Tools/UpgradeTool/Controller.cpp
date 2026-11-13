@@ -9,6 +9,7 @@
 
 #include <QDateTime>
 #include <QDir>
+#include <QFrame>
 #include <QMessageBox>
 #include <QProcess>
 #include <QScrollBar>
@@ -21,6 +22,9 @@
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -37,11 +41,84 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        //=========================================================================
+        // UPGRADE TOOL PROGRESS FRAME (the fill the progress bar and the spinner sit on)
+        //
+        // View.ui gave the progress frame (progressFrame) one bare declaration, `background-color: rgb(47, 47, 47)`, which reached the
+        // frame and every widget below it: the spinner and its labels, which have the frame's fill, so that only the frame's rect shows
+        // it, and the progress bar, whose track it made that colour in place of the application's grey (a sheet on a widget outranks
+        // the application's, whatever the specificity of the rules). The legacy GUI sets that sheet after setupUi; the flattened GUI
+        // sets none, and the two elements below draw the frame and the track. The chunk (ProgressBar.qss:23) and the hidden text
+        // (ProgressBar.qss:18) are the application's, and the style draws them for every bar.
+        //=========================================================================
+
+        //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file with others into one
+        //! translation unit, where anonymous namespaces merge.
+        namespace ControllerFlat
+        {
+            //! `background-color: rgb(47, 47, 47)`: View.ui:199 (before the flattening), the fill of the progress frame and, as the
+            //! declaration reached it, the track of its bar. TOKENIZE: UpgradeProgressFrameFill
+            constexpr QColor ProgressFrameFill(47, 47, 47);
+
+            //! The frame: its rect in the fill. The frame is a QFrame with no frame shape and no autofill (View.ui:195-203).
+            const AzQtComponents::BoxElement ProgressFrame{
+                .m_name = "ScriptCanvas.Box.UpgradeProgressFrame",
+                .m_idle = { .m_fill = QBrush(ProgressFrameFill) },        // background-color: View.ui:199
+            };
+
+            //! The progress bar below the frame: the Global track (Global.Box.ProgressBar, ControlElements.cpp), which a module's element
+            //! replaces whole, restated with the frame's fill in place of #9A9A9A (ProgressBar.qss:14): no border of the style's own
+            //! (ProgressBar.qss:12-13) and the text hidden (ProgressBar.qss:18). Its height is the bar's own (ProgressBarConfig.ini).
+            const AzQtComponents::BoxElement ProgressBar{
+                .m_name = "ScriptCanvas.Box.UpgradeProgressBar",
+                .m_nativeBorder = false,                                   // border, border-radius: ProgressBar.qss:12-13
+                .m_idle = { .m_fill = QBrush(ProgressFrameFill) },         // background-color: View.ui:199
+                .m_properties = { { "textVisible", false } },              // qproperty-textVisible: ProgressBar.qss:18
+            };
+
+            //! `QFrame#progressFrame`: the widget of that name. It occurs once in the tree.
+            bool isProgressFrame(const QWidget* widget)
+            {
+                return AzQtComponents::Selectors::named(widget, "progressFrame");
+            }
+
+            //! The bar of the form, below the frame (`progressBar` is also the name of the bars of two other forms, which no sheet reached)
+            bool isProgressBar(const QWidget* widget)
+            {
+                using AzQtComponents::Selectors::named;
+                using AzQtComponents::Selectors::within;
+                return named(widget, "progressBar") && within(widget, "progressFrame");
+            }
+        } // namespace ControllerFlat
+
+        void Controller::RegisterFlatElements()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                namespace Flat = ControllerFlat;
+                AzQtComponents::BoxElement::registerElement(&Flat::ProgressFrame, &QFrame::staticMetaObject, &Flat::isProgressFrame);
+                AzQtComponents::BoxElement::registerElement(&Flat::ProgressBar, &QProgressBar::staticMetaObject, &Flat::isProgressBar);
+            }
+        }
+
         Controller::Controller(QWidget* parent)
             : AzQtComponents::StyledDialog(parent)
             , m_view(new Ui::View())
         {
+            // The elements are there before the form makes the frame and the bar, which they are resolved for as those are polished
+            using AzQtComponents::StyleManager;
+            if (StyleManager::stylesheetsDisabled())
+            {
+                RegisterFlatElements();
+            }
+
             m_view->setupUi(this);
+
+            // The sheet the form gave the progress frame (View.ui:198-200), for the legacy GUI only, with the fill both rungs read
+            StyleManager::setLegacyStyleSheet(
+                m_view->progressFrame, QStringLiteral("background-color: %1;").arg(ControllerFlat::ProgressFrameFill.name()));
             m_view->tableWidget->horizontalHeader()->setVisible(false);
             m_view->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
             m_view->tableWidget->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Fixed);

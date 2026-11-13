@@ -12,9 +12,23 @@
 
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
+#include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Outliner Level Root Colours
+    // =======================================================================
+
+    //! The colour the Entity Outliner paints the level root row's divider with, named, so the legacy and the flattened GUI read one
+    //! value. The capsule colours are the prefab row's (PrefabUiHandlerFlat, PrefabUiHandler.h). A named namespace, not an anonymous one:
+    //! a header is read by many files, and a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace LevelRootUiHandlerFlat
+    {
+        //! LevelRootUiHandler.h:48. TOKENIZE: OutlinerLevelRootBorder
+        inline constexpr QColor Border(0x65, 0x65, 0x65);
+    }
+
     namespace Prefab
     {
         class PrefabFocusPublicInterface;
@@ -45,10 +59,10 @@ namespace AzToolsFramework
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         QString m_levelRootIconPath = QString(":/Level/level.svg");
-        QColor m_levelRootBorderColor = QColor("#656565");
+        QColor m_levelRootBorderColor = LevelRootUiHandlerFlat::Border;
 
-        QColor m_prefabCapsuleColor = QColor("#1E252F");
-        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
-        QColor m_prefabCapsuleEditColor = QColor("#4A90E2");
+        QColor m_prefabCapsuleColor = PrefabUiHandlerFlat::Capsule;
+        QColor m_prefabCapsuleDisabledColor = PrefabUiHandlerFlat::CapsuleDisabled;
+        QColor m_prefabCapsuleEditColor = PrefabUiHandlerFlat::CapsuleEdit;
     };
 } // namespace AzToolsFramework

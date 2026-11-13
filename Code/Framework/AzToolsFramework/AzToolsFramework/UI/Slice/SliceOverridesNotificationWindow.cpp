@@ -30,6 +30,18 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Notification Colours
+    // =======================================================================
+
+    //! The channels of the colour the notification window paints its rounded background with (its alpha is the fade's: the use sets it),
+    //! named, so the legacy and the flattened GUI read one value. A named namespace, not an anonymous one: a unity build joins files into
+    //! one translation unit, where anonymous namespaces merge.
+    namespace SliceOverridesNotificationWindowFlatInternal
+    {
+        constexpr QColor Background(0, 0, 0);   // SliceOverridesNotificationWindow.cpp:88. TOKENIZE: SliceNotificationBackground
+    }
+
     // constructor
     SliceOverridesNotificationWindow::SliceOverridesNotificationWindow(QWidget* parent, EType type, const QString& Message)
         : QWidget(parent)
@@ -84,8 +96,8 @@ namespace AzToolsFramework
     {
         QPainter p(this);
         p.setPen(Qt::transparent);
-        QColor painterColor;
-        painterColor.setRgbF(0, 0, 0, m_opacity);
+        QColor painterColor = SliceOverridesNotificationWindowFlatInternal::Background;
+        painterColor.setAlphaF(m_opacity);
         p.setBrush(painterColor);
         p.setRenderHint(QPainter::Antialiasing);
         p.drawRoundedRect(rect(), SliceUIConstants::roundedRectXRadius, SliceUIConstants::roundedRectYRadius);

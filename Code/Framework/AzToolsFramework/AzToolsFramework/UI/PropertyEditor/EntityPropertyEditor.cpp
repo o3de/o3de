@@ -31,6 +31,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
@@ -193,6 +198,18 @@ namespace AzToolsFramework
         Qt::WidgetAttribute m_attribute;
         bool m_restoreInDestructor = false;
     };
+
+    // =======================================================================
+    // Overlay Colours
+    // =======================================================================
+
+    //! The colour the overlay draws the drop indicator of a row with (its alpha is the fade's), named, so the legacy and the flattened
+    //! GUI read one value. A named namespace, not an anonymous one: a unity build joins files into one translation unit, where
+    //! anonymous namespaces merge.
+    namespace EntityPropertyEditorOverlayFlatInternal
+    {
+        const QColor DropIndicatorLine(Qt::white);   // EntityPropertyEditor.cpp:432. TOKENIZE: InspectorDropIndicatorLine
+    }
 
     //we require an overlay widget to act as a canvas to draw on top of everything in the inspector
     //attaching to inspector rather than component editors so we can draw outside of bounds
@@ -424,7 +441,7 @@ namespace AzToolsFramework
             painter.setOpacity(alpha);
 
             QPen pen;
-            QColor drawColor = Qt::white;
+            QColor drawColor = EntityPropertyEditorOverlayFlatInternal::DropIndicatorLine;
             drawColor.setAlphaF(alpha);
             pen.setColor(drawColor);
             pen.setWidth(1);
@@ -529,6 +546,164 @@ namespace AzToolsFramework
         return AppearsInGameComponentMenu;
     }
 
+    // ----------------------------------------------------------------------------------
+    // Flattened GUI: the header's dark box
+    //
+    // EntityPropertyEditor.ui gave the box (m_darkBox) and six widgets in it a sheet of one fill. The legacy GUI sets those sheets
+    // after setupUi; the flattened GUI sets none, and these elements draw what they drew. The line (line_2) keeps its own frame,
+    // which the base style draws over the palette of the fill, as QStyleSheetStyle drew it (Style.cpp, CE_ShapedFrame).
+    //
+    // The six sheets have no selector, so they also reached the tooltip each of the labels shows: a tip is resolved through the
+    // widget it is shown for. The tooltip element below gives it the fill.
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace EntityPropertyEditorFlatInternal
+    {
+        //! background-color: EntityPropertyEditor.ui:193 (the box), :381, :536, :750, :905, :943, :1141 (its six widgets), the
+        //! form before the flattening. TOKENIZE: InspectorDarkBoxFill
+        const QColor DarkBoxFill(0x33, 0x33, 0x33);
+
+        //! The sheets the form gave them (EntityPropertyEditor.ui), which the legacy GUI sets, as the form wrote them: the fill is the
+        //! three numbers of the constant the elements read
+        const QString DarkBoxSheet = QStringLiteral("QWidget#m_darkBox { background-color:rgb(%1, %2, %3) }")
+                                         .arg(DarkBoxFill.red()).arg(DarkBoxFill.green()).arg(DarkBoxFill.blue());
+        const QString DarkBoxPartSheet = QStringLiteral("background-color:rgb(%1, %2, %3)")
+                                             .arg(DarkBoxFill.red()).arg(DarkBoxFill.green()).arg(DarkBoxFill.blue());
+
+        //! The tints of the image dragged for a reordered component's row (createDragImage): its fill and its border.
+        //! EntityPropertyEditor.cpp:5298 and :5400. TOKENIZE: InspectorDragImageFill
+        constexpr QColor DragImageFill(0x8E, 0x86, 0x3E);
+        //! EntityPropertyEditor.cpp:5298 and :5400. TOKENIZE: InspectorDragImageBorder
+        constexpr QColor DragImageBorder(0xEA, 0xEC, 0xAA);
+
+        // ------------------------------------------------------------------------------
+        // The palettes of the header labels
+        //
+        // EntityPropertyEditor.ui gave six labels a palette (63 colour elements, every one a SolidPattern brush of alpha 255): the name
+        // label (m_entityNameLabel) its text colour in each colour group, and the five labels in the dark box (m_entityIdLabel,
+        // m_entityIdText, m_prefabContainerLabel, m_prefabContainerText, m_statusLabel) that text colour and a fill in the roles
+        // Button, Base and Window, the same in every group. The constructor sets them after setupUi, as the form did. The flattened GUI
+        // resets them below, to the text colour the labels inherit (the marker InspectorHeaderTextColor at that reset).
+        // ------------------------------------------------------------------------------
+
+        //! The text of a header label, WindowText in the groups Active and Inactive. EntityPropertyEditor.ui:81, :92 (m_entityNameLabel),
+        //! :259, :297 (m_entityIdLabel), :405, :443 (m_entityIdText), :622, :660 (m_prefabContainerLabel), :768, :806
+        //! (m_prefabContainerText), :998, :1036 (m_statusLabel). TOKENIZE: InspectorHeaderPaletteText
+        constexpr QColor HeaderPaletteText(255, 153, 0);
+        //! The text of a header label, WindowText in the group Disabled. EntityPropertyEditor.ui:103 (m_entityNameLabel), :335
+        //! (m_entityIdLabel), :481 (m_entityIdText), :698 (m_prefabContainerLabel), :844 (m_prefabContainerText), :1074 (m_statusLabel).
+        //! TOKENIZE: InspectorHeaderPaletteDisabledText
+        constexpr QColor HeaderPaletteDisabledText(120, 120, 120);
+        //! The fill of the five labels in the dark box, the roles Button, Base and Window in each group. EntityPropertyEditor.ui:268-294,
+        //! :306-332, :344-370 (m_entityIdLabel), :414-440, :452-478, :490-516 (m_entityIdText), :631-657, :669-695, :707-733
+        //! (m_prefabContainerLabel), :777-803, :815-841, :853-879 (m_prefabContainerText), :1007-1033, :1045-1071, :1083-1109
+        //! (m_statusLabel). TOKENIZE: InspectorHeaderPaletteFill
+        constexpr QColor HeaderPaletteFill(51, 51, 51);
+
+        //! The palette the form gave a header label: the text colour in each group, and for the five labels in the dark box the fill
+        QPalette headerLabelPalette(bool inDarkBox)
+        {
+            QPalette palette;
+            for (const QPalette::ColorGroup group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
+            {
+                const QColor& text = group == QPalette::Disabled ? HeaderPaletteDisabledText : HeaderPaletteText;
+                palette.setBrush(group, QPalette::WindowText, QBrush(text));
+                if (inDarkBox)
+                {
+                    for (const QPalette::ColorRole role : { QPalette::Button, QPalette::Base, QPalette::Window })
+                    {
+                        palette.setBrush(group, role, QBrush(HeaderPaletteFill));
+                    }
+                }
+            }
+            return palette;
+        }
+
+        //! `QWidget#m_darkBox { background-color }`
+        const AzQtComponents::BoxElement DarkBox{
+            .m_name = "Editor.Box.InspectorDarkBox",
+            .m_idle = {
+                .m_fill = QBrush(DarkBoxFill),
+            },
+        };
+
+        //! The `background-color` of the five labels in the box, over the box of every label (`QLabel { margin-top: 1px;
+        //! margin-bottom: 1px }`, Text.qss:93-94): an element is the whole definition of its frame, so it carries that margin, which
+        //! Style gives a label without one (Style::subElementRect, SE_ShapedFrameContents)
+        const AzQtComponents::BoxElement DarkBoxLabel{
+            .m_name = "Editor.Box.InspectorDarkBoxLabel",
+            .m_margin = QMargins(0, AzQtComponents::Foundations::Label::MarginV, 0, AzQtComponents::Foundations::Label::MarginV),
+            .m_idle = {
+                .m_fill = QBrush(DarkBoxFill),
+            },
+        };
+
+        //! The `background-color` of the line in the box: the fill, and the line's frame, which the style draws
+        const AzQtComponents::BoxElement DarkBoxLine{
+            .m_name = "Editor.Box.InspectorDarkBoxLine",
+            .m_idle = {
+                .m_fill = QBrush(DarkBoxFill),
+            },
+        };
+
+        //! The tooltip of each of the five labels (m_entityIdLabel, m_prefabContainerLabel and m_statusLabel set one in the form;
+        //! m_prefabContainerText, an ElidingLabel, shows its full text in one when it elides): `background-color:rgb(51, 51, 51)`
+        //! (DarkBoxPartSheet) has no selector, so it reached the tip of the label it was set on (Qt resolves a tooltip through the
+        //! widget it is shown for), and its declaration outranks `QToolTip { background-color: black }` (ToolTip.qss:13). The same
+        //! fill as the label's: DarkBoxFill. The text keeps the tip's own (the sheet had no `color` or `font`).
+        const AzQtComponents::ToolTipElement DarkBoxToolTip{
+            .m_name = "Editor.ToolTip.InspectorDarkBox",
+            .m_fill = DarkBoxFill,
+        };
+
+        //! In the box (m_darkBox) of an inspector
+        bool inDarkBox(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::within(widget, "m_darkBox")
+                && AzQtComponents::Selectors::withinClass(widget, "AzToolsFramework::EntityPropertyEditor");
+        }
+
+        //! The box, by its name, below an inspector
+        bool isDarkBox(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::named(widget, "m_darkBox")
+                && AzQtComponents::Selectors::withinClass(widget, "AzToolsFramework::EntityPropertyEditor");
+        }
+
+        //! The five labels the form gave the sheet, by their names, in the box
+        bool isDarkBoxLabel(const QWidget* widget)
+        {
+            using AzQtComponents::Selectors::named;
+            const bool label = named(widget, "m_entityIdLabel") || named(widget, "m_entityIdText")
+                || named(widget, "m_prefabContainerLabel") || named(widget, "m_prefabContainerText") || named(widget, "m_statusLabel");
+            return label && inDarkBox(widget);
+        }
+
+        //! The line the form gave the sheet, in the box
+        bool isDarkBoxLine(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::named(widget, "line_2") && inDarkBox(widget);
+        }
+    } // namespace EntityPropertyEditorFlatInternal
+
+    void EntityPropertyEditor::RegisterFlatElements()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            namespace Flat = EntityPropertyEditorFlatInternal;
+            using AzQtComponents::BoxElement;
+            // The box's selector names no type (`QWidget#m_darkBox` reaches any widget of that name); the six are labels and a line
+            BoxElement::registerElement(&Flat::DarkBox, &QWidget::staticMetaObject, &Flat::isDarkBox);
+            BoxElement::registerElement(&Flat::DarkBoxLabel, &QLabel::staticMetaObject, &Flat::isDarkBoxLabel);
+            BoxElement::registerElement(&Flat::DarkBoxLine, &QFrame::staticMetaObject, &Flat::isDarkBoxLine);
+            AzQtComponents::ToolTipElement::registerElement(&Flat::DarkBoxToolTip, &QLabel::staticMetaObject, &Flat::isDarkBoxLabel);
+        }
+    }
+
     EntityPropertyEditor::EntityPropertyEditor(QWidget* pParent, Qt::WindowFlags flags, bool isLevelEntityEditor)
         : QWidget(pParent, flags)
         , m_propertyEditBusy(0)
@@ -596,11 +771,34 @@ namespace AzToolsFramework
 
         m_gui = new Ui::EntityPropertyEditorUI();
         m_gui->setupUi(this);
+
+        // The header labels' palettes, set as the form set them before the flattening (EntityPropertyEditor.ui, six <palette>s)
+        m_gui->m_entityNameLabel->setPalette(EntityPropertyEditorFlatInternal::headerLabelPalette(false));
+        for (QWidget* part : { static_cast<QWidget*>(m_gui->m_entityIdLabel), static_cast<QWidget*>(m_gui->m_entityIdText),
+                               static_cast<QWidget*>(m_gui->m_prefabContainerLabel), static_cast<QWidget*>(m_gui->m_prefabContainerText),
+                               static_cast<QWidget*>(m_gui->m_statusLabel) })
+        {
+            part->setPalette(EntityPropertyEditorFlatInternal::headerLabelPalette(true));
+        }
+
+        // The header's dark box: the sheets the form gave the box and six widgets in it, for the legacy GUI only. The flattened GUI
+        // sets none, and its elements draw the box (RegisterFlatElements).
+        using AzQtComponents::StyleManager;
+        StyleManager::setLegacyStyleSheet(m_gui->m_darkBox, EntityPropertyEditorFlatInternal::DarkBoxSheet);
+        for (QWidget* part : { static_cast<QWidget*>(m_gui->m_entityIdLabel), static_cast<QWidget*>(m_gui->m_entityIdText),
+                               static_cast<QWidget*>(m_gui->m_prefabContainerLabel), static_cast<QWidget*>(m_gui->m_prefabContainerText),
+                               static_cast<QWidget*>(m_gui->line_2), static_cast<QWidget*>(m_gui->m_statusLabel) })
+        {
+            StyleManager::setLegacyStyleSheet(part, EntityPropertyEditorFlatInternal::DarkBoxPartSheet);
+        }
+
         if (AzQtComponents::StyleManager::stylesheetsDisabled())
         {
-            // The form embeds an orange (255,153,0) WindowText palette on these labels that
-            // the app-wide `* { color: white }` rule always overrode; without the sheet the
-            // palette would show. Reset them to the inherited (white) text colour.
+            RegisterFlatElements();
+
+            // The constructor gives these labels an orange (255,153,0) WindowText palette (the header labels' palettes above, as the
+            // form did) that the app-wide `* { color: white }` rule always overrode; without the sheet the palette would show. Reset
+            // them to the inherited (white) text colour.
             // TOKENIZE: InspectorHeaderTextColor
             for (QLabel* label : { static_cast<QLabel*>(m_gui->m_entityNameLabel), static_cast<QLabel*>(m_gui->m_entityIdLabel),
                                    static_cast<QLabel*>(m_gui->m_entityIdText), static_cast<QLabel*>(m_gui->m_prefabContainerLabel),
@@ -750,7 +948,12 @@ namespace AzToolsFramework
     void EntityPropertyEditor::OnSearchContextMenu(const QPoint& pos)
     {
         QMenu* menu = m_gui->m_entitySearchBox->createStandardContextMenu();
-        menu->setStyleSheet("background-color: #333333");
+
+        // The fill the menu gave itself, `menu->setStyleSheet("background-color: #333333")` (the form before the flattening): the legacy
+        // GUI sets it as before. The flattened GUI sets none, and the menu is marked for the element that draws it (MenuElement)
+        AzQtComponents::MenuElement::setFilledPopupSheet(menu,
+            QStringLiteral("background-color: %1").arg(AzQtComponents::Foundations::Low.name()));
+
         menu->exec(m_gui->m_entitySearchBox->mapToGlobal(pos));
         delete menu;
     }
@@ -5166,7 +5369,8 @@ namespace AzToolsFramework
 
             drag->setMimeData(mimeData);
             drag->setPixmap(m_reorderRowWidget->createDragImage(
-                QColor("#8E863E"), QColor("#EAECAA"), 0.5f, PropertyRowWidget::DragImageType::SingleRow));
+                EntityPropertyEditorFlatInternal::DragImageFill, EntityPropertyEditorFlatInternal::DragImageBorder, 0.5f,
+                PropertyRowWidget::DragImageType::SingleRow));
             drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
             drag->setDragCursor(m_dragIcon.pixmap(32), Qt::DropAction::MoveAction);
             // Ensure we can tidy up if the drop happens elsewhere.
@@ -5268,7 +5472,8 @@ namespace AzToolsFramework
     {
         m_reorderRowWidget = rowWidget;
         m_reorderRowImage = rowWidget->createDragImage(
-            QColor("#8E863E"), QColor("#EAECAA"), 0.5f, PropertyRowWidget::DragImageType::IncludeVisibleChildren);
+            EntityPropertyEditorFlatInternal::DragImageFill, EntityPropertyEditorFlatInternal::DragImageBorder, 0.5f,
+            PropertyRowWidget::DragImageType::IncludeVisibleChildren);
     }
 
     void EntityPropertyEditor::EndRowWidgetReorder()

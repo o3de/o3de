@@ -11,6 +11,8 @@
 #include "Windows/EditorCommon.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
+#include <AzQtComponents/Components/StyleManager.h>
+
 #include <LyShine/Animation/IUiAnimation.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 
@@ -95,7 +97,9 @@ QSize PreviewAnimationList::sizeHint() const
 void PreviewAnimationList::AddMenuItems()
 {
     QMenu* menu = menuBar()->addMenu(tr("&View"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    // The items of this menu are toggle-view actions, always enabled: the sheet's disabled-item grey shows nothing here, so it is the
+    // legacy GUI's alone and the flattened GUI carries no element for it
+    AzQtComponents::StyleManager::setLegacyStyleSheet(menu, UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     QList<QToolBar*> list = findChildren<QToolBar*>();
     for (auto p : list)

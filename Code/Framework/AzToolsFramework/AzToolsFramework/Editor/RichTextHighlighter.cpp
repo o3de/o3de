@@ -10,6 +10,19 @@
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Rich Text Colours
+    // =======================================================================
+
+    //! The colours of the highlighted rich text: the background of a match, and the text colour of the document by the item state,
+    //! written into its HTML and CSS text. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace RichTextHighlighterFlatInternal
+    {
+        constexpr QColor MatchBackground(0x70, 0x70, 0x70);   // RichTextHighlighter.cpp:23. TOKENIZE: RichTextMatchBackground
+        const QColor EnabledText(Qt::white);                  // RichTextHighlighter.cpp:41. TOKENIZE: RichTextEnabledText
+        constexpr QColor DisabledText(0x7C, 0x7C, 0x7C);      // RichTextHighlighter.cpp:45. TOKENIZE: RichTextDisabledText
+    }
 
     QString RichTextHighlighter::HighlightText(const QString& displayString, const QString& matchingSubstring)
     {
@@ -20,7 +33,7 @@ namespace AzToolsFramework
             highlightTextIndex = static_cast<int>(highlightedString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive));
             if (highlightTextIndex >= 0)
             {
-                const QString backgroundColor{ "#707070" };
+                const QString backgroundColor{ RichTextHighlighterFlatInternal::MatchBackground.name() };
                 highlightedString.insert(static_cast<int>(highlightTextIndex + matchingSubstring.length()), "</span>");
                 highlightedString.insert(highlightTextIndex, "<span style=\"background-color: " + backgroundColor + "\">");
             }
@@ -38,11 +51,11 @@ namespace AzToolsFramework
         textDoc.setDefaultFont(option.font);
         if (option.state & QStyle::State_Enabled)
         {
-            textDoc.setDefaultStyleSheet("body {color: white}");
+            textDoc.setDefaultStyleSheet(QString("body {color: %1}").arg(RichTextHighlighterFlatInternal::EnabledText.name()));
         }
         else
         {
-            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
+            textDoc.setDefaultStyleSheet(QString("body {color: %1}").arg(RichTextHighlighterFlatInternal::DisabledText.name().toUpper()));
         }
         textDoc.setHtml("<body>" + highlightedString + "</body>");
         painter->translate(availableRect.topLeft() + offset);

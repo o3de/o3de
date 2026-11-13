@@ -22,6 +22,21 @@
 
 #include <QTreeWidgetItem>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The hierarchy item's data colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace HierarchyItemFlat
+{
+    // HierarchyItem.cpp:402 (the text of an item that belongs to a slice). TOKENIZE: HierarchySliceText
+    constexpr QColor SliceText(117, 156, 254);
+
+    // HierarchyItem.cpp:476 (the background of an editor-only entity). TOKENIZE: HierarchyEditorOnlyBack
+    constexpr QColor EditorOnlyBack(60, 0, 0);
+} // namespace HierarchyItemFlat
+
 #define UICANVASEDITOR_HIERARCHY_ICON_OPEN ":/Icons/Eye_Open.tif"
 #define UICANVASEDITOR_HIERARCHY_ICON_OPEN_HIDDEN ":/Icons/Eye_Open_Hidden.tif"
 #define UICANVASEDITOR_HIERARCHY_ICON_OPEN_HOVER ":/Icons/Eye_Open_Hover.tif"
@@ -399,7 +414,7 @@ void HierarchyItem::ReplaceElement(const AZStd::string& xml, const AZStd::unorde
 void HierarchyItem::UpdateSliceInfo()
 {
     // This is deliberately slightly different to the blue color used for hover, so that we can still see a change on hover
-    static const QColor sliceForegroundColor(117, 156, 254);
+    static const QColor sliceForegroundColor(HierarchyItemFlat::SliceText);
 
     // determine if entity belongs to a slice
     AZ::SliceComponent::SliceInstanceAddress sliceAddress;
@@ -473,7 +488,7 @@ void HierarchyItem::UpdateEditorOnlyInfo()
 
     if (isEditorOnly)
     {
-        static const QColor editorOnlyBackgroundColor(60, 0, 0);
+        static const QColor editorOnlyBackgroundColor(HierarchyItemFlat::EditorOnlyBack);
         setBackground(0, editorOnlyBackgroundColor);
     }
     else

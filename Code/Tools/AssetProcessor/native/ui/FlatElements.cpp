@@ -13,13 +13,16 @@
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
+#include <QFont>
 #include <QFrame>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListView>
 #include <QListWidget>
+#include <QMenu>
 #include <QPushButton>
 #include <QSplitter>
 #include <QStackedWidget>
@@ -27,6 +30,8 @@
 #include <QToolButton>
 #include <QTreeView>
 #include <QWidget>
+
+#include <cstddef>
 
 // ----------------------------------------------------------------------------------
 // The flattened GUI's AssetProcessor.qss
@@ -42,10 +47,15 @@
 // So where a rule of this sheet gives a property in every state, the :hover and :disabled rules of the global sheets do not
 // reach it: `FilteredSearchWidget QLineEdit { background-color }` keeps its fill when the field is disabled.
 //
-// Widgets an inline .ui sheet styles (the five Settings dividers `background-color: #616161;`, the labels `font: bold;` and
-// `font: 12pt;`) are not rows: QStyleSheetStyle still draws them in the flattened GUI, over what the elements give them
-// (FlatFramePaintTests.Sheet_GivingTheFrameABackground_OwnsItsFillAndShades; the n2 and f3 fonts of builderInfoHeaderTitleName
-// and assetNameLabel are equal).
+// The inline sheets of the .ui forms and of MainWindow.cpp (InlineSheets in FlatElements.h) are rows, at the end of this file: the
+// legacy GUI sets them after setupUi (SetLegacySheet) and the flattened GUI sets none, so no widget of it is under a
+// QStyleSheetStyle for them. The five Settings dividers `background-color: #616161;` are a box element, the labels `font: bold;`,
+// `font: 12pt;` and `font: bold, 12pt;` are text elements (the `12pt` one also for the context menu of the four selectable value
+// labels, which the sheet reached as a descendant), and the remove button of a pattern `QPushButton { background-color:
+// transparent; border: 0px }` is a box element. Not rows: the fill `background-color: rgb(87, 87, 87);` of the detail panels
+// (MainWindow::Activate replaces their sheet by AssetProcessor.qss before the window is shown, so it never paints in the legacy GUI),
+// `padding:0px` of the missing dependency icon (a declared 0, which is what the label rule's box has already: Style gives every label
+// that box) and `QLabel#sharedCacheStatus` (a selector with no body, which only puts the label under the sheet style).
 //
 // The colors of the views (AssetProcessor.qss:50-112, :133-167; AssetsTab.qss:84-105: the alternate and the selection colors, the
 // fills of the items and branches by state, the sections of the headers) are item view elements, laid over the Global element of the kind
@@ -68,12 +78,14 @@ namespace AssetProcessor
         using AzQtComponents::FrameElement;
         using AzQtComponents::ItemViewElement;
         using AzQtComponents::TextElement;
+        using AzQtComponents::Selectors::childOf;
         using AzQtComponents::Selectors::hasProperty;
         using AzQtComponents::Selectors::named;
         using AzQtComponents::Selectors::tagged;
         using AzQtComponents::Selectors::within;
         using AzQtComponents::Selectors::withinClass;
         using Widget = const QWidget*;
+        namespace Foundations = AzQtComponents::Foundations;
 
         // ------------------------------------------------------------------------------
         // Fills shared by several elements
@@ -102,7 +114,7 @@ namespace AssetProcessor
             .m_name = "AssetProcessor.Text.APTimer",
             .m_family = "Open Sans Light",
             .m_pixelSize = 18,
-            .m_color = QColor(0xFF, 0xFF, 0xFF),
+            .m_color = QColor(0xFF, 0xFF, 0xFF),   // BaseStyleSheet.qss:18
         };
 
         // ------------------------------------------------------------------------------
@@ -172,8 +184,8 @@ namespace AssetProcessor
         // ------------------------------------------------------------------------------
 
         //! `QLabel#sharedCacheStatus[highlight = "blue"|"green"|"red"]` (AssetProcessor.qss:174-193): the status line of the page
-        //! (MainWindow.cpp:949-989 sets the property and repolishes the label). A 1px border of its own over a tint of 10% of its
-        //! colour (rgba(r, g, b, 0.1): the alpha reads as 0.1 * 255 = 25, qcssparser.cpp:830-836), and the 1px top and bottom
+        //! (MainWindow::CheckAssetServerStates sets the property and repolishes the label). A 1px border of its own over a tint of 10% of
+        //! its colour (rgba(r, g, b, 0.1): the alpha reads as 0.1 * 255 = 25, qcssparser.cpp:830-836), and the 1px top and bottom
         //! margin of every QLabel (Text.qss:93-94). Its text is a plain label's: white, weight normal (AssetProcessor.qss:175-176,
         //! :182-183, :189-190; BaseStyleSheet.qss:18, :20). A label with no highlight is a plain label too: its rule
         //! (AssetProcessor.qss:169-172) says what '*' says.
@@ -203,8 +215,8 @@ namespace AssetProcessor
         //! 2596-2615 reads a limit only above -1). Over the '*' fill, the border image of :199 is the look of the button:
         //! `border-image: url(":/Browse_on.png") 0 0 0 0 stretch stretch`, which Qt stretches over the whole border box, whatever the size
         //! of the image (QRenderRule::drawBorderImage, qstylesheetstyle.cpp:1167-1188; Face::m_borderImage). The resource is AssetProcessor.qrc's
-        //! (:22), and the button has the same file as its icon (MainWindow.cpp:753). n2 SharedCachePage7: the button is 19x19 at [1171,308] at
-        //! 150%; the sheet has no rule for any other state of it. TOKENIZE: ServerAddressImage
+        //! (:22), and the button has the same file as its icon (MainWindow::SetupAssetServerTab). n2 SharedCachePage7: the button is
+        //! 19x19 at [1171,308] at 150%; the sheet has no rule for any other state of it. TOKENIZE: ServerAddressImage
         const BoxElement ServerAddressToolButton{
             .m_name = "AssetProcessor.Box.ServerAddressToolButton",
             .m_hasBox = true,
@@ -214,8 +226,8 @@ namespace AssetProcessor
 
         //! `QTableWidget { background-color: rgb(45,45,45) }` (AssetProcessor.qss:134) over the borderless views of TableView.qss:28
         //! and the margin of every scroll area (QDockWidget.qss:35); `QTableView { qproperty-showGrid: false }` (TableView.qss:11).
-        //! The rule names the class, so the matcher takes every QTableWidget: the window has one (MainWindow.ui:2339, captured) and
-        //! its detail panels five more (SourceAssetDetailsPanel.ui:353, 420, 481, 543, ProductAssetDetailsPanel.ui:903; UNVERIFIED by
+        //! The rule names the class, so the matcher takes every QTableWidget: the window has one (MainWindow.ui:2309, captured) and
+        //! its detail panels five more (SourceAssetDetailsPanel.ui:338, 405, 466, 528, ProductAssetDetailsPanel.ui:852; UNVERIFIED by
         //! capture). Needs the door of the view's viewport.
         const BoxElement SharedCacheTable{
             .m_name = "AssetProcessor.Box.SharedCacheTable",
@@ -231,7 +243,7 @@ namespace AssetProcessor
         const BoxElement PageOverlay{
             .m_name = "AssetProcessor.Box.PageOverlay",
             .m_nativeBorder = false,
-            .m_idle = { .m_fill = QBrush(QColor(34, 34, 34, 127)) },
+            .m_idle = { .m_fill = QBrush(QColor(34, 34, 34, 127)) },   // AssetProcessor.qss:212, :217
         };
 
         // ------------------------------------------------------------------------------
@@ -260,7 +272,7 @@ namespace AssetProcessor
             .m_name = "AssetProcessor.Box.JobLogPlaceholderLabel",
             .m_margin = QMargins(0, 1, 0, 1),
             .m_padding = QMargins(8, 16, 8, 8),
-            .m_idle = { .m_fill = QBrush(QColor(34, 34, 34)) },
+            .m_idle = { .m_fill = QBrush(QColor(34, 34, 34)) },   // AssetsTab.qss:125
         };
 
         //! `QFrame#logButtonWrapper { margin-top: 8px }` (LogsTab.qss:13)
@@ -273,9 +285,10 @@ namespace AssetProcessor
         //! The lists, tables and trees of the sheets: `AzQtComponents--TableView, #builderList` (AssetsTab.qss:87), `QListWidget`
         //! (AssetProcessor.qss:152) and the five asset trees (:65) are filled rgb(45,45,45). No view has a border (TableView.qss:28,
         //! `border: none`) or a margin (QDockWidget.qss:35, `QAbstractScrollArea { margin: 0 }`: a declared 0, which is a box).
+        //! `AzQtComponents--TableView#jobTreeView { margin-bottom: 0px }` (AssetsTab.qss:107-109) states that same 0 again.
         //! Captured: the TableViews, builderList, SourceAssetsTreeView and missingDependencyScanResults. UNVERIFIED by capture: the
         //! other four trees. Needs the door of the view's viewport.
-        //! OPEN: builderInfoPatternsTableView gets its indentation 0 from MainWindow.ui:1358, which Native may have reset to the
+        //! OPEN: builderInfoPatternsTableView gets its indentation 0 from MainWindow.ui:1355, which Native may have reset to the
         //! style's as it did the tables of AssetBundler (TableView.cpp:324-326); no row of it is captured, so none is carried.
         const BoxElement ItemView{
             .m_name = "AssetProcessor.Box.ItemView",
@@ -466,6 +479,7 @@ namespace AssetProcessor
             .m_nativeBorder = false,
             .m_radius = 2,
             .m_size = QSize(260, 16),
+            // fill AssetsTab.qss:38, ring BaseStyleSheet.qss:81 (its width LineEdit.qss:16)
             .m_idle = { .m_fill = QBrush(QColor(0xE9, 0xE9, 0xE9)), .m_edges = BoxElement::border(2, QColor(0xE9, 0xE9, 0xE9)) },
             .m_properties = { { "frame", true } },
         };
@@ -480,6 +494,7 @@ namespace AssetProcessor
             .m_hasBox = true,
             .m_nativeBorder = false,
             .m_radius = 2,
+            // fill AssetsTab.qss:70, line AssetsTab.qss:71
             .m_idle = { .m_fill = QBrush(QColor(34, 34, 34)), .m_edges = BoxElement::border(1, QColor(70, 70, 70)) },
             .m_properties = { { "indentation", 0 }, { "expandsOnDoubleClick", false } },
         };
@@ -491,6 +506,176 @@ namespace AssetProcessor
             .m_name = "AssetProcessor.Box.FilterPopup",
             .m_properties = { { "lineEditSearchVisible", false } },
         };
+
+        // ------------------------------------------------------------------------------
+        // The inline sheets of the .ui forms and of MainWindow.cpp (InlineSheets in FlatElements.h)
+        //
+        // Each sheet reached the widget it was set on and the widgets under it. The widgets are leaves, but for the popups a label
+        // opens with the label as its parent: the sheets without a selector (`font: ...;`, `padding:0px`) reached those as they reach
+        // every descendant. Two labels open one. The four selectable value labels of the product panel (`font: 12pt;`) open the
+        // Copy / Select All menu (QLabel::contextMenuEvent, qlabel.cpp:850-865 and :1622-1629: QMenu with the label as its parent),
+        // which was 12pt in the legacy GUI: a row of its own below (FormPoint on the menu). missingDependencyErrorIcon (`padding:0px`)
+        // opens a tool tip (QStyleSheetStyle takes the widget for the tool tip's parent, qstylesheetstyle.cpp:1496-1506), whose box
+        // the tool tip rule gave already (ToolTip.qss:10-20: margins and a border) and whose padding is 0 in both: no row.
+        // Of the application sheet, the rules that reach the widgets are the universal rule (BaseStyleSheet.qss:15-21), the frame rule
+        // for the dividers (BaseStyleSheet.qss:40-48), the label rule and its typography tier for the labels (Text.qss:89-95, :64-70;
+        // Style carries both) and the push button rules for the button (PushButton.qss:30-52). AssetProcessor.qss has no rule for any
+        // of them, and a rule of the widget's own sheet outranks every rule of the application sheet for the properties it sets.
+        // ------------------------------------------------------------------------------
+
+        //! The classes of the forms that own the sheets: the objects' classes, not their names (a panel is renamed after it is built)
+        constexpr const char* MainWindowClass = "MainWindow";
+        constexpr const char* ProductPanelClass = "AssetProcessor::ProductAssetDetailsPanel";
+        constexpr const char* SourcePanelClass = "AssetProcessor::SourceAssetDetailsPanel";
+
+        //! `bold`: QFont::Bold (QCss font shorthand; the legacy dump of builderInfoHeaderTitleName has weight 700)
+        constexpr int BoldWeight = QFont::Bold;
+
+        //! `font: bold;` (MainWindow.ui:1334, :1392, :1422, :1442, :1462; ProductAssetDetailsPanel.ui:296, :309, :332, :355, :378;
+        //! SourceAssetDetailsPanel.ui:241, :274, :287, the forms before the flattening). The shorthand sets the style to normal and the
+        //! weight to bold, and leaves the family and the size to the label rule: Open Sans, 12px (Text.qss:91-92). Captured:
+        //! builderInfoHeaderTitleName (legacy dump: Open Sans, 12px, weight 700). UNVERIFIED by capture: the other twelve.
+        //! TOKENIZE: FormTitleWeight
+        const TextElement FormBold{
+            .m_name = "AssetProcessor.Text.FormBold",
+            .m_family = Foundations::Label::Family,
+            .m_pixelSize = Foundations::Label::Size,
+            .m_weight = BoldWeight,
+            .m_italic = 0,
+        };
+
+        //! `font: 12pt;` (ProductAssetDetailsPanel.ui:41, :470, :563, :662, :800; SourceAssetDetailsPanel.ui:41, the forms before the
+        //! flattening). The shorthand sets the style and the weight to normal and the size to 12 points (QCss parseShorthandFontProperty
+        //! and setFontSizeFromValue, qcssparser.cpp:1338-1361 and :1174-1209: QFont::setPointSizeF), over the label rule's 12px
+        //! (Text.qss:92) and, for the two assetNameLabel, over the title tier's 18px (Text.qss:67); the family stays Open Sans
+        //! (Text.qss:66, :91). The size is carried in points (TextElement::m_pointSize), as the sheet gave it: Qt makes pixels of it at
+        //! the screen's logical DPI in both GUIs. Also the font of the context menu of the four selectable value labels (see
+        //! isPointLabelMenu). Captured: assetNameLabel of the source panel (legacy dump: Open Sans, pt 12, px -1, weight 400).
+        //! UNVERIFIED by capture: the other five, and the menu. TOKENIZE: FormTextSize
+        const TextElement FormPoint{
+            .m_name = "AssetProcessor.Text.FormPoint",
+            .m_family = Foundations::Label::Family,
+            .m_pointSize = 12,
+            .m_weight = QFont::Normal,
+            .m_italic = 0,
+        };
+
+        //! `font: bold, 12pt;` (ProductAssetDetailsPanel.ui:212, :454, :550, :649, :787, the form before the flattening). Qt reads the
+        //! shorthand as the weight bold, and then the comma takes the slot of the size without being one; the word after it, 12pt, is
+        //! taken for the family (QCss parseShorthandFontProperty, qcssparser.cpp:1338-1361, called by ValueExtractor::extractFont,
+        //! :1386-1407: bold is a weight, the comma goes to setFontSizeFromValue and sets nothing, then setFontFamilyFromValues reads
+        //! "12pt" from index 2). The size stays the label rule's 12px (Text.qss:92). So the legacy GUI draws these five labels in a
+        //! family named "12pt", which no machine has: Qt falls back to a font of its own. Qt 6.10.2 is the engine's; a probe on 6.10.3
+        //! measured family "12pt", 12px, weight 700 with the rules above the label, and the test
+        //! Fonts_TheShorthandWithACommaMakesTheWordAfterItTheFamily pins it on the engine's Qt. The effective value is kept, quirk and
+        //! all. UNVERIFIED by capture (the product tabs are in no capture). TOKENIZE: FormTitleFamily, FormTitleWeight
+        const TextElement FormBoldWithComma{
+            .m_name = "AssetProcessor.Text.FormBoldWithComma",
+            .m_family = "12pt",
+            .m_pixelSize = Foundations::Label::Size,
+            .m_weight = BoldWeight,
+            .m_italic = 0,
+        };
+
+        //! `background-color: #616161;` (MainWindow.ui:1619, :1767, :1900, :2051, :2202, the form before the flattening) on the five
+        //! dividers of the settings page, over the frame fill `.QFrame[frameShape="4"] { background-color: #444444 }`
+        //! (BaseStyleSheet.qss:40-48), which the widget's own sheet outranks. The fill, and the divider's own frame (a sunken line),
+        //! which the base style draws over the palette of the fill, as it did under the sheet. Captured. TOKENIZE: SettingsDividerSurface
+        const BoxElement SettingsDivider{
+            .m_name = "AssetProcessor.Box.SettingsDivider",
+            .m_idle = { .m_fill = QBrush(QColor(0x61, 0x61, 0x61)) },
+        };
+
+        //! `QPushButton { background-color: transparent; border: 0px }` (MainWindow::AddPatternRow, the code before the flattening), on
+        //! the remove button of a pattern of the shared cache table (a flat button, setFlat in the same function). The border is
+        //! declared, so the box is the rule's and not the style's: no margin, no border, no padding, and the label (the icon) in the
+        //! whole rect, as `QPushButton:flat { border: none; background-color: transparent }` (PushButton.qss:48-52) gave every flat
+        //! button. UNVERIFIED by capture (no row in a capture).
+        const BoxElement RemovePatternButton{
+            .m_name = "AssetProcessor.Box.RemovePatternButton",
+            .m_nativeBorder = false,
+            .m_idle = { .m_fill = Transparent },
+        };
+
+        // ------------------------------------------------------------------------------
+        // Matchers: the widgets each sheet was set on, by name below the class of the form that owns it (the same names are the
+        // names of other widgets of the engine, and of the other forms)
+        // ------------------------------------------------------------------------------
+
+        //! The widget has one of the names
+        template<std::size_t Count>
+        bool namedAmong(Widget widget, const char* const (&names)[Count])
+        {
+            for (const char* name : names)
+            {
+                if (named(widget, name))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //! The sheets and their lines are those of the forms before the flattening.
+        //! MainWindow.ui:1334-1462, ProductAssetDetailsPanel.ui:296-378 and SourceAssetDetailsPanel.ui:241-287: `font: bold;`
+        constexpr const char* MainWindowBoldLabels[] = { "builderInfoHeaderTitleName", "builderInfoDetailsTitleVersionNumber",
+            "builderInfoDetailsTitleFingerprint", "builderInfoDetailsTitleType", "builderInfoDetailsTitleBusId" };
+        constexpr const char* ProductBoldLabels[] = { "platformTitleLabel", "productAssetIdTitleLabel", "sourceAssetTitleLabel",
+            "lastTimeProcessedTitleLabel", "jobKeyTitleLabel" };
+        constexpr const char* SourceBoldLabels[] = { "scanFolderTitleLabel", "sourceGuidTitleLabel", "sourceAssetTitleLabel" };
+
+        //! ProductAssetDetailsPanel.ui:41, :470, :563, :662, :800 and SourceAssetDetailsPanel.ui:41: `font: 12pt;`
+        constexpr const char* ProductPointLabels[] = { "assetNameLabel", "outgoingProductDependenciesValueLabel",
+            "outgoingUnmetPathProductDependenciesValueLabel", "incomingProductDependenciesValueLabel",
+            "MissingProductDependenciesValueLabel" };
+        constexpr const char* SourcePointLabels[] = { "assetNameLabel" };
+
+        //! ProductAssetDetailsPanel.ui:212, :454, :550, :649, :787: `font: bold, 12pt;`
+        constexpr const char* ProductBoldPointLabels[] = { "MissingProductDependenciesFolderTitleLabel",
+            "outgoingProductDependenciesTitleLabel", "outgoingUnmetPathProductDependenciesTitleLabel",
+            "incomingProductDependenciesTitleLabel", "MissingProductDependenciesTitleLabel" };
+
+        //! MainWindow.ui:1619, :1767, :1900, :2051, :2202
+        constexpr const char* SettingsDividers[] = { "line", "line_2", "line_3", "line_4", "line_5" };
+
+        bool isBoldLabel(Widget widget)
+        {
+            return (namedAmong(widget, MainWindowBoldLabels) && withinClass(widget, MainWindowClass))
+                || (namedAmong(widget, ProductBoldLabels) && withinClass(widget, ProductPanelClass))
+                || (namedAmong(widget, SourceBoldLabels) && withinClass(widget, SourcePanelClass));
+        }
+
+        bool isPointLabel(Widget widget)
+        {
+            return (namedAmong(widget, ProductPointLabels) && withinClass(widget, ProductPanelClass))
+                || (namedAmong(widget, SourcePointLabels) && withinClass(widget, SourcePanelClass));
+        }
+
+        //! A menu with a `font: 12pt;` label as its parent: the Copy / Select All menu of a selectable value label
+        //! (QLabel::contextMenuEvent makes it with the label as its parent), which the label's sheet reached as a descendant. The
+        //! menu is a window and takes no font from its parent as a child widget does, so the font is the menu's own element.
+        bool isPointLabelMenu(Widget widget)
+        {
+            const QWidget* parent = widget->parentWidget();
+            return qobject_cast<const QLabel*>(parent) && isPointLabel(parent);
+        }
+
+        bool isBoldPointLabel(Widget widget)
+        {
+            return namedAmong(widget, ProductBoldPointLabels) && withinClass(widget, ProductPanelClass);
+        }
+
+        //! The dividers are children of the settings page (MainWindow.ui, SettingsPage)
+        bool isSettingsDivider(Widget widget)
+        {
+            return namedAmong(widget, SettingsDividers) && childOf(widget, "SettingsPage") && withinClass(widget, MainWindowClass);
+        }
+
+        //! The cell widgets of the shared cache table that are push buttons are the remove buttons (MainWindow::AddPatternRow)
+        bool isRemovePatternButton(Widget widget)
+        {
+            return within(widget, "sharedCacheTable") && withinClass(widget, MainWindowClass);
+        }
     } // namespace FlatElementsInternal
 
     // ----------------------------------------------------------------------------------
@@ -500,6 +685,14 @@ namespace AssetProcessor
     void RegisterFlatElements()
     {
         using namespace FlatElementsInternal;
+
+        // The registries last for the process: a second call would only add the same rows again
+        static bool registered = false;
+        if (registered)
+        {
+            return;
+        }
+        registered = true;
 
         // ---- text
         // `.APTimer` is a class tag of any widget; the three timers are labels
@@ -621,5 +814,22 @@ namespace AssetProcessor
             {
                 return within(w, "jobFilteredSearchWidget") || within(w, "detailsFilterWidget");
             });
+
+        // ---- the inline sheets of the .ui forms and of MainWindow.cpp
+        TextElement::registerElement(&FormBold, &QLabel::staticMetaObject, &isBoldLabel);
+        TextElement::registerElement(&FormPoint, &QLabel::staticMetaObject, &isPointLabel);
+        TextElement::registerElement(&FormPoint, &QMenu::staticMetaObject, &isPointLabelMenu);     // the label's context menu
+        TextElement::registerElement(&FormBoldWithComma, &QLabel::staticMetaObject, &isBoldPointLabel);
+        BoxElement::registerElement(&SettingsDivider, &QFrame::staticMetaObject, &isSettingsDivider);
+        BoxElement::registerElement(&RemovePatternButton, &QPushButton::staticMetaObject, &isRemovePatternButton);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // The legacy GUI's inline sheets
+    // ----------------------------------------------------------------------------------
+
+    void SetLegacySheet(QWidget* widget, const char* sheet)
+    {
+        AzQtComponents::StyleManager::setLegacyStyleSheet(widget, QString::fromLatin1(sheet));
     }
 } // namespace AssetProcessor

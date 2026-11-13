@@ -27,12 +27,57 @@
 #include <QToolTip>
 #include <QWheelEvent>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The spline widget's paint colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace UiSplineCtrlExFlat
+{
+    // UiSplineCtrlEx.cpp:33 (#define ACTIVE_BKG_COLOR: the fill of the time range and the left strip). TOKENIZE: SplineActiveBackground
+    constexpr QColor ActiveBackground(190, 190, 190);
+
+    // UiSplineCtrlEx.cpp:34 (#define GRID_COLOR: the left separator and the dotted grid lines). TOKENIZE: SplineGridLine
+    constexpr QColor GridLine(110, 110, 110);
+
+    // UiSplineCtrlEx.cpp:35 (#define EDIT_SPLINE_COLOR: the colour a curve starts with). TOKENIZE: SplineEditCurve
+    constexpr QColor EditCurve(128, 255, 128);
+
+    // UiSplineCtrlEx.cpp:696 (the fill of the whole widget). TOKENIZE: SplineBackground
+    constexpr QColor Background(160, 160, 160);
+
+    // UiSplineCtrlEx.cpp:792 (the value labels of the horizontal grid lines). TOKENIZE: SplineGridLabel
+    const QColor GridLabel(Qt::black);
+
+    // UiSplineCtrlEx.cpp:804 (the X axis and the Y axis). TOKENIZE: SplineAxis
+    constexpr QColor Axis(110, 100, 100);
+
+    // UiSplineCtrlEx.cpp:952 (the outline of a key). TOKENIZE: SplineKeyOutline
+    const QColor KeyOutline(Qt::black);
+
+    // UiSplineCtrlEx.cpp:1002 (the fill of a key). TOKENIZE: SplineKey
+    constexpr QColor Key(220, 220, 0);
+
+    // UiSplineCtrlEx.cpp:1005 (the fill of a selected key). TOKENIZE: SplineKeySelected
+    const QColor KeySelected(Qt::red);
+
+    // UiSplineCtrlEx.cpp:1034 (the in and out tangent lines). TOKENIZE: SplineTangentLine
+    constexpr QColor TangentLine(96, 96, 96);
+
+    // UiSplineCtrlEx.cpp:1045 (the end handles of a tangent). TOKENIZE: SplineTangentHandle
+    constexpr QColor TangentHandle(0, 220, 0);
+
+    // UiSplineCtrlEx.cpp:1060 (the current-time marker). TOKENIZE: SplineTimeMarker
+    constexpr QColor TimeMarker(255, 0, 255);
+} // namespace UiSplineCtrlExFlat
+
 #define DEFAULT_MIN_TIME_EPSILON 0.001f
 #define MIN_TIME_EPSILON_FOR_SCALING 0.1f
 
-#define ACTIVE_BKG_COLOR      QColor(190, 190, 190)
-#define GRID_COLOR            QColor(110, 110, 110)
-#define EDIT_SPLINE_COLOR     QColor(128, 255, 128)
+#define ACTIVE_BKG_COLOR      UiSplineCtrlExFlat::ActiveBackground
+#define GRID_COLOR            UiSplineCtrlExFlat::GridLine
+#define EDIT_SPLINE_COLOR     UiSplineCtrlExFlat::EditCurve
 
 #define MIN_PIXEL_PER_GRID_X 50
 #define MIN_PIXEL_PER_GRID_Y 10
@@ -693,7 +738,7 @@ void SplineWidget::paintEvent(QPaintEvent* event)
 
     if (m_TimeUpdateRect != event->rect())
     {
-        painter.fillRect(event->rect(), QColor(160, 160, 160));
+        painter.fillRect(event->rect(), UiSplineCtrlExFlat::Background);
 
         m_grid.CalculateGridLines();
 
@@ -789,7 +834,7 @@ void SplineWidget::DrawGrid(QPainter* painter)
 
             if ((v >= m_valueRange.start && v <= m_valueRange.end) || fabs(v - m_valueRange.start) < 0.01f || fabs(v - m_valueRange.end) < 0.01f)
             {
-                painter->setPen(Qt::black);
+                painter->setPen(UiSplineCtrlExFlat::GridLabel);
                 painter->drawText(m_rcClient.left() + 2, py - 8, QString::number(v));
             }
         }
@@ -801,7 +846,7 @@ void SplineWidget::DrawGrid(QPainter* painter)
 
     //////////////////////////////////////////////////////////////////////////
     {
-        const QPen pen0(QColor(110, 100, 100), 2);
+        const QPen pen0(UiSplineCtrlExFlat::Axis, 2);
         const QPoint p = WorldToClient(Vec2(0, 0));
 
         painter->setPen(pen0);
@@ -949,7 +994,7 @@ void SplineWidget::DrawKeys(QPainter* painter, int splineIndex, [[maybe_unused]]
 
     // create and select a white pen // KDAB: white?
     const QPen pOldPen = painter->pen();
-    painter->setPen(Qt::black);
+    painter->setPen(UiSplineCtrlExFlat::KeyOutline);
 
     int i;
 
@@ -999,10 +1044,10 @@ void SplineWidget::DrawKeys(QPainter* painter, int splineIndex, [[maybe_unused]]
                 continue;
             }
 
-            QColor clr(220, 220, 0);
+            QColor clr(UiSplineCtrlExFlat::Key);
             if (pSpline->IsKeySelectedAtDimension(i, nCurrentDimension))
             {
-                clr = Qt::red;
+                clr = UiSplineCtrlExFlat::KeySelected;
                 DrawTangentHandle(painter, splineIndex, i, nCurrentDimension);
             }
 
@@ -1031,7 +1076,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 {
     // create and select a white pen
     const QPen pOldPen = painter->pen();
-    painter->setPen(QColor(96, 96, 96));
+    painter->setPen(UiSplineCtrlExFlat::TangentLine);
 
     // Draw in-tangent & out-tangent lines.
     QPoint a, b, pt;
@@ -1042,7 +1087,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 
         // Draw end-effectors.
         const QBrush pOldBrush = painter->brush();
-        painter->setBrush(QColor(0, 220, 0));
+        painter->setBrush(UiSplineCtrlExFlat::TangentHandle);
 
         painter->drawRect(QRect(QPoint(a.x() - m_nKeyDrawRadius, a.y() - m_nKeyDrawRadius), QPoint(a.x() + m_nKeyDrawRadius - 1, a.y() + m_nKeyDrawRadius - 1)));
         painter->drawRect(QRect(QPoint(b.x() - m_nKeyDrawRadius, b.y() - m_nKeyDrawRadius), QPoint(b.x() + m_nKeyDrawRadius - 1, b.y() + m_nKeyDrawRadius - 1)));
@@ -1057,7 +1102,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 void SplineWidget::DrawTimeMarker(QPainter* painter)
 {
     const QPen pOldPen = painter->pen();
-    painter->setPen(QColor(255, 0, 255));
+    painter->setPen(UiSplineCtrlExFlat::TimeMarker);
     int x = aznumeric_cast<int>(TimeToXOfs(m_fTimeMarker));
     if (x >= m_rcSpline.left() && x <= m_rcSpline.right())
     {

@@ -8,6 +8,8 @@
 
 set(FILES
     Tests/Editor/Components/NodeReplacementSystemTest.cpp
+    Tests/Editor/CanvasWidgetFlatSheetTests.cpp
+    Tests/Editor/UpgradeToolFlatSheetTests.cpp
     Tests/Framework/ScriptCanvasUnitTestFixture.h
     Tests/ScriptCanvasTest.cpp
     Tests/ScriptCanvasBuilderTests.cpp

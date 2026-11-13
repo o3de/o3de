@@ -166,6 +166,10 @@ namespace AzQtComponents
         //! its #contentContainer and the CardHeader #Background, delivered through
         //! SE_ShapedFrameContents exactly like the style sheet did. Null when not ours.
         static QRect shapedFrameContents(const QStyleOption* option, const QWidget* widget);
+        //! Flattened styling: the padding of a tooltip shown for `owner`, in pixels on each side: the Config's for a card header and the
+        //! widgets in it. The legacy header gave the tooltips of those `QToolTip { padding }` (Config::toolTipPaddingInPixels) through
+        //! its own style sheet. 0 for the tooltip of any other widget. The owner is what ToolTipElement::ownerOf gives a tip.
+        static int toolTipPadding(const QWidget* owner, const Config& config);
         static QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const QWidget* widget, const Config& config);
 
         QVBoxLayout* m_rootLayout = nullptr;

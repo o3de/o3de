@@ -13,6 +13,7 @@
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include "../StandardPluginsConfig.h"
 
+#include <QColor>
 #include <QDialog>
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -21,6 +22,14 @@ EMFX_FORWARD_DECLARE(AnimGraphNodeGroup);
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the state filter dialog. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace StateFilterFlat
+    {
+        inline constexpr QColor RowText(255, 255, 255);   // StateFilterSelectionWindow.h:63 TOKENIZE: StateFilterRowText
+    } // namespace StateFilterFlat
+
     // forward declarations
     class AnimGraphPlugin;
 
@@ -60,7 +69,7 @@ namespace EMStudio
 
         EMotionFX::AnimGraphNodeGroup* FindGroupByWidget(QTableWidgetItem* widget) const;
         EMotionFX::AnimGraphNode* FindNodeByWidget(QTableWidgetItem* widget) const;
-        void AddRow(uint32 rowIndex, const char* name, bool isGroup, bool isSelected, const QColor& color = QColor(255, 255, 255));
+        void AddRow(uint32 rowIndex, const char* name, bool isGroup, bool isSelected, const QColor& color = StateFilterFlat::RowText);
 
         AZStd::vector<WidgetLookup>         m_widgetTable;
         AZStd::vector<AZStd::string>        m_selectedGroupNames;

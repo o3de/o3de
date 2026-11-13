@@ -286,6 +286,100 @@ namespace AzQtComponents
         EXPECT_EQ(label.font().pixelSize(), 20);
     }
 
+    // A size in points (a sheet's `font: 12pt`), which Qt makes pixels of at the screen's logical DPI: not a pixel size worked out here
+    namespace TextElementPointSizeTestsInternal
+    {
+        const TextElement Points{ .m_name = "Test.Text.Points", .m_pointSize = 12 };
+        const TextElement PixelsAndPoints{ .m_name = "Test.Text.PixelsAndPoints", .m_pixelSize = 20, .m_pointSize = 12 };
+
+        bool isPoints(const QWidget* widget)
+        {
+            return Selectors::named(widget, "textElementTestsPoints");
+        }
+
+        bool isPixelsAndPoints(const QWidget* widget)
+        {
+            return Selectors::named(widget, "textElementTestsPixelsAndPoints");
+        }
+    } // namespace TextElementPointSizeTestsInternal
+
+    TEST_F(TextElementTests, Apply_APointSizeIsSetAsPointsAndAPixelSizeWinsWhereBothAreGiven)
+    {
+        namespace Internal = TextElementPointSizeTestsInternal;
+        TextElement::installClassFonts();
+        TextElement::registerElement(&Internal::Points, &QLabel::staticMetaObject, &Internal::isPoints);
+        TextElement::registerElement(&Internal::PixelsAndPoints, &QLabel::staticMetaObject, &Internal::isPixelsAndPoints);
+
+        // The label starts from the label class font, which is in pixels (12px): the element replaces it with 12 points
+        QLabel points;
+        points.setObjectName(QStringLiteral("textElementTestsPoints"));
+        polishAndApply(&points);
+        EXPECT_DOUBLE_EQ(points.font().pointSizeF(), 12.0);
+        EXPECT_EQ(points.font().pixelSize(), -1);
+
+        QLabel both;
+        both.setObjectName(QStringLiteral("textElementTestsPixelsAndPoints"));
+        polishAndApply(&both);
+        EXPECT_EQ(both.font().pixelSize(), 20);
+    }
+
+    // An underline (a sheet's `text-decoration: underline`): set, ended by an element that says none, and kept by one that says nothing
+    namespace TextElementUnderlineTestsInternal
+    {
+        const TextElement Underlined{ .m_name = "Test.Text.Underlined", .m_pixelSize = 10, .m_underline = 1 };
+        const TextElement NotUnderlined{ .m_name = "Test.Text.NotUnderlined", .m_pixelSize = 10, .m_underline = 0 };
+        const TextElement NoDecoration{ .m_name = "Test.Text.NoDecoration", .m_pixelSize = 10 };
+
+        bool isState(const QWidget* widget, const char* state)
+        {
+            return Selectors::hasProperty(widget, "textElementTestsUnderline", state);
+        }
+
+        bool isOn(const QWidget* widget)
+        {
+            return isState(widget, "on");
+        }
+
+        bool isOff(const QWidget* widget)
+        {
+            return isState(widget, "off");
+        }
+
+        bool isKept(const QWidget* widget)
+        {
+            return isState(widget, "kept");
+        }
+    } // namespace TextElementUnderlineTestsInternal
+
+    TEST_F(TextElementTests, Apply_AnUnderlineIsSetEndedAndLeftAloneWhereNoRuleGivesOne)
+    {
+        namespace Internal = TextElementUnderlineTestsInternal;
+        TextElement::installClassFonts();
+        TextElement::registerElement(&Internal::Underlined, &QLabel::staticMetaObject, &Internal::isOn);
+        TextElement::registerElement(&Internal::NotUnderlined, &QLabel::staticMetaObject, &Internal::isOff);
+        TextElement::registerElement(&Internal::NoDecoration, &QLabel::staticMetaObject, &Internal::isKept);
+
+        QLabel label;
+        label.setProperty("textElementTestsUnderline", QStringLiteral("none"));
+        polishAndApply(&label);
+        EXPECT_FALSE(label.font().underline());
+
+        // The hover state of a link: underlined; the font keeps it until an element ends it
+        label.setProperty("textElementTestsUnderline", QStringLiteral("on"));
+        TextElement::resolve(&label);
+        EXPECT_TRUE(label.font().underline());
+        EXPECT_EQ(label.font().pixelSize(), 10);
+
+        label.setProperty("textElementTestsUnderline", QStringLiteral("kept"));
+        TextElement::resolve(&label);
+        EXPECT_TRUE(label.font().underline());
+
+        label.setProperty("textElementTestsUnderline", QStringLiteral("off"));
+        TextElement::resolve(&label);
+        EXPECT_FALSE(label.font().underline());
+        EXPECT_EQ(label.font().pixelSize(), 10);
+    }
+
     // ----------------------------------------------------------------------------------
     // T4: the colour of a module's element, as the sheet put it into the palette
     // ----------------------------------------------------------------------------------

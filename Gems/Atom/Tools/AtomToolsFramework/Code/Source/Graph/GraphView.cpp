@@ -9,6 +9,7 @@
 #include <AtomToolsFramework/Graph/GraphView.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/MimeDataHandlerBus.h>
@@ -39,11 +40,69 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMimeData>
+#include <QTreeView>
 #include <QVBoxLayout>
 #include <QWindow>
 
 namespace AtomToolsFramework
 {
+    // ----------------------------------------------------------------------------------
+    // Flattened GUI: GraphView.qss
+    //
+    // The graph tools set this sheet on the node palettes of the scene and proposal menus of a view (below), and on their main
+    // windows (MaterialCanvasMainWindow.cpp:116, PassCanvasMainWindow.cpp:103, as they were before the flattening): it fixes the
+    // highlight of a search match in a node palette. The legacy GUI sets it and never runs the function below; the flattened GUI
+    // runs it when the sheet is first set.
+    // UNVERIFIED by capture: nothing is selected or searched on any screen the automatic captures take, so no pixel of a capture shows
+    // the role; the widget dump of a node palette's tree holds it (Highlight), and the twin test compares the role and the pixels.
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to this sheet: a named namespace, not an anonymous one, as a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace GraphViewFlatInternal
+    {
+        constexpr const char* SheetName = ":/GraphView/GraphView.qss";
+
+        //! `GraphCanvas--NodePaletteTreeView { selection-background-color: rgba(255, 255, 255, 41) }` (GraphView.qss:9-12): the role of
+        //! the tree's selection, which the highlight of a search match is drawn with (NodePaletteTreeDelegate::paint fills the match with
+        //! the Highlight of the option's palette). The fill of a selected item stays the Global one, rgb(101,101,101), whose
+        //! `::item:selected` rule outranks the role (TableView.qss:42-50). The same rule, with the same value, is in Editor.qss:109-113
+        //! for the Editor's node palettes (EditorFlatSheet.cpp, NodePaletteTree): the Editor links neither this library nor GraphCanvas,
+        //! so each holds the value, and both carry the id of one token. OPEN ITEM: one definition in the AzQtComponents Foundations (the
+        //! two literals are then deleted). TOKENIZE: NodePaletteSearchHighlight
+        const AzQtComponents::ItemViewElement NodePaletteTree{
+            .m_name = "AtomTools.ItemView.NodePaletteTree",
+            .m_selection = QColor(255, 255, 255, 41),               // selection-background-color: GraphView.qss:11
+        };
+
+        //! `GraphCanvas--NodePaletteTreeView`, below where the sheet was set: a palette of a view's menus (GraphView), or any widget of a
+        //! graph tool's main window, which sets it on itself
+        bool isNodePaletteTree(const QWidget* widget)
+        {
+            using AzQtComponents::Selectors::withinClass;
+            return widget->inherits("GraphCanvas::NodePaletteTreeView")
+                && (withinClass(widget, "AtomToolsFramework::GraphView")
+                    || withinClass(widget, "MaterialCanvas::MaterialCanvasMainWindow")
+                    || withinClass(widget, "PassCanvas::PassCanvasMainWindow"));
+        }
+    } // namespace GraphViewFlatInternal
+
+    void GraphView::RegisterFlatElements()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            AzQtComponents::ItemViewElement::registerElement(
+                &GraphViewFlatInternal::NodePaletteTree, &QTreeView::staticMetaObject, &GraphViewFlatInternal::isNodePaletteTree);
+        }
+    }
+
+    void GraphView::RegisterFlatSheet()
+    {
+        AzQtComponents::StyleManager::registerFlatSheet(QString::fromLatin1(GraphViewFlatInternal::SheetName), &RegisterFlatElements);
+    }
+
     GraphView::GraphView(
         const AZ::Crc32& toolId, const GraphCanvas::GraphId& activeGraphId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : QWidget(parent)
@@ -97,6 +156,7 @@ namespace AtomToolsFramework
         m_createNodeProposalContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
 
         // Set up style sheet to fix highlighting in node palettes
+        RegisterFlatSheet();
         AzQtComponents::StyleManager::setStyleSheet(
             const_cast<GraphCanvas::NodePaletteWidget*>(m_sceneContextMenu->GetNodePalette()),
             QStringLiteral(":/GraphView/GraphView.qss"));

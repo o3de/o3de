@@ -9,4 +9,5 @@
 set(FILES
     Tests/TestsMain.cpp
     Tests/RowWidgets/TransformRowWidgetTests.cpp
+    Tests/SceneUIFlatSheetTests.cpp
 )

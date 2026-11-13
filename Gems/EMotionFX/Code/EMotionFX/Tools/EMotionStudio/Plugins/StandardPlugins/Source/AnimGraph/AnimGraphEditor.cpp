@@ -11,9 +11,12 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphEditor.h>
 #include <MysticQt/Source/MysticQtManager.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <QAbstractItemView>
 #include <QComboBox>
 #include <QVBoxLayout>
 #include <QVariant>
@@ -22,10 +25,35 @@
 #include <QPixmap>
 #include <QSpacerItem>
 #include <QPushButton>
+#include <QColor>
 
 
 namespace EMotionFX
 {
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace AnimGraphEditorFlatInternal
+    {
+        //! The motion set combo box while it warns: the legacy GUI sets the orange line as a sheet, the flattened GUI tags the combo box
+        //! (EMStudioFlat), whose element draws it. The sheet's bare declaration reached the combo box's popup list as well, which an
+        //! element of the flattened GUI covers by the tag of its combo box: a list that was made is polished again, as it read the tag
+        //! when it was polished
+        void SetMotionSetWarning(QComboBox* comboBox, bool warning)
+        {
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                comboBox, warning ? QString("border: 1px solid %1;").arg(EMStudioFlatValues::WarningBorder.name()) : QString());
+            EMStudioFlat::SetStateTag(comboBox, EMStudioFlat::MotionSetWarningTag, warning);
+            if (AzQtComponents::StyleManager::flatStylingActive())
+            {
+                for (QAbstractItemView* popup : comboBox->findChildren<QAbstractItemView*>())
+                {
+                    popup->style()->unpolish(popup);
+                    popup->style()->polish(popup);
+                }
+            }
+        }
+    } // namespace AnimGraphEditorFlatInternal
+
     const int AnimGraphEditor::s_propertyLabelWidth = 120;
     QString AnimGraphEditor::s_lastMotionSetText = "";
 
@@ -45,7 +73,8 @@ namespace EMotionFX
         filenameLayout->setContentsMargins(2, 2, 2, 2);
         vLayout->addLayout(filenameLayout);
         m_filenameLabel = new QLabel();
-        m_filenameLabel->setStyleSheet("font-weight: bold;");
+        m_filenameLabel->setObjectName(EMStudioFlat::BoldLabelName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_filenameLabel, "font-weight: bold;");
         filenameLayout->addWidget(m_filenameLabel, 0, Qt::AlignTop);
 
         if (animGraph)
@@ -68,7 +97,8 @@ namespace EMotionFX
         m_propertyEditor->SetSizeHintOffset(QSize(0, 0));
         m_propertyEditor->SetAutoResizeLabels(false);
         m_propertyEditor->SetLeafIndentation(0);
-        m_propertyEditor->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_propertyEditor, "QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
         vLayout->addWidget(m_propertyEditor, 0, Qt::AlignLeft);
 
         SetAnimGraph(animGraph);
@@ -139,7 +169,7 @@ namespace EMotionFX
     {
         // block signal to avoid event when the current selected item changed
         m_motionSetComboBox->blockSignals(true);
-        m_motionSetComboBox->setStyleSheet("");
+        AnimGraphEditorFlatInternal::SetMotionSetWarning(m_motionSetComboBox, false);
 
         // get the current selected item to set it back in case no one actor instance is selected
         // if actor instances are selected, the used motion set of the anim graph is set if not multiple used or if no one used
@@ -226,7 +256,7 @@ namespace EMotionFX
 
                 if (usedAnimGraphs.size() > 0)
                 {
-                    m_motionSetComboBox->setStyleSheet("border: 1px solid orange;");
+                    AnimGraphEditorFlatInternal::SetMotionSetWarning(m_motionSetComboBox, true);
                 }
             }
             else if (usedMotionSets.size() == 1)
@@ -242,7 +272,7 @@ namespace EMotionFX
 
                     if (usedAnimGraphs.size() > 0)
                     {
-                        m_motionSetComboBox->setStyleSheet("border: 1px solid orange;");
+                        AnimGraphEditorFlatInternal::SetMotionSetWarning(m_motionSetComboBox, true);
                     }
                 }
 
@@ -289,7 +319,7 @@ namespace EMotionFX
         // enable signals
         m_motionSetComboBox->blockSignals(false);
         // Set ComboBox Name
-        m_motionSetComboBox->setObjectName("EMFX.AttributesWindowWidget.AnimGraph.MotionSetComboBox");
+        m_motionSetComboBox->setObjectName(EMStudioFlat::MotionSetComboName);
     }
 
     QComboBox* AnimGraphEditor::GetMotionSetComboBox() const

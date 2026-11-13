@@ -30,6 +30,13 @@ namespace O3DE::ProjectManager
         QUrl GetUrl() const;
         void SetUrl(const QUrl& url);
 
+        //! The font size in pixels the link was made with (its sheet in the legacy GUI): the flattened GUI's text elements read it
+        int GetFontSize() const;
+
+        //! The dynamic property that marks a link under the pointer in the flattened GUI, where the legacy GUI sets the sheet of the
+        //! hover state (`text-decoration: underline`): the hover text elements of FlatElements.cpp match on it
+        static constexpr const char* HoverProperty = "linkHover";
+
     signals:
         void clicked();
 
@@ -38,6 +45,7 @@ namespace O3DE::ProjectManager
         void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void SetDefaultStyle();
+        void SetHoverState(bool hovered);
 
     private:
         QUrl m_url;

@@ -22,6 +22,21 @@
 #include <QPen>
 #include <QPoint>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The ruler's pen colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous one: a
+//  unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace RulerWidgetFlat
+{
+    // RulerWidget.cpp:232 (the tick marks and the number labels). TOKENIZE: RulerTick
+    constexpr QColor Tick(204, 204, 204);
+
+    // RulerWidget.cpp:324 (the dotted line at the cursor position). TOKENIZE: RulerCursorLine
+    const QColor CursorLine(Qt::magenta);
+} // namespace RulerWidgetFlat
+
 RulerWidget::RulerWidget(Orientation orientation, QWidget* parent, EditorWindow* editorWindow)
     : QWidget(parent)
     , m_orientation(orientation)
@@ -229,7 +244,7 @@ void RulerWidget::DrawTickMarksWithLabels(QPainter* painter, QRectF rulerRect, f
     }
 
     // Set the pen to use for drawing all the tick marks
-    QPen pen(QColor(204, 204, 204), 1);
+    QPen pen(RulerWidgetFlat::Tick, 1);
     painter->setPen(pen);
 
     // set the font to use for drawing the ruler labels
@@ -321,7 +336,7 @@ void RulerWidget::DrawCursorPos(QPainter* painter, QRectF rulerRect)
     QPen pen;
     pen.setStyle(Qt::DotLine);
     pen.setWidth(1);
-    pen.setBrush(Qt::magenta);
+    pen.setBrush(RulerWidgetFlat::CursorLine);
     painter->setPen(pen);
 
     float x1, x2, y1, y2;

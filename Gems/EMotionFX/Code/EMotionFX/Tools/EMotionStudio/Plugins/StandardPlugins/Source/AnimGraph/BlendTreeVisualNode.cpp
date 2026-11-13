@@ -12,9 +12,43 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeConnection.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 
+#include <QColor>
+
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the blend tree node: the port type colours (GetPortColor), then the border, fill, text and arrow of Render.
+    // Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace BlendTreeVisualNodeFlat
+    {
+        constexpr QColor PortPose(150, 150, 255);       // BlendTreeVisualNode.cpp:96 TOKENIZE: BlendTreePortPose
+        constexpr QColor PortFloat(0, 200, 0);          // BlendTreeVisualNode.cpp:98 TOKENIZE: BlendTreePortFloat
+        constexpr QColor PortInt(0, 200, 100);          // BlendTreeVisualNode.cpp:100 TOKENIZE: BlendTreePortInt
+        constexpr QColor PortBool(0, 200, 200);         // BlendTreeVisualNode.cpp:102 TOKENIZE: BlendTreePortBool
+        constexpr QColor PortVector2(100, 0, 100);      // BlendTreeVisualNode.cpp:104 TOKENIZE: BlendTreePortVector2
+        constexpr QColor PortVector3(175, 0, 175);      // BlendTreeVisualNode.cpp:106 TOKENIZE: BlendTreePortVector3
+        constexpr QColor PortVector4(255, 0, 255);      // BlendTreeVisualNode.cpp:108 TOKENIZE: BlendTreePortVector4
+        constexpr QColor PortString(50, 75, 255);       // BlendTreeVisualNode.cpp:110 TOKENIZE: BlendTreePortString
+        constexpr QColor PortDefault(50, 250, 250);     // BlendTreeVisualNode.cpp:113 TOKENIZE: BlendTreePortDefault
+        constexpr QColor SelectedBorder(255, 128, 0);   // BlendTreeVisualNode.cpp:156 TOKENIZE: BlendTreeSelectedBorder
+        constexpr QColor ErrorBorder(255, 0, 0);        // BlendTreeVisualNode.cpp:167 TOKENIZE: BlendTreeErrorBorder
+        // QColor::fromRgbF is not constexpr. BlendTreeVisualNode.cpp:179 TOKENIZE: BlendTreeSelectedFill
+        const QColor SelectedFill = QColor::fromRgbF(0.93f, 0.547f, 0.0f, 1.0f);
+        constexpr QColor UnprocessedFill(100, 100, 100);   // BlendTreeVisualNode.cpp:191 TOKENIZE: BlendTreeUnprocessedFill
+        // QColor::fromRgbF is not constexpr. BlendTreeVisualNode.cpp:197 TOKENIZE: BlendTreeDisabledFill
+        const QColor DisabledFill = QColor::fromRgbF(0.3f, 0.3f, 0.3f, 1.0f);
+        const QColor ErrorBlinkBorder(Qt::red);         // BlendTreeVisualNode.cpp:210 TOKENIZE: BlendTreeErrorBlinkBorder
+        const QColor EnabledText(Qt::white);            // BlendTreeVisualNode.cpp:228 TOKENIZE: BlendTreeEnabledText
+        constexpr QColor DisabledText(100, 100, 100);   // BlendTreeVisualNode.cpp:232 TOKENIZE: BlendTreeDisabledText
+        constexpr QColor BodyFill(40, 40, 40);          // BlendTreeVisualNode.cpp:256 TOKENIZE: BlendTreeBodyFill
+        constexpr QColor BodyHoverFill(50, 50, 50);     // BlendTreeVisualNode.cpp:260 TOKENIZE: BlendTreeBodyHoverFill
+        const QColor ArrowOutline(Qt::black);           // BlendTreeVisualNode.cpp:377 TOKENIZE: BlendTreeArrowOutline
+        constexpr QColor ArrowFill(175, 175, 175);      // BlendTreeVisualNode.cpp:378 TOKENIZE: BlendTreeArrowFill
+        constexpr QColor InfoText(255, 128, 0);         // BlendTreeVisualNode.cpp:442 TOKENIZE: BlendTreeInfoText
+    } // namespace BlendTreeVisualNodeFlat
+
     // the constructor
     BlendTreeVisualNode::BlendTreeVisualNode(const QModelIndex& modelIndex, AnimGraphPlugin* plugin, EMotionFX::AnimGraphNode* node)
         : AnimGraphVisualNode(modelIndex, plugin, node)
@@ -93,24 +127,24 @@ namespace EMStudio
         switch (port.m_compatibleTypes[0])
         {
         case EMotionFX::AttributePose::TYPE_ID:
-            return QColor(150, 150, 255);
+            return BlendTreeVisualNodeFlat::PortPose;
         case MCore::AttributeFloat::TYPE_ID:
-            return QColor(0, 200, 0);
+            return BlendTreeVisualNodeFlat::PortFloat;
         case MCore::AttributeInt32::TYPE_ID:
-            return QColor(0, 200, 100);
+            return BlendTreeVisualNodeFlat::PortInt;
         case MCore::AttributeBool::TYPE_ID:
-            return QColor(0, 200, 200);
+            return BlendTreeVisualNodeFlat::PortBool;
         case MCore::AttributeVector2::TYPE_ID:
-            return QColor(100, 0, 100);
+            return BlendTreeVisualNodeFlat::PortVector2;
         case MCore::AttributeVector3::TYPE_ID:
-            return QColor(175, 0, 175);
+            return BlendTreeVisualNodeFlat::PortVector3;
         case MCore::AttributeVector4::TYPE_ID:
-            return QColor(255, 0, 255);
+            return BlendTreeVisualNodeFlat::PortVector4;
         case MCore::AttributeString::TYPE_ID:
-            return QColor(50, 75, 255);
+            return BlendTreeVisualNodeFlat::PortString;
 
         default:
-            return QColor(50, 250, 250);
+            return BlendTreeVisualNodeFlat::PortDefault;
         }
     }
 
@@ -153,7 +187,7 @@ namespace EMStudio
         pen->setWidth(1);
         if (isSelected)
         {
-            borderColor.setRgb(255, 128, 0);
+            borderColor = BlendTreeVisualNodeFlat::SelectedBorder;
 
             if (m_parentGraph->GetScale() > 0.75f)
             {
@@ -164,7 +198,7 @@ namespace EMStudio
         {
             if (hasError)
             {
-                borderColor.setRgb(255, 0, 0);
+                borderColor = BlendTreeVisualNodeFlat::ErrorBorder;
             }
             else
             {
@@ -176,7 +210,7 @@ namespace EMStudio
         QColor bgColor;
         if (isSelected)
         {
-            bgColor.setRgbF(0.93f, 0.547f, 0.0f, 1.0f); //  rgb(72, 63, 238)
+            bgColor = BlendTreeVisualNodeFlat::SelectedFill; //  rgb(72, 63, 238)
         }
         else // not selected
         {
@@ -188,13 +222,13 @@ namespace EMStudio
                 }
                 else
                 {
-                    bgColor.setRgb(100, 100, 100);
+                    bgColor = BlendTreeVisualNodeFlat::UnprocessedFill;
                     //              painter.setOpacity( 0.25f );
                 }
             }
             else
             {
-                bgColor.setRgbF(0.3f, 0.3f, 0.3f, 1.0f);
+                bgColor = BlendTreeVisualNodeFlat::DisabledFill;
             }
         }
 
@@ -207,7 +241,7 @@ namespace EMStudio
             }
             else
             {
-                borderColor = Qt::red;
+                borderColor = BlendTreeVisualNodeFlat::ErrorBlinkBorder;
             }
 
             bgColor = borderColor;
@@ -225,11 +259,11 @@ namespace EMStudio
         {
             if (m_isEnabled)
             {
-                textColor = Qt::white;
+                textColor = BlendTreeVisualNodeFlat::EnabledText;
             }
             else
             {
-                textColor = QColor(100, 100, 100);
+                textColor = BlendTreeVisualNodeFlat::DisabledText;
             }
         }
         else
@@ -253,11 +287,11 @@ namespace EMStudio
             {
                 if (m_isHighlighted == false)
                 {
-                    painter.setBrush(QColor(40, 40, 40));
+                    painter.setBrush(BlendTreeVisualNodeFlat::BodyFill);
                 }
                 else
                 {
-                    painter.setBrush(QColor(50, 50, 50));
+                    painter.setBrush(BlendTreeVisualNodeFlat::BodyHoverFill);
                 }
             }
             else
@@ -374,8 +408,8 @@ namespace EMStudio
             }
             else
             {
-                painter.setPen(Qt::black);
-                painter.setBrush(QColor(175, 175, 175));
+                painter.setPen(BlendTreeVisualNodeFlat::ArrowOutline);
+                painter.setBrush(BlendTreeVisualNodeFlat::ArrowFill);
             }
 
             if (m_isCollapsed == false)
@@ -439,7 +473,7 @@ namespace EMStudio
             QRect textRect;
             CalcInfoTextRect(textRect, false);
             painter.setFont(m_infoTextFont);
-            painter.setPen(QColor(255, 128, 0));
+            painter.setPen(BlendTreeVisualNodeFlat::InfoText);
             painter.drawStaticText(m_rect.left(), textRect.top() + 4, m_infoText);
 
             painter.setPen(textColor);

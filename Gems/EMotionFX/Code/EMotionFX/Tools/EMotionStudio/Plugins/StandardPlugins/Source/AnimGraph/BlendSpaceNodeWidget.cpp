@@ -11,19 +11,30 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/MathUtils.h>
 
+#include <QColor>
+
 namespace EMStudio
 {
 
+//////////////////////////////////////////////////////////////////////////
+// Colours the blend space widgets paint the sample and motion points with. Each was a literal at the line it cites.
+//////////////////////////////////////////////////////////////////////////
+namespace BlendSpaceNodeWidgetFlat
+{
+    constexpr QColor CurrentSamplePoint(0xCF, 0x02, 0x1B);   // BlendSpaceNodeWidget.cpp:19 TOKENIZE: BlendSpaceCurrentSamplePoint
+    constexpr QColor MotionPoint(245, 166, 35);              // BlendSpaceNodeWidget.cpp:26 TOKENIZE: BlendSpaceMotionPoint
+} // namespace BlendSpaceNodeWidgetFlat
+
 // Current sample point
 const float     BlendSpaceNodeWidget::s_currentSamplePointWidth         = 6.0f;
-const QColor    BlendSpaceNodeWidget::s_currentSamplePointColor         = QColor(0xCF, 0x02, 0x1B);
+const QColor    BlendSpaceNodeWidget::s_currentSamplePointColor         = BlendSpaceNodeWidgetFlat::CurrentSamplePoint;
 
 // Motion points
 const float     BlendSpaceNodeWidget::s_motionPointWidthMin      = 5.0f;
 const float     BlendSpaceNodeWidget::s_motionPointWidthMax      = 10.0f;
 const float     BlendSpaceNodeWidget::s_motionPointAlphaMin      = 1.0f;
 const float     BlendSpaceNodeWidget::s_motionPointAlphaMax      = 1.0f;
-const QColor    BlendSpaceNodeWidget::s_motionPointColor         = QColor(245, 166, 35);
+const QColor    BlendSpaceNodeWidget::s_motionPointColor         = BlendSpaceNodeWidgetFlat::MotionPoint;
 
 const char*     BlendSpaceNodeWidget::s_warningOffsetForIcon     = "     ";
 

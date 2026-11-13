@@ -23,6 +23,27 @@ namespace AzToolsFramework
 {
     namespace Logging
     {
+        // =======================================================================
+        // Log Row Colours
+        // =======================================================================
+
+        //! Every colour a log row takes from its level, named, so the legacy and the flattened GUI read one value. A named namespace, not
+        //! an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+        namespace LogLineFlatInternal
+        {
+            // The background of the row
+            constexpr QColor ErrorBackground(64, 0, 0);       // LogLine.cpp:465. TOKENIZE: LogErrorBackground
+            constexpr QColor WarningBackground(64, 64, 0);    // LogLine.cpp:468. TOKENIZE: LogWarningBackground
+            constexpr QColor ContextBackground(32, 0, 32);    // LogLine.cpp:471. TOKENIZE: LogContextBackground
+
+            // The text of the row
+            constexpr QColor MessageText(255, 255, 255);      // LogLine.cpp:480. TOKENIZE: LogMessageText
+            constexpr QColor ErrorText(255, 192, 192);        // LogLine.cpp:482. TOKENIZE: LogErrorText
+            constexpr QColor WarningText(255, 255, 192);      // LogLine.cpp:484. TOKENIZE: LogWarningText
+            constexpr QColor DebugText(128, 128, 128);        // LogLine.cpp:486. TOKENIZE: LogDebugText
+            constexpr QColor ContextText(255, 192, 255);      // LogLine.cpp:488. TOKENIZE: LogContextText
+        }
+
         static bool IsNumeral(char c)
         {
             return (c >= '0') && (c <= '0');
@@ -462,13 +483,13 @@ namespace AzToolsFramework
                 switch (m_type)
                 {
                 case LogLine::TYPE_ERROR:
-                    return QVariant(QColor::fromRgb(64, 0, 0));
+                    return QVariant(LogLineFlatInternal::ErrorBackground);
                     break;
                 case LogLine::TYPE_WARNING:
-                    return QVariant(QColor::fromRgb(64, 64, 0));
+                    return QVariant(LogLineFlatInternal::WarningBackground);
                     break;
                 case LogLine::TYPE_CONTEXT:
-                    return QVariant(QColor::fromRgb(32, 0, 32));
+                    return QVariant(LogLineFlatInternal::ContextBackground);
                     break;
                 }
             }
@@ -477,15 +498,15 @@ namespace AzToolsFramework
                 switch (m_type)
                 {
                 case LogLine::TYPE_MESSAGE:
-                    return QVariant(QColor::fromRgb(255, 255, 255));
+                    return QVariant(LogLineFlatInternal::MessageText);
                 case LogLine::TYPE_ERROR:
-                    return QVariant(QColor::fromRgb(255, 192, 192));
+                    return QVariant(LogLineFlatInternal::ErrorText);
                 case LogLine::TYPE_WARNING:
-                    return QVariant(QColor::fromRgb(255, 255,192));
+                    return QVariant(LogLineFlatInternal::WarningText);
                 case LogLine::TYPE_DEBUG:
-                    return QVariant(QColor::fromRgb(128, 128, 128));
+                    return QVariant(LogLineFlatInternal::DebugText);
                 case LogLine::TYPE_CONTEXT:
-                    return QVariant(QColor::fromRgb(255, 192, 255));
+                    return QVariant(LogLineFlatInternal::ContextText);
                 }
             }
             return QVariant();

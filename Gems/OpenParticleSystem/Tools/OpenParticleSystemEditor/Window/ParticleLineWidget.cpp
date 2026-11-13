@@ -7,6 +7,7 @@
  */
 
 #include <Window/ParticleLineWidget.h>
+#include <Window/ParticleEditorFlat.h>
 #include <Window/ParticleItemWidget.h>
 
 namespace OpenParticleSystemEditor
@@ -15,7 +16,12 @@ namespace OpenParticleSystemEditor
         : QWidget(parent)
         , m_index(WIDGET_LINE_EMITTER)
     {
-        this->setStyleSheet("background-color: #474747; border-radius: 1px;");
+        // The row paints its own fill. Qt's style sheet style gave a widget of QWidget's own meta object a styled background when it
+        // polished it (the legacy GUI), which a class with Q_OBJECT does not get: the attribute says it, in both GUIs
+        setAttribute(Qt::WA_StyledBackground, true);
+
+        // The idle row: the sheet of the legacy GUI, and in the flattened GUI the row's element (ParticleEditorFlat)
+        ParticleEditorFlat::SetLineRowPressed(this, false);
     }
 
     ParticleLineWidget::~ParticleLineWidget()
@@ -37,7 +43,7 @@ namespace OpenParticleSystemEditor
         Q_UNUSED(event);
         if (m_index != WIDGET_LINE_TITLE)
         {
-            this->setStyleSheet("background-color: #666666; border-radius: 1px;");
+            ParticleEditorFlat::SetLineRowPressed(this, true);
         }
 
         ParticleItemWidget* itemWidget = dynamic_cast<ParticleItemWidget*>(m_parent);
@@ -52,7 +58,7 @@ namespace OpenParticleSystemEditor
         Q_UNUSED(event);
         if (m_index != WIDGET_LINE_TITLE)
         {
-            this->setStyleSheet("background-color: #474747; border-radius: 1px;");
+            ParticleEditorFlat::SetLineRowPressed(this, false);
         }
     };
 } // namespace OpenParticleSystemEditor

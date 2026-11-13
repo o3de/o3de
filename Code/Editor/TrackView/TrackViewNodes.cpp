@@ -51,6 +51,29 @@
 #include "TrackViewFBXImportPreviewDialog.h"
 #include "AnimationContext.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The node tree's role colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace TrackViewNodesFlat
+{
+    // TrackViewNodes.cpp:603 (the text of a node whose entity is missing; the LY palette 'Error/Failure').
+    // TOKENIZE: NodeTreeMissingEntityText
+    constexpr QColor MissingEntityText(226, 52, 43);
+
+    // TrackViewNodes.cpp:604 (the background of the active director's row; the LY palette 'Primary'). TOKENIZE: NodeTreeActiveDirectorBack
+    constexpr QColor ActiveDirectorBack(243, 81, 29);
+
+    // TrackViewNodes.cpp:605 (the background of an inactive director's row; the LY palette 'Background (In Focus)').
+    // TOKENIZE: NodeTreeInactiveDirectorBack
+    constexpr QColor InactiveDirectorBack(22, 23, 27);
+
+    // TrackViewNodes.cpp:606 (the background of a group node's row; the LY palette 'Secondary'). TOKENIZE: NodeTreeGroupNodeBack
+    constexpr QColor GroupNodeBack(42, 84, 244);
+} // namespace TrackViewNodesFlat
+
 CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
     , m_bVisible(false)
@@ -600,10 +623,10 @@ void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pT
 
 void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNode* animNode)
 {
-    const QColor TextColorForMissingEntity(226, 52, 43);        // LY palette for 'Error/Failure'
-    const QColor BackColorForActiveDirector(243, 81, 29);       // LY palette for 'Primary'
-    const QColor BackColorForInactiveDirector(22, 23, 27);      // LY palette for 'Background (In Focus)'
-    const QColor BackColorForGroupNodes(42, 84, 244);           // LY palette for 'Secondary'
+    const QColor TextColorForMissingEntity(TrackViewNodesFlat::MissingEntityText);              // LY palette for 'Error/Failure'
+    const QColor BackColorForActiveDirector(TrackViewNodesFlat::ActiveDirectorBack);            // LY palette for 'Primary'
+    const QColor BackColorForInactiveDirector(TrackViewNodesFlat::InactiveDirectorBack);        // LY palette for 'Background (In Focus)'
+    const QColor BackColorForGroupNodes(TrackViewNodesFlat::GroupNodeBack);                     // LY palette for 'Secondary'
 
     QFont f = font();
     f.setBold(true);

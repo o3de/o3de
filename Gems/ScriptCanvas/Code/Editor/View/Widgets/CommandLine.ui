@@ -49,11 +49,6 @@
              <height>20</height>
            </rect>
          </property>
-         <property name="styleSheet">
-           <string notr="true">
-             QTableView { background-color: rgba(15,15,15,0.1); }
-           </string>
-         </property>
          <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>

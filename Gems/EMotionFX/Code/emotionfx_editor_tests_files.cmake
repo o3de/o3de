@@ -42,6 +42,7 @@ set(FILES
     Tests/UI/CanUseHelpMenu.cpp
     Tests/UI/CommandRunnerFixture.cpp
     Tests/UI/CommandRunnerFixture.h
+    Tests/UI/EMStudioFlatSheetTests.cpp
     Tests/UI/LODSkinnedMeshTests.cpp
     Tests/UI/RagdollEditTests.cpp
     Tests/UI/SkeletonOutlinerTestFixture.cpp

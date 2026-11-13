@@ -29,12 +29,33 @@
 #include <ui_ToolsConfigPage.h>
 #include <ui_IconListDialog.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  COMMAND TYPE COLOURS
+//
+//  The text colours of the command list of Preferences > Tools, one per command type, named so the legacy and the flattened GUI read
+//  one value. A named namespace, not an anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace ToolsConfigPageFlat
+{
+    // ToolsConfigPage.cpp:34 (an editor script command). TOKENIZE: ToolsCommandEditor
+    constexpr QColor EditorCommand(0, 255, 0);
+
+    // ToolsConfigPage.cpp:35 (a console command). TOKENIZE: ToolsCommandConsole
+    constexpr QColor ConsoleCommand(0, 0, 255);
+
+    // ToolsConfigPage.cpp:36 (a console variable toggle). TOKENIZE: ToolsCommandToggle
+    constexpr QColor ToggleCommand(128, 0, 255);
+
+    // ToolsConfigPage.cpp:37 (an invalid command). TOKENIZE: ToolsCommandInvalid
+    constexpr QColor InvalidCommand(255, 0, 0);
+} // namespace ToolsConfigPageFlat
+
 namespace
 {
-    QColor COLOR_FOR_EDITOR_COMMAND = QColor(0, 255, 0);
-    QColor COLOR_FOR_CONSOLE_COMMAND = QColor(0, 0, 255);
-    QColor COLOR_FOR_TOGGLE_COMMAND = QColor(128, 0, 255);
-    QColor COLOR_FOR_INVALID_COMMAND = QColor(255, 0, 0);
+    QColor COLOR_FOR_EDITOR_COMMAND = ToolsConfigPageFlat::EditorCommand;
+    QColor COLOR_FOR_CONSOLE_COMMAND = ToolsConfigPageFlat::ConsoleCommand;
+    QColor COLOR_FOR_TOGGLE_COMMAND = ToolsConfigPageFlat::ToggleCommand;
+    QColor COLOR_FOR_INVALID_COMMAND = ToolsConfigPageFlat::InvalidCommand;
 };
 
 class IconListModel

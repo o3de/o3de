@@ -521,11 +521,17 @@ namespace AzToolsFramework
             const AZ::Data::Asset<AZ::SliceAsset>& targetSlice,
             WillPushEntityCallback willPushEntityCallback);
 
+        // SliceUtilities.h:524. TOKENIZE: SliceSplitterColor
         static constexpr const char* splitterColor = "black";
+        // SliceUtilities.h:525. TOKENIZE: SliceDetachMenuItemHover
         static constexpr const char* detachMenuItemHoverColor = "#4285F4";
+        // SliceUtilities.h:526. TOKENIZE: SliceDetachMenuItemText
         static constexpr const char* detachMenuItemDefaultColor = "#ffffff";
+        // SliceUtilities.h:527. TOKENIZE: SliceDetailBackground
         static constexpr const char* detailWidgetBackgroundColor = "#303030";
+        // SliceUtilities.h:528. TOKENIZE: SliceUnsavableChangesText
         static constexpr const char* unsavableChangesTextColor = "#ff3f3f";
+        // SliceUtilities.h:529. TOKENIZE: SliceConflictedChangesText
         static constexpr const char* conflictedChangesTextColor = "red";
 
     } // namespace SliceUtilities

@@ -27,10 +27,36 @@
 #include <QPainter>
 #include <QLinearGradient>
 #include <QHeaderView>
+#include <QColor>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the phoneme selection window paints its visime widgets with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace PhonemeSelectionWindowFlat
+    {
+        // The background gradient and the pen set next to it paint nothing: paintEvent never hands the gradient to a brush, a pen or a
+        // fill, and the outline pen replaces that pen a few lines later, so GradientEdge, GradientMiddle and GradientPen are dead.
+        constexpr QColor GradientEdge(66, 66, 66);         // PhonemeSelectionWindow.cpp:77, :79 TOKENIZE: VisimeGradientEdge
+        constexpr QColor GradientMiddle(94, 102, 110);     // PhonemeSelectionWindow.cpp:78 TOKENIZE: VisimeGradientMiddle
+        constexpr QColor GradientPen(94, 102, 110);        // PhonemeSelectionWindow.cpp:80 TOKENIZE: VisimeGradientPen
+        constexpr QColor OutlinePen(66, 66, 66);           // PhonemeSelectionWindow.cpp:83 TOKENIZE: VisimeOutlinePen
+
+        // The border and the background of a visime widget: selected, under the pointer, and normal
+        constexpr QColor SelectedBorder(244, 156, 28);     // PhonemeSelectionWindow.cpp:88 TOKENIZE: VisimeSelectedBorder
+        constexpr QColor HoverBorder(153, 160, 178);       // PhonemeSelectionWindow.cpp:92 TOKENIZE: VisimeHoverBorder
+        constexpr QColor NormalBorder(113, 120, 128);      // PhonemeSelectionWindow.cpp:96 TOKENIZE: VisimeNormalBorder
+        constexpr QColor SelectedBackground(56, 65, 72);   // PhonemeSelectionWindow.cpp:104 TOKENIZE: VisimeSelectedBackground
+        constexpr QColor HoverBackground(134, 142, 150);   // PhonemeSelectionWindow.cpp:108 TOKENIZE: VisimeHoverBackground
+        constexpr QColor NormalBackground(144, 152, 160);  // PhonemeSelectionWindow.cpp:112 TOKENIZE: VisimeNormalBackground
+
+        // The visime name
+        constexpr QColor SelectedName(244, 156, 28);       // PhonemeSelectionWindow.cpp:124 TOKENIZE: VisimeSelectedName
+        constexpr QColor NormalName(0, 0, 0);              // PhonemeSelectionWindow.cpp:128 TOKENIZE: VisimeNormalName
+    } // namespace PhonemeSelectionWindowFlat
+
     // constructor
     VisimeWidget::VisimeWidget(const AZStd::string& filename)
     {
@@ -74,26 +100,26 @@ namespace EMStudio
 
         // linear gradient for the background
         QLinearGradient gradient (0, 0, 0, height());
-        gradient.setColorAt(0.0, QColor(66, 66, 66));
-        gradient.setColorAt(0.5, QColor(94, 102, 110));
-        gradient.setColorAt(1.0, QColor(66, 66, 66));
-        painter.setPen(QColor(94, 102, 110));
+        gradient.setColorAt(0.0, PhonemeSelectionWindowFlat::GradientEdge);
+        gradient.setColorAt(0.5, PhonemeSelectionWindowFlat::GradientMiddle);
+        gradient.setColorAt(1.0, PhonemeSelectionWindowFlat::GradientEdge);
+        painter.setPen(PhonemeSelectionWindowFlat::GradientPen);
 
         // set colors
-        painter.setPen(QColor(66, 66, 66));
+        painter.setPen(PhonemeSelectionWindowFlat::OutlinePen);
 
         // draw selection border
         if (m_selected)
         {
-            painter.setBrush(QBrush(QColor(244, 156, 28)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::SelectedBorder));
         }
         else if (m_mouseWithinWidget)
         {
-            painter.setBrush(QBrush(QColor(153, 160, 178)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::HoverBorder));
         }
         else
         {
-            painter.setBrush(QBrush(QColor(113, 120, 128)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::NormalBorder));
         }
 
         painter.drawRoundedRect(0, 2, width(), height() - 4, 5.0, 5.0);
@@ -101,15 +127,15 @@ namespace EMStudio
         // draw background
         if (m_selected)
         {
-            painter.setBrush(QBrush(QColor(56, 65, 72)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::SelectedBackground));
         }
         else if (m_mouseWithinWidget)
         {
-            painter.setBrush(QBrush(QColor(134, 142, 150)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::HoverBackground));
         }
         else
         {
-            painter.setBrush(QBrush(QColor(144, 152, 160)));
+            painter.setBrush(QBrush(PhonemeSelectionWindowFlat::NormalBackground));
         }
 
 
@@ -121,11 +147,11 @@ namespace EMStudio
         // draw visime name
         if (m_selected)
         {
-            painter.setPen(QColor(244, 156, 28));
+            painter.setPen(PhonemeSelectionWindowFlat::SelectedName);
         }
         else
         {
-            painter.setPen(QColor(0, 0, 0));
+            painter.setPen(PhonemeSelectionWindowFlat::NormalName);
         }
 
         painter.drawText(70, (height() / 2) + 4, m_fileNameWithoutExt.c_str());

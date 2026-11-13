@@ -9,11 +9,16 @@
 #include "SpinBoxPage.h"
 #include <AzQtComponents/Gallery/ui_SpinBoxPage.h>
 
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <QUndoCommand>
 #include <QPointer>
 #include <QEvent>
 #include <QAction>
+#include <QFont>
+#include <QLabel>
 #include <QMenu>
 #include <QDebug>
 
@@ -62,6 +67,100 @@ private:
     ValueType m_newValue;
 };
 
+// ==================================================================================================
+// The labels of styleVectorInput, flattened
+//
+// The legacy GUI sets each label's text as the label's own style sheet (VectorInput::setLabelStyle). The flattened GUI sets no sheet and
+// reads none: the three texts below are static text elements, and the rows pick this page's labels out. The Gallery has no flat sheet, so
+// the rows are registered where the page is built.
+// ==================================================================================================
+
+//! A named namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge
+namespace SpinBoxPageFlat
+{
+    using AzQtComponents::SpinBox;
+    using AzQtComponents::TextElement;
+
+    // ---- The values of the sample texts
+    constexpr int SampleWeight = QFont::Bold;       // SpinBoxPage.cpp:196-198 (`font: bold`). TOKENIZE: GalleryVectorLabelWeight
+    constexpr QColor SampleRed(184, 51, 51);        // SpinBoxPage.cpp:196 (`color: rgb(184,51,51)`). TOKENIZE: GalleryVectorLabelRed
+    constexpr QColor SampleGreen(48, 208, 120);     // SpinBoxPage.cpp:197 (`color: rgb(48,208,120)`). TOKENIZE: GalleryVectorLabelGreen
+    constexpr QColor SampleBlue(66, 133, 244);      // SpinBoxPage.cpp:198 (`color: rgb(66,133,244)`). TOKENIZE: GalleryVectorLabelBlue
+
+    // ---- The elements
+    //! `font: bold; color: <colour>;` as a label's own sheet: the shorthand sets the style to normal and the weight to bold and leaves
+    //! the family and the size to the label rule of the application (Text.qss:91-92), so the element states those too
+    const TextElement SampleRedText{
+        .m_name = "Gallery.Text.VectorSampleRed",
+        .m_family = AzQtComponents::Foundations::Label::Family,
+        .m_pixelSize = AzQtComponents::Foundations::Label::Size,
+        .m_weight = SampleWeight,
+        .m_italic = 0,
+        .m_color = SampleRed,
+    };
+    const TextElement SampleGreenText{
+        .m_name = "Gallery.Text.VectorSampleGreen",
+        .m_family = AzQtComponents::Foundations::Label::Family,
+        .m_pixelSize = AzQtComponents::Foundations::Label::Size,
+        .m_weight = SampleWeight,
+        .m_italic = 0,
+        .m_color = SampleGreen,
+    };
+    const TextElement SampleBlueText{
+        .m_name = "Gallery.Text.VectorSampleBlue",
+        .m_family = AzQtComponents::Foundations::Label::Family,
+        .m_pixelSize = AzQtComponents::Foundations::Label::Size,
+        .m_weight = SampleWeight,
+        .m_italic = 0,
+        .m_color = SampleBlue,
+    };
+
+    // ---- The matchers
+    //! The label of the vector element that has this coordinate, in the page's styleVectorInput: the label's own name first (the name
+    //! VectorElement gives it), then the element it sits in and which coordinate that is (VectorInput.qss:37-55 tells the elements
+    //! apart by [Coordinate="X"]), then the page's vector, by its name
+    bool isCoordinateLabel(const QWidget* widget, const char* coordinate)
+    {
+        return AzQtComponents::Selectors::named(widget, SpinBox::s_draggableLabelName)
+            && AzQtComponents::Selectors::childOfClass(widget, "AzQtComponents::VectorElement")
+            && AzQtComponents::Selectors::hasProperty(widget->parentWidget(), "Coordinate", coordinate)
+            && AzQtComponents::Selectors::within(widget, "styleVectorInput");
+    }
+
+    //! Label i of the vector takes sample i % 3: the first (X) red, the second (Y) green, the third (Z) blue, the fourth (W) red again
+    bool isRedLabel(const QWidget* widget)
+    {
+        return isCoordinateLabel(widget, "X") || isCoordinateLabel(widget, "W");
+    }
+
+    bool isGreenLabel(const QWidget* widget)
+    {
+        return isCoordinateLabel(widget, "Y");
+    }
+
+    bool isBlueLabel(const QWidget* widget)
+    {
+        return isCoordinateLabel(widget, "Z");
+    }
+
+    // ---- The registration
+    //! Once, where the page is built, in the flattened GUI only. The rows are a module's: they come before the Global elements of the
+    //! labels, and no other module's row matches these labels.
+    void registerSampleLabels()
+    {
+        static bool registered = false;
+        if (registered)
+        {
+            return;
+        }
+        registered = true;
+
+        TextElement::registerElement(&SampleRedText, &QLabel::staticMetaObject, &isRedLabel);
+        TextElement::registerElement(&SampleGreenText, &QLabel::staticMetaObject, &isGreenLabel);
+        TextElement::registerElement(&SampleBlueText, &QLabel::staticMetaObject, &isBlueLabel);
+    }
+} // namespace SpinBoxPageFlat
+
 SpinBoxPage::SpinBoxPage(QWidget* parent)
 : QWidget(parent)
 , ui(new Ui::SpinBoxPage)
@@ -101,7 +200,15 @@ SpinBoxPage::SpinBoxPage(QWidget* parent)
         const int size = ui->styleVectorInput->getSize();
         for (int i = 0; i < size; ++i)
         {
+            // The legacy GUI sets each text as the label's own sheet; the flattened GUI sets none
             ui->styleVectorInput->setLabelStyle(i, styles[i % styles.size()]);
+        }
+
+        // The flattened GUI's form of the same texts (SpinBoxPageFlat). The labels are named and have their coordinates by now, so the
+        // ones polished while the vector was built are resolved again by the registration
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            SpinBoxPageFlat::registerSampleLabels();
         }
     }
 

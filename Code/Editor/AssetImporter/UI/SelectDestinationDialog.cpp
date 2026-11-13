@@ -18,15 +18,35 @@
 
 #include <AssetImporter/UI/ui_SelectDestinationDialog.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  TOOLTIP COLOURS
+//
+//  The text colour of the destination tooltips (HTML), named so the legacy and the flattened GUI read one value. A named namespace,
+//  not an anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SelectDestinationDialogFlat
+{
+    // SelectDestinationDialog.cpp:26, :27, :28, :29 (the text of the four invalid-directory tooltips). TOKENIZE: DestinationToolTipText
+    constexpr QColor ToolTipText(0xcc, 0xcc, 0xcc);
+} // namespace SelectDestinationDialogFlat
+
 static const char* g_assetProcessorLink = "<a href=\"https://www.o3de.org/docs/user-guide/assets/asset-processor/\">Asset Processor</a>";
 static const char* g_copyFilesMessage = "The original file will remain outside of the project and the %1 will not monitor the file.";
 static const char* g_moveFilesMessage = "The original file will be moved inside of the project and the %1 will monitor the file for changes.";
 static const char* g_selectDestinationFilesPath = "AssetImporter/SelectDestinationFilesPath";
 
-static const char* g_toolTipInvalidRoot = "<p style='white-space:pre'> <span style=\"color:#cccccc;\">Invalid directory. Please choose a destination directory within your game project: %1.</span> </p>";
-static const char* g_toolTipPathMustExist = "<p style='white-space:pre'> <span style=\"color:#cccccc;\">Invalid directory. Please choose a destination directory that exists.</span> </p>";
-static const char* g_toolTipPathMustBeDirectory = "<p style='white-space:pre'> <span style=\"color:#cccccc;\">Invalid directory. Please choose a valid destination directory.</span> </p>";
-static const char* g_toolTipInvalidLength = "<p style='white-space:pre'> <span style=\"color:#cccccc;\">Invalid directory name length. Please choose a destination path that has fewer than %1 characters.</span> </p>";
+static const QString g_toolTipInvalidRoot = QStringLiteral("<p style='white-space:pre'> <span style=\"color:") +
+    SelectDestinationDialogFlat::ToolTipText.name() +
+    QStringLiteral(";\">Invalid directory. Please choose a destination directory within your game project: %1.</span> </p>");
+static const QString g_toolTipPathMustExist = QStringLiteral("<p style='white-space:pre'> <span style=\"color:") +
+    SelectDestinationDialogFlat::ToolTipText.name() +
+    QStringLiteral(";\">Invalid directory. Please choose a destination directory that exists.</span> </p>");
+static const QString g_toolTipPathMustBeDirectory = QStringLiteral("<p style='white-space:pre'> <span style=\"color:") +
+    SelectDestinationDialogFlat::ToolTipText.name() +
+    QStringLiteral(";\">Invalid directory. Please choose a valid destination directory.</span> </p>");
+static const QString g_toolTipInvalidLength = QStringLiteral("<p style='white-space:pre'> <span style=\"color:") +
+    SelectDestinationDialogFlat::ToolTipText.name() +
+    QStringLiteral(";\">Invalid directory name length. Please choose a destination path that has fewer than %1 characters.</span> </p>");
 
 namespace
 {

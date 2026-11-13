@@ -24,6 +24,7 @@
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerFlatValues.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 
@@ -370,10 +371,10 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
-        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = EntityOutlinerFlat::SelectedWash;
+        inline static const QColor s_hoverColor = EntityOutlinerFlat::HoverWash;
 
-        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QColor s_readOnlyBackgroundColor = EntityOutlinerFlat::ReadOnlyBadgeBackground;
         inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
         inline static const int s_readOnlyRadius = 6;
 

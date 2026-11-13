@@ -42,6 +42,33 @@
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The node tree's item colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous one:
+//  a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace UiAnimViewNodesFlat
+{
+    // UiAnimViewNodes.cpp:515 (the text of an entity node). TOKENIZE: NodeTreeEntityText
+    constexpr QColor NormalEntityText(220, 220, 220);
+
+    // UiAnimViewNodes.cpp:516 (the text of an entity node whose entity is missing). TOKENIZE: NodeTreeMissingEntityText
+    constexpr QColor MissingEntityText(255, 0, 0);
+
+    // UiAnimViewNodes.cpp:517 (the text of a material node whose material is invalid). TOKENIZE: NodeTreeInvalidMaterialText
+    constexpr QColor InvalidMaterialText(255, 0, 0);
+
+    // UiAnimViewNodes.cpp:518 (the background of the active director node). TOKENIZE: NodeTreeActiveDirectorBack
+    constexpr QColor ActiveDirectorBack(192, 192, 255);
+
+    // UiAnimViewNodes.cpp:519 (the background of an inactive director node). TOKENIZE: NodeTreeInactiveDirectorBack
+    constexpr QColor InactiveDirectorBack(224, 224, 224);
+
+    // UiAnimViewNodes.cpp:547 (the background of a group node). TOKENIZE: NodeTreeGroupBack
+    constexpr QColor GroupBack(220, 255, 220);
+} // namespace UiAnimViewNodesFlat
+
 CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     : m_pNode(pNode)
     , m_bVisible(false)
@@ -512,11 +539,11 @@ QIcon CUiAnimViewNodesCtrl::NodeTypeToTrackViewIcon(EUiAnimNodeType nodeType)
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewAnimNode* pAnimNode)
 {
-    const QColor TEXT_COLOR_FOR_NORMAL_ENTITY_NODE(220, 220, 220);
-    const QColor TEXT_COLOR_FOR_MISSING_ENTITY(255, 0, 0);
-    const QColor TEXT_COLOR_FOR_INVALID_MATERIAL(255, 0, 0);
-    const QColor BACK_COLOR_FOR_ACTIVE_DIRECTOR(192, 192, 255);
-    const QColor BACK_COLOR_FOR_INACTIVE_DIRECTOR(224, 224, 224);
+    const QColor TEXT_COLOR_FOR_NORMAL_ENTITY_NODE(UiAnimViewNodesFlat::NormalEntityText);
+    const QColor TEXT_COLOR_FOR_MISSING_ENTITY(UiAnimViewNodesFlat::MissingEntityText);
+    const QColor TEXT_COLOR_FOR_INVALID_MATERIAL(UiAnimViewNodesFlat::InvalidMaterialText);
+    const QColor BACK_COLOR_FOR_ACTIVE_DIRECTOR(UiAnimViewNodesFlat::ActiveDirectorBack);
+    const QColor BACK_COLOR_FOR_INACTIVE_DIRECTOR(UiAnimViewNodesFlat::InactiveDirectorBack);
 
     QFont f = font();
     f.setBold(true);
@@ -544,7 +571,7 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     }
     else if (nodeType == eUiAnimNodeType_Group)
     {
-        pRecord->setBackground(0, QColor(220, 255, 220));
+        pRecord->setBackground(0, UiAnimViewNodesFlat::GroupBack);
         pRecord->setSizeHint(0, QSize(30, 20));
     }
     else if (nodeType == eUiAnimNodeType_Material)

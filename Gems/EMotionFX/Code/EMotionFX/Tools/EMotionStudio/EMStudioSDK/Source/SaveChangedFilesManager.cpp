@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QSettings>
 #include <QGridLayout>
@@ -426,7 +427,7 @@ namespace EMStudio
 
             // create the checkbox
             QCheckBox* checkbox = new QCheckBox("");
-            checkbox->setStyleSheet("background: transparent;");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(checkbox, "background: transparent;");
             checkbox->setChecked(true);
 
             // create the filename table item

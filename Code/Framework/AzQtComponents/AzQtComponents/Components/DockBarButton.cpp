@@ -20,6 +20,17 @@
 
 namespace AzQtComponents
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened window buttons: the fills the sheet gave the minimize, maximize and close buttons while the pointer is over them
+    // (TitleBar.qss:97-105). The sheet has no :pressed rule for them, so these are the fills of a pressed button under the pointer too.
+    //////////////////////////////////////////////////////////////////////////
+
+    //! TitleBar.qss:100 `rgba(255,255,255,0.1)`: Qt reads an alpha of 1 or less as a fraction and truncates it, 0.1 * 255 = 25
+    //! (QCss::parseColorValue). TOKENIZE: DockBarButtonHoverFill
+    static constexpr QColor g_dockBarButtonHoverFill(255, 255, 255, 25);
+    //! TitleBar.qss:104 `#B80D1C`. TOKENIZE: DockBarButtonCloseHoverFill
+    static constexpr QColor g_dockBarButtonCloseHoverFill(0xB8, 0x0D, 0x1C);
+
     DockBarButton::Config DockBarButton::loadConfig(QSettings& settings)
     {
         Config config = defaultConfig();
@@ -199,16 +210,27 @@ namespace AzQtComponents
         Qt::MouseButtons mouseButtons = QApplication::mouseButtons();
         bool mouseDown = mouseButtons & Qt::LeftButton;
 
+        // The flattened GUI draws the fills of the sheet (TitleBar.qss:94-105): no idle fill (`background: transparent`), and one fill
+        // under the pointer. That fill is the :hover rule's, which needs the button enabled (QStyleSheetStyle pseudoClass), and it is
+        // the same pressed or not: the sheet has no :pressed rule for these buttons, and it does not read the application's mouse
+        // buttons. The fills of the config are the legacy GUI's.
+        const bool flat = StyleManager::stylesheetsDisabled();
+
         if (tabElement && mouseOver && tabElement->m_closeHoverFill.isValid())
         {
             // over the button's box, its margin excluded (paintEvent passes the contents rect)
             painter->fillRect(buttonOption->rect, tabElement->m_closeHoverFill);
         }
-        else if (!tabBarParent && mouseOver)
+        else if (!tabBarParent && mouseOver && (!flat || buttonOption->state.testFlag(QStyle::State_Enabled)))
         {
             painter->setPen(Qt::NoPen);
 
-            if (dockBarButton->m_buttonType == DockBarButton::CloseButton)
+            if (flat)
+            {
+                painter->setBrush(dockBarButton->m_buttonType == DockBarButton::CloseButton
+                    ? g_dockBarButtonCloseHoverFill : g_dockBarButtonHoverFill);
+            }
+            else if (dockBarButton->m_buttonType == DockBarButton::CloseButton)
             {
                 if (mouseDown)
                 {

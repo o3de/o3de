@@ -10,6 +10,7 @@
 #include <EMotionFX/Source/BlendSpaceManager.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MotionSetSelectionWindow.h>
 #include <Editor/PropertyWidgets/BlendSpaceMotionContainerHandler.h>
@@ -48,7 +49,9 @@ namespace EMotionFX
 
             auto* axisLabel = new QLabel(text);
             axisLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            axisLabel->setStyleSheet(QString("QLabel { font-weight: bold; color : %1; }").arg(color));
+            axisLabel->setObjectName(QString("EMFXAxis%1").arg(text));
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                axisLabel, QString("QLabel { font-weight: bold; color : %1; }").arg(color));
             axisLayout->addWidget(axisLabel);
 
             auto* spinbox = new AzQtComponents::DoubleSpinBox();
@@ -149,12 +152,14 @@ namespace EMotionFX
         // is motion invalid?
         if (m_motion->TestFlag(EMotionFX::BlendSpaceNode::BlendSpaceMotion::TypeFlags::InvalidMotion))
         {
-            m_labelMotion->setStyleSheet("#m_labelMotion { border: 1px solid red; }");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_labelMotion, "#m_labelMotion { border: 1px solid red; }");
+            EMStudioFlat::SetStateTag(m_labelMotion, EMStudioFlat::InvalidMotionTag, true);
             m_labelMotion->setToolTip("Invalid motion.Select a motion set that contains this motion or add it to the current one.");
         }
         else
         {
-            m_labelMotion->setStyleSheet("#m_labelMotion { border: none; }");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_labelMotion, "#m_labelMotion { border: none; }");
+            EMStudioFlat::SetStateTag(m_labelMotion, EMStudioFlat::InvalidMotionTag, false);
             m_labelMotion->setToolTip("");
         }
     }

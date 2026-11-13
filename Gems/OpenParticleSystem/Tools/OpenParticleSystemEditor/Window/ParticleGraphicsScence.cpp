@@ -14,13 +14,22 @@
 
 namespace OpenParticleSystemEditor
 {
+    //=========================================================================
+    // PARTICLE GRAPH SCENE COLOURS (the grid lines, over the view's fill)
+    //=========================================================================
+    namespace ParticleGraphicsScenceFlat
+    {
+        // ParticleGraphicsScence.cpp:23. TOKENIZE: ParticleGraphGridLine
+        constexpr QColor GridLine(34, 34, 34);
+    } // namespace ParticleGraphicsScenceFlat
+
     const qreal PARTICLE_SCENE_X = -2000;
     const qreal PARTICLE_SCENE_Y = -2000;
     const qreal PARTICLE_SCENE_W = 4000;
     const qreal PARTICLE_SCENE_H = 4000;
     const int GRID_WIDTH = 50;
     const int GRID_THICKNESS = 1;
-    const QColor GRID_COLOR = QColor(34, 34, 34);
+    const QColor GRID_COLOR = ParticleGraphicsScenceFlat::GridLine;
 
     ParticleGraphicsScence::ParticleGraphicsScence()
         : m_bPressed(false)

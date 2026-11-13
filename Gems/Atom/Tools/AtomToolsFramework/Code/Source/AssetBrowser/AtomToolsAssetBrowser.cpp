@@ -12,6 +12,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -38,6 +39,13 @@ namespace AtomToolsFramework
         using namespace AzToolsFramework::AssetBrowser;
 
         m_ui->setupUi(this);
+
+        // The sheet the form gave the left side (AtomToolsAssetBrowser.ui:68-70, the form before the flattening:
+        // `vertical-align: top`), for the legacy GUI only. Qt's style sheet style reads no `vertical-align` of a widget's rule (QCss
+        // parses the property, and no extractor of QStyleSheetStyle uses it), so the sheet changed nothing the left side or the tree
+        // below it draws, and no flat element has anything to carry. The flattened GUI sets none, which frees the tree and its views of
+        // the sheet style the rule put them under.
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_ui->m_leftLayout, QStringLiteral("vertical-align: top"));
 
         m_ui->m_searchWidget->Setup(true, true);
         m_ui->m_searchWidget->setMinimumSize(QSize(150, 0));

@@ -13,6 +13,7 @@
 #include <QTranslator>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QColor>
 #include "EMStudioManager.h"
 #include "MainWindow.h"
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -44,6 +45,17 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the save notification texts: the word that says a save worked or failed.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace FileManagerFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);    // FileManager.cpp:440, :503, :584, :660 TOKENIZE: FileManagerSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);    // FileManager.cpp:445, :508, :579, :655 TOKENIZE: FileManagerSaveFailureText
+    } // namespace FileManagerFlat
+
     FileManager::FileManager(QWidget* parent)
         : QObject(parent)
     {
@@ -437,12 +449,13 @@ namespace EMStudio
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                "Actor <font color=green>successfully</font> saved");
+                QString("Actor <font color=%1>successfully</font> saved").arg(FileManagerFlat::SaveSuccessText.name()));
         }
         else
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                AZStd::string::format("Actor <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                AZStd::string::format("Actor <font color=%s>failed</font> to save<br/><br/>%s",
+                    FileManagerFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
         }
     }
 
@@ -500,12 +513,13 @@ namespace EMStudio
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                "Motion <font color=green>successfully</font> saved");
+                QString("Motion <font color=%1>successfully</font> saved").arg(FileManagerFlat::SaveSuccessText.name()));
         }
         else
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                AZStd::string::format("Motion <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                AZStd::string::format("Motion <font color=%s>failed</font> to save<br/><br/>%s",
+                    FileManagerFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
         }
     }
 
@@ -576,12 +590,13 @@ namespace EMStudio
             if (GetCommandManager()->ExecuteCommand(command, result) == false)
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                    AZStd::string::format("MotionSet <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                    AZStd::string::format("MotionSet <font color=%s>failed</font> to save<br/><br/>%s",
+                        FileManagerFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
             }
             else
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                    "MotionSet <font color=green>successfully</font> saved");
+                    QString("MotionSet <font color=%1>successfully</font> saved").arg(FileManagerFlat::SaveSuccessText.name()));
             }
         }
         else
@@ -652,12 +667,13 @@ namespace EMStudio
             if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                    AZStd::string::format("AnimGraph <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                    AZStd::string::format("AnimGraph <font color=%s>failed</font> to save<br/><br/>%s",
+                        FileManagerFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
             }
             else
             {
                 GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                    "AnimGraph <font color=green>successfully</font> saved");
+                    QString("AnimGraph <font color=%1>successfully</font> saved").arg(FileManagerFlat::SaveSuccessText.name()));
             }
         }
         else

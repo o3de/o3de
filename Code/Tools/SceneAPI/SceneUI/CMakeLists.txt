@@ -48,7 +48,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzQtComponents
+                AZ::AzToolsFramework
+                AZ::SceneCore
                 AZ::SceneUI
+                3rdParty::Qt::Widgets
     )
     ly_add_googletest(
         NAME AZ::SceneUI.Tests

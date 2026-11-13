@@ -15,6 +15,32 @@
 
 #include "TrackView/ui_TrackViewCurveEditor.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  CURVE COLOURS
+//
+//  The Track View curve editor's curve colours, named so the legacy and the flattened GUI read one value. A named namespace, not an
+//  anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace TrackViewCurveEditorFlat
+{
+    // TrackViewCurveEditor.cpp:189 (the colour of a sub-track whose index is not 0 to 3). TOKENIZE: TrackViewCurveAxisFallback
+    constexpr QColor AxisFallback(255, 0, 0);
+
+    // TrackViewCurveEditor.cpp:193, :211 (the X curve). TOKENIZE: TrackViewCurveAxisX
+    constexpr QColor AxisX(255, 0, 0);
+
+    // TrackViewCurveEditor.cpp:196, :212 (the Y curve). TOKENIZE: TrackViewCurveAxisY
+    constexpr QColor AxisY(0, 255, 0);
+
+    // TrackViewCurveEditor.cpp:199, :213 (the Z curve). TOKENIZE: TrackViewCurveAxisZ
+    constexpr QColor AxisZ(0, 0, 255);
+
+    // TrackViewCurveEditor.cpp:202 (the W curve). TOKENIZE: TrackViewCurveAxisW
+    constexpr QColor AxisW(255, 255, 0);
+
+    // TrackViewCurveEditor.cpp:214 (the fourth curve of a multi-curve track, pink as a warning). TOKENIZE: TrackViewCurveAxisUnknown
+    constexpr QColor AxisUnknown(255, 0, 255);
+} // namespace TrackViewCurveEditorFlat
 
 TrackViewCurveEditorDialog::TrackViewCurveEditorDialog(QWidget* parent)
     : QWidget(parent)
@@ -186,20 +212,20 @@ void CTrackViewCurveEditor::AddSpline(CTrackViewTrack* pTrack)
 
     if (subTrackIndex >= 0)
     {
-        QColor trackColor = QColor(255, 0, 0);
+        QColor trackColor = TrackViewCurveEditorFlat::AxisFallback;
         switch (subTrackIndex)
         {
         case 0:
-            trackColor = QColor(255, 0, 0);
+            trackColor = TrackViewCurveEditorFlat::AxisX;
             break;
         case 1:
-            trackColor = QColor(0, 255, 0);
+            trackColor = TrackViewCurveEditorFlat::AxisY;
             break;
         case 2:
-            trackColor = QColor(0, 0, 255);
+            trackColor = TrackViewCurveEditorFlat::AxisZ;
             break;
         case 3:
-            trackColor = QColor(255, 255, 0);
+            trackColor = TrackViewCurveEditorFlat::AxisW;
             break;
         }
 
@@ -208,10 +234,10 @@ void CTrackViewCurveEditor::AddSpline(CTrackViewTrack* pTrack)
     else
     {
         QColor    afColorArray[4];
-        afColorArray[0] = QColor(255, 0, 0);
-        afColorArray[1] = QColor(0, 255, 0);
-        afColorArray[2] = QColor(0, 0, 255);
-        afColorArray[3] = QColor(255, 0, 255); //Pink... so you know it's wrong if you see it.
+        afColorArray[0] = TrackViewCurveEditorFlat::AxisX;
+        afColorArray[1] = TrackViewCurveEditorFlat::AxisY;
+        afColorArray[2] = TrackViewCurveEditorFlat::AxisZ;
+        afColorArray[3] = TrackViewCurveEditorFlat::AxisUnknown; //Pink... so you know it's wrong if you see it.
 
         m_ui->m_wndSpline->AddSpline(pTrack->GetSpline(), pTrack, afColorArray);
     }

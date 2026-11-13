@@ -7,7 +7,12 @@
 #
 
 set(FILES
+    Tests/CommentTextEditFlatSheetTests.cpp
     Tests/GraphCanvasTesting.cpp
 
     Tests/GraphCanvasTranslation.cpp
+
+    # The home of the looks of the comment editor, which the twins of the tests compile: it depends on Qt and AzQtComponents only
+    Source/Components/Nodes/Comment/CommentTextEditFlat.cpp
+    Source/Components/Nodes/Comment/CommentTextEditFlat.h
 )

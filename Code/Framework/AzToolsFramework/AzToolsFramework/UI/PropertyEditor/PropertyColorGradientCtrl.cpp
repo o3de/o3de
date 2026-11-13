@@ -11,6 +11,10 @@
 #include "PropertyQTConstants.h"
 
 #include <AzCore/Debug/Trace.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
@@ -66,6 +70,82 @@ namespace AzToolsFramework
     }
 
     // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! Every colour the two gradient widgets paint, named, so the legacy and the flattened GUI read one value. A named namespace, not an
+    //! anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace PropertyColorGradientCtrlFlatInternal
+    {
+        constexpr QColor MixedField(90, 90, 90);             // PropertyColorGradientCtrl.cpp:111. TOKENIZE: GradientMixedFieldFill
+        constexpr QColor MixedCross(30, 30, 30);             // PropertyColorGradientCtrl.cpp:112. TOKENIZE: GradientMixedCross
+        constexpr QColor BarFrame(30, 30, 30);               // PropertyColorGradientCtrl.cpp:115, :149. TOKENIZE: GradientBarFrame
+        constexpr QColor CheckerDark(80, 80, 80);            // PropertyColorGradientCtrl.cpp:127. TOKENIZE: GradientCheckerDark
+        constexpr QColor CheckerLight(120, 120, 120);        // PropertyColorGradientCtrl.cpp:127. TOKENIZE: GradientCheckerLight
+        constexpr QColor AlphaMarkerFill(220, 220, 220);     // PropertyColorGradientCtrl.cpp:411. TOKENIZE: GradientAlphaMarkerFill
+        constexpr QColor MarkerDeleteOutline(255, 60, 60);   // PropertyColorGradientCtrl.cpp:418. TOKENIZE: GradientMarkerDeleteOutline
+        constexpr QColor MarkerSelectedOutline(255, 200, 0); // PropertyColorGradientCtrl.cpp:419. TOKENIZE: GradientMarkerSelectedOutline
+        constexpr QColor MarkerIdleOutline(20, 20, 20);      // PropertyColorGradientCtrl.cpp:420. TOKENIZE: GradientMarkerIdleOutline
+        constexpr QColor CubeCheckerDark(80, 80, 80);        // PropertyColorGradientCtrl.cpp:450. TOKENIZE: GradientCubeCheckerDark
+        constexpr QColor CubeCheckerLight(170, 170, 170);    // PropertyColorGradientCtrl.cpp:451. TOKENIZE: GradientCubeCheckerLight
+        // The channels of the overlay on the alpha marker's preview cube; the alpha is the marker's own (the use sets it)
+        constexpr QColor CubeOverlay(255, 255, 255);         // PropertyColorGradientCtrl.cpp:457. TOKENIZE: GradientCubeOverlay
+        // PropertyColorGradientCtrl.cpp:623. TOKENIZE: GradientMultiEditBannerText
+        constexpr QColor MultiEditBannerText(0xFF, 0xCC, 0x00);
+    }
+
+    // =======================================================================
+    // Flattened GUI: the multi-edit banner
+    //
+    // The banner of the gradient editor dialog, built only for an edit of several entities, had a sheet of its own: yellow, bold text.
+    // The legacy GUI sets it; the flattened GUI sets none, and this element gives the banner's text what the sheet gave it.
+    // =======================================================================
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace PropertyColorGradientCtrlFlatInternal
+    {
+        //! The dynamic property of the banner that says it is the one the sheet of the dialog's constructor was set on: the label has
+        //! no object name for a selector to name
+        constexpr const char* MultiEditBannerProperty = "gradientMultiEditBanner";
+
+        //! `color: #ffcc00; font-weight: bold;` of the sheet the constructor set on the banner (PropertyColorGradientCtrl.cpp:623,
+        //! before the flattening), over the text of every label (Text.qss:91-92: the family and the size an element restates, as it
+        //! takes the place of the Global one). TOKENIZE: GradientMultiEditBannerText
+        const AzQtComponents::TextElement MultiEditBanner{
+            .m_name = "Editor.Text.GradientMultiEditBanner",
+            .m_family = AzQtComponents::Foundations::Label::Family,         // Text.qss:91
+            .m_pixelSize = AzQtComponents::Foundations::Label::Size,        // Text.qss:92
+            .m_weight = QFont::Bold,                                        // PropertyColorGradientCtrl.cpp:623 (font-weight: bold)
+            .m_color = MultiEditBannerText,                                 // PropertyColorGradientCtrl.cpp:623
+        };
+
+        //! The sheet was the banner's own: the label the constructor tagged, in a gradient editor dialog. The parent's class first: one
+        //! step, where the property read ran for every label of the Editor once the element was registered
+        bool isMultiEditBanner(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::childOfClass(widget, "AzToolsFramework::ColorGradientEditorDialog")
+                && AzQtComponents::Selectors::hasProperty(widget, MultiEditBannerProperty, "true");
+        }
+
+        //! The flattened GUI's half of the banner's sheet: the banner says it is the one, and the element is registered, once
+        void tagMultiEditBanner(QLabel& banner)
+        {
+            if (!AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                return;
+            }
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                AzQtComponents::TextElement::registerElement(&MultiEditBanner, &QLabel::staticMetaObject, &isMultiEditBanner);
+            }
+            banner.setProperty(MultiEditBannerProperty, true);
+        }
+    }
+
+    // =======================================================================
     // GradientBarWidget
     // =======================================================================
 
@@ -108,11 +188,11 @@ namespace AzToolsFramework
         // of every selected entity.
         if (m_mixed)
         {
-            painter.fillRect(area, QColor(90, 90, 90));
-            painter.setPen(QPen(QColor(30, 30, 30), 2));
+            painter.fillRect(area, PropertyColorGradientCtrlFlatInternal::MixedField);
+            painter.setPen(QPen(PropertyColorGradientCtrlFlatInternal::MixedCross, 2));
             painter.drawLine(area.topLeft(),    area.bottomRight());
             painter.drawLine(area.topRight(),   area.bottomLeft());
-            painter.setPen(QColor(30, 30, 30));
+            painter.setPen(PropertyColorGradientCtrlFlatInternal::BarFrame);
             painter.drawRect(area.adjusted(0, 0, -1, -1));
             return;
         }
@@ -124,7 +204,8 @@ namespace AzToolsFramework
             for (int x = area.left(); x < area.right(); x += cs)
             {
                 const bool dark = ((x / cs) + (y / cs)) % 2 == 0;
-                painter.fillRect(QRect(x, y, cs, cs), dark ? QColor(80, 80, 80) : QColor(120, 120, 120));
+                using namespace PropertyColorGradientCtrlFlatInternal;
+                painter.fillRect(QRect(x, y, cs, cs), dark ? CheckerDark : CheckerLight);
             }
         }
 
@@ -146,7 +227,7 @@ namespace AzToolsFramework
             painter.fillRect(QRect(area.left() + x, area.top(), 1, area.height()), c);
         }
 
-        painter.setPen(QColor(30, 30, 30));
+        painter.setPen(PropertyColorGradientCtrlFlatInternal::BarFrame);
         painter.drawRect(area.adjusted(0, 0, -1, -1));
     }
 
@@ -408,16 +489,16 @@ namespace AzToolsFramework
             }
             else
             {
-                triFill = QColor(220, 220, 220);
+                triFill = PropertyColorGradientCtrlFlatInternal::AlphaMarkerFill;
             }
 
             const bool isSel = m_selected.has_value() && *m_selected == i;
             const bool isDeletePreview = isSel && m_pendingDelete;
             QColor outline;
             int outlineWidth;
-            if (isDeletePreview)        { outline = QColor(255, 60, 60);  outlineWidth = 2; }
-            else if (isSel)             { outline = QColor(255, 200, 0);  outlineWidth = 2; }
-            else                        { outline = QColor(20, 20, 20);   outlineWidth = 1; }
+            if (isDeletePreview)        { outline = PropertyColorGradientCtrlFlatInternal::MarkerDeleteOutline;  outlineWidth = 2; }
+            else if (isSel)             { outline = PropertyColorGradientCtrlFlatInternal::MarkerSelectedOutline;  outlineWidth = 2; }
+            else                        { outline = PropertyColorGradientCtrlFlatInternal::MarkerIdleOutline;   outlineWidth = 1; }
             painter.setBrush(triFill);
             painter.setPen(QPen(outline, outlineWidth));
             painter.drawPath(path);
@@ -447,14 +528,15 @@ namespace AzToolsFramework
                 // 4-square mini checkerboard, then semi-transparent white overlay
                 // with opacity set to the stop's alpha value.
                 const int half = GradientCtrlConstants::kCubeInnerSize / 2;
-                const QColor dark(80, 80, 80);
-                const QColor light(170, 170, 170);
+                const QColor dark = PropertyColorGradientCtrlFlatInternal::CubeCheckerDark;
+                const QColor light = PropertyColorGradientCtrlFlatInternal::CubeCheckerLight;
                 painter.fillRect(QRect(cubeInner.left(),        cubeInner.top(),        half, half), light);
                 painter.fillRect(QRect(cubeInner.left() + half, cubeInner.top(),        half, half), dark);
                 painter.fillRect(QRect(cubeInner.left(),        cubeInner.top() + half, half, half), dark);
                 painter.fillRect(QRect(cubeInner.left() + half, cubeInner.top() + half, half, half), light);
 
-                QColor whiteOverlay(255, 255, 255, static_cast<int>(m_alphaStops[i].m_markerAlpha * 255.f));
+                QColor whiteOverlay = PropertyColorGradientCtrlFlatInternal::CubeOverlay;
+                whiteOverlay.setAlpha(static_cast<int>(m_alphaStops[i].m_markerAlpha * 255.f));
                 painter.fillRect(cubeInner, whiteOverlay);
             }
 
@@ -620,7 +702,10 @@ namespace AzToolsFramework
             auto* banner = new QLabel(
                 QStringLiteral("This edit will be written to every selected entity's gradient field."),
                 this);
-            banner->setStyleSheet(QStringLiteral("color: #ffcc00; font-weight: bold;"));
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                banner,
+                QStringLiteral("color: %1; font-weight: bold;").arg(PropertyColorGradientCtrlFlatInternal::MultiEditBannerText.name()));
+            PropertyColorGradientCtrlFlatInternal::tagMultiEditBanner(*banner);
             banner->setWordWrap(true);
             root->addWidget(banner);
         }

@@ -32,6 +32,14 @@
 
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // LOGGING WINDOW TREE COLOURS (the link-like script name in the logging tree)
+    //=========================================================================
+    namespace LoggingWindowTreeItemsFlat
+    {
+        constexpr QColor ScriptNameLink(42, 132, 252); // LoggingWindowTreeItems.cpp:284. TOKENIZE: ScriptCanvasLoggingScriptNameLink
+    } // namespace LoggingWindowTreeItemsFlat
+
     /////////////////////
     // DebugLogTreeItem
     /////////////////////
@@ -281,7 +289,7 @@ namespace ScriptCanvasEditor
             }
             else if (role == Qt::ForegroundRole)
             {
-                return QColor(42,132,252);
+                return LoggingWindowTreeItemsFlat::ScriptNameLink;
             }
             else if (role == Qt::FontRole)
             {

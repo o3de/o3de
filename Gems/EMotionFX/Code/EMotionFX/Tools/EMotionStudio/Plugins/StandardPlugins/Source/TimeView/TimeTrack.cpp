@@ -11,11 +11,23 @@
 #include "TimeViewPlugin.h"
 #include <QPainter>
 #include <QPaintEvent>
+#include <QColor>
 #include <MCore/Source/LogManager.h>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time track paints its row backgrounds and its name with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TimeTrackFlat
+    {
+        constexpr QColor DataBackground(60, 65, 70);           // TimeTrack.cpp:34 TOKENIZE: TimeTrackDataBackground
+        constexpr QColor DataDisabledBackground(50, 50, 50);   // TimeTrack.cpp:35 TOKENIZE: TimeTrackDataDisabledBackground
+        constexpr QColor HeaderBackground(30, 30, 30);         // TimeTrack.cpp:36 TOKENIZE: TimeTrackHeaderBackground
+        constexpr QColor NameText(255, 255, 255);              // TimeTrack.cpp:37 TOKENIZE: TimeTrackNameText
+    } // namespace TimeTrackFlat
+
     // the constructor
     TimeTrack::TimeTrack(TimeViewPlugin* plugin)
     {
@@ -31,10 +43,10 @@ namespace EMStudio
         m_font.setPixelSize(14);
 
         // init brushes and pens
-        m_brushDataBg            = QColor(60, 65, 70);
-        m_brushDataDisabledBg    = QColor(50, 50, 50);// use the same color //QBrush( QColor(33, 33, 33) );
-        m_brushHeaderBg          = QBrush(QColor(30, 30, 30));
-        m_penText                = QPen(QColor(255, 255, 255));
+        m_brushDataBg            = TimeTrackFlat::DataBackground;
+        m_brushDataDisabledBg    = TimeTrackFlat::DataDisabledBackground;// use the same color //QBrush( QColor(33, 33, 33) );
+        m_brushHeaderBg          = QBrush(TimeTrackFlat::HeaderBackground);
+        m_penText                = QPen(TimeTrackFlat::NameText);
     }
 
 

@@ -103,17 +103,21 @@ StyleSheetPage::StyleSheetPage(QWidget* parent)
     }
     AzQtComponents::StyleManager::addSearchPaths("gallery", pathOnDisk, qrcPath, engineRootPath);
 
+    // This page is a sample of StyleManager::setStyleSheet, so its sheet is set in both the legacy and the flattened GUI
+    // (setSampleStyleSheet loads and sets the file as setStyleSheet does, where the flattened GUI's setStyleSheet carries a sheet by
+    // elements).
+
     // The following label shows the intended use:
-    AzQtComponents::StyleManager::setStyleSheet(ui->exampleWidget, "gallery:StyleSheetPage.qss");
+    AzQtComponents::StyleManager::setSampleStyleSheet(ui->exampleWidget, "gallery:StyleSheetPage.qss");
 
     // The following labels have their style sheet set specifically for testing.
 
     // Style sheets can be set on a widget from disk or Qt Resource files.
-    AzQtComponents::StyleManager::setStyleSheet(ui->qrcLabel, ":/Gallery/StyleSheetPage.qss");
-    AzQtComponents::StyleManager::setStyleSheet(ui->absolutePathLabel, pathOnDisk + QDir::separator() + "StyleSheetPage.qss");
+    AzQtComponents::StyleManager::setSampleStyleSheet(ui->qrcLabel, ":/Gallery/StyleSheetPage.qss");
+    AzQtComponents::StyleManager::setSampleStyleSheet(ui->absolutePathLabel, pathOnDisk + QDir::separator() + "StyleSheetPage.qss");
 
     // Style sheets without a prefix will still be loaded if they are found in a search path:
-    AzQtComponents::StyleManager::setStyleSheet(ui->noPrefixLabel, "StyleSheetPage.qss");
+    AzQtComponents::StyleManager::setSampleStyleSheet(ui->noPrefixLabel, "StyleSheetPage.qss");
 
     // Setup Example::Widget
     connect(ui->drawSimpleToggle, &QPushButton::clicked, ui->widget, &Example::Widget::setDrawSimple);

@@ -65,6 +65,7 @@ namespace AzQtComponents
         // TabWidget.qss:154 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG
         const TabElement::Edge BorderedTopLine{ 1, Foundations::FarBG };
         constexpr QMargins BorderedPadding(14, 6, 14, 6);           // TabWidget.qss:155 $space.tab.idle.padding.Alt2
+        // TabWidget.qss:125-128 `border: 0 none` on a Secondary bar: it has no bar edges, only the Bordered one below does
         // TabWidget.qss:132-133 $line.tab.idle.width.Alt1 $line.tab.idle.color.FarBG (one rule for the left and top edges)
         const TabElement::Edge BorderedBarLine{ 1, Foundations::FarBG };
 
@@ -76,8 +77,12 @@ namespace AzQtComponents
         const QColor DockCloseHoverFill(0xB8, 0x0D, 0x1C);          // TitleBar.qss:104 $fill.button.hover.fill.Alt3
 
         // ---- The tab widget, its pane and the action toolbar container in its corner
+        // TabWidget.qss:36-39 `:pane { border: 0 none }`: a Primary or DockGroup pane has no edges. A Secondary pane has its top line,
+        // TabWidget.qss:114 below
         const QColor WidgetFill = Foundations::FarBG;               // TabWidget.qss:23 $fill.tab.idle.FarBG
         constexpr int EmptyPaneOffset = 30;                         // TabWidget.qss:43 $space.tab-pane.idle.margin-top
+        // TabWidgetActionToolBar.qss:9-12 The container of a Secondary widget is transparent, over the widget fill. The Primary one's
+        // #111111 (TabWidgetActionToolBar.qss:3) is the Primary widget fill, so flat gives the container no fill of its own
         constexpr int CornerMinHeight = 28;                 // TabWidgetActionToolBar.qss:4, :29 $size.tab.idle.min-height.Alt1
         constexpr int CornerMarginBottom = 9;               // TabWidgetActionToolBar.qss:6, :31 $space.tab.idle.margin-bottom.Alt2
         const QColor SecondaryWidgetFill = Foundations::Mid;        // TabWidget.qss:103 $fill.tab.idle.Mid
@@ -89,6 +94,14 @@ namespace AzQtComponents
         constexpr QMargins SecondaryPanePadding(3, 0, 3, 3);
         constexpr int SecondaryBarLeft = 1;                         // TabWidget.qss:121 $other.tab.idle.left.Alt1
         constexpr int SecondaryBarAreaMinHeight = 30;               // TabWidget.qss:122 $size.tab.idle.min-height.Alt2
+
+        // ---- A bar that has the keyboard focus
+        // TabWidget.qss:95 `AzQtComponents--TabBar:focus { outline: none }`: the current tab of a focused bar gets no focus rectangle
+        // (the PE_FrameFocusRect that the base style's tab label draws for State_HasFocus). TabWidget.qss:96 `border: none` changes
+        // nothing: no rule that reaches a bar gives it a border the focused bar would lose (the bar of TabWidget.qss:125-128 and the
+        // dock bars of StyledDockWidget.qss:25-28 have none, and the Bordered rule of TabWidget.qss:130-134 is the more specific).
+        // TOKENIZE: TabBarFocusOutline
+        constexpr bool HideFocusRect = true;
 
         // ------------------------------------------------------------------------------
         // Elements
@@ -108,6 +121,7 @@ namespace AzQtComponents
                 .m_edges = { TabLine, TabLine, SelectedLine, TabLine } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
+            .m_hideFocusRect = HideFocusRect,
             .m_closeIcon = CloseIcon,
             .m_closeHoverFill = CloseHoverFill,
             .m_closeRadius = CloseHoverRadius,
@@ -121,7 +135,8 @@ namespace AzQtComponents
 
         //! A DockTabBar in a DockTabWidget (docked panel groups): the Primary look with no left edge on any tab. StyledDockWidget.qss:33
         //! names `::tab:only`, which is no Qt pseudo-class (Qt's is :only-one), so Qt applies the rule to every tab. The close button
-        //! is a DockBarButton (DockTabBar::tabInserted); the element gives only its hover fill.
+        //! is a DockBarButton (DockTabBar::tabInserted); the element gives only its hover fill. The pane and the bar have `border: none`
+        //! (StyledDockWidget.qss:20-23, StyledDockWidget.qss:25-28): no .m_paneEdges and no .m_barEdges.
         const TabElement DockGroup{
             .m_name = "Global.Tab.DockGroup",
             .m_barFill = BarFill,
@@ -134,6 +149,7 @@ namespace AzQtComponents
                 .m_edges = { TabLine, TabLine, SelectedLine, {} } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
+            .m_hideFocusRect = HideFocusRect,
             .m_closeHoverFill = DockCloseHoverFill,
             .m_widgetFill = WidgetFill,
             .m_paneEmptyOffset = EmptyPaneOffset,
@@ -154,6 +170,7 @@ namespace AzQtComponents
             .m_selectedHover = { .m_fill = HoverFill, .m_text = Foundations::Surface::Text, .m_edges = { {}, TabLine, SelectedLine, {} } },
             .m_padding = TabPadding,
             .m_maxContentWidth = TabMaxWidth,
+            .m_hideFocusRect = HideFocusRect,
             .m_closeHoverFill = DockCloseHoverFill,
             .m_moveAnimationDuration = MoveAnimationDuration,
         };
@@ -171,6 +188,7 @@ namespace AzQtComponents
                 .m_edges = { {}, {}, SecondarySelectedLine, {} } },
             .m_padding = SecondaryPadding,
             .m_maxContentWidth = TabMaxWidth,
+            .m_hideFocusRect = HideFocusRect,
             .m_closeIcon = CloseIcon,
             .m_closeHoverFill = CloseHoverFill,
             .m_closeRadius = CloseHoverRadius,
@@ -202,6 +220,7 @@ namespace AzQtComponents
                 .m_edges = { BorderedTopLine, {}, SecondarySelectedLine, {} } },
             .m_padding = BorderedPadding,
             .m_maxContentWidth = TabMaxWidth,
+            .m_hideFocusRect = HideFocusRect,
             .m_closeIcon = CloseIcon,
             .m_closeHoverFill = CloseHoverFill,
             .m_closeRadius = CloseHoverRadius,
@@ -217,6 +236,27 @@ namespace AzQtComponents
             .m_cornerMarginBottom = CornerMarginBottom,
             .m_moveAnimationDuration = MoveAnimationDuration,
         };
+
+        //! A secondary look on a DockTabWidget and its DockTabBar (TabWidget::applySecondaryStyle on one: the graph editors of Landscape
+        //! Canvas and the GraphModel tools). The secondary rules name AzQtComponents--TabWidget and AzQtComponents--TabBar, which a
+        //! DockTabWidget and its DockTabBar are, and outrank the dock rules that apply to the same properties (the bar's `border: none`
+        //! of StyledDockWidget.qss:25-28 and the pane's of :20-23 are less specific than TabWidget.qss:125-134 and :111-117; the
+        //! `border-left: none` of StyledDockWidget.qss:30-34 is the left edge the secondary tab has). The container in the corner is
+        //! the secondary one too (TabWidgetActionToolBar.qss:9-12 outranks :26-32). The one difference from the TabBar looks is the
+        //! close button: a DockBarButton (DockTabBar::tabInserted) that the element gives only the hover fill of, as DockGroup does.
+        //! TOKENIZE: DockGroupSecondaryClose
+        TabElement dockGroupOf(TabElement secondary, const char* name)
+        {
+            secondary.m_name = name;
+            secondary.m_closeIcon = "";
+            secondary.m_closeHoverFill = DockCloseHoverFill;            // TitleBar.qss:104
+            secondary.m_closeRadius = 0;
+            secondary.m_closeMarginRight = 0;
+            return secondary;
+        }
+
+        const TabElement DockGroupSecondary = dockGroupOf(Secondary, "Global.Tab.DockGroup.Secondary");
+        const TabElement DockGroupSecondaryBordered = dockGroupOf(SecondaryBordered, "Global.Tab.DockGroup.Secondary.Bordered");
 
         //! Plain tab widgets and bars, which no other element covers (a QTabWidget of Qt's, as the Asset Processor's Builders and
         //! Assets pages). The rule of TabWidget.qss:13 filled the bar and its background-color became the palette's Base, Button and
@@ -245,7 +285,16 @@ namespace AzQtComponents
             if (tabBar->inherits("AzQtComponents::DockTabBar"))
             {
                 const QWidget* parent = tabBar->parentWidget();
-                return (parent && parent->inherits("AzQtComponents::DockTabWidget")) ? &DockGroup : &DockTitle;
+                if (!parent || !parent->inherits("AzQtComponents::DockTabWidget"))
+                {
+                    return &DockTitle;
+                }
+                // TabWidget::applySecondaryStyle tags the bar of a DockTabWidget as any other tab widget's
+                if (Style::hasClass(tabBar, QStringLiteral("Secondary")))
+                {
+                    return Style::hasClass(tabBar, QStringLiteral("Bordered")) ? &DockGroupSecondaryBordered : &DockGroupSecondary;
+                }
+                return &DockGroup;
             }
             if (tabBar->inherits("AzQtComponents::TabBar"))
             {

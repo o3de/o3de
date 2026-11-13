@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFlatValues.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
@@ -94,7 +95,7 @@ namespace AzToolsFramework
                     // draw the background
                     if (!index.parent().isValid() && !(option.state & QStyle::State_MouseOver) && !(option.state & QStyle::State_Selected))
                     {
-                        painter->fillRect(option.rect, 0x333333);
+                        painter->fillRect(option.rect, AssetBrowserFlat::RootRowFill);
                     }
                     else
                     {

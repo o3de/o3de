@@ -8,6 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Editor/LineEditValidatable.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 
 namespace EMStudio
 {
@@ -37,14 +38,9 @@ namespace EMStudio
 
     void LineEditValidatable::OnTextChanged()
     {
-        if (IsValid())
-        {
-            setStyleSheet("");
-        }
-        else
-        {
-            setStyleSheet("border: 1px solid red;");
-        }
+        const bool valid = IsValid();
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this, valid ? QString() : QString("border: 1px solid red;"));
+        EMStudioFlat::SetStateTag(this, EMStudioFlat::InvalidInputTag, !valid);
 
         emit TextChanged();
     }

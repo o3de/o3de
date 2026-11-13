@@ -37,6 +37,70 @@
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  CONSOLE COLOURS
+//
+//  The Editor Console's colours, named so the legacy and the flattened GUI read one value: the log colour table (the text, the
+//  colour codes, the error and the warning), the background of the dark and the light theme, the modified-variable colour and the
+//  search highlight. A named namespace, not an anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace ConsoleSCBFlat
+{
+    // ConsoleSCB.cpp:443, :464 (the text of the light theme). TOKENIZE: ConsoleTextLight
+    constexpr QColor TextLight(0, 0, 0);
+
+    // ConsoleSCB.cpp:450 (the text of the dark theme). TOKENIZE: ConsoleTextDark
+    constexpr QColor TextDark(255, 255, 255);
+
+    // ConsoleSCB.cpp:327 (colour code 0, black). TOKENIZE: ConsoleCode0Black
+    constexpr QColor Code0Black(0, 0, 0);
+
+    // ConsoleSCB.cpp:328 (colour code 1, black). TOKENIZE: ConsoleCode1Black
+    constexpr QColor Code1Black(0, 0, 0);
+
+    // ConsoleSCB.cpp:329 (colour code 2, blue). TOKENIZE: ConsoleCodeBlue
+    constexpr QColor CodeBlue(0, 0, 200);
+
+    // ConsoleSCB.cpp:330 (colour code 3, green). TOKENIZE: ConsoleCodeGreen
+    constexpr QColor CodeGreen(0, 200, 0);
+
+    // ConsoleSCB.cpp:332 (colour code 5, cyan). TOKENIZE: ConsoleCodeCyan
+    constexpr QColor CodeCyan(0, 200, 200);
+
+    // ConsoleSCB.cpp:334 (colour code 7, red and blue). TOKENIZE: ConsoleCodeMagenta
+    constexpr QColor CodeMagenta(200, 0, 200);
+
+    // ConsoleSCB.cpp:335 (colour code 8; the int 0x000080ff, whose alpha byte QColor(QRgb) ignores). TOKENIZE: ConsoleCodeAzure
+    constexpr QColor CodeAzure(0x00, 0x80, 0xff);
+
+    // ConsoleSCB.cpp:336 (colour code 9; the int 0x008f8f8f, whose alpha byte QColor(QRgb) ignores). TOKENIZE: ConsoleCodeGray
+    constexpr QColor CodeGray(0x8f, 0x8f, 0x8f);
+
+    // ConsoleSCB.cpp:331, :444 (colour code 4, the error on the light theme). TOKENIZE: ConsoleErrorLight
+    constexpr QColor ErrorLight(200, 0, 0);
+
+    // ConsoleSCB.cpp:333, :445 (colour code 6, the warning on the light theme). TOKENIZE: ConsoleWarningLight
+    constexpr QColor WarningLight(128, 112, 0);
+
+    // ConsoleSCB.cpp:451 (the error on the dark theme). TOKENIZE: ConsoleErrorDark
+    constexpr QColor ErrorDark(0xfa, 0x27, 0x27);
+
+    // ConsoleSCB.cpp:452 (the warning on the dark theme). TOKENIZE: ConsoleWarningDark
+    constexpr QColor WarningDark(0xff, 0xaa, 0x22);
+
+    // ConsoleSCB.cpp:458 (the background of the dark theme). TOKENIZE: ConsoleBackgroundDark
+    constexpr QColor BackgroundDark(0x22, 0x22, 0x22);
+
+    // ConsoleSCB.cpp:463 (the background of the light theme). TOKENIZE: ConsoleBackgroundLight
+    constexpr QColor BackgroundLight(255, 255, 255);
+
+    // ConsoleSCB.cpp:98 (the text of a console variable whose value was modified). TOKENIZE: ConsoleModifiedVariable
+    constexpr QColor ModifiedVariable(243, 129, 29);
+
+    // ConsoleSCB.cpp:77 (the background of a search hit). TOKENIZE: ConsoleSearchHighlight
+    constexpr QColor SearchHighlight(255, 255, 0);
+} // namespace ConsoleSCBFlat
+
 static void OnVariableUpdated(ICVar* pCVar);
 
 namespace ConsoleConstants
@@ -74,7 +138,7 @@ protected:
         auto pos = -1;
         QTextCharFormat myClassFormat;
         myClassFormat.setFontWeight(QFont::Bold);
-        myClassFormat.setBackground(Qt::yellow);
+        myClassFormat.setBackground(ConsoleSCBFlat::SearchHighlight);
 
         while (true)
         {
@@ -95,7 +159,7 @@ private:
 
 static CConsoleSCB* s_consoleSCB = nullptr;
 // Constant for the modified console variable color
-static const QColor g_modifiedConsoleVariableColor(243, 129, 29);
+static const QColor g_modifiedConsoleVariableColor(ConsoleSCBFlat::ModifiedVariable);
 
 namespace {
     enum Column
@@ -324,16 +388,16 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     SetupOptionsMenu();
 
     // Setup the color table for the default (light) theme
-    m_colorTable << QColor(0, 0, 0)
-        << QColor(0, 0, 0)
-        << QColor(0, 0, 200) // blue
-        << QColor(0, 200, 0) // green
-        << QColor(200, 0, 0) // red
-        << QColor(0, 200, 200) // cyan
-        << QColor(128, 112, 0) // yellow
-        << QColor(200, 0, 200) // red+blue
-        << QColor(0x000080ff)
-        << QColor(0x008f8f8f);
+    m_colorTable << ConsoleSCBFlat::Code0Black
+        << ConsoleSCBFlat::Code1Black
+        << ConsoleSCBFlat::CodeBlue // blue
+        << ConsoleSCBFlat::CodeGreen // green
+        << ConsoleSCBFlat::ErrorLight // red
+        << ConsoleSCBFlat::CodeCyan // cyan
+        << ConsoleSCBFlat::WarningLight // yellow
+        << ConsoleSCBFlat::CodeMagenta // red+blue
+        << ConsoleSCBFlat::CodeAzure
+        << ConsoleSCBFlat::CodeGray;
     RefreshStyle();
 
     auto findNextAction = new QAction(this);
@@ -440,28 +504,28 @@ void CConsoleSCB::RefreshStyle()
     ui->optionsButton->setIcon(QIcon(ConsoleConstants::MenuIcon));
     // Set the debug/warning text colors appropriately for the background theme
     // (e.g. not have black text on black background)
-    QColor textColor = Qt::black;
-    m_colorTable[4] = QColor(200, 0, 0);                // Error (Red)
-    m_colorTable[6] = QColor(128, 112, 0);              // Warning (Yellow)
+    QColor textColor = ConsoleSCBFlat::TextLight;
+    m_colorTable[4] = ConsoleSCBFlat::ErrorLight;       // Error (Red)
+    m_colorTable[6] = ConsoleSCBFlat::WarningLight;     // Warning (Yellow)
     m_backgroundTheme = gSettings.consoleBackgroundColorTheme;
 
     if (m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark)
     {
-        textColor = Qt::white;
-        m_colorTable[4] = QColor(0xfa, 0x27, 0x27);     // Error (Red)
-        m_colorTable[6] = QColor(0xff, 0xaa, 0x22);     // Warning (Yellow)
+        textColor = ConsoleSCBFlat::TextDark;
+        m_colorTable[4] = ConsoleSCBFlat::ErrorDark;    // Error (Red)
+        m_colorTable[6] = ConsoleSCBFlat::WarningDark;  // Warning (Yellow)
     }
 
     QColor bgColor;
     if (!GetIEditor()->IsInConsolewMode() && CConsoleSCB::GetCreatedInstance() && m_backgroundTheme == AzToolsFramework::ConsoleColorTheme::Dark)
     {
-        bgColor = QColor(0x22, 0x22, 0x22);
+        bgColor = ConsoleSCBFlat::BackgroundDark;
         AzQtComponents::ScrollBar::applyLightStyle(ui->textEdit);
     }
     else
     {
-        bgColor = Qt::white;
-        textColor = Qt::black;
+        bgColor = ConsoleSCBFlat::BackgroundLight;
+        textColor = ConsoleSCBFlat::TextLight;
         AzQtComponents::ScrollBar::applyDarkStyle(ui->textEdit);
     }
 

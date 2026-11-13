@@ -29,6 +29,16 @@ namespace EMotionFX
 }
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the anim graph canvas that NodeGraph computes. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace NodeGraphFlat
+    {
+        // The error blink: red swings from the base's red up by ErrorBlinkSwing, green and blue stay at the base's.
+        inline constexpr QColor ErrorBlinkBase(160, 0, 0);   // NodeGraph.h:72 TOKENIZE: NodeGraphErrorBlinkBase
+        inline constexpr int ErrorBlinkSwing = 96;           // NodeGraph.h:72 TOKENIZE: NodeGraphErrorBlinkSwing
+    } // namespace NodeGraphFlat
+
     // forward declarations
     class GraphNode;
     class NodeConnection;
@@ -69,7 +79,13 @@ namespace EMStudio
         void SetTargetPort(NodePort* port)             { m_targetPort = port; }
         NodePort* GetTargetPort()                      { return m_targetPort; }
         float GetDashOffset() const                    { return m_dashOffset; }
-        QColor GetErrorBlinkColor() const              { int32 red = aznumeric_cast<int32>(160 + ((0.5f + 0.5f * MCore::Math::Cos(m_errorBlinkOffset)) * 96)); red = MCore::Clamp<int32>(red, 0, 255); return QColor(red, 0, 0); }
+        QColor GetErrorBlinkColor() const
+        {
+            const float swing = (0.5f + 0.5f * MCore::Math::Cos(m_errorBlinkOffset)) * NodeGraphFlat::ErrorBlinkSwing;
+            int32 red = aznumeric_cast<int32>(NodeGraphFlat::ErrorBlinkBase.red() + swing);
+            red = MCore::Clamp<int32>(red, 0, 255);
+            return QColor(red, NodeGraphFlat::ErrorBlinkBase.green(), NodeGraphFlat::ErrorBlinkBase.blue());
+        }
 
         bool GetIsRepositioningTransitionHead() const               { return (m_replaceTransitionHead); }
         bool GetIsRepositioningTransitionTail() const               { return (m_replaceTransitionTail); }

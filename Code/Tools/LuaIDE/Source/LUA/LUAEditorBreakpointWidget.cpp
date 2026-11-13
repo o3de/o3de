@@ -19,6 +19,15 @@
 
 namespace LUAEditor
 {
+    //=========================================================================
+    // BREAKPOINT GUTTER COLOURS (the breakpoint dot and the current-execution triangle)
+    //=========================================================================
+    namespace LUAEditorBreakpointWidgetFlat
+    {
+        constexpr QColor BreakpointDot(255, 0, 0);        // LUAEditorBreakpointWidget.cpp:112, :113. TOKENIZE: LuaBreakpointDot
+        constexpr QColor ExecutionMarker(255, 255, 0);    // LUAEditorBreakpointWidget.cpp:126, :127. TOKENIZE: LuaExecutionMarker
+    } // namespace LUAEditorBreakpointWidgetFlat
+
     namespace
     {
         //this used to detect deleted lines, doesnt work for last line though, but that can be detected elsewhere.
@@ -109,8 +118,8 @@ namespace LUAEditor
                 //breakpoint red dot
                 if (m_breakpoints.find(lineNum) != m_breakpoints.end())
                 {
-                    p.setPen(QColor::fromRgb(255, 0, 0));
-                    p.setBrush(QBrush(QColor::fromRgb(255, 0, 0)));
+                    p.setPen(LUAEditorBreakpointWidgetFlat::BreakpointDot);
+                    p.setBrush(QBrush(LUAEditorBreakpointWidgetFlat::BreakpointDot));
                     p.drawEllipse(drawRect);
                 }
 
@@ -123,8 +132,8 @@ namespace LUAEditor
                         {drawRect.center().x(), drawRect.bottom() - 1}
                     };
 
-                    p.setPen(QColor::fromRgb(255, 255, 0));
-                    p.setBrush(QBrush(QColor::fromRgb(255, 255, 0)));
+                    p.setPen(LUAEditorBreakpointWidgetFlat::ExecutionMarker);
+                    p.setBrush(QBrush(LUAEditorBreakpointWidgetFlat::ExecutionMarker));
                     p.drawPolygon(marker, sizeof(marker) / sizeof(QPointF));
                 }
             });

@@ -12,11 +12,21 @@
 #include "TrackDataWidget.h"
 #include <QPainter>
 #include <QPaintEvent>
+#include <QColor>
 
 #include <MCore/Source/LogManager.h>
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time info widget paints its text with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TimeInfoWidgetFlat
+    {
+        constexpr QColor Text(200, 200, 200);        // TimeInfoWidget.cpp:37 TOKENIZE: TimeInfoText
+        constexpr QColor FocusText(244, 156, 28);    // TimeInfoWidget.cpp:38 TOKENIZE: TimeInfoFocusText
+    } // namespace TimeInfoWidgetFlat
+
     // the constructor
     TimeInfoWidget::TimeInfoWidget(TimeViewPlugin* plugin, QWidget* parent)
         : QWidget(parent)
@@ -34,8 +44,8 @@ namespace EMStudio
         m_overwriteMode      = false;
 
         // init brushes and pens
-        m_penText            = QPen(QColor(200, 200, 200));
-        m_penTextFocus       = QPen(QColor(244, 156, 28));
+        m_penText            = QPen(TimeInfoWidgetFlat::Text);
+        m_penTextFocus       = QPen(TimeInfoWidgetFlat::FocusText);
 
         setFocusPolicy(Qt::StrongFocus);
     }

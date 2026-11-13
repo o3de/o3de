@@ -15,6 +15,7 @@
 #include "Helpers/SliceMenuHelpers.h"
 #include "HierarchyItem.h"
 #include "HierarchyWidget.h"
+#include "UiEditorFlat.h"
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Windows/EditorCommon.h"
 #include "Widgets/PropertiesWidget/PropertiesWidget.h"
@@ -34,7 +35,9 @@
 HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool addMenuForNewElement, const QPoint* optionalPos)
     : QMenu()
 {
-    setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    // The disabled items' grey: the menu's own sheet in the legacy GUI, the tag the flattened GUI's element reads in the other. Before the
+    // menus below this one are added.
+    UiEditorFlat::SetPopupMenuSheet(this);
 
     QTreeWidgetItemRawPtrQList selectedItems = hierarchy->selectedItems();
 

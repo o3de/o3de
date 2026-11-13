@@ -12,8 +12,26 @@
 #include <QMouseEvent>
 #include <QFontMetrics>
 
+#include <QColor>
+
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the blend space 1D widget: edges, grid, labels, points and the info text. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace BlendSpace1DNodeWidgetFlat
+    {
+        constexpr QColor Edge(0xBB, 0xBB, 0xBB);                  // BlendSpace1DNodeWidget.cpp:41 TOKENIZE: BlendSpace1DEdge
+        constexpr QColor HighlightedEdge(0xF5, 0xA6, 0x23);       // BlendSpace1DNodeWidget.cpp:45 TOKENIZE: BlendSpace1DHighlightedEdge
+        constexpr QColor Grid(61, 61, 61);                        // BlendSpace1DNodeWidget.cpp:49 TOKENIZE: BlendSpace1DGrid
+        constexpr QColor Subgrid(55, 55, 55);                     // BlendSpace1DNodeWidget.cpp:50 TOKENIZE: BlendSpace1DSubgrid
+        constexpr QColor AxisLabel(0xBB, 0xBB, 0xBB);             // BlendSpace1DNodeWidget.cpp:52 TOKENIZE: BlendSpace1DAxisLabel
+        constexpr QColor InfoText(0xBB, 0xBB, 0xBB);              // BlendSpace1DNodeWidget.cpp:56 TOKENIZE: BlendSpace1DInfoText
+        constexpr QColor BackgroundRect(0xDD, 0xDD, 0xDD, 0x11);  // BlendSpace1DNodeWidget.cpp:60 TOKENIZE: BlendSpace1DBackgroundRect
+        constexpr QColor Point(0xBB, 0xBB, 0xBB);                 // BlendSpace1DNodeWidget.cpp:64 TOKENIZE: BlendSpace1DPoint
+        constexpr QColor InfoTextBackground(0x22, 0x22, 0x22);    // BlendSpace1DNodeWidget.cpp:68 TOKENIZE: BlendSpace1DInfoTextBackground
+    } // namespace BlendSpace1DNodeWidgetFlat
+
     const int   BlendSpace1DNodeWidget::s_motionPointCircleWidth = 4;
     const int   BlendSpace1DNodeWidget::s_leftMargin = 35;
     const int   BlendSpace1DNodeWidget::s_rightMargin = 15;
@@ -38,34 +56,34 @@ namespace EMStudio
 
         QColor color;
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace1DNodeWidgetFlat::Edge;
         m_edgePen.setColor(color);
         m_edgePen.setWidth(1);
 
-        color.setRgb(0xF5, 0xA6, 0x23);
+        color = BlendSpace1DNodeWidgetFlat::HighlightedEdge;
         m_highlightedEdgePen.setColor(color);
         m_highlightedEdgePen.setWidth(2);
 
-        m_gridPen.setColor(QColor(61, 61, 61));
-        m_subgridPen.setColor(QColor(55, 55, 55));
+        m_gridPen.setColor(BlendSpace1DNodeWidgetFlat::Grid);
+        m_subgridPen.setColor(BlendSpace1DNodeWidgetFlat::Subgrid);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace1DNodeWidgetFlat::AxisLabel;
         m_axisLabelPen.setColor(color);
         m_axisLabelPen.setWidth(2);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace1DNodeWidgetFlat::InfoText;
         m_infoTextPen.setColor(color);
         m_infoTextPen.setWidth(1);
 
-        color.setRgb(0xDD, 0xDD, 0xDD, 0x11);
+        color = BlendSpace1DNodeWidgetFlat::BackgroundRect;
         m_backgroundRectBrush.setColor(color);
         m_backgroundRectBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace1DNodeWidgetFlat::Point;
         m_pointBrush.setColor(color);
         m_pointBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0x22, 0x22, 0x22);
+        color = BlendSpace1DNodeWidgetFlat::InfoTextBackground;
         m_infoTextBackgroundBrush.setColor(color);
         m_infoTextBackgroundBrush.setStyle(Qt::SolidPattern);
 

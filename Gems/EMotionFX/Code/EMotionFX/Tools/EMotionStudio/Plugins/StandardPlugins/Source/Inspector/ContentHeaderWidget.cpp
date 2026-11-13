@@ -6,6 +6,7 @@
  *
  */
 
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/ContentHeaderWidget.h>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -18,7 +19,8 @@ namespace EMStudio
         m_iconLabel = new QLabel();
 
         m_titleLabel = new QLabel();
-        m_titleLabel->setStyleSheet("font-weight: bold;");
+        m_titleLabel->setObjectName(EMStudioFlat::BoldLabelName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_titleLabel, "font-weight: bold;");
 
         QHBoxLayout* filenameLayout = new QHBoxLayout();
         filenameLayout->setContentsMargins(2, 2, 2, 2);

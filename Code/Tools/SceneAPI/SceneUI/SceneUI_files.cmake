@@ -8,6 +8,8 @@
 
 set(FILES
     SceneUIConfiguration.h
+    SceneUIFlatSheet.h
+    SceneUIFlatSheet.cpp
     SceneUI.qrc
     ManifestMetaInfoHandler.h
     ManifestMetaInfoHandler.cpp

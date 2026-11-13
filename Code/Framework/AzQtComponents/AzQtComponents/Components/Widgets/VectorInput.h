@@ -162,7 +162,8 @@ namespace AzQtComponents
         /**
         * Sets the style on the indicated Vector element
         * @param index Index of the element for which the label is to be styled
-        * @param qss The Qt Style to be applied
+        * @param qss The Qt Style to be applied. Set as the label's own style sheet; the flattened GUI (no style sheets) sets none
+        *            and reads none
         */
         void setLabelStyle(int index, const QString& qss);
 

@@ -150,6 +150,8 @@ set(FILES
     Editor/UiEditorEntityContext.cpp
     Editor/UiEditorEntityContext.h
     Editor/UiEditorEntityContextBus.h
+    Editor/UiEditorFlat.cpp
+    Editor/UiEditorFlat.h
     Editor/UiEditorInternalBus.h
     Editor/Undo/UndoStack.cpp
     Editor/Undo/UndoStack.h

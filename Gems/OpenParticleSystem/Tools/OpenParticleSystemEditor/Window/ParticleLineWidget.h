@@ -21,6 +21,9 @@ namespace OpenParticleSystemEditor
 {
     class ParticleLineWidget : public QWidget
     {
+        // Q_OBJECT gives the class a meta object of its own, so that the flattened GUI's rows sit on this class and not on QWidget
+        // (every plain widget would then run their matchers)
+        Q_OBJECT
     public:
         explicit ParticleLineWidget(QWidget* parent = nullptr);
         virtual ~ParticleLineWidget();

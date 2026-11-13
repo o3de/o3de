@@ -7,6 +7,8 @@
  */
 
 #include <GemCatalog/GemFilterTagWidget.h>
+#include <FlatValues.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
@@ -24,7 +26,10 @@ namespace O3DE::ProjectManager
         layout->setSpacing(2);
         setLayout(layout);
 
-        setStyleSheet("background-color: #555555;");
+        // The legacy GUI's sheets; the flattened GUI sets none and its elements carry them (FlatElements.cpp, FilterTag, FilterTagClose).
+        // The fill is the tag's: its element reads the same constant (FlatValues.h).
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this,
+            QString("background-color: %1;").arg(FlatValues::FilterTagFill.name()));
 
         m_textLabel = new QLabel();
         m_textLabel->setObjectName("FilterTagWidgetTextLabel");
@@ -35,7 +40,7 @@ namespace O3DE::ProjectManager
         m_closeButton->setFlat(true);
         m_closeButton->setIcon(QIcon(":/X.svg"));
         m_closeButton->setIconSize(QSize(12, 12));
-        m_closeButton->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_closeButton, "QPushButton { background-color: transparent; border: 0px }");
         layout->addWidget(m_closeButton);
         connect(m_closeButton, &QPushButton::clicked, this, [this]{ emit RemoveClicked(); });
     }

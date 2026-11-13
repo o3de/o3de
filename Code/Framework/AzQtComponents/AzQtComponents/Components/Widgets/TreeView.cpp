@@ -23,6 +23,17 @@ namespace AzQtComponents
 {
     constexpr const char* g_branchLinesEnabledProperty = "BranchLinesEnabled";
 
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+    //! with others into one translation unit, where anonymous namespaces merge. The branch line colour (defaultConfig) is read from
+    //! TreeViewConfig.ini and stays where it is.
+    namespace TreeViewFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The drag image of a tree item (shown only while dragging)
+        // ------------------------------------------------------------------------------
+        constexpr QColor DragImageFill(0x22, 0x22, 0x22);   // TreeView.cpp:330. TOKENIZE: TreeViewDragImageFill
+    } // namespace TreeViewFlat
+
     class TreeViewWatcher
         : public QObject
     {
@@ -327,7 +338,7 @@ namespace AzQtComponents
         dragPainter.fillRect(dragImage.rect(), Qt::transparent);
         dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         dragPainter.setOpacity(0.35f);
-        dragPainter.fillRect(rect, QColor("#222222"));
+        dragPainter.fillRect(rect, TreeViewFlat::DragImageFill);
         dragPainter.setOpacity(1.0f);
 
         int imageY = 0;

@@ -17,6 +17,7 @@
 #include <QEvent>
 
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerFlatValues.h>
 #include <AzQtComponents/Components/Widgets/TreeView.h>
 
 class QFocusEvent;
@@ -96,10 +97,10 @@ namespace AzToolsFramework
         int m_expandOnlyDelay = -1;
         QBasicTimer m_expandTimer;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
-        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
-        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
+        const QColor m_selectedColor = EntityOutlinerFlat::SelectedWash;
+        const QColor m_hoverColor = EntityOutlinerFlat::HoverWash;
+        const QColor m_dragSelectRectColor = EntityOutlinerFlat::DragSelectFill;
+        const QColor m_dragSelectBorderColor = EntityOutlinerFlat::DragSelectBorder;
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;

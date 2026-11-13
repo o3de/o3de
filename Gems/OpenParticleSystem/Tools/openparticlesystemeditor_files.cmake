@@ -34,6 +34,8 @@ set(FILES
     OpenParticleSystemEditor/Window/ParticleItemWidget.ui
     OpenParticleSystemEditor/Window/ParticleLineWidget.h
     OpenParticleSystemEditor/Window/ParticleLineWidget.cpp
+    OpenParticleSystemEditor/Window/ParticleEditorFlat.h
+    OpenParticleSystemEditor/Window/ParticleEditorFlat.cpp
     OpenParticleSystemEditor/Window/ParticleCommonData.h
     OpenParticleSystemEditor/Window/LightingPresetMenu.h
     OpenParticleSystemEditor/Window/LightingPresetMenu.cpp

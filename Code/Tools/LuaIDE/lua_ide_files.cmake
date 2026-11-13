@@ -13,6 +13,8 @@ set(FILES
     Source/LuaIDEApplication.cpp
     Source/AssetDatabaseLocationListener.h
     Source/AssetDatabaseLocationListener.cpp
+    Source/FlatElements.h
+    Source/FlatElements.cpp
     Source/Editor/LuaEditor.cpp
     Source/LUA/BreakpointPanel.cpp
     Source/LUA/BreakpointPanel.hxx

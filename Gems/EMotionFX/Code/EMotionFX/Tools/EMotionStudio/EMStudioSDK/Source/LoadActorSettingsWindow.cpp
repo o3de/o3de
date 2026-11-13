@@ -13,10 +13,19 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QSettings>
+#include <QColor>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the load actor settings dialog styles its widgets with. Each was written in the style sheet at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace LoadActorSettingsWindowFlat
+    {
+        constexpr QColor TopLabelBackground(40, 40, 40);    // LoadActorSettingsWindow.cpp:32 TOKENIZE: LoadActorSettingsTopLabelBackground
+    } // namespace LoadActorSettingsWindowFlat
+
     // constructor
     LoadActorSettingsWindow::LoadActorSettingsWindow(QWidget* parent, const AZStd::string& filePath)
         : QDialog(parent)
@@ -29,7 +38,7 @@ namespace EMStudio
 
         // create the top layout
         QLabel* topLabel = new QLabel(QString("File: <b>%1</b>").arg(filename.c_str()));
-        topLabel->setStyleSheet("background-color: rgb(40, 40, 40); padding: 6px;");
+        topLabel->setStyleSheet(QString("background-color: %1; padding: 6px;").arg(LoadActorSettingsWindowFlat::TopLabelBackground.name()));
         topLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QVBoxLayout* topLayout = new QVBoxLayout();
         topLayout->addWidget(topLabel);

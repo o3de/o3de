@@ -12,16 +12,26 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <MCore/Source/StringConversions.h>
+#include "EMStudioFlatSheet.h"
 #include "RecoverFilesWindow.h"
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QCheckBox>
 #include <QLabel>
+#include <QColor>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the recover files dialog writes into its texts. Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace RecoverFilesWindowFlat
+    {
+        constexpr QColor WarningText(255, 255, 0);    // RecoverFilesWindow.cpp:191 TOKENIZE: RecoverFilesWarningText
+    } // namespace RecoverFilesWindowFlat
+
     RecoverFilesWindow::RecoverFilesWindow(QWidget* parent, const AZStd::vector<AZStd::string>& files)
         : QDialog(parent)
     {
@@ -106,7 +116,8 @@ namespace EMStudio
 
             // Create the checkbox.
             QCheckBox* checkbox = new QCheckBox("");
-            checkbox->setStyleSheet("background: transparent; padding-left: 3px; max-width: 13px;");
+            checkbox->setObjectName(EMStudioFlat::RecoverCheckName);
+            AzQtComponents::StyleManager::setLegacyStyleSheet(checkbox, "background: transparent; padding-left: 3px; max-width: 13px;");
             checkbox->setChecked(true);
 
             // Create the filename label.
@@ -188,7 +199,8 @@ namespace EMStudio
         layout->addWidget(m_tableWidget);
 
         // Create the warning message.
-        QLabel* warningLabel = new QLabel("<font color='yellow'>Warning: Files that will not be recovered will be deleted</font>");
+        QLabel* warningLabel = new QLabel(QString("<font color='%1'>Warning: Files that will not be recovered will be deleted</font>")
+            .arg(RecoverFilesWindowFlat::WarningText.name()));
         warningLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
         // Add the button layout.

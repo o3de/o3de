@@ -86,6 +86,28 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The fallback the viewport widget paints while no level is loaded (the render overlay is hidden), named so the legacy and the
+//  flattened GUI read one value. A named namespace, not an anonymous one: a unity build merges the anonymous namespaces of a
+//  target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace EditorViewportWidgetFlat
+{
+    // EditorViewportWidget.cpp:310 (the fallback background gradient, top). TOKENIZE: ViewportFallbackGradientTop
+    constexpr QColor FallbackGradientTop(80, 80, 80);
+
+    // EditorViewportWidget.cpp:311 (the fallback background gradient, bottom). TOKENIZE: ViewportFallbackGradientBottom
+    constexpr QColor FallbackGradientBottom(200, 200, 200);
+
+    // EditorViewportWidget.cpp:320 (the 'Preparing level' text). TOKENIZE: ViewportFallbackText
+    constexpr QColor FallbackText(255, 255, 255);
+
+    // EditorViewportWidget.cpp:321 (the shadow of the 'Preparing level' text). TOKENIZE: ViewportFallbackTextShadow
+    constexpr QColor FallbackTextShadow(0, 0, 0);
+} // namespace EditorViewportWidgetFlat
+
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 
@@ -307,8 +329,8 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
         // draw gradient background
         const QRect rc = rect();
         QLinearGradient gradient(rc.topLeft(), rc.bottomLeft());
-        gradient.setColorAt(0, QColor(80, 80, 80));
-        gradient.setColorAt(1, QColor(200, 200, 200));
+        gradient.setColorAt(0, EditorViewportWidgetFlat::FallbackGradientTop);
+        gradient.setColorAt(1, EditorViewportWidgetFlat::FallbackGradientBottom);
         painter.fillRect(rc, gradient);
 
         // if we have some level loaded/loading/new
@@ -317,8 +339,8 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
         {
             const int kFontSize = 200;
             const char* kFontName = "Arial";
-            const QColor kTextColor(255, 255, 255);
-            const QColor kTextShadowColor(0, 0, 0);
+            const QColor kTextColor(EditorViewportWidgetFlat::FallbackText);
+            const QColor kTextShadowColor(EditorViewportWidgetFlat::FallbackTextShadow);
             const QFont font(kFontName, static_cast<int>(kFontSize / 10.0f));
             painter.setFont(font);
 

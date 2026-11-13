@@ -19,6 +19,39 @@
 // Editor
 #include "TimelineCtrl.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  SPLINE CONTROL COLOURS
+//
+//  The spline control's colours (CSplineCtrl), named so the legacy and the flattened GUI read one value: the panel, the grid, the
+//  curve, the keys and the time marker. A named namespace, not an anonymous one: a unity build merges the anonymous namespaces of a
+//  target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SplineCtrlFlat
+{
+    // SplineCtrl.cpp:134 (the fill of the whole panel). TOKENIZE: SplineCtrlBackground
+    constexpr QColor Background(140, 140, 140);
+
+    // SplineCtrl.cpp:159 (the dotted grid lines). TOKENIZE: SplineCtrlGrid
+    constexpr QColor Grid(90, 90, 90);
+
+    // SplineCtrl.cpp:175 (the two centre lines and the frame of the grid). TOKENIZE: SplineCtrlGridCentre
+    constexpr QColor GridCentre(75, 75, 75);
+
+    // SplineCtrl.cpp:191 (the curve). TOKENIZE: SplineCtrlCurve
+    constexpr QColor Curve(128, 255, 128);
+
+    // SplineCtrl.cpp:226 (the outline of a key). TOKENIZE: SplineCtrlKeyOutline
+    constexpr QColor KeyOutline(0, 0, 0);
+
+    // SplineCtrl.cpp:235 (the fill of a key). TOKENIZE: SplineCtrlKeyFill
+    constexpr QColor KeyFill(220, 220, 0);
+
+    // SplineCtrl.cpp:238 (the fill of a selected key). TOKENIZE: SplineCtrlKeySelected
+    constexpr QColor KeySelected(255, 0, 0);
+
+    // SplineCtrl.cpp:255 (the current-time marker). TOKENIZE: SplineCtrlTimeMarker
+    constexpr QColor TimeMarker(255, 0, 255);
+} // namespace SplineCtrlFlat
 
 #define MIN_TIME_EPSILON 0.01f
 
@@ -131,7 +164,7 @@ void CSplineCtrl::paintEvent(QPaintEvent* event)
     {
         if (m_TimeUpdateRect != event->rect())
         {
-            painter.fillRect(event->rect(), QColor(140, 140, 140));
+            painter.fillRect(event->rect(), SplineCtrlFlat::Background);
 
             //Draw Grid
             DrawGrid(&painter);
@@ -156,7 +189,7 @@ void CSplineCtrl::DrawGrid(QPainter* painter)
     int cx = m_rcSpline.width();
     int cy = m_rcSpline.height();
 
-    QPen pen(QColor(90, 90, 90), 1, Qt::DotLine);
+    QPen pen(SplineCtrlFlat::Grid, 1, Qt::DotLine);
     pen.setCosmetic(true);
     painter->setPen(pen);
 
@@ -172,7 +205,7 @@ void CSplineCtrl::DrawGrid(QPainter* painter)
         painter->drawLine(m_rcSpline.left(), m_rcSpline.top() + x * cy / m_gridY, m_rcSpline.left() + cx, m_rcSpline.top() + x * cy / m_gridY);
     }
 
-    painter->setPen(QColor(75, 75, 75));
+    painter->setPen(SplineCtrlFlat::GridCentre);
 
     painter->drawLine(m_rcSpline.left() + (m_gridX / 2) * cx / m_gridX, m_rcSpline.top() + cy, m_rcSpline.left() + (m_gridX / 2) * cx / m_gridX, m_rcSpline.top() + 0);
     painter->drawLine(m_rcSpline.left() + 0, m_rcSpline.left() + (m_gridY / 2) * cy / m_gridY, m_rcSpline.left() + cx, m_rcSpline.left() + (m_gridY / 2) * cy / m_gridY);
@@ -188,7 +221,7 @@ void CSplineCtrl::DrawSpline(QPainter* painter)
     //Draw Curve
     // create and select a thick, white pen
     const QPen pOldPen = painter->pen();
-    painter->setPen(QColor(128, 255, 128));
+    painter->setPen(SplineCtrlFlat::Curve);
 
     const QRect rcClip = painter->hasClipping() ? painter->clipBoundingRect().intersected(m_rcSpline).toRect() : m_rcSpline;
 
@@ -223,7 +256,7 @@ void CSplineCtrl::DrawKeys(QPainter* painter)
 
     // create and select a white pen
     const QPen pOldPen = painter->pen();
-    painter->setPen(Qt::black);
+    painter->setPen(SplineCtrlFlat::KeyOutline);
 
     m_bSelectedKeys.resize(m_pSpline->GetKeyCount());
 
@@ -232,10 +265,10 @@ void CSplineCtrl::DrawKeys(QPainter* painter)
         float time = m_pSpline->GetKeyTime(i);
         const QPoint pt = TimeToPoint(time);
 
-        QColor clr(220, 220, 0);
+        QColor clr(SplineCtrlFlat::KeyFill);
         if (m_bSelectedKeys[i])
         {
-            clr = QColor(255, 0, 0);
+            clr = SplineCtrlFlat::KeySelected;
         }
         const QBrush pOldBrush = painter->brush();
         painter->setBrush(clr);
@@ -252,7 +285,7 @@ void CSplineCtrl::DrawKeys(QPainter* painter)
 //////////////////////////////////////////////////////////////////////////
 void CSplineCtrl::DrawTimeMarker(QPainter* painter)
 {
-    painter->setPen(QColor(255, 0, 255));
+    painter->setPen(SplineCtrlFlat::TimeMarker);
     const QPoint pt = TimeToPoint(m_fTimeMarker);
     painter->drawLine(pt.x(), m_rcSpline.top() + 1, pt.x(), m_rcSpline.bottom() - 1);
 }

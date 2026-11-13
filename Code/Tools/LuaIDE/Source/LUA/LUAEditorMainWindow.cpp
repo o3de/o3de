@@ -51,9 +51,11 @@
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <Source/AssetDatabaseLocationListener.h>
+#include <Source/FlatElements.h>
 #include <Source/LUA/ui_LUAEditorMainWindow.h>
 
 #include <QBoxLayout>
+#include <QColor>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
@@ -93,6 +95,12 @@ namespace LUAEditor
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         AzQtComponents::StyleManager* m_styleSheet = new AzQtComponents::StyleManager(this);
         m_styleSheet->initialize(qApp, engineRootPath);
+
+        // The elements of the flattened GUI of LuaIDE (FlatElements.cpp); the legacy GUI sets the sheets of its sites instead
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            RegisterFlatElements();
+        }
 
         LUAViewMessages::Bus::Handler::BusConnect();
 
@@ -561,8 +569,16 @@ namespace LUAEditor
         luaViewWidget->installEventFilter(this);
 
         m_ptrPerforceStatusWidget = new QLabel(tr("Pending Status"), this);
+        // The name the label's elements match (FlatElements.cpp), set before the label is polished
+        m_ptrPerforceStatusWidget->setObjectName(LUAEditorMainWindowFlat::PerforceStatusName);
         m_ptrPerforceStatusWidget->setContentsMargins(2, 2, 2, 2);
-        m_ptrPerforceStatusWidget->setStyleSheet(QString("background: rgba(192,192,192,255); color: black;  border-style: inset;\nborder-width: 1px;\nborder-color: rgba(100,100,100,255);\nborder-radius: 8px;"));
+        // The legacy GUI sets the sheet. The flattened GUI sets none: its box and text elements draw the same label
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_ptrPerforceStatusWidget,
+            QString("background: %1; color: %2;  border-style: inset;\n"
+                    "border-width: 1px;\nborder-color: %3;\nborder-radius: 8px;")
+                .arg(LUAEditorMainWindowFlat::PerforceStatusFill.name())
+                .arg(LUAEditorMainWindowFlat::PerforceStatusText.name())
+                .arg(LUAEditorMainWindowFlat::PerforceStatusBorder.name()));
         m_ptrPerforceStatusWidget->setAutoFillBackground(true);
         m_ptrPerforceStatusWidget->setTextInteractionFlags(Qt::NoTextInteraction);
         m_ptrPerforceStatusWidget->setAttribute(Qt::WA_TransparentForMouseEvents);

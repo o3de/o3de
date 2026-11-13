@@ -29,6 +29,7 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 
 // AzQtComponents
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
@@ -37,6 +38,7 @@
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "LyViewPaneNames.h"
+#include <EditorFlatValues.h>
 
 #include <QSettings>
 
@@ -60,6 +62,27 @@ namespace
         return QString::fromUtf8(string.data(), static_cast<int>(string.size()));
     }
 }
+
+// ----------------------------------------------------------------------------------
+// Flattened GUI: the sheets of the form
+//
+// AzAssetBrowserWindow.ui gave five of its widgets a sheet of their own. The legacy GUI sets them after setupUi; the flattened GUI
+// sets none, and the elements of EditorFlatSheet draw what they drew (the two dividers by the Create button, the thumbnails). The
+// last divider (frame) and the left pane (m_leftLayout) have no element: `QFrame { color : white;}` is the colour of the universal
+// rule (BaseStyleSheet.qss:18), which the Global frame element has, and `vertical-align` is not a property Qt's style sheet style
+// applies to a widget.
+// ----------------------------------------------------------------------------------
+
+//! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+//! where anonymous namespaces merge.
+namespace AzAssetBrowserWindowFlatInternal
+{
+    //! The sheets the form gave its widgets (AzAssetBrowserWindow.ui before the flattening: the line of each is noted). The sheets of
+    //! the two dividers by the Create button (framePreCreate :132, framePostCreate :206) and of the thumbnail view (m_thumbnailView
+    //! :567) hold a colour that the elements of EditorFlatSheet read as well: EditorFlatValues.h writes them from it.
+    constexpr const char* LastDividerSheet = "QFrame { color : white;}";                // frame :357
+    constexpr const char* LeftPaneSheet = "vertical-align: top";                        // m_leftLayout :457
+} // namespace AzAssetBrowserWindowFlatInternal
 
 namespace AzToolsFramework
 {
@@ -108,6 +131,15 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_listModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
 {
     m_ui->setupUi(this);
+
+    // The sheets the form gave five of its widgets, for the legacy GUI only (see AzAssetBrowserWindowFlatInternal)
+    using AzQtComponents::StyleManager;
+    StyleManager::setLegacyStyleSheet(m_ui->framePreCreate, EditorFlatValues::AssetBrowserCreateDividerSheet());
+    StyleManager::setLegacyStyleSheet(m_ui->framePostCreate, EditorFlatValues::AssetBrowserCreateDividerSheet());
+    StyleManager::setLegacyStyleSheet(m_ui->frame, QString::fromLatin1(AzAssetBrowserWindowFlatInternal::LastDividerSheet));
+    StyleManager::setLegacyStyleSheet(m_ui->m_leftLayout, QString::fromLatin1(AzAssetBrowserWindowFlatInternal::LeftPaneSheet));
+    StyleManager::setLegacyStyleSheet(m_ui->m_thumbnailView, EditorFlatValues::AssetBrowserThumbnailViewSheet());
+
     m_ui->m_searchWidget->Setup(true, true, true);
 
     CreateToolsMenu();

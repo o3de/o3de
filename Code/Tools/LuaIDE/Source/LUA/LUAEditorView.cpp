@@ -18,7 +18,9 @@
 #include "LUAEditorSyntaxHighlighter.hxx"
 #include "LUAEditorStyleMessages.h"
 
+#include <Source/FlatElements.h>
 #include <Source/LUA/ui_LUAEditorView.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <QFileInfo>
@@ -229,7 +231,22 @@ namespace LUAEditor
                                .arg(colors->GetTextSelectedColor().name())
                                .arg(colors->GetTextSelectedBackgroundColor().name());
 
-        m_gui->m_luaTextEdit->setStyleSheet(styleSheet);
+        // The legacy GUI sets the sheet. The flattened GUI sets none: the view's palette carries the same colours (CodeViewPalette,
+        // FlatElements.cpp), in the roles the sheet's declarations set. Not at the passthrough rung, where Style hands every call to its
+        // base style and a widget leaves out what it sets on itself.
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_gui->m_luaTextEdit, styleSheet);
+        if (AzQtComponents::StyleManager::flatStylingActive())
+        {
+            CodeViewPalette::Apply(m_gui->m_luaTextEdit,
+                CodeViewColors{
+                    .m_focusedBackground = colors->GetTextFocusedBackgroundColor(),
+                    .m_unfocusedBackground = colors->GetTextUnfocusedBackgroundColor(),
+                    .m_readOnlyFocusedBackground = colors->GetTextReadOnlyFocusedBackgroundColor(),
+                    .m_readOnlyUnfocusedBackground = colors->GetTextReadOnlyUnfocusedBackgroundColor(),
+                    .m_selectedText = colors->GetTextSelectedColor(),
+                    .m_selectedBackground = colors->GetTextSelectedBackgroundColor(),
+                });
+        }
 
         styleSheet = QString(R"(LUAEditor--FoldingWidget:enabled { 
                                     background-color: %1;
@@ -243,7 +260,9 @@ namespace LUAEditor
         styleSheet = styleSheet.arg(colors->GetFoldingFocusedBackgroundColor().name())
                                .arg(colors->GetFoldingUnfocusedBackgroundColor().name());
 
-        m_gui->m_folding->setStyleSheet(styleSheet);
+        // The legacy GUI sets the sheet. The flattened GUI sets none: the gutter fills itself from the same colours
+        // (FoldingWidget::paintEvent)
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_gui->m_folding, styleSheet);
     }
 
     LUAViewWidget::~LUAViewWidget()
@@ -1076,6 +1095,11 @@ namespace LUAEditor
         m_gui->m_luaTextEdit->setReadOnly(readonly);
         m_gui->m_luaTextEdit->style()->unpolish(m_gui->m_luaTextEdit);
         m_gui->m_luaTextEdit->style()->polish(m_gui->m_luaTextEdit);
+        if (AzQtComponents::StyleManager::flatStylingActive())
+        {
+            // The polish put the field's own palette over the view's colours, and the background follows the read-only state
+            CodeViewPalette::Refresh(m_gui->m_luaTextEdit);
+        }
 
         if (readonly)
         {

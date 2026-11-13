@@ -13,9 +13,23 @@
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Vector.h>
 
+#include <QColor>
+
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the anim graph connection lines are drawn with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace NodeConnectionFlat
+    {
+        constexpr QColor DefaultLine(128, 255, 128);     // NodeConnection.cpp:35 TOKENIZE: NodeConnectionDefaultLine
+        constexpr QColor SelectedLine(255, 128, 0);      // NodeConnection.cpp:106 TOKENIZE: NodeConnectionSelectedLine
+        constexpr QColor UnprocessedLine(75, 75, 75);    // NodeConnection.cpp:124 TOKENIZE: NodeConnectionUnprocessedLine
+        constexpr QColor WildcardLine(75, 75, 75);       // NodeConnection.cpp:146 TOKENIZE: NodeConnectionWildcardLine
+        const QColor ErrorLine(Qt::red);                 // NodeConnection.cpp:195 TOKENIZE: NodeConnectionErrorLine
+    } // namespace NodeConnectionFlat
+
     // constructor
     NodeConnection::NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, AZ::u16 portNr, GraphNode* sourceNode, AZ::u16 sourceOutputPortNr)
         : m_modelIndex(modelIndex)
@@ -32,7 +46,7 @@ namespace EMStudio
         m_isHeadHighlighted = false;
         m_isTailHighlighted = false;
         m_isSynced       = false;
-        m_color          = QColor(128, 255, 128);
+        m_color          = NodeConnectionFlat::DefaultLine;
     }
 
 
@@ -103,7 +117,7 @@ namespace EMStudio
         // draw some small horizontal lines that go outside of the connection port
         if (GetIsSelected())
         {
-            penColor.setRgb(255, 128, 0);
+            penColor = NodeConnectionFlat::SelectedLine;
 
             if (scale > 0.75f)
             {
@@ -121,7 +135,7 @@ namespace EMStudio
             {
                 if (m_sourceNode)
                 {
-                    penColor.setRgb(75, 75, 75);
+                    penColor = NodeConnectionFlat::UnprocessedLine;
                 }
                 else
                 {
@@ -143,7 +157,7 @@ namespace EMStudio
                 }
                 else
                 {
-                    penColor.setRgb(75, 75, 75);
+                    penColor = NodeConnectionFlat::WildcardLine;
                 }
             }
             //penColor.setRgb(255,225,0);
@@ -192,7 +206,7 @@ namespace EMStudio
             }
             else
             {
-                penColor = Qt::red;
+                penColor = NodeConnectionFlat::ErrorLine;
             }
         }
 

@@ -10,6 +10,9 @@
 #include <Window/ParticleItemWidget.h>
 #include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
+#include <Window/ParticleEditorFlat.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <QColor>
 #include <QMessageBox>
 
 namespace OpenParticleSystemEditor
@@ -28,7 +31,12 @@ namespace OpenParticleSystemEditor
         AZ_Assert(m_serializeContext != nullptr, "invalid serialize context");
         m_preWarm = m_serializeContext->CreateAny(azrtti_typeid<OpenParticle::PreWarm>());
 
-        m_ui->particleName->setStyleSheet("background:transparent;color:white");
+        // The sheet the form gave the icon beside the name (EffectorInspector.ui:46 before the flattening), for the legacy GUI only.
+        // The flattened GUI sets none: the elements of ParticleEditorFlat give the icon and the name edit their looks
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_ui->particNameIco, ParticleEditorFlat::NameIconSheet());
+
+        // The name edit's look before it has had the focus; FocusIn and FocusOut (eventFilter) change it
+        ParticleEditorFlat::SetNameEditState(m_ui->particleName, ParticleEditorFlat::NameEditState::Initial);
         m_ui->particleName->installEventFilter(this);
 
         connect(m_ui->particleName, &QLineEdit::editingFinished, this, &EffectorInspector::OnEditingFinished);
@@ -51,11 +59,11 @@ namespace OpenParticleSystemEditor
         {
             if (event->type() == QEvent::FocusIn)
             {
-                m_ui->particleName->setStyleSheet("QLineEdit{color:rgb(68,68,68);}");
+                ParticleEditorFlat::SetNameEditState(m_ui->particleName, ParticleEditorFlat::NameEditState::Focused);
             }
             else if (event->type() == QEvent::FocusOut)
             {
-                m_ui->particleName->setStyleSheet("QLineEdit{background:rgb(68,68,68);border-width:0;border-style:outset;color:white;}");
+                ParticleEditorFlat::SetNameEditState(m_ui->particleName, ParticleEditorFlat::NameEditState::Blurred);
             }
         }
         return QWidget::eventFilter(obj, event);

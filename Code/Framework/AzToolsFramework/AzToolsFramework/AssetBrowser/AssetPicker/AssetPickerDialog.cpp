@@ -9,6 +9,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 
 #include <AzQtComponents/Components/DockBar.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/Console/IConsole.h>
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
@@ -51,6 +52,11 @@ namespace AzToolsFramework
             m_filterStateSaver = AzToolsFramework::TreeViewState::CreateTreeViewState();
 
             m_ui->setupUi(this);
+
+            // The sheet the form gave the left pane (AssetPickerDialog.ui:102, the form before the flattening), for the legacy GUI only.
+            // `vertical-align` is not a property Qt's style sheet style applies to a widget, so the flattened GUI has nothing to carry.
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_ui->m_leftLayout, QStringLiteral("vertical-align: top"));
+
             m_ui->m_searchWidget->Setup(true, false);
 
             m_ui->m_searchWidget->GetFilter()->AddFilter(m_selection.GetDisplayFilter());

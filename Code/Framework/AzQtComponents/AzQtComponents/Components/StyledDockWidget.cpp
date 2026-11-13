@@ -218,11 +218,19 @@ namespace AzQtComponents
         setTitleBarWidget(titleBar);
     }
 
+    //! Everything private to this file that the flattened GUI reads as well. A named namespace, not an anonymous one: a unity build joins
+    //! this file with others into one translation unit, where anonymous namespaces merge.
+    namespace StyledDockWidgetFlatInternal
+    {
+        //! The line StyledDockWidget::drawFrame draws around the dock widget. StyledDockWidget.cpp:225. TOKENIZE: DockWidgetFrameLine
+        constexpr QColor FrameLine(33, 34, 35);
+    } // namespace StyledDockWidgetFlatInternal
+
     /** static */
     void StyledDockWidget::drawFrame(QPainter& p, QRect rect, bool drawTop)
     {
         p.save();
-        p.setPen(QColor(33, 34, 35));
+        p.setPen(StyledDockWidgetFlatInternal::FrameLine);
 
         rect.adjust(0, p.pen().width(), 0, 0);
         if (drawTop)

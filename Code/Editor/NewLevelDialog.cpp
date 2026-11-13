@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include "NewLevelDialog.h"
 
 // Qt
@@ -76,7 +77,12 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("New Level"));
-    setStyleSheet("QListWidget::item {height: 148px; padding-left: 0px; padding-right: 0px; background-color: transparent;}");
+
+    // The rule of the items of the template list, for the legacy GUI only: the flattened GUI sets no sheet, and the element of
+    // EditorFlatSheet (NewLevelTemplateList) carries the same items
+    AzQtComponents::StyleManager::setLegacyStyleSheet(
+        this, QStringLiteral("QListWidget::item {height: 148px; padding-left: 0px; padding-right: 0px; background-color: transparent;}"));
+
     InitTemplateListWidget();
 
     // Populate the "Root" combo box from the project + active gems, then

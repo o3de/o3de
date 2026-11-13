@@ -57,6 +57,11 @@ namespace ScriptCanvasEditor
             explicit Controller(QWidget* parent = nullptr);
             ~Controller();
 
+            //! Flattened GUI: the elements that draw the fill of the progress frame and the track of its bar, which the legacy GUI draws
+            //! with the sheet the form gave the frame (View.ui:198-200, before the flattening). The constructor registers them (once)
+            //! in the flattened GUI; the entry is public so that a twin test can register them.
+            static void RegisterFlatElements();
+
         private:
             static constexpr int ColumnAsset = 0;
             static constexpr int ColumnAction = 1;

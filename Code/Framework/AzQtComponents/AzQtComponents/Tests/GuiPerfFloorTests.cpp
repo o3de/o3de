@@ -864,34 +864,228 @@ namespace AzQtComponents
     }
 
     // ----------------------------------------------------------------------------------
+    // T3b: StyleManager::setLegacyStyleSheet, the flattening's conversion path: the legacy GUI sets the sheet, the flattened GUI none
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(GuiPerfFloorTests, LegacyHelper_SetsTheSheetInTheLegacyGuiExactlyAsSetStyleSheetDoes)
+    {
+        startAt(Rung::Qss);
+        QWidget widget;
+        QWidget plain;
+
+        StyleManager::setLegacyStyleSheet(&widget, GuiPerfFloorTestsInternal::OwnSheet);
+        plain.setStyleSheet(GuiPerfFloorTestsInternal::OwnSheet);
+
+        EXPECT_EQ(widget.styleSheet(), GuiPerfFloorTestsInternal::OwnSheet);
+        EXPECT_TRUE(GuiPerfFloorTestsInternal::hasSheetStyle(widget));
+        EXPECT_EQ(GuiPerfFloorTestsInternal::hasSheetStyle(widget), GuiPerfFloorTestsInternal::hasSheetStyle(plain));
+
+        StyleManager::setLegacyStyleSheet(&widget, QString());     // an empty sheet takes it away, as setStyleSheet does
+        EXPECT_TRUE(widget.styleSheet().isEmpty());
+        EXPECT_FALSE(GuiPerfFloorTestsInternal::hasSheetStyle(widget));
+    }
+
+    TEST_F(GuiPerfFloorTests, LegacyHelper_SetsNothingInTheFlattenedGui)
+    {
+        for (const Rung rung : { Rung::Flat, Rung::Noop, Rung::Passthrough })
+        {
+            GuiPerfFloor::resetForTesting();
+            startAt(rung);
+            QWidget widget;
+
+            StyleManager::setLegacyStyleSheet(&widget, GuiPerfFloorTestsInternal::OwnSheet);
+            widget.ensurePolished();
+
+            EXPECT_TRUE(widget.styleSheet().isEmpty()) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_FALSE(GuiPerfFloorTestsInternal::hasSheetStyle(widget)) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_FALSE(widget.testAttribute(Qt::WA_StyleSheet)) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(widget.style(), QApplication::style()) << GuiPerfFloorTestsInternal::named(rung);
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // T3c: the census of inline sheets (O3DE_UI_SHEET_CENSUS): one line per carrier and sheet, at any rung
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(GuiPerfFloorTests, Census_WritesTheCarrierAndTheSheetWhenTheWidgetIsFirstPolished)
+    {
+        startAt(Rung::Flat);
+        captureLines();
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        QWidget box;
+        box.setObjectName(QStringLiteral("box"));
+        auto* label = new QLabel(&box);
+        label->setStyleSheet(QStringLiteral("QLabel {\n    color: red;\n}"));
+        label->setObjectName(QStringLiteral("title"));     // named after its sheet was set: the line waits for the polish
+        ASSERT_TRUE(m_lines.isEmpty());
+
+        box.ensurePolished();                               // and its children
+
+        ASSERT_EQ(m_lines.size(), 1);
+        EXPECT_EQ(m_lines[0], QStringLiteral("GuiPerfFloor: v=1 sheet=1 | QLabel#title < QWidget#box | QLabel { color: red; }"));
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_WritesACarrierAndSheetOnceAndEveryOtherOne)
+    {
+        startAt(Rung::Flat);
+        captureLines();
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        QWidget box;
+        for (const char* sheet : { "QLabel { color: red; }", "QLabel { color: red; }", "QLabel { color: blue; }" })
+        {
+            auto* label = new QLabel(&box);
+            label->setStyleSheet(QString::fromLatin1(sheet));
+        }
+
+        box.ensurePolished();
+
+        ASSERT_EQ(m_lines.size(), 2);
+        EXPECT_EQ(m_lines[0], QStringLiteral("GuiPerfFloor: v=1 sheet=1 | QLabel < QWidget | QLabel { color: red; }"));
+        EXPECT_EQ(m_lines[1], QStringLiteral("GuiPerfFloor: v=1 sheet=2 | QLabel < QWidget | QLabel { color: blue; }"));
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_WritesASheetSetAfterThePolishAndNothingForAWidgetWithoutOne)
+    {
+        startAt(Rung::Flat);
+        captureLines();
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        QWidget widget;
+        widget.ensurePolished();
+        ASSERT_TRUE(m_lines.isEmpty());
+
+        widget.setStyleSheet(GuiPerfFloorTestsInternal::OwnSheet);         // StyleChange, of a polished widget
+
+        ASSERT_EQ(m_lines.size(), 1);
+        EXPECT_EQ(m_lines[0], GuiPerfFloor::formatSheetLine(1, QStringLiteral("QWidget"), GuiPerfFloorTestsInternal::OwnSheet));
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_SeesASheetBeforeTheStripFilterClearsIt)
+    {
+        startAt(Rung::Noop);
+        captureLines();
+        GuiPerfFloor::install(m_application.get());                        // in the order initialize installs them
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        QWidget widget;
+        widget.setStyleSheet(GuiPerfFloorTestsInternal::OwnSheet);
+
+        widget.ensurePolished();
+
+        EXPECT_TRUE(widget.styleSheet().isEmpty()) << "the strip filter still clears it";
+        ASSERT_EQ(m_lines.size(), 1);
+        EXPECT_EQ(m_lines[0], GuiPerfFloor::formatSheetLine(1, QStringLiteral("QWidget"), GuiPerfFloorTestsInternal::OwnSheet));
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_InitializeInstallsItAtAnyRungWhenTheVariableIsOnAndNotForZero)
+    {
+        for (const Rung rung : GuiPerfFloorTestsInternal::AllRungs)
+        {
+            GuiPerfFloor::resetForTesting();
+            {
+                GuiPerfFloorTestsInternal::ScopedEnvironment census("O3DE_UI_SHEET_CENSUS", "1");
+                startAt(rung);
+                GuiPerfFloor::initialize(m_application.get());
+                EXPECT_TRUE(GuiPerfFloor::isSheetCensusInstalled()) << GuiPerfFloorTestsInternal::named(rung);
+            }
+            {
+                GuiPerfFloorTestsInternal::ScopedEnvironment census("O3DE_UI_SHEET_CENSUS", "0");
+                startAt(rung);                              // a new application: the last one took its census with it
+                GuiPerfFloor::initialize(m_application.get());
+                EXPECT_FALSE(GuiPerfFloor::isSheetCensusInstalled()) << GuiPerfFloorTestsInternal::named(rung);
+            }
+        }
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_StopsAtFiveHundredSheetsWithOneLineThatSaysSo)
+    {
+        startAt(Rung::Flat);
+        captureLines();
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        QWidget box;
+        for (int index = 0; index < 501; ++index)
+        {
+            auto* widget = new QWidget(&box);
+            widget->setStyleSheet(QStringLiteral("QWidget { margin: %1px; }").arg(index));
+        }
+
+        box.ensurePolished();
+
+        ASSERT_EQ(m_lines.size(), 501);
+        EXPECT_TRUE(m_lines[499].startsWith(QStringLiteral("GuiPerfFloor: v=1 sheet=500 | ")));
+        EXPECT_EQ(m_lines[500], QStringLiteral("GuiPerfFloor: v=1 sheet_census_full=500"));
+    }
+
+    TEST_F(GuiPerfFloorTests, Census_NeverConsumesAnEvent)
+    {
+        startAt(Rung::Flat);
+        // The probe is installed first, so it is the last filter the application asks
+        GuiPerfFloorTestsInternal::EventProbe probe(m_application.get());
+        m_application->installEventFilter(&probe);
+        GuiPerfFloor::installSheetCensus(m_application.get());
+        captureLines();
+
+        {
+            QWidget widget;
+            widget.setStyleSheet(GuiPerfFloorTestsInternal::OwnSheet);
+            widget.ensurePolished();                                        // Polish
+            widget.setStyleSheet(QStringLiteral("QWidget { margin: 1px; }"));  // StyleChange, of a polished widget
+        }
+
+        for (const QEvent::Type type : { QEvent::Polish, QEvent::StyleChange })
+        {
+            EXPECT_TRUE(probe.m_seen.contains(static_cast<int>(type))) << "event type " << static_cast<int>(type);
+        }
+        EXPECT_EQ(m_lines.size(), 2);       // and the census did write both sheets
+    }
+
+    TEST_F(GuiPerfFloorTests, SheetLine_IsTheIndexTheCarrierAndTheSheetWithItsWhiteSpaceCollapsed)
+    {
+        EXPECT_EQ(
+            GuiPerfFloor::formatSheetLine(3, QStringLiteral("QLabel#a < QWidget"), QStringLiteral("QLabel {\n\tcolor: red;\n}\n")),
+            QStringLiteral("GuiPerfFloor: v=1 sheet=3 | QLabel#a < QWidget | QLabel { color: red; }"));
+
+        // A marker in the carrier is text: the three values are put in one pass
+        EXPECT_EQ(
+            GuiPerfFloor::formatSheetLine(1, QStringLiteral("QLabel#%2"), QStringLiteral("a")),
+            QStringLiteral("GuiPerfFloor: v=1 sheet=1 | QLabel#%2 | a"));
+
+        // A long sheet is cut at 400 characters
+        const QString line = GuiPerfFloor::formatSheetLine(1, QStringLiteral("QWidget"), QString(500, QLatin1Char('x')));
+        EXPECT_EQ(line.section(QStringLiteral(" | "), 2).size(), 400);
+    }
+
+    // ----------------------------------------------------------------------------------
     // T4: the sites that make a sheet for every widget they build (Card, VectorInput) and the work that passthrough leaves out
     // ----------------------------------------------------------------------------------
 
-    TEST_F(GuiPerfFloorTests, Card_TheHeaderSheetIsMadeBelowNoopAndLeftOutAtNoopAndPassthrough)
+    TEST_F(GuiPerfFloorTests, Card_TheHeaderSheetIsMadeAtQssOnlyAndNoOtherRungMakesOrCountsIt)
     {
+        // The card's header sheet is a legacy-only sheet (StyleManager::setLegacyStyleSheet): the flattened GUI pads the tooltips of a card
+        // header in Style, so no rung below qss makes the sheet, and the helper that counts the skipped sheets is not the card's any more
         for (const Rung rung : GuiPerfFloorTestsInternal::AllRungs)
         {
             GuiPerfFloor::resetForTesting();
             startAt(rung);
             Card card;
 
-            const bool sheet = rung == Rung::Qss || rung == Rung::Flat;
+            const bool sheet = rung == Rung::Qss;
             EXPECT_EQ(card.header()->styleSheet().isEmpty(), !sheet) << GuiPerfFloorTestsInternal::named(rung);
             EXPECT_EQ(GuiPerfFloorTestsInternal::hasSheetStyle(*card.header()), sheet) << GuiPerfFloorTestsInternal::named(rung);
-            EXPECT_EQ(GuiPerfFloor::counts().m_helperSkipped, sheet ? 0u : 1u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(GuiPerfFloor::counts().m_helperSkipped, 0u) << GuiPerfFloorTestsInternal::named(rung);
         }
     }
 
     TEST_F(GuiPerfFloorTests, Card_TheHeaderSheetIsTheTooltipPaddingRule)
     {
-        startAt(Rung::Flat);
+        startAt(Rung::Qss);
         Card card;
 
         EXPECT_TRUE(card.header()->styleSheet().startsWith(QStringLiteral("QToolTip { padding: ")));
     }
 
-    TEST_F(GuiPerfFloorTests, VectorInput_TheLabelStyleIsSetBelowNoopAndLeftOutAtNoopAndPassthrough)
+    TEST_F(GuiPerfFloorTests, VectorInput_TheLabelStyleIsASheetAtQssOnlyAndNoOtherRungSetsOne)
     {
+        // The caller's text is the label's own sheet in the legacy GUI, and in the flattened one (flat, noop, passthrough) no sheet at
+        // all (a legacy-only sheet), so no helper has a sheet to skip
         for (const Rung rung : GuiPerfFloorTestsInternal::AllRungs)
         {
             GuiPerfFloor::resetForTesting();
@@ -903,9 +1097,8 @@ namespace AzQtComponents
             vector->setLabelStyle(1, qss);
 
             QLabel* label = vector->findChildren<QLabel*>().at(1);
-            const bool sheet = rung == Rung::Qss || rung == Rung::Flat;
-            EXPECT_EQ(label->styleSheet(), sheet ? qss : QString()) << GuiPerfFloorTestsInternal::named(rung);
-            EXPECT_EQ(GuiPerfFloor::counts().m_helperSkipped, sheet ? 0u : 1u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(label->styleSheet(), rung == Rung::Qss ? qss : QString()) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(GuiPerfFloor::counts().m_helperSkipped, 0u) << GuiPerfFloorTestsInternal::named(rung);
         }
     }
 
@@ -922,14 +1115,16 @@ namespace AzQtComponents
             card.setAttribute(Qt::WA_DontShowOnScreen);
             card.show();
             QApplication::processEvents();
-            QImage image(card.size(), QImage::Format_ARGB32_Premultiplied);
+            // The body is the container's own rule (Card.qss:21-44), painted by the container, not by the card
+            QFrame* container = card.findChild<QFrame*>(QStringLiteral("contentContainer"));
+            QImage image(container->size(), QImage::Format_ARGB32_Premultiplied);
             image.fill(QColor(0xFF, 0x00, 0xFF));
 
             QPainter painter(&image);
-            card.render(&painter, QPoint(), QRegion(), QWidget::RenderFlags());     // the card only, not its children
+            container->render(&painter, QPoint(), QRegion(), QWidget::RenderFlags());      // the container only, not its children
             painter.end();
 
-            const QPoint bodyCenter = card.findChild<QFrame*>(QStringLiteral("contentContainer"))->geometry().center();
+            const QPoint bodyCenter = container->rect().center();
             if (rung == Rung::Passthrough)
             {
                 EXPECT_EQ(image.pixelColor(bodyCenter), QColor(0xFF, 0x00, 0xFF)) << "the frame as the style draws it paints no body";
@@ -2292,12 +2487,12 @@ namespace AzQtComponents
         EXPECT_EQ(GuiPerfFloor::counts().m_strippedLate, 1u);
     }
 
-    TEST_F(GuiPerfFloorTests, Scenario_ASelectionOfCardsWithVectorLabelsNeverMakesASheetStyleAtNoopAndPassthrough)
+    TEST_F(GuiPerfFloorTests, Scenario_ASelectionOfCardsWithVectorLabelsNeverMakesASheetStyleInTheFlatRungs)
     {
-        // The inspector's selection in small: 25 cards, each with a vector control whose three labels get a sheet (StyleForX/Y/Z), built
-        // through the sites that the helper routes. The counters are the reading the kit takes: below noop the headers (and, when they are
-        // not polished yet, the labels) carry sheets that the counters see; at noop and passthrough there is none, nothing is stripped, and
-        // no polish reached the style under a sheet style.
+        // The inspector's selection in small: 25 cards, each with a vector control whose three labels get a text style (StyleForX/Y/Z),
+        // built through the site that was a sheet (the card's header sheet is legacy-only now, and no rung here makes it). The counters
+        // are the reading the kit takes: at flat, noop and passthrough the labels carry no sheet, nothing is stripped, and no polish
+        // reached the style under a sheet style.
         for (const Rung rung : { Rung::Flat, Rung::Noop, Rung::Passthrough })
         {
             GuiPerfFloor::resetForTesting();
@@ -2331,25 +2526,14 @@ namespace AzQtComponents
 
             const GuiPerfCounters::Counters counters = GuiPerfCounters::counters();
             const GuiPerfFloor::Counts floorCounts = GuiPerfFloor::counts();
-            constexpr quint64 Sheets = CardCount * (1 + 3);
-            if (rung == Rung::Flat)
-            {
-                EXPECT_GE(counters.m_evPolishOwnSheet, static_cast<quint64>(CardCount));
-                EXPECT_LE(counters.m_evPolishOwnSheet, Sheets);
-                EXPECT_GT(counters.m_polishSheet, 0u);
-                EXPECT_FALSE(GuiPerfFloorTestsInternal::withSheetLeft(&host).isEmpty());
-            }
-            else
-            {
-                EXPECT_EQ(counters.m_evPolishOwnSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_EQ(counters.m_polishSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_EQ(counters.m_unpolishSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_EQ(floorCounts.m_stripped, 0u) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_EQ(floorCounts.m_strippedLate, 0u) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_EQ(floorCounts.m_helperSkipped, Sheets) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_TRUE(GuiPerfFloorTestsInternal::withSheetLeft(&host).isEmpty()) << GuiPerfFloorTestsInternal::named(rung);
-                EXPECT_TRUE(GuiPerfFloorTestsInternal::withStaleAttributeLeft(&host).isEmpty()) << GuiPerfFloorTestsInternal::named(rung);
-            }
+            EXPECT_EQ(counters.m_evPolishOwnSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(counters.m_polishSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(counters.m_unpolishSheet, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(floorCounts.m_stripped, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(floorCounts.m_strippedLate, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_EQ(floorCounts.m_helperSkipped, 0u) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_TRUE(GuiPerfFloorTestsInternal::withSheetLeft(&host).isEmpty()) << GuiPerfFloorTestsInternal::named(rung);
+            EXPECT_TRUE(GuiPerfFloorTestsInternal::withStaleAttributeLeft(&host).isEmpty()) << GuiPerfFloorTestsInternal::named(rung);
         }
     }
 } // namespace AzQtComponents

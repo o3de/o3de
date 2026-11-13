@@ -22,6 +22,18 @@
 namespace AzQtComponents
 {
 
+//! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+//! with others into one translation unit, where anonymous namespaces merge.
+namespace ToolButtonFlat
+{
+    // ------------------------------------------------------------------------------
+    // The Config defaults of ToolButton::defaultConfig: ToolButtonConfig.ini holds no line, so this is the live value of the legacy
+    // GUI. The flattened GUI reads it for a tool button that no element draws (Style::drawComplexControl hands CC_ToolButton to
+    // BoxElement::drawToolButton first).
+    // ------------------------------------------------------------------------------
+    constexpr QColor CheckedFill(0x1E, 0x70, 0xEB); // ToolButton.cpp:46. TOKENIZE: ToolButtonCheckedFill
+} // namespace ToolButtonFlat
+
 ToolButton::Config ToolButton::loadConfig(QSettings& settings)
 {
     Config config = defaultConfig();
@@ -43,7 +55,7 @@ ToolButton::Config ToolButton::defaultConfig()
     config.buttonIconSize = 16;
     config.defaultButtonMargin = 1;
     config.menuIndicatorWidth = 10;
-    config.checkedStateBackgroundColor = QStringLiteral("#1E70EB");
+    config.checkedStateBackgroundColor = ToolButtonFlat::CheckedFill;
     config.menuIndicatorIcon = QStringLiteral(":/stylesheet/img/UI20/menu-indicator.svg");
     config.menuIndicatorIconSize = QSize(6, 3);
 
@@ -194,6 +206,8 @@ bool ToolButton::drawToolButton(const Style* style, const QStyleOptionComplex* o
 
     QStyleOptionToolButton label = *buttonOption;
 
+    // TabWidgetActionToolBar.qss:23 `QToolButton, :hover, :pressed { background: transparent }`: the idle, hover and pressed states
+    // carry no fill, only the checked state is filled
     if (buttonOption->state & QStyle::State_On)
     {
         painter->setPen(Qt::NoPen);

@@ -8,6 +8,7 @@
 #include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
+#include <QColor>
 #include <QGraphicsScene>
 #include <QTimer>
 #include <QPainter>
@@ -21,6 +22,15 @@ AZ_POP_DISABLE_WARNING
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // ANIMATED PULSE COLOURS (the colour of a pulse whose caller sets none)
+    //=========================================================================
+    namespace AnimatedPulseFlat
+    {
+        // AnimatedPulse.cpp:45 (the draw colour of a pulse configuration before a caller sets one). TOKENIZE: PulseDefault
+        constexpr QColor PulseDefault(0, 0, 0);
+    } // namespace AnimatedPulseFlat
+
     //////////////////////////////
     // AnimatedPulseControlPoint
     //////////////////////////////
@@ -42,7 +52,7 @@ namespace GraphCanvas
     
     AnimatedPulseConfiguration::AnimatedPulseConfiguration()
         : m_enableGradient(false)
-        , m_drawColor(0,0,0)
+        , m_drawColor(AnimatedPulseFlat::PulseDefault)
         , m_durationSec(1.0f)
     {        
     }

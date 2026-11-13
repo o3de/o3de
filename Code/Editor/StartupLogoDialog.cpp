@@ -8,11 +8,16 @@
 
 #include "StartupLogoDialog.h"
 #include "EditorDefs.h"
+#include "EditorFlatSheet.h"
+#include "EditorFlatValues.h"
 
+#include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Qt
 #include <QPainter>
+#include <QStyle>
 #include <QThread>
 
 #include <ui_StartupLogoDialog.h>
@@ -25,6 +30,10 @@ CStartupLogoDialog::CStartupLogoDialog(
     , m_ui(new Ui::StartupLogoDialog)
     , m_dialogType(dialogType)
 {
+    // Flattened GUI only: the elements that carry the sheets set below. The splash is made before the main window sets Editor.qss
+    // (CryEdit.cpp), so the dialog registers them itself, before its form is built; once for the process.
+    EditorFlatSheet::RegisterStartupLogoElements();
+
     m_ui->setupUi(this);
 
     s_pLogoWindow = this;
@@ -51,9 +60,9 @@ CStartupLogoDialog::CStartupLogoDialog(
         m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
         m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
         m_ui->m_TransparentVersion->setText(versionText);
-        setStyleSheet("QLabel { background: transparent; color: 'white' }\
-                            QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");
-
+        // The sheet of the splash screen, for the legacy GUI only: the flattened GUI sets none, and the elements of EditorFlatSheet
+        // (RegisterStartupLogoElements) carry the notice. Its label rule equals the universal rule (BaseStyleSheet.qss:17-18).
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this, EditorFlatValues::StartupLogoLoadingSheet());
         break;
     case About:
         setWindowFlags(Qt::FramelessWindowHint | Qt::Popup | Qt::NoDropShadowWindowHint);
@@ -62,9 +71,31 @@ CStartupLogoDialog::CStartupLogoDialog(
         m_ui->m_transparentAllRightReserved->setTextFormat(Qt::RichText);
         m_ui->m_transparentAllRightReserved->setText(richTextCopyrightNotice);
         m_ui->m_transparentTrademarks->setText(versionText);
-        setStyleSheet("QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
-                            QLabel#link { text-decoration: underline; color: #94D2FF; }");
+        // The sheet of the About box, for the legacy GUI only. Its link rule reaches the box's own link and not the one on the hidden
+        // page of the splash, which the flattened GUI's element tells by the mode of the dialog (the legacy GUI has a sheet per mode).
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this, EditorFlatValues::StartupLogoAboutSheet());
         break;
+    }
+
+    // Flattened GUI only. The form polished its labels while it was built (the stack shows its first page when the page is added to it,
+    // and showing a widget polishes everything below it), and the switch above showed the About page: before the notice was named and
+    // before the dialog had its tag, which the matchers of the elements read. The sheet of the legacy GUI repolished the whole dialog
+    // when it was set (QStyleSheetStyle::repolish); here the About dialog is tagged and the labels below it, in either mode, are
+    // polished again, those that are polished already, to resolve their elements. The legacy GUI sets nothing.
+    if (AzQtComponents::StyleManager::flatStylingActive())
+    {
+        if (m_dialogType == About)
+        {
+            AzQtComponents::Style::addClass(this, QString::fromLatin1(EditorFlatSheet::StartupLogoAboutTag));
+        }
+        for (QWidget* each : findChildren<QWidget*>())
+        {
+            if (each->testAttribute(Qt::WA_WState_Polished))
+            {
+                each->style()->unpolish(each);
+                each->style()->polish(each);
+            }
+        }
     }
 
     // Draw the Open 3D Engine logo from svg

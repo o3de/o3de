@@ -7,6 +7,7 @@
  */
 
 #include "EMStudioManager.h"
+#include "EMStudioFlatSheet.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -66,6 +67,10 @@ namespace EMStudio
         m_avoidRendering = false;
 
         m_app = app;
+
+        // The flattened GUI's elements for the inline sheets of the Animation Editor's widgets: run when the Editor's sheet is applied,
+        // or at once if it has been (the legacy GUI never runs them)
+        AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:Editor.qss"), &EMStudioFlat::RegisterElements);
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -259,7 +264,17 @@ namespace EMStudio
 
     void EMStudioManager::SetWidgetAsInvalidInput(QWidget* widget)
     {
-        widget->setStyleSheet("border: 1px solid red;");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(widget, "border: 1px solid red;");
+        EMStudioFlat::SetStateTag(widget, EMStudioFlat::InvalidInputTag, true);
+    }
+
+    void EMStudioManager::SetWidgetAsValidInput(QWidget* widget)
+    {
+        AzQtComponents::StyleManager::setLegacyStyleSheet(widget, QString());
+
+        // The sheet that was cleared was the field's whole sheet, so the flattened GUI takes both of its states away
+        EMStudioFlat::SetStateTag(widget, EMStudioFlat::InvalidInputTag, false);
+        EMStudioFlat::SetStateTag(widget, EMStudioFlat::DisabledTrackTag, false);
     }
 
 

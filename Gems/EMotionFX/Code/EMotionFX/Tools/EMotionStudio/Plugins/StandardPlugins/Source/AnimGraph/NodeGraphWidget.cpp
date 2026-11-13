@@ -24,12 +24,30 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/StateGraphNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
+#include <QColor>
 #include <QMouseEvent>
 #include <QPainter>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the anim graph widget paints: background, rubber-band selection, border and the two text overlays.
+    // Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace NodeGraphWidgetFlat
+    {
+        constexpr QColor Background(47, 47, 47);               // NodeGraphWidget.cpp:251 TOKENIZE: NodeGraphWidgetBackground
+        constexpr QColor SelectionAltFill(0, 100, 200, 75);    // NodeGraphWidget.cpp:270 TOKENIZE: NodeGraphWidgetSelectionAltFill
+        constexpr QColor SelectionAltBorder(0, 100, 255);      // NodeGraphWidget.cpp:271 TOKENIZE: NodeGraphWidgetSelectionAltBorder
+        constexpr QColor SelectionFill(200, 120, 0, 75);       // NodeGraphWidget.cpp:275 TOKENIZE: NodeGraphWidgetSelectionFill
+        constexpr QColor SelectionBorder(255, 128, 0);         // NodeGraphWidget.cpp:276 TOKENIZE: NodeGraphWidgetSelectionBorder
+        constexpr QColor Border(0, 0, 0);                      // NodeGraphWidget.cpp:293 TOKENIZE: NodeGraphWidgetBorder
+        constexpr QColor FocusBorder(244, 156, 28);            // NodeGraphWidget.cpp:297 TOKENIZE: NodeGraphWidgetFocusBorder
+        constexpr QColor Fps(150, 150, 150);                   // NodeGraphWidget.cpp:344 TOKENIZE: NodeGraphWidgetFps
+        constexpr QColor ActorInfo(150, 150, 150);             // NodeGraphWidget.cpp:362 TOKENIZE: NodeGraphWidgetActorInfo
+    } // namespace NodeGraphWidgetFlat
+
     //NodeGraphWidget::NodeGraphWidget(NodeGraph* activeGraph, QWidget* parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
     NodeGraphWidget::NodeGraphWidget(AnimGraphPlugin* plugin, NodeGraph* activeGraph, QWidget* parent)
         : QWidget(parent)
@@ -248,7 +266,7 @@ namespace EMStudio
 
         // fill the background
         //painter.fillRect( event->rect(), QColor(30, 30, 30) );
-        painter.setBrush(QColor(47, 47, 47));
+        painter.setBrush(NodeGraphWidgetFlat::Background);
         painter.setPen(Qt::NoPen);
         painter.drawRect(QRect(0, 0, width, height));
 
@@ -267,13 +285,13 @@ namespace EMStudio
 
             if (m_altPressed)
             {
-                painter.setBrush(QColor(0, 100, 200, 75));
-                painter.setPen(QColor(0, 100, 255));
+                painter.setBrush(NodeGraphWidgetFlat::SelectionAltFill);
+                painter.setPen(NodeGraphWidgetFlat::SelectionAltBorder);
             }
             else
             {
-                painter.setBrush(QColor(200, 120, 0, 75));
-                painter.setPen(QColor(255, 128, 0));
+                painter.setBrush(NodeGraphWidgetFlat::SelectionFill);
+                painter.setPen(NodeGraphWidgetFlat::SelectionBorder);
             }
 
             painter.drawRect(selectRect);
@@ -290,11 +308,11 @@ namespace EMStudio
         }
 
         // draw the border
-        QColor borderColor(0, 0, 0);
+        QColor borderColor(NodeGraphWidgetFlat::Border);
         float borderWidth = 2.0f;
         if (hasFocus())
         {
-            borderColor = QColor(244, 156, 28);
+            borderColor = NodeGraphWidgetFlat::FocusBorder;
             borderWidth = 3.0f;
         }
         if (m_borderOverwrite)
@@ -341,7 +359,9 @@ namespace EMStudio
             static AZStd::string perfTempString;
             perfTempString = AZStd::string::format("%i FPS (%.1f ms)", lastFPS, renderTime);
 
-            GraphNode::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignRight, QRect(width - 55, height - 20, 50, 20));
+            GraphNode::RenderText(
+                painter, perfTempString.c_str(), NodeGraphWidgetFlat::Fps, m_font, *m_fontMetrics, Qt::AlignRight,
+                QRect(width - 55, height - 20, 50, 20));
         }
 
         // show the info to which actor the currently rendered graph belongs to
@@ -359,7 +379,9 @@ namespace EMStudio
             }
 
             m_tempString = AZStd::string::format("Showing graph for ActorInstance with ID %d and Actor file \"%s\"", firstActorInstance->GetID(), m_actorName.c_str());
-            GraphNode::RenderText(painter, m_tempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignLeft, QRect(8, 0, 50, 20));
+            GraphNode::RenderText(
+                painter, m_tempString.c_str(), NodeGraphWidgetFlat::ActorInfo, m_font, *m_fontMetrics, Qt::AlignLeft,
+                QRect(8, 0, 50, 20));
         }
     }
 

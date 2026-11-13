@@ -64,6 +64,13 @@ namespace AzQtComponents
 
         static bool setStyleSheet(QWidget* widget, QString styleFileName);
 
+        //! setStyleSheet for the Gallery's purposeful sample pages, whose sheets stay live in the flattened GUI as they are in the legacy
+        //! one: the file is loaded as setStyleSheet loads it and set on the widget in both GUIs, where setStyleSheet sets none in the
+        //! flattened one (elements carry its sheets). The sheet is tracked and reloaded by refresh in both. In the flattened GUI the
+        //! application's sheet is not there to give a label its margin above and below (Text.qss:93-94), which the legacy GUI draws a
+        //! sample's fill inside, so the flattened GUI sets that margin ahead of the file's rules.
+        static bool setSampleStyleSheet(QWidget* widget, QString styleFileName);
+
         //! Flattened GUI only (see stylesheetsDisabled): the function that defines the rules of a style sheet as
         //! elements (TextElement::registerElement, ...), registered under the name the sheet is set by (with or
         //! without the extension). setStyleSheet runs it the first time that sheet is set on a widget, and a
@@ -71,6 +78,11 @@ namespace AzQtComponents
         //! register for one sheet (a sheet shared by modules); legacy mode never runs any.
         using FlatSheetRegistrar = void (*)();
         static void registerFlatSheet(const QString& styleFileName, FlatSheetRegistrar registrar);
+
+        //! A widget's own style sheet that only the legacy GUI sets. The flattened GUI (stylesheetsDisabled) carries the
+        //! sheet's look in elements, so there the call sets nothing and the widget never gets a QStyleSheetStyle. For the
+        //! sites the flattening has converted: a site whose look no element carries yet calls QWidget::setStyleSheet.
+        static void setLegacyStyleSheet(QWidget* widget, const QString& styleSheet);
 
         static QStyle* styleSheetStyle(const QWidget* widget);
         static QStyle* baseStyle(const QWidget* widget);
@@ -92,6 +104,13 @@ namespace AzQtComponents
         //! rung of the GuiPerfFloor ladder, where Style hands every call to its base style and the widgets leave out
         //! what they set on themselves in place of a rule (palettes, sizes, their own painting).
         static bool flatStylingActive();
+
+        //! The flat gate for code that cannot call stylesheetsDisabled (the Python tools, which have no binding for it and cannot see the
+        //! command-line flag): the name of the dynamic property that initialize sets on the QApplication to true when stylesheetsDisabled()
+        //! holds, and leaves unset in the legacy GUI. PySide reads it as `QApplication.instance().property("o3deFlatGui")`, which is
+        //! true in the flattened GUI and None in the legacy one. The property is written once, by initialize: the rung does not change
+        //! while the application runs.
+        static constexpr const char* FlatGuiProperty = "o3deFlatGui";
 
         explicit StyleManager(QObject* parent);
         ~StyleManager() override;
@@ -129,6 +148,9 @@ namespace AzQtComponents
         void stopTrackingWidget(QObject* object);
 
     private:
+        //! setStyleSheet and setSampleStyleSheet. With `carriedByElements` the flattened GUI sets no sheet (applyFlatSheet).
+        static bool setFileStyleSheet(QWidget* widget, QString styleFileName, bool carriedByElements);
+
         //! The flat branch of setStyleSheet
         static void applyFlatSheet(QWidget* widget, const QString& styleFileName);
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QStyledItemDelegate>
 #include <GemRepo/GemRepoInfo.h>
 
@@ -17,6 +18,20 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
+
+    //! The paint values of the Gem Repos rows that the flattened GUI owns; the members of GemRepoItemDelegate below take their value from
+    //! here. A named namespace, not an anonymous one: a unity build joins the files of a target into one translation unit, where
+    //! anonymous namespaces merge.
+    namespace GemRepoItemDelegateFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The rows of the Gem Repos list (GemRepoItemDelegate::paint)
+        // ------------------------------------------------------------------------------
+        inline constexpr QColor ItemText(0xFF, 0xFF, 0xFF);         // GemRepoItemDelegate.h:35. TOKENIZE: GemRepoItemText
+        inline constexpr QColor ListSurface(0x33, 0x33, 0x33);      // GemRepoItemDelegate.h:36 (outside). TOKENIZE: GemRepoListSurface
+        inline constexpr QColor ItemFill(0x40, 0x40, 0x40);         // GemRepoItemDelegate.h:37 (item). TOKENIZE: GemRepoItemFill
+        inline constexpr QColor SelectedBorder(0x1E, 0x70, 0xEB);   // GemRepoItemDelegate.h:38. TOKENIZE: GemRepoSelectedBorder
+    } // namespace GemRepoItemDelegateFlat
 
     class GemRepoItemDelegate
         : public QStyledItemDelegate
@@ -32,10 +47,10 @@ namespace O3DE::ProjectManager
         QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
 
         // Colors
-        const QColor m_textColor = QColor("#FFFFFF");
-        const QColor m_backgroundColor = QColor("#333333"); // Outside of the actual repo item
-        const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the repo item
-        const QColor m_borderColor = QColor("#1E70EB");
+        const QColor m_textColor = GemRepoItemDelegateFlat::ItemText;
+        const QColor m_backgroundColor = GemRepoItemDelegateFlat::ListSurface; // Outside of the actual repo item
+        const QColor m_itemBackgroundColor = GemRepoItemDelegateFlat::ItemFill; // Background color of the repo item
+        const QColor m_borderColor = GemRepoItemDelegateFlat::SelectedBorder;
 
         // Item
         inline constexpr static int s_height = 72; // Repo item total height

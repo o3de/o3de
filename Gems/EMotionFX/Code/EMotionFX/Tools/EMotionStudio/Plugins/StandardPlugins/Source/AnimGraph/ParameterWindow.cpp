@@ -17,6 +17,7 @@
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
@@ -75,6 +76,7 @@ namespace EMStudio
 
         // add the line edit
         m_lineEdit = new QLineEdit(defaultName);
+        m_lineEdit->setObjectName(EMStudioFlat::InputFieldName);
         connect(m_lineEdit, &QLineEdit::textChanged, this, &ParameterCreateRenameWindow::NameEditChanged);
         m_lineEdit->selectAll();
 
@@ -109,7 +111,7 @@ namespace EMStudio
         else if (m_oldName == convertedNewName)
         {
             m_okButton->setEnabled(true);
-            m_lineEdit->setStyleSheet("");
+            GetManager()->SetWidgetAsValidInput(m_lineEdit);
         }
         else
         {
@@ -131,7 +133,7 @@ namespace EMStudio
 
             // no duplicate name found
             m_okButton->setEnabled(true);
-            m_lineEdit->setStyleSheet("");
+            GetManager()->SetWidgetAsValidInput(m_lineEdit);
         }
     }
 
@@ -340,7 +342,8 @@ namespace EMStudio
             parameterWidget.m_propertyEditor->SetSizeHintOffset(QSize(0, 0));
             parameterWidget.m_propertyEditor->SetAutoResizeLabels(false);
             parameterWidget.m_propertyEditor->SetLeafIndentation(0);
-            parameterWidget.m_propertyEditor->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                parameterWidget.m_propertyEditor, "QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
             parameterWidget.m_propertyEditor->setFixedHeight(20);
 
             parameterWidget.m_propertyEditor->AddInstance(parameterWidget.m_valueParameterEditor.get(), azrtti_typeid(parameterWidget.m_valueParameterEditor.get()));

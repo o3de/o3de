@@ -24,6 +24,17 @@ namespace
     const int cursorRadius = 5;
 }
 
+//! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+//! with others into one translation unit, where anonymous namespaces merge.
+namespace ColorGridFlat
+{
+    // ------------------------------------------------------------------------------
+    // The cursor circle of the grid: white on a dark value (<= 0.5), black on a light one
+    // ------------------------------------------------------------------------------
+    constexpr QColor CursorOnDark(255, 255, 255);   // ColorGrid.cpp:160 (Qt::white). TOKENIZE: ColorGridCursorOnDark
+    constexpr QColor CursorOnLight(0, 0, 0);        // ColorGrid.cpp:160 (Qt::black). TOKENIZE: ColorGridCursorOnLight
+} // namespace ColorGridFlat
+
 ColorGrid::ColorGrid(QWidget* parent)
     : QFrame(parent)
     , m_mode(Mode::SaturationValue)
@@ -157,7 +168,9 @@ void ColorGrid::paintEvent(QPaintEvent*)
 
     p.drawPixmap(contentsRect().topLeft(), m_pixmap);
 
-    QPen pen(m_value <= 0.5 ? Qt::white : Qt::black);
+    using ColorGridFlat::CursorOnDark;
+    using ColorGridFlat::CursorOnLight;
+    QPen pen(m_value <= 0.5 ? CursorOnDark : CursorOnLight);
     pen.setCosmetic(true);
     p.setPen(pen);
     p.drawEllipse(cursorCenter(), cursorRadius, cursorRadius);

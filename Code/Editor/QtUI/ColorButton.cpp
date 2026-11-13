@@ -17,6 +17,18 @@
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>  // for AzQtComponents::ColorPicker
 #include <AzQtComponents/Utilities/Conversions.h>           // for AzQtComponents::toQColor
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The colour button's border, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace ColorButtonFlat
+{
+    // ColorButton.cpp:31 (the border of the colour button; the fill is the button's own colour). TOKENIZE: ColorButtonBorder
+    const QColor Border(Qt::black);
+} // namespace ColorButtonFlat
+
 
 ColorButton::ColorButton(QWidget* parent /* = nullptr */)
     : QToolButton(parent)
@@ -28,7 +40,7 @@ void ColorButton::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
     QPainter painter(this);
     painter.fillRect(rect(), m_color);
-    painter.setPen(Qt::black);
+    painter.setPen(ColorButtonFlat::Border);
     painter.drawRect(rect().adjusted(0, 0, -1, -1));
 }
 

@@ -6,6 +6,7 @@
  *
  */
 
+#include <QColor>
 #include <QPainter>
 
 #include <Components/Slots/Execution/ExecutionSlotConnectionPin.h>
@@ -13,6 +14,15 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // EXECUTION PIN COLOURS (the fill of a connected pin whose style gives none)
+    //=========================================================================
+    namespace ExecutionSlotConnectionPinFlat
+    {
+        // ExecutionSlotConnectionPin.cpp:42 (the fill of a connected execution pin with no style colour). TOKENIZE: ExecutionPinFallback
+        constexpr QColor ExecutionPinFallback(0xFF, 0xFF, 0xFF);
+    } // namespace ExecutionSlotConnectionPinFlat
+
     ///////////////////////////////
     // ExecutionSlotConnectionPin
     ///////////////////////////////
@@ -39,7 +49,8 @@ namespace GraphCanvas
         if (isConnected)
         {
             // Add fill color for slots if it is connected
-            painter->setBrush(m_connectedStyle.GetBrush(Styling::Attribute::BackgroundColor, QColor{ 0xFF, 0xFF, 0xFF }));
+            painter->setBrush(m_connectedStyle.GetBrush(Styling::Attribute::BackgroundColor,
+                                                        ExecutionSlotConnectionPinFlat::ExecutionPinFallback));
         }
         
         QPen decorationBorder = m_style.GetBorder();

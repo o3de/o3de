@@ -14,18 +14,21 @@
 
 #include <AtomToolsFramework/Util/Util.h>
 #include <AssetBrowser/AssetBrowserBus.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <ViewInspector.h>
 #include <EmitterInspector.h>
 #include <LevelOfDetailInspector.h>
 #include <InputController/OpenParticleEditorViewportInputControllerBus.h>
 #include <Window/Controls/PropertyDistCtrl.h>
 #include <Window/Controls/PropertyGradientColorCtrl.h>
+#include <Window/ParticleEditorFlat.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 
+#include <QColor>
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QLabel>
@@ -38,12 +41,28 @@ void QCleanupResourceOpenParticleEditor() { Q_CLEANUP_RESOURCE(OpenParticleEdito
 
 namespace OpenParticleSystemEditor
 {
+    //=========================================================================
+    // OPEN PARTICLE SYSTEM EDITOR WINDOW COLOURS (the text of the status bar message)
+    //=========================================================================
+    namespace OpenParticleSystemEditorWindowFlat
+    {
+        constexpr QColor StatusMessageText(255, 255, 255); // OpenParticleSystemEditorWindow.cpp:519. TOKENIZE: ParticleStatusMessageText
+    } // namespace OpenParticleSystemEditorWindowFlat
+
     OpenParticleSystemEditorWindow::OpenParticleSystemEditorWindow(QWidget* parent)
         : AzQtComponents::DockMainWindow(parent)
         , m_fancyDockingManager(new AzQtComponents::FancyDocking(this, "particlestudiosdk"))
     {
         QInitResourceOpenParticleEditor();
         setObjectName("ParticleEditorWindow");
+
+        // Flattened GUI only: the elements that carry the looks the editor's widgets gave themselves with sheets, registered once, before
+        // the widgets below are built. A session that never opens the pane pays nothing.
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            ParticleEditorFlat::RegisterFlatElements();
+        }
+
         SetupCentral();
         SetupMenu();
         SetupDocking();
@@ -516,7 +535,9 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleSystemEditorWindow::SetStatusMessage(const QString& message)
     {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
+        m_statusMessage->setText(QString("<font color=\"%1\">%2</font>")
+                                     .arg(OpenParticleSystemEditorWindowFlat::StatusMessageText.name())
+                                     .arg(message));
     }
 
     void OpenParticleSystemEditorWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)

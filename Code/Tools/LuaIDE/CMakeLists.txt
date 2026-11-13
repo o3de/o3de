@@ -45,3 +45,36 @@ endif()
 
 ly_set_gem_variant_to_load(TARGETS LuaIDE VARIANTS LuaTools)
 ly_add_dependencies(Editor LuaIDE)
+
+################################################################################
+# Tests
+#
+# The flattened GUI's elements (Source/FlatElements.cpp) have a test target of their own: the application's other sources are not
+# built into it, so what the twins reach from the code view and the document gutter is a stand-in of the same calls.
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME LuaIDE.Tests EXECUTABLE
+        NAMESPACE AZ
+        FILES_CMAKE
+            lua_ide_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                3rdParty::Qt::Core
+                3rdParty::Qt::Widgets
+                AZ::AzCore
+                AZ::AzQtComponents
+                AZ::AzTest
+    )
+
+    ly_add_googletest(
+        NAME AZ::LuaIDE.Tests
+        LABELS REQUIRES_tiaf
+        TEST_COMMAND $<TARGET_FILE:AZ::LuaIDE.Tests> AzRunUnitTests
+    )
+
+endif()

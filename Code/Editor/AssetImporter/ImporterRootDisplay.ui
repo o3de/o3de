@@ -75,9 +75,6 @@
    </item>
    <item row="0" column="0">
     <widget class="QFrame" name="m_pythonBuilderLayout">
-     <property name="styleSheet">
-      <string notr="true">QFrame#m_pythonBuilderLayout {background-color: #333333; margin-bottom: 6px; padding-top: 2px; padding-bottom: 2px; border-top-left-radius: 2px; border-top-right-radius: 2px;}</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>

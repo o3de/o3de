@@ -6,6 +6,8 @@
  *
  */
 #include <AzCore/Component/Entity.h>
+#include <AzQtComponents/Components/Elements/ControlElements.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ToastNotification.h>
 #include <AzQtComponents/Components/ui_ToastNotification.h>
 
@@ -17,6 +19,36 @@
 
 namespace AzQtComponents
 {
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+    //! with others into one translation unit, where anonymous namespaces merge.
+    namespace ToastNotificationFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The rounded toast: the fill ToastNotification::paintEvent paints when the toast has a border radius
+        // ------------------------------------------------------------------------------
+        constexpr QColor Fill(0, 0, 0);     // ToastNotification.cpp:99 (setRgbF(0, 0, 0, 1)). TOKENIZE: ToastNotificationFill
+
+        // ------------------------------------------------------------------------------
+        // The sheets the form gave the icon frame and its label (ToastNotification.ui:59, :98 before the flattening)
+        // ------------------------------------------------------------------------------
+
+        //! The legacy GUI sets them after setupUi, as the form wrote them; the flattened GUI sets none, and the element of
+        //! ControlElements (ToastIconFrame) draws the frame's fill. The fill is the value that element reads.
+        QString iconFrameSheet()
+        {
+            const QColor fill = ControlElements::ToastIconFrameFill;
+            return QStringLiteral("background-color: rgba(%1, %2, %3, %4);")
+                .arg(fill.red()).arg(fill.green()).arg(fill.blue()).arg(fill.alpha());
+        }
+
+        //! The sheet only cancelled the frame's fill on the label, which reached it as the frame's sheet had no selector. The flattened
+        //! GUI's element does not cascade, so the label has no fill to cancel.
+        QString iconLabelSheet()
+        {
+            return QStringLiteral("background-color: rgba(255, 255, 255, 0);");
+        }
+    } // namespace ToastNotificationFlat
+
     ToastNotification::ToastNotification(QWidget* parent, const ToastConfiguration& toastConfiguration)
         : QDialog(parent, Qt::FramelessWindowHint)
         , m_closeOnClick(true)
@@ -36,6 +68,10 @@ namespace AzQtComponents
         }
 
         m_ui->setupUi(this);
+
+        // The sheets of the form's icon frame and label, for the legacy GUI only (see ToastNotificationFlat)
+        StyleManager::setLegacyStyleSheet(m_ui->icon_frame, ToastNotificationFlat::iconFrameSheet());
+        StyleManager::setLegacyStyleSheet(m_ui->iconLabel, ToastNotificationFlat::iconLabelSheet());
 
         QIcon toastIcon;
 
@@ -96,7 +132,7 @@ namespace AzQtComponents
             QPainter p(this);
             p.setPen(Qt::transparent);
             QColor painterColor;
-            painterColor.setRgbF(0.f, 0.f, 0.f, 1.f);
+            painterColor = ToastNotificationFlat::Fill;
             p.setBrush(painterColor);
             p.setRenderHint(QPainter::Antialiasing);
             p.drawRoundedRect(rect(), m_borderRadius, m_borderRadius);

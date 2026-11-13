@@ -13,16 +13,25 @@
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Tests/SheetTwins.h>
+#include <AzQtComponents/Tests/SiteTwins.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerFlatSheet.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 
+#include <QApplication>
 #include <QFile>
 #include <QFrame>
 #include <QIcon>
 #include <QImage>
+#include <QLabel>
+#include <QPainter>
+#include <QPixmap>
 #include <QStyleFactory>
 #include <QToolButton>
 #include <QTreeView>
 #include <QWidget>
+
+#include <string>
 
 namespace UnitTest
 {
@@ -192,5 +201,232 @@ namespace UnitTest
         EXPECT_STREQ(globalElement->m_name, "Global.ItemView.Tree");
         EXPECT_TRUE(globalElement->fillOf(ItemViewElement::Selected, ItemViewElement::OnItem) == QColor(101, 101, 101));
         EXPECT_TRUE(globalElement->fillOf(ItemViewElement::Hover, ItemViewElement::OnItem) == QColor(90, 90, 90));
+    }
+
+    // ----------------------------------------------------------------------------------
+    // C042: the icon of a chip of the Outliner's search box (EntityOutlinerSearchWidget.cpp:82). The chip of a global criterion
+    // (Unlocked, Locked, Visible, Hidden) holds a label with the criterion's icon, which the code gave a sheet of its own,
+    // `border: 0px; background-color: transparent;`. The legacy twin is Qt's own style sheet style over AzQtComponents::Style with the
+    // real application sheet (FilteredSearchWidget.qss:50-55 gives the labels of a chip no margin, no padding and a clear fill, and the
+    // sheet of the label comes over it); the flat twin is the flattened Style with no sheet on the label.
+    // ----------------------------------------------------------------------------------
+
+    namespace OutlinerChipIconFlatSheetTestsInternal
+    {
+        namespace Twins = AzQtComponents::SheetTwins;
+
+        //! The test application carries StyleManager's legacy sheets, which the twins name their own of: none while a test runs
+        class ApplicationSheetGuard
+        {
+        public:
+            ApplicationSheetGuard()
+                : m_sheet(qApp->styleSheet())
+            {
+                qApp->setStyleSheet(QString());
+            }
+
+            ~ApplicationSheetGuard()
+            {
+                qApp->setStyleSheet(m_sheet);
+            }
+
+            ApplicationSheetGuard(const ApplicationSheetGuard&) = delete;
+            ApplicationSheetGuard& operator=(const ApplicationSheetGuard&) = delete;
+
+        private:
+            QString m_sheet;
+        };
+
+        class OutlinerChipIconFlatSheetTests
+            : public LeakDetectionFixture
+        {
+        protected:
+            ApplicationSheetGuard m_applicationSheet;
+            Twins::Context m_context;
+        };
+
+        constexpr int FirstGlobalCriterion = 0;                 // GlobalSearchCriteria::Unlocked
+        constexpr QSize ChipSize(140, 24);                      // FilteredSearchWidget.qss:33-34: 22px high and 1px of border each side
+
+        //! The icon label of the chip: the one label with no object name (the others are the chip's text and its extra icon)
+        QLabel* iconOf(QWidget* chip)
+        {
+            for (QLabel* label : chip->findChildren<QLabel*>())
+            {
+                if (label->objectName().isEmpty())
+                {
+                    return label;
+                }
+            }
+            return nullptr;
+        }
+
+        //! A picture of the size the code gives the icon (10 x 10): a colour with a diagonal, so that a shifted or scaled icon differs.
+        //! The criteria's icons are resources of the Editor (MainWindow.qrc), which this test does not link: the code finds none and
+        //! gives the label an empty picture, so the test gives it this one in both twins.
+        QPixmap iconPicture()
+        {
+            QPixmap pixmap(10, 10);
+            pixmap.fill(QColor(0x30, 0xA0, 0xE0));
+            QPainter painter(&pixmap);
+            painter.setPen(Qt::white);
+            painter.drawLine(0, 0, 9, 9);
+            return pixmap;
+        }
+
+        //! The chip of a global criterion, as the search box makes it (EntityOutlinerSearchWidget::createCriteriaButton)
+        QWidget* makeChip(QWidget* parent)
+        {
+            auto* chip = new AzToolsFramework::OutlinerCriteriaButton(QStringLiteral("Unlocked"), parent, FirstGlobalCriterion);
+            if (QLabel* icon = iconOf(chip))
+            {
+                icon->setPixmap(iconPicture());
+            }
+            return chip;
+        }
+
+        //! The icon of a chip, the widget whose sheet it was
+        QWidget* makeIcon(QWidget* parent)
+        {
+            return iconOf(makeChip(parent));
+        }
+
+        //! The chip of a global criterion, sized as its search box lays it out
+        Twins::Row chipRow()
+        {
+            return Twins::Row{
+                .m_site = "C042 the chip of a global criterion with its icon",
+                .m_make = &makeChip,
+                .m_realApplicationSheet = true,
+                .m_compare = Twins::Compare::Geometry,
+                .m_size = ChipSize,
+                .m_base = Twins::Base::AzQtComponentsStyle,
+            };
+        }
+
+        //! The icon on its own: what its sheet decided (the box of the chip around it, and the chip's rounded line, are the chip's)
+        Twins::Row iconRow()
+        {
+            return Twins::Row{
+                .m_site = "C042 the icon of a global criterion's chip",
+                .m_make = &makeIcon,
+                .m_realApplicationSheet = true,
+                .m_states = { Twins::States::disabled() },
+                .m_compare = Twins::Compare::Geometry | Twins::Compare::Palette | Twins::Compare::Pixels,
+                .m_roles = { QPalette::WindowText, QPalette::Text, QPalette::ButtonText },
+                .m_base = Twins::Base::AzQtComponentsStyle,
+            };
+        }
+
+        //! What the icon label has, of the legacy twin or the flat one
+        struct IconFacts
+        {
+            bool m_found = false;
+            QRect m_geometry;
+            QRect m_contentsRect;
+            QSize m_sizeHint;
+            QSize m_minimumSizeHint;
+            QMargins m_contentsMargins;
+            int m_frameWidth = -1;
+            QSize m_pixmapSize;
+            bool m_hasSheet = false;
+
+            //! The facts the sheet decides, as text for a comparison and for its report
+            std::string text() const
+            {
+                const auto rect = [](const QRect& r)
+                {
+                    return QStringLiteral("(%1,%2 %3x%4)").arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height());
+                };
+                const auto size = [](const QSize& s)
+                {
+                    return QStringLiteral("%1x%2").arg(s.width()).arg(s.height());
+                };
+                const QMargins& m = m_contentsMargins;
+                QStringList lines;
+                lines << QStringLiteral("geometry ") + rect(m_geometry);
+                lines << QStringLiteral("contentsRect ") + rect(m_contentsRect);
+                lines << QStringLiteral("sizeHint ") + size(m_sizeHint);
+                lines << QStringLiteral("minimumSizeHint ") + size(m_minimumSizeHint);
+                lines << QStringLiteral("contentsMargins %1/%2/%3/%4").arg(m.left()).arg(m.top()).arg(m.right()).arg(m.bottom());
+                lines << QStringLiteral("frameWidth %1").arg(m_frameWidth);
+                lines << QStringLiteral("pixmap ") + size(m_pixmapSize);
+                return lines.join(QStringLiteral(", ")).toStdString();
+            }
+        };
+
+        IconFacts readIcon(const Twins::Row& row, Twins::Context& context, bool legacy)
+        {
+            Twins::Context::registerOnce(row.m_register);
+            Twins::RungScope rung(legacy ? row.m_legacyRung : Twins::Rung::Flat);
+            const Twins::Twin twin(row, context, legacy);
+            IconFacts facts;
+            if (QLabel* icon = iconOf(twin.widget()))
+            {
+                facts.m_found = true;
+                facts.m_geometry = icon->geometry();
+                facts.m_contentsRect = icon->contentsRect();
+                facts.m_sizeHint = icon->sizeHint();
+                facts.m_minimumSizeHint = icon->minimumSizeHint();
+                facts.m_contentsMargins = icon->contentsMargins();
+                facts.m_frameWidth = icon->frameWidth();
+                facts.m_pixmapSize = icon->pixmap().size();
+                facts.m_hasSheet = !icon->styleSheet().isEmpty();
+            }
+            return facts;
+        }
+    } // namespace OutlinerChipIconFlatSheetTestsInternal
+
+    // A unity build joins this file with others of namespace UnitTest: the fixture is the only name brought in
+    using OutlinerChipIconFlatSheetTestsInternal::OutlinerChipIconFlatSheetTests;
+    namespace OutlinerChip = OutlinerChipIconFlatSheetTestsInternal;
+
+    TEST_F(OutlinerChipIconFlatSheetTests, Icon_WithNoSheetIsTheIconOfTheLegacyGui)
+    {
+        // The flat twin has no sheet at all (the harness flags one on the icon), and the icon is sized, coloured and painted as under
+        // its sheet, at the device ratios 1, 1.5 and 2, enabled and disabled
+        EXPECT_TRUE(OutlinerChip::Twins::check(OutlinerChip::iconRow(), m_context));
+    }
+
+    TEST_F(OutlinerChipIconFlatSheetTests, Icon_HasTheBoxOfTheLegacyLabelAndNoSheet)
+    {
+        // In the chip as the search box lays it out: where the icon lies, what it asks for, and that it has no sheet in the flat twin
+        const OutlinerChip::Twins::Row row = OutlinerChip::chipRow();
+        const OutlinerChip::IconFacts legacy = OutlinerChip::readIcon(row, m_context, true);
+        const OutlinerChip::IconFacts flat = OutlinerChip::readIcon(row, m_context, false);
+
+        ASSERT_TRUE(legacy.m_found);
+        ASSERT_TRUE(flat.m_found);
+        EXPECT_TRUE(legacy.m_hasSheet) << "the legacy GUI sets the sheet of the icon";
+        EXPECT_FALSE(flat.m_hasSheet) << "the flattened GUI sets none";
+        EXPECT_EQ(flat.text(), legacy.text());
+        EXPECT_EQ(legacy.m_contentsRect.size(), legacy.m_geometry.size()) << "the sheet gives the icon no margin, border or padding";
+    }
+
+    TEST_F(OutlinerChipIconFlatSheetTests, Icon_IsOnTheCensusOnlyInTheLegacyGui)
+    {
+        const auto build = []
+        {
+            QWidget host;
+            host.resize(200, 40);
+            new AzToolsFramework::OutlinerCriteriaButton(QStringLiteral("Visible"), &host, OutlinerChip::FirstGlobalCriterion + 2);
+            // A chip of a real filter (the index is past the global criteria) has no icon label
+            new AzToolsFramework::OutlinerCriteriaButton(QStringLiteral("Mesh"), &host, 40);
+            host.setAttribute(Qt::WA_DontShowOnScreen);
+            host.show();
+            host.ensurePolished();
+            for (QWidget* each : host.findChildren<QWidget*>())
+            {
+                each->ensurePolished();
+            }
+        };
+
+        const QStringList legacy = AzQtComponents::SiteTwins::sheetLinesAt(AzQtComponents::GuiPerfFloor::Rung::Qss, build);
+        ASSERT_EQ(legacy.size(), 1) << legacy.join("\n").toStdString();
+        EXPECT_TRUE(AzQtComponents::SiteTwins::namesCarrier(legacy[0], QStringLiteral("QLabel"))) << legacy[0].toStdString();
+        EXPECT_TRUE(legacy[0].contains(QStringLiteral("border: 0px; background-color: transparent;"))) << legacy[0].toStdString();
+
+        const QStringList flat = AzQtComponents::SiteTwins::sheetLinesAt(AzQtComponents::GuiPerfFloor::Rung::Flat, build);
+        EXPECT_TRUE(flat.isEmpty()) << flat.join("\n").toStdString();
     }
 } // namespace UnitTest

@@ -9,6 +9,7 @@
 #include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Trace.h>
 
 #include <QApplication>
@@ -18,6 +19,7 @@
 #include <QEvent>
 #include <QMetaObject>
 #include <QObject>
+#include <QSet>
 #include <QStyle>
 #include <QWidget>
 
@@ -39,6 +41,7 @@ namespace AzQtComponents
         constexpr const char* FlatVariable = "O3DE_DISABLE_STYLESHEETS";
         constexpr const char* NoopVariable = "O3DE_STYLESHEETS_NOOP";
         constexpr const char* PassthroughVariable = "O3DE_STYLE_PASSTHROUGH";
+        constexpr const char* CensusVariable = "O3DE_UI_SHEET_CENSUS";
 
         constexpr const char* SnapshotProperty = "_o3de_perf_snapshot";     // the property GuiPerfCounters reads
         constexpr const char* RungProperty = "_o3de_floor_rung";
@@ -205,6 +208,60 @@ namespace AzQtComponents
         }
 
         // ------------------------------------------------------------------------------
+        // The census of inline sheets
+        // ------------------------------------------------------------------------------
+
+        //! The census writes no more sheets than this: a sheet made from a value that changes (a colour being edited) could fill
+        //! the log otherwise
+        constexpr int CensusCap = 500;
+
+        //! The carriers and sheets the census has written, as "carrier|sheet"
+        QSet<QString> g_censusSeen;
+
+        //! "Class#objectName", or "Class" for a widget without a name
+        QString describeWidget(const QWidget* widget)
+        {
+            const QString className = QString::fromLatin1(widget->metaObject()->className());
+            return widget->objectName().isEmpty() ? className : className + QLatin1Char('#') + widget->objectName();
+        }
+
+        //! The widget and three of its parents, as the capture harness writes a carrier
+        QString describeCarrier(const QWidget* widget)
+        {
+            QString carrier = describeWidget(widget);
+            int depth = 0;
+            for (const QWidget* parent = widget->parentWidget(); parent && depth < 3; parent = parent->parentWidget(), ++depth)
+            {
+                carrier += QStringLiteral(" < ") + describeWidget(parent);
+            }
+            return carrier;
+        }
+
+        //! The line of a widget's own sheet, the first time the census meets that carrier with that sheet
+        void noteSheet(const QWidget* widget)
+        {
+            const QString sheet = widget->styleSheet();
+            if (sheet.isEmpty() || g_censusSeen.size() >= CensusCap)
+            {
+                return;
+            }
+
+            const QString carrier = describeCarrier(widget);
+            const QString key = carrier + QLatin1Char('|') + sheet.simplified();
+            if (g_censusSeen.contains(key))
+            {
+                return;
+            }
+
+            g_censusSeen.insert(key);
+            writeLine(GuiPerfFloor::formatSheetLine(aznumeric_cast<int>(g_censusSeen.size()), carrier, sheet));
+            if (g_censusSeen.size() == CensusCap)
+            {
+                writeLine(QStringLiteral("GuiPerfFloor: v=1 sheet_census_full=%1").arg(CensusCap));
+            }
+        }
+
+        // ------------------------------------------------------------------------------
         // The filter
         // ------------------------------------------------------------------------------
 
@@ -268,6 +325,46 @@ namespace AzQtComponents
                 {
                     writeLine(GuiPerfFloor::formatSnapshotLine(tag, GuiPerfFloor::rung(), GuiPerfFloor::counts()));
                 }
+            }
+        };
+
+        //! The census, null while there is none. A child of the QApplication, as the filter is.
+        std::atomic<QObject*> g_census{ nullptr };
+
+        class CensusFilter
+            : public QObject
+        {
+        public:
+            explicit CensusFilter(QApplication* application)
+                : QObject(application)
+            {
+                g_census = this;
+                application->installEventFilter(this);
+            }
+
+            ~CensusFilter() override
+            {
+                g_census = nullptr;
+            }
+
+        protected:
+            //! Never consumes an event. A widget's first polish shows the sheets of its constructor and its .ui; a style change of a
+            //! polished widget shows a sheet set later. A sheet set before the polish waits for it, when the widget's name and parents
+            //! are complete, as the strip filter's late path does (queueLateStrip).
+            bool eventFilter(QObject* watched, QEvent* event) override
+            {
+                if (!watched->isWidgetType())
+                {
+                    return false;
+                }
+
+                const auto* widget = static_cast<const QWidget*>(watched);
+                if (event->type() == QEvent::Polish
+                    || (event->type() == QEvent::StyleChange && widget->testAttribute(Qt::WA_WState_Polished)))
+                {
+                    noteSheet(widget);
+                }
+                return false;
             }
         };
     } // namespace GuiPerfFloorInternal
@@ -378,6 +475,12 @@ namespace AzQtComponents
         {
             install(application);
         }
+
+        // After the filter that clears the sheets: Qt asks the filter installed last first, so the census still sees them
+        if (hasVariable(CensusVariable))
+        {
+            installSheetCensus(application);
+        }
     }
 
     void GuiPerfFloor::install(QApplication* application)
@@ -393,6 +496,21 @@ namespace AzQtComponents
     bool GuiPerfFloor::isInstalled()
     {
         return GuiPerfFloorInternal::g_filter != nullptr;
+    }
+
+    void GuiPerfFloor::installSheetCensus(QApplication* application)
+    {
+        using namespace GuiPerfFloorInternal;
+
+        if (application && !g_census)
+        {
+            new CensusFilter(application);      // owned by the application
+        }
+    }
+
+    bool GuiPerfFloor::isSheetCensusInstalled()
+    {
+        return GuiPerfFloorInternal::g_census != nullptr;
     }
 
     // ----------------------------------------------------------------------------------
@@ -431,6 +549,12 @@ namespace AzQtComponents
             .arg(values.m_helperSkipped);
     }
 
+    QString GuiPerfFloor::formatSheetLine(int index, const QString& carrier, const QString& sheet)
+    {
+        // One pass over both, so a '%' in the carrier or the sheet is never read as a marker
+        return QStringLiteral("GuiPerfFloor: v=1 sheet=%1 | %2 | %3").arg(QString::number(index), carrier, sheet.simplified().left(400));
+    }
+
     // ----------------------------------------------------------------------------------
     // Test seams
     // ----------------------------------------------------------------------------------
@@ -448,6 +572,7 @@ namespace AzQtComponents
         g_stripped = 0;
         g_strippedLate = 0;
         g_helperSkipped = 0;
+        g_censusSeen.clear();
     }
 
     void GuiPerfFloor::captureLinesInto(QStringList* lines)

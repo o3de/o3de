@@ -6,6 +6,7 @@
  *
  */
 
+#include <QColor>
 #include <QCoreApplication>
 #include <QFont>
 #include <QGraphicsItem>
@@ -21,6 +22,15 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // CHECK BOX COLOURS (the check mark of a box whose style gives no line colour)
+    //=========================================================================
+    namespace GraphCanvasCheckBoxFlat
+    {
+        // GraphCanvasCheckBox.cpp:122 (the check mark with no style line colour). TOKENIZE: CheckBoxCheckMarkFallback
+        constexpr QColor CheckMarkFallback(0, 0, 0);
+    } // namespace GraphCanvasCheckBoxFlat
+
     ////////////////////////
     // GraphCanvasCheckBox
     ////////////////////////
@@ -119,7 +129,7 @@ namespace GraphCanvas
             drawRectangle.adjust(margin, margin, -margin, -margin);
 
             QPen checkPen;
-            checkPen.setColor(m_styleHelper.GetAttribute(Styling::Attribute::LineColor, QColor(0,0,0)));
+            checkPen.setColor(m_styleHelper.GetAttribute(Styling::Attribute::LineColor, GraphCanvasCheckBoxFlat::CheckMarkFallback));
             checkPen.setWidth(m_styleHelper.GetAttribute(Styling::Attribute::LineWidth, 2));
 
             painter->setPen(checkPen);

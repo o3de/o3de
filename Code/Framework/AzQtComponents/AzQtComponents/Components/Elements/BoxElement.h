@@ -27,6 +27,7 @@ class QPainterPath;
 class QStyleOption;
 class QStyleOptionButton;
 class QStyleOptionComboBox;
+class QStyleOptionGroupBox;
 class QStyleOptionToolButton;
 
 namespace AzQtComponents
@@ -44,11 +45,26 @@ namespace AzQtComponents
     //! fixed capacity (6 state faces, 3 properties).
     struct AZ_QT_COMPONENTS_API BoxElement
     {
-        //! One side of a box: a solid line; a width of 0 or no colour draws nothing
+        //! `border-style` of an edge: the lines qDrawBorder draws for it. A dashed edge is the pen line of the sheet style (qPenFromStyle
+        //! and qDrawEdge): a dotted line when it is 1px wide, else dashes four widths long with gaps of two, ending inside the strip
+        //! by half a width, and the same dashes on the arcs of its round corners. An inset edge is a solid one with the colour of the
+        //! rule on its top and left edges and that colour lightened (QColor::lighter) on its bottom and right edges, an outset one the
+        //! other way round, arcs of round corners included (qDrawEdge, qDrawRoundedCorners). A solid edge is painted over its neighbour's
+        //! square corner only where the neighbour is solid and of the same opaque colour, any other is mitred (qDrawBorder, paintsOver).
+        enum class LineStyle
+        {
+            Solid,
+            Dashed,
+            Inset,
+            Outset,
+        };
+
+        //! One side of a box: a line of m_style; a width of 0 or no colour draws nothing
         struct Edge
         {
             int m_width = 0;
             QColor m_color;
+            LineStyle m_style = LineStyle::Solid;
         };
 
         struct Edges
@@ -57,6 +73,15 @@ namespace AzQtComponents
             Edge m_right;
             Edge m_bottom;
             Edge m_left;
+        };
+
+        //! The radius of each corner of a border box; a corner that does not fit its box is square (qNormalizeRadii)
+        struct Radii
+        {
+            int m_topLeft = 0;
+            int m_topRight = 0;
+            int m_bottomRight = 0;
+            int m_bottomLeft = 0;
         };
 
         //! An integer member no rule sets (the sheet's own -1)
@@ -82,12 +107,14 @@ namespace AzQtComponents
         //! What the box draws in one state, and the parts of the box the rule of that state may change
         struct Face
         {
-            QBrush m_fill;                      //!< no brush: no fill; a gradient is a brush (vertical)
-            Edges m_edges;                      //!< the declared solid edges; an edge with no colour is the style's own or none
+            //! no brush: no fill, but for a text edit (QTextEdit, QPlainTextEdit), whose field is the palette's Base; a gradient is a
+            //! brush (vertical)
+            QBrush m_fill;
+            Edges m_edges;                      //!< the declared edges; an edge with no colour is the style's own or none
             QColor m_text;                      //!< the label of a push button; invalid: the widget's own
             const char* m_image = "";           //!< background image resource, once, at its natural size ("": none)
             AZStd::optional<QMargins> m_margin; //!< unset: the element's m_margin
-            int m_radius = Unset;               //!< border-radius of the four corners; Unset: the element's m_radius
+            int m_radius = Unset;               //!< border-radius of the four corners; Unset: the element's (m_radii, else m_radius)
             int m_spacing = Unset;              //!< the label spacing; Unset: the element's m_spacing
             //! border-image: url(...) 0 0 0 0 stretch stretch ("": none): the image stretched over the border box in place of the
             //! declared border, clipped to the radius (QRenderRule::drawBorderImage); the border is then the rule's, not the style's
@@ -125,6 +152,14 @@ namespace AzQtComponents
         //! rules give the border a style of their own: a border, border: none, a radius or a border image
         bool m_nativeBorder = true;
         int m_radius = 0;                       //!< border-radius of the four corners
+        //! border-top-left-radius, border-top-right-radius, border-bottom-right-radius and border-bottom-left-radius, where the rules give
+        //! the corners different radii. When any corner is not 0 these radii replace m_radius as a whole (Qt merges per corner, the
+        //! element does not): every corner is written here, a corner the rules leave square as 0. `border-radius: 4px` with
+        //! `border-top-left-radius: 2px` is { .m_topLeft = 2, .m_topRight = 4, .m_bottomRight = 4, .m_bottomLeft = 4 }, whereas
+        //! `.m_radius = 4` with `.m_radii = { .m_topLeft = 2 }` is { 2, 0, 0, 0 }. A face that sets m_radius (a state rule's
+        //! border-radius) sets the four corners again. As with m_radius, the author writes m_nativeBorder = false for an element with
+        //! radii (a radius gives the border a style of its own); hasNativeBorder does not infer it.
+        Radii m_radii;
 
         // ---- The contents' width, height and limits (-1: unset)
         QSize m_size;
@@ -148,6 +183,18 @@ namespace AzQtComponents
         //! `text-align`: the push button's rule has a position, and the sheet lays the label out itself, the icon and the text in one
         //! group in this alignment (QStyleSheetStyle::drawControl, CE_PushButtonLabel). 0: the base style's label.
         Qt::Alignment m_textAlign;
+
+        //! The idle fill becomes the Base, Button and Window of the widget's palette, and the role the widget paints its background with
+        //! (QWidget::backgroundRole), in every colour group, when the widget is polished (QStyleSheetStyle::setPalette,
+        //! QRenderRule::configurePalette). Two uses:
+        //!   - A widget of a class the style sheet style gives no styled background (QStyleSheetStyle::polish sets it for a QWidget
+        //!     itself, a frame, a dialog and a few more classes), top-level: a translucent window is painted with the Window brush of
+        //!     its palette alone (QWidgetPrivate::paintBackground, as the root), so the fill reaches the screen through the palette.
+        //!   - A widget that paints a fill of its own (a plain widget or a frame with a styled background) and has the sheet's palette
+        //!     as well: what the base style draws with the palette (the parts a widget has of its own) and the widgets below it, which
+        //!     take the palette of their parent, read the fill.
+        //! The palette is not given back when an element no longer covers the widget.
+        bool m_fillsPalette = false;
 
         // ---- Geometry, for the state of an option (no option: Disabled alone, as QStyleSheetStyle::renderRule reads it)
         bool hasNativeBorder(const QStyleOption* option) const;     //!< the style's border draws in this state
@@ -175,17 +222,8 @@ namespace AzQtComponents
         static void configurePalette(QPalette& palette, const Face& face, QPalette::ColorRole foreground, QPalette::ColorRole background);
         //! qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 top, stop: 1 bottom)
         static QBrush vertical(const QColor& top, const QColor& bottom);
-        //! The same solid edge on the four sides
-        static Edges border(int width, const QColor& color);
-
-        //! The radius of each corner of a border box; a corner that does not fit its box is square (qNormalizeRadii)
-        struct Radii
-        {
-            int m_topLeft = 0;
-            int m_topRight = 0;
-            int m_bottomRight = 0;
-            int m_bottomLeft = 0;
-        };
+        //! The same edge on the four sides (`border: 2px dashed #979797` is border(2, color, LineStyle::Dashed))
+        static Edges border(int width, const QColor& color, LineStyle style = LineStyle::Solid);
 
         //! QRenderRule::drawFrame of a rule with no image, in its border box: drawFill, then drawEdges. draw() is this for an element.
         static void drawFrame(QPainter* painter, const QRect& borderBox, const QBrush& fill, const Edges& edges, const Radii& radii);
@@ -227,6 +265,15 @@ namespace AzQtComponents
         //! in the contents rect. False: the widget has no indicator element.
         bool drawIndicatorButton(const QStyle* style, const QStyleOptionButton* option, QPainter* painter, const QWidget* widget) const;
 
+        // ---- Group boxes
+        //! CC_GroupBox of a group box under an element, as QStyleSheetStyle draws one under the application's rules (they give every
+        //! group box a background, a colour and a font, so the sheet style leaves none to the base style): the fill and the image over
+        //! the border box, the border in place of the base style's frame (PE_FrameGroupBox, which a group box with a border of its own
+        //! does not draw), kept out of the title's rect, then the title text centered in its rect and the check box as the base style
+        //! has them. A rule with no box owns no more than its border box: the frame and the contents are the base style's inside it
+        //! (Style::subControlRect), and the label and the check box lie in the border box.
+        void drawGroupBox(const QStyle* style, const QStyleOptionGroupBox* option, QPainter* painter, const QWidget* widget) const;
+
         // ---- Resolution
         //! The widgets of widgetClass the matcher accepts have this element: module rows before Global ones, each in registration order
         static void registerElement(const BoxElement* element, const QMetaObject* widgetClass, ElementMatcher matcher,
@@ -241,7 +288,8 @@ namespace AzQtComponents
         //! and the viewport of a scroll area whose element has no background in this state
         static bool fillsBackgroundRole(const QWidget* widget, const QStyleOption* option);
         //! The widget whose element draws this one: the combo box or spin box a line edit sits in, the scroll area a viewport
-        //! belongs to (containerWidget, qstylesheetstyle.cpp), else the widget itself; such a widget has no element of its own
+        //! belongs to (QStyleSheetStyle::drawPrimitive, PE_PanelLineEdit and PE_Widget), else the widget itself; such a widget has no
+        //! element of its own
         static const QWidget* containerOf(const QWidget* widget);
     };
 } // namespace AzQtComponents

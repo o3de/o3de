@@ -30,6 +30,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFlatValues.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -199,7 +200,7 @@ namespace AzToolsFramework
         {
             if (!index.parent().isValid() && ! selectedIndexes().contains(index))
             {
-                painter->fillRect(rect, 0x333333);
+                painter->fillRect(rect, AssetBrowserFlat::RootRowFill);
             }
 
             QTreeView::drawBranches(painter, rect, index);

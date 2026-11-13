@@ -20,7 +20,8 @@ class QFont;
 namespace AzQtComponents
 {
     //! The font a widget's rules give it, and the colour of its text. Every element sets the family and the weight (the legacy
-    //! '*' rule reached every widget); a size or style no rule sets stays Qt's or the widget's code's (m_pixelSize 0, m_italic -1).
+    //! '*' rule reached every widget); a size or style no rule sets stays Qt's or the widget's code's (m_pixelSize and m_pointSize
+    //! 0, m_italic and m_underline -1).
     //! A class's rules are installed as Qt class fonts, which do not reach the widgets inside as setFont would; the matched
     //! elements are set over them at polish. The colour goes into the widget's palette as the sheet put it there, and so reaches
     //! the widget's children: give one to the widgets that draw the text, not to a container.
@@ -29,8 +30,14 @@ namespace AzQtComponents
         const char* m_name = "";                                //!< Scope.Text.Look
         const char* m_family = Foundations::Surface::Family;    //!< the universal rule's
         int m_pixelSize = 0;                                    //!< 0: no rule sets it
+        //! 0: no rule sets it. A size in points, for a rule that gave `12pt` (QCss setFontSizeFromValue calls QFont::setPointSizeF):
+        //! Qt turns it into pixels at the screen's logical DPI, as it did for the sheet. Taken only where m_pixelSize is 0.
+        int m_pointSize = 0;
         int m_weight = Foundations::Surface::Weight;            //!< the universal rule's
         int m_italic = -1;                                      //!< -1: no rule sets it
+        //! -1: no rule sets it. 1 for a rule that gave `text-decoration: underline`, 0 for one that gave `none` (QCss extractFont sets
+        //! the font's underline). The font keeps what an earlier element set, so a state that ends the underline gives 0.
+        int m_underline = -1;
         QColor m_color;                                         //!< The text, enabled; invalid: the widget keeps its palette
         QColor m_disabledColor;                                 //!< The text, disabled; invalid: m_color
 

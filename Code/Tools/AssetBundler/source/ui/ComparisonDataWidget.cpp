@@ -11,11 +11,23 @@
 
 #include <source/ui/NewFileDialog.h>
 
+#include <AzQtComponents/Components/StyleManager.h>
+
+#include <QColor>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QStringList>
 
 namespace AssetBundler
 {
+    //=========================================================================
+    // COMPARISON DATA WIDGET COLOURS (the line edit fill the constructor sets)
+    //=========================================================================
+    namespace ComparisonDataWidgetFlat
+    {
+        constexpr QColor LineEditFill(0xCC, 0xCC, 0xCC); // ComparisonDataWidget.cpp:48. TOKENIZE: ComparisonDataLineEditFill
+    } // namespace ComparisonDataWidgetFlat
+
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // ComparisonDataWidget
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,12 +56,15 @@ namespace AssetBundler
         }
 
         // Due to initialization order, we need to hard-code this or else the value will be overwritten once this
-        // ComparisonDataWidget is added to the ComparisonDataCard, and the Card.qss file is applied
-        QString lineEditStyle("background-color: #CCCCCC;");
-        m_ui->nameLineEdit->setStyleSheet(lineEditStyle);
-        m_ui->firstInputLineEdit->setStyleSheet(lineEditStyle);
-        m_ui->secondInputLineEdit->setStyleSheet(lineEditStyle);
-        m_ui->filePatternLineEdit->setStyleSheet(lineEditStyle);
+        // ComparisonDataWidget is added to the ComparisonDataCard, and the Card.qss file is applied.
+        // The legacy GUI sets the sheet. The flattened GUI sets none and needs no element: the sheet restates the fill every line edit
+        // has there (Foundations::Field::Fill, BaseStyleSheet.qss:76), and nothing here disables the edits, the one state in which the
+        // sheet's fill and the field's differ (LineEdit.qss:31-35).
+        const QString lineEditStyle(QString("background-color: %1;").arg(ComparisonDataWidgetFlat::LineEditFill.name()));
+        for (QLineEdit* lineEdit : { m_ui->nameLineEdit, m_ui->firstInputLineEdit, m_ui->secondInputLineEdit, m_ui->filePatternLineEdit })
+        {
+            AzQtComponents::StyleManager::setLegacyStyleSheet(lineEdit, lineEditStyle);
+        }
 
         m_ui->firstInputLineEdit->setReadOnly(true);
         m_ui->secondInputLineEdit->setReadOnly(true);

@@ -7,7 +7,10 @@
 #
 
 set(FILES
+    Tests/AssetSelectionGridFlatSheetTests.cpp
+    Tests/AtomToolsAssetBrowserFlatSheetTests.cpp
     Tests/AtomToolsFrameworkTest.cpp
+    Tests/GraphViewFlatSheetTests.cpp
     Tests/InspectorGroupHeaderWidgetTests.cpp
     Tests/ViewportInteractionImplTests.cpp
 )

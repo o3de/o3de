@@ -34,6 +34,28 @@
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Console Colours
+    // =======================================================================
+
+    //! Every colour the Python Console sets for its output and its background, per console colour theme, named, so the legacy and the
+    //! flattened GUI read one value. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace ScriptTermDialogFlatInternal
+    {
+        // The light console colour theme
+        const QColor LightText(Qt::black);                  // ScriptTermDialog.cpp:78. TOKENIZE: PythonConsoleLightText
+        constexpr QColor LightError(200, 0, 0);             // ScriptTermDialog.cpp:79. TOKENIZE: PythonConsoleLightError
+        constexpr QColor LightWarning(128, 112, 0);         // ScriptTermDialog.cpp:80. TOKENIZE: PythonConsoleLightWarning
+        const QColor LightBackground(Qt::white);            // ScriptTermDialog.cpp:100. TOKENIZE: PythonConsoleLightBackground
+
+        // The dark console colour theme
+        const QColor DarkText(Qt::white);                   // ScriptTermDialog.cpp:87. TOKENIZE: PythonConsoleDarkText
+        constexpr QColor DarkError(0xfa, 0x27, 0x27);       // ScriptTermDialog.cpp:88. TOKENIZE: PythonConsoleDarkError
+        constexpr QColor DarkWarning(0xff, 0xaa, 0x22);     // ScriptTermDialog.cpp:89. TOKENIZE: PythonConsoleDarkWarning
+        constexpr QColor DarkBackground(0x22, 0x22, 0x22);  // ScriptTermDialog.cpp:95. TOKENIZE: PythonConsoleDarkBackground
+    }
+
     static constexpr const char* OtherCategory = "Other";
 
     CScriptTermDialog::CScriptTermDialog(QWidget* parent)
@@ -75,29 +97,29 @@ namespace AzToolsFramework
     {
         // Set the debug/warning text colors appropriately for the background theme
         // (e.g. not have black text on black background)
-        m_textColor = Qt::black;
-        m_errorColor = QColor(200, 0, 0);                   // Error (Red)
-        m_warningColor = QColor(128, 112, 0);               // Warning (Yellow)
+        m_textColor = ScriptTermDialogFlatInternal::LightText;
+        m_errorColor = ScriptTermDialogFlatInternal::LightError; // Error (Red)
+        m_warningColor = ScriptTermDialogFlatInternal::LightWarning; // Warning (Yellow)
 
         ConsoleColorTheme consoleColorTheme(ConsoleColorTheme::Dark);
         EditorSettingsAPIBus::BroadcastResult(consoleColorTheme, &EditorSettingsAPIBus::Handler::GetConsoleColorTheme);
 
         if (consoleColorTheme == ConsoleColorTheme::Dark)
         {
-            m_textColor = Qt::white;
-            m_errorColor = QColor(0xfa, 0x27, 0x27);        // Error (Red)
-            m_warningColor = QColor(0xff, 0xaa, 0x22);      // Warning (Yellow)
+            m_textColor = ScriptTermDialogFlatInternal::DarkText;
+            m_errorColor = ScriptTermDialogFlatInternal::DarkError; // Error (Red)
+            m_warningColor = ScriptTermDialogFlatInternal::DarkWarning; // Warning (Yellow)
         }
 
         QColor bgColor;
         if (consoleColorTheme == ConsoleColorTheme::Dark)
         {
-            bgColor = QColor(0x22, 0x22, 0x22);
+            bgColor = ScriptTermDialogFlatInternal::DarkBackground;
             AzQtComponents::ScrollBar::applyLightStyle(ui->SCRIPT_OUTPUT);
         }
         else
         {
-            bgColor = Qt::white;
+            bgColor = ScriptTermDialogFlatInternal::LightBackground;
             AzQtComponents::ScrollBar::applyDarkStyle(ui->SCRIPT_OUTPUT);
         }
         AzQtComponents::ScrollBar::setBackgroundColor(ui->SCRIPT_OUTPUT, bgColor);

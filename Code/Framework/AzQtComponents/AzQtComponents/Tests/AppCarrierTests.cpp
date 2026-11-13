@@ -8,18 +8,29 @@
 
 #include <AzQtComponents/Tests/FieldTwins.h>
 
+#include <AzQtComponents/Tests/ToolTipTwins.h>
+
 #include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ColorPickerElements.h>
 #include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
+#include <AzQtComponents/Components/Widgets/Slider.h>
 
+#include <QCursor>
 #include <QFontDatabase>
 #include <QFontInfo>
 #include <QFontMetrics>
 #include <QFrame>
+#include <QGridLayout>
+#include <QGuiApplication>
+#include <QHBoxLayout>
 #include <QIcon>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMargins>
+#include <QMessageBox>
 #include <QPixmap>
 #include <QPushButton>
 #include <QRadioButton>
@@ -28,6 +39,8 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+
+#include <optional>
 
 namespace AzQtComponents
 {
@@ -42,6 +55,9 @@ namespace AzQtComponents
     //   - the icon of the button of a toolbar that shows what does not fit it (ToolBar.qss:139-142): ControlElements' Global element
     //   - the frame of the breadcrumbs whose path can be edited (BreadCrumbs.qss:33-37): ControlElements' Global element
     //   - the height of the entry of a form in ems (ProjectManager.qss:305): the 24px the Project Manager's element carries
+    //   - the icon and the icon size of the button of breadcrumbs (BreadCrumbs.qss:20-24): ControlElements' Global element
+    //   - the padding of the two labels of a message box (MessageBox.qss:11-22): ControlElements' Global elements
+    //   - the tool tip offsets of a slider (Slider.qss:10-20): ControlElements' Global elements
     // ----------------------------------------------------------------------------------
 
     namespace AppCarrierTestsInternal
@@ -896,6 +912,573 @@ namespace AzQtComponents
                         // the colour of the border in the middle of the left edge (n2: #2f2f2f)
                         EXPECT_EQ(flatImage.pixelColor(0, 10).name().toStdString(), "#2f2f2f");
                     }
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // BreadCrumbs.qss:20-24, MessageBox.qss:11-22 and Slider.qss:10-20: rules of the application's sheet that gave a widget a property
+        // at polish (an icon, an icon size, a tool tip offset) or a box (the padding of a message box's labels). The legacy twin has the
+        // application's real sheet (appSheet: the rules above among the files it imports); the flat twin has ControlElements' Global
+        // elements, at the flat rung. What a rule decides is compared: the properties, the pixmaps of the icon, the contents of a label
+        // and the hints that follow, the pixels at the ratios 1, 1.5 and 2, and where the tip of a slider is shown.
+        // ----------------------------------------------------------------------------------
+
+        const qreal AllRatios[] = { 1.0, 1.5, 2.0 };
+
+        //! The rung the flat twin is made at, for the length of a test: another test may have left the process at another one
+        class FlatRungScope
+        {
+        public:
+            FlatRungScope()
+                : m_before(GuiPerfFloor::rung())
+            {
+                GuiPerfFloor::setRungForTesting(GuiPerfFloor::Rung::Flat);
+            }
+
+            ~FlatRungScope()
+            {
+                GuiPerfFloor::setRungForTesting(m_before);
+            }
+
+            FlatRungScope(const FlatRungScope&) = delete;
+            FlatRungScope& operator=(const FlatRungScope&) = delete;
+
+        private:
+            GuiPerfFloor::Rung m_before;
+        };
+
+        //! A child of the widget named "holder" of a twin's tree
+        template<typename W>
+        W* inHolder(QWidget& root, const char* name)
+        {
+            auto* holder = root.findChild<QWidget*>(QStringLiteral("holder"));
+            return holder ? holder->findChild<W*>(QString::fromLatin1(name)) : nullptr;
+        }
+
+        //! The contents margins of a widget as text, for the failure message of a comparison
+        std::string marginsOf(const QWidget* widget)
+        {
+            return ToolTipTwins::marginsText(widget->contentsMargins());
+        }
+
+        // ----------------------------------------------------------------------------------
+        // BreadCrumbs.qss:20-24, `AzQtComponents--BreadCrumbs #MenuButton { qproperty-icon: url(:/Breadcrumb/img/UI20/Breadcrumb/
+        // dot-dot-dot_with_arrow.svg); qproperty-iconSize: 22px 11px }`: the button that opens the menu of a path too wide for the
+        // breadcrumbs
+        // ----------------------------------------------------------------------------------
+
+        const char* const BreadCrumbsMenuIcon = ":/Breadcrumb/img/UI20/Breadcrumb/dot-dot-dot_with_arrow.svg";      // BreadCrumbs.qss:22
+        const QSize BreadCrumbsMenuIconSize(22, 11);                                                                // BreadCrumbs.qss:23
+
+        //! Breadcrumbs with a path far wider than the window, so that the button that opens the menu of the path is shown; and below
+        //! them two buttons no rule reaches: one named as the breadcrumbs' button but below no breadcrumbs, and one given the sheet's
+        //! icon and icon size by hand, which a button with the rule's properties is compared with
+        void buildOverflowingBreadCrumbs(QWidget& root, bool)
+        {
+            auto* layout = new QVBoxLayout(&root);
+            layout->setContentsMargins(0, 0, 0, 0);
+
+            auto* crumbs = new BreadCrumbs(&root);
+            crumbs->setObjectName(QStringLiteral("overflowing"));
+            crumbs->setCurrentPath(QStringLiteral("Levels/Prefabs/Characters/Heroes/Armour/Helmets"));
+            layout->addWidget(crumbs);
+
+            auto* holder = new QWidget(&root);
+            holder->setObjectName(QStringLiteral("holder"));
+            auto* holderLayout = new QHBoxLayout(holder);
+            auto* elsewhere = new QToolButton(holder);
+            elsewhere->setObjectName(QStringLiteral("MenuButton"));
+            elsewhere->setAutoRaise(true);
+            holderLayout->addWidget(elsewhere);
+            auto* byHand = new QToolButton(holder);
+            byHand->setObjectName(QStringLiteral("byHand"));
+            byHand->setAutoRaise(true);
+            byHand->setIcon(QIcon(QString::fromLatin1(BreadCrumbsMenuIcon)));
+            byHand->setIconSize(BreadCrumbsMenuIconSize);
+            holderLayout->addWidget(byHand);
+            layout->addWidget(holder);
+            layout->addStretch();
+        }
+
+        TEST_F(AppCarrierTests, BreadCrumbsMenuButton_HasTheIconAndTheIconSizeOfTheSheet)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            AppTwins twins(*this, buildOverflowingBreadCrumbs, appSheet(), QSize(120, 160), Qt::LeftToRight);
+            auto* legacyCrumbs = twins.legacyChild<BreadCrumbs>("overflowing");
+            auto* flatCrumbs = twins.flatChild<BreadCrumbs>("overflowing");
+            ASSERT_TRUE(legacyCrumbs != nullptr && flatCrumbs != nullptr);
+            auto* legacyButton = legacyCrumbs->findChild<QToolButton*>(QStringLiteral("MenuButton"));
+            auto* flatButton = flatCrumbs->findChild<QToolButton*>(QStringLiteral("MenuButton"));
+            ASSERT_TRUE(legacyButton != nullptr && flatButton != nullptr);
+            auto* legacyByHand = twins.legacyChild<QToolButton>("byHand");
+            auto* flatByHand = twins.flatChild<QToolButton>("byHand");
+            ASSERT_TRUE(legacyByHand != nullptr && flatByHand != nullptr);
+
+            // shown while the path is truncated (BreadCrumbs::resizeEvent)
+            EXPECT_TRUE(legacyButton->isVisibleTo(&twins.m_legacy));
+            EXPECT_TRUE(flatButton->isVisibleTo(&twins.m_flat));
+
+            // qproperty-iconSize
+            EXPECT_EQ(sizeText(legacyButton->iconSize()), sizeText(BreadCrumbsMenuIconSize));
+            EXPECT_EQ(sizeText(flatButton->iconSize()), sizeText(legacyButton->iconSize()));
+
+            // qproperty-icon: the file the rule names, as the pixmap of each ratio
+            const QIcon sheetIcon{ QString::fromLatin1(BreadCrumbsMenuIcon) };
+            for (const qreal ratio : AllRatios)
+            {
+                const QImage expected = sheetIcon.pixmap(BreadCrumbsMenuIconSize, ratio).toImage();
+                EXPECT_TRUE(isDrawnOn(expected)) << "ratio " << ratio;
+                EXPECT_EQ(differing(legacyButton->icon().pixmap(legacyButton->iconSize(), ratio).toImage(), expected), 0)
+                    << "legacy, ratio " << ratio;
+                EXPECT_EQ(differing(flatButton->icon().pixmap(flatButton->iconSize(), ratio).toImage(), expected), 0)
+                    << "flat, ratio " << ratio;
+            }
+
+            // the rule decides the icon and its size and nothing else: the button is the button given the two by hand, in its hint and in
+            // its pixels, and its pixels are the legacy twin's
+            EXPECT_EQ(sizeText(legacyButton->sizeHint()), sizeText(legacyByHand->sizeHint()));
+            EXPECT_EQ(sizeText(flatButton->sizeHint()), sizeText(flatByHand->sizeHint()));
+            const QSize paintSize(36, 24);
+            for (const qreal ratio : AllRatios)
+            {
+                const QImage legacyImage = paintedToolButton(legacyButton, paintSize, ratio);
+                const QImage flatImage = paintedToolButton(flatButton, paintSize, ratio);
+                EXPECT_FALSE(inkBounds(legacyImage).isNull()) << "ratio " << ratio;
+                EXPECT_EQ(differing(legacyImage, paintedToolButton(legacyByHand, paintSize, ratio)), 0) << "legacy, ratio " << ratio;
+                EXPECT_EQ(differing(flatImage, paintedToolButton(flatByHand, paintSize, ratio)), 0) << "flat, ratio " << ratio;
+                EXPECT_EQ(rectText(inkBounds(flatImage)), rectText(inkBounds(legacyImage))) << "ratio " << ratio;
+                EXPECT_EQ(differingAlpha(flatImage, legacyImage), 0) << "ratio " << ratio;
+            }
+
+            // the rule is the breadcrumbs': a button of that name below no breadcrumbs keeps the icon it has (none)
+            auto* legacyElsewhere = inHolder<QToolButton>(twins.m_legacy, "MenuButton");
+            auto* flatElsewhere = inHolder<QToolButton>(twins.m_flat, "MenuButton");
+            ASSERT_TRUE(legacyElsewhere != nullptr && flatElsewhere != nullptr);
+            EXPECT_TRUE(legacyElsewhere->icon().isNull());
+            EXPECT_TRUE(flatElsewhere->icon().isNull());
+            ASSERT_TRUE(BoxElement::forWidget(flatButton) != nullptr);
+            EXPECT_EQ(std::string(BoxElement::forWidget(flatButton)->m_name), "Global.Box.BreadCrumbsMenuButton");
+            EXPECT_TRUE(BoxElement::forWidget(flatElsewhere) == nullptr);
+            EXPECT_TRUE(BoxElement::forWidget(flatByHand) == nullptr);
+        }
+
+        TEST_F(AppCarrierTests, BreadCrumbsMenuButton_TheLegacyTwinHasNoIconWithoutTheRule)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            // the witness: the application's sheet less the rule, so that what the twin above reads is the rule's
+            const Replacements withoutRule = { { "AzQtComponents--BreadCrumbs #MenuButton", "AzQtComponents--BreadCrumbs #NoSuchButton" } };
+            ASSERT_TRUE(appSheet().contains(QStringLiteral("AzQtComponents--BreadCrumbs #MenuButton")));
+            AppTwins twins(*this, buildOverflowingBreadCrumbs, appSheet(withoutRule), QSize(120, 160), Qt::LeftToRight);
+            auto* legacyButton = twins.legacyChild<BreadCrumbs>("overflowing")->findChild<QToolButton*>(QStringLiteral("MenuButton"));
+            ASSERT_TRUE(legacyButton != nullptr);
+            EXPECT_TRUE(legacyButton->icon().isNull());
+            EXPECT_NE(sizeText(legacyButton->iconSize()), sizeText(BreadCrumbsMenuIconSize));
+        }
+
+        // ----------------------------------------------------------------------------------
+        // MessageBox.qss:11-22, `QMessageBox QLabel#qt_msgbox_label { padding-top, -right, -bottom: 20px }` and `QMessageBox
+        // QLabel#qt_msgboxex_icon_label { padding-left, -top: 20px }`: the two labels Qt names in every message box. Over the label rule
+        // of Text.qss:89-95 (the margin of 1px above and below), and over the picker's `AzQtComponents--ColorPicker QLabel { padding: 0px;
+        // margin: 0px }` (ColorPicker.qss:45-49) where the picker is the parent of the box (ColorPicker.cpp asks its questions so).
+        // ----------------------------------------------------------------------------------
+
+        //! A frame that answers inherits() for the color picker (the class is not linked into these tests, and the matcher asks for no
+        //! more). The legacy twin names the picker's rule for its labels by QFrame instead: the same two type names
+        class ColorPickerStandIn
+            : public QFrame
+        {
+        public:
+            using QFrame::QFrame;
+
+            void* qt_metacast(const char* name) override
+            {
+                return qstrcmp(name, "AzQtComponents::ColorPicker") == 0 ? static_cast<void*>(this) : QFrame::qt_metacast(name);
+            }
+        };
+
+        QMessageBox* addMessageBox(QWidget* parent, const char* name, bool withIcon)
+        {
+            auto* box = new QMessageBox(parent);
+            box->setObjectName(QString::fromLatin1(name));
+            box->setWindowTitle(QStringLiteral("Save"));
+            box->setText(QStringLiteral("The level could not be saved."));
+            box->setStandardButtons(QMessageBox::NoButton);
+            if (withIcon)
+            {
+                box->setIconPixmap(discIcon().pixmap(QSize(32, 32)));
+            }
+            return box;
+        }
+
+        //! A message box without an icon and one with, each in a plain window and below a color picker; and a label named as the text label
+        //! of a message box but in none
+        void buildMessageBoxes(QWidget& root, bool)
+        {
+            addMessageBox(&root, "plain", false);
+            addMessageBox(&root, "iconic", true);
+            auto* picker = new ColorPickerStandIn(&root);
+            picker->setObjectName(QStringLiteral("picker"));
+            addMessageBox(picker, "pickerPlain", false);
+            addMessageBox(picker, "pickerIconic", true);
+
+            auto* holder = new QWidget(&root);
+            holder->setObjectName(QStringLiteral("holder"));
+            auto* holderLayout = new QVBoxLayout(holder);
+            auto* stray = new QLabel(QStringLiteral("Stray"), holder);
+            stray->setObjectName(QStringLiteral("qt_msgbox_label"));
+            holderLayout->addWidget(stray);
+        }
+
+        //! The boxes shown, as the application shows them but not on the screen (QMessageBox::showEvent sizes the box to its layout). The
+        //! layout of a box takes its margins and spacing from the style (QLayout, PM_Layout*Margin): the application's is Style, whose
+        //! values are 5 and 3 (Style.cpp), and the legacy twin's base is Fusion. Both twins are given Style's by hand, so that what
+        //! the boxes differ in is the labels.
+        void showMessageBoxes(QWidget& root)
+        {
+            constexpr int layoutMargin = 5;
+            constexpr int layoutSpacing = 3;
+            for (QMessageBox* box : root.findChildren<QMessageBox*>())
+            {
+                box->setAttribute(Qt::WA_DontShowOnScreen);
+                box->show();
+                box->layout()->setContentsMargins(layoutMargin, layoutMargin, layoutMargin, layoutMargin);
+                box->layout()->setSpacing(layoutSpacing);
+                // QMessageBox::setText sizes the box to its layout again
+                box->setText(box->text());
+            }
+            QApplication::processEvents();
+        }
+
+        //! A label as its paint event draws it, onto an image of an explicit device ratio, on grey
+        QImage renderedLabel(QLabel* label, qreal ratio)
+        {
+            QImage image((QSizeF(label->size()) * ratio).toSize(), QImage::Format_ARGB32_Premultiplied);
+            image.setDevicePixelRatio(ratio);
+            image.fill(QColor(0x80, 0x80, 0x80));
+            label->render(&image, QPoint(), QRegion(), QWidget::DrawChildren);
+            return image;
+        }
+
+        struct MessageBoxCase
+        {
+            const char* m_name;
+            bool m_icon;
+            QMargins m_text;                //!< the contents margins of the text label: left, top, right, bottom
+            QMargins m_iconLabel;           //!< and of the icon label
+            const char* m_element;          //!< the flat twin's element of the text label
+            const char* m_iconElement;      //!< and of the icon label
+        };
+
+        const MessageBoxCase MessageBoxCases[] = {
+            // the margin of 1px above and below (Text.qss:93-94) and the padding of the rules (MessageBox.qss:13-15, :20-21)
+            { "plain", false, QMargins(0, 21, 20, 21), QMargins(20, 21, 0, 1), "Global.Box.MessageBoxText", "Global.Box.MessageBoxIcon" },
+            { "iconic", true, QMargins(0, 21, 20, 21), QMargins(20, 21, 0, 1), "Global.Box.MessageBoxText", "Global.Box.MessageBoxIcon" },
+            // below a picker: its `margin: 0px` outranks the label rule's margin (ColorPicker.qss:48), and the padding of the message box's
+            // rules outranks its `padding: 0px` (:47)
+            { "pickerPlain", false, QMargins(0, 20, 20, 20), QMargins(20, 20, 0, 0), "Global.Box.MessageBoxTextInColorPicker",
+                "Global.Box.MessageBoxIconInColorPicker" },
+            { "pickerIconic", true, QMargins(0, 20, 20, 20), QMargins(20, 20, 0, 0), "Global.Box.MessageBoxTextInColorPicker",
+                "Global.Box.MessageBoxIconInColorPicker" },
+        };
+
+        TEST_F(AppCarrierTests, MessageBoxLabels_HaveTheBoxOfTheSheetWithAndWithoutAnIcon)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+            // the picker's elements are there to be outranked, as in the application
+            ColorPickerElements::registerGlobal();
+
+            const Replacements pickerAsFrame = { { "AzQtComponents--ColorPicker QLabel", "QFrame QLabel" } };
+            AppTwins twins(*this, buildMessageBoxes, appSheet(pickerAsFrame), QSize(100, 100), Qt::LeftToRight);
+            showMessageBoxes(twins.m_legacy);
+            showMessageBoxes(twins.m_flat);
+
+            for (const MessageBoxCase& boxCase : MessageBoxCases)
+            {
+                SCOPED_TRACE(boxCase.m_name);
+                auto* legacyBox = twins.legacyChild<QMessageBox>(boxCase.m_name);
+                auto* flatBox = twins.flatChild<QMessageBox>(boxCase.m_name);
+                ASSERT_TRUE(legacyBox != nullptr && flatBox != nullptr);
+                EXPECT_TRUE(legacyBox->isVisible());
+                EXPECT_TRUE(flatBox->isVisible());
+
+                for (const char* labelName : { "qt_msgbox_label", "qt_msgboxex_icon_label" })
+                {
+                    SCOPED_TRACE(labelName);
+                    const bool text = qstrcmp(labelName, "qt_msgbox_label") == 0;
+                    auto* legacyLabel = legacyBox->findChild<QLabel*>(QString::fromLatin1(labelName));
+                    auto* flatLabel = flatBox->findChild<QLabel*>(QString::fromLatin1(labelName));
+                    ASSERT_TRUE(legacyLabel != nullptr && flatLabel != nullptr);
+                    // a label that is hidden (the icon label of a box without an icon) is polished when asked to be
+                    legacyLabel->ensurePolished();
+                    flatLabel->ensurePolished();
+
+                    // the box of the label: its contents, and so the frame width Qt reads from them
+                    const QMargins expected = text ? boxCase.m_text : boxCase.m_iconLabel;
+                    EXPECT_EQ(marginsOf(legacyLabel), ToolTipTwins::marginsText(expected));
+                    EXPECT_EQ(marginsOf(flatLabel), marginsOf(legacyLabel));
+                    EXPECT_EQ(flatLabel->frameWidth(), legacyLabel->frameWidth());
+                    EXPECT_EQ(rectText(flatLabel->contentsRect()), rectText(legacyLabel->contentsRect()));
+
+                    // the hints that follow from it, and where the layout of the box put the label
+                    EXPECT_EQ(sizeText(flatLabel->sizeHint()), sizeText(legacyLabel->sizeHint()));
+                    EXPECT_EQ(sizeText(flatLabel->minimumSizeHint()), sizeText(legacyLabel->minimumSizeHint()));
+                    EXPECT_EQ(rectText(flatLabel->geometry()), rectText(legacyLabel->geometry()));
+                    EXPECT_EQ(flatLabel->isVisibleTo(flatBox), text || boxCase.m_icon);
+                    EXPECT_EQ(legacyLabel->isVisibleTo(legacyBox), flatLabel->isVisibleTo(flatBox));
+
+                    // the pixels of a label that is shown, at the ratios of the GUI
+                    if (legacyLabel->isVisibleTo(legacyBox))
+                    {
+                        for (const qreal ratio : AllRatios)
+                        {
+                            const QImage legacyImage = renderedLabel(legacyLabel, ratio);
+                            const QImage flatImage = renderedLabel(flatLabel, ratio);
+                            EXPECT_TRUE(isDrawnOn(legacyImage)) << "ratio " << ratio;
+                            EXPECT_EQ(differing(flatImage, legacyImage), 0)
+                                << "ratio " << ratio << ": " << firstDifference(flatImage, legacyImage);
+                        }
+                    }
+
+                    // the element of the label
+                    const BoxElement* element = BoxElement::forWidget(flatLabel);
+                    ASSERT_TRUE(element != nullptr);
+                    EXPECT_EQ(std::string(element->m_name), text ? boxCase.m_element : boxCase.m_iconElement);
+                }
+
+                // the box that follows the layout of its labels
+                EXPECT_EQ(sizeText(flatBox->size()), sizeText(legacyBox->size()));
+                EXPECT_EQ(sizeText(flatBox->sizeHint()), sizeText(legacyBox->sizeHint()));
+            }
+        }
+
+        TEST_F(AppCarrierTests, MessageBoxLabels_OnlyTheLabelsOfAMessageBoxHaveTheBox)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            AppTwins twins(*this, buildMessageBoxes, appSheet(), QSize(100, 100), Qt::LeftToRight);
+            auto* legacyStray = inHolder<QLabel>(twins.m_legacy, "qt_msgbox_label");
+            auto* flatStray = inHolder<QLabel>(twins.m_flat, "qt_msgbox_label");
+            ASSERT_TRUE(legacyStray != nullptr && flatStray != nullptr);
+
+            // a label of that name in no message box has the label rule's margin alone
+            EXPECT_EQ(marginsOf(legacyStray), ToolTipTwins::marginsText(QMargins(0, 1, 0, 1)));
+            EXPECT_EQ(marginsOf(flatStray), marginsOf(legacyStray));
+            EXPECT_TRUE(BoxElement::forWidget(flatStray) == nullptr);
+        }
+
+        TEST_F(AppCarrierTests, MessageBoxLabels_TheLegacyTwinHasTheLabelMarginAloneWithoutTheRules)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            // the witness: the application's sheet less the two rules
+            const Replacements withoutRules = {
+                { "QMessageBox QLabel#qt_msgbox_label", "QMessageBox QLabel#no_such_label" },
+                { "QMessageBox QLabel#qt_msgboxex_icon_label", "QMessageBox QLabel#no_such_icon" },
+            };
+            ASSERT_TRUE(appSheet().contains(QStringLiteral("QMessageBox QLabel#qt_msgbox_label")));
+            ASSERT_TRUE(appSheet().contains(QStringLiteral("QMessageBox QLabel#qt_msgboxex_icon_label")));
+            AppTwins twins(*this, buildMessageBoxes, appSheet(withoutRules), QSize(100, 100), Qt::LeftToRight);
+            showMessageBoxes(twins.m_legacy);
+            auto* legacyBox = twins.legacyChild<QMessageBox>("iconic");
+            ASSERT_TRUE(legacyBox != nullptr);
+            for (const char* labelName : { "qt_msgbox_label", "qt_msgboxex_icon_label" })
+            {
+                auto* label = legacyBox->findChild<QLabel*>(QString::fromLatin1(labelName));
+                ASSERT_TRUE(label != nullptr);
+                EXPECT_EQ(marginsOf(label), ToolTipTwins::marginsText(QMargins(0, 1, 0, 1))) << labelName;
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // Slider.qss:10-20, `AzQtComponents--Slider.HorizontalSlider { qproperty-toolTipOffsetX: -8; qproperty-toolTipOffsetY: -16 }` and
+        // `AzQtComponents--Slider.VerticalSlider { qproperty-toolTipOffsetX: 8; qproperty-toolTipOffsetY: -24 }`: the offset of the tip
+        // of a slider's value from where the Config puts it (SliderConfig.ini: (-8, -16) and (8, -24)), which Slider::ShowValueToolTip adds
+        // ----------------------------------------------------------------------------------
+
+        //! Two sliders of each orientation, one for each class that derives from Slider. The legacy twin has not the style that gives a
+        //! slider its class (Slider::polish, Slider.cpp:495-519): its sliders have the classes by hand
+        void buildSliders(QWidget& root, bool flat)
+        {
+            auto* layout = new QGridLayout(&root);
+            const auto add = [&](Slider* slider, const char* name, Qt::Orientation orientation, int row, int column)
+            {
+                slider->setObjectName(QString::fromLatin1(name));
+                if (!flat)
+                {
+                    const bool horizontal = orientation == Qt::Horizontal;
+                    slider->setProperty("class", horizontal ? QStringLiteral("HorizontalSlider") : QStringLiteral("VerticalSlider"));
+                }
+                layout->addWidget(slider, row, column);
+            };
+            add(new SliderInt(Qt::Horizontal, &root), "horizontalInt", Qt::Horizontal, 0, 0);
+            add(new SliderDouble(Qt::Horizontal, &root), "horizontalDouble", Qt::Horizontal, 0, 1);
+            add(new SliderInt(Qt::Vertical, &root), "verticalInt", Qt::Vertical, 1, 0);
+            add(new SliderDouble(Qt::Vertical, &root), "verticalDouble", Qt::Vertical, 1, 1);
+        }
+
+        struct SliderCase
+        {
+            const char* m_name;
+            QPoint m_offset;
+            const char* m_element;
+        };
+
+        const SliderCase SliderCases[] = {
+            { "horizontalInt", QPoint(-8, -16), "Global.Box.HorizontalSliderToolTip" },         // Slider.qss:12-13
+            { "horizontalDouble", QPoint(-8, -16), "Global.Box.HorizontalSliderToolTip" },
+            { "verticalInt", QPoint(8, -24), "Global.Box.VerticalSliderToolTip" },              // Slider.qss:18-19
+            { "verticalDouble", QPoint(8, -24), "Global.Box.VerticalSliderToolTip" },
+        };
+
+        TEST_F(AppCarrierTests, Slider_ToolTipOffsetsAreThoseOfTheSheet)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            AppTwins twins(*this, buildSliders, appSheet(), QSize(200, 200), Qt::LeftToRight);
+            for (const SliderCase& sliderCase : SliderCases)
+            {
+                SCOPED_TRACE(sliderCase.m_name);
+                auto* legacy = twins.legacyChild<Slider>(sliderCase.m_name);
+                auto* flat = twins.flatChild<Slider>(sliderCase.m_name);
+                ASSERT_TRUE(legacy != nullptr && flat != nullptr);
+                EXPECT_EQ(legacy->toolTipOffset(), sliderCase.m_offset);
+                EXPECT_EQ(flat->toolTipOffset(), sliderCase.m_offset) << flat->toolTipOffsetX() << ", " << flat->toolTipOffsetY();
+                ASSERT_TRUE(BoxElement::forWidget(flat) != nullptr);
+                EXPECT_EQ(std::string(BoxElement::forWidget(flat)->m_name), sliderCase.m_element);
+            }
+        }
+
+        TEST_F(AppCarrierTests, Slider_TheSliderInsideIsNotReached)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            AppTwins twins(*this, buildSliders, appSheet(), QSize(200, 200), Qt::LeftToRight);
+            // the rules name AzQtComponents::Slider: the QSlider that draws it carries the same class, and has no such property
+            auto* flat = twins.flatChild<Slider>("horizontalInt");
+            ASSERT_TRUE(flat != nullptr);
+            auto* inner = flat->findChild<QSlider*>();
+            ASSERT_TRUE(inner != nullptr);
+            EXPECT_TRUE(Style::hasClass(inner, QStringLiteral("HorizontalSlider")));
+            EXPECT_TRUE(BoxElement::forWidget(inner) == nullptr);
+            EXPECT_FALSE(inner->property("toolTipOffsetX").isValid());
+        }
+
+        TEST_F(AppCarrierTests, Slider_TheLegacyTwinHasNoOffsetWithoutTheRules)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            // the witness: the application's sheet less the two rules
+            const Replacements withoutRules = {
+                { "AzQtComponents--Slider.HorizontalSlider", "AzQtComponents--Slider.NoSuchSlider" },
+                { "AzQtComponents--Slider.VerticalSlider", "AzQtComponents--Slider.NoSuchSlider" },
+            };
+            ASSERT_TRUE(appSheet().contains(QStringLiteral("AzQtComponents--Slider.HorizontalSlider")));
+            AppTwins twins(*this, buildSliders, appSheet(withoutRules), QSize(200, 200), Qt::LeftToRight);
+            for (const SliderCase& sliderCase : SliderCases)
+            {
+                EXPECT_EQ(twins.legacyChild<Slider>(sliderCase.m_name)->toolTipOffset(), QPoint()) << sliderCase.m_name;
+            }
+        }
+
+        TEST_F(AppCarrierTests, Slider_TheClassIsKnownWhenTheElementIsResolvedAtPolish)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            const FlatRungScope rung;
+
+            // Slider::polish tags the slider with its orientation inside Style::polish, and the element is resolved at the end of it
+            QWidget root;
+            root.setStyle(m_style.get());
+            for (const Qt::Orientation orientation : { Qt::Horizontal, Qt::Vertical })
+            {
+                auto* slider = new SliderInt(orientation, &root);
+                slider->setStyle(m_style.get());
+                EXPECT_EQ(slider->toolTipOffset(), QPoint());
+                EXPECT_TRUE(BoxElement::forWidget(slider) == nullptr);
+
+                slider->ensurePolished();
+                const bool horizontal = orientation == Qt::Horizontal;
+                EXPECT_TRUE(Style::hasClass(slider, horizontal ? QStringLiteral("HorizontalSlider") : QStringLiteral("VerticalSlider")));
+                EXPECT_EQ(slider->toolTipOffset(), horizontal ? QPoint(-8, -16) : QPoint(8, -24));
+            }
+        }
+
+        //! Where the tip of the value of a slider is shown while it is dragged: the value changes with the slider held
+        //! (Slider::sliderIsInMoving) and the slider asks QToolTip for the tip at the point it works out (Slider::ShowValueToolTip).
+        //! None: no tip was shown.
+        std::optional<QPoint> draggedTipPosition(SliderInt* slider)
+        {
+            QToolTip::hideText();
+            slider->sliderIsInMoving(true);
+            slider->setValue(slider->value() == 5 ? 6 : 5);
+            slider->sliderIsInMoving(false);
+
+            std::optional<QPoint> position;
+            if (QLabel* tip = ToolTipTwins::findTip())
+            {
+                position = tip->pos();
+                delete tip;
+            }
+            return position;
+        }
+
+        TEST_F(AppCarrierTests, Slider_TheToolTipIsShownWhereTheSheetPutsIt)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            // The pointer is where the tip is placed from (Slider::showHoverToolTip): it is put well inside the screen, so that the
+            // screen's edge moves no tip. Only the screen of the offscreen platform is the test's to move.
+            if (QGuiApplication::platformName() != QLatin1String("offscreen"))
+            {
+                GTEST_SKIP() << "the pointer of a screen is not the test's to move";
+            }
+            const FlatRungScope rung;
+            const ToolTipTwins::Guard tipGuard;
+
+            QCursor::setPos(QPoint(300, 300));
+            if (QCursor::pos() != QPoint(300, 300))
+            {
+                GTEST_SKIP() << "the platform keeps no pointer position";
+            }
+
+            AppTwins twins(*this, buildSliders, appSheet(), QSize(200, 200), Qt::LeftToRight);
+            twins.m_legacy.move(60, 100);
+            twins.m_flat.move(60, 100);
+            QApplication::processEvents();
+
+            // a slider of each orientation, the first and the third of the cases (the SliderInt of each)
+            for (const SliderCase* sliderCase : { &SliderCases[0], &SliderCases[2] })
+            {
+                SCOPED_TRACE(sliderCase->m_name);
+                auto* legacy = twins.legacyChild<SliderInt>(sliderCase->m_name);
+                auto* flat = twins.flatChild<SliderInt>(sliderCase->m_name);
+                ASSERT_TRUE(legacy != nullptr && flat != nullptr);
+                const QPoint offset = sliderCase->m_offset;
+                ASSERT_EQ(legacy->toolTipOffset(), offset);
+                ASSERT_EQ(flat->toolTipOffset(), offset);
+
+                // The sliders of the twins are as large as their base styles make them, and the tip is placed from the slider's edge
+                // and the pointer: what is compared is how far the sheet's offset moves the tip. The same slider with the offset a
+                // slider has of itself (none) shows the tip that much nearer to the pointer and the slider.
+                for (SliderInt* slider : { legacy, flat })
+                {
+                    SCOPED_TRACE(slider == legacy ? "legacy" : "flat");
+                    const std::optional<QPoint> tip = draggedTipPosition(slider);
+                    slider->setToolTipOffset(QPoint());
+                    const std::optional<QPoint> bareTip = draggedTipPosition(slider);
+                    slider->setToolTipOffset(offset);
+                    ASSERT_TRUE(tip.has_value() && bareTip.has_value());
+                    EXPECT_EQ(tip->x() - bareTip->x(), offset.x());
+                    EXPECT_EQ(tip->y() - bareTip->y(), offset.y());
                 }
             }
         }

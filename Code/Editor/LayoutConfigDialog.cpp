@@ -79,6 +79,7 @@ CLayoutConfigDialog::CLayoutConfigDialog(QWidget* pParent /*=nullptr*/)
 
     ui->m_layouts->setModel(m_model);
 
+    // Abandoned: no menu of the Editor reaches this dialog, so it has no flattened element (the flattened GUI sets no sheet here)
     AzQtComponents::StyleManager::setStyleSheet(ui->m_layouts, "style:LayoutConfigDialog.qss");
 
     connect(ui->m_buttonBox, &QDialogButtonBox::accepted, this, &CLayoutConfigDialog::OnOK);

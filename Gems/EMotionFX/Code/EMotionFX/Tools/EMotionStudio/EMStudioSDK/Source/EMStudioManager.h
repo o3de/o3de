@@ -88,6 +88,9 @@ namespace EMStudio
 
         void SetWidgetAsInvalidInput(QWidget* widget);
 
+        //! Takes the states of an input field away: a valid text clears the sheet the field had (an invalid input's, or a disabled track's)
+        void SetWidgetAsValidInput(QWidget* widget);
+
         static void MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width = 20, uint32 height = 20);
         static void MakeTransparentButton(QPushButton* button, const char* iconFileName, const char* toolTipText, uint32 width = 20, uint32 height = 20);
         static void MakeTransparentMenuButton(QPushButton* button, const char* iconFileName, const char* toolTipText, uint32 width = 30, uint32 height = 20);

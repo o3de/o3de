@@ -11,9 +11,23 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <QColor>
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Suggestion Colours
+    // =======================================================================
+
+    //! The colours of a suggestion in the asset completer popup, written into its HTML text: the text, and the background of the
+    //! highlighted match. A named namespace, not an anonymous one: a unity build joins files into one translation unit, where
+    //! anonymous namespaces merge.
+    namespace AssetCompleterModelFlatInternal
+    {
+        constexpr QColor SuggestionText(0xFF, 0xFF, 0xFF);    // AssetCompleterModel.cpp:105. TOKENIZE: AssetCompleterSuggestionText
+        constexpr QColor MatchBackground(0x49, 0x8F, 0xE1);   // AssetCompleterModel.cpp:106. TOKENIZE: AssetCompleterMatchBackground
+    }
+
     AssetCompleterModel::AssetCompleterModel(QObject* parent) 
         : QAbstractTableModel(parent)
     {
@@ -102,8 +116,13 @@ namespace AzToolsFramework
                 }
                                 
                 QString displayString = QString(m_assets[index.row()].m_displayName.data());
-                return  "<span style=\"color: #fff;\">" + 
-                            displayString.replace(m_highlightString, "<span style=\"background-color: #498FE1\">" + m_highlightString + "</span>", Qt::CaseInsensitive) + 
+                return QStringLiteral("<span style=\"color: %1;\">").arg(AssetCompleterModelFlatInternal::SuggestionText.name()) +
+                            displayString.replace(
+                                m_highlightString,
+                                QStringLiteral("<span style=\"background-color: %1\">")
+                                    .arg(AssetCompleterModelFlatInternal::MatchBackground.name().toUpper()) +
+                                    m_highlightString + "</span>",
+                                Qt::CaseInsensitive) +
                         "</span>";
             }
 

@@ -6,22 +6,56 @@
  *
  */
 
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 
 #include <QBitmap>
+#include <QLayout>
 #include <QPainter>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
+    // ----------------------------------------------------------------------------------
+    // Flattened GUI: the switcher's spacing
+    //
+    // The legacy GUI sets the sheet below in the constructor, and ViewportUiDisplay replaces it with `QToolBar { border: none; }` as it
+    // takes the switcher (PrepareWidgetForViewportUi), before the switcher is polished. The toolbar's layout read its spacing when
+    // the first sheet was set, and a widget that is not polished is not told its style changed again (QWidget::setStyleSheet), so
+    // the layout keeps the 3px of the first sheet: the switcher of the captured legacy Editor has a layout spacing of 3 where a
+    // cluster has 12 (m3 Editor 01_main_window, qss). The flattened GUI sets no sheet and gives the layout that spacing itself. The
+    // second rule of the sheet (the black buttons) reaches no button of a switcher the viewport UI builds: the switcher is made with
+    // an empty button group, and its tool buttons are made and polished after the second sheet is set (the captured button is 86 x 19,
+    // which a padding of 7px and a border of 2px would make larger).
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace ViewportUiSwitcherFlatInternal
+    {
+        //! The spacing between the switcher's items: `spacing: 3px` of the sheet the ViewportUiSwitcher constructor sets in the legacy
+        //! GUI. TOKENIZE: ViewportUiSwitcherItemSpacing
+        constexpr int ItemSpacing = 3;
+
+        //! The colour the switcher's button icons are recoloured to (RemoveIconColor: the icon's shape filled with it, SourceIn).
+        //! ViewportUiSwitcher.cpp:86. TOKENIZE: ViewportUiSwitcherIconColor
+        const QColor IconColor(Qt::white);
+    } // namespace ViewportUiSwitcherFlatInternal
+
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : m_buttonGroup(buttonGroup)
     {
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-        setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
-                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
-                              "border-width: 2px; padding: 7px; color: white;}"));
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            this,
+            QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
+                    "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
+                    "border-width: 2px; padding: 7px; color: white;}"));
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            layout()->setSpacing(ViewportUiSwitcherFlatInternal::ItemSpacing);
+        }
 
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
@@ -53,7 +87,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         painter.begin(&buttonPixmap);
         painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-        painter.fillRect(buttonPixmap.rect(), Qt::white);
+        painter.fillRect(buttonPixmap.rect(), ViewportUiSwitcherFlatInternal::IconColor);
         painter.end();
 
         return buttonPixmap;

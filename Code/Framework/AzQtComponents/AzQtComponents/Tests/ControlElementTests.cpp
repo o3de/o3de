@@ -16,6 +16,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Titlebar.h>
+#include <AzQtComponents/Tests/FieldTwins.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -26,8 +27,10 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QImage>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
 #include <QSpinBox>
@@ -40,7 +43,9 @@
 #include <QVBoxLayout>
 
 #include <algorithm>
+#include <cmath>
 #include <initializer_list>
+#include <string>
 
 namespace AzQtComponents
 {
@@ -225,6 +230,25 @@ namespace AzQtComponents
                 for (int x = 0; x < a.width(); ++x)
                 {
                     count += (a.pixel(x, y) != b.pixel(x, y)) ? 1 : 0;
+                }
+            }
+            return count;
+        }
+
+        //! How many pixels of two images differ, but those in the square of `corner` pixels at each of the four corners of the image
+        int differingOutsideCorners(const QImage& a, const QImage& b, int corner)
+        {
+            if (a.size() != b.size())
+            {
+                return a.width() * a.height();
+            }
+            int count = 0;
+            for (int y = 0; y < a.height(); ++y)
+            {
+                for (int x = 0; x < a.width(); ++x)
+                {
+                    const bool inCorner = (x < corner || x >= a.width() - corner) && (y < corner || y >= a.height() - corner);
+                    count += (!inCorner && a.pixel(x, y) != b.pixel(x, y)) ? 1 : 0;
                 }
             }
             return count;
@@ -839,6 +863,167 @@ namespace AzQtComponents
         }
 
         // ----------------------------------------------------------------------------------
+        // T-CHIP: the chips of a search field (FilteredSearchWidget.qss:26-35 the criteria, :68-77 the selected count, :79-88 the text
+        // filter): the three have one box, a rounded fill with a line around it. The count's chip had no box in the flattened GUI (Native
+        // Editor, the Asset Browser's '0 Selected.'): the paint covered the other two.
+        // ----------------------------------------------------------------------------------
+
+        // FilteredSearchWidget.qss:26-35, :68-77, :79-88, and Text.qss:89-95: the rule of every label, which the label of the selected
+        // count has alone (no rule of the chips reaches it)
+        const char* const ChipRules =
+            "AzQtComponents--FilterCriteriaButton { padding: 0px; border-radius: 2px; border: 1px solid #808080;"
+            " background-color: rgb(46, 46, 46); min-height: 22px; max-height: 22px; }"
+            "AzQtComponents--SelectionCountButton { padding: 0px; border-radius: 2px; border: 1px solid #808080;"
+            " background-color: rgb(46, 46, 46); min-height: 22px; max-height: 22px; }"
+            "AzQtComponents--FilterTextButton { padding: 0px; border-radius: 2px; border: 1px solid #808080;"
+            " background-color: rgb(46, 46, 46); min-height: 22px; max-height: 22px; }"
+            "QLabel { font-family: \"Open Sans\"; font-size: 12px; margin-top: 1px; margin-bottom: 1px; }";
+
+        enum class ChipKind
+        {
+            Criteria,
+            TextFilter,
+            SelectionCount,
+        };
+
+        //! A chip of a kind in a row of its own, 120 wide (its width in a search field is its layout's)
+        void buildChip(QWidget& root, ChipKind kind)
+        {
+            QHBoxLayout* layout = new QHBoxLayout(&root);
+            layout->setContentsMargins(0, 0, 0, 0);
+            QFrame* chip = nullptr;
+            switch (kind)
+            {
+            case ChipKind::Criteria:
+                chip = new FilterCriteriaButton(QStringLiteral("Tag"), &root);
+                break;
+            case ChipKind::TextFilter:
+                chip = new FilterTextButton(QStringLiteral("Tag"), &root);
+                break;
+            case ChipKind::SelectionCount:
+                chip = new SelectionCountButton(&root);
+                break;
+            }
+            chip->setObjectName(QStringLiteral("chip"));
+            chip->setFixedWidth(120);
+            layout->addWidget(chip, 0, Qt::AlignLeft | Qt::AlignTop);
+        }
+
+        //! A chip as its paint event paints it: its styled background where it has one (PE_Widget, QWidgetPrivate::paintBackground), then
+        //! its frame (CE_ShapedFrame, QFrame::paintEvent), onto an image of an explicit device ratio
+        QImage drawChipFrame(const QFrame* chip, qreal ratio)
+        {
+            QImage image = newImage(chip->size(), ratio, QColor(0x44, 0x44, 0x44));
+            QPainter painter(&image);
+            if (chip->testAttribute(Qt::WA_StyledBackground))
+            {
+                QStyleOption background;
+                background.initFrom(chip);
+                chip->style()->drawPrimitive(QStyle::PE_Widget, &background, &painter, chip);
+            }
+            QStyleOptionFrame option;
+            option.initFrom(chip);
+            option.frameShape = chip->frameShape();
+            option.lineWidth = chip->lineWidth();
+            option.midLineWidth = chip->midLineWidth();
+            chip->style()->drawControl(QStyle::CE_ShapedFrame, &option, &painter, chip);
+            return image;
+        }
+
+        TEST_F(ControlElementTests, Chips_EveryChipIsTheRulesFillAndLineAtEveryRatio)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            const QColor fill(46, 46, 46);          // FilteredSearchWidget.qss:31, :73, :84
+            const QColor line(0x80, 0x80, 0x80);    // FilteredSearchWidget.qss:30, :72, :83
+            const int radius = 2;                   // FilteredSearchWidget.qss:29, :71, :82
+            for (const ChipKind kind : { ChipKind::Criteria, ChipKind::TextFilter, ChipKind::SelectionCount })
+            {
+                Twins<QWidget> twins(*this, [&](QWidget& root) { buildChip(root, kind); }, QString::fromUtf8(ChipRules), QSize(200, 40));
+                const QFrame* legacyChip = twins.legacyChild<QFrame>("chip");
+                const QFrame* flatChip = twins.flatChild<QFrame>("chip");
+                ASSERT_TRUE(legacyChip != nullptr && flatChip != nullptr) << static_cast<int>(kind);
+
+                // The Native numbers (n3 Editor, 07_main_window_final, the count: [5, 1067, 73, 24] in both dumps): 24 high, a line of 1px.
+                // The 24 is the constructors' fixed height of the flat rung (FilteredSearchWidget.cpp), which this process builds the
+                // legacy twin with too: the line is proved by the contents box (the next test), not by the height.
+                EXPECT_EQ(legacyChip->height(), 24) << static_cast<int>(kind);
+                EXPECT_EQ(flatChip->size(), legacyChip->size()) << static_cast<int>(kind);
+
+                for (const qreal ratio : { 1.0, 1.5, 2.0 })
+                {
+                    const QImage legacyImage = drawChipFrame(legacyChip, ratio);
+                    const QImage flatImage = drawChipFrame(flatChip, ratio);
+                    const std::string where = "kind " + std::to_string(static_cast<int>(kind)) + " at ratio " + std::to_string(ratio);
+
+                    // Something was drawn: the middle of the chip is the fill in the legacy twin, which the pixels then have to agree on
+                    EXPECT_EQ(legacyImage.pixelColor(QPoint(static_cast<int>(60 * ratio), static_cast<int>(12 * ratio))), fill) << where;
+                    if (kind == ChipKind::SelectionCount)
+                    {
+                        // The count's chip is drawn as the rule draws it (BoxElement::drawFrame): every pixel is the sheet's
+                        EXPECT_EQ(differing(legacyImage, flatImage), 0)
+                            << where << ": " << FieldTwins::firstDifference(flatImage, legacyImage);
+                    }
+                    else
+                    {
+                        // The other two keep the stroked paint they had (Style.cpp, CE_ShapedFrame): the fill, the straight edges and
+                        // everything but the four corner squares (the radius and one more logical pixel, where the stroke and the border
+                        // of the sheet anti-alias differently) are the sheet's. The corner pixels are recorded, not asserted: whether to
+                        // move these chips to the count's paint is the user's decision, with this number.
+                        const int corner = static_cast<int>(std::ceil((radius + 1) * ratio));
+                        const int outside = differingOutsideCorners(legacyImage, flatImage, corner);
+                        EXPECT_EQ(outside, 0) << where << ": " << FieldTwins::firstDifference(flatImage, legacyImage);
+                        RecordProperty("ChipCornerPixels_Kind" + std::to_string(static_cast<int>(kind)) + "_Ratio"
+                                + std::to_string(static_cast<int>(ratio * 10)),
+                            differing(legacyImage, flatImage) - outside);
+                    }
+                    if (ratio == 1.0)
+                    {
+                        EXPECT_EQ(flatImage.pixelColor(QPoint(60, 0)), line) << static_cast<int>(kind);
+                        EXPECT_EQ(flatImage.pixelColor(QPoint(60, 12)), fill) << static_cast<int>(kind);
+                    }
+                }
+            }
+        }
+
+        TEST_F(ControlElementTests, Chips_TheContentsBoxIsTheLineAroundTheChipAndTheLabelOfTheCountKeepsTheLabelRulesBox)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            for (const ChipKind kind : { ChipKind::Criteria, ChipKind::TextFilter, ChipKind::SelectionCount })
+            {
+                Twins<QWidget> twins(*this, [&](QWidget& root) { buildChip(root, kind); }, QString::fromUtf8(ChipRules), QSize(200, 40));
+                const QFrame* legacyChip = twins.legacyChild<QFrame>("chip");
+                const QFrame* flatChip = twins.flatChild<QFrame>("chip");
+                ASSERT_TRUE(legacyChip != nullptr && flatChip != nullptr) << static_cast<int>(kind);
+
+                // The Native numbers (n3, the count): contents [1, 1, 1, 1], a frame 1 wide; the 24 of the chip are a content of 22 and
+                // the line
+                EXPECT_TRUE(legacyChip->contentsMargins() == QMargins(1, 1, 1, 1)) << static_cast<int>(kind);
+                EXPECT_TRUE(flatChip->contentsMargins() == legacyChip->contentsMargins()) << static_cast<int>(kind);
+                EXPECT_EQ(flatChip->frameWidth(), legacyChip->frameWidth()) << static_cast<int>(kind);
+                EXPECT_EQ(flatChip->contentsRect(), legacyChip->contentsRect()) << static_cast<int>(kind);
+                EXPECT_EQ(flatChip->minimumSize(), legacyChip->minimumSize()) << static_cast<int>(kind);
+                EXPECT_EQ(flatChip->maximumSize(), legacyChip->maximumSize()) << static_cast<int>(kind);
+
+                if (kind == ChipKind::SelectionCount)
+                {
+                    // (the labels of the other two have rules of their own in the sheet, which this test leaves out)
+                    EXPECT_EQ(flatChip->sizeHint(), legacyChip->sizeHint());
+                    // No rule of the chips reaches the label of the count, so it has the box of every label (Text.qss:93-94, contents
+                    // [0, 1, 0, 1] in both Native dumps) and sits where the layout of the chip puts it
+                    const QLabel* legacyLabel = legacyChip->findChild<QLabel*>(QStringLiteral("tagText"));
+                    const QLabel* flatLabel = flatChip->findChild<QLabel*>(QStringLiteral("tagText"));
+                    ASSERT_TRUE(legacyLabel != nullptr && flatLabel != nullptr);
+                    EXPECT_TRUE(legacyLabel->contentsMargins() == QMargins(0, 1, 0, 1));
+                    EXPECT_TRUE(flatLabel->contentsMargins() == legacyLabel->contentsMargins());
+                    EXPECT_EQ(flatLabel->geometry(), legacyLabel->geometry());
+                    EXPECT_EQ(flatLabel->sizeHint(), legacyLabel->sizeHint());
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
         // T-SPN: the spin box (SpinBox.qss over BaseStyleSheet.qss:68-84, VectorInput.qss:18-35, ColorPicker.qss:66-81)
         // ----------------------------------------------------------------------------------
 
@@ -978,6 +1163,19 @@ namespace AzQtComponents
             painter.setClipRect(option.rect);
             spinBox->style()->drawComplexControl(QStyle::CC_SpinBox, &option, &painter, spinBox);
             return image;
+        }
+
+        //! The option QAbstractSpinBox::initStyleOption gives its style, in a state
+        QStyleOptionSpinBox spinBoxOption(const QAbstractSpinBox* spinBox, QStyle::State state, QAbstractSpinBox::ButtonSymbols symbols)
+        {
+            QStyleOptionSpinBox option;
+            option.initFrom(spinBox);
+            option.state = state;
+            option.rect = spinBox->rect();
+            option.buttonSymbols = symbols;
+            option.subControls = QStyle::SC_All;
+            option.frame = true;
+            return option;
         }
 
         //! The properties of a spin box are set before the style polishes it: the watcher of the flattened Style re-polishes a spin box
@@ -1244,7 +1442,618 @@ namespace AzQtComponents
                     EXPECT_EQ(flatBox->sizeHint(), legacyBox->sizeHint()) << qPrintable(what);
                     EXPECT_EQ(flatBox->minimumSizeHint(), legacyBox->minimumSizeHint()) << qPrintable(what);
                     EXPECT_EQ(flatBox->sizeHint().height(), 23) << qPrintable(what);
-                    EXPECT_EQ(SpinBoxElement::extraSize(flatBox), QSize(place.m_extra, 4)) << qPrintable(what);
+                    const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, QStyle::State_Enabled, QAbstractSpinBox::UpDownArrows);
+                    EXPECT_EQ(SpinBoxElement::extraSize(&flatOption, flatBox), QSize(place.m_extra, 4)) << qPrintable(what);
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T-SPN.B: the buttons of a spin box in a color picker. ColorPicker.qss:74-81 `width: 0px` over SpinBox.qss:81-82 leaves each
+        // button its height, its position and its inset and no width: QStyleSheetStyle::subControlRect returns the position rect, a
+        // zero-wide rect that is not valid and holds no point, so QCommonStyle::hitTestComplexControl finds the frame where the base
+        // style's 14px buttons were, and a press there drags the field (SpinBoxWatcher, QEvent::MouseButtonPress) in place of
+        // stepping it (QAbstractSpinBox::mousePressEvent).
+        // ----------------------------------------------------------------------------------
+
+        TEST_F(ControlElementTests, SpinBoxButtons_RuleOfTheColorPickerIsTheSheetsAndTheTwinsQuoteIt)
+        {
+            // ColorPicker.qss:74-81, as the real sheet has it
+            const char* const rule =
+                "AzQtComponents--ColorPicker QSpinBox::down-button,\n"
+                "AzQtComponents--ColorPicker QSpinBox::up-button,\n"
+                "AzQtComponents--ColorPicker QDoubleSpinBox::down-button,\n"
+                "AzQtComponents--ColorPicker QDoubleSpinBox::up-button\n"
+                "{\n"
+                "    width: 0px;\n"
+                "    border-style: none;\n"
+                "}\n";
+            EXPECT_TRUE(FieldTwins::appSheet().contains(QString::fromLatin1(rule)));
+
+            // The geometry the zero-wide rect keeps, as the real sheet has it: the height (SpinBox.qss:76-83) and the position and the
+            // inset of each button (SpinBox.qss:85-91 down, :93-99 up), which SpinBoxElement::buttonRect restates
+            const char* const sizeRule =
+                "QSpinBox::up-button,\n"
+                "QDoubleSpinBox::up-button,\n"
+                "QSpinBox::down-button,\n"
+                "QDoubleSpinBox::down-button\n"
+                "{\n"
+                "    width: 6px;\n"
+                "    height: 10px;\n"
+                "}\n";
+            const char* const downRule =
+                "QSpinBox::down-button,\n"
+                "QDoubleSpinBox::down-button\n"
+                "{\n"
+                "    right: 8px;\n"
+                "    subcontrol-position: right center;\n"
+                "    image: url(:/SpinBox/arrowLeftHover.svg);\n"
+                "}\n";
+            const char* const upRule =
+                "QSpinBox::up-button,\n"
+                "QDoubleSpinBox::up-button\n"
+                "{\n"
+                "    right: 2px;\n"
+                "    subcontrol-position: right center;\n"
+                "    image: url(:/SpinBox/arrowRightHover.svg);\n"
+                "}\n";
+            EXPECT_TRUE(FieldTwins::appSheet().contains(QString::fromLatin1(sizeRule)));
+            EXPECT_TRUE(FieldTwins::appSheet().contains(QString::fromLatin1(downRule)));
+            EXPECT_TRUE(FieldTwins::appSheet().contains(QString::fromLatin1(upRule)));
+
+            // The twins' sheet has it with the stand-in for the picker, and SpinBox.qss:81-82 under it
+            EXPECT_TRUE(QString::fromUtf8(SpinBoxRules).contains(QStringLiteral(
+                "QGroupBox QSpinBox::down-button, QGroupBox QSpinBox::up-button, QGroupBox QDoubleSpinBox::down-button,"
+                " QGroupBox QDoubleSpinBox::up-button { width: 0px; border-style: none; }")));
+            EXPECT_TRUE(QString::fromUtf8(SpinBoxRules).contains(QStringLiteral(
+                "QSpinBox::up-button, QDoubleSpinBox::up-button, QSpinBox::down-button, QDoubleSpinBox::down-button"
+                " { width: 6px; height: 10px; }")));
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_OfAColorPickerAreTheZeroWideRectsOfTheSheet)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            const QStyle::State enabled = QStyle::State_Enabled;
+            const struct { const char* m_name; QStyle::State m_state; } states[] = {
+                { "rest", enabled },
+                { "disabled", QStyle::State_None },
+                { "hover", enabled | QStyle::State_MouseOver },
+                { "focus", enabled | QStyle::State_HasFocus },
+                { "hover and focus", enabled | QStyle::State_MouseOver | QStyle::State_HasFocus },
+            };
+            for (const bool doubleBox : { false, true })
+            {
+                for (const bool error : { false, true })
+                {
+                    Twins<QWidget> twins(*this, [&](QWidget& root)
+                    {
+                        presetProperties(buildSpinBox(root, SpinContext::ColorPicker, doubleBox), error, {});
+                    }, QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                    const QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                    const QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                    for (const auto& state : states)
+                    {
+                        using Symbols = QAbstractSpinBox::ButtonSymbols;
+                        for (const Symbols symbols : { QAbstractSpinBox::UpDownArrows, QAbstractSpinBox::NoButtons })
+                        {
+                            const QStyleOptionSpinBox legacyOption = spinBoxOption(legacyBox, state.m_state, symbols);
+                            const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, state.m_state, symbols);
+                            for (const QStyle::SubControl control : { QStyle::SC_SpinBoxUp, QStyle::SC_SpinBoxDown })
+                            {
+                                const QStyle* legacyStyle = legacyBox->style();
+                                const QStyle* flatStyle = flatBox->style();
+                                const QRect legacyRect = legacyStyle->subControlRect(QStyle::CC_SpinBox, &legacyOption, control, legacyBox);
+                                const QRect flatRect = flatStyle->subControlRect(QStyle::CC_SpinBox, &flatOption, control, flatBox);
+                                const QString what = QStringLiteral("%1 %2 spin box, %3, %4, %5").arg(
+                                    doubleBox ? QStringLiteral("double") : QStringLiteral("int"),
+                                    error ? QStringLiteral("error") : QStringLiteral("plain"),
+                                    QString::fromLatin1(state.m_name),
+                                    symbols == QAbstractSpinBox::NoButtons ? QStringLiteral("no buttons") : QStringLiteral("buttons"),
+                                    control == QStyle::SC_SpinBoxUp ? QStringLiteral("up") : QStringLiteral("down"));
+
+                                EXPECT_EQ(FieldTwins::rectText(flatRect), FieldTwins::rectText(legacyRect)) << qPrintable(what);
+                                EXPECT_EQ(flatRect.width(), 0) << qPrintable(what);
+                                EXPECT_EQ(flatRect.height(), 10) << qPrintable(what);       // SpinBox.qss:82
+                                EXPECT_FALSE(flatRect.isValid()) << qPrintable(what);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_OfAColorPickerHoldNoPointSoNoPointHitsAButton)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            for (const bool doubleBox : { false, true })
+            {
+                Twins<QWidget> twins(*this, [&](QWidget& root)
+                {
+                    presetProperties(buildSpinBox(root, SpinContext::ColorPicker, doubleBox), false, {});
+                    presetProperties(buildSpinBox(root, SpinContext::Plain, doubleBox), false, {});
+                }, QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                // buildSpinBox names both boxes "spin": the picker's is the one inside the QGroupBox
+                const auto inPicker = [](const QWidget& root, bool picker)
+                {
+                    for (QAbstractSpinBox* box : root.findChildren<QAbstractSpinBox*>())
+                    {
+                        if ((box->parentWidget()->inherits("QGroupBox")) == picker)
+                        {
+                            return box;
+                        }
+                    }
+                    return static_cast<QAbstractSpinBox*>(nullptr);
+                };
+                const QAbstractSpinBox* legacyBox = inPicker(twins.m_legacy, true);
+                const QAbstractSpinBox* flatBox = inPicker(twins.m_flat, true);
+                const QAbstractSpinBox* plainBox = inPicker(twins.m_flat, false);
+                ASSERT_TRUE(legacyBox != nullptr && flatBox != nullptr && plainBox != nullptr);
+
+                const QStyleOptionSpinBox legacyOption = spinBoxOption(legacyBox, QStyle::State_Enabled, QAbstractSpinBox::UpDownArrows);
+                const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, QStyle::State_Enabled, QAbstractSpinBox::UpDownArrows);
+                const QStyleOptionSpinBox plainOption = spinBoxOption(plainBox, QStyle::State_Enabled, QAbstractSpinBox::UpDownArrows);
+
+                // Every point of the box inside its margin: the part of the box the sheet's frame covers, and so the hit it finds
+                int buttons = 0;
+                for (int y = 2; y < flatBox->height() - 2; ++y)
+                {
+                    for (int x = 2; x < flatBox->width() - 2; ++x)
+                    {
+                        const QPoint at(x, y);
+                        const QStyle::SubControl legacyHit =
+                            legacyBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &legacyOption, at, legacyBox);
+                        const QStyle::SubControl flatHit =
+                            flatBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &flatOption, at, flatBox);
+                        EXPECT_EQ(int(flatHit), int(legacyHit)) << x << ", " << y;
+                        buttons += (flatHit == QStyle::SC_SpinBoxUp || flatHit == QStyle::SC_SpinBoxDown) ? 1 : 0;
+                    }
+                }
+                EXPECT_EQ(buttons, 0);
+
+                // A spin box outside a picker has the glyph boxes of SpinBox.qss:76-99, the up one at x 110 and the down one at x 104 in
+                // a box 120 wide (T-SPN.C holds the rest of their rects and hits)
+                const QPoint upButton(plainBox->width() - 7, 11);
+                const QPoint downButton(plainBox->width() - 13, 11);
+                EXPECT_EQ(int(plainBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &plainOption, upButton, plainBox)),
+                    int(QStyle::SC_SpinBoxUp));
+                EXPECT_EQ(int(plainBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &plainOption, downButton, plainBox)),
+                    int(QStyle::SC_SpinBoxDown));
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_APressAtTheRightOfAColorPickersFieldDragsItAndStepsNothing)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            for (const bool doubleBox : { false, true })
+            {
+                Twins<QWidget> twins(*this, [&](QWidget& root)
+                {
+                    QAbstractSpinBox* spinBox = buildSpinBox(root, SpinContext::ColorPicker, doubleBox);
+                    presetProperties(spinBox, false, {});
+                    if (auto* intBox = qobject_cast<QSpinBox*>(spinBox))
+                    {
+                        intBox->setRange(0, 100);
+                        intBox->setValue(50);
+                    }
+                    else if (auto* realBox = qobject_cast<QDoubleSpinBox*>(spinBox))
+                    {
+                        realBox->setRange(0.0, 100.0);
+                        realBox->setValue(50.0);
+                    }
+                }, QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                const QString before = legacyBox->text();
+                ASSERT_EQ(flatBox->text().toStdString(), before.toStdString());
+
+                // Where the base style's up button (the upper half) and down button (the lower half) are: 14px at the right, beyond the
+                // field the line edit fills (the field ends 14px short of the box: the margin 2 and the padding of 12)
+                for (const int y : { 6, 17 })
+                {
+                    const QPoint at(flatBox->width() - 8, y);
+                    ASSERT_TRUE(flatBox->childAt(at) == nullptr) << "the point is the box's own";
+                    for (QAbstractSpinBox* box : { legacyBox, flatBox })
+                    {
+                        SCOPED_TRACE((box == legacyBox ? "legacy " : "flat ") + std::to_string(y));
+                        const QPointF global(box->mapToGlobal(at));
+                        QMouseEvent press(QEvent::MouseButtonPress, QPointF(at), global, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+                        QApplication::sendEvent(box, &press);
+                        EXPECT_EQ(box->text().toStdString(), before.toStdString()) << "the press stepped the value";
+                        if (box == flatBox)
+                        {
+                            // The watcher of the flattened Style took the press for a drag of the field (SpinBox.cpp, MouseButtonPress):
+                            // what it does for the frame the legacy hit test finds, and not for a button
+                            EXPECT_TRUE(box->property("SpinBoxDragging").toBool()) << "the press did not start a drag";
+                            EXPECT_FALSE(box->property("SpinBoxUpButtonPressed").toBool());
+                            EXPECT_FALSE(box->property("SpinBoxDownButtonPressed").toBool());
+                        }
+                        QMouseEvent release(QEvent::MouseButtonRelease, QPointF(at), global, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+                        QApplication::sendEvent(box, &release);
+                        EXPECT_EQ(box->text().toStdString(), before.toStdString()) << "the release stepped the value";
+                    }
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T-SPN.C: the buttons of every spin box. SpinBox.qss:76-99 gives each button a width of 6, a height of 10 and a position
+        // (`right center`, an inset of 2 for the up button and 8 for the down one), so QStyleSheetStyle::subControlRect returns the
+        // position rect (positionRect) of a glyph box: the up one at the right, the down one beside it to the left. The base style's
+        // are two 14px halves, stacked at the right of the field, so a press on the up glyph was the down button's. SC_SpinBoxFrame
+        // is the rect inside the margin (QRenderRule::borderRect), where the base style's is the whole rect.
+        // ----------------------------------------------------------------------------------
+
+        struct SpinState
+        {
+            const char* m_name;
+            QStyle::State m_state;
+        };
+
+        const SpinState SpinStates[] = {
+            { "rest", QStyle::State_Enabled },
+            { "disabled", QStyle::State_None },
+            { "hover", QStyle::State_Enabled | QStyle::State_MouseOver },
+            { "focus", QStyle::State_Enabled | QStyle::State_HasFocus },
+            { "hover and focus", QStyle::State_Enabled | QStyle::State_MouseOver | QStyle::State_HasFocus },
+        };
+
+        struct SpinPlace
+        {
+            const char* m_name;
+            SpinContext m_context;
+        };
+
+        const SpinPlace SpinPlaces[] = {
+            { "plain", SpinContext::Plain }, { "vector element", SpinContext::Vector }, { "color picker", SpinContext::ColorPicker },
+        };
+
+        const char* subControlName(QStyle::SubControl control)
+        {
+            switch (control)
+            {
+            case QStyle::SC_SpinBoxUp: return "up";
+            case QStyle::SC_SpinBoxDown: return "down";
+            case QStyle::SC_SpinBoxFrame: return "frame";
+            case QStyle::SC_SpinBoxEditField: return "edit field";
+            default: return "none";
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_OfEverySpinBoxAreTheGlyphBoxesOfTheSheetAndTheFrameIsInsideTheMargin)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            for (const SpinPlace& place : SpinPlaces)
+            {
+                for (const bool doubleBox : { false, true })
+                {
+                    for (const bool error : { false, true })
+                    {
+                        // A spin box with NoButtons (StyledDoubleSpinBox) has the buttons as subcontrols no more, and the sheet's rects
+                        // of its buttons are the same (QStyleSheetStyle::subControlRect, positionRect, ignores the symbols), but for
+                        // the field, which leaves them no room (hasButtons)
+                        for (const auto symbols : { QAbstractSpinBox::UpDownArrows, QAbstractSpinBox::NoButtons })
+                        {
+                            Twins<QWidget> twins(*this,
+                                [&](QWidget& root) { presetProperties(buildSpinBox(root, place.m_context, doubleBox), error, {}); },
+                                QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                            QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                            QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                            // After the polish, which gives a spin box its buttons back (SpinBox::setButtonSymbolsForStyle)
+                            legacyBox->setButtonSymbols(symbols);
+                            flatBox->setButtonSymbols(symbols);
+                            for (const SpinState& state : SpinStates)
+                            {
+                                const QStyleOptionSpinBox legacyOption = spinBoxOption(legacyBox, state.m_state, symbols);
+                                const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, state.m_state, symbols);
+                                for (const QStyle::SubControl control : { QStyle::SC_SpinBoxUp, QStyle::SC_SpinBoxDown,
+                                         QStyle::SC_SpinBoxFrame, QStyle::SC_SpinBoxEditField })
+                                {
+                                    const QRect legacyRect =
+                                        legacyBox->style()->subControlRect(QStyle::CC_SpinBox, &legacyOption, control, legacyBox);
+                                    const QRect flatRect =
+                                        flatBox->style()->subControlRect(QStyle::CC_SpinBox, &flatOption, control, flatBox);
+                                    EXPECT_EQ(FieldTwins::rectText(flatRect), FieldTwins::rectText(legacyRect))
+                                        << place.m_name << (doubleBox ? " double" : " int") << (error ? " error, " : ", ")
+                                        << (symbols == QAbstractSpinBox::NoButtons ? "no buttons, " : "") << state.m_name << ", "
+                                        << subControlName(control);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_AreTheGlyphBoxesSideBySideAtTheRightOfThePaddingBoxInABoxOf120By23)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            Twins<QWidget> twins(*this, [&](QWidget& root) { presetProperties(buildSpinBox(root, SpinContext::Plain, true), false, {}); },
+                QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+            for (const bool legacyTwin : { true, false })
+            {
+                SCOPED_TRACE(legacyTwin ? "legacy" : "flat");
+                const QAbstractSpinBox* box =
+                    legacyTwin ? twins.legacyChild<QAbstractSpinBox>("spin") : twins.flatChild<QAbstractSpinBox>("spin");
+                ASSERT_EQ(box->size(), QSize(120, 23));
+                const auto rectOf = [&](QStyle::State state, QStyle::SubControl control)
+                {
+                    const QStyleOptionSpinBox option = spinBoxOption(box, state, QAbstractSpinBox::UpDownArrows);
+                    return box->style()->subControlRect(QStyle::CC_SpinBox, &option, control, box);
+                };
+
+                // The padding box is the rect less the margin 2 (SpinBox.qss:13), 116 by 19 at (2, 2); a box of 6 by 10 (:81-82) is at its
+                // right edge less the inset (:96 right 2px for the up button, :88 right 8px for the down one) and centered vertically
+                const QStyle::State enabled = QStyle::State_Enabled;
+                EXPECT_EQ(FieldTwins::rectText(rectOf(enabled, QStyle::SC_SpinBoxUp)), FieldTwins::rectText(QRect(110, 6, 6, 10)));
+                EXPECT_EQ(FieldTwins::rectText(rectOf(enabled, QStyle::SC_SpinBoxDown)), FieldTwins::rectText(QRect(104, 6, 6, 10)));
+
+                // The frame: the rect less the margin of the state, 2 (:13), 1 for :hover and :focus (:27)
+                EXPECT_EQ(FieldTwins::rectText(rectOf(enabled, QStyle::SC_SpinBoxFrame)), FieldTwins::rectText(QRect(2, 2, 116, 19)));
+                EXPECT_EQ(FieldTwins::rectText(rectOf(enabled | QStyle::State_MouseOver, QStyle::SC_SpinBoxFrame)),
+                    FieldTwins::rectText(QRect(1, 1, 118, 21)));
+                EXPECT_EQ(FieldTwins::rectText(rectOf(enabled | QStyle::State_HasFocus, QStyle::SC_SpinBoxFrame)),
+                    FieldTwins::rectText(QRect(1, 1, 118, 21)));
+            }
+        }
+
+        //! The rect of the edit field and the geometry of the line edit QAbstractSpinBox puts in it, as the style of the box gives them
+        struct EditFieldFacts
+        {
+            std::string m_field;
+            std::string m_lineEdit;
+        };
+
+        EditFieldFacts editFieldFactsOf(QAbstractSpinBox* spinBox, QStyle::State state)
+        {
+            // The line edit is put where the style says the edit field is when the box is resized (QAbstractSpinBox::resizeEvent)
+            spinBox->resize(spinBox->width() + 1, spinBox->height());
+            spinBox->resize(spinBox->width() - 1, spinBox->height());
+            const QStyleOptionSpinBox option = spinBoxOption(spinBox, state, spinBox->buttonSymbols());
+            return { FieldTwins::rectText(spinBox->style()->subControlRect(
+                         QStyle::CC_SpinBox, &option, QStyle::SC_SpinBoxEditField, spinBox)),
+                FieldTwins::rectText(spinBox->findChild<QLineEdit*>()->geometry()) };
+        }
+
+        TEST_F(ControlElementTests, SpinBoxEditField_WithoutButtonsLeavesThemNoRoomAndTheHintsLoseTheirWidth)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            // QStyleSheetStyle::subControlRect (CC_SpinBox, SC_SpinBoxEditField) takes the width of the widest button off the contents only
+            // for a spin box that has buttons (hasButtons), and QStyleSheetStyle::sizeFromContents (CT_SpinBox) adds the up button's width
+            // to the hint for such a box alone: the 6px of SpinBox.qss:81 less in the field and in the hints. A color picker's buttons
+            // (ColorPicker.qss:74-81) have no width, and there is nothing to take off.
+            const struct { const char* m_name; SpinContext m_context; int m_extra; int m_buttons; } places[] = {
+                { "plain", SpinContext::Plain, 22, 6 }, { "vector element", SpinContext::Vector, 20, 6 },
+                { "color picker", SpinContext::ColorPicker, 16, 0 },
+            };
+            for (const auto& place : places)
+            {
+                for (const bool doubleBox : { false, true })
+                {
+                    for (const auto symbols : { QAbstractSpinBox::UpDownArrows, QAbstractSpinBox::NoButtons })
+                    {
+                        const bool buttons = symbols != QAbstractSpinBox::NoButtons;
+                        Twins<QWidget> twins(*this,
+                            [&](QWidget& root) { presetProperties(buildSpinBox(root, place.m_context, doubleBox), false, {}); },
+                            QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                        QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                        QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                        // After the polish, which gives a spin box its buttons back (SpinBox::setButtonSymbolsForStyle)
+                        legacyBox->setButtonSymbols(symbols);
+                        flatBox->setButtonSymbols(symbols);
+                        const QString what = QStringLiteral("%1, %2, %3").arg(QString::fromLatin1(place.m_name),
+                            doubleBox ? QStringLiteral("double") : QStringLiteral("int"),
+                            buttons ? QStringLiteral("with buttons") : QStringLiteral("no buttons"));
+
+                        EXPECT_EQ(flatBox->sizeHint(), legacyBox->sizeHint()) << qPrintable(what);
+                        EXPECT_EQ(flatBox->minimumSizeHint(), legacyBox->minimumSizeHint()) << qPrintable(what);
+                        const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, QStyle::State_Enabled, symbols);
+                        const int extraWidth = place.m_extra - (buttons ? 0 : place.m_buttons);
+                        EXPECT_EQ(SpinBoxElement::extraSize(&flatOption, flatBox), QSize(extraWidth, 4)) << qPrintable(what);
+
+                        const EditFieldFacts legacyFacts = editFieldFactsOf(legacyBox, QStyle::State_Enabled);
+                        const EditFieldFacts flatFacts = editFieldFactsOf(flatBox, QStyle::State_Enabled);
+                        EXPECT_EQ(flatFacts.m_field, legacyFacts.m_field) << qPrintable(what);
+                        EXPECT_EQ(flatFacts.m_lineEdit, legacyFacts.m_lineEdit) << qPrintable(what);
+
+                        // The numbers of a plain box of 120 by 23: the margin 2 at the left, and at the right the margin 2, the padding 12
+                        // and the buttons' 6
+                        if (place.m_context == SpinContext::Plain)
+                        {
+                            const QRect field = flatBox->style()->subControlRect(
+                                QStyle::CC_SpinBox, &flatOption, QStyle::SC_SpinBoxEditField, flatBox);
+                            EXPECT_EQ(field.left(), 2) << qPrintable(what);
+                            EXPECT_EQ(field.width(), buttons ? 98 : 104) << qPrintable(what);
+                        }
+                    }
+                }
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxEditField_OfAVectorElementWithAnErrorStartsAtTheBorderOfTheErrorFace)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            // The error face (SpinBox.qss:57-67, 0x21) outranks the rule of the vector element (VectorInput.qss:18-28, 0x12): it puts back
+            // the 2px of border at the left that the vector element took away, so the field starts 2px from the left and the box is 2px
+            // wider than without an error. A disabled box has no error face (:enabled).
+            for (const bool doubleBox : { false, true })
+            {
+                for (const bool error : { false, true })
+                {
+                    Twins<QWidget> twins(*this,
+                        [&](QWidget& root) { presetProperties(buildSpinBox(root, SpinContext::Vector, doubleBox), error, {}); },
+                        QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                    QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                    QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                    const QString what = QStringLiteral("%1, %2").arg(doubleBox ? QStringLiteral("double") : QStringLiteral("int"),
+                        error ? QStringLiteral("error") : QStringLiteral("no error"));
+
+                    EXPECT_EQ(flatBox->sizeHint(), legacyBox->sizeHint()) << qPrintable(what);
+                    EXPECT_EQ(flatBox->minimumSizeHint(), legacyBox->minimumSizeHint()) << qPrintable(what);
+
+                    const EditFieldFacts legacyFacts = editFieldFactsOf(legacyBox, QStyle::State_Enabled);
+                    const EditFieldFacts flatFacts = editFieldFactsOf(flatBox, QStyle::State_Enabled);
+                    EXPECT_EQ(flatFacts.m_field, legacyFacts.m_field) << qPrintable(what);
+                    EXPECT_EQ(flatFacts.m_lineEdit, legacyFacts.m_lineEdit) << qPrintable(what);
+
+                    for (const SpinState& state : SpinStates)
+                    {
+                        const bool errorFace = error && state.m_state.testFlag(QStyle::State_Enabled);
+                        const QStyleOptionSpinBox legacyOption = spinBoxOption(legacyBox, state.m_state, QAbstractSpinBox::UpDownArrows);
+                        const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, state.m_state, QAbstractSpinBox::UpDownArrows);
+                        const QRect legacyField = legacyBox->style()->subControlRect(
+                            QStyle::CC_SpinBox, &legacyOption, QStyle::SC_SpinBoxEditField, legacyBox);
+                        const QRect flatField = flatBox->style()->subControlRect(
+                            QStyle::CC_SpinBox, &flatOption, QStyle::SC_SpinBoxEditField, flatBox);
+                        EXPECT_EQ(legacyField.left(), errorFace ? 2 : 0) << qPrintable(what) << ", " << state.m_name;
+                        EXPECT_EQ(flatField.left(), errorFace ? 2 : 0) << qPrintable(what) << ", " << state.m_name;
+                        EXPECT_EQ(SpinBoxElement::extraSize(&flatOption, flatBox), QSize(errorFace ? 22 : 20, 4))
+                            << qPrintable(what) << ", " << state.m_name;
+                    }
+                }
+            }
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_EveryPointOfTheBoxHitsWhatTheSheetsRectsHit)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            for (const SpinPlace& place : SpinPlaces)
+            {
+                for (const bool error : { false, true })
+                {
+                    Twins<QWidget> twins(*this,
+                        [&](QWidget& root) { presetProperties(buildSpinBox(root, place.m_context, true), error, {}); },
+                        QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                    const QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                    const QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+                    for (const SpinState& state : SpinStates)
+                    {
+                        const QStyleOptionSpinBox legacyOption = spinBoxOption(legacyBox, state.m_state, QAbstractSpinBox::UpDownArrows);
+                        const QStyleOptionSpinBox flatOption = spinBoxOption(flatBox, state.m_state, QAbstractSpinBox::UpDownArrows);
+                        int hits[16] = {};
+                        int mismatches = 0;
+                        for (int y = 0; y < flatBox->height(); ++y)
+                        {
+                            for (int x = 0; x < flatBox->width(); ++x)
+                            {
+                                const QPoint at(x, y);
+                                const QStyle::SubControl legacyHit =
+                                    legacyBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &legacyOption, at, legacyBox);
+                                const QStyle::SubControl flatHit =
+                                    flatBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &flatOption, at, flatBox);
+                                mismatches += (flatHit != legacyHit) ? 1 : 0;
+                                ++hits[int(flatHit) & 15];
+                            }
+                        }
+                        EXPECT_EQ(mismatches, 0) << place.m_name << (error ? " error, " : ", ") << state.m_name;
+
+                        // The glyph boxes hold 60 points each, in a color picker none (its boxes are 0 wide)
+                        const int glyphPoints = (place.m_context == SpinContext::ColorPicker) ? 0 : 60;
+                        EXPECT_EQ(hits[int(QStyle::SC_SpinBoxUp)], glyphPoints)
+                            << place.m_name << (error ? " error, " : ", ") << state.m_name;
+                        EXPECT_EQ(hits[int(QStyle::SC_SpinBoxDown)], glyphPoints)
+                            << place.m_name << (error ? " error, " : ", ") << state.m_name;
+                    }
+                }
+            }
+
+            // A point in the margin of the box (2px at rest) is no part of the box, where the base style's frame was the whole rect
+            Twins<QWidget> twins(*this, [&](QWidget& root) { presetProperties(buildSpinBox(root, SpinContext::Plain, true), false, {}); },
+                QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+            const QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+            const QStyleOptionSpinBox option = spinBoxOption(flatBox, QStyle::State_Enabled, QAbstractSpinBox::UpDownArrows);
+            EXPECT_EQ(int(flatBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &option, QPoint(0, 0), flatBox)),
+                int(QStyle::SC_None));
+            EXPECT_EQ(int(flatBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &option, QPoint(2, 2), flatBox)),
+                int(QStyle::SC_SpinBoxFrame));
+        }
+
+        TEST_F(ControlElementTests, SpinBoxButtons_APressOnAGlyphStepsTheValueAndAPressWhereTheBaseStylesHalvesWereDoesNot)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+            // The glyphs' centers (the up box is at x 110, the down one at x 104, both 6 wide and from y 6 to 15), and the middle of the
+            // base style's upper and lower halves of the 14px column at the right of the field (the stacked halves of Fusion)
+            const struct { const char* m_name; QPoint m_at; int m_step; } presses[] = {
+                { "up glyph", QPoint(113, 11), +1 },
+                { "down glyph", QPoint(107, 11), -1 },
+                { "where the base style's upper half was", QPoint(112, 5), 0 },
+                { "where the base style's lower half was", QPoint(112, 17), 0 },
+            };
+            for (const SpinPlace& place : SpinPlaces)
+            {
+                if (place.m_context == SpinContext::ColorPicker)
+                {
+                    continue;       // T-SPN.B: a picker's buttons hold no point
+                }
+                for (const bool doubleBox : { false, true })
+                {
+                    Twins<QWidget> twins(*this, [&](QWidget& root)
+                    {
+                        QAbstractSpinBox* spinBox = buildSpinBox(root, place.m_context, doubleBox);
+                        presetProperties(spinBox, false, {});
+                        if (auto* intBox = qobject_cast<QSpinBox*>(spinBox))
+                        {
+                            intBox->setRange(0, 100);
+                            intBox->setValue(50);
+                        }
+                        else if (auto* realBox = qobject_cast<QDoubleSpinBox*>(spinBox))
+                        {
+                            realBox->setRange(0.0, 100.0);
+                            realBox->setValue(50.0);
+                        }
+                    }, QString::fromUtf8(SpinBoxRules), QSize(200, 40));
+                    QAbstractSpinBox* legacyBox = twins.legacyChild<QAbstractSpinBox>("spin");
+                    QAbstractSpinBox* flatBox = twins.flatChild<QAbstractSpinBox>("spin");
+
+                    for (const auto& press : presses)
+                    {
+                        QString stepped[2];
+                        int index = 0;
+                        for (QAbstractSpinBox* box : { legacyBox, flatBox })
+                        {
+                            SCOPED_TRACE(QStringLiteral("%1 %2 %3 %4").arg(QString::fromLatin1(place.m_name),
+                                doubleBox ? QStringLiteral("double") : QStringLiteral("int"),
+                                box == legacyBox ? QStringLiteral("legacy") : QStringLiteral("flat"),
+                                QString::fromLatin1(press.m_name)).toStdString());
+                            if (auto* intBox = qobject_cast<QSpinBox*>(box))
+                            {
+                                intBox->setValue(50);
+                            }
+                            else if (auto* realBox = qobject_cast<QDoubleSpinBox*>(box))
+                            {
+                                realBox->setValue(50.0);
+                            }
+                            const QString before = box->text();
+                            const QPointF global(box->mapToGlobal(press.m_at));
+                            ASSERT_TRUE(box->childAt(press.m_at) == nullptr) << "the point is the box's own";
+                            QMouseEvent mousePress(QEvent::MouseButtonPress, QPointF(press.m_at), global, Qt::LeftButton, Qt::LeftButton,
+                                Qt::NoModifier);
+                            QApplication::sendEvent(box, &mousePress);
+                            stepped[index] = box->text();
+                            if (box == flatBox)
+                            {
+                                // The watcher of the flattened Style reads the same hit (SpinBox.cpp, MouseButtonPress)
+                                EXPECT_EQ(box->property("SpinBoxUpButtonPressed").toBool(), press.m_step > 0);
+                                EXPECT_EQ(box->property("SpinBoxDownButtonPressed").toBool(), press.m_step < 0);
+                                EXPECT_EQ(box->property("SpinBoxDragging").toBool(), press.m_step == 0);
+                            }
+                            QMouseEvent release(QEvent::MouseButtonRelease, QPointF(press.m_at), global, Qt::LeftButton, Qt::NoButton,
+                                Qt::NoModifier);
+                            QApplication::sendEvent(box, &release);
+                            EXPECT_EQ(press.m_step != 0, stepped[index] != before)
+                                << "the press " << (press.m_step != 0 ? "did not step" : "stepped");
+                            ++index;
+                        }
+                        EXPECT_EQ(stepped[1].toStdString(), stepped[0].toStdString());
+                    }
                 }
             }
         }

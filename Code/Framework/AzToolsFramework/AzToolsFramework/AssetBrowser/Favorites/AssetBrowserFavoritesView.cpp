@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/FavoritesEntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFlatValues.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 
 #include <QHeaderView>
@@ -216,7 +217,7 @@ namespace AzToolsFramework
         {
             if (!index.parent().isValid() && !selectedIndexes().contains(index))
             {
-                painter->fillRect(rect, 0x333333);
+                painter->fillRect(rect, AssetBrowserFlat::RootRowFill);
             }
 
             QTreeView::drawBranches(painter, rect, index);

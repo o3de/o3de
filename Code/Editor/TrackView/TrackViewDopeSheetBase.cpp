@@ -45,14 +45,203 @@
 #include "TVCustomizeTrackColorsDlg.h"
 #include "TrackView/TrackViewKeyPropertiesDlg.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The dope sheet's paint colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace TrackViewDopeSheetBaseFlat
+{
+    //////////////////////////////////////////////////////////////////////////
+    //  Sheet
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:959 (the sheet's background gradient, top). TOKENIZE: DopeSheetGradientTop
+    constexpr QColor SheetGradientTop(250, 250, 250);
+
+    // TrackViewDopeSheetBase.cpp:960 (the sheet's background gradient, bottom). TOKENIZE: DopeSheetGradientBottom
+    constexpr QColor SheetGradientBottom(220, 220, 220);
+
+    // TrackViewDopeSheetBase.cpp:53 (kEditDisableColor: the fill over a locked sheet). TOKENIZE: DopeSheetEditLockFill
+    constexpr QColor EditLockFill(128, 128, 128);
+
+    // TrackViewDopeSheetBase.cpp:77 (the brush m_bkgrBrushEmpty, set in the constructor and not painted with today).
+    // TOKENIZE: DopeSheetBackgroundEmptyBrush
+    constexpr QColor BackgroundEmptyBrush(190, 190, 190);
+
+    // TrackViewDopeSheetBase.cpp:78 (the brush m_timeBkgBrush, set in the constructor and not painted with today).
+    // TOKENIZE: DopeSheetTimeBackgroundBrush
+    constexpr QColor TimeBackgroundBrush(0xE0, 0xE0, 0xE0);
+
+    // TrackViewDopeSheetBase.cpp:79 (the brush m_timeHighlightBrush, set in the constructor and not painted with today).
+    // TOKENIZE: DopeSheetTimeHighlightBrush
+    constexpr QColor TimeHighlightBrush(0xFF, 0x0, 0x0);
+
+    // TrackViewDopeSheetBase.cpp:80 (the brush m_selectedBrush, set in the constructor and not painted with today).
+    // TOKENIZE: DopeSheetSelectedBrush
+    constexpr QColor SelectedBrush(200, 200, 230);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Timeline strip
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:3507 (the timeline strip's gradient, top). TOKENIZE: DopeSheetTimelineGradientTop
+    constexpr QColor TimelineGradientTop(250, 250, 250);
+
+    // TrackViewDopeSheetBase.cpp:3508 (the timeline strip's gradient, bottom). TOKENIZE: DopeSheetTimelineGradientBottom
+    constexpr QColor TimelineGradientBottom(180, 180, 180);
+
+    // TrackViewDopeSheetBase.cpp:3478 (the current-time marker). TOKENIZE: DopeSheetTimelineMarker
+    constexpr QColor TimelineMarker(255, 0, 255);
+
+    // TrackViewDopeSheetBase.cpp:3485 (the current-time marker while recording). TOKENIZE: DopeSheetTimelineMarkerRecording
+    const QColor TimelineMarkerRecording(Qt::red);
+
+    // TrackViewDopeSheetBase.cpp:3479 (the labels of the timeline strip and its long ticks). TOKENIZE: DopeSheetTimelineText
+    const QColor TimelineText(Qt::black);
+
+    // TrackViewDopeSheetBase.cpp:3480 (the strip's pen before the first labelled tick). TOKENIZE: DopeSheetTimelineTickDark
+    constexpr QColor TimelineTickDark(90, 90, 90);
+
+    // TrackViewDopeSheetBase.cpp:3481 (the strip's light pen). TOKENIZE: DopeSheetTimelineTickLight
+    constexpr QColor TimelineTickLight(150, 150, 150);
+
+    // TrackViewDopeSheetBase.cpp:3388, :3435 (the strip's short ticks after a labelled tick). TOKENIZE: DopeSheetTimelineTickMinor
+    constexpr QColor TimelineTickMinor(90, 90, 90);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Summary strip
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:3557 (the fill of the summary strip). TOKENIZE: DopeSheetSummaryFill
+    constexpr QColor SummaryFill(150, 100, 220);
+
+    // TrackViewDopeSheetBase.cpp:3556 (the key marks on the summary strip). TOKENIZE: DopeSheetSummaryKeyLine
+    const QColor SummaryKeyLine(Qt::black);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Track rows
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:2455 (the ticks of a track row). TOKENIZE: DopeSheetTrackTickDark
+    constexpr QColor TrackTickDark(90, 90, 90);
+
+    // TrackViewDopeSheetBase.cpp:2456 (the ticks of a track row before the first tick of the range). TOKENIZE: DopeSheetTrackTickLight
+    constexpr QColor TrackTickLight(120, 120, 120);
+
+    // TrackViewDopeSheetBase.cpp:2496 (the long ticks of a track row). TOKENIZE: DopeSheetTrackTickMajor
+    const QColor TrackTickMajor(Qt::black);
+
+    // TrackViewDopeSheetBase.cpp:2527 (the line under a track row). TOKENIZE: DopeSheetTrackBottomLine
+    constexpr QColor TrackBottomLine(120, 120, 120);
+
+    // TrackViewDopeSheetBase.cpp:2606, :2616 (the gradient left and right of a track, top). TOKENIZE: DopeSheetTrackOutsideTop
+    constexpr QColor TrackOutsideTop(210, 210, 210);
+
+    // TrackViewDopeSheetBase.cpp:2607, :2617 (the gradient left and right of a track, bottom). TOKENIZE: DopeSheetTrackOutsideBottom
+    constexpr QColor TrackOutsideBottom(180, 180, 180);
+
+    // TrackViewDopeSheetBase.cpp:2581 (the fill of a track with an obsolete TCB spline). TOKENIZE: DopeSheetObsoleteTrackFill
+    constexpr QColor ObsoleteTrackFill(245, 80, 70);
+
+    // TrackViewDopeSheetBase.cpp:2588 (the divisor of the selected track's gradient end: each channel of the track's colour is halved).
+    // TOKENIZE: DopeSheetSelectedTrackShade
+    constexpr int SelectedTrackShadeDivisor = 2;
+
+    // TrackViewDopeSheetBase.cpp:3605 (the text of a node with an obsolete TCB track). TOKENIZE: DopeSheetObsoleteNodeText
+    constexpr QColor ObsoleteNodeText(245, 80, 70);
+
+    // TrackViewDopeSheetBase.cpp:54 (kKeyTextColor: key descriptions and node names). TOKENIZE: DopeSheetKeyText
+    constexpr QColor KeyText(0, 0, 50);
+
+    // TrackViewDopeSheetBase.cpp:55 (kInactiveTextColor: node of an inactive director). TOKENIZE: DopeSheetInactiveNodeText
+    constexpr QColor InactiveNodeText(128, 128, 128);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Track ranges
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:81 (the brush set before a bool track or a key duration is drawn). TOKENIZE: DopeSheetVisibilityBrush
+    constexpr QColor VisibilityBrush(120, 120, 255);
+
+    // TrackViewDopeSheetBase.cpp:82 (the brush set before a select track or a sequence track is drawn).
+    // TOKENIZE: DopeSheetSelectTrackBrush
+    constexpr QColor SelectTrackBrush(100, 190, 255);
+
+    // TrackViewDopeSheetBase.cpp:2713, :2721 (a select track's gradient, top: key and blend). TOKENIZE: DopeSheetSelectTrackFadeTop
+    const QColor SelectTrackFadeTop(Qt::white);
+
+    // TrackViewDopeSheetBase.cpp:2714 (a select track's gradient over the key, bottom). TOKENIZE: DopeSheetSelectTrackFadeEnd
+    constexpr QColor SelectTrackFadeEnd(100, 190, 255);
+
+    // TrackViewDopeSheetBase.cpp:2722 (a select track's gradient over the blend time, bottom). TOKENIZE: DopeSheetSelectTrackBlendEnd
+    constexpr QColor SelectTrackBlendEnd(0, 115, 230);
+
+    // TrackViewDopeSheetBase.cpp:2757, :2770 (a bool track's gradient when true, top). TOKENIZE: DopeSheetBoolTrackGradientTop
+    constexpr QColor BoolTrackGradientTop(250, 250, 250);
+
+    // TrackViewDopeSheetBase.cpp:2758, :2771 (a bool track's gradient when true, bottom). TOKENIZE: DopeSheetBoolTrackGradientBottom
+    constexpr QColor BoolTrackGradientBottom(0, 80, 255);
+
+    // TrackViewDopeSheetBase.cpp:2805 (a sequence track's gradient, top). TOKENIZE: DopeSheetSequenceTrackGradientTop
+    constexpr QColor SequenceTrackGradientTop(100, 190, 255);
+
+    // TrackViewDopeSheetBase.cpp:2806 (a sequence track's gradient, bottom). TOKENIZE: DopeSheetSequenceTrackGradientBottom
+    constexpr QColor SequenceTrackGradientBottom(250, 250, 250);
+
+    // TrackViewDopeSheetBase.cpp:3676 (a key duration's gradient, top; a sound key sets its own). TOKENIZE: DopeSheetKeyDurationGradientTop
+    constexpr QColor KeyDurationGradientTop(120, 120, 255);
+
+    // TrackViewDopeSheetBase.cpp:3685 (a key duration's gradient, bottom). TOKENIZE: DopeSheetKeyDurationGradientBottom
+    constexpr QColor KeyDurationGradientBottom(250, 250, 250);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Keys
+    //////////////////////////////////////////////////////////////////////////
+
+    // TrackViewDopeSheetBase.cpp:3045 (the lines of the keys that a paste would add). TOKENIZE: DopeSheetPasteKeyLine
+    const QColor PasteKeyLine(Qt::green);
+
+    // TrackViewDopeSheetBase.cpp:3326 (the lines through the selected keys). TOKENIZE: DopeSheetSelectedKeyLine
+    const QColor SelectedKeyLine(Qt::green);
+
+    // TrackViewDopeSheetBase.cpp:3617 (the body of the go-to-track arrow). TOKENIZE: DopeSheetGoToArrowBody
+    constexpr QColor GoToArrowBody(150, 150, 150);
+
+    // TrackViewDopeSheetBase.cpp:3618 (the head of the go-to-track arrow). TOKENIZE: DopeSheetGoToArrowHead
+    constexpr QColor GoToArrowHead(50, 50, 50);
+
+    // TrackViewDopeSheetBase.cpp:3724 (the outline of the whole animation box of a selected animation key). TOKENIZE: DopeSheetAnimBoxLine
+    const QColor AnimBoxLine(Qt::green);
+
+    // TrackViewDopeSheetBase.cpp:3732 (the two adjust bars of a selected animation key). TOKENIZE: DopeSheetAdjustBarLine
+    const QColor AdjustBarLine(Qt::red);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Debug redraw counter (debug builds only)
+    //////////////////////////////////////////////////////////////////////////
+
+#ifdef AZ_DEBUG_BUILD
+    // TrackViewDopeSheetBase.cpp:984 (the text of the redraw counter). TOKENIZE: DopeSheetDebugRedrawText
+    constexpr QColor DebugRedrawText(255, 255, 255);
+
+    // TrackViewDopeSheetBase.cpp:985 (the brush set for the redraw counter). TOKENIZE: DopeSheetDebugRedrawFill
+    constexpr QColor DebugRedrawFill(0, 0, 0);
+
+    // TrackViewDopeSheetBase.cpp:992 (the box behind the redraw counter). TOKENIZE: DopeSheetDebugRedrawBounds
+    const QColor DebugRedrawBounds(Qt::black);
+#endif
+} // namespace TrackViewDopeSheetBaseFlat
+
 namespace
 {
     const int kMarginForMagnetSnapping = 10;
     const unsigned int kDefaultTrackHeight = 16;
 
-    const QColor kEditDisableColor = QColor(128, 128, 128);
-    const QColor kKeyTextColor = QColor(0, 0, 50);
-    const QColor kInactiveTextColor = QColor(128, 128, 128);
+    const QColor kEditDisableColor = TrackViewDopeSheetBaseFlat::EditLockFill;
+    const QColor kKeyTextColor = TrackViewDopeSheetBaseFlat::KeyText;
+    const QColor kInactiveTextColor = TrackViewDopeSheetBaseFlat::InactiveNodeText;
 }
 
 enum ETVMouseMode
@@ -74,12 +263,12 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
     : QWidget(parent)
 {
     m_bkgrBrush = palette().color(QPalette::Window);
-    m_bkgrBrushEmpty = QColor(190, 190, 190);
-    m_timeBkgBrush = QColor(0xE0, 0xE0, 0xE0);
-    m_timeHighlightBrush = QColor(0xFF, 0x0, 0x0);
-    m_selectedBrush = QColor(200, 200, 230);
-    m_visibilityBrush = QColor(120, 120, 255);
-    m_selectTrackBrush = QColor(100, 190, 255);
+    m_bkgrBrushEmpty = TrackViewDopeSheetBaseFlat::BackgroundEmptyBrush;
+    m_timeBkgBrush = TrackViewDopeSheetBaseFlat::TimeBackgroundBrush;
+    m_timeHighlightBrush = TrackViewDopeSheetBaseFlat::TimeHighlightBrush;
+    m_selectedBrush = TrackViewDopeSheetBaseFlat::SelectedBrush;
+    m_visibilityBrush = TrackViewDopeSheetBaseFlat::VisibilityBrush;
+    m_selectTrackBrush = TrackViewDopeSheetBaseFlat::SelectTrackBrush;
 
     m_timeScale = 1.0f;
     m_ticksStep = 10;
@@ -956,8 +1145,8 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
         if (!m_bFastRedraw)
         {
             QLinearGradient gradient(rect().topLeft(), rect().bottomLeft());
-            gradient.setColorAt(0, QColor(250, 250, 250));
-            gradient.setColorAt(1, QColor(220, 220, 220));
+            gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::SheetGradientTop);
+            gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::SheetGradientBottom);
             painter.fillRect(rect(), gradient);
 
             if (GetIEditor()->GetAnimation()->GetSequence())
@@ -981,15 +1170,15 @@ void CTrackViewDopeSheetBase::paintEvent(QPaintEvent* event)
 
 #ifdef AZ_DEBUG_BUILD
     painter.setFont(m_descriptionFont);
-    painter.setPen(QColor(255, 255, 255));
-    painter.setBrush(QColor(0, 0, 0));
+    painter.setPen(TrackViewDopeSheetBaseFlat::DebugRedrawText);
+    painter.setBrush(TrackViewDopeSheetBaseFlat::DebugRedrawFill);
 
     const QString redrawCountStr = QString::fromLatin1("Redraw Count: %1").arg(m_redrawCount);
     QRect redrawCountRect(0, 0, 150, 20);
 
     QRect bounds;
     painter.drawText(redrawCountRect, Qt::AlignLeft | Qt::TextSingleLine, redrawCountStr, &bounds);
-    painter.fillRect(bounds, Qt::black);
+    painter.fillRect(bounds, TrackViewDopeSheetBaseFlat::DebugRedrawBounds);
     painter.drawText(redrawCountRect, Qt::AlignLeft | Qt::TextSingleLine, redrawCountStr);
 
     ++m_redrawCount;
@@ -2452,8 +2641,8 @@ void CTrackViewDopeSheetBase::DrawNodesRecursive(CTrackViewNode* pNode, QPainter
 void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Range& timeRange)
 {
     // Draw time ticks every tick step seconds.
-    const QPen dkgray(QColor(90, 90, 90));
-    const QPen ltgray(QColor(120, 120, 120));
+    const QPen dkgray(TrackViewDopeSheetBaseFlat::TrackTickDark);
+    const QPen ltgray(TrackViewDopeSheetBaseFlat::TrackTickLight);
 
     const QPen prevPen = painter->pen();
     painter->setPen(dkgray);
@@ -2493,7 +2682,7 @@ void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Rang
         {
             if (st >= start)
             {
-                painter->setPen(Qt::black);
+                painter->setPen(TrackViewDopeSheetBaseFlat::TrackTickMajor);
             }
             else
             {
@@ -2524,7 +2713,7 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
 
     const QPen prevPen = painter->pen();
-    painter->setPen(QColor(120, 120, 120));
+    painter->setPen(TrackViewDopeSheetBaseFlat::TrackBottomLine);
     painter->drawLine(trackRect.bottomLeft(), trackRect.bottomRight());
     painter->setPen(prevPen);
 
@@ -2578,14 +2767,19 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     const EAnimCurveType trackType = pTrack->GetCurveType();
     if (trackType == eAnimCurveType_TCBFloat || trackType == eAnimCurveType_TCBQuat || trackType == eAnimCurveType_TCBVector)
     {
-        trackColor = QColor(245, 80, 70);
+        trackColor = TrackViewDopeSheetBaseFlat::ObsoleteTrackFill;
     }
 
     if (pTrack->IsSelected())
     {
         QLinearGradient gradient(rc.topLeft(), rc.bottomLeft());
         gradient.setColorAt(0, trackColor);
-        gradient.setColorAt(1, QColor(trackColor.red() / 2, trackColor.green() / 2, trackColor.blue() / 2));
+        gradient.setColorAt(
+            1,
+            QColor(
+                trackColor.red() / TrackViewDopeSheetBaseFlat::SelectedTrackShadeDivisor,
+                trackColor.green() / TrackViewDopeSheetBaseFlat::SelectedTrackShadeDivisor,
+                trackColor.blue() / TrackViewDopeSheetBaseFlat::SelectedTrackShadeDivisor));
         painter->fillRect(rc, gradient);
     }
     else if (pTrack->GetValueType() == AnimValueType::RGB && pTrack->GetKeyCount() > 0)
@@ -2603,8 +2797,8 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     rcOutside.adjust(1, 1, -1, 0);
 
     QLinearGradient gradient(rcOutside.topLeft(), rcOutside.bottomLeft());
-    gradient.setColorAt(0, QColor(210, 210, 210));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::TrackOutsideTop);
+    gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::TrackOutsideBottom);
     painter->fillRect(rcOutside, gradient);
 
     // Right outside.
@@ -2613,8 +2807,8 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     rcOutside.adjust(1, 1, -1, 0);
 
     gradient = QLinearGradient(rcOutside.topLeft(), rcOutside.bottomLeft());
-    gradient.setColorAt(0, QColor(210, 210, 210));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::TrackOutsideTop);
+    gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::TrackOutsideBottom);
     painter->fillRect(rcOutside, gradient);
 
     // Get time range of update rectangle.
@@ -2710,16 +2904,16 @@ void CTrackViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter* 
         if (x != x0_2) // draw duration bar
         {
             QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
-            gradient.setColorAt(0, Qt::white);
-            gradient.setColorAt(1, QColor(100, 190, 255));
+            gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::SelectTrackFadeTop);
+            gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::SelectTrackFadeEnd);
             painter->fillRect(QRect(QPoint(x0_2, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
         }
 
         if (fBlendTime > 0.0f) // draw blend time bar
         {
             QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
-            gradient.setColorAt(0, Qt::white);
-            gradient.setColorAt(1, QColor(0, 115, 230));
+            gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::SelectTrackFadeTop);
+            gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::SelectTrackBlendEnd);
             painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
         }
     }
@@ -2754,8 +2948,8 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
         if (val)
         {
             QLinearGradient gradient(x0, rc.top() + 4, x0, rc.bottom() - 4);
-            gradient.setColorAt(0, QColor(250, 250, 250));
-            gradient.setColorAt(1, QColor(0, 80, 255));
+            gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::BoolTrackGradientTop);
+            gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::BoolTrackGradientBottom);
             painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
         }
 
@@ -2767,8 +2961,8 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
     if (val)
     {
         QLinearGradient gradient(x0, rc.top() + 4, x0, rc.bottom() - 4);
-        gradient.setColorAt(0, QColor(250, 250, 250));
-        gradient.setColorAt(1, QColor(0, 80, 255));
+        gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::BoolTrackGradientTop);
+        gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::BoolTrackGradientBottom);
         painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
     }
     painter->setBrush(prevBrush);
@@ -2802,8 +2996,8 @@ void CTrackViewDopeSheetBase::DrawSequenceTrack(const Range& timeRange, QPainter
 
             if (x != x0_2)
             {
-                const QColor startColour(100, 190, 255);
-                const QColor endColour(250, 250, 250);
+                const QColor startColour(TrackViewDopeSheetBaseFlat::SequenceTrackGradientTop);
+                const QColor endColour(TrackViewDopeSheetBaseFlat::SequenceTrackGradientBottom);
                 QLinearGradient gradient(x0_2, rc.top() + 1, x0_2, rc.bottom());
                 gradient.setColorAt(0, startColour);
                 gradient.setColorAt(1, endColour);
@@ -3042,7 +3236,7 @@ void CTrackViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unuse
 void CTrackViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CTrackViewTrack* pTrack, XmlNodeRef trackNode, const float timeOffset)
 {
     const QPen prevPen = painter->pen();
-    painter->setPen(Qt::green);
+    painter->setPen(TrackViewDopeSheetBaseFlat::PasteKeyLine);
 
     const QRect trackRect = GetNodeRect(pTrack);
     const int numKeysToPaste = trackNode->getChildCount();
@@ -3323,7 +3517,7 @@ void CTrackViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
 
     const QPen prevPen = painter->pen();
-    painter->setPen(Qt::green);
+    painter->setPen(TrackViewDopeSheetBaseFlat::SelectedKeyLine);
 
     CTrackViewKeyBundle keys = pSequence->GetSelectedKeys();
     for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
@@ -3385,7 +3579,7 @@ void CTrackViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRec
 
     const Range& timeRange = m_timeRange;
 
-    const QPen ltgray(QColor(90, 90, 90));
+    const QPen ltgray(TrackViewDopeSheetBaseFlat::TimelineTickMinor);
     const QPen black(textCol);
 
     for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(m_fFrameTickStep); t += static_cast<float>(m_fFrameTickStep))
@@ -3432,7 +3626,7 @@ void CTrackViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QRe
     const Range& timeRange = m_timeRange;
     int nNumberTicks = 10;
 
-    const QPen ltgray(QColor(90, 90, 90));
+    const QPen ltgray(TrackViewDopeSheetBaseFlat::TimelineTickMinor);
     const QPen black(textCol);
 
     for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(step); t += static_cast<float>(step))
@@ -3475,14 +3669,14 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
 {
     bool recording = GetIEditor()->GetAnimation()->IsRecording();
 
-    QColor lineCol(255, 0, 255);
-    const QColor textCol(Qt::black);
-    const QColor dkgrayCol(90, 90, 90);
-    const QColor ltgrayCol(150, 150, 150);
+    QColor lineCol(TrackViewDopeSheetBaseFlat::TimelineMarker);
+    const QColor textCol(TrackViewDopeSheetBaseFlat::TimelineText);
+    const QColor dkgrayCol(TrackViewDopeSheetBaseFlat::TimelineTickDark);
+    const QColor ltgrayCol(TrackViewDopeSheetBaseFlat::TimelineTickLight);
 
     if (recording)
     {
-        lineCol = Qt::red;
+        lineCol = TrackViewDopeSheetBaseFlat::TimelineMarkerRecording;
     }
 
     // Draw vertical line showing current time.
@@ -3504,8 +3698,8 @@ void CTrackViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUpd
     }
 
     QLinearGradient gradient(rc.topLeft(), rc.bottomLeft());
-    gradient.setColorAt(0, QColor(250, 250, 250));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, TrackViewDopeSheetBaseFlat::TimelineGradientTop);
+    gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::TimelineGradientBottom);
     painter->fillRect(rc, gradient);
 
     const QPen prevPen = painter->pen();
@@ -3553,8 +3747,8 @@ void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpda
 {
     CTrackViewSequence* pSequence = GetIEditor()->GetAnimation()->GetSequence();
 
-    const QColor lineCol = Qt::black;
-    const QColor fillCol(150, 100, 220);
+    const QColor lineCol = TrackViewDopeSheetBaseFlat::SummaryKeyLine;
+    const QColor fillCol(TrackViewDopeSheetBaseFlat::SummaryFill);
 
     const QRect rc = m_rcSummary;
     if (!rc.intersects(rcUpdate))
@@ -3602,7 +3796,7 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
 
     if (hasObsoleteTrack)
     {
-        painter->setPen(QColor(245, 80, 70));
+        painter->setPen(TrackViewDopeSheetBaseFlat::ObsoleteNodeText);
         sAnimNodeName += tr(": Some of the sub-tracks contains obsoleted TCB splines (marked in red), thus cannot be copied or pasted.");
     }
 
@@ -3614,8 +3808,8 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
 void CTrackViewDopeSheetBase::DrawGoToTrackArrow(CTrackViewTrack* pTrack, QPainter* painter, const QRect& rc)
 {
     int numKeys = pTrack->GetKeyCount();
-    const QColor colorLine(150, 150, 150);
-    const QColor colorHeader(50, 50, 50);
+    const QColor colorLine(TrackViewDopeSheetBaseFlat::GoToArrowBody);
+    const QColor colorHeader(TrackViewDopeSheetBaseFlat::GoToArrowHead);
     const int tickness = 2;
     const int halfMargin = (rc.height() - tickness) / 2;
 
@@ -3673,7 +3867,7 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
     }
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
-    QColor colorFrom(120, 120, 255);
+    QColor colorFrom(TrackViewDopeSheetBaseFlat::KeyDurationGradientTop);
     if (pTrack->GetParameterType() == AnimParamType::Sound)    // If it is a sound key
     {
         ISoundKey soundKey;
@@ -3682,7 +3876,7 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
     }
     QLinearGradient gradient(x, rc.top() + 3, x, rc.bottom() - 3);
     gradient.setColorAt(0, colorFrom);
-    gradient.setColorAt(1, QColor(250, 250, 250));
+    gradient.setColorAt(1, TrackViewDopeSheetBaseFlat::KeyDurationGradientBottom);
     const int width = x1 + 1 - x;
     painter->fillRect(QRect(x, rc.top() + 3, width, rc.height() - 3), gradient);
 
@@ -3721,7 +3915,7 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
         int startX = TimeToClient(time - timeRangeKey->m_startTime / timeRangeKey->m_speed);
         int endX = TimeToClient(time + (timeRangeKey->m_duration - timeRangeKey->m_startTime) / timeRangeKey->m_speed);
         const QPen prevPen = painter->pen();
-        painter->setPen(Qt::green);
+        painter->setPen(TrackViewDopeSheetBaseFlat::AnimBoxLine);
         painter->drawLine(startX, rc.top(), endX, rc.top());
         painter->drawLine(endX, rc.top(), endX, rc.bottom());
         painter->drawLine(endX, rc.bottom(), startX, rc.bottom());
@@ -3729,7 +3923,7 @@ void CTrackViewDopeSheetBase::DrawKeyDuration(CTrackViewTrack* pTrack, QPainter*
 
         // Draw two adjust bars.
         int durationX = TimeToClient(time + AZStd::min(timeRangeKey->GetValidEndTime(), timeRangeKey->m_duration));
-        painter->setPen(QPen(Qt::red, 3));
+        painter->setPen(QPen(TrackViewDopeSheetBaseFlat::AdjustBarLine, 3));
         painter->drawLine(x - 2, rc.top(), x - 2, rc.bottom());
         painter->drawLine(durationX + 2, rc.top(), durationX + 2, rc.bottom());
         painter->setPen(prevPen);

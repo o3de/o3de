@@ -6,11 +6,14 @@
  *
  */
 #include <Editor/NotificationWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <MysticQt/Source/MysticQtManager.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QIcon>
+#include <QColor>
 
 namespace EMotionFX
 {
@@ -23,7 +26,11 @@ namespace EMotionFX
         headerFrame->setObjectName("HeaderFrame");
         headerFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         headerFrame->setFrameStyle(0x0 | QFrame::StyledPanel | QFrame::Plain);
-        headerFrame->setStyleSheet("background-color: rgb(60, 60, 60);");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            headerFrame, QString("background-color: %1;").arg(EMStudioFlatValues::NotificationHeaderBackground.name()));
+
+        // The name HeaderFrame is other frames' too, so the flattened GUI's element finds this one by its tag
+        EMStudioFlat::SetStateTag(headerFrame, EMStudioFlat::NotificationHeaderTag, true);
 
         // Icon widget
         QLabel* iconLabel = new QLabel(headerFrame);

@@ -20,6 +20,19 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! The wash the asset completer popup paints under the row the pointer is on, named, so the legacy and the flattened GUI read one
+    //! value. A named namespace, not an anonymous one: a header is read by many files, and a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace AssetCompleterListViewFlat
+    {
+        //! AssetCompleterListView.h:34. TOKENIZE: AssetCompleterHoverWash
+        inline constexpr QColor HoverWash(255, 255, 255, 30);
+    }
+
     //! Delegate on the asset autocompleter that enables html styling (used to show highlight of searched word)
     class AZTF_API AssetCompleterDelegate : public QStyledItemDelegate
     {
@@ -31,7 +44,7 @@ namespace AzToolsFramework
 
     private:
         static const int s_rowHeight = 20;
-        inline static const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor m_hoverColor = AssetCompleterListViewFlat::HoverWash;
     };
 
     //! List View of suggestions in the Asset Autocompleter for PropertyAssetCtrl

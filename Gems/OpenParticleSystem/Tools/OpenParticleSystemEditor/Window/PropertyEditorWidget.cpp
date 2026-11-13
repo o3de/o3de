@@ -8,6 +8,8 @@
 
 #include <PropertyEditorWidget.h>
 #include <Window/EffectorInspector.h>
+#include <Window/ParticleEditorFlat.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
 #include <Document/ParticleDocumentBus.h>
@@ -52,8 +54,9 @@ namespace OpenParticleSystemEditor
         }
 
         m_checkBox = new QCheckBox(this);
-        m_checkBox->setStyleSheet(QString::fromUtf8("QCheckBox::indicator:unchecked{image: url(:/stylesheet/img/UI20/checkbox/off.svg);}\n"
-                              "QCheckBox::indicator:checked{image: url(:/stylesheet/img/UI20/checkbox/on.svg);}"));
+        // The box's images (PropertyEditorWidget.cpp:55-56 before the flattening), for the legacy GUI only: the flattened GUI sets no
+        // sheet, and the element of ParticleEditorFlat (FixedCheck) gives the box the same image in every state
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_checkBox, ParticleEditorFlat::FixedCheckSheet());
         m_checkBox->setChecked(checked);
         bool visibility = false;
         if (m_moduleName != PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER])

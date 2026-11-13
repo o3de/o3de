@@ -12,6 +12,13 @@ set(FILES
     Lib/Tests/test_CryEditDocPythonBindings.cpp
     Lib/Tests/test_EditorPythonBindings.cpp
     Lib/Tests/test_EditorFlatSheet.cpp
+    Lib/Tests/test_EditorDialogsFlatSheet.cpp
+    Lib/Tests/test_AzAssetBrowserFlatSheet.cpp
+    Lib/Tests/test_AssetImporterFlatSheet.cpp
+    Lib/Tests/test_AssetImporterTreeFlatSheet.cpp
+    Lib/Tests/test_NewLevelWelcomeFlatSheet.cpp
+    Lib/Tests/test_StartupLogoFlatSheet.cpp
+    Lib/Tests/test_FlatPolishSplit.cpp
     Lib/Tests/test_EditorUtils.cpp
     Lib/Tests/test_Main.cpp
     Lib/Tests/test_MainWindowPythonBindings.cpp

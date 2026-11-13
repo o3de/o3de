@@ -22,10 +22,22 @@
 
 #include <MysticQt/Source/MysticQtManager.h>
 
+#include <QColor>
 #include <QSettings>
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the preset save notification texts: the word that says the save worked or failed.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace MotionEventPresetManagerFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);    // MotionEventPresetManager.cpp:270 TOKENIZE: MotionEventPresetSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);    // MotionEventPresetManager.cpp:277 TOKENIZE: MotionEventPresetSaveFailureText
+    } // namespace MotionEventPresetManagerFlat
+
     MotionEventPreset::MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color, const AZStd::string& comment)
         : m_eventDatas(AZStd::move(eventDatas))
         , m_name(name)
@@ -267,14 +279,18 @@ namespace EMStudio
 
             if (showNotification)
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, "Motion event presets <font color=green>successfully</font> saved");
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
+                    QString("Motion event presets <font color=%1>successfully</font> saved")
+                        .arg(MotionEventPresetManagerFlat::SaveSuccessText.name()));
             }
         }
         else
         {
             if (showNotification)
             {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, "Motion event presets <font color=red>failed</font> to save");
+                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
+                    QString("Motion event presets <font color=%1>failed</font> to save")
+                        .arg(MotionEventPresetManagerFlat::SaveFailureText.name()));
             }
         }
 

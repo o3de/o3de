@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ComboPopupElement.h>
 #include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
@@ -85,6 +86,7 @@ namespace AzQtComponents
 
         //! An AzQtComponents::TableView (and the AssetFolderListView, a TableView): a tree with no indentation of its own. Its sheet's
         //! `image: none` for the branches never applies (the carets' rules above outrank it), so a row with children shows a caret.
+        //! The AssetFolderListView's `icon-size: 16px` (AssetFolderListView.qss:9-12) is Fusion's PM_SmallIconSize, so nothing is carried.
         const ItemViewElement TableViewLook{
             .m_name = "Global.ItemView.TableView",
             .m_indicatorMargin = TreeIndicatorMargin,
@@ -214,6 +216,12 @@ namespace AzQtComponents
             takeBranch(&ItemViewElement::m_closed);
             takeBranch(&ItemViewElement::m_open);
 
+            // the rule of the check box: a module's replaces the Global element's (which has none)
+            if (module->m_check.declared())
+            {
+                merged->m_check = module->m_check;
+            }
+
             // the faces: the Global entries, then the module's; where they do not all fit the module's come first
             constexpr int Capacity = static_cast<int>(sizeof(merged->m_faces) / sizeof(merged->m_faces[0]));
             std::vector<ItemViewElement::StateFace> faces;
@@ -336,6 +344,16 @@ namespace AzQtComponents
             states |= Selected;
         }
         states |= option->state.testFlag(QStyle::State_Active) ? Active : Inactive;
+        // The check box of an item: QStyledItemDelegate::initStyleOption and QCommonStyle (CE_ItemViewItem) put its check state in the
+        // state of the option (`:checked` is State_On; a partially checked box is State_NoChange, and neither on nor off)
+        if (option->state.testFlag(QStyle::State_On))
+        {
+            states |= Checked;
+        }
+        if (option->state.testFlag(QStyle::State_NoChange))
+        {
+            states |= Indeterminate;
+        }
         return states;
     }
 
@@ -381,7 +399,8 @@ namespace AzQtComponents
     QSize ItemViewElement::itemSize(const QSize& base) const
     {
         // QRenderRule::adjustSize gives the contents the rule's height, QRenderRule::boxSize the margin and the padding around them
-        // (border: none has no width)
+        // (border: none has no width). The height is TableView.qss:36's 24px, and the rule of the SearchTypeSelector's tree gives the
+        // same 24px (FilteredSearchWidget.qss:130-133)
         const int height = (m_itemHeight == Unset) ? base.height() : m_itemHeight;
         return QSize(base.width() + m_itemMargin.left() + m_itemMargin.right() + m_itemPadding.left() + m_itemPadding.right(),
             height + m_itemMargin.top() + m_itemMargin.bottom() + m_itemPadding.top() + m_itemPadding.bottom());
@@ -392,16 +411,72 @@ namespace AzQtComponents
         return rect.marginsRemoved(m_itemMargin).marginsRemoved(m_itemPadding);
     }
 
-    QSize ItemViewElement::indicatorBox() const
+    ItemViewElement::CheckLook ItemViewElement::checkLookOf(unsigned states) const
     {
-        // The rule's size is the image's plus the margin around it (QRenderRule::size)
-        return QSize(m_indicatorSize.width() + m_indicatorMargin.left() + m_indicatorMargin.right(),
-            m_indicatorSize.height() + m_indicatorMargin.top() + m_indicatorMargin.bottom());
+        // The rules of the states that hold, a later one over an earlier one. `border` is one declaration of a width, a style and a
+        // colour: a rule that sets it replaces the colour too, and `border: 0px` leaves none.
+        CheckLook look;
+        for (const CheckStateFace& entry : m_check.m_faces)
+        {
+            if ((states & entry.m_states) != entry.m_states)
+            {
+                continue;
+            }
+            const CheckFace& face = entry.m_face;
+            if (face.m_borderWidth != Unset)
+            {
+                look.m_borderWidth = face.m_borderWidth;
+                look.m_borderColor = face.m_borderColor;
+            }
+            if (face.m_fill.isValid())
+            {
+                look.m_fill = face.m_fill;
+            }
+            if (face.m_image)
+            {
+                look.m_image = face.m_image;
+            }
+        }
+        return look;
     }
 
-    QRect ItemViewElement::indicatorImageRect(const QRect& slot) const
+    QSize ItemViewElement::indicatorBox(unsigned states) const
     {
-        return slot.marginsRemoved(m_indicatorMargin);
+        // The rule's size is the image's plus the margin and the line around it (QRenderRule::size, boxSize)
+        const int line = checkLookOf(states).m_borderWidth;
+        return QSize(m_indicatorSize.width() + m_indicatorMargin.left() + m_indicatorMargin.right() + 2 * line,
+            m_indicatorSize.height() + m_indicatorMargin.top() + m_indicatorMargin.bottom() + 2 * line);
+    }
+
+    QRect ItemViewElement::indicatorImageRect(const QRect& slot, unsigned states) const
+    {
+        // The contents of the rule: the slot less the margin (the border box), less the line (QRenderRule::contentsRect)
+        const int line = checkLookOf(states).m_borderWidth;
+        return slot.marginsRemoved(m_indicatorMargin).adjusted(line, line, -line, -line);
+    }
+
+    void ItemViewElement::drawCheck(QPainter* painter, const QStyleOption* option) const
+    {
+        // QRenderRule::drawRule in the slot: the fill and the line over the border box (BoxElement::drawFrame, which rounds the fill by
+        // the radius as QRenderRule::drawBackground does), then the image in the contents
+        const unsigned states = statesOf(option);
+        const CheckLook look = checkLookOf(states);
+        const bool line = look.m_borderWidth > 0 && look.m_borderColor.isValid();
+        const BoxElement::Radii radii{ m_check.m_radius, m_check.m_radius, m_check.m_radius, m_check.m_radius };
+        const QBrush fill = look.m_fill.isValid() ? QBrush(look.m_fill) : QBrush();
+        BoxElement::drawFrame(painter, option->rect.marginsRemoved(m_indicatorMargin), fill,
+            line ? BoxElement::border(look.m_borderWidth, look.m_borderColor) : BoxElement::Edges(), radii);
+
+        // "": a declared image that loads nothing, which paints nothing (QRenderRule::drawImage, a null icon)
+        if (look.m_image && *look.m_image)
+        {
+            CachedIcon(QString::fromUtf8(look.m_image)).paint(painter, indicatorImageRect(option->rect, states), Qt::AlignCenter);
+        }
+    }
+
+    bool ItemViewElement::wantsStockImage(unsigned states) const
+    {
+        return !checkLookOf(states).m_image;
     }
 
     void ItemViewElement::prepareItem(QStyleOptionViewItem* option) const

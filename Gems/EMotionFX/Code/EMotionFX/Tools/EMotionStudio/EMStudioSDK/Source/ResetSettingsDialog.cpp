@@ -6,6 +6,8 @@
  *
  */
 
+#include "EMStudioFlatSheet.h"
+#include "EMStudioFlatValues.h"
 #include "ResetSettingsDialog.h"
 
 #include <EMotionFX/Source/Actor.h>
@@ -17,6 +19,7 @@
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <QCheckBox>
+#include <QColor>
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QPushButton>
@@ -53,7 +56,9 @@ namespace EMStudio
         setObjectName("StyledWidgetDark");
 
         QLabel* topLabel = new QLabel("<b>Select one or more items that you want to reset:</b>");
-        topLabel->setStyleSheet("background-color: rgb(40, 40, 40); padding: 6px;");
+        topLabel->setObjectName(EMStudioFlat::DialogTopLabelName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            topLabel, QString("background-color: %1; padding: 6px;").arg(EMStudioFlatValues::ResetSettingsTopLabelBackground.name()));
         topLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         vLayout->addWidget(topLabel);
         vLayout->setContentsMargins(0, 0, 0, 0);

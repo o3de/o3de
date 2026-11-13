@@ -10,6 +10,8 @@
 #include "DialogStack.h"
 #include "AzCore/std/iterator.h"
 #include "AzCore/std/limits.h"
+#include "AzQtComponents/Components/Style.h"
+#include "AzQtComponents/Components/StyleManager.h"
 #include "AzQtComponents/Components/Widgets/CardHeader.h"
 #include "MysticQtManager.h"
 #include <QVBoxLayout>
@@ -24,6 +26,33 @@
 
 namespace MysticQt
 {
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace DialogStackFlatInternal
+    {
+        constexpr const char* OpenGapSheet = "QSplitter::handle{ height: 4px; background: transparent; }";
+        constexpr const char* ClosedGapSheet = "QSplitter::handle{ height: 1px; background: transparent; }";
+
+        //! The gap between the cards of a stack: the legacy GUI sets a sheet of the splitter, 4px while the dialog above the handle is
+        //! open and 1px while it is closed. The flattened GUI sets none: the splitter is named (it has no class of its own), and a
+        //! closed dialog tags it, which its elements read (EMStudioFlat)
+        void SetSplitterGap(QSplitter* splitter, bool closed)
+        {
+            AzQtComponents::StyleManager::setLegacyStyleSheet(splitter, QString::fromLatin1(closed ? ClosedGapSheet : OpenGapSheet));
+            if (AzQtComponents::StyleManager::flatStylingActive())
+            {
+                if (closed)
+                {
+                    AzQtComponents::Style::addClass(splitter, QString::fromLatin1(DialogStackClosedTag));
+                }
+                else
+                {
+                    AzQtComponents::Style::removeClass(splitter, QString::fromLatin1(DialogStackClosedTag));
+                }
+            }
+        }
+    } // namespace DialogStackFlatInternal
+
     // dialog stack splitter
     class DialogStackSplitter
         : public QSplitter
@@ -32,7 +61,8 @@ namespace MysticQt
 
         DialogStackSplitter()
         {
-            setStyleSheet("QSplitter::handle{ height: 4px; background: transparent; }");
+            setObjectName(DialogStackSplitterName);
+            DialogStackFlatInternal::SetSplitterGap(this, false);
         }
 
         void MoveFirstSplitterToMin()
@@ -143,7 +173,7 @@ namespace MysticQt
                 if (m_dialogs.back().m_frame->isHidden())
                 {
                     m_dialogs.back().m_splitter->handle(1)->setFixedHeight(1);
-                    m_dialogs.back().m_splitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
+                    DialogStackFlatInternal::SetSplitterGap(m_dialogs.back().m_splitter, true);
                 }
 
                 // disable the splitter
@@ -173,7 +203,7 @@ namespace MysticQt
                 if (m_dialogs.back().m_frame->isHidden())
                 {
                     dialogSplitter->handle(1)->setFixedHeight(1);
-                    dialogSplitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
+                    DialogStackFlatInternal::SetSplitterGap(dialogSplitter, true);
                 }
 
                 // disable the splitter
@@ -380,7 +410,7 @@ namespace MysticQt
         if (dialog != m_dialogs.end() - 1)
         {
             dialog->m_splitter->handle(1)->setFixedHeight(4);
-            dialog->m_splitter->setStyleSheet("QSplitter::handle{ height: 4px; background: transparent; }");
+            DialogStackFlatInternal::SetSplitterGap(dialog->m_splitter, false);
         }
 
         // enable the splitter
@@ -466,7 +496,7 @@ namespace MysticQt
         if (dialog < m_dialogs.end() - 1)
         {
             dialog->m_splitter->handle(1)->setFixedHeight(1);
-            dialog->m_splitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
+            DialogStackFlatInternal::SetSplitterGap(dialog->m_splitter, true);
             dialog->m_splitter->handle(1)->setDisabled(true);
             static_cast<DialogStackSplitter*>(dialog->m_splitter)->MoveFirstSplitterToMin();
         }

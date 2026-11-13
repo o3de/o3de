@@ -12,6 +12,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4244, "-Wunknown-warning-option")
 #include <QAbstractItemView>
+#include <QColor>
 #include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 
@@ -22,6 +23,18 @@ namespace AzQtComponents
 {
     class Style;
     class AssetFolderThumbnailViewDelegate;
+
+    //! The paint values of the thumbnail view that the flattened GUI owns. A named namespace, not an anonymous one: a unity build joins the
+    //! files of a target into one translation unit, where anonymous namespaces merge. The header holds the colours the view's members take
+    //! their value from; AssetFolderThumbnailView.cpp adds the colours it paints to the same namespace.
+    namespace AssetFolderThumbnailViewFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The drag selection rectangle (shown only while drag-selecting)
+        // ------------------------------------------------------------------------------
+        inline constexpr QColor DragSelectFill(255, 255, 255, 20);  // AssetFolderThumbnailView.h:192. TOKENIZE: ThumbnailDragSelectFill
+        inline constexpr QColor DragSelectBorder(255, 255, 255);    // AssetFolderThumbnailView.h:193. TOKENIZE: ThumbnailDragSelectBorder
+    } // namespace AssetFolderThumbnailViewFlat
 
     class AZ_QT_COMPONENTS_API AssetFolderThumbnailView
         : public QAbstractItemView
@@ -189,8 +202,8 @@ namespace AzQtComponents
         QTimer* m_selectionUpdater;
 
         const int m_selectionUpdateInterval = 30; //msec
-        const QColor m_dragSelectRectColor = QColor(255, 255, 255, 20);
-        const QColor m_dragSelectBorderColor = QColor(255, 255, 255);
+        const QColor m_dragSelectRectColor = AssetFolderThumbnailViewFlat::DragSelectFill;
+        const QColor m_dragSelectBorderColor = AssetFolderThumbnailViewFlat::DragSelectBorder;
     };
 
     class AssetFolderThumbnailViewDelegate

@@ -23,6 +23,14 @@ namespace AtomToolsFramework
     //! translation unit, where anonymous namespaces merge.
     namespace InspectorGroupHeaderWidgetInternal
     {
+        //! background-color: InspectorGroupHeaderWidget.cpp:74 (the fill of the header: the legacy sheet reads it, and the flat element
+        //! below). TOKENIZE: InspectorGroupHeaderFill
+        constexpr QColor HeaderFill(0x33, 0x33, 0x33);
+
+        //! border-color: InspectorGroupHeaderWidget.cpp:74 (the line above and below the header: the legacy sheet reads it, and the
+        //! flat element below). TOKENIZE: InspectorGroupHeaderBorder
+        constexpr QColor HeaderBorder(0x1B, 0x1B, 0x1B);
+
         // ------------------------------------------------------------------------------
         // Flattened GUI: the box of the header. The legacy sheets gave it, together, the vertical margin of every label
         // (`.Label, QLabel`, Text.qss:89-95) and its own sheet below, set in the constructor (a fill, and a line above and below
@@ -36,9 +44,9 @@ namespace AtomToolsFramework
             .m_margin = QMargins(0, 1, 0, 1),                                       // margin-top, margin-bottom: Text.qss:93, :94
             .m_nativeBorder = false,                                                // border-style solid: a border of its own (:74)
             .m_idle = {
-                .m_fill = QBrush(QColor(0x33, 0x33, 0x33)),                         // background-color (:74). TOKENIZE: InspectorGroupHeaderFill
-                // border-color #1B1B1B, border-width 1px; border-left and border-right none (:74). TOKENIZE: InspectorGroupHeaderBorder
-                .m_edges = { { 1, QColor(0x1B, 0x1B, 0x1B) }, {}, { 1, QColor(0x1B, 0x1B, 0x1B) }, {} },
+                .m_fill = QBrush(HeaderFill),                                       // background-color (:74)
+                // border-color #1B1B1B, border-width 1px; border-left and border-right none (:74)
+                .m_edges = { { 1, HeaderBorder }, {}, { 1, HeaderBorder }, {} },
             },
         };
 
@@ -71,7 +79,10 @@ namespace AtomToolsFramework
         }
         else
         {
-            setStyleSheet("background-color: #333333; border-style: solid; border-color: #1B1B1B; border-width: 1px; border-left: none; border-right: none;");
+            setStyleSheet(QString("background-color: %1; border-style: solid; border-color: %2; "
+                                  "border-width: 1px; border-left: none; border-right: none;")
+                              .arg(InspectorGroupHeaderWidgetInternal::HeaderFill.name().toUpper())
+                              .arg(InspectorGroupHeaderWidgetInternal::HeaderBorder.name().toUpper()));
         }
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         setFixedHeight(24);

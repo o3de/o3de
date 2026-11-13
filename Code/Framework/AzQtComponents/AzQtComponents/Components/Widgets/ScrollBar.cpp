@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
+#include <AzQtComponents/Components/Widgets/ScrollBarProperties.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
@@ -22,10 +23,7 @@
 
 namespace AzQtComponents
 {
-    static constexpr const char* g_showBackgroundProperty = "ShowBackground";
     static constexpr const char* g_scrollBarModeProperty = "ScrollBarMode";
-    static constexpr const char* g_darkStyleClass = "DarkScrollBar";
-    static constexpr const char* g_backgroundColorProperty = "_o3de_scrollAreaBackgroundColor";
 
     class ScrollBarWatcher : public QObject
     {
@@ -68,7 +66,7 @@ namespace AzQtComponents
                     scrollArea->installEventFilter(this);
                     m_widgets.insert(widget, data);
                     auto cornerWidget = new QWidget();
-                    cornerWidget->setProperty(g_showBackgroundProperty, false);
+                    cornerWidget->setProperty(ScrollBarProperties::ShowBackground, false);
                     scrollArea->setCornerWidget(cornerWidget);
                     cornerWidget->installEventFilter(this);
 
@@ -145,7 +143,7 @@ namespace AzQtComponents
                         {
                             if (parentScrollArea->cornerWidget())
                             {
-                                parentScrollArea->cornerWidget()->setProperty(g_showBackgroundProperty, true);
+                                parentScrollArea->cornerWidget()->setProperty(ScrollBarProperties::ShowBackground, true);
                             }
                         }
                         break;
@@ -153,7 +151,7 @@ namespace AzQtComponents
                         {
                             if (parentScrollArea->cornerWidget())
                             {
-                                parentScrollArea->cornerWidget()->setProperty(g_showBackgroundProperty, false);
+                                parentScrollArea->cornerWidget()->setProperty(ScrollBarProperties::ShowBackground, false);
                             }
                         }
                         break;
@@ -223,14 +221,14 @@ namespace AzQtComponents
     void ScrollBar::applyDarkStyle(QAbstractScrollArea* scrollArea)
     {
         // Note: ScrollBars default to light
-        Style::addClass(scrollArea, g_darkStyleClass);
+        Style::addClass(scrollArea, ScrollBarProperties::DarkStyleClass);
         StyleManager::repolishStyleSheet(scrollArea);
     }
 
     void ScrollBar::applyLightStyle(QAbstractScrollArea* scrollArea)
     {
         // Note: ScrollBars default to light
-        Style::removeClass(scrollArea, g_darkStyleClass);
+        Style::removeClass(scrollArea, ScrollBarProperties::DarkStyleClass);
         StyleManager::repolishStyleSheet(scrollArea);
     }
 
@@ -247,7 +245,7 @@ namespace AzQtComponents
             return;
         }
 
-        scrollArea->setProperty(g_backgroundColorProperty, color);
+        scrollArea->setProperty(ScrollBarProperties::BackgroundColor, color);
         applyBackgroundColor(scrollArea);
     }
 
@@ -258,20 +256,31 @@ namespace AzQtComponents
             return;
         }
 
-        const QVariant background = widget->property(g_backgroundColorProperty);
+        const QVariant background = widget->property(ScrollBarProperties::BackgroundColor);
         if (!background.isValid())
         {
             return;
         }
 
         // The inline sheet's `background` filled the area, its viewport and the lanes of its scroll bars, in every state of the widget:
-        // the viewport fills with Base, the area itself (under the scroll bars) with Window
+        // the viewport fills with Base, the area itself (under the scroll bars) with Window. A deeper sheet than the module's, it
+        // outranked the module's fill of the same widget (the Python Console output's `background-color: #222222`, Editor.qss:196).
         const QColor color = background.value<QColor>();
         QPalette palette = widget->palette();
         palette.setColor(QPalette::Base, color);
         palette.setColor(QPalette::Window, color);
         widget->setPalette(palette);
-        widget->setAutoFillBackground(true);
+
+        // A text edit the flattened style draws as a field (Style::polish gave it a styled background and took its autofill) paints
+        // this colour inside its margin at PE_Widget, whether the field is the style's or sits in the box of a module's element. The
+        // legacy widget had no autofill either (its sheet's background filled the border box), so the margin around its hover or
+        // focus ring, or above its box, shows what is behind it.
+        const bool flattenedTextEditField = StyleManager::stylesheetsDisabled() && widget->testAttribute(Qt::WA_StyledBackground)
+            && (widget->inherits("QTextEdit") || widget->inherits("QPlainTextEdit"));
+        if (!flattenedTextEditField)
+        {
+            widget->setAutoFillBackground(true);
+        }
     }
 
     QPointer<ScrollBarWatcher> ScrollBar::s_scrollBarWatcher = nullptr;

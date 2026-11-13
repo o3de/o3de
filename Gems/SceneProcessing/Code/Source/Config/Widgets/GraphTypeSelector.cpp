@@ -11,6 +11,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <Config/Widgets/GraphTypeSelector.h>
@@ -28,7 +30,12 @@ namespace AZ
             QPushButton* base = new QPushButton("Select required graph types", parent);
             QMenu* menu = new QMenu(base);
             menu->setLayoutDirection(Qt::LeftToRight);
-            menu->setStyleSheet("border: none; background-color: #333333;");
+
+            // The fill the menu gave itself, `menu->setStyleSheet("border: none; background-color: #333333;")` (the form before the
+            // flattening): the legacy GUI sets it as before. The flattened GUI sets none, and the menu is marked for the element that
+            // draws it (MenuElement). The fill is the one the element reads (Foundations::Low), so both rungs read a single value
+            AzQtComponents::MenuElement::setFilledPopupSheet(menu,
+                QStringLiteral("border: none; background-color: %1;").arg(AzQtComponents::Foundations::Low.name()));
 
             SerializeContext* context = nullptr;
             ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);

@@ -147,6 +147,10 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! Flattened GUI: the elements that draw the header's dark box, which the legacy GUI draws with the sheets the form gave the
+        //! box and six widgets in it (EntityPropertyEditor.ui). The first editor built in the flattened GUI registers them, once.
+        static void RegisterFlatElements();
+
         // implementation of IPropertyEditorNotify:
 
         // CALLED FOR UNDO PURPOSES

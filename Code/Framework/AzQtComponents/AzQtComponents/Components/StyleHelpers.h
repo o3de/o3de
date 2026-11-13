@@ -45,6 +45,17 @@ namespace AzQtComponents
         void repolishWhenPropertyChanges(T* widget, void (T::*signal)(Args...))
         {
             QObject::connect(widget, signal, widget, [widget]() {
+                // Flattened GUI: the repolish below repainted the widget and each widget under it in the legacy GUI. The sheet style
+                // unpolishes and polishes each of them, which sets its palette (and font) again (QStyleSheetStyle::unpolish,
+                // unsetPalette; QStyleSheetStyle::polish, setPalette), and QWidget::setPalette updates a widget whose palette changes.
+                // The same repolish through Style sets no palette of its own that changes and updates nothing, so a look the flattened
+                // paint code draws from the property would stay as it was until something else paints the widget. One update of the
+                // widget paints it and everything in it again, the region the legacy repolish painted.
+                if (StyleManager::flatStylingActive())
+                {
+                    widget->update();
+                }
+
                 // Prevent asserts in Unit Tests
                 if (!StyleManager::isInstanced())
                 {

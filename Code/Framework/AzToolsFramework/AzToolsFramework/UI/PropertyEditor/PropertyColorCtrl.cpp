@@ -7,6 +7,11 @@
  */
 #include "PropertyColorCtrl.hxx"
 #include "PropertyQTConstants.h"
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Utilities/Conversions.h>
@@ -24,6 +29,66 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! The colour the colour property control draws the outline of its swatch with, named, so the legacy and the flattened GUI read one
+    //! value. A named namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces
+    //! merge.
+    namespace PropertyColorCtrlFlatInternal
+    {
+        constexpr QColor SwatchOutline(0x33, 0x33, 0x33);   // PropertyColorCtrl.cpp:124. TOKENIZE: ColorSwatchOutline
+
+        //! The colour of the text in the colour field while what is typed is not a valid colour: the `color: red;` of OnTextEdited
+        //! (PropertyColorCtrl.cpp:326, before the flattening). The sheet of the legacy GUI is built from it. TOKENIZE: ColorEditInvalidText
+        constexpr QColor InvalidText(0xFF, 0x00, 0x00);
+    }
+
+    // =======================================================================
+    // Flattened GUI: the colour field's invalid text
+    //
+    // OnTextEdited turned the text of the colour field red with a sheet of the field while what is typed is invalid, and took the sheet
+    // away with any other text. The legacy GUI sets that sheet; the flattened GUI sets none, and tags the field with the class the
+    // element below is matched by (Style::addClass and removeClass), which polish the field again.
+    // =======================================================================
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation unit,
+    //! where anonymous namespaces merge.
+    namespace PropertyColorCtrlFlatInternal
+    {
+        //! The class tag of the colour field that says its text is not valid: the flattened GUI's form of the sheet
+        constexpr const char* InvalidTextTag = "ColorEditInvalid";
+
+        //! `color: red;` of the sheet OnTextEdited set (PropertyColorCtrl.cpp:326, before the flattening), over the field's own text:
+        //! the family and the size of the entry fields (BaseStyleSheet.qss:78, :82), which an element restates, as it takes the place
+        //! of the Global one. TOKENIZE: ColorEditInvalidText
+        const AzQtComponents::TextElement InvalidTextElement{
+            .m_name = "Editor.Text.ColorEditInvalid",
+            .m_family = AzQtComponents::Foundations::Field::Family,         // BaseStyleSheet.qss:78
+            .m_pixelSize = AzQtComponents::Foundations::Field::Size,        // BaseStyleSheet.qss:82
+            .m_color = InvalidText,                                         // PropertyColorCtrl.cpp:326 (before the flattening)
+        };
+
+        //! `color: red;` was the field's own sheet: the colour field of a PropertyColorCtrl, while its text is not valid
+        bool isInvalidColorEdit(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::childOfClass(widget, "AzToolsFramework::PropertyColorCtrl")
+                && AzQtComponents::Selectors::tagged(widget, InvalidTextTag);
+        }
+
+        //! The first control built in the flattened GUI registers the element, once
+        void registerFlatElements()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                AzQtComponents::TextElement::registerElement(&InvalidTextElement, &QLineEdit::staticMetaObject, &isInvalidColorEdit);
+            }
+        }
+    } // namespace PropertyColorCtrlFlatInternal
+
     PropertyColorCtrl::PropertyColorCtrl(QWidget* pParent)
         : QWidget(pParent)
     {
@@ -74,6 +139,11 @@ namespace AzToolsFramework
         connect(m_colorEdit, SIGNAL(textEdited(const QString&)), this, SLOT(OnTextEdited(const QString&)));
 
         new AzQtComponents::LineEditRevertHandler(m_colorEdit);
+
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            PropertyColorCtrlFlatInternal::registerFlatElements();
+        }
     }
 
     PropertyColorCtrl::~PropertyColorCtrl()
@@ -121,7 +191,7 @@ namespace AzToolsFramework
             pixmap.fill(TransformColor(color, m_config.m_propertyColorSpaceId, m_config.m_colorSwatchColorSpaceId));
             // Draw a border
             QPainter painter(&pixmap);
-            painter.setPen(QColor("#333333"));
+            painter.setPen(PropertyColorCtrlFlatInternal::SwatchOutline);
             painter.drawRect(pixmap.rect().adjusted(0, 0, -1, -1));
             QIcon newIcon(pixmap);
             m_pDefaultButton->setIcon(newIcon);
@@ -321,13 +391,23 @@ namespace AzToolsFramework
         QString text = newText;
         QValidator::State validateState = m_colorEdit->validator()->validate(text, pos);
 
-        if (validateState == QValidator::State::Invalid)
+        // The text is red while what is typed is invalid. The legacy GUI sets a sheet of the field for that and takes it away with any
+        // other text; the flattened GUI tags the field, which the element is matched by, and the field is polished again when the tag
+        // changes (a tag it has, or lacks, already changes nothing)
+        const bool invalid = validateState == QValidator::State::Invalid;
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_colorEdit, invalid ? QStringLiteral("color: %1;").arg(PropertyColorCtrlFlatInternal::InvalidText.name()) : QString());
+        if (AzQtComponents::StyleManager::flatStylingActive())
         {
-            m_colorEdit->setStyleSheet("color: red;");
-        }
-        else
-        {
-            m_colorEdit->setStyleSheet("");
+            const QString tag = QString::fromLatin1(PropertyColorCtrlFlatInternal::InvalidTextTag);
+            if (invalid)
+            {
+                AzQtComponents::Style::addClass(m_colorEdit, tag);
+            }
+            else
+            {
+                AzQtComponents::Style::removeClass(m_colorEdit, tag);
+            }
         }
     }
 

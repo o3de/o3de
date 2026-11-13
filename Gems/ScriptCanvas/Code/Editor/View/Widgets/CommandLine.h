@@ -251,6 +251,11 @@ namespace ScriptCanvasEditor
             CommandLine(QWidget* object = nullptr);
             ~CommandLine() override;
 
+            //! Flattened GUI: the element that draws the fill of the command list, which the legacy GUI draws with the sheet the form
+            //! gave it. The constructor registers it (once) in the flattened GUI; the entry is public so that a twin test can register
+            //! it (there is none in the suites yet).
+            static void RegisterFlatElements();
+
             void showEvent(QShowEvent *event) override;
             void onTextChanged(const QString&);
             void onEditKeyReleaseEvent(QKeyEvent*);

@@ -20,6 +20,7 @@
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
 #include <native/ui/EnabledRelocationTypesModel.h>
+#include <native/ui/FlatElements.h>
 #include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -197,6 +198,18 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , m_enabledRelocationTypesModel(new AssetProcessor::EnabledRelocationTypesModel(this))
 {
     ui->setupUi(this);
+
+    // The sheets the form gave its labels (the builders page) and the dividers of the settings page: the legacy GUI sets them here,
+    // the flattened GUI sets none, and its elements draw their look (native/ui/FlatElements.cpp, "The inline sheets")
+    for (QLabel* label : { ui->builderInfoHeaderTitleName, ui->builderInfoDetailsTitleVersionNumber, ui->builderInfoDetailsTitleFingerprint,
+                           ui->builderInfoDetailsTitleType, ui->builderInfoDetailsTitleBusId })
+    {
+        AssetProcessor::SetLegacySheet(label, AssetProcessor::InlineSheets::BoldFont);
+    }
+    for (QFrame* divider : { ui->line, ui->line_2, ui->line_3, ui->line_4, ui->line_5 })
+    {
+        AssetProcessor::SetLegacySheet(divider, AssetProcessor::InlineSheets::Divider);
+    }
 
     // Don't show the "Filter by:" text on this filter widget
     ui->jobFilteredSearchWidget->clearLabelText();
@@ -884,7 +897,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     button->setFlat(true);
     button->setIcon(QIcon(":/Delete.png"));
     button->setIconSize(QSize(14, 14));
-    button->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
+    AssetProcessor::SetLegacySheet(button, AssetProcessor::InlineSheets::RemovePatternButton);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
     button->setToolTip(tr("Removes the pattern to be considered for caching"));
@@ -951,7 +964,7 @@ void MainWindow::CheckAssetServerStates()
         case CacheServerData::StatusLevel::None:
         {
             m_cacheServerData.m_updateStatus = true;
-            ui->sharedCacheStatus->setStyleSheet("QLabel#sharedCacheStatus");
+            AssetProcessor::SetLegacySheet(ui->sharedCacheStatus, AssetProcessor::InlineSheets::SharedCacheStatus);
             ui->sharedCacheStatus->setText("");
             break;
         }

@@ -13,8 +13,11 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSortFilterProxyModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigateWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSelectionProxyModel.h>
+#include <QColor>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QTreeView>
@@ -68,7 +71,9 @@ namespace EMStudio
             m_treeView->header()->setSectionResizeMode(AnimGraphModel::COLUMN_PALETTE_NAME, QHeaderView::ResizeMode::ResizeToContents);
         }
         // Set the custom delegate
-        m_treeView->setStyleSheet("font-size: 11px; color: #e9e9e9;");
+        m_treeView->setObjectName(EMStudioFlat::GraphTreeName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_treeView, QString("font-size: 11px; color: %1;").arg(EMStudioFlatValues::GraphTreeText.name()));
         m_treeView->setItemDelegate(new AnimGraphItemDelegate(m_treeView));
 
         // tree's selection model

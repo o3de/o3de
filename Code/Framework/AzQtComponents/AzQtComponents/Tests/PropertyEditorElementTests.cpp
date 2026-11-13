@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ColorPickerElements.h>
+#include <AzQtComponents/Components/Elements/ControlElements.h>
 #include <AzQtComponents/Components/Elements/PropertyEditorElements.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Style.h>
@@ -194,10 +195,11 @@ namespace AzQtComponents
                 m_application.reset();
             }
 
-            //! Registered once for the process, as the application does from Style::polish(QApplication*), and the element of the
-            //! test for the stand-in header's #Background
+            //! Registered once for the process, in the order the application does from Style::polish(QApplication*), and the element of
+            //! the test for the stand-in header's #Background
             static void registerElements()
             {
+                ControlElements::registerGlobal();          // first: the picker's rows are outranked by it where both reach a label
                 ColorPickerElements::registerGlobal();      // the labels of a picker are its elements' too (the registry test below)
                 PropertyEditorElements::registerGlobal();
 

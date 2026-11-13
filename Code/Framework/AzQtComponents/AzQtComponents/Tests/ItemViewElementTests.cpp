@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -51,11 +52,13 @@
 #include <QStyleOptionViewItem>
 #include <QStyledItemDelegate>
 #include <QTableView>
+#include <QTextEdit>
 #include <QTreeView>
 #include <QUndoStack>
 #include <QtMath>
 
 #include <algorithm>
+#include <cstdio>
 #include <iterator>
 #include <string>
 #include <type_traits>
@@ -377,6 +380,57 @@ namespace AzQtComponents
             },
         };
 
+        // ---- AssetImporterWindow.qss:6-40 (the sheet the Editor's asset importer sets on its window; its first rule, the delete button's,
+        // reaches no widget): the check box of the items of the trees below it, over CheckBox.qss:23-73 and TableView.qss:78-85 of the
+        // application sheet. The three PNGs it names are in no .qrc, so each `image` is a declared image that loads nothing. The element
+        // is the Editor's (AssetImporterWindow.cpp, AssetImporterWindowFlatInternal::ImporterTree), whose values these are.
+        const char* const ImporterCheckRules =
+            "QTreeView::indicator {"
+            "    width: 12px;"
+            "    height: 12px;"
+            "    border: 1px solid rgb(204, 204, 204);"
+            "    border-radius: 2px;"
+            "}"
+            "QTreeView::indicator:checked {"
+            "    background-color: rgb(66, 133, 244);"
+            "    image: url(:Icons/CheckMark_Checked.png);"
+            "    border-radius: 2px;"
+            "    border: 0px;"
+            "}"
+            "QTreeView::indicator:hover {"
+            "    border: 1px solid white;"
+            "}"
+            "QTreeView::indicator:checked:hover {"
+            "    image: url(:Icons/CheckMark_Hover.png);"
+            "}"
+            "QTreeView::indicator:!checked:hover {"
+            "    image: url(:Icons/CheckMark_Unchecked_Hover.png);"
+            "}"
+            "QTreeView::indicator:!enabled {"
+            "    border: 1px solid rgb(102, 102, 102);"
+            "}";
+        const ItemViewElement ImporterCheckTree{
+            .m_name = "Test.ItemView.ImporterCheckTree",
+            .m_indicatorSize = QSize(12, 12),                                                   // :8-9
+            .m_check = {
+                .m_radius = 2,                                                                  // :11, :18
+                .m_faces = {
+                    // :10
+                    { .m_states = 0, .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(204, 204, 204) } },
+                    // :16-19
+                    { .m_states = ItemViewElement::Checked,
+                      .m_face = { .m_borderWidth = 0, .m_fill = QColor(66, 133, 244), .m_image = "" } },
+                    // :24
+                    { .m_states = ItemViewElement::Hover, .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(255, 255, 255) } },
+                    // :39
+                    { .m_states = ItemViewElement::Disabled,
+                      .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(102, 102, 102) } },
+                    // :29, :34
+                    { .m_states = ItemViewElement::Hover, .m_face = { .m_image = "" } },
+                },
+            },
+        };
+
         const char* const ViewKinds[] = { "QTreeView", "TableView", "QTableView", "QListView" };
         const Qt::LayoutDirection Directions[] = { Qt::LeftToRight, Qt::RightToLeft };
         const qreal Ratios[] = { 1.0, 1.5 };
@@ -423,6 +477,8 @@ namespace AzQtComponents
                 ItemViewElement::registerElement(&AbLogHeader, &AzQtComponents::TableView::staticMetaObject, [](const QWidget* w) { return named(w, "logTableView"); });
                 ItemViewElement::registerElement(&AbTabHeader, &AzQtComponents::TableView::staticMetaObject, [](const QWidget* w) { return named(w, "abFileTable"); });
                 ItemViewElement::registerElement(&OutlinerTree, &QTreeView::staticMetaObject, [](const QWidget* w) { return named(w, "m_objectTree"); });
+                ItemViewElement::registerElement(
+                    &ImporterCheckTree, &QTreeView::staticMetaObject, [](const QWidget* w) { return named(w, "importerTree"); });
             }
 
             ~ItemViewElementTests() override
@@ -1777,7 +1833,8 @@ namespace AzQtComponents
                 EXPECT_EQ(console->viewport()->style(), flat);
                 EXPECT_EQ(console->verticalScrollBar()->style(), flat);
                 EXPECT_EQ(console->horizontalScrollBar()->style(), flat);
-                EXPECT_TRUE(console->autoFillBackground());
+                // The field paints the colour inside its margin; the legacy console had no autofill either (ScrollBar.cpp)
+                EXPECT_FALSE(console->autoFillBackground());
                 for (const auto group : { QPalette::Active, QPalette::Inactive, QPalette::Disabled })
                 {
                     EXPECT_EQ(console->palette().color(group, QPalette::Base), color) << "group " << int(group);
@@ -2155,6 +2212,956 @@ namespace AzQtComponents
             {
                 EXPECT_NEAR(firstInk(rows[i]), native[i], 1) << "row " << rows[i];      // a platform's font engine is a pixel off at most
             }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T11: the check box of an item as a rule of its own (ItemViewElement::m_check). The legacy twin is the importer's tree under the
+        // REAL application sheet (on the root) and the sheet of the importer's window (on a window below the root: a sheet's weight is the
+        // depth of its widget before it is the specificity of a rule, so the window's sheet outranks the application's for what it
+        // declares, as AssetImporterWindow.qss does in the Editor). The flat twin is the tree under the style, with the element of the
+        // tests.
+        // ----------------------------------------------------------------------------------
+
+        const qreal CheckRatios[] = { 1.0, 1.5, 2.0 };
+
+        struct CheckCase
+        {
+            const char* m_name;
+            QStyle::State m_state;
+            Qt::CheckState m_check;
+        };
+
+        // The state QStyledItemDelegate::initStyleOption gives an item (State_On, State_NoChange or State_Off for its check state)
+        const QStyle::State CheckEnabled = QStyle::State_Enabled | QStyle::State_Active;
+        const QStyle::State CheckDisabled = QStyle::State_Active;
+        const CheckCase CheckCases[] = {
+            { "unchecked", CheckEnabled | QStyle::State_Off, Qt::Unchecked },
+            { "checked", CheckEnabled | QStyle::State_On, Qt::Checked },
+            { "indeterminate", CheckEnabled | QStyle::State_NoChange, Qt::PartiallyChecked },
+            { "unchecked and hovered", CheckEnabled | QStyle::State_Off | QStyle::State_MouseOver, Qt::Unchecked },
+            { "checked and hovered", CheckEnabled | QStyle::State_On | QStyle::State_MouseOver, Qt::Checked },
+            { "indeterminate and hovered", CheckEnabled | QStyle::State_NoChange | QStyle::State_MouseOver, Qt::PartiallyChecked },
+            { "unchecked and disabled", CheckDisabled | QStyle::State_Off, Qt::Unchecked },
+            { "checked and disabled", CheckDisabled | QStyle::State_On, Qt::Checked },
+            { "indeterminate and disabled", CheckDisabled | QStyle::State_NoChange, Qt::PartiallyChecked },
+        };
+
+        //! The option of an item with a text and a check box in a state, as the delegate makes it
+        QStyleOptionViewItem checkItemOption(const QWidget* view, const CheckCase& test, const QRect& rect)
+        {
+            QStyleOptionViewItem option = paintOption(view, test.m_state, rect, false, true);
+            option.checkState = test.m_check;
+            return option;
+        }
+
+        //! The importer's tree twice (see above)
+        struct ImporterCheckTwins
+        {
+            ImporterCheckTwins(const ItemViewElementTests& tests, Qt::LayoutDirection direction)
+            {
+                build(m_legacy, direction, m_legacyView);
+                m_legacy.setStyleSheet(appSheet());
+                m_legacy.findChild<QWidget*>(QStringLiteral("importerWindow"))->setStyleSheet(QString::fromUtf8(ImporterCheckRules));
+                show(m_legacy);
+
+                build(m_flat, direction, m_flatView);
+                m_flat.setProperty("itemViewElementTestsFlat", true);
+                QPalette palette;
+                tests.style()->polish(palette);
+                m_flat.setPalette(palette);
+                m_flat.setStyle(tests.style());
+                for (QWidget* child : m_flat.findChildren<QWidget*>())
+                {
+                    child->setStyle(tests.style());
+                }
+                show(m_flat);
+
+                // The font is not what the tests prove: the flat view has the one the sheet gave its twin
+                m_flatView->setFont(m_legacyView->font());
+            }
+
+            static void build(QWidget& root, Qt::LayoutDirection direction, ExposedView<QTreeView>*& view)
+            {
+                root.setObjectName(QStringLiteral("root"));
+                root.setLayoutDirection(direction);
+                auto* window = new QWidget(&root);
+                window->setObjectName(QStringLiteral("importerWindow"));
+                window->setGeometry(0, 0, 320, 240);
+                view = new ExposedView<QTreeView>(window);
+                view->setObjectName(QStringLiteral("importerTree"));
+                view->setGeometry(0, 0, 320, 240);
+                view->setModel(makeModel(&root, true));
+                view->setIconSize(QSize(16, 16));
+            }
+
+            static void show(QWidget& root)
+            {
+                root.setAttribute(Qt::WA_DontShowOnScreen);
+                root.resize(320, 240);
+                root.show();
+                QApplication::processEvents();
+            }
+
+            QWidget m_legacy;
+            QWidget m_flat;
+            ExposedView<QTreeView>* m_legacyView = nullptr;
+            ExposedView<QTreeView>* m_flatView = nullptr;
+        };
+
+        TEST_F(ItemViewElementTests, Check_TheRuleSizesTheBoxAndTheItemAndPlacesTheCheckBoxInEveryState)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());   // the test environment sets it (AzQtComponentTests.cpp)
+            for (const Qt::LayoutDirection direction : Directions)
+            {
+                SCOPED_TRACE(direction == Qt::RightToLeft ? "right to left" : "left to right");
+                ImporterCheckTwins twins(*this, direction);
+                const QWidget* flatView = twins.m_flatView;
+                const QWidget* legacyView = twins.m_legacyView;
+                ASSERT_TRUE(ItemViewElement::forWidget(flatView) != nullptr);
+                ASSERT_TRUE(ItemViewElement::forWidget(legacyView) == nullptr);
+
+                for (const CheckCase& test : CheckCases)
+                {
+                    SCOPED_TRACE(test.m_name);
+                    const QRect rect(7, 11, 140, 24);
+                    const QStyleOptionViewItem legacyOption = checkItemOption(legacyView, test, rect);
+                    const QStyleOptionViewItem flatOption = checkItemOption(flatView, test, rect);
+
+                    // The room the layout makes for the box is the rule's of the state: 12 by 12, the 3px of margin-left of the
+                    // application's rule for a tree (TableView.qss:84) and the line of the state around it: a checked box has none,
+                    // unless it is hovered (the window's :hover rule is after its :checked) or disabled
+                    const int legacyWidth = legacyView->style()->pixelMetric(QStyle::PM_IndicatorWidth, &legacyOption, legacyView);
+                    const int legacyHeight = legacyView->style()->pixelMetric(QStyle::PM_IndicatorHeight, &legacyOption, legacyView);
+                    const bool bare = test.m_check == Qt::Checked && test.m_state.testFlag(QStyle::State_Enabled)
+                        && !test.m_state.testFlag(QStyle::State_MouseOver);
+                    EXPECT_EQ(legacyWidth, bare ? 9 : 11);
+                    EXPECT_EQ(legacyHeight, bare ? 12 : 14);
+                    EXPECT_EQ(flatView->style()->pixelMetric(QStyle::PM_IndicatorWidth, &flatOption, flatView), legacyWidth);
+                    EXPECT_EQ(flatView->style()->pixelMetric(QStyle::PM_IndicatorHeight, &flatOption, flatView), legacyHeight);
+
+                    // The size of the item, and the rects of its check box and text
+                    EXPECT_EQ(flatView->style()->sizeFromContents(QStyle::CT_ItemViewItem, &flatOption, QSize(), flatView),
+                        legacyView->style()->sizeFromContents(QStyle::CT_ItemViewItem, &legacyOption, QSize(), legacyView));
+                    for (const auto element :
+                        { QStyle::SE_ItemViewItemCheckIndicator, QStyle::SE_ItemViewItemText, QStyle::SE_ItemViewItemFocusRect })
+                    {
+                        EXPECT_EQ(flatView->style()->subElementRect(element, &flatOption, flatView),
+                            legacyView->style()->subElementRect(element, &legacyOption, legacyView)) << "element " << int(element);
+                    }
+                    EXPECT_EQ(flatView->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &flatOption, flatView).size(),
+                        QSize(legacyWidth, legacyHeight));
+                }
+            }
+        }
+
+        //! PE_IndicatorItemViewItemCheck in the slot the item gives its check box (QCommonStyle, CE_ItemViewItem)
+        QImage paintedCheckBox(const ExposedView<QTreeView>* view, const CheckCase& test, qreal ratio)
+        {
+            return drawn(QSize(160, 40), ratio, [&](QPainter* painter)
+            {
+                const QStyleOptionViewItem item = checkItemOption(view, test, QRect(7, 8, 140, 24));
+                QStyleOptionViewItem box(item);
+                box.rect = view->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &item, view);
+                view->style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &box, painter, view);
+            });
+        }
+
+        //! CE_ItemViewItem of a whole item: its text, its fill in the state and the box
+        QImage paintedCheckItem(const ExposedView<QTreeView>* view, const CheckCase& test, qreal ratio)
+        {
+            return drawn(QSize(160, 40), ratio, [&](QPainter* painter)
+            {
+                const QStyleOptionViewItem item = checkItemOption(view, test, QRect(8, 8, 140, 24));
+                view->style()->drawControl(QStyle::CE_ItemViewItem, &item, painter, view);
+            });
+        }
+
+        //! The pixels of a rect of an image (at ratio 1) that are not the backdrop `drawn` fills the image with
+        int countNotBackdrop(const QImage& image, const QRect& rect)
+        {
+            int count = 0;
+            for (int y = rect.top(); y <= rect.bottom(); ++y)
+            {
+                for (int x = rect.left(); x <= rect.right(); ++x)
+                {
+                    count += (QColor::fromRgba(image.pixel(x, y)) != rgb(0x808080)) ? 1 : 0;
+                }
+            }
+            return count;
+        }
+
+        TEST_F(ItemViewElementTests, Check_TheBoxIsTheRulesFillLineAndImageInEveryStateAtEveryRatio)
+        {
+            // The stock images of the application sheet are in the library: a process that did not register them would draw none, and
+            // the twins would be two boxes with nothing inside the line
+            for (const char* stock : { "off", "off-disabled", "partial-selected", "partial-selected-disabled" })
+            {
+                ASSERT_TRUE(QFile::exists(QStringLiteral(":/stylesheet/img/UI20/checkbox/%1.svg").arg(QLatin1String(stock)))) << stock;
+            }
+
+            Failures failures;
+            ImporterCheckTwins twins(*this, Qt::LeftToRight);
+            for (const qreal ratio : CheckRatios)
+            {
+                for (const CheckCase& test : CheckCases)
+                {
+                    const std::string name = std::string(test.m_name) + " at ratio " + std::to_string(ratio).substr(0, 3);
+                    const QImage legacy = paintedCheckBox(twins.m_legacyView, test, ratio);
+                    failures.check(name, paintedCheckBox(twins.m_flatView, test, ratio), legacy);
+
+                    // The twins are not two images of nothing: the sheet's colours are in the legacy one (at ratio 1, where a line is a
+                    // pixel)
+                    if (ratio == 1.0)
+                    {
+                        const QString state = QString::fromLatin1(test.m_name);
+                        const bool checked = test.m_check == Qt::Checked;
+                        const bool hovered = state.contains(QLatin1String("hovered"));
+                        const bool disabled = state.contains(QLatin1String("disabled"));
+                        if (checked)
+                        {
+                            EXPECT_GT(countOf(legacy, rgb(0x4285F4)), 0) << name;                           // :16
+                        }
+                        if (hovered)
+                        {
+                            EXPECT_GT(countOf(legacy, QColor(Qt::white)), 0) << name;                       // :24
+                        }
+                        else if (disabled)
+                        {
+                            EXPECT_GT(countOf(legacy, rgb(0x666666)), 0) << name;                           // :39
+                        }
+                        else if (!checked)
+                        {
+                            EXPECT_GT(countOf(legacy, rgb(0xCCCCCC)), 0) << name;                           // :10
+                        }
+
+                        // What is in the box: it begins 3px to the left of its slot (the margin-left of -3, TableView.qss:84), and the
+                        // image is inside its line. A state with the stock image has it (a white outline, a blue square, grey ones); a
+                        // state with a declared image that loads nothing has the rule's fill, or the backdrop, and nothing else.
+                        const QStyleOptionViewItem item = checkItemOption(twins.m_legacyView, test, QRect(7, 8, 140, 24));
+                        const QRect slot = twins.m_legacyView->style()->subElementRect(
+                            QStyle::SE_ItemViewItemCheckIndicator, &item, twins.m_legacyView);
+                        const QRect box = slot.adjusted(-3, 0, 0, 0);
+                        if (!checked && !hovered)
+                        {
+                            EXPECT_GT(countNotBackdrop(legacy, box.adjusted(1, 1, -1, -1)), 20) << name;
+                        }
+                        else
+                        {
+                            EXPECT_EQ(QColor::fromRgba(legacy.pixel(box.center().x(), box.center().y())),
+                                checked ? rgb(0x4285F4) : rgb(0x808080)) << name;
+                            if (!checked)
+                            {
+                                // (inside the line less its rounded corner: the radius of 2 and the line of 1)
+                                EXPECT_EQ(countNotBackdrop(legacy, box.adjusted(3, 3, -3, -3)), 0) << name;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // The box sticks out to the physical left of its slot (the margin of the sheet is not mirrored): right to left as well
+            ImporterCheckTwins mirrored(*this, Qt::RightToLeft);
+            for (const CheckCase& test : CheckCases)
+            {
+                failures.check(std::string(test.m_name) + " right to left at ratio 1.5", paintedCheckBox(mirrored.m_flatView, test, 1.5),
+                    paintedCheckBox(mirrored.m_legacyView, test, 1.5));
+            }
+        }
+
+        TEST_F(ItemViewElementTests, Check_TheItemPaintsItsBoxAndMovesItsTextInEveryStateAtEveryRatio)
+        {
+            Failures failures;
+            ImporterCheckTwins twins(*this, Qt::LeftToRight);
+            for (const qreal ratio : CheckRatios)
+            {
+                for (const CheckCase& test : CheckCases)
+                {
+                    const std::string name = std::string(test.m_name) + " as a whole item at ratio " + std::to_string(ratio).substr(0, 3);
+                    failures.check(
+                        name, paintedCheckItem(twins.m_flatView, test, ratio), paintedCheckItem(twins.m_legacyView, test, ratio));
+                }
+            }
+
+            // Right to left: the text is on the other side of the box
+            ImporterCheckTwins mirrored(*this, Qt::RightToLeft);
+            for (const CheckCase& test : CheckCases)
+            {
+                failures.check(std::string(test.m_name) + " as a whole item right to left at ratio 1.5",
+                    paintedCheckItem(mirrored.m_flatView, test, 1.5), paintedCheckItem(mirrored.m_legacyView, test, 1.5));
+            }
+        }
+
+        TEST_F(ItemViewElementTests, Check_AnImageOfTheRuleIsPaintedInsideItsLine)
+        {
+            // An image of the rule's own (a resource), which no sheet of the engine declares yet: the box of the state, then the image
+            // in the contents, as QRenderRule::drawImage paints it
+            const QString image = QStringLiteral(":/stylesheet/img/UI20/checkbox/on.svg");
+            ASSERT_TRUE(QFile::exists(image));
+            const ItemViewElement element{
+                .m_indicatorSize = QSize(12, 12),
+                .m_check = {
+                    .m_faces = { { .m_states = 0, .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(Qt::white),
+                                                              .m_image = ":/stylesheet/img/UI20/checkbox/on.svg" } } },
+                },
+            };
+            ASSERT_TRUE(element.m_check.declared());
+            EXPECT_FALSE(element.wantsStockImage(0));
+
+            // 12 x 12, the margin of 2px (the struct's) and the line of 1px around it: the slot, and the contents inside the line
+            const QRect slot(4, 4, 18, 18);
+            ASSERT_EQ(element.indicatorBox(0), slot.size());
+            const QRect contents = element.indicatorImageRect(slot, 0);
+            EXPECT_EQ(contents, QRect(7, 7, 12, 12));
+
+            for (const qreal ratio : { 1.0, 2.0 })
+            {
+                SCOPED_TRACE(ratio);
+                const auto deviceRect = [&](const QRect& rect) { return QRect(rect.topLeft() * ratio, rect.size() * ratio); };
+                const QImage painted = drawn(QSize(26, 26), ratio, [&](QPainter* painter)
+                {
+                    QStyleOptionViewItem option;
+                    option.state = QStyle::State_Enabled | QStyle::State_Active;
+                    option.rect = slot;
+                    element.drawCheck(painter, &option);
+                });
+                const QImage expected = drawn(QSize(26, 26), ratio, [&](QPainter* painter)
+                {
+                    QIcon(image).paint(painter, contents, Qt::AlignCenter);
+                });
+
+                // The contents are the icon's pixels, there is something in them, and the line is white at the corner of the box
+                const QImage paintedContents = painted.copy(deviceRect(contents));
+                EXPECT_EQ(differing(paintedContents, expected.copy(deviceRect(contents))), 0);
+                EXPECT_GT(countNotBackdrop(paintedContents, QRect(QPoint(), paintedContents.size())), 20);
+                EXPECT_EQ(QColor::fromRgba(painted.pixel(int(6 * ratio), int(6 * ratio))), QColor(Qt::white));
+            }
+
+            // A state that declares no image wants the stock one, whatever else it declares
+            const ItemViewElement lineOnly{
+                .m_check = { .m_faces = { { .m_states = 0, .m_face = { .m_borderWidth = 1, .m_borderColor = QColor(Qt::white) } } } },
+            };
+            EXPECT_TRUE(lineOnly.wantsStockImage(0));
+        }
+
+        TEST_F(ItemViewElementTests, Check_TheCascadeOfTheRulesLeavesTheLookOfEachState)
+        {
+            // The table of the importer's check box in each state, from AssetImporterWindow.qss over the application sheet (the stock image
+            // is the application sheet's: CheckBox.qss's off, partial-selected and their -disabled)
+            struct Expected
+            {
+                unsigned m_states;
+                int m_line;
+                QColor m_lineColor;
+                QColor m_fill;
+                const char* m_image;        // nullptr: the stock one
+            };
+            const unsigned h = ItemViewElement::Hover;
+            const unsigned c = ItemViewElement::Checked;
+            const unsigned i = ItemViewElement::Indeterminate;
+            const unsigned d = ItemViewElement::Disabled;
+            const Expected table[] = {
+                { 0, 1, rgb(0xCCCCCC), QColor(), nullptr },
+                { i, 1, rgb(0xCCCCCC), QColor(), nullptr },
+                { c, 0, QColor(), rgb(0x4285F4), "" },
+                { h, 1, QColor(Qt::white), QColor(), "" },
+                { h | i, 1, QColor(Qt::white), QColor(), "" },
+                { h | c, 1, QColor(Qt::white), rgb(0x4285F4), "" },
+                { d, 1, rgb(0x666666), QColor(), nullptr },
+                { d | i, 1, rgb(0x666666), QColor(), nullptr },
+                { d | c, 1, rgb(0x666666), rgb(0x4285F4), "" },
+            };
+            for (const Expected& expected : table)
+            {
+                SCOPED_TRACE(expected.m_states);
+                const ItemViewElement::CheckLook look = ImporterCheckTree.checkLookOf(expected.m_states);
+                EXPECT_EQ(look.m_borderWidth, expected.m_line);
+                EXPECT_EQ(look.m_borderColor, expected.m_lineColor);
+                EXPECT_EQ(look.m_fill, expected.m_fill);
+                ASSERT_EQ(look.m_image == nullptr, expected.m_image == nullptr);
+                if (expected.m_image)
+                {
+                    EXPECT_STREQ(look.m_image, expected.m_image);
+                }
+            }
+
+            // An element with no rule of its own has none: no line, no fill, the stock image, and the box of the size and the margin
+            const ItemViewElement plain{};
+            EXPECT_FALSE(plain.m_check.declared());
+            EXPECT_TRUE(ImporterCheckTree.m_check.declared());
+            const ItemViewElement::CheckLook none =
+                plain.checkLookOf(ItemViewElement::Hover | ItemViewElement::Checked | ItemViewElement::Disabled);
+            EXPECT_EQ(none.m_borderWidth, 0);
+            EXPECT_FALSE(none.m_fill.isValid());
+            EXPECT_TRUE(none.m_image == nullptr);
+            EXPECT_EQ(plain.indicatorBox(ItemViewElement::Checked), QSize(20, 20));
+            EXPECT_EQ(plain.indicatorImageRect(QRect(10, 20, 20, 20), ItemViewElement::Checked), QRect(12, 22, 16, 16));
+        }
+
+        TEST_F(ItemViewElementTests, Check_OnlyTheTreesTheMatcherNamesHaveTheRuleAndTheyKeepTheTreesMargin)
+        {
+            QWidget root;
+            root.setProperty("itemViewElementTestsFlat", true);
+            root.setStyle(style());
+            auto* importerTree = new QTreeView(&root);
+            importerTree->setObjectName(QStringLiteral("importerTree"));
+            auto* otherTree = new QTreeView(&root);
+            otherTree->setObjectName(QStringLiteral("otherTree"));
+            auto* list = new QListView(&root);
+            list->setObjectName(QStringLiteral("importerTree"));
+            for (QWidget* view : { static_cast<QWidget*>(importerTree), static_cast<QWidget*>(otherTree), static_cast<QWidget*>(list) })
+            {
+                view->setStyle(style());
+            }
+            root.setAttribute(Qt::WA_DontShowOnScreen);
+            root.show();
+            QApplication::processEvents();
+
+            const ItemViewElement* element = ItemViewElement::forWidget(importerTree);
+            ASSERT_TRUE(element != nullptr);
+            EXPECT_STREQ(element->m_name, "Test.ItemView.ImporterCheckTree");
+            EXPECT_TRUE(element->m_check.declared());
+            EXPECT_EQ(element->m_indicatorSize, QSize(12, 12));
+            // a module's element lists only what its sheet changes: the margin is the Global tree's (TableView.qss:81, :84)
+            EXPECT_EQ(element->m_indicatorMargin, QMargins(-3, 0, 0, 0));
+            EXPECT_EQ(element->m_indentation, 20);
+
+            // The box the layout makes room for: 12 x 12 less the 3px of margin-left, and the line of the state around it (a checked
+            // box has none, unless it is hovered or disabled), and the image in it: the slot less the margin, less the line
+            EXPECT_EQ(element->indicatorBox(0), QSize(11, 14));
+            EXPECT_EQ(element->indicatorBox(ItemViewElement::Checked), QSize(9, 12));
+            EXPECT_EQ(element->indicatorBox(ItemViewElement::Checked | ItemViewElement::Hover), QSize(11, 14));
+            EXPECT_EQ(element->indicatorBox(ItemViewElement::Checked | ItemViewElement::Disabled), QSize(11, 14));
+            EXPECT_EQ(element->indicatorBox(ItemViewElement::Indeterminate), QSize(11, 14));
+            EXPECT_EQ(element->indicatorImageRect(QRect(10, 20, 11, 14), 0), QRect(8, 21, 12, 12));
+            EXPECT_EQ(element->indicatorImageRect(QRect(10, 20, 9, 12), ItemViewElement::Checked), QRect(7, 20, 12, 12));
+
+            // the same class under another name, and the list of that name, have the Global elements of their kinds
+            const ItemViewElement* other = ItemViewElement::forWidget(otherTree);
+            ASSERT_TRUE(other != nullptr);
+            EXPECT_FALSE(other->m_check.declared());
+            EXPECT_EQ(other->m_indicatorSize, QSize(16, 16));
+            EXPECT_EQ(other->indicatorBox(0), QSize(13, 16));
+            EXPECT_EQ(other->indicatorBox(ItemViewElement::Checked | ItemViewElement::Hover | ItemViewElement::Disabled), QSize(13, 16));
+            EXPECT_EQ(other->indicatorImageRect(QRect(10, 20, 13, 16), ItemViewElement::Checked), QRect(7, 20, 16, 16));
+            const ItemViewElement* listElement = ItemViewElement::forWidget(list);
+            ASSERT_TRUE(listElement != nullptr);
+            EXPECT_FALSE(listElement->m_check.declared());
+            EXPECT_STREQ(listElement->m_name, "Global.ItemView.List");
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T12: the field of a text edit and the ring it has under the pointer and with the focus. The legacy twin is the text edit under
+        // the REAL application sheet (BaseStyleSheet.qss:86-115, QDockWidget.qss:33-36, LineEdit.qss:28-35); the flat twin is the one
+        // under the style. The IDLE field is the one deviation: the legacy field is rounded by 2px (BaseStyleSheet.qss:79), the
+        // flattened GUI's has always been square (judged in earlier A/Bs; g_textEditIdleRadius, Style.cpp; open: item 1 of the I.3n2
+        // report), so the four corners of an idle or a disabled field are left out of the comparison and pinned as different.
+        // ----------------------------------------------------------------------------------
+
+        const qreal EditRatios[] = { 1.0, 1.5, 2.0 };
+
+        struct EditCase
+        {
+            const char* m_name;
+            QStyle::State m_state;
+            bool m_ring;                    //!< the legacy rule has a ring in this state (:hover or :focus)
+        };
+
+        const QStyle::State EditEnabled = QStyle::State_Enabled | QStyle::State_Active;
+        const EditCase EditCases[] = {
+            { "idle", EditEnabled, false },
+            { "hovered", EditEnabled | QStyle::State_MouseOver, true },
+            { "focused", EditEnabled | QStyle::State_HasFocus, true },
+            { "hovered and focused", EditEnabled | QStyle::State_MouseOver | QStyle::State_HasFocus, true },
+            { "disabled", QStyle::State_Active, false },
+            // the ring of :focus, over the fill of :disabled, which is declared after it (LineEdit.qss is imported after the rules of
+            // BaseStyleSheet.qss)
+            { "disabled with the focus", QStyle::State_Active | QStyle::State_HasFocus, true },
+        };
+
+        //! A text edit twice, shown, with a vertical scroll bar: under the application sheet, and under the style
+        template<typename Edit>
+        struct TextEditTwins
+        {
+            explicit TextEditTwins(const ItemViewElementTests& tests)
+            {
+                build(m_legacy, m_legacyEdit);
+                m_legacy.setStyleSheet(appSheet());
+                show(m_legacy);
+
+                build(m_flat, m_flatEdit);
+                m_flat.setProperty("itemViewElementTestsFlat", true);
+                QPalette palette;
+                tests.style()->polish(palette);
+                m_flat.setPalette(palette);
+                m_flat.setStyle(tests.style());
+                for (QWidget* child : m_flat.findChildren<QWidget*>())
+                {
+                    child->setStyle(tests.style());
+                }
+                show(m_flat);
+            }
+
+            static void build(QWidget& root, Edit*& edit)
+            {
+                edit = new Edit(&root);
+                edit->setObjectName(QStringLiteral("textEdit"));
+                edit->setGeometry(5, 5, 200, 100);
+                edit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+            }
+
+            static void show(QWidget& root)
+            {
+                root.setAttribute(Qt::WA_DontShowOnScreen);
+                root.resize(210, 110);
+                root.show();
+                QApplication::processEvents();
+            }
+
+            QWidget m_legacy;
+            QWidget m_flat;
+            Edit* m_legacyEdit = nullptr;
+            Edit* m_flatEdit = nullptr;
+        };
+
+        //! The pixels that differ, those whose centre is in a rect of the logical image left out
+        int differingOutside(const QImage& a, const QImage& b, const std::vector<QRect>& ignored)
+        {
+            if (a.size() != b.size())
+            {
+                return a.width() * a.height();
+            }
+            const qreal ratio = a.devicePixelRatio();
+            int count = 0;
+            for (int y = 0; y < a.height(); ++y)
+            {
+                for (int x = 0; x < a.width(); ++x)
+                {
+                    if (a.pixel(x, y) == b.pixel(x, y))
+                    {
+                        continue;
+                    }
+                    const QPointF centre((x + 0.5) / ratio, (y + 0.5) / ratio);
+                    const bool left = std::any_of(
+                        ignored.begin(), ignored.end(), [&](const QRect& rect) { return QRectF(rect).contains(centre); });
+                    count += left ? 0 : 1;
+                }
+            }
+            return count;
+        }
+
+        //! The four squares at the corners of a rect that the legacy field rounds (the radius is 2px)
+        std::vector<QRect> cornerSquares(const QSize& size)
+        {
+            constexpr int side = 3;
+            return { QRect(0, 0, side, side), QRect(size.width() - side, 0, side, side), QRect(0, size.height() - side, side, side),
+                QRect(size.width() - side, size.height() - side, side, side) };
+        }
+
+        //! What a style paints for the widget's own background (PE_Widget, what QWidgetPrivate::paintBackground asks for) in a state
+        QImage paintedField(const QWidget* edit, QStyle::State state, qreal ratio)
+        {
+            return drawn(edit->size(), ratio, [&](QPainter* painter)
+            {
+                QStyleOption option;
+                option.initFrom(edit);
+                option.state = state;
+                option.rect = edit->rect();
+                option.palette.setCurrentColorGroup(state.testFlag(QStyle::State_Enabled) ? QPalette::Active : QPalette::Disabled);
+                edit->style()->drawPrimitive(QStyle::PE_Widget, &option, painter, edit);
+            });
+        }
+
+        template<typename Edit>
+        void expectSameField(const ItemViewElementTests& tests, const char* kind)
+        {
+            TextEditTwins<Edit> twins(tests);
+            ASSERT_TRUE(BoxElement::forWidget(twins.m_flatEdit) == nullptr);
+            for (const qreal ratio : EditRatios)
+            {
+                for (const EditCase& test : EditCases)
+                {
+                    SCOPED_TRACE(std::string(kind) + " " + test.m_name + " at ratio " + std::to_string(ratio).substr(0, 3));
+                    const QImage legacy = paintedField(twins.m_legacyEdit, test.m_state, ratio);
+                    const QImage flat = paintedField(twins.m_flatEdit, test.m_state, ratio);
+
+                    // A state with a ring is the sheet's to the pixel, the outer pixel left to what is behind the widget included; one
+                    // without is the same but for the rounded corners
+                    const std::vector<QRect> ignored = test.m_ring ? std::vector<QRect>() : cornerSquares(twins.m_flatEdit->size());
+                    const int different = differingOutside(flat, legacy, ignored);
+                    EXPECT_EQ(different, 0) << "first difference " << firstDifference(flat, legacy).toStdString();
+
+                    if (ratio == 1.0)
+                    {
+                        // The legacy twin is not an image of nothing: the colours of the rules are in it
+                        const bool disabled = !test.m_state.testFlag(QStyle::State_Enabled);
+                        const bool focused = test.m_state.testFlag(QStyle::State_HasFocus);
+                        EXPECT_GT(countOf(legacy, disabled ? rgb(0x666666) : rgb(0xE9E9E9)), 100);
+                        EXPECT_EQ(countOf(legacy, rgb(0x94D2FF)) > 0, focused);                                 // BaseStyleSheet.qss:113
+                        EXPECT_EQ(countOf(legacy, rgb(0x222222)) > 0, test.m_ring && !focused);                 // :104
+                        // the ring leaves the pixel at the edge to what is behind the widget (the margin of 1px), the idle field has none
+                        EXPECT_EQ(QColor::fromRgba(legacy.pixel(100, 0)) == rgb(0x808080), test.m_ring);
+                        EXPECT_EQ(QColor::fromRgba(flat.pixel(100, 0)) == rgb(0x808080), test.m_ring);
+                        if (!test.m_ring)
+                        {
+                            // the one deviation: the legacy corner is rounded, the flat one square
+                            EXPECT_NE(legacy.pixel(0, 0), flat.pixel(0, 0));
+                        }
+                    }
+                }
+            }
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_TheFieldAndItsRingAreThoseOfTheSheetInEveryStateAtEveryRatio)
+        {
+            ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+            expectSameField<QPlainTextEdit>(*this, "QPlainTextEdit");
+            expectSameField<QTextEdit>(*this, "QTextEdit");
+        }
+
+        //! A text edit as it paints itself (the field, then its viewport and what it holds: nothing), without its scroll bar, which is not
+        //! what is proved here, onto an image that shows through where nothing is painted
+        QImage renderedNow(QWidget* edit, qreal ratio)
+        {
+            QImage image((QSizeF(edit->size()) * ratio).toSize(), QImage::Format_ARGB32_Premultiplied);
+            image.setDevicePixelRatio(ratio);
+            image.fill(rgb(0x808080));
+            edit->render(&image, QPoint(), QRegion(), QWidget::DrawChildren);
+            return image;
+        }
+
+        //! The same with the pointer put over the widget by hand (the flag a style reads as State_MouseOver)
+        QImage renderedField(QWidget* edit, bool hovered, qreal ratio)
+        {
+            edit->setAttribute(Qt::WA_UnderMouse, hovered);
+            const QImage image = renderedNow(edit, ratio);
+            edit->setAttribute(Qt::WA_UnderMouse, false);
+            return image;
+        }
+
+        template<typename Edit>
+        void expectSameRenderedField(const ItemViewElementTests& tests, const char* kind)
+        {
+            TextEditTwins<Edit> twins(tests);
+            QAbstractScrollArea* legacy = twins.m_legacyEdit;
+            QAbstractScrollArea* flat = twins.m_flatEdit;
+
+            // The strip of the vertical bar is where the bars of the two GUIs paint
+            ASSERT_EQ(flat->viewport()->geometry(), legacy->viewport()->geometry()) << kind;
+            const QRect viewport = legacy->viewport()->geometry();
+            const QRect strip(viewport.right() + 1, 0, legacy->width() - viewport.right() - 1, legacy->height());
+            ASSERT_GT(strip.width(), 0);
+
+            for (const qreal ratio : EditRatios)
+            {
+                for (const bool hovered : { false, true })
+                {
+                    SCOPED_TRACE(std::string(kind) + (hovered ? " hovered" : " idle") + " at ratio " + std::to_string(ratio).substr(0, 3));
+                    std::vector<QRect> ignored{ strip };
+                    if (!hovered)
+                    {
+                        const std::vector<QRect> corners = cornerSquares(legacy->size());
+                        ignored.insert(ignored.end(), corners.begin(), corners.end());
+                    }
+                    const QImage legacyImage = renderedField(legacy, hovered, ratio);
+                    const QImage flatImage = renderedField(flat, hovered, ratio);
+                    EXPECT_EQ(differingOutside(flatImage, legacyImage, ignored), 0)
+                        << firstDifference(flatImage, legacyImage).toStdString();
+                    // the field is there: the widget's colour at its middle
+                    EXPECT_EQ(QColor::fromRgba(flatImage.pixel(int(50 * ratio), int(50 * ratio))), rgb(0xE9E9E9));
+                }
+            }
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_TheWidgetPaintsItsFieldAndItsRingOverATransparentViewport)
+        {
+            expectSameRenderedField<QPlainTextEdit>(*this, "QPlainTextEdit");
+            expectSameRenderedField<QTextEdit>(*this, "QTextEdit");
+        }
+
+        // ----------------------------------------------------------------------------------
+        // The ring as it arrives: the pointer and the focus are put on the edit and not into an option. The chain that makes the state
+        // arrive is Qt's: the pointer over the viewport enters the widget and its viewport (WA_UnderMouse) and, for each that tracks it
+        // (WA_Hover), a hover event makes it repaint; the focus is the widget's (the focus proxy of its viewport) and its focus event
+        // repaints it; the paint reads both from the widget (QStyleOption::initFrom). Both twins go through the same change and each must
+        // repaint by itself (a paint event nobody asked for) and then paint the field of the sheet, ring included, and back again.
+        // ----------------------------------------------------------------------------------
+
+        //! Counts the paint events a widget gets
+        class EditPaintCounter
+            : public QObject
+        {
+        public:
+            explicit EditPaintCounter(QWidget* watched)
+            {
+                watched->installEventFilter(this);
+            }
+
+            bool eventFilter(QObject* watched, QEvent* event) override
+            {
+                if (event->type() == QEvent::Paint)
+                {
+                    ++m_paints;
+                }
+                return QObject::eventFilter(watched, event);
+            }
+
+            int m_paints = 0;
+        };
+
+        //! The pointer enters (or leaves) a text edit over its viewport, as QApplicationPrivate::dispatchEnterLeave delivers it: the edit
+        //! and its viewport are under the mouse and each of them that tracks the pointer (Qt::WA_Hover) gets the hover event
+        bool movePointer(QAbstractScrollArea* edit, bool inside)
+        {
+            for (QWidget* widget : { static_cast<QWidget*>(edit), edit->viewport() })
+            {
+                widget->setAttribute(Qt::WA_UnderMouse, inside);
+                if (widget->testAttribute(Qt::WA_Hover))
+                {
+                    const QPointF centre = widget->rect().center();
+                    const QPointF outside(-1, -1);
+                    QHoverEvent hover(inside ? QEvent::HoverEnter : QEvent::HoverLeave, inside ? centre : outside,
+                        widget->mapToGlobal(inside ? centre : outside), inside ? outside : centre);
+                    QApplication::sendEvent(widget, &hover);
+                }
+            }
+            return edit->underMouse();
+        }
+
+        //! The active window, set at once. QApplication::setActiveWindow is deprecated in Qt 6 for QWidget::activateWindow, which
+        //! asks the platform and so takes effect later (and cannot clear it); the focus tests need the window active on this turn.
+        void setActiveWindowNow(QWidget* window)
+        {
+            QT_WARNING_PUSH
+            QT_WARNING_DISABLE_DEPRECATED
+            QApplication::setActiveWindow(window);
+            QT_WARNING_POP
+        }
+
+        //! The edit takes the focus as a click gives it (in the window nobody activated: it is made the active one), or gives it back
+        bool giveFocus(QAbstractScrollArea* edit)
+        {
+            setActiveWindowNow(edit->window());
+            edit->setFocus(Qt::MouseFocusReason);
+            QApplication::processEvents();
+            return edit->hasFocus();
+        }
+
+        bool takeFocus(QAbstractScrollArea* edit)
+        {
+            edit->clearFocus();
+            setActiveWindowNow(nullptr);
+            QApplication::processEvents();
+            return !edit->hasFocus();
+        }
+
+        //! What a text edit painted before a change, after it and after it was undone, and the paint events each change got
+        struct DrivenField
+        {
+            bool m_applied = false;             //!< the change took (the pointer is over the edit, the edit has the focus)
+            bool m_reverted = false;
+            int m_paintsOnApply = 0;
+            int m_paintsOnRevert = 0;
+            QImage m_idle;
+            QImage m_driven;
+            QImage m_back;
+        };
+
+        template<typename Apply, typename Revert>
+        DrivenField driveField(QAbstractScrollArea* edit, qreal ratio, Apply apply, Revert revert)
+        {
+            EditPaintCounter paints(edit);
+            DrivenField field;
+            field.m_idle = renderedNow(edit, ratio);
+
+            // a render paints the widget too: the count starts after it
+            paints.m_paints = 0;
+            field.m_applied = apply(edit);
+            QApplication::processEvents();
+            field.m_paintsOnApply = paints.m_paints;
+            field.m_driven = renderedNow(edit, ratio);
+
+            paints.m_paints = 0;
+            field.m_reverted = revert(edit);
+            QApplication::processEvents();
+            field.m_paintsOnRevert = paints.m_paints;
+            field.m_back = renderedNow(edit, ratio);
+            return field;
+        }
+
+        //! Whether the platform paints a widget that is not shown on screen: an update is answered with a paint event
+        bool paintsOffscreen(QWidget* widget)
+        {
+            EditPaintCounter paints(widget);
+            widget->update();
+            QApplication::processEvents();
+            return paints.m_paints > 0;
+        }
+
+        //! False: the platform could not do what the test drives (paint a widget not shown on screen, hover it, activate its window),
+        //! and nothing was proved
+        template<typename Edit, typename Apply, typename Revert>
+        bool expectSameDrivenField(const ItemViewElementTests& tests, const char* kind, Apply apply, Revert revert)
+        {
+            TextEditTwins<Edit> twins(tests);
+            QAbstractScrollArea* legacy = twins.m_legacyEdit;
+            QAbstractScrollArea* flat = twins.m_flatEdit;
+            if (!paintsOffscreen(legacy))
+            {
+                return false;
+            }
+
+            constexpr qreal ratio = 1.5;
+            const DrivenField legacyField = driveField(legacy, ratio, apply, revert);
+            const DrivenField flatField = driveField(flat, ratio, apply, revert);
+            if (!legacyField.m_applied || !flatField.m_applied)
+            {
+                return false;
+            }
+            SCOPED_TRACE(kind);
+
+            // Each repaints by itself when the change arrives and when it goes: the sheet's widget does (the control), and so must ours
+            EXPECT_GT(legacyField.m_paintsOnApply, 0);
+            EXPECT_GT(flatField.m_paintsOnApply, 0);
+            EXPECT_TRUE(legacyField.m_reverted);
+            EXPECT_TRUE(flatField.m_reverted);
+            EXPECT_GT(legacyField.m_paintsOnRevert, 0);
+            EXPECT_GT(flatField.m_paintsOnRevert, 0);
+
+            // What is painted is the ring of the sheet and the fill behind it: not the strip of the vertical bar, where the bars of the
+            // two GUIs paint, nor the inside of the text area, where a focused edit draws its cursor in the font of its own GUI
+            const QRect viewport = legacy->viewport()->geometry();
+            const std::vector<QRect> ignored{ QRect(viewport.right() + 1, 0, legacy->width() - viewport.right() - 1, legacy->height()),
+                viewport.adjusted(3, 3, -3, -3) };
+            EXPECT_GT(differingOutside(flatField.m_driven, flatField.m_idle, ignored), 0);
+            EXPECT_EQ(differingOutside(flatField.m_driven, legacyField.m_driven, ignored), 0)
+                << firstDifference(flatField.m_driven, legacyField.m_driven).toStdString();
+
+            // ... and it goes with the change, to the idle field
+            EXPECT_EQ(differing(flatField.m_back, flatField.m_idle), 0)
+                << firstDifference(flatField.m_back, flatField.m_idle).toStdString();
+            return true;
+        }
+
+        //! A test that could not drive what it proves on this platform has proved nothing, and says so (this googletest has no GTEST_SKIP)
+        void reportNotProven(const char* test, const char* why, const char* manualProof)
+        {
+            std::printf("[  NOT PROVEN ] %s: %s. Manual proof: %s\n", test, why, manualProof);
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_ThePointerOverTheViewportRepaintsTheWidgetWithItsRing)
+        {
+            const auto enter = [](QAbstractScrollArea* edit) { return movePointer(edit, true); };
+            const auto leave = [](QAbstractScrollArea* edit) { return !movePointer(edit, false); };
+            if (!expectSameDrivenField<QPlainTextEdit>(*this, "QPlainTextEdit", enter, leave)
+                || !expectSameDrivenField<QTextEdit>(*this, "QTextEdit", enter, leave))
+            {
+                reportNotProven("TextEdit_ThePointerOverTheViewportRepaintsTheWidgetWithItsRing",
+                    "this platform paints no widget that is not shown on screen",
+                    "hover the text edit of the Gallery's hyperlink page and the Editor's console (the ring is a 1px #222222 line)");
+            }
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_TheFocusRepaintsTheWidgetWithItsRing)
+        {
+            if (!expectSameDrivenField<QPlainTextEdit>(*this, "QPlainTextEdit", giveFocus, takeFocus)
+                || !expectSameDrivenField<QTextEdit>(*this, "QTextEdit", giveFocus, takeFocus))
+            {
+                reportNotProven("TextEdit_TheFocusRepaintsTheWidgetWithItsRing",
+                    "this platform paints no widget that is not shown on screen, or activates no window of one",
+                    "click into the text edit of the Gallery's hyperlink page and the Editor's console (the ring is a 1px #94D2FF line)");
+            }
+        }
+
+        template<typename Edit>
+        void expectSameEditGeometry(const ItemViewElementTests& tests, const char* kind)
+        {
+            TextEditTwins<Edit> twins(tests);
+            SCOPED_TRACE(kind);
+            Edit* legacy = twins.m_legacyEdit;
+            Edit* flat = twins.m_flatEdit;
+
+            // The sheet read the frame of the field at its style change, in the idle state (margin 0, no line): the contents are the whole
+            // widget, with the lane of the bar beside them, in both GUIs. The state of the pointer changes none of it.
+            EXPECT_EQ(legacy->frameWidth(), 0);
+            EXPECT_EQ(flat->frameWidth(), 0);
+            EXPECT_EQ(flat->contentsRect(), legacy->contentsRect());
+            EXPECT_EQ(flat->viewport()->geometry(), legacy->viewport()->geometry());
+            EXPECT_EQ(flat->sizeHint(), legacy->sizeHint());
+            flat->setAttribute(Qt::WA_UnderMouse, true);
+            legacy->setAttribute(Qt::WA_UnderMouse, true);
+            EXPECT_EQ(flat->sizeHint(), legacy->sizeHint());
+            EXPECT_EQ(flat->viewport()->geometry(), legacy->viewport()->geometry());
+            flat->setAttribute(Qt::WA_UnderMouse, false);
+            legacy->setAttribute(Qt::WA_UnderMouse, false);
+
+            // What the sheet's polish did to the widget, which the field and its ring need
+            EXPECT_TRUE(flat->testAttribute(Qt::WA_StyledBackground));
+            EXPECT_TRUE(legacy->testAttribute(Qt::WA_StyledBackground));
+            EXPECT_FALSE(flat->autoFillBackground());
+            EXPECT_FALSE(flat->viewport()->autoFillBackground());
+            EXPECT_FALSE(legacy->viewport()->autoFillBackground());
+            // The pointer is tracked where the rules have a :hover: QStyleSheetStyle::polish sets the hover of the widget and of its
+            // viewport, which the pointer is over, and the mouse tracking of the viewport (qstylesheetstyle.cpp:2894-2905)
+            for (const Edit* edit : { legacy, flat })
+            {
+                EXPECT_TRUE(edit->testAttribute(Qt::WA_Hover));
+                EXPECT_TRUE(edit->viewport()->testAttribute(Qt::WA_Hover));
+                EXPECT_TRUE(edit->viewport()->hasMouseTracking());
+            }
+            EXPECT_TRUE(flat->styleSheet().isEmpty());
+
+            // The focus reaches the widget through its viewport (the focus proxy of a scroll area's viewport), so :focus is the widget's
+            for (const Edit* edit : { legacy, flat })
+            {
+                EXPECT_EQ(edit->viewport()->focusProxy(), edit);
+                EXPECT_TRUE(edit->focusPolicy() & Qt::ClickFocus);
+                EXPECT_TRUE(edit->focusPolicy() & Qt::TabFocus);
+            }
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_TheFrameAndTheContentsAreTheSheetsAndThePolishHasItsAttributes)
+        {
+            expectSameEditGeometry<QPlainTextEdit>(*this, "QPlainTextEdit");
+            expectSameEditGeometry<QTextEdit>(*this, "QTextEdit");
+        }
+
+        TEST_F(ItemViewElementTests, TextEdit_TheFillIsThePaletteOfTheWidgetAndATextEditWithAnElementIsLeftToIt)
+        {
+            TextEditTwins<QPlainTextEdit> twins(*this);
+            QPlainTextEdit* edit = twins.m_flatEdit;
+
+            // The colours a console, the script terminal and the lists of the tools hand over (ScrollBar::setBackgroundColor and the like)
+            // are the palette of the widget, and so the fill, in the ring and out of it
+            QPalette palette = edit->palette();
+            palette.setColor(QPalette::Active, QPalette::Base, rgb(0x224466));
+            edit->setPalette(palette);
+            for (const EditCase& test : EditCases)
+            {
+                if (!test.m_state.testFlag(QStyle::State_Enabled))
+                {
+                    continue;
+                }
+                const QImage image = paintedField(edit, test.m_state, 1.0);
+                EXPECT_EQ(QColor::fromRgba(image.pixel(100, 50)), rgb(0x224466)) << test.m_name;
+                EXPECT_EQ(countOf(image, rgb(0xE9E9E9)), 0) << test.m_name;
+            }
+
+            // The field of the disabled group is the palette's too
+            const QImage disabled = paintedField(edit, QStyle::State_Active, 1.0);
+            EXPECT_EQ(QColor::fromRgba(disabled.pixel(100, 50)), rgb(0x666666));
+
+            // A widget that is not a text edit is not painted by it: a scroll area has no field of this kind
+            QWidget root;
+            root.setStyle(style());
+            auto* area = new QScrollArea(&root);
+            area->setStyle(style());
+            area->setGeometry(0, 0, 60, 40);
+            root.setAttribute(Qt::WA_DontShowOnScreen);
+            root.resize(60, 40);
+            root.show();
+            QApplication::processEvents();
+            const QImage untouched = paintedField(area, EditEnabled | QStyle::State_MouseOver, 1.0);
+            EXPECT_EQ(countOf(untouched, rgb(0x222222)), 0);
         }
     } // namespace ItemViewElementTestsInternal
 } // namespace AzQtComponents

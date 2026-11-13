@@ -20,6 +20,26 @@
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! Every colour the curve control paints, named, so the legacy and the flattened GUI read one value. A named namespace, not an
+    //! anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace PropertyCurveCtrlFlatInternal
+    {
+        constexpr QColor GridLine(43, 43, 43);          // PropertyCurveCtrl.cpp:232. TOKENIZE: CurveGridLine
+        const QColor AxisText(Qt::gray);                // PropertyCurveCtrl.cpp:251. TOKENIZE: CurveAxisText
+        constexpr QColor PlotFill(56, 56, 56);          // PropertyCurveCtrl.cpp:269. TOKENIZE: CurvePlotFill
+        const QColor CurveLine(Qt::red);                // PropertyCurveCtrl.cpp:275. TOKENIZE: CurveLine
+        const QColor KeyOutline(Qt::gray);              // PropertyCurveCtrl.cpp:276. TOKENIZE: CurveKeyOutline
+        const QColor KeySelectedOutline(Qt::yellow);    // PropertyCurveCtrl.cpp:277. TOKENIZE: CurveKeySelectedOutline
+        const QColor KeyFill(Qt::gray);                 // PropertyCurveCtrl.cpp:286. TOKENIZE: CurveKeyFill
+        const QColor PresetPressedFill(Qt::darkYellow); // PropertyCurveCtrl.cpp:485. TOKENIZE: CurvePresetPressedFill
+        const QColor PresetFill(Qt::black);             // PropertyCurveCtrl.cpp:485. TOKENIZE: CurvePresetFill
+        const QColor PresetCurveLine(Qt::white);        // PropertyCurveCtrl.cpp:488. TOKENIZE: CurvePresetLine
+    }
+
     constexpr AZStd::string_view INTERPMODE_LINEAR = "Linear";
     constexpr AZStd::string_view INTERPMODE_STEP = "Step";
     constexpr AZStd::string_view INTERPMODE_CUBICIN = "CubicIn";
@@ -229,7 +249,7 @@ namespace AzToolsFramework
         const AZStd::string_view AXIS_INFO_X2 = "0.50";
         const AZStd::string_view AXIS_INFO_X3 = "0.75";
 
-        painter.setPen(QColor(43, 43, 43));
+        painter.setPen(PropertyCurveCtrlFlatInternal::GridLine);
         // horizon
         painter.drawLine(
             m_scaleWidth, m_mainRect.height() / 2 + m_mainRect.top(), m_mainRect.right(),
@@ -248,7 +268,7 @@ namespace AzToolsFramework
             painter.drawLine(begin, end);
         }
 
-        QPen pen(Qt::gray);
+        QPen pen(PropertyCurveCtrlFlatInternal::AxisText);
         int offset = m_scaleWidth / 2;
         painter.setPen(pen);
         painter.drawText(0, m_mainRect.top() + 12, AXIS_INFO_ONE.data());
@@ -266,15 +286,15 @@ namespace AzToolsFramework
     {
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, true);
-        painter.fillRect(m_mainRect, QBrush(QColor(56, 56, 56)));
+        painter.fillRect(m_mainRect, QBrush(PropertyCurveCtrlFlatInternal::PlotFill));
 
         // draw grids
         DrawGrid(painter);
 
         // draw keys
-        QPen pen(Qt::red);
-        QPen unselectedPen = QPen(Qt::gray);
-        QPen selectedPen = QPen(Qt::yellow);
+        QPen pen(PropertyCurveCtrlFlatInternal::CurveLine);
+        QPen unselectedPen = QPen(PropertyCurveCtrlFlatInternal::KeyOutline);
+        QPen selectedPen = QPen(PropertyCurveCtrlFlatInternal::KeySelectedOutline);
         painter.setPen(pen);
         for (int64_t index = 0; index < m_currentCurve.GetNumPoints(); index++)
         {
@@ -283,7 +303,7 @@ namespace AzToolsFramework
                 keyPoint.m_time, keyPoint.m_value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
             painter.setPen((m_currentKeyIndex == index) ? selectedPen : unselectedPen);
-            painter.setBrush(QBrush(Qt::gray));
+            painter.setBrush(QBrush(PropertyCurveCtrlFlatInternal::KeyFill));
             painter.drawRect(rc);
         }
 
@@ -482,10 +502,11 @@ namespace AzToolsFramework
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.drawRect(rect());
-        painter.fillRect(rect(), m_pressed ? QBrush(Qt::darkYellow) : QBrush(Qt::black));
+        using namespace PropertyCurveCtrlFlatInternal;
+        painter.fillRect(rect(), m_pressed ? QBrush(PresetPressedFill) : QBrush(PresetFill));
 
         // draw curve
-        QPen pen(Qt::white);
+        QPen pen(PropertyCurveCtrlFlatInternal::PresetCurveLine);
         painter.setPen(pen);
         QPainterPath path;
         const float CURVE_STEP = 0.05f;

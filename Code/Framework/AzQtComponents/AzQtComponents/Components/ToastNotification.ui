@@ -55,9 +55,6 @@
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgba(255, 255, 255, 20);</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
@@ -93,9 +90,6 @@
           <width>32</width>
           <height>32</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
         </property>
         <property name="text">
          <string/>

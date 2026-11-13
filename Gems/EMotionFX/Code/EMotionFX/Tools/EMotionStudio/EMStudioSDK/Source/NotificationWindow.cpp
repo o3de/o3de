@@ -8,15 +8,26 @@
 
 #include "NotificationWindow.h"
 #include "EMStudioManager.h"
+#include <AzQtComponents/Components/StyleManager.h>
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QColor>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the notification popup paints with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace NotificationWindowFlat
+    {
+        // The rounded background: this colour with the window's runtime opacity as its alpha
+        constexpr QColor Background(0, 0, 0);     // NotificationWindow.cpp:94 TOKENIZE: NotificationBackground
+    } // namespace NotificationWindowFlat
+
     // constructor
     NotificationWindow::NotificationWindow(QWidget* parent, EType type, const QString& Message)
         : QWidget(parent)
@@ -42,7 +53,7 @@ namespace EMStudio
         // create the icon
         m_icon = new QToolButton();
         m_icon->setObjectName("NotificationIcon");
-        m_icon->setStyleSheet("#NotificationIcon{ background-color: transparent; border: none; }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_icon, "#NotificationIcon{ background-color: transparent; border: none; }");
         m_icon->setIconSize(QSize(22, 22));
         m_icon->setFocusPolicy(Qt::NoFocus);
         if (type == TYPE_ERROR)
@@ -91,7 +102,9 @@ namespace EMStudio
         MCORE_UNUSED(event);
         QPainter p(this);
         p.setPen(Qt::transparent);
-        p.setBrush(QColor(0, 0, 0, m_opacity));
+        QColor backgroundColor = NotificationWindowFlat::Background;
+        backgroundColor.setAlpha(m_opacity);
+        p.setBrush(backgroundColor);
         p.setRenderHint(QPainter::Antialiasing);
         p.drawRoundedRect(rect(), 10, 10);
     }

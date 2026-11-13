@@ -28,8 +28,72 @@ AZ_POP_DISABLE_WARNING
 #include <GraphCanvas/Components/VisualBus.h>
 #include <GraphCanvas/tools.h>
 
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
+#include <Components/Nodes/Comment/CommentTextEditFlat.h>
+
 namespace GraphCanvas
 {
+    //=========================================================================
+    // COMMENT EDITOR ROWS (the editor a comment or a group title is renamed in)
+    //
+    // The looks of the editor (its rings and its text, CommentTextEditFlat.h) are drawn by elements that the editor's tags pick:
+    // UpdateStyles tags the editor (CommentTextEditFlat::TagEditor) in the flattened GUI, and these rows, on the editor's own class,
+    // read the tags.
+    //=========================================================================
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins this file with others into one
+    //! translation unit, where anonymous namespaces merge.
+    namespace CommentTextGraphicsWidgetFlat
+    {
+        // ---- The matchers: the editor's own tag, on the editor's own class
+
+        bool isOrangeRing(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::tagged(widget, CommentTextEditFlat::RingOrangeTag);
+        }
+
+        bool isBlueRing(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::tagged(widget, CommentTextEditFlat::RingBlueTag);
+        }
+
+        bool isFallbackRing(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::tagged(widget, CommentTextEditFlat::RingFallbackTag);
+        }
+
+        bool isCommentText(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::tagged(widget, CommentTextEditFlat::CommentTag);
+        }
+
+        bool isGroupTitleText(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::tagged(widget, CommentTextEditFlat::GroupTitleTag);
+        }
+    } // namespace CommentTextGraphicsWidgetFlat
+
+    void CommentTextGraphicsWidget::RegisterFlatElements()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            namespace Flat = CommentTextGraphicsWidgetFlat;
+            namespace Looks = CommentTextEditFlat;
+            const QMetaObject* editor = &Internal::FocusableTextEdit::staticMetaObject;
+            AzQtComponents::BoxElement::registerElement(&Looks::OrangeRingBox, editor, &Flat::isOrangeRing);
+            AzQtComponents::BoxElement::registerElement(&Looks::BlueRingBox, editor, &Flat::isBlueRing);
+            AzQtComponents::BoxElement::registerElement(&Looks::FallbackRingBox, editor, &Flat::isFallbackRing);
+            AzQtComponents::TextElement::registerElement(&Looks::CommentText, editor, &Flat::isCommentText);
+            AzQtComponents::TextElement::registerElement(&Looks::GroupTitleText, editor, &Flat::isGroupTitleText);
+        }
+    }
+
     //////////////////////////////////
     // CommentNodeTextGraphicsWidget
     //////////////////////////////////
@@ -175,7 +239,15 @@ namespace GraphCanvas
 
         if (m_textEdit)
         {
-            m_textEdit->setStyleSheet(fields.join("; ").toUtf8().data());
+            // The sheet is the legacy GUI's. The flattened GUI sets none: the editor takes the tags of the elements that draw what the
+            // sheet drew, from the pen of the ring the style resolved (the border above) and the mode of the node (RegisterFlatElements)
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_textEdit, fields.join("; "));
+            if (AzQtComponents::StyleManager::flatStylingActive())
+            {
+                using CommentTextEditFlat::Kind;
+                CommentTextEditFlat::TagEditor(
+                    m_textEdit, border, (m_commentMode == CommentMode::BlockComment) ? Kind::GroupTitle : Kind::Comment);
+            }
 
             if (styleHelper.HasTextAlignment())
             {
@@ -427,6 +499,12 @@ namespace GraphCanvas
     {
         if (!m_textEdit)
         {
+            // The elements are there before the editor is made, which they are resolved for as it is polished
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                RegisterFlatElements();
+            }
+
             m_proxyWidget = new QGraphicsProxyWidget();
             m_proxyWidget->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
             

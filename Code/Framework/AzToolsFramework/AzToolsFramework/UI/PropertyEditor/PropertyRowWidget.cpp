@@ -7,6 +7,10 @@
  */
 #include "PropertyRowWidget.hxx"
 
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
@@ -14,6 +18,8 @@
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyCheckBoxCtrl.hxx>
 
+#include <QFrame>
+#include <QLabel>
 #include <QTimer>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
@@ -34,6 +40,270 @@ static const int ValueColumnStretch = 3;
  
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! The colour a property row paints the line above a reorderable row with, named, so the legacy and the flattened GUI read one value.
+    //! A named namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace PropertyRowWidgetFlatInternal
+    {
+        constexpr QColor ReorderLine(0x3B, 0x3E, 0x3F);   // PropertyRowWidget.cpp:131. TOKENIZE: PropertyRowReorderLine
+
+        // ===================================================================
+        // Scene Settings Rows
+        //
+        // The scene settings tool (the Asset Importer, the Scene Settings page of the Asset Browser) gives some of its property rows a
+        // sheet of their own. A row below a row of a scene setting gets SettingSheet, and the row of a group in the "display divider"
+        // style gets DividerSheet, which replaces it. A widget's own sheet is deeper than the application's and outranks it for the
+        // properties it names, and the QFrame type selector reaches the row and every QFrame (labels and the scroll areas
+        // included) below it, nested rows and editors too: what lies in the handler widget of a row, and not the rows laid out
+        // beside it. The flattened GUI sets no sheet: the row carries a class tag (the nearest row that has one decides, as the nearest
+        // sheet did) and the elements below read it.
+        // ===================================================================
+
+        constexpr const char* SettingSheet = "QFrame {background-color: #555555; color: white;}";
+        constexpr const char* DividerSheet =
+            "QFrame {background-color: #333333; margin-top: 5px; border-top-right-radius: 2px; border-top-left-radius: 2px;}";
+
+        // ---- The class tag of a row: the kind of sheet it has, one at a time
+        constexpr const char* SettingTag = "SceneSettingRow";
+        constexpr const char* DividerTag = "SceneDividerRow";
+
+        // ---- The values of the sheets
+        const QColor SettingFill(0x55, 0x55, 0x55);     // PropertyRowWidget.cpp:64. TOKENIZE: SceneSettingRowFill
+        const QColor DividerFill(0x33, 0x33, 0x33);     // PropertyRowWidget.cpp:66. TOKENIZE: SceneDividerRowFill
+        constexpr int DividerMarginTop = 5;             // PropertyRowWidget.cpp:66. TOKENIZE: SceneDividerRowMarginTop
+        constexpr int DividerRadius = 2;                // PropertyRowWidget.cpp:66. TOKENIZE: SceneDividerRowRadius
+
+        // ---- The boxes of the labels of a row, which the sheets lie over (restated: an element is the whole definition of its box)
+        // ReflectedPropertyEditor.qss:14 (left), :13 (the others) TOKENIZE: PropertyRowNameMargin
+        constexpr QMargins NameMargin(4, 0, 0, 0);
+        constexpr int LabelHeight = 16;                 // ReflectedPropertyEditor.qss:11-12, :19-20. TOKENIZE: PropertyRowLabelHeight
+        constexpr QSize LabelMinSize(-1, LabelHeight);
+        constexpr QSize LabelMaxSize(-1, LabelHeight);
+        // Text.qss:93-94 (QLabel { margin-top: 1px; margin-bottom: 1px }), what ReflectedPropertyEditor.qss:19-20 leaves alone
+        constexpr int LabelMarginV = AzQtComponents::Foundations::Label::MarginV;   // Text.qss:93-94. TOKENIZE: PropertyRowLabelMarginV
+
+        // ---- The box of the coordinate label of a vector below a setting row: VectorInput.qss:9-16, which the fill of the row's sheet
+        // lies over in place of the colour of the coordinate (VectorInput.qss:37-55)
+        constexpr int VectorLabelMarginV = 2;           // VectorInput.qss:11-12. TOKENIZE: VectorLabelMargin
+        constexpr int VectorLabelRadius = 2;            // VectorInput.qss:13-14. TOKENIZE: VectorLabelRadius
+
+        // ---- The elements
+        //! `QFrame {background-color: #555555}` on a frame below a row of a scene setting. The frame has no box of its own: the fill
+        //! alone.
+        const AzQtComponents::BoxElement SettingFrame{
+            .m_name = "AzToolsFramework.Box.SceneSettingFrame",
+            .m_idle = {
+                .m_fill = QBrush(SettingFill),
+            },
+        };
+
+        //! `AzToolsFramework--PropertyRowWidget QLabel#Name` (ReflectedPropertyEditor.qss:9-15) below a row of a scene setting: the name
+        //! of Global.Box.PropertyRowName, over the fill of the sheet (the sheet's is deeper than the application's)
+        const AzQtComponents::BoxElement SettingRowName{
+            .m_name = "AzToolsFramework.Box.SceneSettingRowName",
+            .m_margin = NameMargin,
+            .m_minSize = LabelMinSize,
+            .m_maxSize = LabelMaxSize,
+            .m_idle = {
+                .m_fill = QBrush(SettingFill),
+            },
+        };
+
+        //! `AzToolsFramework--PropertyRowWidget QLabel#DefaultLabel` (ReflectedPropertyEditor.qss:17-21) below a row of a scene setting:
+        //! Global.Box.PropertyRowDefaultLabel, over the fill of the sheet
+        const AzQtComponents::BoxElement SettingRowDefaultLabel{
+            .m_name = "AzToolsFramework.Box.SceneSettingRowDefaultLabel",
+            .m_margin = QMargins(0, LabelMarginV, 0, LabelMarginV),
+            .m_minSize = LabelMinSize,
+            .m_maxSize = LabelMaxSize,
+            .m_idle = {
+                .m_fill = QBrush(SettingFill),
+            },
+        };
+
+        //! `QFrame {background-color: #333333; margin-top: 5px; border-top-*-radius: 2px}` on the row of a group in the display divider
+        //! style: a margin above, a border of the rule's own (a radius gives it a style), the fill in the border box
+        const AzQtComponents::BoxElement DividerRow{
+            .m_name = "AzToolsFramework.Box.SceneDividerRow",
+            .m_margin = QMargins(0, DividerMarginTop, 0, 0),
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = DividerRadius, .m_topRight = DividerRadius },
+            .m_idle = {
+                .m_fill = QBrush(DividerFill),
+            },
+        };
+
+        //! The name label of a divider row: the label of Global.Box.PropertyRowName with the sheet's margin above, fill and corners
+        const AzQtComponents::BoxElement DividerRowName{
+            .m_name = "AzToolsFramework.Box.SceneDividerRowName",
+            .m_margin = QMargins(NameMargin.left(), DividerMarginTop, 0, 0),
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = DividerRadius, .m_topRight = DividerRadius },
+            .m_minSize = LabelMinSize,
+            .m_maxSize = LabelMaxSize,
+            .m_idle = {
+                .m_fill = QBrush(DividerFill),
+            },
+        };
+
+        //! The default label of a divider row: Global.Box.PropertyRowDefaultLabel with the sheet's margin above, fill and corners (the
+        //! margin below stays the label rule's)
+        const AzQtComponents::BoxElement DividerRowDefaultLabel{
+            .m_name = "AzToolsFramework.Box.SceneDividerRowDefaultLabel",
+            .m_margin = QMargins(0, DividerMarginTop, 0, LabelMarginV),
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = DividerRadius, .m_topRight = DividerRadius },
+            .m_minSize = LabelMinSize,
+            .m_maxSize = LabelMaxSize,
+            .m_idle = {
+                .m_fill = QBrush(DividerFill),
+            },
+        };
+
+        //! `AzQtComponents--VectorElement QLabel` (VectorInput.qss:9-16) below a row of a scene setting: the label of a coordinate of a
+        //! vector keeps its box (a margin above and below, the two left corners rounded), and the fill of the row's sheet is its fill in
+        //! place of the colour of its coordinate (VectorInput.qss:37-55), as the sheet of the row is deeper than the application's.
+        const AzQtComponents::BoxElement SettingVectorLabel{
+            .m_name = "AzToolsFramework.Box.SceneSettingVectorLabel",
+            .m_margin = QMargins(0, VectorLabelMarginV, 0, VectorLabelMarginV),
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = VectorLabelRadius, .m_bottomLeft = VectorLabelRadius },
+            .m_idle = {
+                .m_fill = QBrush(SettingFill),
+            },
+        };
+
+        // ---- The matchers
+        //! Whether the sheet a widget lies under is the one of `tag`: its own tag, else that of the nearest parent that has either
+        //! (`other` is the tag of the other kind, which ends the walk the other way)
+        bool inRowOfKind(const QWidget* widget, const char* tag, const char* other)
+        {
+            for (const QWidget* each = widget; each; each = each->parentWidget())
+            {
+                if (AzQtComponents::Selectors::tagged(each, tag))
+                {
+                    return true;
+                }
+                if (AzQtComponents::Selectors::tagged(each, other))
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        bool inSettingRow(const QWidget* widget)
+        {
+            return inRowOfKind(widget, SettingTag, DividerTag);
+        }
+
+        bool inDividerRow(const QWidget* widget)
+        {
+            return inRowOfKind(widget, DividerTag, SettingTag);
+        }
+
+        //! The frames of a handler widget that the fill reaches alone: a plain QFrame and the editor of a nested set of rows. The other
+        //! frames (labels, scroll areas, the line edit frames and the like) take their box from an element or from the style, and one
+        //! that no element of this file restates keeps that.
+        bool isPlainFrame(const QWidget* widget)
+        {
+            return widget->metaObject() == &QFrame::staticMetaObject || widget->inherits("AzToolsFramework::ReflectedPropertyEditor");
+        }
+
+        //! The class test comes first: this matcher is asked of every frame and label polished in the process, and the walk up the
+        //! parents that finds the row is the dearer of the two.
+        bool isSettingFrame(const QWidget* widget)
+        {
+            return isPlainFrame(widget) && inSettingRow(widget);
+        }
+
+        //! The label of a coordinate of a vector (a child of the vector element), asked of every label polished in the process
+        bool isSettingVectorLabel(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::childOfClass(widget, "AzQtComponents::VectorElement") && inSettingRow(widget);
+        }
+
+        bool isRowLabel(const QWidget* widget, const char* name)
+        {
+            return AzQtComponents::Selectors::named(widget, name)
+                && AzQtComponents::Selectors::withinClass(widget, "AzToolsFramework::PropertyRowWidget");
+        }
+
+        bool isSettingRowName(const QWidget* widget)
+        {
+            return isRowLabel(widget, "Name") && inSettingRow(widget);
+        }
+
+        bool isSettingRowDefaultLabel(const QWidget* widget)
+        {
+            return isRowLabel(widget, "DefaultLabel") && inSettingRow(widget);
+        }
+
+        bool isDividerRowName(const QWidget* widget)
+        {
+            return isRowLabel(widget, "Name") && inDividerRow(widget);
+        }
+
+        bool isDividerRowDefaultLabel(const QWidget* widget)
+        {
+            return isRowLabel(widget, "DefaultLabel") && inDividerRow(widget);
+        }
+
+        // ---- The registration
+        //! Once, before the first row that carries a tag is polished. The elements of a module come before the Global ones of the
+        //! labels, which they restate.
+        void RegisterSceneSettingElements()
+        {
+            static bool registered = false;
+            if (registered)
+            {
+                return;
+            }
+            registered = true;
+
+            using AzQtComponents::BoxElement;
+            BoxElement::registerElement(&SettingFrame, &PropertyRowWidget::staticMetaObject, &inSettingRow);
+            BoxElement::registerElement(&SettingFrame, &QFrame::staticMetaObject, &isSettingFrame);
+            BoxElement::registerElement(&DividerRow, &PropertyRowWidget::staticMetaObject, &inDividerRow);
+            BoxElement::registerElement(&SettingRowName, &QLabel::staticMetaObject, &isSettingRowName);
+            BoxElement::registerElement(&SettingRowDefaultLabel, &QLabel::staticMetaObject, &isSettingRowDefaultLabel);
+            BoxElement::registerElement(&SettingVectorLabel, &QLabel::staticMetaObject, &isSettingVectorLabel);
+            BoxElement::registerElement(&DividerRowName, &QLabel::staticMetaObject, &isDividerRowName);
+            BoxElement::registerElement(&DividerRowDefaultLabel, &QLabel::staticMetaObject, &isDividerRowDefaultLabel);
+        }
+
+        //! The look of a row of the scene settings tool: the sheet in the legacy GUI; in the flattened GUI no sheet, but the class tag
+        //! the elements read, which replaces the one of the other kind (as setting a sheet replaced the sheet). A row of the pool that
+        //! is given another look has its labels polished already, so the widgets below it that are polished are polished again after
+        //! the tag changes (a row that is new has none polished yet: they resolve their elements when they are).
+        void StyleSceneRow(PropertyRowWidget* row, const char* sheet, const char* tag, const char* other)
+        {
+            AzQtComponents::StyleManager::setLegacyStyleSheet(row, QString::fromLatin1(sheet));
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                RegisterSceneSettingElements();
+            }
+
+            // A row that has the tag already changes nothing
+            if (AzQtComponents::StyleManager::flatStylingActive() && !AzQtComponents::Selectors::tagged(row, tag))
+            {
+                AzQtComponents::Style::removeClass(row, QString::fromLatin1(other));
+                AzQtComponents::Style::addClass(row, QString::fromLatin1(tag));
+                for (QWidget* each : row->findChildren<QWidget*>())
+                {
+                    if (each->testAttribute(Qt::WA_WState_Polished))
+                    {
+                        each->style()->unpolish(each);
+                        each->style()->polish(each);
+                    }
+                }
+            }
+        }
+    }
+
     PropertyRowWidget::PropertyRowWidget(QWidget* pParent)
         : QFrame(pParent)
     {
@@ -128,7 +398,7 @@ namespace AzToolsFramework
 
         if (CanBeReordered())
         {
-            const QPen linePen(QColor(0x3B3E3F));
+            const QPen linePen(PropertyRowWidgetFlatInternal::ReorderLine);
             p.setPen(linePen);
             int indent = m_treeDepth * m_treeIndentation;
             p.drawLine(event->rect().topLeft() + QPoint(indent, 0), event->rect().topRight());
@@ -331,7 +601,9 @@ namespace AzToolsFramework
             if (m_parentRow && m_parentRow->m_isSceneSetting)
             {
                 m_isSceneSetting = true;
-                setStyleSheet("QFrame {background-color: #555555; color: white;}");
+                PropertyRowWidgetFlatInternal::StyleSceneRow(
+                    this, PropertyRowWidgetFlatInternal::SettingSheet, PropertyRowWidgetFlatInternal::SettingTag,
+                    PropertyRowWidgetFlatInternal::DividerTag);
                 setContentsMargins(0, 0, 8, 0);
                 if (m_treeDepth > 0)
                 {
@@ -1001,7 +1273,9 @@ namespace AzToolsFramework
             {
                 m_isSceneSetting = true;
                 setContentsMargins(8, 0, 4, 0);
-                setStyleSheet("QFrame {background-color: #333333; margin-top: 5px; border-top-right-radius: 2px; border-top-left-radius: 2px;}");
+                PropertyRowWidgetFlatInternal::StyleSceneRow(
+                    this, PropertyRowWidgetFlatInternal::DividerSheet, PropertyRowWidgetFlatInternal::DividerTag,
+                    PropertyRowWidgetFlatInternal::SettingTag);
             }
         }
         // Attribute types you are NOT allowed to update at runtime

@@ -10,8 +10,32 @@
 
 #include <QScrollBar>
 
+#include <AzQtComponents/Components/Widgets/ScrollBar.h>
+
 #include <LyShine/Bus/UiAnimationBus.h>
 #include <LyShine/Bus/UiElementBus.h>
+
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The action log's text colours and its fill, named so the legacy and the flattened GUI read one value. The text colours are the
+//  colours Qt's colour names resolve to (white 255,255,255; gray 128,128,128; lightGray 211,211,211). A named namespace, not an
+//  anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace PreviewActionLogFlat
+{
+    // PreviewActionLog.cpp:85 (QColor("lightGray"): a repeated message, the odd repeats). TOKENIZE: ActionLogRepeatOddText
+    constexpr QColor RepeatOddText(211, 211, 211);
+
+    // PreviewActionLog.cpp:89 (QColor("gray"): a repeated message, the even repeats). TOKENIZE: ActionLogRepeatEvenText
+    constexpr QColor RepeatEvenText(128, 128, 128);
+
+    // PreviewActionLog.cpp:96 (QColor("white"): a new message). TOKENIZE: ActionLogNewText
+    constexpr QColor NewText(255, 255, 255);
+
+    // PreviewActionLog.cpp:28 (background-color of the log, set as its sheet). TOKENIZE: ActionLogFill
+    constexpr QColor Fill(0x22, 0x22, 0x22);
+} // namespace PreviewActionLogFlat
 
 PreviewActionLog::PreviewActionLog([[maybe_unused]] EditorWindow* editorWindow)
     : QTextEdit()
@@ -25,7 +49,10 @@ PreviewActionLog::PreviewActionLog([[maybe_unused]] EditorWindow* editorWindow)
     // start of the message (the action name)
     setLineWrapMode(QTextEdit::NoWrap);
 
-    setStyleSheet("background-color: #222222;");
+    // The fill of the log, handed over as the consoles' colours are: the legacy GUI sets an inline sheet, `background: #222222` (the
+    // sheet before the flattening was `background-color: #222222;`, the same fill); the flattened GUI sets the Base and Window colours
+    // of the area and no sheet
+    AzQtComponents::ScrollBar::setBackgroundColor(this, PreviewActionLogFlat::Fill);
 }
 
 PreviewActionLog::~PreviewActionLog()
@@ -82,18 +109,18 @@ void PreviewActionLog::OnAction(AZ::EntityId entityId, const LyShine::ActionName
         m_repeatCount++;
         if (m_repeatCount & 1)
         {
-            setTextColor(QColor("lightGray"));
+            setTextColor(PreviewActionLogFlat::RepeatOddText);
         }
         else
         {
-            setTextColor(QColor("gray"));
+            setTextColor(PreviewActionLogFlat::RepeatEvenText);
         }
     }
     else
     {
         m_lastMessage = message;
         m_repeatCount = 0;
-        setTextColor(QColor("white"));
+        setTextColor(PreviewActionLogFlat::NewText);
     }
 
     append(message); // Adds the message to the widget

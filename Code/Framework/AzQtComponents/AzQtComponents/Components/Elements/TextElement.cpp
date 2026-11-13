@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Elements/TextElement.h>
 #include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
 
 #include <AzCore/Debug/Trace.h>
 
@@ -262,10 +263,17 @@ namespace AzQtComponents
             return nullptr;
         }
 
-        //! A module's element first, then the Global one, then the class rule over a font code set; none: the widget keeps its
-        //! class font
+        //! The text of the look a converted sheet gave the tooltip of the widget it is shown for (ToolTipElement), then a module's
+        //! element, then the Global one, then the class rule over a font code set; none: the widget keeps its class font
         const TextElement* findElement(const QWidget* widget, const QFont& classFont)
         {
+            if (ToolTipElement::isToolTip(widget))
+            {
+                if (const TextElement* element = ToolTipElement::textOf(widget))
+                {
+                    return element;
+                }
+            }
             if (const TextElement* element = registry().find(widget))
             {
                 return element;
@@ -342,10 +350,18 @@ namespace AzQtComponents
         {
             font.setPixelSize(m_pixelSize);
         }
+        else if (m_pointSize > 0)
+        {
+            font.setPointSizeF(m_pointSize);        // clears the pixel size, as the sheet's `12pt` did (qfont.cpp setPointSizeF)
+        }
         font.setWeight(static_cast<QFont::Weight>(m_weight));
         if (m_italic >= 0)
         {
             font.setItalic(m_italic != 0);
+        }
+        if (m_underline >= 0)
+        {
+            font.setUnderline(m_underline != 0);
         }
         return font != before;
     }

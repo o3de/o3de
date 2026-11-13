@@ -23,8 +23,27 @@
 #include <AzToolsFramework/Debug/TraceContextStack.h>
 #include <AzToolsFramework/UI/Logging/LogEntry.h>
 #include <AzQtComponents/Components/StyledDetailsTableView.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
+
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The card header's underline colours by completion state, named so the legacy and the flattened GUI read one value. A named
+//  namespace, not an anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SceneSettingsCardFlat
+{
+    // SceneSettingsCard.cpp:342 (the header underline of a card that completed with errors). TOKENIZE: SceneCardUnderlineError
+    constexpr QColor UnderlineError(226, 82, 67);
+
+    // SceneSettingsCard.cpp:346 (the header underline of a card that completed with warnings). TOKENIZE: SceneCardUnderlineWarning
+    constexpr QColor UnderlineWarning(240, 195, 45);
+
+    // SceneSettingsCard.cpp:350 (the header underline of a card that completed without problems). TOKENIZE: SceneCardUnderlineSuccess
+    constexpr QColor UnderlineSuccess(88, 188, 97);
+} // namespace SceneSettingsCardFlat
 
 SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */)
     : AzQtComponents::CardHeader(parent)
@@ -35,7 +54,7 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
     m_busySpinner->setMaximumSize(20, 20);
     m_busySpinner->setBaseSize(20, 20);
     m_backgroundLayout->insertWidget(1, m_busySpinner);
-    m_busySpinner->setStyleSheet("background-color: rgba(0,0,0,0)");
+    AzQtComponents::StyleManager::setLegacyStyleSheet(m_busySpinner, QStringLiteral("background-color: rgba(0,0,0,0)"));
     m_busySpinner->setToolTip(tr("There is an active processing event for this file. The window will update when the event completes."));
 
     m_closeButton = new QPushButton(this);
@@ -339,15 +358,15 @@ void SceneSettingsCard::SetState(State newState)
             case CompletionState::Error:
             case CompletionState::Failure:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/ErrorIcon.svg"));
-                m_settingsHeader->setUnderlineColor(QColor(226, 82, 67));
+                m_settingsHeader->setUnderlineColor(SceneSettingsCardFlat::UnderlineError);
                 break;
             case CompletionState::Warning:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/WarningIcon.svg"));
-                m_settingsHeader->setUnderlineColor(QColor(240, 195, 45));
+                m_settingsHeader->setUnderlineColor(SceneSettingsCardFlat::UnderlineWarning);
                 break;
             default:
                 m_settingsHeader->setIcon(QIcon(":/SceneUI/Common/SuccessIcon.svg"));
-                m_settingsHeader->setUnderlineColor(QColor(88, 188, 97));
+                m_settingsHeader->setUnderlineColor(SceneSettingsCardFlat::UnderlineSuccess);
                 break;
             }
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();

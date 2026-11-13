@@ -156,7 +156,8 @@ namespace AzQtComponents
 
         // Use this class if you have a TableView and you need to wrap calls, indirectly
         // to Style::generatedIconPixmap in order to properly style icons.
-        class DrawWidgetSentinel
+        //! Exported on its own: a nested class does not share the export of the class around it (the tests use it from their DLL)
+        class AZ_QT_COMPONENTS_API DrawWidgetSentinel
         {
         public:
             DrawWidgetSentinel(const QWidget* widgetAboutToDraw);

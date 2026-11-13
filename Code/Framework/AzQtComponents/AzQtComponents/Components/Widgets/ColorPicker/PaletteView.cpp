@@ -63,6 +63,15 @@ namespace AzQtComponents
         }
     }
 
+    //! Everything private to this file that the flattened GUI reads as well. A named namespace, not an anonymous one: a unity build joins
+    //! this file with others into one translation unit, where anonymous namespaces merge.
+    namespace PaletteViewFlatInternal
+    {
+        //! The colour of the drop indicator when PaletteViewConfig.ini names none, as it names it: `[DropIndicator] Color`,
+        //! PaletteViewConfig.ini:7. PaletteView.cpp:1311. TOKENIZE: PaletteDropIndicatorColor
+        const QColor DropIndicatorColor(Qt::white);
+    } // namespace PaletteViewFlatInternal
+
 class PaletteModel : public QAbstractListModel
 {
 public:
@@ -1308,7 +1317,7 @@ PaletteView::Config PaletteView::defaultConfig()
     return {
         DropIndicator{
             1,
-            QColor{Qt::white} // Color
+            PaletteViewFlatInternal::DropIndicatorColor // Color
         },
         QSize(0, 0),
         4,

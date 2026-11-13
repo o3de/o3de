@@ -99,6 +99,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzQtComponents.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
+        AUTORCC
         FILES_CMAKE
             AzQtComponents/azqtcomponents_testing_files.cmake
         INCLUDE_DIRECTORIES
@@ -108,6 +109,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 ${pal_dir}
         BUILD_DEPENDENCIES
             PRIVATE
+                3rdParty::Qt::Test
                 AZ::AzQtComponents
                 AZ::AzTest
     )

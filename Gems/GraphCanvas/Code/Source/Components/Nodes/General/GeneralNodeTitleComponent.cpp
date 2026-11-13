@@ -7,6 +7,7 @@
  */
 
 #include <QGraphicsItem>
+#include <QColor>
 #include <QFont>
 #include <QPainter>
 
@@ -26,6 +27,18 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // GENERAL NODE TITLE COLOURS (the shade laid over the title of a node)
+    //=========================================================================
+    namespace GeneralNodeTitleComponentFlat
+    {
+        // GeneralNodeTitleComponent.cpp:550 (the black shade at the bottom of a title, 40 percent). TOKENIZE: NodeTitleShadeBottom
+        constexpr QColor TitleShadeBottom(0, 0, 0, 102);
+
+        // GeneralNodeTitleComponent.cpp:551 (the black shade at the top of a title, 30 percent). TOKENIZE: NodeTitleShadeTop
+        constexpr QColor TitleShadeTop(0, 0, 0, 77);
+    } // namespace GeneralNodeTitleComponentFlat
+
     // Implementation of RTTI functions for the GeneralNodeTitleComponent SaveData class in a cpp file
     AZ_RTTI_NO_TYPE_INFO_IMPL(GeneralNodeTitleComponentSaveData, SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
 
@@ -547,8 +560,8 @@ namespace GraphCanvas
         }
 
         QLinearGradient gradient(bounds.bottomLeft(), bounds.topLeft());
-        gradient.setColorAt(0, QColor(0, 0, 0, 102));
-        gradient.setColorAt(1, QColor(0, 0, 0, 77));
+        gradient.setColorAt(0, GeneralNodeTitleComponentFlat::TitleShadeBottom);
+        gradient.setColorAt(1, GeneralNodeTitleComponentFlat::TitleShadeTop);
         painter->fillPath(path, gradient);
 
         painter->restore();

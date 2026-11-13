@@ -18,6 +18,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
+#include <native/ui/AssetDetailsPanelPalettes.h>
+#include <native/ui/FlatElements.h>
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_ProductAssetDetailsPanel.h>
 #include <QDateTime>
@@ -34,6 +36,34 @@ namespace AssetProcessor
     ProductAssetDetailsPanel::ProductAssetDetailsPanel(QWidget* parent) : AssetDetailsPanel(parent), m_ui(new Ui::ProductAssetDetailsPanel)
     {
         m_ui->setupUi(this);
+
+        // The palette the form gave the separator line (ProductAssetDetailsPanel.ui:58-175): both rungs read the named colours
+        // (native/ui/AssetDetailsPanelPalettes.h)
+        m_ui->AssetDetailsSeparator->setPalette(ProductAssetDetailsPanelFlat::SeparatorPalette());
+
+        // The sheets the form gave the panel and its labels: the legacy GUI sets them here, the flattened GUI sets none, and its elements
+        // draw their look (native/ui/FlatElements.cpp, "The inline sheets"). MainWindow::Activate replaces the panel's own sheet by
+        // AssetProcessor.qss before the window is shown.
+        SetLegacySheet(this, InlineSheets::PanelFill);
+        for (QLabel* label : { m_ui->assetNameLabel, m_ui->outgoingProductDependenciesValueLabel,
+                               m_ui->outgoingUnmetPathProductDependenciesValueLabel, m_ui->incomingProductDependenciesValueLabel,
+                               m_ui->MissingProductDependenciesValueLabel })
+        {
+            SetLegacySheet(label, InlineSheets::PointFont);
+        }
+        for (QLabel* label : { m_ui->MissingProductDependenciesFolderTitleLabel, m_ui->outgoingProductDependenciesTitleLabel,
+                               m_ui->outgoingUnmetPathProductDependenciesTitleLabel, m_ui->incomingProductDependenciesTitleLabel,
+                               m_ui->MissingProductDependenciesTitleLabel })
+        {
+            SetLegacySheet(label, InlineSheets::BoldPointFont);
+        }
+        for (QLabel* label : { m_ui->platformTitleLabel, m_ui->productAssetIdTitleLabel, m_ui->sourceAssetTitleLabel,
+                               m_ui->lastTimeProcessedTitleLabel, m_ui->jobKeyTitleLabel })
+        {
+            SetLegacySheet(label, InlineSheets::BoldFont);
+        }
+        SetLegacySheet(m_ui->missingDependencyErrorIcon, InlineSheets::NoPadding);
+
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
         m_ui->MissingProductDependenciesTable->setColumnWidth(static_cast<int>(MissingDependencyTableColumns::ScanTime), 160);
         ResetText();

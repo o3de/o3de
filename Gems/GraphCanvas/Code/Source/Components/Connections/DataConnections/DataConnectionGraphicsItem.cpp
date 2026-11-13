@@ -6,6 +6,8 @@
  *
  */
 
+#include <QColor>
+
 #include <Components/Connections/DataConnections/DataConnectionGraphicsItem.h>
 
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
@@ -13,6 +15,15 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // DATA CONNECTION COLOURS (the end colour of a connection whose slot has no palette)
+    //=========================================================================
+    namespace DataConnectionGraphicsItemFlat
+    {
+        // DataConnectionGraphicsItem.cpp:242 (the end colour of a data connection with no colour palette). TOKENIZE: DataConnectionFallback
+        const QColor ConnectionFallback(Qt::white);
+    } // namespace DataConnectionGraphicsItemFlat
+
     ////////////////////////
     // DataPinStyleMonitor
     ////////////////////////
@@ -239,7 +250,7 @@ namespace GraphCanvas
             }
             else
             {
-                targetColor = Qt::white;
+                targetColor = DataConnectionGraphicsItemFlat::ConnectionFallback;
             }
         }
     }    

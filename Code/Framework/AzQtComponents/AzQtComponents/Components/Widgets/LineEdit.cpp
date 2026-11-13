@@ -16,6 +16,7 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Utilities/IconUtilities.h>
 
+#include <QAbstractItemView>
 #include <QLineEdit>
 #include <QAction>
 #include <QSettings>
@@ -59,6 +60,17 @@ namespace AzQtComponents
                 } },
             },
         };
+
+        // ------------------------------------------------------------------------------
+        // The Config defaults of LineEdit::defaultConfig: LineEditConfig.ini holds no line, so these are the live values of the legacy
+        // GUI. The flattened GUI reads only PlaceholderText (LineEdit::polish, for a line edit inside a spin box or a combo box): a
+        // framed line edit is drawn by LineEditFlat::Frame (LineEdit::drawFrame) before the hover, focus and error colours are read.
+        // ------------------------------------------------------------------------------
+        constexpr QColor HoverFill(0xFF, 0xFF, 0xFF);       // LineEdit.cpp:509. TOKENIZE: LineEditHoverFill
+        constexpr QColor HoverLine(0x22, 0x22, 0x22);       // LineEdit.cpp:510. TOKENIZE: LineEditHoverLine
+        constexpr QColor FocusLine(0x94, 0xD2, 0xFF);       // LineEdit.cpp:512. TOKENIZE: LineEditFocusLine
+        constexpr QColor ErrorLine(0xE2, 0x52, 0x43);       // LineEdit.cpp:514. TOKENIZE: LineEditErrorLine
+        constexpr QColor PlaceholderText(0x88, 0x88, 0x88); // LineEdit.cpp:516. TOKENIZE: LineEditPlaceholderText
     } // namespace LineEditFlat
 
     class LineEditWatcher : public QObject
@@ -505,14 +517,14 @@ namespace AzQtComponents
         config.borderRadius = 2;
         // An invalid color will take current background color
         config.borderColor = QColor(Qt::transparent);
-        config.hoverBackgroundColor = QColor("#FFFFFF");
-        config.hoverBorderColor = QColor("#222222");
+        config.hoverBackgroundColor = LineEditFlat::HoverFill;
+        config.hoverBorderColor = LineEditFlat::HoverLine;
         config.hoverLineWidth = 1;
-        config.focusedBorderColor = QColor("#94D2FF");
+        config.focusedBorderColor = LineEditFlat::FocusLine;
         config.focusedLineWidth = 1;
-        config.errorBorderColor = QColor("#E25243");
+        config.errorBorderColor = LineEditFlat::ErrorLine;
         config.errorLineWidth = 2;
-        config.placeHolderTextColor = QColor("#888888");
+        config.placeHolderTextColor = LineEditFlat::PlaceholderText;
         config.clearImage = QStringLiteral(":/stylesheet/img/UI20/lineedit-close.svg");
         config.clearImageDisabled = QStringLiteral(":/stylesheet/img/UI20/lineedit-close-disabled.svg");
         config.clearImageSize = {14, 14};
@@ -649,6 +661,15 @@ namespace AzQtComponents
                 {
                     lineEdit->setFrame(true);
                 }
+
+                // LineEdit.qss:39 `QAbstractItemView QLineEdit { qproperty-frame: true }`: the editor a delegate opens in a view. The
+                // default editor factory leaves a string editor without a frame (it asks QStyle::SH_ItemView_DrawDelegateFrame, which
+                // neither rung's style answers), and the sheet set it at polish. The line edit of a spin box or a combo box stays as
+                // the container left it, as the legacy GUI's did. TOKENIZE: ItemViewEditorFrame
+                if (!isEmbedded(lineEdit) && StyleHelpers::findParent<QAbstractItemView>(lineEdit))
+                {
+                    lineEdit->setFrame(true);
+                }
             }
 
             s_lineEditWatcher->storeHoverAttributeState(lineEdit);
@@ -722,7 +743,9 @@ namespace AzQtComponents
             return false;
         }
 
-        if (lineEdit->hasFrame())
+        // The sheet drew the rule of the field whatever its frame (QStyleSheetStyle::drawPrimitive, PE_PanelLineEdit): LineEdit.qss:11-20
+        // reached a line edit with no frame as well. The line edit of a spin box or a combo box has no box of its own.
+        if (lineEdit->hasFrame() || (StyleManager::stylesheetsDisabled() && !isEmbedded(lineEdit)))
         {
             if (StyleManager::stylesheetsDisabled())
             {
@@ -815,10 +838,10 @@ namespace AzQtComponents
             return QRect();
         }
 
-        // The legacy text rect of a framed field is the rect inside the sheet's border and padding (QStyleSheetStyle::subElementRect,
-        // SE_LineEditContents: the box the ring is drawn around). QLineEdit takes the room of its side widgets off it itself
-        // (QLineEdit::paintEvent), so no button is looked at here.
-        if (StyleManager::stylesheetsDisabled() && lineEdit->hasFrame() && !isEmbedded(lineEdit))
+        // The legacy text rect of a field, with or without a frame, is the rect inside the sheet's border and padding
+        // (QStyleSheetStyle::subElementRect, SE_LineEditContents: the box the ring is drawn around). QLineEdit takes the room of its
+        // side widgets off it itself (QLineEdit::paintEvent), so no button is looked at here.
+        if (StyleManager::stylesheetsDisabled() && !isEmbedded(lineEdit))
         {
             return option->rect.marginsRemoved(flattenedFieldBox(lineEdit));
         }

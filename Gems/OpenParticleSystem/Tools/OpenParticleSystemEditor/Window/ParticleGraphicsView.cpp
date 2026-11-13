@@ -7,15 +7,18 @@
  */
 
 #include <ParticleGraphicsView.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsView>
 #include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
+#include <Window/ParticleEditorFlat.h>
 #include <QMessageBox>
 #include <QSettings>
 #include <QFile>
+#include <QColor>
 
 namespace OpenParticleSystemEditor
 {
@@ -49,7 +52,10 @@ namespace OpenParticleSystemEditor
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setDragMode(QGraphicsView::RubberBandDrag);
         setMouseTracking(true);
-        setStyleSheet("background-color: #2D2D2D;");
+        // The view's sheet, for the legacy GUI only. It has no selector, so it also reached the menu ShowMenu pops up (QMenu(this)).
+        // The flattened GUI sets none: the elements of ParticleEditorFlat give the view and its menu the same fill
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            this, QString("background-color: %1;").arg(ParticleGraphicsViewFlat::ViewFill.name()));
         m_pActAddItem = new QAction(tr("Add Emitter"));
         m_pActDelItem = new QAction(tr("Delete Emitter"));
         m_pActCopyItem = new QAction(tr("Copy Emitter"));

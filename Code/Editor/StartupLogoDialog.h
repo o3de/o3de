@@ -18,7 +18,8 @@ namespace Ui
     class StartupLogoDialog;
 }
 
-class CStartupLogoDialog
+// Exported so that EditorLib.Tests builds the real dialog, for the twins of its sheets (test_StartupLogoFlatSheet.cpp)
+class SANDBOX_API CStartupLogoDialog
     : public QDialog
     , public IInitializeUIInfo
 {

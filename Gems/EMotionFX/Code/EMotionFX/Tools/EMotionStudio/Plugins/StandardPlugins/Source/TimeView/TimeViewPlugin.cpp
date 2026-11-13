@@ -28,6 +28,7 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QColor>
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Compare.h>
@@ -45,13 +46,31 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time view paints its playhead and its dotted guide lines with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TimeViewPluginFlat
+    {
+        // CurTimeHandleFill and CurTimeHelperLine feed m_brushCurTimeHandle and m_penCurTimeHelper, which are set here and read nowhere,
+        // so they paint nothing. CurTimeHandleLine and ElementHandleLine feed m_penCurTimeHandle and m_penTimeHandles, which are read.
+        constexpr QColor CurTimeHandleFill(255, 180, 0);     // TimeViewPlugin.cpp:51 TOKENIZE: TimeViewCurTimeHandleFill
+        constexpr QColor CurTimeHandleLine(255, 180, 0);     // TimeViewPlugin.cpp:52 TOKENIZE: TimeViewCurTimeHandleLine
+        constexpr QColor ElementHandleLine(150, 150, 150);   // TimeViewPlugin.cpp:53 TOKENIZE: TimeViewElementHandleLine
+        constexpr QColor CurTimeHelperLine(100, 100, 100);   // TimeViewPlugin.cpp:54 TOKENIZE: TimeViewCurTimeHelperLine
+
+        // The tooltip of a motion event. The label cell of a row takes the colour of the event (data, so it stays); the value cell
+        // of a row, at TimeViewPlugin.cpp:1251, :1258, :1263, :1279
+        // TOKENIZE: TimeViewToolTipValue
+        constexpr QColor ToolTipValue(115, 115, 115);
+    } // namespace TimeViewPluginFlat
+
     TimeViewPlugin::TimeViewPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        m_brushCurTimeHandle = QBrush(QColor(255, 180, 0));
-        m_penCurTimeHandle   = QPen(QColor(255, 180, 0));
-        m_penTimeHandles     = QPen(QColor(150, 150, 150), 1, Qt::DotLine);
-        m_penCurTimeHelper   = QPen(QColor(100, 100, 100), 1, Qt::DotLine);
+        m_brushCurTimeHandle = QBrush(TimeViewPluginFlat::CurTimeHandleFill);
+        m_penCurTimeHandle   = QPen(TimeViewPluginFlat::CurTimeHandleLine);
+        m_penTimeHandles     = QPen(TimeViewPluginFlat::ElementHandleLine, 1, Qt::DotLine);
+        m_penCurTimeHelper   = QPen(TimeViewPluginFlat::CurTimeHelperLine, 1, Qt::DotLine);
     }
 
     TimeViewPlugin::~TimeViewPlugin()
@@ -1248,19 +1267,28 @@ namespace EMStudio
                             // time
                             rowName = "Time";
                             tooltip += AZStd::string::format("<tr><td><p style=\"color:rgb(%i,%i,%i)\"><b>%s:&nbsp;</b></p></td>", qColor.red(), qColor.green(), qColor.blue(), rowName.c_str());
-                            tooltip += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f s</p></td></tr>", motionEvent.GetStartTime());
+                            tooltip += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%.3f s</p></td></tr>",
+                                TimeViewPluginFlat::ToolTipValue.name().toUtf8().data(),
+                                motionEvent.GetStartTime());
                         }
                         else // range event
                         {
                             // start time
                             rowName = "Start&nbsp;Time";
                             tooltip += AZStd::string::format("<tr><td><p style=\"color:rgb(%i,%i,%i)\"><b>%s:&nbsp;</b></p></td>", qColor.red(), qColor.green(), qColor.blue(), rowName.c_str());
-                            tooltip += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f s</p></td></tr>", motionEvent.GetStartTime());
+                            tooltip += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%.3f s</p></td></tr>",
+                                TimeViewPluginFlat::ToolTipValue.name().toUtf8().data(),
+                                motionEvent.GetStartTime());
 
                             // end time
                             rowName = "End&nbsp;Time";
                             tooltip += AZStd::string::format("<tr><td><p style=\"color:rgb(%i,%i,%i)\"><b>%s:&nbsp;</b></p></td>", qColor.red(), qColor.green(), qColor.blue(), rowName.c_str());
-                            tooltip += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f s</p></td></tr>", motionEvent.GetEndTime());
+                            tooltip += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%.3f s</p></td></tr>",
+                                TimeViewPluginFlat::ToolTipValue.name().toUtf8().data(),
+                                motionEvent.GetEndTime());
                         }
 
                         for (const EMotionFX::EventDataPtr& eventData : eventDatas)
@@ -1276,11 +1304,12 @@ namespace EMStudio
                                 {
                                     tooltip += AZStd::string::format(
                                             "<tr><td><p style=\"color:rgb(%i,%i,%i)\"><b>%s:&nbsp;</b></p></td>" // no comma, concat these 2 string literals
-                                            "<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>",
+                                            "<td><p style=\"color:%s\">%s</p></td></tr>",
                                             qColor.red(),
                                             qColor.green(),
                                             qColor.blue(),
                                             keyValuePair.first.c_str(),
+                                            TimeViewPluginFlat::ToolTipValue.name().toUtf8().data(),
                                             keyValuePair.second.c_str()
                                             );
                                 }

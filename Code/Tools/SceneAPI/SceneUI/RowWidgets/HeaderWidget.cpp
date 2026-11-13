@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderWidget.h>
 #include <SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.h>
+#include <SceneAPI/SceneUI/SceneUIFlatSheet.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 
 
@@ -271,7 +272,7 @@ namespace AZ
                                 AZStd::string categoryAttributeValue = categoryAttributeData->Get(&sceneNodeGroup);
                                 if (categoryAttributeValue.compare("display divider") == 0)
                                 {
-                                    setStyleSheet("QFrame, QLabel {margin-top: 0px; font: bold;}");
+                                    SceneUIFlatSheet::StyleDisplayDividerHeader(this);
                                 }
                             }
                         }

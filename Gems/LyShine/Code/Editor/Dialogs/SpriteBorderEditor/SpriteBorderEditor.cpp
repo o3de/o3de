@@ -36,6 +36,30 @@
 #include <QString>
 #include <QRegularExpression>
 
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The sprite border editor's pen colours, named so the legacy and the flattened GUI read one value. A named namespace, not an
+//  anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SpriteBorderEditorFlat
+{
+    // SpriteBorderEditor.cpp:497 (the white dashed divider between the cells). TOKENIZE: SpriteBorderCellDividerDashed
+    const QColor CellDividerDashed(Qt::white);
+
+    // SpriteBorderEditor.cpp:500 (the black solid divider under the dashed one). TOKENIZE: SpriteBorderCellDividerSolid
+    const QColor CellDividerSolid(Qt::black);
+
+    // SpriteBorderEditor.cpp:554 (the outer border around the sprite sheet). TOKENIZE: SpriteBorderOuterBorder
+    const QColor OuterBorder(Qt::black);
+
+    // SpriteBorderEditor.cpp:570 (the inner border around the sprite sheet). TOKENIZE: SpriteBorderInnerBorder
+    const QColor InnerBorder(Qt::white);
+
+    // SpriteBorderEditor.cpp:1015 (the border of the selected cell). TOKENIZE: SpriteBorderSelectedCell
+    constexpr QColor SelectedCell(255, 165, 0);
+} // namespace SpriteBorderEditorFlat
+
 namespace
 {
     // Various pixel values that affect layout and appearance of items within
@@ -494,10 +518,10 @@ void SpriteBorderEditor::AddSelectCellSection(QGridLayout* gridLayout, int& rowN
         cellDividerPenWhite.setStyle(Qt::DashLine);
         static const float dashedPenWidth = 2.0f;
         cellDividerPenWhite.setWidthF(dashedPenWidth);
-        cellDividerPenWhite.setColor(Qt::white);
+        cellDividerPenWhite.setColor(SpriteBorderEditorFlat::CellDividerDashed);
 
         QPen cellDividerPenBlack(cellDividerPenWhite);
-        cellDividerPenBlack.setColor(Qt::black);
+        cellDividerPenBlack.setColor(SpriteBorderEditorFlat::CellDividerSolid);
         cellDividerPenBlack.setStyle(Qt::SolidLine);
         cellDividerPenBlack.setWidthF(dashedPenWidth * 2.0f);
 
@@ -551,7 +575,7 @@ void SpriteBorderEditor::AddSelectCellSection(QGridLayout* gridLayout, int& rowN
         {
             QPen wholeImageBorder;
             wholeImageBorder.setWidthF(outerPenWidth);
-            wholeImageBorder.setColor(Qt::black);
+            wholeImageBorder.setColor(SpriteBorderEditorFlat::OuterBorder);
             wholeImageBorder.setJoinStyle(Qt::MiterJoin);
 
             QPointF topLeft(outerPenWidth * 0.5f, outerPenWidth * 0.5f);
@@ -567,7 +591,7 @@ void SpriteBorderEditor::AddSelectCellSection(QGridLayout* gridLayout, int& rowN
         {
             QPen wholeImageBorder;
             wholeImageBorder.setWidthF(innerPenWidth);
-            wholeImageBorder.setColor(Qt::white);
+            wholeImageBorder.setColor(SpriteBorderEditorFlat::InnerBorder);
             wholeImageBorder.setJoinStyle(Qt::MiterJoin);
 
             QPointF topLeft(outerPenWidth, outerPenWidth);
@@ -1012,7 +1036,7 @@ void CellSelectRectItem::SelectCell()
     s_currentSelection = this;
 
     QPen solidPenStyle;
-    static const QColor orangeQColor(255, 165, 0);
+    static const QColor orangeQColor(SpriteBorderEditorFlat::SelectedCell);
     solidPenStyle.setColor(orangeQColor);
     solidPenStyle.setStyle(Qt::SolidLine);
     solidPenStyle.setWidth(4);

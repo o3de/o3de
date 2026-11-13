@@ -609,9 +609,6 @@
             <height>1</height>
            </size>
           </property>
-          <property name="styleSheet">
-           <string notr="true">color: &quot;black&quot;</string>
-          </property>
           <property name="frameShadow">
            <enum>QFrame::Plain</enum>
           </property>

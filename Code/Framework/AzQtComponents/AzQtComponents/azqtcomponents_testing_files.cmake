@@ -10,8 +10,16 @@ set(FILES
     Tests/AzQtComponentTests.cpp
     Tests/BoxElementDoorTests.cpp
     Tests/BoxElementFaceTests.cpp
+    Tests/BoxElementPaletteTests.cpp
     Tests/BoxElementTests.cpp
+    Tests/BoxesAndBarsTwinTests.cpp
+    Tests/BoxFoundationTwinTests.cpp
+    Tests/BreadCrumbsFlatSheetTests.cpp
     Tests/BrowseEditTests.cpp
+    Tests/CardFrameFlatSheetTests.cpp
+    Tests/CardHeaderFlatSheetTests.cpp
+    Tests/CardNotificationFlatSheetTests.cpp
+    Tests/ChromeBarsFlatSheetTests.cpp
     Tests/ChromeTwinTests.cpp
     Tests/ColorControllerTests.cpp
     Tests/ColorPickerElementTests.cpp
@@ -25,6 +33,7 @@ set(FILES
     Tests/FieldTwins.h
     Tests/FieldVectorLabelTests.cpp
     Tests/FileDialogTests.cpp
+    Tests/FilledPopupFlatSheetTests.cpp
     Tests/FlatFramePaintTests.cpp
     Tests/FlatPaletteTests.cpp
     Tests/FlatWidgetTests.cpp
@@ -35,21 +44,38 @@ set(FILES
     Tests/HexParsingTests.cpp
     Tests/IconUtilitiesTests.cpp
     Tests/IndicatorElementTests.cpp
+    Tests/InlineSheetSiteTests.cpp
     Tests/ItemViewElementTests.cpp
     Tests/LineEditFieldTests.cpp
     Tests/MenuElementTests.cpp
+    Tests/OverlayToastFlatSheetTests.cpp
+    Tests/PaletteAndMiscFlatSheetTests.cpp
     Tests/PropertyEditorElementTests.cpp
+    Tests/SheetTwins.h
+    Tests/SheetTwinsTests.cpp
+    Tests/SiteTwins.h
     Tests/SpinBoxEditFieldTests.cpp
+    Tests/SpinBoxErrorFlatSheetTests.cpp
     Tests/StyleManagerTests.cpp
     Tests/StyleSheetCacheTests.cpp
     Tests/TabElementTests.cpp
     Tests/TextElementTests.cpp
+    Tests/TitleBarButtonFlatSheetTests.cpp
+    Tests/ToolTipElementTests.cpp
+    Tests/ToolTipTwins.h
+    Tests/VectorLabelTextFlatSheetTests.cpp
+    Tests/ViewsFlatSheetTests.cpp
     Tests/WindowDecoratorWrapperTests.cpp
     Tests/WindowFrameTests.cpp
     Tests/AppCarrierTests.cpp
+    Tests/ControlFoundationTwinTests.cpp
     Tests/qrc1.qrc
     Tests/qrc2.qrc
+    Tests/qrc3.qrc
+    Tests/qrc1/pagesheet.qss
     Tests/qrc1/sheet1.qss
     Tests/qrc1/sheet2.qss
     Tests/qrc2/sheet1.qss
+    Tests/qrc3/Visualization.svg
+    Tests/qrc3/VisualizationHidden.svg
 )

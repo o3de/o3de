@@ -110,7 +110,8 @@ namespace AzQtComponents
 
     QSize IndicatorElement::boxSize() const
     {
-        return m_imageSize + QSize(2 * m_margin, 2 * m_margin);
+        return m_imageSize
+            + QSize(2 * m_margin + m_padding.left() + m_padding.right(), 2 * m_margin + m_padding.top() + m_padding.bottom());
     }
 
     QRect IndicatorElement::imageRect(const QRect& widgetRect, bool focused, Qt::LayoutDirection direction) const
@@ -118,7 +119,7 @@ namespace AzQtComponents
         const QRect box = QStyle::alignedRect(direction, Qt::AlignLeft | Qt::AlignVCenter, boxSize(), widgetRect);
         const int margin = focused ? m_focusMargin : m_margin;
         const QSize image = focused ? m_focusImageSize : m_imageSize;
-        return QRect(box.left() + margin, box.top() + margin, image.width(), image.height());
+        return QRect(box.left() + margin + m_padding.left(), box.top() + margin + m_padding.top(), image.width(), image.height());
     }
 
     QRect IndicatorElement::contentsRect(const QRect& widgetRect, int spacing, Qt::LayoutDirection direction) const
@@ -148,6 +149,34 @@ namespace AzQtComponents
             click |= QStyle::visualRect(option.direction, option.rect, text);
         }
         return click;
+    }
+
+    const char* IndicatorElement::imageOf(QStyle::State state) const
+    {
+        // QStyleSheetStyle::pseudoClass: :hover needs the widget enabled as well as under the pointer
+        const bool enabled = state.testFlag(QStyle::State_Enabled);
+        unsigned states = 0;
+        states |= state.testFlag(QStyle::State_Off) ? Unchecked : 0;
+        states |= state.testFlag(QStyle::State_On) ? Checked : 0;
+        states |= state.testFlag(QStyle::State_NoChange) ? Indeterminate : 0;
+        states |= (enabled && state.testFlag(QStyle::State_MouseOver)) ? Hover : 0;
+        states |= state.testFlag(QStyle::State_HasFocus) ? Focus : 0;
+        states |= !enabled ? Disabled : 0;
+
+        // One sheet's cascade: the rule with the most pseudo-classes is the most specific (QCss::Selector::specificity), and of equal
+        // ones the later rule wins (QCss::StyleSelector::matchRule). Each flag of an entry is one pseudo-class of the rule.
+        const char* image = m_image;
+        uint rank = 0;
+        for (const StateImage& stateImage : m_stateImages)
+        {
+            const uint stateRank = qPopulationCount(static_cast<quint32>(stateImage.m_states));
+            if (stateImage.m_states != 0 && (states & stateImage.m_states) == stateImage.m_states && stateRank >= rank)
+            {
+                image = stateImage.m_image;
+                rank = stateRank;
+            }
+        }
+        return image;
     }
 
     // ----------------------------------------------------------------------------------

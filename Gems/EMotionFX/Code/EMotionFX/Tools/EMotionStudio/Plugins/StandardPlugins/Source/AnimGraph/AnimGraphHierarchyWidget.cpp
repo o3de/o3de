@@ -11,12 +11,15 @@
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphHierarchyWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphItemDelegate.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSortFilterProxyModel.h>
 #include <QHBoxLayout>
+#include <QColor>
 #include <QHeaderView>
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -64,7 +67,9 @@ namespace EMStudio
             m_treeView->header()->setSectionResizeMode(AnimGraphModel::COLUMN_PALETTE_NAME, QHeaderView::ResizeMode::ResizeToContents);
         }
         // Set the custom delegate
-        m_treeView->setStyleSheet("font-size: 11px; color: #e9e9e9;");
+        m_treeView->setObjectName(EMStudioFlat::GraphTreeName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_treeView, QString("font-size: 11px; color: %1;").arg(EMStudioFlatValues::GraphTreeText.name()));
         m_treeView->setItemDelegate(new AnimGraphItemDelegate(m_treeView));
 
         // m_treeView->setAlternatingRowColors(true); TODO: do we want this?

@@ -64,6 +64,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
         ~ViewportUiDisplay() override;
 
+        //! Flattened GUI: registers the elements that draw the highlight border and the label on top of it, which the legacy GUI
+        //! draws with the sheets of CreateViewportBorder and InitializeUiOverlay. The first display built in the flattened GUI
+        //! registers them, once.
+        static void RegisterFlatElements();
+
         void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
         void SetClusterButtonLocked(ViewportUiElementId clusterId, ButtonId buttonId, bool isLocked);

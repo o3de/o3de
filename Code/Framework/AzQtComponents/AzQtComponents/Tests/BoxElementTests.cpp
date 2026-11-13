@@ -346,6 +346,57 @@ namespace AzQtComponents
         }
         BoxElement RealCard = realCard("Test.Box.Button.RealCard");
         BoxElement DraftedCard = realCard("Test.Box.Button.DraftedCard");
+
+        // Rounded corners on some sides only: border-top-left-radius, -top-right-, -bottom-right- and -bottom-left-radius. A rule with a
+        // radius has no native border (QRenderRule::fixupBorder), a frame's or a button's. Qt's box model does not depend on the radii.
+        const char* const RadiiRules =
+            "#topRounded { background-color: #336699; margin-bottom: 4px; border-top-left-radius: 6px; border-top-right-radius: 6px; }"
+            "#diagonal { background-color: #336699; border: 2px solid #cc9933; border-top-left-radius: 8px;"
+            " border-bottom-right-radius: 3px; }"
+            "#unequal { background-color: #336699; border: 1px solid #cc9933; border-top-left-radius: 2px; border-top-right-radius: 4px;"
+            " border-bottom-right-radius: 6px; border-bottom-left-radius: 8px; }"
+            "#pairTooWide { background-color: #336699; border-top-left-radius: 30px; border-top-right-radius: 30px; }"
+            "#sideRounded { background-color: #333333; border: 1px solid #cc9933; border-top-left-radius: 5px;"
+            " border-bottom-left-radius: 5px; }"
+            "#sideRounded:hover { background-color: #444444; border-radius: 2px; }"
+            "#sideRounded:disabled { background-color: #333333; border-top-left-radius: 0px; border-bottom-left-radius: 0px; }";
+        const BoxElement TopRounded{
+            .m_name = "Test.Box.TopRounded",
+            .m_margin = QMargins(0, 0, 0, 4),
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = 6, .m_topRight = 6 },
+            .m_idle = { .m_fill = solid(0x336699) },
+        };
+        const BoxElement Diagonal{
+            .m_name = "Test.Box.Diagonal",
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = 8, .m_bottomRight = 3 },
+            .m_idle = { .m_fill = solid(0x336699), .m_edges = BoxElement::border(2, rgb(0xCC9933)) },
+        };
+        const BoxElement Unequal{
+            .m_name = "Test.Box.Unequal",
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = 2, .m_topRight = 4, .m_bottomRight = 6, .m_bottomLeft = 8 },
+            .m_idle = { .m_fill = solid(0x336699), .m_edges = BoxElement::border(1, rgb(0xCC9933)) },
+        };
+        const BoxElement PairTooWide{
+            .m_name = "Test.Box.PairTooWide",
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = 30, .m_topRight = 30 },
+            .m_idle = { .m_fill = solid(0x336699) },
+        };
+        // A button whose left corners are round. Under the pointer a rule gives the four corners one radius (a face's own radius sets
+        // the four corners); disabled, a rule gives the two left ones 0 (a face's radius of 0 is its own, not the element's radii)
+        const BoxElement SideRounded{
+            .m_name = "Test.Box.Button.SideRounded",
+            .m_nativeBorder = false,
+            .m_radii = { .m_topLeft = 5, .m_bottomLeft = 5 },
+            .m_idle = { .m_fill = solid(0x333333), .m_edges = BoxElement::border(1, rgb(0xCC9933)) },
+            .m_stateFaces = {
+                { BoxElement::Hover, { .m_fill = solid(0x444444), .m_edges = BoxElement::border(1, rgb(0xCC9933)), .m_radius = 2 } },
+                { BoxElement::Disabled, { .m_fill = solid(0x333333), .m_edges = BoxElement::border(1, rgb(0xCC9933)), .m_radius = 0 } },
+            },
+        };
     } // namespace BoxElementTestData
 
     // The tests and their fixture sit in a namespace of their own: the using-directive below must not leak into the
@@ -416,6 +467,11 @@ namespace AzQtComponents
                 BoxElement::registerElement(&Inset, button, [](const QWidget* w) { return named(w, "insetButton"); });
                 BoxElement::registerElement(&ZeroBoxFrame, frame, [](const QWidget* w) { return named(w, "zeroBoxFrame"); });
                 BoxElement::registerElement(&ZeroBoxButton, button, [](const QWidget* w) { return named(w, "zeroBoxButton"); });
+                BoxElement::registerElement(&TopRounded, frame, [](const QWidget* w) { return named(w, "topRounded"); });
+                BoxElement::registerElement(&Diagonal, frame, [](const QWidget* w) { return named(w, "diagonal"); });
+                BoxElement::registerElement(&Unequal, frame, [](const QWidget* w) { return named(w, "unequal"); });
+                BoxElement::registerElement(&PairTooWide, frame, [](const QWidget* w) { return named(w, "pairTooWide"); });
+                BoxElement::registerElement(&SideRounded, button, [](const QWidget* w) { return named(w, "sideRounded"); });
                 BoxElement::registerElement(&BarFill, &QWidget::staticMetaObject,
                     [](const QWidget* w) { return named(w, "tabBar") || named(w, "menuBar") || named(w, "headerView") || named(w, "subWindow"); });
 
@@ -611,6 +667,19 @@ namespace AzQtComponents
                 void expectSameDraw(const QRect& rect, std::initializer_list<QStyle::State> states, const char* what) const
                 {
                     for (const qreal ratio : { 1.0, 1.5 })
+                    {
+                        for (const QStyle::State state : states)
+                        {
+                            EXPECT_EQ(differing(draw(m_legacy, state, rect, ratio), draw(m_flat, state, rect, ratio)), 0)
+                                << what << " in state " << int(state) << " at ratio " << ratio;
+                        }
+                    }
+                }
+
+                //! The same at the ratios the GUI runs at: 1, 1.5 and 2
+                void expectSameDrawAtEveryRatio(const QRect& rect, std::initializer_list<QStyle::State> states, const char* what) const
+                {
+                    for (const qreal ratio : { 1.0, 1.5, 2.0 })
                     {
                         for (const QStyle::State state : states)
                         {
@@ -911,7 +980,7 @@ namespace AzQtComponents
             EXPECT_EQ(frame->maximumHeight(), QWIDGETSIZE_MAX);
             EXPECT_EQ(frame->contentsMargins().left(), 7);      // the frame read its box again (a style change)
 
-            // The sheet's way: set the property, repolish (AssetProcessor MainWindow.cpp:960-964 does it for the status label)
+            // The sheet's way: set the property, repolish (AssetProcessor MainWindow::CheckAssetServerStates does it for the status label)
             frame->setProperty("variant", 2);
             frame->style()->unpolish(frame);
             frame->style()->polish(frame);
@@ -1069,6 +1138,132 @@ namespace AzQtComponents
                 differs += differing(ButtonTwins::draw(fixed.m_legacy, state, rect, 1.0), ButtonTwins::draw(fixed.m_flat, state, rect, 1.0));
             }
             EXPECT_GT(differs, 0);
+        }
+
+        // ----------------------------------------------------------------------------------
+        // T3: the radius of each corner (border-top-left-radius, -top-right-, -bottom-right-, -bottom-left-radius)
+        // ----------------------------------------------------------------------------------
+
+        TEST_F(BoxElementTests, Radii_FramesWithDifferentRadiiAtTheirCornersPaintLikeTheSheetAtEveryRatio)
+        {
+            Twins<QWidget> twins(*this, [](QWidget& root)
+            {
+                // as the asset importer's python builder frame
+                QFrame* topRounded = add<QFrame>(root, "topRounded", QRect(0, 0, 100, 50));
+                topRounded->setFrameShape(QFrame::StyledPanel);
+                topRounded->setFrameShadow(QFrame::Raised);
+                add<QFrame>(root, "diagonal", QRect(110, 0, 80, 50));                           // two corners, the others square
+                add<QFrame>(root, "unequal", QRect(200, 0, 80, 60));                            // four radii, a line around them
+                add<QFrame>(root, "pairTooWide", QRect(290, 0, 50, 40));                        // two corners of 30px in a box 50px wide
+            }, QString::fromUtf8(RadiiRules), QSize(350, 70));
+
+            // The box does not depend on the radii: the contents of the first are its rect less the margin, none of the native frame
+            EXPECT_TRUE(twins.legacyChild<QFrame>("topRounded")->contentsMargins() == QMargins(0, 0, 0, 4));
+            EXPECT_TRUE(twins.legacyChild<QFrame>("diagonal")->contentsMargins() == QMargins(2, 2, 2, 2));
+            expectSame(twins, { "topRounded", "diagonal", "unequal", "pairTooWide" });
+            for (const qreal ratio : { 1.0, 1.5, 2.0 })
+            {
+                EXPECT_EQ(differing(paint(twins.m_legacy, ratio), paint(twins.m_flat, ratio)), 0) << "frames at ratio " << ratio;
+            }
+
+            // And they are not the four-corner look: the corners the rules leave square are filled, the ones they round are not
+            const QImage image = paint(twins.m_flat, 1.0);
+            EXPECT_NE(image.pixelColor(0, 0).rgb(), rgb(0x336699).rgb());               // topRounded: top left, round
+            EXPECT_NE(image.pixelColor(99, 0).rgb(), rgb(0x336699).rgb());              // top right, round
+            EXPECT_TRUE(image.pixelColor(0, 45).rgb() == rgb(0x336699).rgb());          // bottom left, square (the border box ends at 45)
+            EXPECT_TRUE(image.pixelColor(99, 45).rgb() == rgb(0x336699).rgb());         // bottom right, square
+            EXPECT_EQ(image.pixelColor(50, 47).alpha(), 0);                             // the margin-bottom stays bare
+            EXPECT_TRUE(image.pixelColor(290, 0).rgb() == rgb(0x336699).rgb());         // pairTooWide: the pair does not fit, both square
+            EXPECT_TRUE(image.pixelColor(339, 0).rgb() == rgb(0x336699).rgb());
+        }
+
+        TEST_F(BoxElementTests, Radii_AButtonWithRoundedCornersOnOneSideHasTheSheetsBoxAndPaintsLikeItInEveryState)
+        {
+            ButtonTwins buttons(*this, "sideRounded", "Text", QString::fromUtf8(RadiiRules));
+
+            // Qt's box does not depend on the radii: the hint is the text and the border
+            EXPECT_EQ(buttons.m_flat->sizeHint(), buttons.m_legacy->sizeHint());
+            EXPECT_EQ(buttons.m_flat->minimumSizeHint(), buttons.m_legacy->minimumSizeHint());
+            EXPECT_EQ(buttons.m_flat->maximumHeight(), buttons.m_legacy->maximumHeight());
+            EXPECT_TRUE(BoxElement::forWidget(buttons.m_flat) == &SideRounded);
+            EXPECT_TRUE(buttons.m_flat->testAttribute(Qt::WA_Hover));
+
+            // The states of the rules: idle (the left corners round), hovered (all four corners 2px: a state rule's border-radius),
+            // pressed and focused (no rule of theirs), disabled (the left corners square), and the combinations
+            const QStyle::State e = QStyle::State_Enabled;
+            const QStyle::State h = QStyle::State_MouseOver;
+            const QStyle::State s = QStyle::State_Sunken;
+            const QStyle::State f = QStyle::State_HasFocus;
+            buttons.expectSameDrawAtEveryRatio(QRect(0, 0, 80, 30), { e, e | h, e | h | s, e | s, e | f, e | h | f, QStyle::State_None },
+                "button with the left corners round");
+
+            // The idle button is not the hovered one, the pixels at the top right say it: square at rest, round under the pointer
+            const QImage idle = ButtonTwins::draw(buttons.m_flat, e, QRect(0, 0, 80, 30), 1.0);
+            const QImage hover = ButtonTwins::draw(buttons.m_flat, e | h, QRect(0, 0, 80, 30), 1.0);
+            EXPECT_TRUE(idle.pixelColor(79, 0).rgb() == rgb(0xCC9933).rgb());
+            EXPECT_NE(hover.pixelColor(79, 0).rgb(), rgb(0xCC9933).rgb());
+            EXPECT_NE(idle.pixelColor(0, 0).rgb(), rgb(0xCC9933).rgb());
+        }
+
+        //! The image a function draws on, at a device ratio
+        template<typename Draw>
+        static QImage drawnAt(const QSize& size, qreal ratio, Draw draw)
+        {
+            QImage image((QSizeF(size) * ratio).toSize(), QImage::Format_ARGB32_Premultiplied);
+            image.setDevicePixelRatio(ratio);
+            image.fill(rgb(0x808080));
+            QPainter painter(&image);
+            draw(&painter);
+            painter.end();
+            return image;
+        }
+
+        TEST_F(BoxElementTests, Radii_TheRadiiOfTheElementReplaceItsRadiusAndTheRadiusOfAFaceSetsTheFourCornersAgain)
+        {
+            const QRect rect(0, 0, 60, 40);
+            const BoxElement::Edges edges = BoxElement::border(1, rgb(0xCC9933));
+            const QBrush fill = solid(0x336699);
+            const QStyle::State e = QStyle::State_Enabled;
+
+            // The radius of the four corners and the radii of the corners: when any corner is not 0 these replace the radius, so
+            // `border-radius: 3px` with a top-left radius of 5px written the way the sheet has it is { 5, 3, 3, 3 }
+            BoxElement both;
+            both.m_nativeBorder = false;
+            both.m_radius = 3;
+            both.m_radii = { .m_topLeft = 5 };
+            both.m_idle = { .m_fill = fill, .m_edges = edges };
+            both.m_stateFaces[0] = { BoxElement::Hover, { .m_fill = fill, .m_edges = edges, .m_radius = 4 } };
+            both.m_stateFaces[1] = { BoxElement::Disabled, { .m_fill = fill, .m_edges = edges, .m_radius = 0 } };
+            BoxElement uniform = both;
+            uniform.m_radii = {};
+
+            for (const qreal ratio : { 1.0, 1.5, 2.0 })
+            {
+                const auto element = [&](const BoxElement& box, QStyle::State state)
+                {
+                    return drawnAt(rect.size(), ratio, [&](QPainter* painter)
+                    {
+                        QStyleOption option;
+                        option.state = state;
+                        option.rect = rect;
+                        box.draw(painter, &option, nullptr);
+                    });
+                };
+                const auto frame = [&](const BoxElement::Radii& radii)
+                {
+                    return drawnAt(rect.size(), ratio, [&](QPainter* painter)
+                    {
+                        BoxElement::drawFrame(painter, rect, fill, edges, radii);
+                    });
+                };
+                EXPECT_EQ(differing(element(both, e), frame({ .m_topLeft = 5 })), 0) << "radii replace the radius, at ratio " << ratio;
+                EXPECT_EQ(differing(element(uniform, e), frame({ 3, 3, 3, 3 })), 0) << "no radii: the radius, at ratio " << ratio;
+                EXPECT_EQ(differing(element(both, e | QStyle::State_MouseOver), frame({ 4, 4, 4, 4 })), 0)
+                    << "a face's radius sets the four corners, at ratio " << ratio;
+                EXPECT_EQ(differing(element(both, QStyle::State_None), frame({})), 0)
+                    << "a face's radius of 0 is its own, at ratio " << ratio;
+                EXPECT_GT(differing(element(both, e), element(uniform, e)), 0) << "the radii are not the radius, at ratio " << ratio;
+            }
         }
     } // namespace BoxElementTestsInternal
 } // namespace AzQtComponents

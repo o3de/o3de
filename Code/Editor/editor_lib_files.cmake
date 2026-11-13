@@ -236,6 +236,7 @@ set(FILES
     CryEdit.h
     EditorFlatSheet.cpp
     EditorFlatSheet.h
+    EditorFlatValues.h
     EditorToolsApplication.cpp
     EditorToolsApplication.h
     EditorToolsApplicationAPI.h
@@ -295,6 +296,7 @@ set(FILES
     AssetImporter/AssetImporter.qrc
     AssetImporter/AssetImporterDocument.cpp
     AssetImporter/AssetImporterDocument.h
+    AssetImporter/AssetImporterFlatSheet.h
     AssetImporter/AssetImporterTool.cpp
     AssetImporter/AssetImporterTool.h
     AssetImporter/AssetImporterWindow.cpp

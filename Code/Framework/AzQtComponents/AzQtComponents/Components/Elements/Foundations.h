@@ -24,10 +24,16 @@ namespace AzQtComponents
         // Primitive layers: the background tiers of the BJDS grey ladder, darkest first, and no paint
         // ------------------------------------------------------------------------------
 
+        // Each tier is the grey that many rules of the legacy sheets name; the lines cited are two of those rules
+        // BaseStyleSheet.qss:52, TitleBar.qss:11. TOKENIZE: FarBG
         inline constexpr QColor FarBG(0x11, 0x11, 0x11);           // BJDS Gray Far BG $tier.FarBG
+        // Splitter.qss:10, Menu.qss:12. TOKENIZE: BG
         inline constexpr QColor BG(0x22, 0x22, 0x22);              // BJDS Gray BG $tier.BG
+        // QDockWidget.qss:22, Card.qss:129. TOKENIZE: Low
         inline constexpr QColor Low(0x33, 0x33, 0x33);             // BJDS Gray Low $tier.Low
+        // BaseStyleSheet.qss:29, :65. TOKENIZE: Mid
         inline constexpr QColor Mid(0x44, 0x44, 0x44);             // BJDS Gray Mid $tier.Mid
+        // Card.qss:23, MenuBar.qss:30. TOKENIZE: Highest
         inline constexpr QColor Highest(0x55, 0x55, 0x55);         // BJDS Gray Highest $tier.Highest
         inline constexpr QColor Clear(0x00, 0x00, 0x00, 0x00);     // Qt::transparent $tier.Clear
 

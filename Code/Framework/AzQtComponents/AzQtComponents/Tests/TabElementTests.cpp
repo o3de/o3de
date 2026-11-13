@@ -526,7 +526,7 @@ namespace AzQtComponents
             EXPECT_TRUE(element->m_margin == QMargins());
             EXPECT_EQ(element->m_minContentWidth, 0);
             EXPECT_EQ(element->m_contentHeight, 0);
-            EXPECT_FALSE(element->m_hideFocusRect);
+            EXPECT_TRUE(element->m_hideFocusRect);      // TabWidget.qss:95 `AzQtComponents--TabBar:focus { outline: none }`
             EXPECT_FALSE(element->m_paneFill.isValid());
             for (const TabElement::TabFace* face : { &element->m_idle, &element->m_hover, &element->m_selected, &element->m_selectedHover })
             {

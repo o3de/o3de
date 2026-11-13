@@ -6,6 +6,7 @@
  *
  */
 
+#include <QColor>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsScene>
 #include <QResizeEvent>
@@ -17,6 +18,18 @@
 
 namespace GraphCanvas
 {
+    //=========================================================================
+    // MINI MAP COLOURS (the drop shadow and the magnifier box)
+    //=========================================================================
+    namespace MiniMapGraphicsViewFlat
+    {
+        // MiniMapGraphicsView.cpp:51 (the drop shadow of a docked mini map). TOKENIZE: MiniMapShadow
+        constexpr QColor MiniMapShadow(0, 0, 0, 127);
+
+        // MiniMapGraphicsView.cpp:282 (the outline of the magnifier box, opaque yellow). TOKENIZE: MiniMapMagnifierBox
+        constexpr QColor MiniMapMagnifierBox(255, 255, 0, 255);
+    } // namespace MiniMapGraphicsViewFlat
+
     MiniMapGraphicsView::MiniMapGraphicsView(const AZ::Crc32& graphCanvasEditorNotificationBusId,
         bool isStandAlone,
         const AZ::EntityId sceneId,
@@ -48,7 +61,7 @@ namespace GraphCanvas
             effect->setBlurRadius(50);
             effect->setXOffset(0);
             effect->setYOffset(0);
-            effect->setColor(QColor(0, 0, 0, 127));
+            effect->setColor(MiniMapGraphicsViewFlat::MiniMapShadow);
             setGraphicsEffect(effect);
 
             setFixedSize(200, 200);
@@ -279,7 +292,7 @@ namespace GraphCanvas
         QPainter painter(viewport());
 
         QPen pen;
-        pen.setColor(QColor(255, 255, 0, 255)); // Opaque yellow.
+        pen.setColor(MiniMapGraphicsViewFlat::MiniMapMagnifierBox); // Opaque yellow.
         pen.setWidth(MINIMAP_MAGNIFIER_BOX_THICKNESS); // Box thickness.
         painter.setPen(pen);
 

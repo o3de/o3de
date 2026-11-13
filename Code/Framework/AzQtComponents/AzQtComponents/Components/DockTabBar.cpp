@@ -28,7 +28,7 @@
 // Constant for the width of the close button and its total offset (width + margin spacing)
 static const int g_closeButtonWidth = 19;
 static const int g_closeButtonOffset = g_closeButtonWidth + AzQtComponents::DockBar::ButtonsSpacing;
-// Constant for the color of our tab indicator underlay
+// Constant for the color of our tab indicator underlay. DockTabBar.cpp:32. TOKENIZE: DockTabIndicatorUnderlay
 static const QColor g_tabIndicatorUnderlayColor(Qt::black);
 // Constant for the opacity of our tab indicator underlay
 static const qreal g_tabIndicatorUnderlayOpacity = 0.75;
@@ -188,7 +188,7 @@ namespace AzQtComponents
         auto closeButton = new DockBarButton(DockBarButton::CloseButton);
         if (StyleManager::stylesheetsDisabled())
         {
-            // TitleBar.qss: AzQtComponents--TabBar AzQtComponents--DockBarButton: 14px box, icon
+            // TitleBar.qss:79-88 AzQtComponents--TabBar AzQtComponents--DockBarButton: 14px box, icon
             // 12px, margin-right 4px (the margin belongs to the widget, outside the drawn box)
             closeButton->setFixedSize(14 + 4, 14);
             closeButton->setContentsMargins(0, 0, 4, 0);

@@ -59,10 +59,13 @@ namespace AzQtComponents
             return metaObject == &QFrame::staticMetaObject || qstrcmp(metaObject->className(), "QFrame") == 0;
         }
 
-        //! The widgets that may have an element: a QFrame itself, a scroll area, or a class a module registered
+        //! The widgets that may have an element: a QFrame itself, a scroll area, or a class a module registered. A row on QFrame is
+        //! for a QFrame itself, as `.QFrame` matches it alone (isExactFrame), so it makes no class derived from QFrame a candidate:
+        //! else every label and every view below a module that has such a row would keep a null element at its polish
         bool isCandidate(const QWidget* widget)
         {
-            return isExactFrame(widget) || qobject_cast<const QAbstractScrollArea*>(widget) || registry().covers(widget);
+            return isExactFrame(widget) || qobject_cast<const QAbstractScrollArea*>(widget)
+                || registry().covers(widget, &QFrame::staticMetaObject);
         }
 
         //! The Global element of a candidate; none for a class only a module covers

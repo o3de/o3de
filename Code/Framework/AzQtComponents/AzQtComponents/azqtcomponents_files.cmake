@@ -56,10 +56,14 @@ set(FILES
     Components/Elements/PropertyEditorElements.h
     Components/Elements/SpinBoxElement.cpp
     Components/Elements/SpinBoxElement.h
+    Components/Elements/SplitterElement.cpp
+    Components/Elements/SplitterElement.h
     Components/Elements/TabElement.cpp
     Components/Elements/TabElement.h
     Components/Elements/TextElement.cpp
     Components/Elements/TextElement.h
+    Components/Elements/ToolTipElement.cpp
+    Components/Elements/ToolTipElement.h
     Components/FancyDocking.cpp
     Components/FancyDocking.h
     Components/FancyDockingGhostWidget.cpp
@@ -228,6 +232,7 @@ set(FILES
     Components/Widgets/ReflectedPropertyEditor.qss
     Components/Widgets/ScrollBar.cpp
     Components/Widgets/ScrollBar.h
+    Components/Widgets/ScrollBarProperties.h
     Components/Widgets/ScrollBar.qss
     Components/Widgets/ScrollBarConfig.ini
     Components/Widgets/SegmentBar.h

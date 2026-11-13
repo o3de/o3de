@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 
@@ -16,7 +17,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_buttonGroup(AZStd::move(buttonGroup))
     {
         setOrientation(Qt::Orientation::Vertical);
-        setStyleSheet("background: black;");
+        // A sheet of the legacy GUI alone, and ViewportUiDisplay replaces it as it takes the cluster (PrepareWidgetForViewportUi). The
+        // flattened GUI draws a toolbar as ToolBar.qss does (ViewportUiDisplay.cpp, the flat section) and sets no sheet.
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this, QString("background: black;"));
 
         for (auto button : m_buttonGroup->GetButtons())
         {

@@ -80,6 +80,8 @@ set(FILES
     Source/Components/Nodes/Comment/CommentNodeLayoutComponent.h
     Source/Components/Nodes/Comment/CommentNodeTextComponent.cpp
     Source/Components/Nodes/Comment/CommentNodeTextComponent.h
+    Source/Components/Nodes/Comment/CommentTextEditFlat.cpp
+    Source/Components/Nodes/Comment/CommentTextEditFlat.h
     Source/Components/Nodes/Comment/CommentTextGraphicsWidget.cpp
     Source/Components/Nodes/Comment/CommentTextGraphicsWidget.h
     Source/Components/Nodes/General/GeneralNodeFrameComponent.cpp

@@ -10,12 +10,14 @@
 #include <Editor/InspectorBus.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/ReflectionSerializer.h>
+#include <QColor>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -69,16 +71,21 @@ namespace EMStudio
         m_previewFrame = new QFrame(this);
         m_previewFrame->setFrameShape(QFrame::Box);
         m_previewFrame->setObjectName("previewFrame");
-        m_previewFrame->setStyleSheet("QFrame#previewFrame { border: 2px dashed #979797; background-color: #85858580; }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_previewFrame,
+            QString("QFrame#previewFrame { border: 2px dashed %1; background-color: %2; }")
+                .arg(EMStudioFlatValues::PreviewBorder.name())
+                .arg(EMStudioFlatValues::PreviewBackground.name(QColor::HexArgb)));
         m_previewFrame->setLayout(new QHBoxLayout());
         QLabel* previewLabel = new QLabel("Preview", m_previewFrame);
         previewLabel->setAutoFillBackground(false);
-        previewLabel->setStyleSheet("background: transparent");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(previewLabel, "background: transparent");
         m_previewFrame->layout()->addWidget(previewLabel);
         m_previewWidget = new AzToolsFramework::ReflectedPropertyEditor(m_previewFrame);
         m_previewWidget->SetAutoResizeLabels(false);
         m_previewWidget->SetLeafIndentation(0);
-        m_previewWidget->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_previewWidget, "QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
         m_previewFrame->layout()->addWidget(m_previewWidget);
         previewLayout->addSpacerItem(new QSpacerItem(100, 0, QSizePolicy::Fixed, QSizePolicy::Fixed));
         previewLayout->addWidget(m_previewFrame);

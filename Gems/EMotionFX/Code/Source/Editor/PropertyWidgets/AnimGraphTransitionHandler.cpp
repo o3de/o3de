@@ -23,13 +23,22 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QColor>
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colour the anim graph window border takes while transitions are selected. It was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace AnimGraphTransitionHandlerFlat
+    {
+        constexpr QColor BorderOverwrite(255, 133, 0);   // AnimGraphTransitionHandler.cpp:32 TOKENIZE: AnimGraphTransitionBorderOverwrite
+    } // namespace AnimGraphTransitionHandlerFlat
+
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator)
 
-    const QColor AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteColor = QColor(255, 133, 0);
+    const QColor AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteColor = AnimGraphTransitionHandlerFlat::BorderOverwrite;
     const float AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteWidth = 5.0f;
 
     AnimGraphTransitionIdSelector::AnimGraphTransitionIdSelector()

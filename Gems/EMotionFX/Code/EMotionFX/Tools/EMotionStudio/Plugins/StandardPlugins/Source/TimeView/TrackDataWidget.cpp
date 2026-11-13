@@ -24,6 +24,7 @@
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QToolTip>
+#include <QColor>
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Algorithms.h>
@@ -43,12 +44,66 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time view data area paints with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TrackDataWidgetFlat
+    {
+        // The backgrounds of the data area
+        constexpr QColor Background(40, 45, 50);                // TrackDataWidget.cpp:49 TOKENIZE: TimeDataBackground
+        constexpr QColor BackgroundClipped(40, 40, 40);         // TrackDataWidget.cpp:50 TOKENIZE: TimeDataBackgroundClipped
+        constexpr QColor BackgroundOutOfRange(35, 35, 35);      // TrackDataWidget.cpp:51 TOKENIZE: TimeDataBackgroundOutOfRange
+
+        // The rubber band: zooming into a rectangle, and selecting the elements in a rectangle
+        constexpr QColor ZoomRectFill(0, 100, 200, 75);         // TrackDataWidget.cpp:167 TOKENIZE: TimeDataZoomRectFill
+        constexpr QColor ZoomRectLine(0, 100, 255);             // TrackDataWidget.cpp:168 TOKENIZE: TimeDataZoomRectLine
+        constexpr QColor SelectRectFill(200, 120, 0, 75);       // TrackDataWidget.cpp:175 TOKENIZE: TimeDataSelectRectFill
+        constexpr QColor SelectRectLine(255, 128, 0);           // TrackDataWidget.cpp:176 TOKENIZE: TimeDataSelectRectLine
+
+        // The recorded node history graph: the line and the fill of the selected node
+        constexpr QColor GraphHighlight(255, 128, 0);           // TrackDataWidget.cpp:376 TOKENIZE: TimeDataGraphHighlight
+
+        // The recorded event ticks. EventTickPen and EventTickBrush are replaced before anything is drawn with them (:562, :563).
+        constexpr QColor EventTickBorder(30, 30, 30);           // TrackDataWidget.cpp:520 TOKENIZE: TimeDataEventTickBorder
+        constexpr QColor EventTickEmitterBorder(255, 128, 0);   // TrackDataWidget.cpp:534 TOKENIZE: TimeDataEventTickEmitterBorder
+        constexpr QColor EventTickEmitterFill(255, 128, 0);     // TrackDataWidget.cpp:535 TOKENIZE: TimeDataEventTickEmitterFill
+        constexpr QColor EventTickSelectedBorder(255, 128, 0);  // TrackDataWidget.cpp:542 TOKENIZE: TimeDataEventTickSelectedBorder
+        const QColor EventTickPen(Qt::red);                     // TrackDataWidget.cpp:552 TOKENIZE: TimeDataEventTickPen
+        const QColor EventTickBrush(Qt::black);                 // TrackDataWidget.cpp:553 TOKENIZE: TimeDataEventTickBrush
+
+        // The recorded node history boxes and their text
+        constexpr QColor NodeSelectedFill(255, 128, 0);         // TrackDataWidget.cpp:643 TOKENIZE: TimeDataNodeSelectedFill
+        constexpr QColor NodeEmitterFill(255, 128, 0);          // TrackDataWidget.cpp:650 TOKENIZE: TimeDataNodeEmitterFill
+        constexpr QColor NodeText(255, 255, 255, 175);          // TrackDataWidget.cpp:725, :734 TOKENIZE: TimeDataNodeText
+        constexpr QColor NodeSelectedText(0, 0, 0);             // TrackDataWidget.cpp:729 TOKENIZE: TimeDataNodeSelectedText
+        const QColor NodeEmitterText(Qt::black);                // TrackDataWidget.cpp:739 TOKENIZE: TimeDataNodeEmitterText
+
+        // The line under a track title bar
+        constexpr QColor Separator(60, 70, 80);                 // TrackDataWidget.cpp:2636 TOKENIZE: TimeDataSeparator
+
+        // The tooltips of the node history items and the event history items (BuildToolTipString): the text colours of a row.
+        // The label cell of a row, at
+        // TrackDataWidget.cpp:2366, :2397, :2400, :2403, :2408, :2411, :2420, :2431, :2434, :2437, :2440, :2445, :2503, :2513, :2515,
+        // :2518, :2521, :2538, :2542, :2545, :2557, :2578, :2581, :2584, :2589, :2592, :2606, :2611, :2614, :2617, :2622
+        // TOKENIZE: TimeDataToolTipLabel
+        constexpr QColor ToolTipLabel(200, 200, 200);
+        // The value cell of a row, at
+        // TrackDataWidget.cpp:2367, :2398, :2401, :2404, :2409, :2412, :2421, :2432, :2435, :2438, :2441, :2504, :2516, :2519, :2522,
+        // :2539, :2543, :2546, :2558, :2579, :2582, :2585, :2590, :2593, :2609, :2612, :2615, :2618
+        // TOKENIZE: TimeDataToolTipValue
+        constexpr QColor ToolTipValue(115, 115, 115);
+        // The value of a motion that is not loaded anymore, at
+        // TrackDataWidget.cpp:2446, :2623
+        // TOKENIZE: TimeDataToolTipMissing
+        constexpr QColor ToolTipMissing(255, 0, 0);
+    } // namespace TrackDataWidgetFlat
+
     // the constructor
     TrackDataWidget::TrackDataWidget(TimeViewPlugin* plugin, QWidget* parent)
         : QWidget(parent)
-        , m_brushBackground(QColor(40, 45, 50), Qt::SolidPattern)
-        , m_brushBackgroundClipped(QColor(40, 40, 40), Qt::SolidPattern)
-        , m_brushBackgroundOutOfRange(QColor(35, 35, 35), Qt::SolidPattern)
+        , m_brushBackground(TrackDataWidgetFlat::Background, Qt::SolidPattern)
+        , m_brushBackgroundClipped(TrackDataWidgetFlat::BackgroundClipped, Qt::SolidPattern)
+        , m_brushBackgroundOutOfRange(TrackDataWidgetFlat::BackgroundOutOfRange, Qt::SolidPattern)
         , m_plugin(plugin)
         , m_mouseLeftClicked(false)
         , m_mouseMidClicked(false)
@@ -164,16 +219,16 @@ namespace EMStudio
 
             if (m_rectZooming)
             {
-                painter.setBrush(QColor(0, 100, 200, 75));
-                painter.setPen(QColor(0, 100, 255));
+                painter.setBrush(TrackDataWidgetFlat::ZoomRectFill);
+                painter.setPen(TrackDataWidgetFlat::ZoomRectLine);
                 painter.drawRect(selectRect);
             }
             else
             {
                 if (EMotionFX::GetRecorder().GetRecordTime() < MCore::Math::epsilon && m_plugin->m_motion)
                 {
-                    painter.setBrush(QColor(200, 120, 0, 75));
-                    painter.setPen(QColor(255, 128, 0));
+                    painter.setBrush(TrackDataWidgetFlat::SelectRectFill);
+                    painter.setPen(TrackDataWidgetFlat::SelectRectLine);
                     painter.drawRect(selectRect);
                 }
             }
@@ -373,7 +428,7 @@ namespace EMStudio
             }
             else
             {
-                color = QColor(255, 128, 0);
+                color = TrackDataWidgetFlat::GraphHighlight;
                 painter.setPen(color);
                 color.setAlpha(128);
                 painter.setBrush(color);
@@ -517,7 +572,7 @@ namespace EMStudio
             }
 
             // try to locate the node based on its unique ID
-            QColor borderColor(30, 30, 30);
+            QColor borderColor(TrackDataWidgetFlat::EventTickBorder);
             const AZ::Color& colorCode = curItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
@@ -531,15 +586,15 @@ namespace EMStudio
                         RecorderGroup* recorderGroup = m_plugin->GetTimeViewToolBar()->GetRecorderGroup();
                         if (recorderGroup->GetDisplayNodeActivity())
                         {
-                            borderColor = QColor(255, 128, 0);
-                            color = QColor(255, 128, 0);
+                            borderColor = TrackDataWidgetFlat::EventTickEmitterBorder;
+                            color = TrackDataWidgetFlat::EventTickEmitterFill;
                         }
                     }
                 }
 
                 if (m_plugin->m_eventHistoryItem == curItem)
                 {
-                    borderColor = QColor(255, 128, 0);
+                    borderColor = TrackDataWidgetFlat::EventTickSelectedBorder;
                     color = borderColor;
                 }
             }
@@ -549,8 +604,8 @@ namespace EMStudio
             gradient.setColorAt(0.0f, color);
             gradient.setColorAt(1.0f, gradientColor);
 
-            painter.setPen(Qt::red);
-            painter.setBrush(Qt::black);
+            painter.setPen(TrackDataWidgetFlat::EventTickPen);
+            painter.setBrush(TrackDataWidgetFlat::EventTickBrush);
 
             tickPoints[0] = QPoint(aznumeric_cast<int>(startTimePixel),                  aznumeric_cast<int>(height));
             tickPoints[1] = QPoint(aznumeric_cast<int>(startTimePixel + tickHalfWidth),    aznumeric_cast<int>(height + tickHeight / 2));
@@ -640,14 +695,14 @@ namespace EMStudio
             {
                 if (m_plugin->m_nodeHistoryItem == curItem)
                 {
-                    color = QColor(255, 128, 0);
+                    color = TrackDataWidgetFlat::NodeSelectedFill;
                 }
 
                 if (m_plugin->m_eventEmitterNode && m_plugin->m_eventEmitterNode->GetId() == curItem->m_nodeId && m_plugin->m_eventHistoryItem)
                 {
                     if (m_plugin->m_eventHistoryItem->m_startTime >= curItem->m_startTime && m_plugin->m_eventHistoryItem->m_startTime <= curItem->m_endTime)
                     {
-                        color = QColor(255, 128, 0);
+                        color = TrackDataWidgetFlat::NodeEmitterFill;
                         matchesEvent = true;
                     }
                 }
@@ -722,21 +777,21 @@ namespace EMStudio
                 {
                     if (m_plugin->m_nodeHistoryItem != curItem)
                     {
-                        painter.setPen(QColor(255, 255, 255, 175));
+                        painter.setPen(TrackDataWidgetFlat::NodeText);
                     }
                     else
                     {
-                        painter.setPen(QColor(0, 0, 0));
+                        painter.setPen(TrackDataWidgetFlat::NodeSelectedText);
                     }
                 }
                 else
                 {
-                    painter.setPen(QColor(255, 255, 255, 175));
+                    painter.setPen(TrackDataWidgetFlat::NodeText);
                 }
             }
             else
             {
-                painter.setPen(Qt::black);
+                painter.setPen(TrackDataWidgetFlat::NodeEmitterText);
             }
 
             m_tempString.clear();
@@ -2363,8 +2418,13 @@ namespace EMStudio
         outString = "<table border=\"0\">";
 
         // node name
-        outString += AZStd::string::format("<tr><td width=\"150\"><p style=\"color:rgb(200,200,200)\"><b>Node Name:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td width=\"400\"><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->m_name.c_str());
+        outString += AZStd::string::format(
+            "<tr><td width=\"150\"><p style=\"color:%s\"><b>Node Name:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td width=\"400\"><p style=\"color:%s\">%s</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            item->m_name.c_str());
 
         // build the node path string
         EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->m_actorInstance;
@@ -2394,22 +2454,47 @@ namespace EMStudio
                     nodePathString += parentNode->GetName();
                 }
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Path:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", nodePathString.c_str());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Node Path:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    nodePathString.c_str());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Type:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->RTTI_GetTypeName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Node Type:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    node->RTTI_GetTypeName());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Parent Type:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->GetParentNode()->RTTI_GetTypeName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Parent Type:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    node->GetParentNode()->RTTI_GetTypeName());
 
                 if (node->GetNumChildNodes() > 0)
                 {
-                    outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Child Nodes:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->GetNumChildNodes());
+                    outString += AZStd::string::format(
+                        "<tr><td><p style=\"color:%s\"><b>Child Nodes:&nbsp;</b></p></td>",
+                        TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                    outString += AZStd::string::format(
+                        "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                        TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                        node->GetNumChildNodes());
 
-                    outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Recursive Children:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->RecursiveCalcNumNodes());
+                    outString += AZStd::string::format(
+                        "<tr><td><p style=\"color:%s\"><b>Recursive Children:&nbsp;</b></p></td>",
+                        TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                    outString += AZStd::string::format(
+                        "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                        TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                        node->RecursiveCalcNumNodes());
                 }
             }
         }
@@ -2417,8 +2502,13 @@ namespace EMStudio
         // motion name
         if (item->m_motionId != InvalidIndex32 && !item->m_motionFileName.empty())
         {
-            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion FileName:&nbsp;</b></p></td>");
-            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", item->m_motionFileName.c_str());
+            outString += AZStd::string::format(
+                "<tr><td><p style=\"color:%s\"><b>Motion FileName:&nbsp;</b></p></td>",
+                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+            outString += AZStd::string::format(
+                "<td><p style=\"color:%s\">%s</p></td></tr>",
+                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                item->m_motionFileName.c_str());
 
             // show motion info
             EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(item->m_motionId);
@@ -2428,22 +2518,47 @@ namespace EMStudio
                 AzFramework::StringFunc::Path::GetFolderPath(motion->GetFileNameString().c_str(), path);
                 EMotionFX::GetEMotionFX().GetFilenameRelativeToMediaRoot(&path);
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion Path:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", path.c_str());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Motion Path:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    path.c_str());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion Type:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", motion->GetMotionData()->RTTI_GetTypeName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Motion Type:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    motion->GetMotionData()->RTTI_GetTypeName());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion Duration:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", motion->GetDuration());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Motion Duration:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%.3f seconds</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    motion->GetDuration());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event Tracks:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", motion->GetEventTable()->GetNumTracks());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Event Tracks:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    motion->GetEventTable()->GetNumTracks());
             }
             else
             {
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion FileName:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(255, 0, 0)\">%s</p></td></tr>", "<not loaded anymore>");
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Motion FileName:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipMissing.name().toUtf8().data(),
+                    "<not loaded anymore>");
             }
         }
 
@@ -2500,9 +2615,11 @@ namespace EMStudio
                     for (const AZStd::pair<AZStd::string, AZStd::string>& keyValuePair : motionDataProperties.GetValue())
                     {
                         outString += AZStd::string::format(
-                            "<tr><td><p style=\"color:rgb(200, 200, 200)\"><b>%s:&nbsp;</b></p></td>" // no comma, concat these 2 string literals
-                            "<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>",
+                            "<tr><td><p style=\"color:%s\"><b>%s:&nbsp;</b></p></td>" // no comma, concat these 2 string literals
+                            "<td><p style=\"color:%s\">%s</p></td></tr>",
+                            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data(),
                             keyValuePair.first.c_str(),
+                            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
                             keyValuePair.second.c_str()
                         );
                     }
@@ -2510,16 +2627,33 @@ namespace EMStudio
             }
         }
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event ID:&nbsp;</b></p></td>");
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Event ID:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Local Event Time:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->m_eventInfo.m_timeValue);
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Local Event Time:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td><p style=\"color:%s\">%.3f seconds</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            item->m_eventInfo.m_timeValue);
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event Trigger Time:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", item->m_startTime);
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Event Trigger Time:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td><p style=\"color:%s\">%.3f seconds</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            item->m_startTime);
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Is Ranged Event:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", (item->m_isTickEvent == false) ? "Yes" : "No");
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Is Ranged Event:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td><p style=\"color:%s\">%s</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            (item->m_isTickEvent == false) ? "Yes" : "No");
 
         if (item->m_isTickEvent == false)
         {
@@ -2535,15 +2669,30 @@ namespace EMStudio
             {
                 outputEventStateText = &eventEndText;
             }
-            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Ranged Info:&nbsp;</b></p></td>");
-            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", outputEventStateText->c_str());
+            outString += AZStd::string::format(
+                "<tr><td><p style=\"color:%s\"><b>Ranged Info:&nbsp;</b></p></td>",
+                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+            outString += AZStd::string::format(
+                "<td><p style=\"color:%s\">%s</p></td></tr>",
+                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                outputEventStateText->c_str());
         }
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Global Weight:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->m_eventInfo.m_globalWeight);
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Global Weight:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td><p style=\"color:%s\">%.3f</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            item->m_eventInfo.m_globalWeight);
 
-        outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Local Weight:&nbsp;</b></p></td>");
-        outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f</p></td></tr>", item->m_eventInfo.m_localWeight);
+        outString += AZStd::string::format(
+            "<tr><td><p style=\"color:%s\"><b>Local Weight:&nbsp;</b></p></td>",
+            TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+        outString += AZStd::string::format(
+            "<td><p style=\"color:%s\">%.3f</p></td></tr>",
+            TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+            item->m_eventInfo.m_localWeight);
 
         // build the node path string
         EMotionFX::ActorInstance* actorInstance = FindActorInstanceData()->m_actorInstance;
@@ -2554,8 +2703,13 @@ namespace EMStudio
             EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->m_emitterNodeId);
             if (node)
             {
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Emitted By:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->GetName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Emitted By:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    node->GetName());
 
                 AZStd::vector<EMotionFX::AnimGraphNode*> nodePath;
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
@@ -2575,22 +2729,47 @@ namespace EMStudio
                     nodePathString += parentNode->GetName();
                 }
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Path:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", nodePathString.c_str());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Node Path:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    nodePathString.c_str());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Node Type:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->RTTI_GetTypeName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Node Type:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    node->RTTI_GetTypeName());
 
-                outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Parent Type:&nbsp;</b></p></td>");
-                outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->GetParentNode()->RTTI_GetTypeName());
+                outString += AZStd::string::format(
+                    "<tr><td><p style=\"color:%s\"><b>Parent Type:&nbsp;</b></p></td>",
+                    TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                outString += AZStd::string::format(
+                    "<td><p style=\"color:%s\">%s</p></td></tr>",
+                    TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                    node->GetParentNode()->RTTI_GetTypeName());
 
                 if (node->GetNumChildNodes() > 0)
                 {
-                    outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Child Nodes:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->GetNumChildNodes());
+                    outString += AZStd::string::format(
+                        "<tr><td><p style=\"color:%s\"><b>Child Nodes:&nbsp;</b></p></td>",
+                        TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                    outString += AZStd::string::format(
+                        "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                        TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                        node->GetNumChildNodes());
 
-                    outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Recursive Children:&nbsp;</b></p></td>");
-                    outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", node->RecursiveCalcNumNodes());
+                    outString += AZStd::string::format(
+                        "<tr><td><p style=\"color:%s\"><b>Recursive Children:&nbsp;</b></p></td>",
+                        TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                    outString += AZStd::string::format(
+                        "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                        TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                        node->RecursiveCalcNumNodes());
                 }
 
                 // show the motion info
@@ -2603,24 +2782,49 @@ namespace EMStudio
                         EMotionFX::Motion* motion = motionInstance->GetMotion();
                         if (motion)
                         {
-                            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion FileName:&nbsp;</b></p></td>");
+                            outString += AZStd::string::format(
+                                "<tr><td><p style=\"color:%s\"><b>Motion FileName:&nbsp;</b></p></td>",
+                                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
                             AZStd::string filename;
                             AzFramework::StringFunc::Path::GetFileName(motion->GetFileName(), filename);
-                            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", filename.c_str());
+                            outString += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%s</p></td></tr>",
+                                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                                filename.c_str());
 
-                            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion Type:&nbsp;</b></p></td>");
-                            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", motion->GetMotionData()->RTTI_GetTypeName());
+                            outString += AZStd::string::format(
+                                "<tr><td><p style=\"color:%s\"><b>Motion Type:&nbsp;</b></p></td>",
+                                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                            outString += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%s</p></td></tr>",
+                                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                                motion->GetMotionData()->RTTI_GetTypeName());
 
-                            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion Duration:&nbsp;</b></p></td>");
-                            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%.3f seconds</p></td></tr>", motion->GetDuration());
+                            outString += AZStd::string::format(
+                                "<tr><td><p style=\"color:%s\"><b>Motion Duration:&nbsp;</b></p></td>",
+                                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                            outString += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%.3f seconds</p></td></tr>",
+                                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                                motion->GetDuration());
 
-                            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Event Tracks:&nbsp;</b></p></td>");
-                            outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%zu</p></td></tr>", motion->GetEventTable()->GetNumTracks());
+                            outString += AZStd::string::format(
+                                "<tr><td><p style=\"color:%s\"><b>Event Tracks:&nbsp;</b></p></td>",
+                                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                            outString += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%zu</p></td></tr>",
+                                TrackDataWidgetFlat::ToolTipValue.name().toUtf8().data(),
+                                motion->GetEventTable()->GetNumTracks());
                         }
                         else
                         {
-                            outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Motion FileName:&nbsp;</b></p></td>");
-                            outString += AZStd::string::format("<td><p style=\"color:rgb(255, 0, 0)\">%s</p></td></tr>", "<not loaded anymore>");
+                            outString += AZStd::string::format(
+                                "<tr><td><p style=\"color:%s\"><b>Motion FileName:&nbsp;</b></p></td>",
+                                TrackDataWidgetFlat::ToolTipLabel.name().toUtf8().data());
+                            outString += AZStd::string::format(
+                                "<td><p style=\"color:%s\">%s</p></td></tr>",
+                                TrackDataWidgetFlat::ToolTipMissing.name().toUtf8().data(),
+                                "<not loaded anymore>");
                         }
                     }
                 }
@@ -2633,7 +2837,7 @@ namespace EMStudio
     // paint a title bar
     uint32 TrackDataWidget::PaintSeparator(QPainter& painter, int32 heightOffset, float animationLength)
     {
-        painter.setPen(QColor(60, 70, 80));
+        painter.setPen(TrackDataWidgetFlat::Separator);
         painter.setBrush(Qt::NoBrush);
         painter.drawLine(QPoint(0, heightOffset), QPoint(aznumeric_cast<int>(m_plugin->TimeToPixel(animationLength)), heightOffset));
         return 1;

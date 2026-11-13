@@ -33,6 +33,10 @@
 #include <GraphCanvas/Components/ViewBus.h>
 #include <GraphCanvas/Components/GeometryBus.h>
 
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
 namespace
 {
     using namespace ScriptCanvasEditor;
@@ -565,6 +569,56 @@ namespace ScriptCanvasEditor
             return false;
         }
 
+        // ----------------------------------------------------------------------------------
+        // Flattened GUI: the command list's fill
+        //
+        // CommandLine.ui gave the command list (commandList) a sheet of one fill. The legacy GUI sets that sheet after setupUi; the
+        // flattened GUI sets none, and this element draws what it drew: the list's whole rect, the lane of its scroll bar included,
+        // in the colour of the sheet over what lies behind the list. The viewport paints nothing (Style::polish), so the fill is
+        // laid once, as the sheet laid it.
+        // ----------------------------------------------------------------------------------
+
+        //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+        //! unit, where anonymous namespaces merge.
+        namespace CommandLineFlatInternal
+        {
+            //! background-color: CommandLine.ui:54 (the form before the flattening), `rgba(15,15,15,0.1)`. Qt's style sheet parser reads
+            //! a fractional alpha as int(alpha * 255), so 0.1 is 25 (the same reading as rgba(0,0,0,0.7) = 178 in ProjectManager's
+            //! FlatElements.cpp). TOKENIZE: CommandListFill
+            const QColor CommandListFill(15, 15, 15, 25);
+
+            //! `QTableView { background-color }` on the list, over the rules every table has: a margin of 0 (`QAbstractScrollArea`,
+            //! QDockWidget.qss:35), no border (`QTableView`, TableView.qss:28), and the fill of a view in a widget
+            //! (`QWidget > QTableView`, BaseStyleSheet.qss:37), which the sheet's own fill outranks
+            const AzQtComponents::BoxElement CommandList{
+                .m_name = "ScriptCanvas.Box.CommandList",
+                .m_hasBox = true,         // margin: 0, QDockWidget.qss:35 (QAbstractScrollArea)
+                .m_nativeBorder = false,  // border: none, TableView.qss:28 (QTableView)
+                .m_idle = {
+                    .m_fill = QBrush(CommandListFill),
+                },
+            };
+
+            //! The list the form gave the sheet: the widget named commandList in a command line. The sheet's selector (`QTableView`)
+            //! names a type, and the sheet sat on this one list, so it reached this list and no other table
+            bool isCommandList(const QWidget* widget)
+            {
+                return AzQtComponents::Selectors::named(widget, "commandList")
+                    && AzQtComponents::Selectors::childOfClass(widget, "ScriptCanvasEditor::Widget::CommandLine");
+            }
+        } // namespace CommandLineFlatInternal
+
+        void CommandLine::RegisterFlatElements()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                namespace Flat = CommandLineFlatInternal;
+                AzQtComponents::BoxElement::registerElement(&Flat::CommandList, &CommandLineList::staticMetaObject, &Flat::isCommandList);
+            }
+        }
+
         // CommandLine
         /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -573,6 +627,17 @@ namespace ScriptCanvasEditor
             , ui(new Ui::CommandLine())
         {
             ui->setupUi(this);
+
+            // The command list's fill: the sheet the form gave it, for the legacy GUI only, with the fill both rungs read
+            // (CommandListFill) written as #AARRGGBB, the alpha first. The flattened GUI sets none, and its element draws the fill
+            // (RegisterFlatElements).
+            using AzQtComponents::StyleManager;
+            StyleManager::setLegacyStyleSheet(ui->commandList,
+                QString("QTableView { background-color: %1; }").arg(CommandLineFlatInternal::CommandListFill.name(QColor::HexArgb)));
+            if (StyleManager::stylesheetsDisabled())
+            {
+                RegisterFlatElements();
+            }
 
             CommandListDataModel* commandListDataModel = new CommandListDataModel();
             CommandListDataProxyModel* commandListDataProxyModel = new CommandListDataProxyModel(commandListDataModel);

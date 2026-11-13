@@ -50,6 +50,17 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Slice Push Colours
+    // =======================================================================
+
+    //! The colour of the conflict count in the push widget's conflict message, written into its HTML text. A named namespace, not an
+    //! anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace SlicePushWidgetFlatInternal
+    {
+        const QColor ConflictText(Qt::red);   // SlicePushWidget.cpp:1299. TOKENIZE: SlicePushConflictText
+    }
+
     using EditorEntitySortComponent = AzToolsFramework::Components::EditorEntitySortComponent;
 
     /**
@@ -1296,7 +1307,8 @@ namespace AzToolsFramework
         int numConflicts = GetConflictCount();
         if (numConflicts > 0)
         {
-            QString conflictMsg = QString("<font color=\"red\">%1 ").arg(numConflicts);
+            QString conflictMsg =
+                QString("<font color=\"%1\">%2 ").arg(SlicePushWidgetFlatInternal::ConflictText.name()).arg(numConflicts);
             if (numConflicts > 1)
             {
                 conflictMsg += QObject::tr("conflicts: ");

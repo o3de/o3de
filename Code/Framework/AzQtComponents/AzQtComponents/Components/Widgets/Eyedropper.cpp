@@ -23,6 +23,20 @@
 namespace AzQtComponents
 {
 
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins this file
+    //! with others into one translation unit, where anonymous namespaces merge.
+    namespace EyedropperFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The loupe: the colours Eyedropper::paintEvent paints (shown only while a colour is picked)
+        // ------------------------------------------------------------------------------
+        constexpr QColor GridLine(0x80, 0x80, 0x80, 0x80);  // Eyedropper.cpp:130. TOKENIZE: EyedropperGridLine
+        constexpr QColor ContrastDark(0, 0, 0);             // Eyedropper.cpp:147, :148 (Qt::black). TOKENIZE: EyedropperContrastDark
+        constexpr QColor ContrastLight(255, 255, 255);      // Eyedropper.cpp:147, :148 (Qt::white). TOKENIZE: EyedropperContrastLight
+        constexpr QColor RingOuter(0, 0, 0);                // Eyedropper.cpp:177 (Qt::black). TOKENIZE: EyedropperRingOuter
+        constexpr QColor RingInner(255, 255, 255);          // Eyedropper.cpp:182 (Qt::white). TOKENIZE: EyedropperRingInner
+    } // namespace EyedropperFlat
+
     Eyedropper::Config Eyedropper::loadConfig(QSettings& settings)
     {
         Config config = defaultConfig();
@@ -127,7 +141,7 @@ namespace AzQtComponents
         painter.drawImage(rect(), m_sample);
 
         // Draw the grid
-        QPen pen(QColor(0x80, 0x80, 0x80, 0x80));
+        QPen pen(EyedropperFlat::GridLine);
         pen.setCosmetic(true);
         painter.setPen(pen);
 
@@ -144,8 +158,10 @@ namespace AzQtComponents
         pen.setCosmetic(false);
         
         // Draw the border of the hovered pixel
-        QColor highlight = m_color.lightness() > 127 ? Qt::black : Qt::white;
-        QColor lowlight = m_color.lightness() > 127 ? Qt::white : Qt::black;
+        using EyedropperFlat::ContrastDark;
+        using EyedropperFlat::ContrastLight;
+        QColor highlight = m_color.lightness() > 127 ? ContrastDark : ContrastLight;
+        QColor lowlight = m_color.lightness() > 127 ? ContrastLight : ContrastDark;
 
         pen.setColor(highlight);
         pen.setWidth(2);
@@ -174,12 +190,12 @@ namespace AzQtComponents
         painter.setClipping(false);
 
         QRect bounds = rect() - halfOutlineMargin;
-        pen.setColor(Qt::black);
+        pen.setColor(EyedropperFlat::RingOuter);
         pen.setWidth(m_zoomFactor);
         painter.setPen(pen);
         painter.drawEllipse(bounds);
 
-        pen.setColor(Qt::white);
+        pen.setColor(EyedropperFlat::RingInner);
         pen.setWidth(m_zoomFactor - 2);
         painter.setPen(pen);
         painter.drawEllipse(bounds);

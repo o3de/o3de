@@ -8,6 +8,7 @@
 
 #include "AzCore/std/algorithm.h"
 #include "MotionSetsWindowPlugin.h"
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzCore/IO/FileIO.h>
 #include <QAction>
@@ -27,6 +28,7 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QToolBar>
+#include <QColor>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
@@ -42,6 +44,19 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the motion set window paints the rows of a motion ID rename with and writes into its duplicate ID label.
+    // Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace MotionSetWindowFlat
+    {
+        // Qt::green is rgb(0, 255, 0), unlike the SVG name "green" (rgb(0, 128, 0))
+        const QColor RenameDuplicateText(Qt::red);     // MotionSetWindow.cpp:2123, :2124 TOKENIZE: MotionSetRenameDuplicateText
+        const QColor RenameValidText(Qt::green);       // MotionSetWindow.cpp:2131, :2132 TOKENIZE: MotionSetRenameValidText
+        // The number of duplicate IDs in its label (the HTML colour name red is rgb(255, 0, 0))
+        constexpr QColor DuplicateCountText(255, 0, 0);    // MotionSetWindow.cpp:2154 TOKENIZE: MotionSetDuplicateCountText
+    } // namespace MotionSetWindowFlat
+
     MotionSetRemoveMotionsFailedWindow::MotionSetRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions)
         : QDialog(parent)
     {
@@ -136,6 +151,7 @@ namespace EMStudio
         QVBoxLayout* layout = new QVBoxLayout();
 
         m_lineEdit = new QLineEdit();
+        m_lineEdit->setObjectName(EMStudioFlat::InputFieldName);
         connect(m_lineEdit, &QLineEdit::textEdited, this, &RenameMotionEntryWindow::TextEdited);
         layout->addWidget(m_lineEdit);
 
@@ -174,7 +190,7 @@ namespace EMStudio
         }
 
         m_okButton->setEnabled(true);
-        m_lineEdit->setStyleSheet("");
+        GetManager()->SetWidgetAsValidInput(m_lineEdit);
     }
 
 
@@ -2120,16 +2136,16 @@ namespace EMStudio
             // set the row red if duplicate, green if the value is valid, nothing if the value is the same
             if (itemFoundCounter > 1)
             {
-                beforeTableWidgetItem->setForeground(Qt::red);
-                afterTableWidgetItem->setForeground(Qt::red);
+                beforeTableWidgetItem->setForeground(MotionSetWindowFlat::RenameDuplicateText);
+                afterTableWidgetItem->setForeground(MotionSetWindowFlat::RenameDuplicateText);
             }
             else
             {
                 if (modifiedID != m_motionIDs[i])
                 {
                     // set the row green
-                    beforeTableWidgetItem->setForeground(Qt::green);
-                    afterTableWidgetItem->setForeground(Qt::green);
+                    beforeTableWidgetItem->setForeground(MotionSetWindowFlat::RenameValidText);
+                    afterTableWidgetItem->setForeground(MotionSetWindowFlat::RenameValidText);
 
                     // add a valid
                     m_valids.push_back(i);
@@ -2151,7 +2167,9 @@ namespace EMStudio
         // the number is in red if at least one found
         if (numDuplicateFound > 0)
         {
-            m_numDuplicateIDsLabel->setText(QString("Number of duplicate IDs: <font color='red'>%1</font>").arg(numDuplicateFound));
+            m_numDuplicateIDsLabel->setText(QString("Number of duplicate IDs: <font color='%1'>%2</font>")
+                .arg(MotionSetWindowFlat::DuplicateCountText.name())
+                .arg(numDuplicateFound));
         }
         else
         {

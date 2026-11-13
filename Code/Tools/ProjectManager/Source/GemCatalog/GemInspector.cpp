@@ -8,8 +8,12 @@
 
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <FlatElements.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
+
+#include <AzCore/Debug/Trace.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QDir>
 #include <QFrame>
@@ -306,7 +310,21 @@ namespace O3DE::ProjectManager
     QLabel* GemInspector::CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString)
     {
         QLabel* result = new QLabel();
-        result->setStyleSheet(QString("font-size: %1px; color: %2;").arg(QString::number(fontSize), colorCodeString));
+
+        // The legacy GUI styles the label with a sheet of its own. The flattened GUI sets none: the two values go to its elements
+        // as properties (FlatElements.cpp has an element for each pair the inspector uses)
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            result, QString("font-size: %1px; color: %2;").arg(QString::number(fontSize), colorCodeString));
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            // A pair no element names would show as a plain label: FlatElements.cpp holds the pairs in use
+            AZ_Warning("ProjectManager", HasFlatStyledLabelText(fontSize, colorCodeString),
+                "A label of %d px and colour %s has no text element in the flattened GUI (FlatElements.cpp): it shows as a plain label.",
+                fontSize, colorCodeString.toUtf8().constData());
+            result->setProperty(StyledLabelFontSizeProperty, fontSize);
+            result->setProperty(StyledLabelColorProperty, colorCodeString);
+        }
+
         layout->addWidget(result);
         return result;
     }

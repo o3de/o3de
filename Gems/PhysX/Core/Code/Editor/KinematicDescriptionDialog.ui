@@ -75,9 +75,6 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QGroupBox" name="groupBox">
-         <property name="styleSheet">
-          <string notr="true">border: none</string>
-         </property>
          <property name="title">
           <string/>
          </property>
@@ -96,9 +93,6 @@
             <height>74</height>
            </size>
           </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(51, 51, 51);</string>
-          </property>
           <property name="title">
            <string/>
           </property>
@@ -110,9 +104,6 @@
              <width>71</width>
              <height>21</height>
             </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Simulated&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -126,9 +117,6 @@
              <width>281</width>
              <height>51</height>
             </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when physics is applied and&lt;br/&gt; automated forces are needed to move assets.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -158,10 +146,6 @@
             <height>74</height>
            </size>
           </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(51, 51, 51);
-</string>
-          </property>
           <property name="title">
            <string/>
           </property>
@@ -173,9 +157,6 @@
              <width>71</width>
              <height>21</height>
             </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Kinematic&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -189,9 +170,6 @@
              <width>281</width>
              <height>51</height>
             </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Used when manually moving an object with code or Script Canvas, using Transform.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -227,9 +205,6 @@
              <height>21</height>
             </rect>
            </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -242,9 +217,6 @@
              <width>21</width>
              <height>21</height>
             </rect>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
            </property>
            <property name="text">
             <string/>
@@ -260,9 +232,6 @@
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QGroupBox" name="groupBox_2">
-           <property name="styleSheet">
-            <string notr="true">border: none;</string>
-           </property>
            <property name="title">
             <string/>
            </property>
@@ -291,9 +260,6 @@
               <height>21</height>
              </rect>
             </property>
-            <property name="styleSheet">
-             <string notr="true">color: #58BC61</string>
-            </property>
             <property name="text">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Valid&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -307,9 +273,6 @@
               <height>21</height>
              </rect>
             </property>
-            <property name="styleSheet">
-             <string notr="true">color: #FA2727</string>
-            </property>
             <property name="text">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Invalid&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
@@ -322,9 +285,6 @@
               <width>111</width>
               <height>21</height>
              </rect>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">margin-left: 5px;</string>
             </property>
             <property name="text">
              <string>Move with code</string>
@@ -345,9 +305,6 @@
               <height>21</height>
              </rect>
             </property>
-            <property name="styleSheet">
-             <string notr="true">margin-left: 5px;</string>
-            </property>
             <property name="text">
              <string>Move manually</string>
             </property>
@@ -366,9 +323,6 @@
               <width>101</width>
               <height>21</height>
              </rect>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">margin-left: 5px;</string>
             </property>
             <property name="text">
              <string>Collision</string>
@@ -389,9 +343,6 @@
               <height>21</height>
              </rect>
             </property>
-            <property name="styleSheet">
-             <string notr="true">margin-left: 5px;</string>
-            </property>
             <property name="text">
              <string>Gravity</string>
             </property>
@@ -411,10 +362,6 @@
               <height>191</height>
              </rect>
             </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(51, 51, 51);
-</string>
-            </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -429,10 +376,6 @@
                <width>20</width>
                <height>81</height>
               </rect>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: rgb(136, 136, 136);
-border-right: 1px solid  rgb(136, 136, 136); </string>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Plain</enum>
@@ -514,9 +457,6 @@ border-right: 1px solid  rgb(136, 136, 136); </string>
               <width>121</width>
               <height>23</height>
              </rect>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(30, 112, 235);</string>
             </property>
             <property name="text">
              <string>Save</string>

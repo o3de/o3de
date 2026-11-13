@@ -7,15 +7,19 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/StyleSheetCache.h>
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string_view.h>
 
 #include <QApplication>
 #include <QEvent>
+#include <QFile>
 #include <QFrame>
 #include <QLabel>
 #include <QObject>
@@ -99,6 +103,41 @@ namespace AzQtComponents
             StyleManager::applyFlatSheet(widget, styleFileName);
         }
 
+        //! The text StyleManager sets for a sheet it loads (private: this fixture is a friend of StyleManager)
+        static QString loadedSheet(StyleManager& manager, const QString& styleFileName)
+        {
+            return manager.m_stylesheetCache->loadStyleSheet(styleFileName);
+        }
+
+        //! The rung of the process for the life of the object, put back after it. The process runs at the flat rung (the environment
+        //! sets it, AzQtComponentTests.cpp), so the legacy GUI is a rung a test steps into.
+        class RungOfTheProcess
+        {
+        public:
+            explicit RungOfTheProcess(GuiPerfFloor::Rung rung)
+                : m_before(GuiPerfFloor::rung())
+            {
+                GuiPerfFloor::setRungForTesting(rung);
+            }
+
+            ~RungOfTheProcess()
+            {
+                GuiPerfFloor::setRungForTesting(m_before);
+            }
+
+            RungOfTheProcess(const RungOfTheProcess&) = delete;
+            RungOfTheProcess& operator=(const RungOfTheProcess&) = delete;
+
+        private:
+            GuiPerfFloor::Rung m_before;
+        };
+
+        //! The sheet of a sample page of the Gallery (StyleSheetPage.qss), as a resource of the tests (qrc1.qrc)
+        static QString sampleSheet()
+        {
+            return QStringLiteral(":/StyleSheetTests1/pagesheet.qss");
+        }
+
         //! Counts the StyleChange events of the widget it is installed on
         class StyleChangeCounter
             : public QObject
@@ -137,7 +176,8 @@ namespace AzQtComponents
 
     TEST_F(StyleManagerTests, ApplyFlatSheet_ClearsTheOwnSheetOfTheWidget)
     {
-        // An AP details panel: a sheet of its .ui (SourceAssetDetailsPanel.ui:19-21) that legacy replaced
+        // An AP details panel: a sheet of its .ui that legacy replaced (SourceAssetDetailsPanel.ui:19-21 before the flattening; the
+        // panel's constructor sets it now, in the legacy GUI only)
         QFrame panel;
         panel.setStyleSheet(QStringLiteral("background-color: rgb(87, 87, 87);"));
         QLabel* label = new QLabel(&panel);
@@ -152,7 +192,8 @@ namespace AzQtComponents
 
     TEST_F(StyleManagerTests, ApplyFlatSheet_KeepsTheSheetOfADescendant)
     {
-        // assetNameLabel has a sheet of its own (SourceAssetDetailsPanel.ui:40-42), which legacy kept as well
+        // assetNameLabel has a sheet of its own, which legacy kept as well (SourceAssetDetailsPanel.ui:40-42 before the flattening;
+        // the panel's constructor sets it now, in the legacy GUI only)
         QFrame panel;
         panel.setStyleSheet(QStringLiteral("background-color: rgb(87, 87, 87);"));
         QLabel* label = new QLabel(&panel);
@@ -308,4 +349,149 @@ namespace AzQtComponents
         EXPECT_TRUE(m_logged.isEmpty());
     }
 #endif // defined(AZ_ENABLE_TRACING)
+
+    // ----------------------------------------------------------------------------------
+    // T4: the flat gate that Python reads. The Python tools have no binding for StyleManager::stylesheetsDisabled and cannot see the
+    // command-line flag, so initialize publishes the answer as a dynamic property of the QApplication, which PySide reads as
+    // QApplication.instance().property("o3deFlatGui").
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(StyleManagerTests, FlatGate_TheApplicationHasThePropertyInTheFlatGui)
+    {
+        const RungOfTheProcess flatGui(GuiPerfFloor::Rung::Flat);
+        ASSERT_FALSE(m_application->property(StyleManager::FlatGuiProperty).isValid());
+
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        const QVariant gate = m_application->property(StyleManager::FlatGuiProperty);
+        ASSERT_TRUE(gate.isValid());
+        EXPECT_EQ(gate.typeId(), QMetaType::Bool);      // what Python gets is a bool
+        EXPECT_TRUE(gate.toBool());
+    }
+
+    TEST_F(StyleManagerTests, FlatGate_TheApplicationHasNoPropertyInTheLegacyGui)
+    {
+        const RungOfTheProcess legacyGui(GuiPerfFloor::Rung::Qss);
+        ASSERT_FALSE(StyleManager::stylesheetsDisabled());
+
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        EXPECT_FALSE(m_application->property(StyleManager::FlatGuiProperty).isValid());
+        EXPECT_FALSE(m_application->dynamicPropertyNames().contains(QByteArray(StyleManager::FlatGuiProperty)));
+    }
+
+    TEST_F(StyleManagerTests, FlatGate_TheLegacyGuiTakesBackAGateAnEarlierFlatGuiSet)
+    {
+        // The property is the state of the rung that initialize ran at: an application that was flat and is initialized again at the
+        // legacy rung (a test process does) does not keep it
+        m_application->setProperty(StyleManager::FlatGuiProperty, true);
+        const RungOfTheProcess legacyGui(GuiPerfFloor::Rung::Qss);
+
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        EXPECT_FALSE(m_application->property(StyleManager::FlatGuiProperty).isValid());
+    }
+
+    TEST_F(StyleManagerTests, FlatGate_TheNoopRungIsFlatAsStylesheetsDisabledIs)
+    {
+        const RungOfTheProcess floor(GuiPerfFloor::Rung::Noop);
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        EXPECT_TRUE(m_application->property(StyleManager::FlatGuiProperty).toBool());
+    }
+
+    TEST_F(StyleManagerTests, FlatGate_ThePassthroughRungIsFlatAsStylesheetsDisabledIs)
+    {
+        const RungOfTheProcess floor(GuiPerfFloor::Rung::Passthrough);
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        EXPECT_TRUE(m_application->property(StyleManager::FlatGuiProperty).toBool());
+    }
+
+    // ----------------------------------------------------------------------------------
+    // T5: the sample pages' sheets (setSampleStyleSheet), which the Gallery keeps live in both GUIs, are reloaded by refresh in both
+    // as they are when a sheet file changes on disk (StyleSheetCache::styleSheetsChanged calls refresh)
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(StyleManagerTests, SampleSheet_TheLegacyGuiSetsTheFileAsItIsAndRefreshReloadsIt)
+    {
+        const RungOfTheProcess legacyGui(GuiPerfFloor::Rung::Qss);
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+        const QString file = loadedSheet(styleManager, sampleSheet());
+        ASSERT_TRUE(file.contains(QStringLiteral("AzQtComponents--FilteredSearchWidget")));
+
+        QWidget page;
+        EXPECT_TRUE(StyleManager::setSampleStyleSheet(&page, sampleSheet()));
+        EXPECT_EQ(page.styleSheet(), file);
+
+        page.setStyleSheet(QStringLiteral("QLabel { color: red; }"));
+        styleManager.refresh();
+        EXPECT_EQ(page.styleSheet(), file);
+    }
+
+    TEST_F(StyleManagerTests, SampleSheet_TheFlatGuiSetsTheFileBehindTheLabelMarginAndRefreshReloadsIt)
+    {
+        const RungOfTheProcess flatGui(GuiPerfFloor::Rung::Flat);
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+        const QString file = loadedSheet(styleManager, sampleSheet());
+        ASSERT_TRUE(file.contains(QStringLiteral("AzQtComponents--FilteredSearchWidget")));
+
+        QWidget page;
+        EXPECT_TRUE(StyleManager::setSampleStyleSheet(&page, sampleSheet()));
+        // The margin every label has (Text.qss:93-94) comes first, so that a margin of the page's own outranks it; the file follows
+        // as it is
+        const QString margin = QStringLiteral("QLabel { margin-top: 1px; margin-bottom: 1px; }\n");
+        const QString set = page.styleSheet();
+        EXPECT_EQ(set, margin + file);
+
+        // The page's sheet is something else when the file changed: refresh sets the file's text on the tracked page again
+        page.setStyleSheet(QStringLiteral("QLabel { color: red; }"));
+        styleManager.refresh();
+        EXPECT_EQ(page.styleSheet(), set);
+    }
+
+    TEST_F(StyleManagerTests, SampleSheet_TheFlatGuiReloadsTheSamplesAndNoSheetItCarriesByElements)
+    {
+        const RungOfTheProcess flatGui(GuiPerfFloor::Rung::Flat);
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        // A sheet carried by elements is no sheet of the widget in the flat GUI and is not tracked, so refresh leaves the widget bare
+        QWidget carried;
+        EXPECT_FALSE(StyleManager::setStyleSheet(&carried, sampleSheet()));
+        QWidget sample;
+        EXPECT_TRUE(StyleManager::setSampleStyleSheet(&sample, sampleSheet()));
+        sample.setStyleSheet(QString());
+
+        styleManager.refresh();
+
+        EXPECT_TRUE(carried.styleSheet().isEmpty());
+        EXPECT_FALSE(sample.styleSheet().isEmpty());
+    }
+
+    TEST_F(StyleManagerTests, SampleSheet_ADestroyedPageIsNotTrackedAnyMore)
+    {
+        const RungOfTheProcess flatGui(GuiPerfFloor::Rung::Flat);
+        StyleManager styleManager(nullptr);
+        styleManager.initialize(m_application.get(), AZ::IO::PathView());
+
+        {
+            QWidget page;
+            ASSERT_TRUE(StyleManager::setSampleStyleSheet(&page, sampleSheet()));
+        }
+
+        styleManager.refresh();     // a widget that is gone is not touched: no crash
+        SUCCEED();
+    }
 } // namespace AzQtComponents

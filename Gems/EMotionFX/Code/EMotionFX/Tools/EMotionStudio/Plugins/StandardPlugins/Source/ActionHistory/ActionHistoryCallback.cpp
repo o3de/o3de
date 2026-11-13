@@ -15,9 +15,19 @@
 #include <QTextEdit>
 #include <QApplication>
 #include <QHBoxLayout>
+#include <QColor>
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the action history list paints its rows with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace ActionHistoryCallbackFlat
+    {
+        constexpr QColor DarkenedRowText(110, 110, 110);   // ActionHistoryCallback.cpp:31 TOKENIZE: ActionHistoryDarkenedRowText
+        constexpr QColor RowText(200, 200, 200);           // ActionHistoryCallback.cpp:32 TOKENIZE: ActionHistoryRowText
+    } // namespace ActionHistoryCallbackFlat
+
     ActionHistoryCallback::ActionHistoryCallback(QListWidget* list)
         : MCore::CommandManagerCallback()
     {
@@ -28,8 +38,8 @@ namespace EMStudio
         m_executedGroup = nullptr;
         m_numGroupCommands = 0;
         m_currentCommandIndex = 0;
-        m_darkenedBrush.setColor(QColor(110, 110, 110));
-        m_brush.setColor(QColor(200, 200, 200));
+        m_darkenedBrush.setColor(ActionHistoryCallbackFlat::DarkenedRowText);
+        m_brush.setColor(ActionHistoryCallbackFlat::RowText);
     }
 
     // Before executing a command.

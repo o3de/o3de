@@ -18,6 +18,15 @@
 
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // COLOUR PROPERTY ICON COLOURS (the outline of the colour swatch icon; the swatch fill is the colour data)
+    //=========================================================================
+    namespace ScriptCanvasColorDataInterfaceFlat
+    {
+        // ScriptCanvasColorDataInterface.h:78, was QColor("#333333"). TOKENIZE: ScriptCanvasColorSwatchOutline
+        inline constexpr QColor ColorSwatchOutline(0x33, 0x33, 0x33);
+    } // namespace ScriptCanvasColorDataInterfaceFlat
+
     class ScriptCanvasColorDataInterface
         : public ScriptCanvasDataInterface<GraphCanvas::VectorDataInterface>
     {
@@ -75,7 +84,7 @@ namespace ScriptCanvasEditor
                     QPixmap pixmap(QSize(colorIconWidth, colorIconHeight));
                     pixmap.fill(color);
                     QPainter painter(&pixmap);
-                    painter.setPen(QColor("#333333"));
+                    painter.setPen(ScriptCanvasColorDataInterfaceFlat::ColorSwatchOutline);
                     painter.drawRect(pixmap.rect().adjusted(0, 0, -1, -1));
                     return pixmap;
                 }

@@ -33,6 +33,11 @@ namespace LUAEditor
         LUAEditorSettingsDialog(QWidget *parent = nullptr);
         ~LUAEditorSettingsDialog() override;
         
+        //! Flattened GUI: the element that sizes the labels of the property editor, which the legacy GUI sizes with the sheet the form
+        //! gave the editor (LUAEditorSettingsDialog.ui, before the flattening). The first dialog built in the flattened GUI registers
+        //! it, once.
+        static void RegisterFlatElements();
+
     public Q_SLOTS:
 
         void OnSave();

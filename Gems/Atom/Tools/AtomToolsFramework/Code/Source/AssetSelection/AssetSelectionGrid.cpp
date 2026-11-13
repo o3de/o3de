@@ -10,6 +10,12 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
+#include <AzQtComponents/Components/Elements/MenuElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
@@ -25,6 +31,71 @@
 
 namespace AtomToolsFramework
 {
+    // ----------------------------------------------------------------------------------
+    // Flattened GUI: the header of an asset tile
+    //
+    // AddPath gave the header of every tile (an ElidingLabel) a sheet of one fill. The legacy GUI sets it as before; the flattened GUI
+    // sets none, and this element draws what it drew: the fill, inside the margin the sheets gave every label. The sheet had no
+    // selector, so it also reached the label the header keeps hidden to measure its text (never drawn), and the tooltip the header
+    // shows for an elided name or a description (Qt hands a tip the sheet of the widget it is for). The tooltip element below gives
+    // that tip the fill (AzQtComponents::ToolTipElement).
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace AssetSelectionGridFlatInternal
+    {
+        //! background-color: AssetSelectionGrid.cpp:159 before the flattening (the form before the flattening):
+        //! `header->setStyleSheet("background-color: rgb(35, 35, 35)")`. TOKENIZE: AssetSelectionGridHeaderFill
+        const QColor HeaderFill(35, 35, 35);
+
+        //! background-color: AssetSelectionGrid.cpp:266 (the fill the context menu of the search box gives itself, set as the legacy
+        //! sheet of the menu). TOKENIZE: AssetSelectionGridSearchMenuFill
+        constexpr QColor SearchMenuFill(0x33, 0x33, 0x33);
+
+        //! The `background-color` of the header, over the box of every label (`.Label, QLabel { margin-top: 1px; margin-bottom: 1px }`,
+        //! Text.qss:89-95, the margins at :93-94): an element is the whole definition of its frame, so it carries that margin, which
+        //! Style gives a label without an element (Style::subElementRect, SE_ShapedFrameContents). The fill is drawn inside it, as the
+        //! sheet drew it.
+        const AzQtComponents::BoxElement Header{
+            .m_name = "AtomTools.Box.AssetSelectionGridHeader",
+            .m_margin = QMargins(0, AzQtComponents::Foundations::Label::MarginV, 0, AzQtComponents::Foundations::Label::MarginV),
+            .m_idle = {
+                .m_fill = QBrush(HeaderFill),
+            },
+        };
+
+        //! The tooltip of the header (ElidingLabel::elide sets the full name, or the name and the description): the fill of the sheet
+        //! (HeaderFill), which outranked `QToolTip { background-color: black }` (ToolTip.qss:13) there
+        const AzQtComponents::ToolTipElement HeaderToolTip{
+            .m_name = "AtomTools.ToolTip.AssetSelectionGridHeader",
+            .m_fill = HeaderFill,
+        };
+
+        //! The header of a tile: an ElidingLabel (the class it is registered for) in the asset list of a grid. The grid has no other
+        //! ElidingLabel; the label it keeps hidden is a plain QLabel.
+        bool isHeader(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::within(widget, "m_assetList")
+                && AzQtComponents::Selectors::withinClass(widget, "AtomToolsFramework::AssetSelectionGrid");
+        }
+    } // namespace AssetSelectionGridFlatInternal
+
+    void AssetSelectionGrid::RegisterFlatElements()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            AzQtComponents::BoxElement::registerElement(
+                &AssetSelectionGridFlatInternal::Header, &AzQtComponents::ElidingLabel::staticMetaObject,
+                &AssetSelectionGridFlatInternal::isHeader);
+            AzQtComponents::ToolTipElement::registerElement(
+                &AssetSelectionGridFlatInternal::HeaderToolTip, &AzQtComponents::ElidingLabel::staticMetaObject,
+                &AssetSelectionGridFlatInternal::isHeader);
+        }
+    }
+
     AssetSelectionGrid::AssetSelectionGrid(
         const QString& title,
         const FilterFn& filterFn,
@@ -36,6 +107,12 @@ namespace AtomToolsFramework
         , m_filterFn(filterFn)
     {
         m_ui->setupUi(this);
+
+        // The tiles' headers are built after this, and polished when the dialog is shown
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            RegisterFlatElements();
+        }
 
         QSignalBlocker signalBlocker(this);
 
@@ -156,7 +233,9 @@ namespace AtomToolsFramework
         header->setText(uniqueTitle);
         header->setFixedSize(QSize(m_tileSize.width(), headerHeight));
         header->setContentsMargins(0, 0, 0, 0);
-        header->setStyleSheet("background-color: rgb(35, 35, 35)");
+        // The fill of the legacy GUI; the flattened GUI sets no sheet and draws it with the element of the header
+        AzQtComponents::StyleManager::setLegacyStyleSheet(header,
+            QStringLiteral("background-color: %1").arg(AssetSelectionGridFlatInternal::HeaderFill.name()));
         AzQtComponents::Text::addPrimaryStyle(header);
         AzQtComponents::Text::addLabelStyle(header);
         itemWidget->layout()->addWidget(header);
@@ -263,7 +342,12 @@ namespace AtomToolsFramework
     void AssetSelectionGrid::ShowSearchMenu(const QPoint& pos)
     {
         QScopedPointer<QMenu> menu(m_ui->m_searchWidget->createStandardContextMenu());
-        menu->setStyleSheet("background-color: #333333");
+
+        // The fill the menu gave itself, `menu->setStyleSheet("background-color: #333333")` (the form before the flattening): the legacy
+        // GUI sets it as before. The flattened GUI sets none, and the menu is marked for the element that draws it (MenuElement)
+        AzQtComponents::MenuElement::setFilledPopupSheet(menu.data(),
+            QStringLiteral("background-color: %1").arg(AssetSelectionGridFlatInternal::SearchMenuFill.name()));
+
         menu->exec(m_ui->m_searchWidget->mapToGlobal(pos));
     }
 } // namespace AtomToolsFramework

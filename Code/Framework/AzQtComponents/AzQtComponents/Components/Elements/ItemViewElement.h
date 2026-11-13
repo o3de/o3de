@@ -47,6 +47,8 @@ namespace AzQtComponents
             Active = 4,                         //!< the view's window is active (QStyle::State_Active)
             Inactive = 8,                       //!< ... is not
             Disabled = 16,                      //!< not QStyle::State_Enabled
+            Checked = 32,                       //!< :checked, the item's check box is on (QStyle::State_On)
+            Indeterminate = 64,                 //!< :indeterminate, it is partially checked (QStyle::State_NoChange)
         };
 
         //! What the rule of a state declares; a property it does not declare is invalid (an alpha of 0 is declared and paints nothing)
@@ -83,6 +85,67 @@ namespace AzQtComponents
             QMargins m_padding;                 //!< left, top, right, bottom
         };
 
+        //! What the rule of a state declares for the check box of an item (`::indicator`); a property it leaves out is the cascade's: the
+        //! entry before it, else the stock check box's (CheckBox.qss's images, which Style draws)
+        struct CheckFace
+        {
+            int m_borderWidth = Unset;          //!< `border`: the width of its line; Unset: no `border` is declared
+            QColor m_borderColor;               //!< ... and its colour, which a `border` with no colour (`border: 0px`) leaves out
+            QColor m_fill;                      //!< background-color; invalid: none declared (an alpha of 0 is declared and paints nothing)
+            //! image: nullptr: none declared, so the stock check box's. "": declared, and draws nothing: a url that does not load is a
+            //! declared image all the same, which outranks the application sheet's and paints a null icon (QRenderRule::drawImage).
+            //! Else the resource of the image.
+            const char* m_image = nullptr;
+        };
+
+        //! A face that applies while all of its states hold (0: always), as StateFace does; of the entries that hold, the last that
+        //! declares a property gives it (the cascade, when the entries follow the order the sheets declare them in)
+        struct CheckStateFace
+        {
+            unsigned m_states = 0;
+            CheckFace m_face;
+        };
+
+        //! The check box of an item as a rule of its own: its rules gave `::indicator` a line, a radius, a fill or an image of its own,
+        //! which Style draws in place of the stock check box. The size is m_indicatorSize and the margin m_indicatorMargin; the box the
+        //! layout makes room for is those and the line of the state around them (QRenderRule::boxSize).
+        struct Check
+        {
+            //! The most entries a rule can hold (the importer's sheet needs five: a line, a fill, a hover line, a disabled line and the
+            //! hover image)
+            static constexpr int Capacity = 6;
+
+            int m_radius = 0;                   //!< border-radius of the box, in every state
+            CheckStateFace m_faces[Capacity];
+
+            //! The element carries a rule: some entry declares a property, or the box is rounded (inline: a nested type of an exported
+            //! class is not exported with it)
+            bool declared() const
+            {
+                if (m_radius != 0)
+                {
+                    return true;
+                }
+                for (const CheckStateFace& entry : m_faces)
+                {
+                    if (entry.m_face.m_borderWidth != Unset || entry.m_face.m_fill.isValid() || entry.m_face.m_image)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+
+        //! What the cascade of a set of states leaves of a check box's rule
+        struct CheckLook
+        {
+            int m_borderWidth = 0;
+            QColor m_borderColor;
+            QColor m_fill;
+            const char* m_image = nullptr;      //!< as CheckFace::m_image
+        };
+
         const char* m_name = "";                //!< Scope.ItemView.Look
 
         // ---- The roles of the view: its palette
@@ -100,6 +163,8 @@ namespace AzQtComponents
         QSize m_indicatorSize = QSize(16, 16);
         //! Around the image: the box the layout makes room for. CheckBox.qss:27 $space.check-indicator.idle.margin.Alt1
         QMargins m_indicatorMargin = QMargins(2, 2, 2, 2);
+        //! A rule of its own for the box (a line, a radius, a fill, an image of a state); none: the stock check box, in the margin's rect
+        Check m_check;
 
         // ---- The branches of a tree and its indentation
         Branch m_closed;                                    //!< `::branch:closed:has-children` (a right caret); no image: none
@@ -124,9 +189,18 @@ namespace AzQtComponents
         QSize itemSize(const QSize& base) const;
         //! The rect the item's box leaves for its contents: the layout of the check box, icon and text
         QRect itemContentsRect(const QRect& rect) const;
-        //! What the check box asks of the layout (PM_IndicatorWidth and PM_IndicatorHeight of an item option), and its image in it
-        QSize indicatorBox() const;
-        QRect indicatorImageRect(const QRect& slot) const;
+        //! What the check box asks of the layout (PM_IndicatorWidth and PM_IndicatorHeight of an item option, whose state is the rule's:
+        //! a line of the state widens the box), and its image in it: the slot less the margin and the line
+        QSize indicatorBox(unsigned states = 0) const;
+        QRect indicatorImageRect(const QRect& slot, unsigned states = 0) const;
+        //! What the check box's rule leaves in a set of states (a box with no rule has no line, fill or image of its own)
+        CheckLook checkLookOf(unsigned states) const;
+        //! PE_IndicatorItemViewItemCheck of a check box with a rule: its fill, rounded where the rule has a radius, and its line in the
+        //! slot less the margin (QRenderRule::drawRule), then the image the state declares, if it declares one
+        void drawCheck(QPainter* painter, const QStyleOption* option) const;
+        //! The state declares no image of its own, so the stock check box's image is to be drawn into indicatorImageRect (a declared
+        //! image, even one that loads nothing, is the rule's: drawCheck has drawn it)
+        bool wantsStockImage(unsigned states) const;
         //! The palette of an item as the rule of its state set it (QStyleSheetStyle::drawControl, CE_ItemViewItem)
         void prepareItem(QStyleOptionViewItem* option) const;
         //! The fill of the item's rule in the option's state, over the item's rect less its margin

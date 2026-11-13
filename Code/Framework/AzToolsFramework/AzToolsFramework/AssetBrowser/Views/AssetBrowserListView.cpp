@@ -16,11 +16,15 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
+#include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
 AZ_PUSH_DISABLE_WARNING(
     4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to
                                                 // be used by clients of class 'QFlags<QPainter::RenderHint>::Int': forcing value to bool
                                                 // 'true' or 'false' (performance warning)
 #include <QCoreApplication>
+#include <QFont>
 #include <QHeaderView>
 #include <QMenu>
 #include <QResizeEvent>
@@ -36,6 +40,47 @@ namespace AzToolsFramework
 
         static constexpr const char* const ListViewMainViewName = "AssetBrowserListView_main";
 
+        // ----------------------------------------------------------------------------------
+        // Flattened GUI: the list's header
+        //
+        // The constructor gave the header of the list a sheet of one declaration, a bold font. The legacy GUI sets it; the flattened GUI
+        // sets none, and this element gives the header the font it gave.
+        // ----------------------------------------------------------------------------------
+
+        //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+        //! unit, where anonymous namespaces merge.
+        namespace AssetBrowserListViewFlatInternal
+        {
+            //! The sheet the constructor gave the header before the flattening (AssetBrowserListView.cpp:50)
+            constexpr const char* HeaderSheet = "QHeaderView { font-weight: bold; };";
+
+            //! `font-weight: bold` of that sheet (AssetBrowserListView.cpp:50, the line before the flattening) over the family the
+            //! universal rule gives every widget (BaseStyleSheet.qss:19-20): no size, as no rule of the header's sets one (the sections'
+            //! size is the section rule's, TableView.qss:72). TOKENIZE: AssetBrowserListHeaderWeight
+            const AzQtComponents::TextElement ListHeaderText{
+                .m_name = "Editor.Text.AssetBrowserListHeader",
+                .m_weight = QFont::Bold,                // font-weight: bold, AssetBrowserListView.cpp:50 (before the flattening)
+            };
+
+            //! `QHeaderView` of that sheet: the header of an asset browser list view (the view is its parent), and no other
+            bool isListHeader(const QWidget* widget)
+            {
+                return AzQtComponents::Selectors::childOfClass(widget, "AzToolsFramework::AssetBrowser::AssetBrowserListView");
+            }
+        } // namespace AssetBrowserListViewFlatInternal
+
+        void AssetBrowserListView::RegisterFlatElements()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                AzQtComponents::TextElement::registerElement(
+                    &AssetBrowserListViewFlatInternal::ListHeaderText, &QHeaderView::staticMetaObject,
+                    &AssetBrowserListViewFlatInternal::isListHeader);
+            }
+        }
+
         AssetBrowserListView::AssetBrowserListView(QWidget* parent)
             : AzQtComponents::TableView(parent)
             , m_delegate(new SearchEntryDelegate(this))
@@ -47,8 +92,12 @@ namespace AzToolsFramework
 
             //Styling the header aligning text to the left and using a bold font.
             header()->setDefaultAlignment(Qt::AlignLeft);
-            header()->setStyleSheet("QHeaderView { font-weight: bold; };");
-            
+            AzQtComponents::StyleManager::setLegacyStyleSheet(
+                header(), QString::fromLatin1(AssetBrowserListViewFlatInternal::HeaderSheet));
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                RegisterFlatElements();
+            }
 
             setContextMenuPolicy(Qt::CustomContextMenu);
 

@@ -41,6 +41,22 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Search Criteria Colours
+    // =======================================================================
+
+    //! The colours of a search criteria button: its border and background, and the colours of the words in its label. A named
+    //! namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace SearchCriteriaWidgetFlatInternal
+    {
+        constexpr QColor Border(0x80, 0x80, 0x80);           // SearchCriteriaWidget.cpp:149. TOKENIZE: SearchCriteriaBorder
+        constexpr QColor Background(0x40, 0x40, 0x40);       // SearchCriteriaWidget.cpp:150. TOKENIZE: SearchCriteriaBackground
+        constexpr QColor DisabledBorder(0x66, 0x66, 0x66);   // SearchCriteriaWidget.cpp:153. TOKENIZE: SearchCriteriaDisabledBorder
+        constexpr QColor HoverBackground(0x50, 0x50, 0x50);  // SearchCriteriaWidget.cpp:157. TOKENIZE: SearchCriteriaHoverBackground
+        constexpr QColor DisabledText(0x66, 0x66, 0x66);     // SearchCriteriaWidget.cpp:169, :180. TOKENIZE: SearchCriteriaDisabledText
+        constexpr QColor TagText(0xD9, 0x82, 0x2E);          // SearchCriteriaWidget.cpp:176. TOKENIZE: SearchCriteriaTag
+    }
+
     //////////////////////////////////////////////////////////////////////////
     //  SearchCriteriaButton
     //////////////////////////////////////////////////////////////////////////
@@ -146,15 +162,15 @@ namespace AzToolsFramework
     void SearchCriteriaButton::SetFilterEnabled(bool enabled)
     {
         m_filterEnabled = enabled;
-        QString borderColor = "#808080";
-        QString bgColor = "#404040";
+        QString borderColor = SearchCriteriaWidgetFlatInternal::Border.name();
+        QString bgColor = SearchCriteriaWidgetFlatInternal::Background.name();
         if (!m_filterEnabled)
         {
-            borderColor = "#666666";
+            borderColor = SearchCriteriaWidgetFlatInternal::DisabledBorder.name();
         }
         if (m_mouseHover)
         {
-            bgColor = "#505050";
+            bgColor = SearchCriteriaWidgetFlatInternal::HoverBackground.name();
         }
 
         QString labelText;
@@ -166,18 +182,21 @@ namespace AzToolsFramework
             }
             else
             {
-                labelText = "<font color=#666666>" + m_criteriaText + "</font>";
+                labelText = QStringLiteral("<font color=%1>").arg(SearchCriteriaWidgetFlatInternal::DisabledText.name()) + m_criteriaText +
+                    QStringLiteral("</font>");
             }
         }
         else
         {
             if (m_filterEnabled)
             {
-                labelText = "<font color=#D9822E>" + m_tagText + ":</font> " + m_criteriaText;
+                labelText = QStringLiteral("<font color=%1>").arg(SearchCriteriaWidgetFlatInternal::TagText.name().toUpper()) + m_tagText +
+                    QStringLiteral(":</font> ") + m_criteriaText;
             }
             else
             {
-                labelText = "<font color=#666666>" + m_tagText + ": " + m_criteriaText + "</font>";
+                labelText = QStringLiteral("<font color=%1>").arg(SearchCriteriaWidgetFlatInternal::DisabledText.name()) + m_tagText +
+                    QStringLiteral(": ") + m_criteriaText + QStringLiteral("</font>");
             }
         }
 

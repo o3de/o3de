@@ -34,9 +34,18 @@
 #include <QCoreApplication>
 #include <QWidgetAction>
 #include <QIcon>
+#include <QColor>
 
 namespace AudioControls
 {
+    //=========================================================================
+    // ATL CONTROLS PANEL COLOURS (the filter button of the Add menu)
+    //=========================================================================
+    namespace ATLControlsPanelFlat
+    {
+        constexpr QColor FilterButtonHoverFill(0x44, 0x44, 0x44); // ATLControlsPanel.cpp:87. TOKENIZE: AudioFilterButtonHoverFill
+    } // namespace ATLControlsPanelFlat
+
     //-------------------------------------------------------------------------------------------//
     const QString s_addMenuStyleSheetAdjustments("QMenu::icon { left: 0px; right: 6px; }");
 
@@ -84,7 +93,7 @@ namespace AudioControls
 
     void QFilterButton::enterEvent(QEnterEvent* /*event*/)
     {
-        setStyleSheet("background-color: #444444;");
+        setStyleSheet(QString("background-color: %1;").arg(ATLControlsPanelFlat::FilterButtonHoverFill.name()));
     }
 
     void QFilterButton::leaveEvent(QEvent* /*event*/)

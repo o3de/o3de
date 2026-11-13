@@ -8,6 +8,7 @@
 
 #include <QLabel>
 #include <QPushButton>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <SceneWidgets/ui_ManifestWidget.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -15,6 +16,7 @@
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
+#include <SceneAPI/SceneUI/SceneUIFlatSheet.h>
 #include <SceneAPI/SceneUI/SceneWidgets/SceneGraphWidget.h>
 #include <AzCore/std/sort.h>
 
@@ -31,6 +33,13 @@ namespace AZ
             {
                 ui->setupUi(this);
                 ui->m_tabs->setOverflowButtonSpacing(true);
+
+                // The flattened GUI sets none of the sheets of the scene settings widgets: their elements are registered before the pages
+                // and the rows are built
+                if (AzQtComponents::StyleManager::stylesheetsDisabled())
+                {
+                    SceneUIFlatSheet::RegisterElements();
+                }
             }
             
             ManifestWidget::~ManifestWidget()

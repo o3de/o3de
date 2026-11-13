@@ -51,6 +51,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::SceneBuilder
                 AZ::AssetBuilderSDK
+                AZ::AzQtComponents
     )
 
     ly_add_target(

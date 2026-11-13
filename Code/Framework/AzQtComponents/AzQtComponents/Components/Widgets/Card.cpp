@@ -12,16 +12,18 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
-#include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+#include <QEvent>
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
+#include <QRegion>
 #include <QVBoxLayout>
 #include <QStyle>
 #include <QPoint>
@@ -40,6 +42,74 @@ namespace AzQtComponents
     {
         return Style::hasClass(card, g_containerCardClass) || Style::hasClass(card, g_sectionCardClass);
     }
+
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
+    namespace CardInternal
+    {
+        // ---- The body of a card: #contentContainer, Card.qss:21-33 and :41-44, and its selected state, :35-39
+        // TOKENIZE: CardBodyColor
+        constexpr QColor BodyColor(0x55, 0x55, 0x55);                   // Card.qss:23, :25, :43 background-color, border-color
+        // TOKENIZE: CardSelectedBorderColor
+        constexpr QColor BodySelectedBorderColor(0x94, 0xD2, 0xFF);     // Card.qss:37
+        // TOKENIZE: CardBodyBorderWidth
+        constexpr int BodyBorderWidth = 1;                              // Card.qss:25, :37 (no top edge: :26, :38)
+        // TOKENIZE: CardCornerRadius
+        constexpr int BodyBottomRadius = 2;                             // Card.qss:31-32
+
+        // ---- The title of a header (flattened GUI)
+        // Card.qss:172-175 CardHeader[contentModified=true] * { color: #E57829 }. Card.cpp:443
+        // TOKENIZE: CardModifiedTextColor
+        constexpr QColor TitleModifiedColor(0xE5, 0x78, 0x29);
+        // Card.qss:272 AzQtComponents--Card QLabel:disabled { color: #999999 }. Card.cpp:454
+        // TOKENIZE: CardDisabledTextColor
+        constexpr QColor TitleDisabledColor(0x99, 0x99, 0x99);
+
+        //! The body of a card (flattened GUI), in `body`, the rect of its container, as the container's own rule painted it
+        //! (QRenderRule::drawRule, from QStyleSheetStyle::drawPrimitive PE_Widget): the fill of the path through the middle of the border,
+        //! antialiased, then the border over it (QRenderRule::drawBackground, drawBorder)
+        void paintBody(QPainter& painter, const QRect& body, bool selected)
+        {
+            const BoxElement::Edge none{ 0, QColor() };
+            const BoxElement::Edge edge{ BodyBorderWidth, selected ? BodySelectedBorderColor : BodyColor };
+            const BoxElement::Edges edges{ none, edge, edge, edge };
+            const BoxElement::Radii radii{ 0, 0, BodyBottomRadius, BodyBottomRadius };
+            BoxElement::drawFrame(&painter, body, BodyColor, edges, radii);
+        }
+
+        //! The body of a card, painted by its container (flattened GUI). The legacy container was a styled frame that painted its own rule
+        //! after the header, a widget below it in the card, and a card that paints its body for the container paints it before the header
+        //! instead: where the two meet on a device pixel, as they do when the header ends on a half pixel (a device pixel ratio of 1.5),
+        //! the pixel is the blend of the header over the body and not of the body over the header. The two overlap in a card whose frame
+        //! is hidden too: the padding of -3px at the top (Card.qss:14, :48) puts the header out of its box, over the first rows of the
+        //! body.
+        class BodyPainter
+            : public QObject
+        {
+        public:
+            BodyPainter(const Card* card, QFrame* container)
+                : QObject(container)
+                , m_card(card)
+                , m_container(container)
+            {
+                container->installEventFilter(this);
+            }
+
+            bool eventFilter(QObject* watched, QEvent* event) override
+            {
+                if (watched == m_container && event->type() == QEvent::Paint && StyleManager::flatStylingActive()
+                    && !cardHasFlatFrame(m_card))
+                {
+                    QPainter painter(m_container);
+                    paintBody(painter, m_container->rect(), m_card->isSelected());
+                }
+                return false;
+            }
+
+        private:
+            const Card* m_card;
+            QFrame* m_container;
+        };
+    } // namespace CardInternal
 
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
@@ -99,8 +169,9 @@ namespace AzQtComponents
 
         // has to be done here, otherwise it will affect all tooltips
         // as tooltips do not support any kind of css matchers other than QToolTip
-        // (an inline sheet of every card header: the GuiPerfFloor noop and passthrough rungs leave it out)
-        GuiPerfFloor::setInlineStyleSheet(
+        // (an inline sheet of every card header, for the legacy GUI only: the flattened GUI pads the tooltips of a card header in
+        // Style, SE_ShapedFrameContents, through Card::toolTipPadding)
+        StyleManager::setLegacyStyleSheet(
             m_header, QStringLiteral("QToolTip { padding: %1px; }").arg(defaultConfigValues.toolTipPaddingInPixels));
 
         m_rootLayout = new QVBoxLayout(this);
@@ -110,6 +181,10 @@ namespace AzQtComponents
 
         m_contentContainer = new QFrame(this);
         m_contentContainer->setObjectName(QStringLiteral("contentContainer"));
+        if (StyleManager::flatStylingActive())
+        {
+            new CardInternal::BodyPainter(this, m_contentContainer);
+        }
 
         m_mainLayout = new QVBoxLayout(m_contentContainer);
         m_mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
@@ -122,6 +197,7 @@ namespace AzQtComponents
         m_mainLayout->addWidget(m_contentWidget);
 
 
+        // #SeparatorContainer { margin: 0; padding: 0 } (Card.qss:266-270) is the QFrame default: no box to set here
         m_separatorContainer = new QFrame(this);
         m_separatorContainer->setObjectName("SeparatorContainer");
         QBoxLayout* separatorLayout = new QHBoxLayout(m_separatorContainer);
@@ -243,6 +319,10 @@ namespace AzQtComponents
         if (m_selected != selected)
         {
             m_selected = selected;
+
+            // The selection is painted by this card and by its header (Card::paintEvent, CardHeader::paintEvent). selectedChanged
+            // repolishes the card and each widget below it, and paints the card again as the legacy repolish did
+            // (StyleHelpers::repolishWhenPropertyChanges)
             emit selectedChanged(m_selected);
         }
     }
@@ -421,7 +501,7 @@ namespace AzQtComponents
 
             if (StyleManager::stylesheetsDisabled())
             {
-                // Card.qss header, one layer. The header fill is painted by
+                // Card.qss header, one layer (Card.qss:80-84: margin 0, padding 0, the QFrame default). The header fill is painted by
                 // CardHeader::paintEvent; #Background stays transparent and gets its
                 // 2/7/3/7 padding + 1px border as the frame box (8, 3, 8, 3) from
                 // Card::shapedFrameContents. The per-child margins (#Expander, #Icon,
@@ -431,27 +511,31 @@ namespace AzQtComponents
                 cardHeader->m_backgroundFrame->setAutoFillBackground(false);
                 cardHeader->m_backgroundLayout->setContentsMargins(0, 0, 0, 0);
 
+                // Card.qss:86-89 `CardHeader * { background-color: #555555 }` fills every widget below the header that no rule of its
+                // own outranks it on. Each named part has one (#Background Card.qss:98, #Title :206, #Icon and #WarningIcon :221, the
+                // expander CheckBox.qss:121-123, the flat buttons PushButton.qss:48-52), so those need nothing here. A frame that
+                // names none (the background of EMotionFX's RagdollCardHeader) is filled by the box element CardHeaderFrame
+                // (PropertyEditorElements.cpp).
+
                 // #Title { font-weight: bold }, normal inside a palette card: TextElement CardTitle, applied when
                 // each #Title label of the header is polished (the title and the hidden label its ElidingLabel
                 // measures the size hint with; ElidingLabel::setObjectName names both)
 
-                // CardHeader[contentModified=true] * { color: #E57829 }
-                // TOKENIZE: CardModifiedTextColor
+                // Card.qss:172-175 CardHeader[contentModified=true] * { color: #E57829 }
                 QPalette titlePalette;
                 if (cardHeader->isContentModified())
                 {
-                    titlePalette.setColor(QPalette::WindowText, QColor(0xE5, 0x78, 0x29));
+                    titlePalette.setColor(QPalette::WindowText, CardInternal::TitleModifiedColor);
                 }
                 // Card.qss:272 `AzQtComponents--Card QLabel:disabled { color: #999999 }` (two type selectors and a pseudo-class: it outranks the
                 // line above, an attribute, a type and `*`): the title of a disabled card, mock disabled or not, is #999999 either way. The
                 // title is polished before its header sits in a card (ElidingLabel::elide polishes it while the header is built), so the
                 // polish of the label (Style's applyFlattenedDisabledText) did not find the card, and this palette replaces whatever it set.
-                // TOKENIZE: CardDisabledTextColor
                 if (Selectors::withinClass(cardHeader, "AzQtComponents::Card"))
                 {
                     for (const QPalette::ColorRole role : { QPalette::WindowText, QPalette::Text, QPalette::ButtonText })
                     {
-                        titlePalette.setColor(QPalette::Disabled, role, QColor(0x99, 0x99, 0x99));
+                        titlePalette.setColor(QPalette::Disabled, role, CardInternal::TitleDisabledColor);
                     }
                 }
                 cardHeader->m_titleLabel->setPalette(titlePalette);
@@ -467,7 +551,7 @@ namespace AzQtComponents
                 QString newStyleSheet = QStringLiteral("QToolTip { padding: %1px; }").arg(config.toolTipPaddingInPixels);
                 if (newStyleSheet != cardHeader->styleSheet())
                 {
-                    cardHeader->setStyleSheet(newStyleSheet);
+                    StyleManager::setLegacyStyleSheet(cardHeader, newStyleSheet);
                 }
             }
 
@@ -479,6 +563,16 @@ namespace AzQtComponents
         }
 
         return polished;
+    }
+
+    int Card::toolTipPadding(const QWidget* owner, const Config& config)
+    {
+        // The legacy style sheet style resolved the rules of a tooltip through the widget it is shown for (QTipLabel::placeTip,
+        // `_q_stylesheet_parent`) and the widgets above it, so the sheet of a header reached the tips of the header and of every widget
+        // in it. Every CardHeader had the sheet: the primary one (the constructor) and any other when it was polished. The tip is not
+        // below the widget it is shown for in the flattened GUI (Qt hangs it on none on Windows): ToolTipElement::ownerOf is.
+        const bool inHeader = owner->inherits("AzQtComponents::CardHeader") || Selectors::withinClass(owner, "AzQtComponents::CardHeader");
+        return inHeader ? config.toolTipPaddingInPixels : 0;
     }
 
     bool Card::unpolish(Style* style, QWidget* widget, const Card::Config& config)
@@ -510,9 +604,9 @@ namespace AzQtComponents
 
         if (auto card = qobject_cast<const Card*>(widget))
         {
-            // Card: border-image 5/7/9/7, padding -4/-5/-4/-5, margin-bottom 4 -> (2, 1, 2, 9)
-            // ContainerCard / SectionCard: border none, same padding          -> (-5, -4, -5, 0)
-            // Card[hideFrame=true]: border 1px transparent, same padding     -> (-4, -3, -4, 1)
+            // Card: border-image 5/7/9/7, padding -4/-5/-4/-5, margin-bottom 4 -> (2, 1, 2, 9)     Card.qss:10-19
+            // ContainerCard / SectionCard: border none, same padding          -> (-5, -4, -5, 0)   Card.qss:115-119, Card.qss:134-138
+            // Card[hideFrame=true]: border 1px transparent, same padding     -> (-4, -3, -4, 1)    Card.qss:46-49
             // TOKENIZE: CardShadowInset
             if (cardHasFlatFrame(card))
             {
@@ -528,8 +622,8 @@ namespace AzQtComponents
         const QWidget* parent = widget->parentWidget();
         if (widget->objectName() == QLatin1String("contentContainer"))
         {
-            // #contentContainer: padding 8/7/7/7 + 1px border (no top) -> (8, 8, 8, 8)
-            // ContainerCard / SectionCard body: no border               -> (7, 8, 7, 7)
+            // #contentContainer: padding 8/7/7/7 + 1px border (no top) -> (8, 8, 8, 8)             Card.qss:21-33
+            // ContainerCard / SectionCard body: no border               -> (7, 8, 7, 7)            Card.qss:121-125, Card.qss:140-144
             // TOKENIZE: CardBodyInset
             if (auto card = qobject_cast<const Card*>(parent))
             {
@@ -538,14 +632,24 @@ namespace AzQtComponents
         }
         else if (widget->objectName() == QLatin1String("Background"))
         {
-            // CardHeader #Background: padding 2/7/3/7 + 1px border (no bottom) -> (8, 3, 8, 3)
-            // .secondaryCardHeader #Background: padding 2/0/2/0, no border      -> (0, 2, 0, 2)
+            // CardHeader #Background: padding 2/7/3/7 + 1px border (no bottom) -> (8, 3, 8, 3)     Card.qss:91-99
+            // Card[selected=true][expanded=false] > CardHeader #Background: border 1px on all four edges, bottom too
+            //                                                                   -> (8, 3, 8, 4)     Card.qss:109-113
+            // .secondaryCardHeader #Background: padding 2/0/2/0, no border      -> (0, 2, 0, 2)    Card.qss:166-170
             // TOKENIZE: CardHeaderInset
             if (auto header = qobject_cast<const CardHeader*>(parent))
             {
-                return Style::hasClass(header, QStringLiteral("secondaryCardHeader"))
-                    ? rect.adjusted(0, 2, 0, -2)
-                    : rect.adjusted(8, 3, -8, -3);
+                if (Style::hasClass(header, QStringLiteral("secondaryCardHeader")))
+                {
+                    return rect.adjusted(0, 2, 0, -2);
+                }
+
+                // The frame reads this box when it is polished and when its style changes, as a QFrame does (QFramePrivate::
+                // updateFrameWidth): a card selected and collapsed from the start has the extra pixel, one that becomes so later keeps
+                // the box it had, as it did under the style sheet (its repolish sends neither event)
+                const auto* card = qobject_cast<const Card*>(header->parentWidget());
+                const bool selectedAndCollapsed = card && card->header() == header && card->isSelected() && !card->isExpanded();
+                return selectedAndCollapsed ? rect.adjusted(8, 3, -8, -4) : rect.adjusted(8, 3, -8, -3);
             }
         }
 
@@ -562,53 +666,47 @@ namespace AzQtComponents
         }
 
         // Card.qss, one layer:
-        //   Card: border-image shadow.png sliced 5/7/9/7 over the box left after the
-        //         4px bottom margin (ContainerCard / SectionCard / hideFrame: none)
-        //   #contentContainer: #555555 with its 1px same-colour border, bottom corners
-        //         2px (ContainerCard / SectionCard: transparent)
-        //   Card[selected=true] > #contentContainer: 1px #94D2FF border, no top edge
-        // TOKENIZE: CardShadowImage, CardBodyColor, CardCornerRadius, CardSelectedBorderColor
+        //   Card (Card.qss:10-19): border-image shadow.png sliced 5/7/9/7 over the box left after the
+        //         4px bottom margin (ContainerCard Card.qss:115-119 / SectionCard Card.qss:134-138: none)
+        //   Card[hideFrame=true] (Card.qss:46-49): the same border image, over borders of 1px: `border` sets the widths and the style
+        //         and leaves the image, which the four 1px edges then show squashed (QRenderRule::fixupBorder keeps the widths of a rule
+        //         that has a border image)
+        //   #contentContainer (Card.qss:21-33, Card.qss:41-44; ContainerCard Card.qss:121-125 / SectionCard Card.qss:140-144:
+        //         transparent) and its selected state (Card.qss:35-39) are the container's own rule: CardInternal::BodyPainter paints
+        //         them when the container is painted, after the header, as the container did
+        // TOKENIZE: CardShadowImage, CardHiddenFrameBorderWidth
         const bool flatFrame = cardHasFlatFrame(this);
         QPainter painter(this);
 
-        if (!flatFrame && !property("hideFrame").toBool())
+        if (!flatFrame)
         {
             static const QPixmap shadow(QStringLiteral(":/Cards/img/UI20/Cards/shadow.png"));
-            const QMargins shadowSlices(7, 5, 7, 9); // left, top, right, bottom
-            qDrawBorderPixmap(&painter, rect().adjusted(0, 0, 0, -4), shadowSlices, shadow);
-        }
+            const QMargins shadowSlices(7, 5, 7, 9); // left, top, right, bottom (Card.qss:18 border-image cuts, Card.qss:17 border widths)
+            constexpr int hiddenFrameBorderWidth = 1; // Card.qss:48 border: 1px
+            const QMargins shadowEdges = property("hideFrame").toBool()
+                ? QMargins(hiddenFrameBorderWidth, hiddenFrameBorderWidth, hiddenFrameBorderWidth, hiddenFrameBorderWidth)
+                : shadowSlices;
 
-        if (!flatFrame && !m_contentContainer->isHidden())
-        {
-            const QRectF body(m_contentContainer->geometry());
-            const qreal radius = 2.0;
-            painter.setRenderHint(QPainter::Antialiasing, true);
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(QColor(0x55, 0x55, 0x55));
-            painter.drawRoundedRect(body, radius, radius);
-            painter.drawRect(body.adjusted(0, 0, 0, -radius)); // square top corners
-
-            if (m_selected)
-            {
-                const QRectF stroke = body.adjusted(0.5, 0.5, -0.5, -0.5);
-                QPainterPath outline;
-                outline.moveTo(stroke.left(), stroke.top());
-                outline.lineTo(stroke.left(), stroke.bottom() - radius);
-                outline.arcTo(QRectF(stroke.left(), stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 180, 90);
-                outline.lineTo(stroke.right() - radius, stroke.bottom());
-                outline.arcTo(QRectF(stroke.right() - 2 * radius, stroke.bottom() - 2 * radius, 2 * radius, 2 * radius), 270, 90);
-                outline.lineTo(stroke.right(), stroke.top());
-                painter.setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
-                painter.setBrush(Qt::NoBrush);
-                painter.drawPath(outline);
-            }
+            // The border image is drawn smoothed (QRenderRule::drawBorderImage), which shows wherever it is scaled: its centre, and all
+            // of it at a device pixel ratio above 1
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+            qDrawBorderPixmap(&painter, rect().adjusted(0, 0, 0, -4), shadowEdges, shadow, shadow.rect(), shadowSlices);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
         }
     }
 
     QPixmap Card::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap, const QStyleOption* option, const QWidget* widget, const Config& config)
     {
         const auto* iconWidget = widget ? widget : qobject_cast<QWidget*>(option->styleObject);
-        if (CardHeader::isCardHeaderMenuButton(iconWidget))
+
+        // The guard below is for the legacy rung. The legacy GUI never ran it: QIcon asks the application's style for the icon of a mode
+        // other than Normal with a bare option (QApplicationPrivate::applyQIconStyleHelper, QStyleOption(0): no styleObject), and the
+        // sheet style draws the label of a push button itself (QStyleSheetStyle::drawControl, CE_PushButtonLabel: ParentStyle::drawControl,
+        // not this Style's), so this Style was drawing no widget at that moment and iconWidget was null: PushButton::generatedIconPixmap
+        // recolored the Help and ContextMenu icons of a disabled card (iconButton.disabledColor #999999, PushButtonConfig.ini:49) and of
+        // a focused button (activeColor). The flattened Style draws the label itself, so iconWidget is the button, and the guard would
+        // keep them white. T-CD.3 (FieldCardTests) compares the pixels of both GUIs.
+        if (!StyleManager::stylesheetsDisabled() && CardHeader::isCardHeaderMenuButton(iconWidget))
         {
             // don't gray out menu icons in the header, even if the card is disabled
             return pixmap;

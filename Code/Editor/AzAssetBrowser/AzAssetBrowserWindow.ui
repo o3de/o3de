@@ -128,9 +128,6 @@
              <height>22</height>
             </size>
            </property>
-           <property name="styleSheet">
-            <string notr="true">QFrame { color : rgb(34, 34, 34);}</string>
-           </property>
            <property name="frameShape">
             <enum>QFrame::Box</enum>
            </property>
@@ -201,9 +198,6 @@
              <width>1</width>
              <height>22</height>
             </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QFrame { color : rgb(34, 34, 34);}</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::Box</enum>
@@ -353,9 +347,6 @@
              <height>22</height>
             </size>
            </property>
-           <property name="styleSheet">
-            <string notr="true">QFrame { color : white;}</string>
-           </property>
            <property name="frameShape">
             <enum>QFrame::Box</enum>
            </property>
@@ -452,9 +443,6 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">vertical-align: top</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
@@ -562,11 +550,7 @@
             <height>0</height>
            </size>
           </property>
-             <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
-                 <property name="styleSheet">
-                     <string notr="true">AzToolsFramework--AssetBrowser--AssetBrowserThumbnailView, AzQtComponents--AssetFolderThumbnailView { background-color: #333333; }</string>
-                 </property>
-             </widget>
+             <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView"/>
           <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
             <property name="spacing">

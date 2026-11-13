@@ -103,6 +103,15 @@ namespace EditorGraphCpp
 }
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // EDITOR GRAPH COLOURS (the highlight glow of a node and the pulse when a node is detached)
+    //=========================================================================
+    namespace EditorGraphFlat
+    {
+        constexpr QColor HighlightGlow(243, 129, 29);       // EditorGraph.cpp:1572. TOKENIZE: ScriptCanvasHighlightGlow
+        constexpr QColor DetachPulse(255, 0, 0);            // EditorGraph.cpp:3021. TOKENIZE: ScriptCanvasDetachPulse
+        constexpr QColor DetachRefusedPulse(255, 255, 255); // EditorGraph.cpp:3025. TOKENIZE: ScriptCanvasDetachRefusedPulse
+    } // namespace EditorGraphFlat
 
     EditorGraph::~EditorGraph()
     {
@@ -1569,7 +1578,7 @@ namespace ScriptCanvasEditor
         glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         glowConfiguration.m_pen = QPen();
-        glowConfiguration.m_pen.setBrush(QColor(243,129,29));
+        glowConfiguration.m_pen.setBrush(EditorGraphFlat::HighlightGlow);
         glowConfiguration.m_pen.setWidth(5);
 
         SceneMemberMappingRequestBus::EventResult(glowConfiguration.m_sceneMember, scriptCanvasId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -3018,11 +3027,11 @@ namespace ScriptCanvasEditor
 
         if (canDetachNode)
         {
-            animatedPulseConfig.m_drawColor = QColor(255, 0, 0);
+            animatedPulseConfig.m_drawColor = EditorGraphFlat::DetachPulse;
         }
         else
         {
-            animatedPulseConfig.m_drawColor = QColor(255, 255, 255);
+            animatedPulseConfig.m_drawColor = EditorGraphFlat::DetachRefusedPulse;
         }
 
         animatedPulseConfig.m_durationSec = 0.25f;

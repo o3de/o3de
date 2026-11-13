@@ -8,8 +8,10 @@
 
 #include <OpenParticleSystem/ParticleGraphicsViewRequestsBus.h>
 #include <Document/ParticleDocumentBus.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <QAction>
 #include <QByteArray>
+#include <QColor>
 #include <QCursor>
 #include <QDesktopServices>
 #include <QList>
@@ -18,6 +20,7 @@
 #include <QPushButton>
 #include <QUrl>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
+#include <Window/ParticleEditorFlat.h>
 #include <Window/ParticleItemWidget.h>
 
 namespace OpenParticleSystemEditor
@@ -47,11 +50,34 @@ namespace OpenParticleSystemEditor
             { PARTICLE_LINE_NAMES[WIDGET_LINE_EVENT], m_ui->checkEvent },
             { PARTICLE_LINE_NAMES[WIDGET_LINE_RENDERER], m_ui->checkRenderer }
         };
+        // The sheets this window and its form gave themselves, for the legacy GUI only. The flattened GUI sets none: the elements of
+        // ParticleEditorFlat give the widgets the same look. The form's sheets (ParticleItemWidget.ui before the flattening) are set
+        // here, after setupUi, written from the values the elements read: the title row, the check boxes and the four lines. The twelve
+        // rows keep the sheet their constructor sets, which the form's sheets repeated.
+        using AzQtComponents::StyleManager;
+        StyleManager::setLegacyStyleSheet(m_ui->titleWidget, ParticleEditorFlat::TitleRowSheet());
+        StyleManager::setLegacyStyleSheet(m_ui->checkSolo, ParticleEditorFlat::SoloCheckSheet());
+        const QString fixedCheckSheet = ParticleEditorFlat::FixedCheckSheet();
+        StyleManager::setLegacyStyleSheet(m_ui->checkParticleName, fixedCheckSheet);
+        for (auto& classCheck : m_classChecks)
+        {
+            StyleManager::setLegacyStyleSheet(classCheck.second, fixedCheckSheet);
+        }
+        const QString selectionLineSheet = ParticleEditorFlat::SelectionLineSheet();
+        for (QWidget* line : { m_ui->lineLeft, m_ui->lineRight, m_ui->lineBotton, m_ui->lineTop })
+        {
+            StyleManager::setLegacyStyleSheet(line, selectionLineSheet);
+        }
+
         setAttribute(Qt::WA_TranslucentBackground);
         setAttribute(Qt::WA_DeleteOnClose);
         this->setMouseTracking(true);
         this->setWindowFlags(Qt::FramelessWindowHint);
-        this->setStyleSheet("background-color: #333333; border-radius: 8px;");
+        StyleManager::setLegacyStyleSheet(
+            this,
+            QString("background-color: %1; border-radius: %2px;")
+                .arg(ParticleItemWidgetFlat::ItemWindowFill.name())
+                .arg(ParticleItemWidgetFlat::ItemWindowRadius));
         SetLineWidgetIndex();
         SetLineWidgetParent();
         m_pSourceData->SelectClass(m_detail->m_name, PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER]);

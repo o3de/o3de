@@ -34,9 +34,172 @@
 
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 
-#define EDIT_DISABLE_GRAY_COLOR QColor(128, 128, 128)
-#define KEY_TEXT_COLOR QColor(0, 0, 50)
-#define INACTIVE_TEXT_COLOR QColor(128, 128, 128)
+//////////////////////////////////////////////////////////////////////////
+//  PAINT COLOURS
+//
+//  The dope sheet's paint colours, named so the legacy and the flattened GUI read one value. A named namespace, not an anonymous
+//  one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace UiAnimViewDopeSheetBaseFlat
+{
+    //////////////////////////////////////////////////////////////////////////
+    //  Sheet
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:858 (the sheet's background gradient, top). TOKENIZE: DopeSheetGradientTop
+    constexpr QColor SheetGradientTop(250, 250, 250);
+
+    // UiAnimViewDopeSheetBase.cpp:859 (the sheet's background gradient, bottom). TOKENIZE: DopeSheetGradientBottom
+    constexpr QColor SheetGradientBottom(220, 220, 220);
+
+    // UiAnimViewDopeSheetBase.cpp:37 (the #define EDIT_DISABLE_GRAY_COLOR: the fill over a locked sheet). TOKENIZE: DopeSheetEditLockFill
+    constexpr QColor EditLockFill(128, 128, 128);
+
+    // UiAnimViewDopeSheetBase.cpp:67 (m_bkgrBrushEmpty, the empty sheet's background; never read). TOKENIZE: DopeSheetEmptyBackground
+    constexpr QColor EmptyBackground(190, 190, 190);
+
+    // UiAnimViewDopeSheetBase.cpp:68 (m_timeBkgBrush, the time strip's background; never read). TOKENIZE: DopeSheetTimeBackground
+    constexpr QColor TimeBackground(0xE0, 0xE0, 0xE0);
+
+    // UiAnimViewDopeSheetBase.cpp:69 (m_timeHighlightBrush, the time strip's highlight; never read). TOKENIZE: DopeSheetTimeHighlight
+    constexpr QColor TimeHighlight(0xFF, 0x0, 0x0);
+
+    // UiAnimViewDopeSheetBase.cpp:70 (m_selectedBrush, the fill of a selection; never read). TOKENIZE: DopeSheetSelectedFill
+    constexpr QColor SelectedFill(200, 200, 230);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Timeline strip
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:2871 (the timeline strip's gradient, top). TOKENIZE: DopeSheetTimelineGradientTop
+    constexpr QColor TimelineGradientTop(250, 250, 250);
+
+    // UiAnimViewDopeSheetBase.cpp:2872 (the timeline strip's gradient, bottom). TOKENIZE: DopeSheetTimelineGradientBottom
+    constexpr QColor TimelineGradientBottom(180, 180, 180);
+
+    // UiAnimViewDopeSheetBase.cpp:2842 (the current-time marker). TOKENIZE: DopeSheetTimelineMarker
+    constexpr QColor TimelineMarker(255, 0, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:2849 (the current-time marker while recording). TOKENIZE: DopeSheetTimelineMarkerRecording
+    const QColor TimelineMarkerRecording(Qt::red);
+
+    // UiAnimViewDopeSheetBase.cpp:2843 (the labels of the timeline strip and its long ticks). TOKENIZE: DopeSheetTimelineText
+    const QColor TimelineText(Qt::black);
+
+    // UiAnimViewDopeSheetBase.cpp:2844 (the strip's pen before the first labelled tick). TOKENIZE: DopeSheetTimelineTickDark
+    constexpr QColor TimelineTickDark(90, 90, 90);
+
+    // UiAnimViewDopeSheetBase.cpp:2845 (the strip's light pen). TOKENIZE: DopeSheetTimelineTickLight
+    constexpr QColor TimelineTickLight(150, 150, 150);
+
+    // UiAnimViewDopeSheetBase.cpp:2749, :2796 (the strip's short ticks after a labelled tick). TOKENIZE: DopeSheetTimelineTickMinor
+    constexpr QColor TimelineTickMinor(90, 90, 90);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Summary strip
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:2924 (the fill of the summary strip). TOKENIZE: DopeSheetSummaryFill
+    constexpr QColor SummaryFill(150, 100, 220);
+
+    // UiAnimViewDopeSheetBase.cpp:2923 (the key marks on the summary strip). TOKENIZE: DopeSheetSummaryKeyLine
+    const QColor SummaryKeyLine(Qt::black);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Track rows
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:1977 (the ticks of a track row). TOKENIZE: DopeSheetTrackTickDark
+    constexpr QColor TrackTickDark(90, 90, 90);
+
+    // UiAnimViewDopeSheetBase.cpp:1978 (the ticks of a track row before the first tick of the range). TOKENIZE: DopeSheetTrackTickLight
+    constexpr QColor TrackTickLight(120, 120, 120);
+
+    // UiAnimViewDopeSheetBase.cpp:2018 (the long ticks of a track row). TOKENIZE: DopeSheetTrackTickMajor
+    const QColor TrackTickMajor(Qt::black);
+
+    // UiAnimViewDopeSheetBase.cpp:2051 (the line under a track row). TOKENIZE: DopeSheetTrackBottomLine
+    constexpr QColor TrackBottomLine(120, 120, 120);
+
+    // UiAnimViewDopeSheetBase.cpp:2131, :2141 (the gradient left and right of a track, top). TOKENIZE: DopeSheetTrackOutsideTop
+    constexpr QColor TrackOutsideTop(210, 210, 210);
+
+    // UiAnimViewDopeSheetBase.cpp:2132, :2142 (the gradient left and right of a track, bottom). TOKENIZE: DopeSheetTrackOutsideBottom
+    constexpr QColor TrackOutsideBottom(180, 180, 180);
+
+    // UiAnimViewDopeSheetBase.cpp:2106 (the fill of a track with an obsolete TCB spline). TOKENIZE: DopeSheetObsoleteTrackFill
+    constexpr QColor ObsoleteTrackFill(245, 80, 70);
+
+    // UiAnimViewDopeSheetBase.cpp:2973 (the text of a node with an obsolete TCB track). TOKENIZE: DopeSheetObsoleteNodeText
+    constexpr QColor ObsoleteNodeText(245, 80, 70);
+
+    // UiAnimViewDopeSheetBase.cpp:38 (the #define KEY_TEXT_COLOR: key descriptions and node names). TOKENIZE: DopeSheetKeyText
+    constexpr QColor KeyText(0, 0, 50);
+
+    // UiAnimViewDopeSheetBase.cpp:39 (the #define INACTIVE_TEXT_COLOR: node of an inactive director). TOKENIZE: DopeSheetInactiveNodeText
+    constexpr QColor InactiveNodeText(128, 128, 128);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Track ranges
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:71 (the brush set before a bool track or a key duration is drawn). TOKENIZE: DopeSheetVisibilityBrush
+    constexpr QColor VisibilityBrush(120, 120, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:72 (the brush set before a select track is drawn). TOKENIZE: DopeSheetSelectTrackBrush
+    constexpr QColor SelectTrackBrush(100, 190, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:2212, :2220 (a select track's gradient, top: key and blend). TOKENIZE: DopeSheetSelectTrackFadeTop
+    const QColor SelectTrackFadeTop(Qt::white);
+
+    // UiAnimViewDopeSheetBase.cpp:2213 (a select track's gradient over the key, bottom). TOKENIZE: DopeSheetSelectTrackFadeEnd
+    constexpr QColor SelectTrackFadeEnd(100, 190, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:2221 (a select track's gradient over the blend time, bottom). TOKENIZE: DopeSheetSelectTrackBlendEnd
+    constexpr QColor SelectTrackBlendEnd(0, 115, 230);
+
+    // UiAnimViewDopeSheetBase.cpp:2258, :2271 (a bool track's gradient when true, top). TOKENIZE: DopeSheetBoolTrackGradientTop
+    constexpr QColor BoolTrackGradientTop(250, 250, 250);
+
+    // UiAnimViewDopeSheetBase.cpp:2259, :2272 (a bool track's gradient when true, bottom). TOKENIZE: DopeSheetBoolTrackGradientBottom
+    constexpr QColor BoolTrackGradientBottom(0, 80, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:3046 (a key duration's gradient, top). TOKENIZE: DopeSheetKeyDurationGradientTop
+    constexpr QColor KeyDurationGradientTop(120, 120, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:3049 (a key duration's gradient, bottom). TOKENIZE: DopeSheetKeyDurationGradientBottom
+    constexpr QColor KeyDurationGradientBottom(250, 250, 250);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Keys
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:2436 (the keys that a paste would add). TOKENIZE: DopeSheetPasteKeyLine
+    const QColor PasteKeyLine(Qt::green);
+
+    // UiAnimViewDopeSheetBase.cpp:2686 (the lines through the selected keys). TOKENIZE: DopeSheetSelectedKeyLine
+    const QColor SelectedKeyLine(Qt::green);
+
+    // UiAnimViewDopeSheetBase.cpp:2986 (the body of the go-to-track arrow). TOKENIZE: DopeSheetGoToArrowBody
+    constexpr QColor GoToArrowBody(150, 150, 150);
+
+    // UiAnimViewDopeSheetBase.cpp:2987 (the head of the go-to-track arrow). TOKENIZE: DopeSheetGoToArrowHead
+    constexpr QColor GoToArrowHead(50, 50, 50);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  Redraw counter (the DEBUG build only)
+    //////////////////////////////////////////////////////////////////////////
+
+    // UiAnimViewDopeSheetBase.cpp:883 (the text of the redraw counter). TOKENIZE: DopeSheetRedrawCountText
+    [[maybe_unused]] constexpr QColor RedrawCountText(255, 255, 255);
+
+    // UiAnimViewDopeSheetBase.cpp:884, :891 (the box behind the redraw counter). TOKENIZE: DopeSheetRedrawCountFill
+    [[maybe_unused]] constexpr QColor RedrawCountFill(0, 0, 0);
+} // namespace UiAnimViewDopeSheetBaseFlat
+
+#define EDIT_DISABLE_GRAY_COLOR UiAnimViewDopeSheetBaseFlat::EditLockFill
+#define KEY_TEXT_COLOR UiAnimViewDopeSheetBaseFlat::KeyText
+#define INACTIVE_TEXT_COLOR UiAnimViewDopeSheetBaseFlat::InactiveNodeText
 
 namespace
 {
@@ -64,12 +227,12 @@ CUiAnimViewDopeSheetBase::CUiAnimViewDopeSheetBase(QWidget* parent)
     : QWidget(parent)
 {
     m_bkgrBrush = palette().color(QPalette::Window);
-    m_bkgrBrushEmpty = QColor(190, 190, 190);
-    m_timeBkgBrush = QColor(0xE0, 0xE0, 0xE0);
-    m_timeHighlightBrush = QColor(0xFF, 0x0, 0x0);
-    m_selectedBrush = QColor(200, 200, 230);
-    m_visibilityBrush = QColor(120, 120, 255);
-    m_selectTrackBrush = QColor(100, 190, 255);
+    m_bkgrBrushEmpty = UiAnimViewDopeSheetBaseFlat::EmptyBackground;
+    m_timeBkgBrush = UiAnimViewDopeSheetBaseFlat::TimeBackground;
+    m_timeHighlightBrush = UiAnimViewDopeSheetBaseFlat::TimeHighlight;
+    m_selectedBrush = UiAnimViewDopeSheetBaseFlat::SelectedFill;
+    m_visibilityBrush = UiAnimViewDopeSheetBaseFlat::VisibilityBrush;
+    m_selectTrackBrush = UiAnimViewDopeSheetBaseFlat::SelectTrackBrush;
 
     m_timeScale = 1.0f;
     m_ticksStep = 10;
@@ -855,8 +1018,8 @@ void CUiAnimViewDopeSheetBase::paintEvent(QPaintEvent* event)
         if (!m_bFastRedraw)
         {
             QLinearGradient gradient(rect().topLeft(), rect().bottomLeft());
-            gradient.setColorAt(0, QColor(250, 250, 250));
-            gradient.setColorAt(1, QColor(220, 220, 220));
+            gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::SheetGradientTop);
+            gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::SheetGradientBottom);
             painter.fillRect(rect(), gradient);
 
             if (pSequence)
@@ -880,15 +1043,15 @@ void CUiAnimViewDopeSheetBase::paintEvent(QPaintEvent* event)
 
 #ifdef DEBUG
     painter.setFont(m_descriptionFont);
-    painter.setPen(QColor(255, 255, 255));
-    painter.setBrush(QColor(0, 0, 0));
+    painter.setPen(UiAnimViewDopeSheetBaseFlat::RedrawCountText);
+    painter.setBrush(UiAnimViewDopeSheetBaseFlat::RedrawCountFill);
 
     const QString redrawCountStr = QString::fromLatin1("Redraw Count: %1").arg(m_redrawCount);
     QRect redrawCountRect(0, 0, 150, 20);
 
     QRect bounds;
     painter.drawText(redrawCountRect, Qt::AlignLeft | Qt::TextSingleLine, redrawCountStr, &bounds);
-    painter.fillRect(bounds, Qt::black);
+    painter.fillRect(bounds, UiAnimViewDopeSheetBaseFlat::RedrawCountFill);
     painter.drawText(redrawCountRect, Qt::AlignLeft | Qt::TextSingleLine, redrawCountStr);
 
     ++m_redrawCount;
@@ -1974,8 +2137,8 @@ void CUiAnimViewDopeSheetBase::DrawNodesRecursive(CUiAnimViewNode* pNode, QPaint
 void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Range& timeRange)
 {
     // Draw time ticks every tick step seconds.
-    const QPen dkgray(QColor(90, 90, 90));
-    const QPen ltgray(QColor(120, 120, 120));
+    const QPen dkgray(UiAnimViewDopeSheetBaseFlat::TrackTickDark);
+    const QPen ltgray(UiAnimViewDopeSheetBaseFlat::TrackTickLight);
 
     const QPen prevPen = painter->pen();
     painter->setPen(dkgray);
@@ -2015,7 +2178,7 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
         {
             if (st >= start)
             {
-                painter->setPen(Qt::black);
+                painter->setPen(UiAnimViewDopeSheetBaseFlat::TrackTickMajor);
             }
             else
             {
@@ -2048,7 +2211,7 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const QPen prevPen = painter->pen();
-    painter->setPen(QColor(120, 120, 120));
+    painter->setPen(UiAnimViewDopeSheetBaseFlat::TrackBottomLine);
     painter->drawLine(trackRect.bottomLeft(), trackRect.bottomRight());
     painter->setPen(prevPen);
 
@@ -2103,7 +2266,7 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     const EUiAnimCurveType trackType = pTrack->GetCurveType();
     if (trackType == eUiAnimCurveType_TCBFloat || trackType == eUiAnimCurveType_TCBQuat || trackType == eUiAnimCurveType_TCBVector)
     {
-        trackColor = QColor(245, 80, 70);
+        trackColor = UiAnimViewDopeSheetBaseFlat::ObsoleteTrackFill;
     }
 
     if (pTrack->IsSelected())
@@ -2128,8 +2291,8 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     rcOutside.adjust(1, 1, -1, 0);
 
     QLinearGradient gradient(rcOutside.topLeft(), rcOutside.bottomLeft());
-    gradient.setColorAt(0, QColor(210, 210, 210));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::TrackOutsideTop);
+    gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::TrackOutsideBottom);
     painter->fillRect(rcOutside, gradient);
 
     // Right outside.
@@ -2138,8 +2301,8 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     rcOutside.adjust(1, 1, -1, 0);
 
     gradient = QLinearGradient(rcOutside.topLeft(), rcOutside.bottomLeft());
-    gradient.setColorAt(0, QColor(210, 210, 210));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::TrackOutsideTop);
+    gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::TrackOutsideBottom);
     painter->fillRect(rcOutside, gradient);
 
     // Get time range of update rectangle.
@@ -2209,16 +2372,16 @@ void CUiAnimViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter*
             if (x != x0)
             {
                 QLinearGradient gradient(x0, rc.top() + 1, x0, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(100, 190, 255));
+                gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::SelectTrackFadeTop);
+                gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::SelectTrackFadeEnd);
                 painter->fillRect(QRect(QPoint(x0, rc.top() + 1), QPoint(x, rc.bottom())), gradient);
             }
 
             if (fBlendTime > 0.0f)
             {
                 QLinearGradient gradient(x, rc.top() + 1, x, rc.bottom());
-                gradient.setColorAt(0, Qt::white);
-                gradient.setColorAt(1, QColor(0, 115, 230));
+                gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::SelectTrackFadeTop);
+                gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::SelectTrackBlendEnd);
                 painter->fillRect(QRect(QPoint(x, rc.top() + 1), QPoint(blendTimeEnd, rc.bottom())), gradient);
             }
         }
@@ -2255,8 +2418,8 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
         if (val)
         {
             QLinearGradient gradient(x0, rc.top() + 4, x0, rc.bottom() - 4);
-            gradient.setColorAt(0, QColor(250, 250, 250));
-            gradient.setColorAt(1, QColor(0, 80, 255));
+            gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::BoolTrackGradientTop);
+            gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::BoolTrackGradientBottom);
             painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
         }
 
@@ -2268,8 +2431,8 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
     if (val)
     {
         QLinearGradient gradient(x0, rc.top() + 4, x0, rc.bottom() - 4);
-        gradient.setColorAt(0, QColor(250, 250, 250));
-        gradient.setColorAt(1, QColor(0, 80, 255));
+        gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::BoolTrackGradientTop);
+        gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::BoolTrackGradientBottom);
         painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
     }
     painter->setBrush(prevBrush);
@@ -2433,7 +2596,7 @@ void CUiAnimViewDopeSheetBase::DrawClipboardKeys(QPainter* painter, [[maybe_unus
 void CUiAnimViewDopeSheetBase::DrawTrackClipboardKeys(QPainter* painter, CUiAnimViewTrack* pTrack, XmlNodeRef trackNode, const float timeOffset)
 {
     const QPen prevPen = painter->pen();
-    painter->setPen(Qt::green);
+    painter->setPen(UiAnimViewDopeSheetBaseFlat::PasteKeyLine);
 
     const QRect trackRect = GetNodeRect(pTrack);
     const int numKeysToPaste = trackNode->getChildCount();
@@ -2683,7 +2846,7 @@ void CUiAnimViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     const QPen prevPen = painter->pen();
-    painter->setPen(Qt::green);
+    painter->setPen(UiAnimViewDopeSheetBaseFlat::SelectedKeyLine);
 
     CUiAnimViewKeyBundle keys = pSequence->GetSelectedKeys();
     for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
@@ -2746,7 +2909,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRe
 
     const Range& timeRange = m_timeRange;
 
-    const QPen ltgray(QColor(90, 90, 90));
+    const QPen ltgray(UiAnimViewDopeSheetBaseFlat::TimelineTickMinor);
     const QPen black(textCol);
 
     for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(m_fFrameTickStep); t += static_cast<float>(m_fFrameTickStep))
@@ -2793,7 +2956,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
     const Range& timeRange = m_timeRange;
     int nNumberTicks = 10;
 
-    const QPen ltgray(QColor(90, 90, 90));
+    const QPen ltgray(UiAnimViewDopeSheetBaseFlat::TimelineTickMinor);
     const QPen black(textCol);
 
     for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(step); t += static_cast<float>(step))
@@ -2839,14 +3002,14 @@ void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUp
     UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
     bool recording = pAnimationContext->IsRecording();
 
-    QColor lineCol(255, 0, 255);
-    const QColor textCol(Qt::black);
-    const QColor dkgrayCol(90, 90, 90);
-    const QColor ltgrayCol(150, 150, 150);
+    QColor lineCol(UiAnimViewDopeSheetBaseFlat::TimelineMarker);
+    const QColor textCol(UiAnimViewDopeSheetBaseFlat::TimelineText);
+    const QColor dkgrayCol(UiAnimViewDopeSheetBaseFlat::TimelineTickDark);
+    const QColor ltgrayCol(UiAnimViewDopeSheetBaseFlat::TimelineTickLight);
 
     if (recording)
     {
-        lineCol = Qt::red;
+        lineCol = UiAnimViewDopeSheetBaseFlat::TimelineMarkerRecording;
     }
 
     // Draw vertical line showing current time.
@@ -2868,8 +3031,8 @@ void CUiAnimViewDopeSheetBase::DrawTimeline(QPainter* painter, const QRect& rcUp
     }
 
     QLinearGradient gradient(rc.topLeft(), rc.bottomLeft());
-    gradient.setColorAt(0, QColor(250, 250, 250));
-    gradient.setColorAt(1, QColor(180, 180, 180));
+    gradient.setColorAt(0, UiAnimViewDopeSheetBaseFlat::TimelineGradientTop);
+    gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::TimelineGradientBottom);
     painter->fillRect(rc, gradient);
 
     const QPen prevPen = painter->pen();
@@ -2920,8 +3083,8 @@ void CUiAnimViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpd
     CUiAnimViewSequence* pSequence = nullptr;
     UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
-    const QColor lineCol = Qt::black;
-    const QColor fillCol(150, 100, 220);
+    const QColor lineCol = UiAnimViewDopeSheetBaseFlat::SummaryKeyLine;
+    const QColor fillCol(UiAnimViewDopeSheetBaseFlat::SummaryFill);
 
     const QRect rc = m_rcSummary;
     if (!rc.intersects(rcUpdate))
@@ -2970,7 +3133,7 @@ void CUiAnimViewDopeSheetBase::DrawNodeTrack(CUiAnimViewAnimNode* pAnimNode, QPa
 
     if (hasObsoleteTrack)
     {
-        painter->setPen(QColor(245, 80, 70));
+        painter->setPen(UiAnimViewDopeSheetBaseFlat::ObsoleteNodeText);
         sAnimNodeName += tr(": Some of the sub-tracks contains obsoleted TCB splines (marked in red), thus cannot be copied or pasted.");
     }
 
@@ -2983,8 +3146,8 @@ void CUiAnimViewDopeSheetBase::DrawNodeTrack(CUiAnimViewAnimNode* pAnimNode, QPa
 void CUiAnimViewDopeSheetBase::DrawGoToTrackArrow(CUiAnimViewTrack* pTrack, QPainter* painter, const QRect& rc)
 {
     int numKeys = pTrack->GetKeyCount();
-    const QColor colorLine(150, 150, 150);
-    const QColor colorHeader(50, 50, 50);
+    const QColor colorLine(UiAnimViewDopeSheetBaseFlat::GoToArrowBody);
+    const QColor colorHeader(UiAnimViewDopeSheetBaseFlat::GoToArrowHead);
     const int tickness = 2;
     const int halfMargin = (rc.height() - tickness) / 2;
 
@@ -3043,10 +3206,10 @@ void CUiAnimViewDopeSheetBase::DrawKeyDuration(CUiAnimViewTrack* pTrack, QPainte
     }
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
-    QColor colorFrom(120, 120, 255);
+    QColor colorFrom(UiAnimViewDopeSheetBaseFlat::KeyDurationGradientTop);
     QLinearGradient gradient(x, rc.top() + 3, x, rc.bottom() - 3);
     gradient.setColorAt(0, colorFrom);
-    gradient.setColorAt(1, QColor(250, 250, 250));
+    gradient.setColorAt(1, UiAnimViewDopeSheetBaseFlat::KeyDurationGradientBottom);
     const int width = x1 + 1 - x;
     painter->fillRect(QRect(x, rc.top() + 3, width, rc.height() - 3), gradient);
 

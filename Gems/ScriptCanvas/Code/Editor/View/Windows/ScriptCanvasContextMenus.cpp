@@ -63,6 +63,14 @@
 
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // CONTEXT MENU COLOURS (the pulse around a node created from a context menu)
+    //=========================================================================
+    namespace ScriptCanvasContextMenusFlat
+    {
+        constexpr QColor CreatedNodePulse(255, 255, 255); // ScriptCanvasContextMenus.cpp:386. TOKENIZE: ScriptCanvasCreatedNodePulse
+    } // namespace ScriptCanvasContextMenusFlat
+
     ////////////////////////////
     // EndpointSelectionAction
     ////////////////////////////
@@ -383,7 +391,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::AnimatedPulseConfiguration animatedPulseConfig;
 
         animatedPulseConfig.m_enableGradient = true;
-        animatedPulseConfig.m_drawColor = QColor(255, 255, 255);
+        animatedPulseConfig.m_drawColor = ScriptCanvasContextMenusFlat::CreatedNodePulse;
         animatedPulseConfig.m_durationSec = 0.25f;
 
         GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::CreatePulseAroundSceneMember, createdNodeId, 4, animatedPulseConfig);

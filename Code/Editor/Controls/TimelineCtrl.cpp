@@ -18,6 +18,34 @@
 #include "ScopedVariableSetter.h"
 #include "GridUtils.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  TIMELINE COLOURS
+//
+//  The timeline ruler's colours (TimelineWidget), named so the legacy and the flattened GUI read one value: the tick marks, the
+//  current-time marker and the key markers. A named namespace, not an anonymous one: a unity build merges the anonymous namespaces
+//  of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace TimelineCtrlFlat
+{
+    // TimelineCtrl.cpp:128, :596, :640 (the tick marks of the ruler). TOKENIZE: TimelineTick
+    constexpr QColor Tick(110, 110, 110);
+
+    // TimelineCtrl.cpp:646 (the long tick and the label of a frame tick). TOKENIZE: TimelineFrameTickLabel
+    constexpr QColor FrameTickLabel(0, 0, 0);
+
+    // TimelineCtrl.cpp:129, :159 (the current-time marker). TOKENIZE: TimelineTimeMarker
+    constexpr QColor TimeMarker(255, 0, 255);
+
+    // TimelineCtrl.cpp:167, :168 (the outline and the fill of a selected key marker). TOKENIZE: TimelineKeySelected
+    constexpr QColor KeySelected(100, 255, 255);
+
+    // TimelineCtrl.cpp:174 (the key marker of a time with the fewest keys; the colour the markers blend from). TOKENIZE: TimelineKeyFewest
+    constexpr QColor KeyFewest(0, 255, 0);
+
+    // TimelineCtrl.cpp:174 (the key marker of a time with the most keys; the colour the markers blend to). TOKENIZE: TimelineKeyMost
+    constexpr QColor KeyMost(255, 0, 0);
+} // namespace TimelineCtrlFlat
+
 QColor InterpolateColor(const QColor& c1, const QColor& c2, float fraction)
 {
     const int r = static_cast<int>(static_cast<float>(c2.red() - c1.red()) * fraction + c1.red());
@@ -125,8 +153,8 @@ void TimelineWidget::DrawTicks(QPainter* painter)
 
     const QPen pOldPen = painter->pen();
 
-    const QPen ltgray(QColor(110, 110, 110));
-    const QPen redpen(QColor(255, 0, 255));
+    const QPen ltgray(TimelineCtrlFlat::Tick);
+    const QPen redpen(TimelineCtrlFlat::TimeMarker);
 
     // Draw time ticks every tick step seconds.
     painter->setPen(ltgray);
@@ -156,7 +184,7 @@ void TimelineWidget::DrawTicks(QPainter* painter)
         int x2 = TimeToClient(m_fTimeMarker);
         if (x2 > m_rcTimeline.left() && x2 < m_rcTimeline.right())
         {
-            painter->setPen(QColor(255, 0, 255));
+            painter->setPen(TimelineCtrlFlat::TimeMarker);
             painter->drawLine(x2, 0, x2, m_rcTimeline.bottom());
         }
     }
@@ -164,14 +192,14 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     // Draw the key times.
     painter->setPen(redpen);
     painter->setBrush(Qt::NoBrush);
-    const QPen keySelectedPen(QColor(100, 255, 255));
-    const QBrush keySelectedBrush(QColor(100, 255, 255));
+    const QPen keySelectedPen(TimelineCtrlFlat::KeySelected);
+    const QBrush keySelectedBrush(TimelineCtrlFlat::KeySelected);
     for (int keyTimeIndex = 0; m_pKeyTimeSet && keyTimeIndex < m_pKeyTimeSet->GetKeyTimeCount(); ++keyTimeIndex)
     {
         int keyCountBound = __max(m_pKeyTimeSet->GetKeyCountBound(), 1);
         int keyCount = __min(m_pKeyTimeSet->GetKeyCount(keyTimeIndex), keyCountBound);
         float colorCodeFraction = float(keyCount) / keyCountBound;
-        const QColor keyMarkerCol = InterpolateColor(Qt::green, Qt::red, colorCodeFraction);
+        const QColor keyMarkerCol = InterpolateColor(TimelineCtrlFlat::KeyFewest, TimelineCtrlFlat::KeyMost, colorCodeFraction);
 
         const QPen keyPen(keyMarkerCol);
         const QBrush keyBrush(keyMarkerCol);
@@ -593,7 +621,7 @@ void TimelineWidget::SetFPS(float fps)
 //////////////////////////////////////////////////////////////////////////
 void TimelineWidget::DrawSecondTicks(QPainter* painter)
 {
-    const QPen ltgray(QColor(110, 110, 110));
+    const QPen ltgray(TimelineCtrlFlat::Tick);
     const QPen black(palette().color(QPalette::Normal, QPalette::Text));
 
     for (int gx = m_grid.firstGridLine.x(); gx < m_grid.firstGridLine.x() + m_grid.numGridLines.x() + 1; gx++)
@@ -637,13 +665,13 @@ public:
     {
         if (painter)
         {
-            painter->setPen(QColor(110, 110, 110));
+            painter->setPen(TimelineCtrlFlat::Tick);
             painter->drawLine(rect.left() + x, rect.bottom() - 2, rect.left() + x, rect.bottom() - 4);
 
             {
                 const QString str = QString::number(frameIndex);
 
-                painter->setPen(Qt::black);
+                painter->setPen(TimelineCtrlFlat::FrameTickLabel);
                 painter->drawLine(rect.left() + x, rect.bottom() - 2, rect.left() + x, rect.bottom() - 14);
                 painter->drawText(rect.left() + x + 2, rect.top(), str);
             }

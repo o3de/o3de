@@ -11,6 +11,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include "LUAEditorFindDialog.hxx"
 #include "LUAEditorMainWindow.hxx"
 #include "LUAEditorContextMessages.h"
@@ -126,7 +127,12 @@ namespace LUAEditor
                          }
                         )");
 
-        setStyleSheet(stylesheet);
+        // The legacy GUI sets the sheet. The flattened GUI sets none, and needs no element for it: the sheet restates the 12px that the
+        // rules of its classes give anyway (QLabel Text.qss:92, QCheckBox CheckBox.qss:13, QRadioButton RadioButton.qss:12, QPushButton
+        // PushButton.qss:34, and the application font for a QGroupBox, StyleManager::initialize), which the flattened text elements
+        // carry (Global.Text.Label, .Check, .PushButton, .Base). Qt applies only the first rule of this sheet: the stray ';' ends the
+        // parse, so the 18px of the second rule (the "Idle" label) is never applied and that label keeps the 12px of every label.
+        AzQtComponents::StyleManager::setLegacyStyleSheet(this, stylesheet);
     }
 
     LUAViewWidget* LUAEditorFindDialog::GetViewFromParent()

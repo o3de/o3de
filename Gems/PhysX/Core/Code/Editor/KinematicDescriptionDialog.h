@@ -32,6 +32,10 @@ namespace PhysX
 
             bool GetResult() const;
 
+            //! Flattened GUI: the elements that draw the dialog's looks, which the legacy GUI draws with the sheets the form and the
+            //! dialog set on their widgets. The first dialog built in the flattened GUI registers them, once.
+            static void RegisterFlatElements();
+
         private:
             void OnButtonClicked();
             void InitializeButtons();

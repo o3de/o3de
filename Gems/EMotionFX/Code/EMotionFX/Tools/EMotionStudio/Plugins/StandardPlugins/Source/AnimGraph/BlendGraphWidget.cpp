@@ -39,6 +39,7 @@
 #include <GraphCanvas/Widgets/GraphCanvasMimeContainer.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 // qt includes
+#include <QColor>
 #include <QDropEvent>
 #include <QMessageBox>
 #include <QMimeData>
@@ -48,6 +49,16 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the blend graph widget sets on the graph nodes and writes into its tooltip. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace BlendGraphWidgetFlat
+    {
+        constexpr QColor PreviewNodeBorder(0, 255, 0);   // BlendGraphWidget.cpp:844 TOKENIZE: BlendGraphPreviewNodeBorder
+        constexpr QColor TooltipParameterLabel(80, 80, 80);      // BlendGraphWidget.cpp:1566 TOKENIZE: BlendGraphTooltipParameterLabel
+        constexpr QColor TooltipParameterValue(115, 115, 115);   // BlendGraphWidget.cpp:1566 TOKENIZE: BlendGraphTooltipParameterValue
+    } // namespace BlendGraphWidgetFlat
+
     void BlendGraphMimeEvent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -841,7 +852,7 @@ namespace EMStudio
                     if (node != blendTree->GetFinalNode())
                     {
                         GraphNode* graphNode = it->second->FindGraphNode(nodeModelIndex);
-                        graphNode->SetBorderColor(QColor(0, 255, 0));
+                        graphNode->SetBorderColor(BlendGraphWidgetFlat::PreviewNodeBorder);
                     }
                 }
             }
@@ -1563,7 +1574,10 @@ namespace EMStudio
                                     const EMotionFX::Parameter* parameter = animGraph->FindValueParameter(parameterIndex);
 
                                     toolTipString += "\n<qt><table border=\"0\"><tr>";
-                                    toolTipString += AZStd::string::format("<td><p style=\"color:rgb(80, 80, 80)\"><b>Parameter:</b></p></td><td><p style=\"color:rgb(115, 115, 115)\">%s</p></td>", parameter->GetName().c_str());
+                                    toolTipString += AZStd::string::format(
+                                        "<td><p style=\"color:%s\"><b>Parameter:</b></p></td><td><p style=\"color:%s\">%s</p></td>",
+                                        BlendGraphWidgetFlat::TooltipParameterLabel.name().toUtf8().data(),
+                                        BlendGraphWidgetFlat::TooltipParameterValue.name().toUtf8().data(), parameter->GetName().c_str());
                                     toolTipString += "</tr></table></qt>";
                                 }
                             }

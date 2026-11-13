@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <SandboxAPI.h>
+
 #include <QDialog>
 
 namespace News {
@@ -21,7 +23,9 @@ namespace Ui {
 class QStringListModel;
 class RecentFileList;
 
-class WelcomeScreenDialog
+// Exported so that EditorLib.Tests builds the real dialog, to prove that the flattened GUI sets no sheet on its divider
+// (test_NewLevelWelcomeFlatSheet.cpp)
+class SANDBOX_API WelcomeScreenDialog
     : public QDialog
 {
     Q_OBJECT

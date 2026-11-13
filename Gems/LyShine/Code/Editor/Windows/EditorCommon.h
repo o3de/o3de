@@ -7,9 +7,18 @@
  */
 #pragma once
 
+#include <QColor>
 #include <QString>
 #include <type_traits>
 #include <QKeySequence>
+
+//=========================================================================
+// UI CANVAS EDITOR COMMON COLOURS (the text of a disabled menu item)
+//=========================================================================
+namespace UiEditorFlat
+{
+    inline constexpr QColor DisabledText(127, 127, 127); // EditorCommon.h:50. TOKENIZE: UiCanvasMenuItemDisabledText
+} // namespace UiEditorFlat
 
 // This allows iterating over an enum class.
 #define ADD_ENUM_CLASS_ITERATION_OPERATORS(CLASS_NAME, FIRST_VALUE, LAST_VALUE)                                             \
@@ -47,7 +56,7 @@ bool ClipboardContainsOurDataType();
 #define UICANVASEDITOR_CANVAS_DIRECTORY "UI/Canvases"
 #define UICANVASEDITOR_CANVAS_EXTENSION "uicanvas"
 
-#define UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET   "QMenu::item:disabled { color: rgb(127, 127, 127); }"
+#define UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET QString("QMenu::item:disabled { color: %1; }").arg(UiEditorFlat::DisabledText.name())
 
 enum HierarchyColumn
 {

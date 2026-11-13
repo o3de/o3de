@@ -14,12 +14,14 @@
 #include "Helpers/FileHelpers.h"
 #include "Toolbar/AlignToolbarSection.h"
 #include "Toolbar/ModeToolbar.h"
+#include "UiEditorFlat.h"
 #include "Widgets/ViewportWidget/Interaction/ViewportAlign.h"
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Widgets/ViewportWidget/Interaction/ViewportInteraction.h"
 #include "Widgets/HierarchyWidget/HierarchyWidget.h"
 
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -111,7 +113,7 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
 void EditorWindow::AddMenu_File()
 {
     QMenu* menu = menuBar()->addMenu(tr("&File"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    UiEditorFlat::SetPopupMenuSheet(menu);
 
     // Create a new canvas.
     {
@@ -506,7 +508,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 void EditorWindow::AddMenu_Edit()
 {
     QMenu* menu = menuBar()->addMenu(tr("&Edit"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    UiEditorFlat::SetPopupMenuSheet(menu);
 
     AddMenuItems_Edit(menu);
 }
@@ -514,7 +516,7 @@ void EditorWindow::AddMenu_Edit()
 void EditorWindow::AddMenu_View()
 {
     QMenu* menu = menuBar()->addMenu(tr("&View"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    UiEditorFlat::SetPopupMenuSheet(menu);
 
     bool canvasLoaded = GetCanvas().IsValid();
 
@@ -902,7 +904,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
 void EditorWindow::AddMenu_Preview()
 {
     QMenu* menu = menuBar()->addMenu(tr("&Preview"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    UiEditorFlat::SetPopupMenuSheet(menu);
 
     // Toggle preview.
     {
@@ -928,7 +930,9 @@ void EditorWindow::AddMenu_Preview()
 void EditorWindow::AddMenu_PreviewView()
 {
     QMenu* menu = menuBar()->addMenu(tr("&View"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    // The items of this menu are toggle-view actions, always enabled: the sheet's disabled-item grey shows nothing here, so it is the
+    // legacy GUI's alone and the flattened GUI carries no element for it
+    AzQtComponents::StyleManager::setLegacyStyleSheet(menu, UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Add all Preview mode QDockWidget panes.
     {
@@ -966,7 +970,9 @@ void EditorWindow::AddMenu_Help()
     const char* forumUrl = "https://o3de.org/community/";
 
     QMenu* menu = menuBar()->addMenu(tr("&Help"));
-    menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
+    // The items of this menu are links, always enabled: the sheet's disabled-item grey shows nothing here, so it is the legacy GUI's
+    // alone and the flattened GUI carries no element for it
+    AzQtComponents::StyleManager::setLegacyStyleSheet(menu, UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Documentation
     {

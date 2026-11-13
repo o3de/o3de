@@ -45,6 +45,11 @@ namespace AzQtComponents
         constexpr int PaddingLeft = 2;                  // BrowseEdit.qss:26 $space.field.idle.padding-left.Alt3
         constexpr int PaddingRight = -4;                // BrowseEdit.qss:28 $space.field.idle.padding-right.Alt2
 
+        // ------------------------------------------------------------------------------
+        // The drop frame: the ring painted while a file is dragged over the field
+        // ------------------------------------------------------------------------------
+        constexpr QColor DropFrame(0xFF, 0xFF, 0xFF);   // BrowseEdit.cpp:499 (Qt::white). TOKENIZE: BrowseEditDropFrame
+
         //! QRenderRule::borderClip of that rule: a path along the box with the arcs of its two left corners (no border, so none of the
         //! half-widths the arcs lose); QRenderRule::drawBackground fills it antialiased, so at a fractional device ratio the rows at the
         //! edges blend.
@@ -496,7 +501,7 @@ namespace AzQtComponents
             dropFramePath.moveTo(buttonRect.topLeft());
             dropFramePath.lineTo(buttonRect.bottomLeft());
 
-            Style::drawFrame(painter, dropFramePath, QPen(Qt::white), Qt::NoBrush);
+            Style::drawFrame(painter, dropFramePath, QPen(BrowseEditFlat::DropFrame), Qt::NoBrush);
         }
 
         return true;

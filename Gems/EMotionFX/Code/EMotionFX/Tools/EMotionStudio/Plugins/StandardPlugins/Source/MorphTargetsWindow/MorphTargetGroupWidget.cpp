@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 
 namespace EMStudio
@@ -77,7 +78,7 @@ namespace EMStudio
             m_morphTargets[i].m_manualMode = new QCheckBox();
             m_morphTargets[i].m_manualMode->setMaximumWidth(15);
             m_morphTargets[i].m_manualMode->setProperty("MorphTargetIndex", intIndex);
-            m_morphTargets[i].m_manualMode->setStyleSheet("QCheckBox{ spacing: 0px; }");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_morphTargets[i].m_manualMode, "QCheckBox{ spacing: 0px; }");
             gridLayout->addWidget(m_morphTargets[i].m_manualMode, intIndex, 1);
             connect(m_morphTargets[i].m_manualMode, &QCheckBox::clicked, this, &MorphTargetGroupWidget::ManualModeClicked);
 

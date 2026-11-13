@@ -20,6 +20,23 @@
 
 namespace OpenParticleSystemEditor
 {
+    //=========================================================================
+    // CURVE EDITOR COLOURS (the curve editor and the preset curve buttons)
+    //=========================================================================
+    namespace CurveEditorFlat
+    {
+        constexpr QColor GridLine(43, 43, 43);          // CurveEditor.cpp:320. TOKENIZE: ParticleCurveGridLine
+        const QColor AxisText(Qt::gray);                // CurveEditor.cpp:339. TOKENIZE: ParticleCurveAxisText
+        constexpr QColor PlotFill(56, 56, 56);          // CurveEditor.cpp:356. TOKENIZE: ParticleCurvePlotFill
+        const QColor CurveLine(Qt::red);                // CurveEditor.cpp:367. TOKENIZE: ParticleCurveLine
+        const QColor KeyOutline(Qt::gray);              // CurveEditor.cpp:368. TOKENIZE: ParticleCurveKeyOutline
+        const QColor KeySelected(Qt::yellow);           // CurveEditor.cpp:369. TOKENIZE: ParticleCurveKeySelected
+        const QColor KeyFill(Qt::gray);                 // CurveEditor.cpp:379. TOKENIZE: ParticleCurveKeyFill
+        const QColor PresetPressedFill(Qt::darkYellow); // CurveEditor.cpp:700. TOKENIZE: ParticleCurvePresetPressedFill
+        const QColor PresetFill(Qt::black);             // CurveEditor.cpp:700. TOKENIZE: ParticleCurvePresetFill
+        const QColor PresetCurve(Qt::white);            // CurveEditor.cpp:703. TOKENIZE: ParticleCurvePresetCurve
+    } // namespace CurveEditorFlat
+
     constexpr AZStd::string_view INTERPMODE_LINEAR = "Linear";
     constexpr AZStd::string_view INTERPMODE_STEP = "Step";
     constexpr AZStd::string_view INTERPMODE_CUBICIN = "CubicIn";
@@ -317,7 +334,7 @@ namespace OpenParticleSystemEditor
         const AZStd::string_view AXIS_INFO_X2 = "0.50";
         const AZStd::string_view AXIS_INFO_X3 = "0.75";
 
-        painter.setPen(QColor(43, 43, 43));
+        painter.setPen(CurveEditorFlat::GridLine);
         // horizon
         painter.drawLine(
             m_scaleWidth, m_mainRect.height() / PART_TWO + m_mainRect.top(), m_mainRect.right(),
@@ -336,7 +353,7 @@ namespace OpenParticleSystemEditor
             painter.drawLine(begin, end);
         }
 
-        QPen pen(Qt::gray);
+        QPen pen(CurveEditorFlat::AxisText);
         int offset = m_scaleWidth / PART_TWO;
         painter.setPen(pen);
         painter.drawText(0, m_mainRect.top() + 12, AXIS_INFO_ONE.data());
@@ -353,7 +370,7 @@ namespace OpenParticleSystemEditor
     {
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, true);
-        painter.fillRect(m_mainRect, QBrush(QColor(56, 56, 56)));
+        painter.fillRect(m_mainRect, QBrush(CurveEditorFlat::PlotFill));
 
         // draw grids
         DrawGrid(painter);
@@ -364,9 +381,9 @@ namespace OpenParticleSystemEditor
         }
 
         // draw keys
-        QPen pen(Qt::red);
-        QPen unselectedPen = QPen(Qt::gray);
-        QPen selectedPen = QPen(Qt::yellow);
+        QPen pen(CurveEditorFlat::CurveLine);
+        QPen unselectedPen = QPen(CurveEditorFlat::KeyOutline);
+        QPen selectedPen = QPen(CurveEditorFlat::KeySelected);
         painter.setPen(pen);
         time_t index = 0;
         for (auto iter = m_currentCurve->keyPoints.begin(); iter != m_currentCurve->keyPoints.end(); iter++, index++)
@@ -376,7 +393,7 @@ namespace OpenParticleSystemEditor
                 keyPoint.time, keyPoint.value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
             painter.setPen((m_currentKeyIndex == index) ? selectedPen : unselectedPen);
-            painter.setBrush(QBrush(Qt::gray));
+            painter.setBrush(QBrush(CurveEditorFlat::KeyFill));
             painter.drawRect(rc);
             if (m_currentKeyIndex == index)
             {
@@ -697,10 +714,10 @@ namespace OpenParticleSystemEditor
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.drawRect(rect());
-        painter.fillRect(rect(), m_pressed ? QBrush(Qt::darkYellow) : QBrush(Qt::black));
+        painter.fillRect(rect(), m_pressed ? QBrush(CurveEditorFlat::PresetPressedFill) : QBrush(CurveEditorFlat::PresetFill));
 
         // draw curve
-        QPen pen(Qt::white);
+        QPen pen(CurveEditorFlat::PresetCurve);
         painter.setPen(pen);
         QPainterPath path;
         const float CURVE_STEP = 0.05f;

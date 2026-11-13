@@ -52,6 +52,7 @@ set(FILES
     native/ui/MessageWindow.h
     native/ui/MessageWindow.cpp
     native/ui/MessageWindow.ui
+    native/ui/AssetDetailsPanelPalettes.h
     native/ui/ProductAssetDetailsPanel.h
     native/ui/ProductAssetDetailsPanel.cpp
     native/ui/ProductAssetDetailsPanel.ui

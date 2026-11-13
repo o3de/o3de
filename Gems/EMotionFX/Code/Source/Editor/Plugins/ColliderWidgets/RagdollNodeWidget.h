@@ -15,6 +15,7 @@
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #include <Editor/SkeletonModelJointWidget.h>
 
+#include <QColor>
 #include <QWidget>
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
@@ -26,6 +27,14 @@ namespace Physics
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colour the ragdoll card underlines itself with. It was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace RagdollNodeWidgetFlat
+    {
+        inline const QColor Underline{ "#f5a623" };   // RagdollNodeWidget.h:69 TOKENIZE: RagdollCardUnderline
+    } // namespace RagdollNodeWidgetFlat
+
     class ObjectEditor;
     class AddColliderButton;
     class ColliderContainerWidget;
@@ -66,7 +75,7 @@ namespace EMotionFX
         }
         QColor GetColor() const override
         {
-            return QColor{ "#f5a623" };
+            return RagdollNodeWidgetFlat::Underline;
         }
 
     public slots:

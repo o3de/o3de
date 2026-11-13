@@ -17,6 +17,7 @@
 #include <QToolTip>
 #include <QPaintEvent>
 #include <QMenu>
+#include <QColor>
 
 #include <MCore/Source/Algorithms.h>
 
@@ -31,6 +32,38 @@
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the time view header paints with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace TrackDataHeaderWidgetFlat
+    {
+        constexpr QColor OutOfRangeBackground(35, 35, 35);   // TrackDataHeaderWidget.cpp:49 TOKENIZE: TimeHeaderOutOfRangeBackground
+
+        // The header gradients, from the top (stop 0.0) down to the bottom (stop 1.0)
+        constexpr QColor ActiveTop(20, 20, 20);              // TrackDataHeaderWidget.cpp:54 TOKENIZE: TimeHeaderActiveTop
+        constexpr QColor ActiveMiddle(30, 35, 40);           // TrackDataHeaderWidget.cpp:53 TOKENIZE: TimeHeaderActiveMiddle
+        constexpr QColor ActiveBottom(100, 105, 110);        // TrackDataHeaderWidget.cpp:52 TOKENIZE: TimeHeaderActiveBottom
+        constexpr QColor ActiveFocusTop(20, 20, 20);         // TrackDataHeaderWidget.cpp:59 TOKENIZE: TimeHeaderActiveFocusTop
+        constexpr QColor ActiveFocusMiddle(30, 35, 40);      // TrackDataHeaderWidget.cpp:58 TOKENIZE: TimeHeaderActiveFocusMiddle
+        constexpr QColor ActiveFocusBottom(100, 105, 130);   // TrackDataHeaderWidget.cpp:57 TOKENIZE: TimeHeaderActiveFocusBottom
+        constexpr QColor InactiveTop(20, 20, 20);            // TrackDataHeaderWidget.cpp:63 TOKENIZE: TimeHeaderInactiveTop
+        constexpr QColor InactiveBottom(30, 30, 30);         // TrackDataHeaderWidget.cpp:62 TOKENIZE: TimeHeaderInactiveBottom
+        constexpr QColor InactiveFocusTop(20, 20, 20);       // TrackDataHeaderWidget.cpp:67 TOKENIZE: TimeHeaderInactiveFocusTop
+        constexpr QColor InactiveFocusBottom(30, 30, 30);    // TrackDataHeaderWidget.cpp:66 TOKENIZE: TimeHeaderInactiveFocusBottom
+
+        constexpr QColor MainTimeStepLines(110, 110, 110);   // TrackDataHeaderWidget.cpp:69 TOKENIZE: TimeHeaderMainTimeStepLines
+        constexpr QColor RecorderRange(175, 0, 0);           // TrackDataHeaderWidget.cpp:506 TOKENIZE: TimeHeaderRecorderRange
+        constexpr QColor AnimationRange(0, 175, 0);          // TrackDataHeaderWidget.cpp:519 TOKENIZE: TimeHeaderAnimationRange
+        constexpr QColor FiveSecondLabelText(175, 175, 175); // TrackDataHeaderWidget.cpp:557 TOKENIZE: TimeHeaderFiveSecondLabelText
+
+        // The labels of the finer time steps fade in: these hold the RGB of the label, the alpha is set where they are used
+        constexpr QColor SecondLabelText(200, 200, 200);     // TrackDataHeaderWidget.cpp:605 TOKENIZE: TimeHeaderSecondLabelText
+        constexpr QColor HalfSecondLabelText(175, 175, 175); // TrackDataHeaderWidget.cpp:662 TOKENIZE: TimeHeaderHalfSecondLabelText
+        constexpr QColor HundredMsLabelText(110, 110, 110);  // TrackDataHeaderWidget.cpp:710 TOKENIZE: TimeHeaderHundredMsLabelText
+        constexpr QColor FiftyMsLabelText(80, 80, 80);       // TrackDataHeaderWidget.cpp:756 TOKENIZE: TimeHeaderFiftyMsLabelText
+        constexpr QColor TenMsLabelText(60, 60, 60);         // TrackDataHeaderWidget.cpp:800 TOKENIZE: TimeHeaderTenMsLabelText
+    } // namespace TrackDataHeaderWidgetFlat
+
     // the constructor
     TrackDataHeaderWidget::TrackDataHeaderWidget(TimeViewPlugin* plugin, QWidget* parent)
         : QWidget(parent)
@@ -46,27 +79,27 @@ namespace EMStudio
         setObjectName("TrackDataHeaderWidget");
 
         // init brushes and pens
-        m_brushBackgroundOutOfRange  = QBrush(QColor(35, 35, 35), Qt::SolidPattern);
+        m_brushBackgroundOutOfRange  = QBrush(TrackDataHeaderWidgetFlat::OutOfRangeBackground, Qt::SolidPattern);
 
         m_headerGradientActive       = QLinearGradient(0, 0, 0, 35);
-        m_headerGradientActive.setColorAt(1.0f, QColor(100, 105, 110));
-        m_headerGradientActive.setColorAt(0.5f, QColor(30, 35, 40));
-        m_headerGradientActive.setColorAt(0.0f, QColor(20, 20, 20));
+        m_headerGradientActive.setColorAt(1.0f, TrackDataHeaderWidgetFlat::ActiveBottom);
+        m_headerGradientActive.setColorAt(0.5f, TrackDataHeaderWidgetFlat::ActiveMiddle);
+        m_headerGradientActive.setColorAt(0.0f, TrackDataHeaderWidgetFlat::ActiveTop);
 
         m_headerGradientActiveFocus  = QLinearGradient(0, 0, 0, 35);
-        m_headerGradientActiveFocus.setColorAt(1.0f, QColor(100, 105, 130));
-        m_headerGradientActiveFocus.setColorAt(0.5f, QColor(30, 35, 40));
-        m_headerGradientActiveFocus.setColorAt(0.0f, QColor(20, 20, 20));
+        m_headerGradientActiveFocus.setColorAt(1.0f, TrackDataHeaderWidgetFlat::ActiveFocusBottom);
+        m_headerGradientActiveFocus.setColorAt(0.5f, TrackDataHeaderWidgetFlat::ActiveFocusMiddle);
+        m_headerGradientActiveFocus.setColorAt(0.0f, TrackDataHeaderWidgetFlat::ActiveFocusTop);
 
         m_headerGradientInactive     = QLinearGradient(0, 0, 0, 35);
-        m_headerGradientInactive.setColorAt(1.0f, QColor(30, 30, 30));
-        m_headerGradientInactive.setColorAt(0.0f, QColor(20, 20, 20));
+        m_headerGradientInactive.setColorAt(1.0f, TrackDataHeaderWidgetFlat::InactiveBottom);
+        m_headerGradientInactive.setColorAt(0.0f, TrackDataHeaderWidgetFlat::InactiveTop);
 
         m_headerGradientInactiveFocus = QLinearGradient(0, 0, 0, 35);
-        m_headerGradientInactiveFocus.setColorAt(1.0f, QColor(30, 30, 30));
-        m_headerGradientInactiveFocus.setColorAt(0.0f, QColor(20, 20, 20));
+        m_headerGradientInactiveFocus.setColorAt(1.0f, TrackDataHeaderWidgetFlat::InactiveFocusBottom);
+        m_headerGradientInactiveFocus.setColorAt(0.0f, TrackDataHeaderWidgetFlat::InactiveFocusTop);
 
-        m_penMainTimeStepLinesActive     = QPen(QColor(110, 110, 110));
+        m_penMainTimeStepLinesActive     = QPen(TrackDataHeaderWidgetFlat::MainTimeStepLines);
 
         m_timeLineFont.setPixelSize(12);
         m_dataFont.setPixelSize(13);
@@ -503,7 +536,7 @@ namespace EMStudio
             recorderRect.setBottom(height());
 
             painter.setPen(Qt::NoPen);
-            painter.setBrush(QColor(175, 0, 0));
+            painter.setBrush(TrackDataHeaderWidgetFlat::RecorderRange);
             painter.drawRect(recorderRect);
         }
         else
@@ -516,7 +549,7 @@ namespace EMStudio
                 rangeRect.setBottom(height());
 
                 painter.setPen(Qt::NoPen);
-                painter.setBrush(QColor(0, 175, 0));
+                painter.setBrush(TrackDataHeaderWidgetFlat::AnimationRange);
                 painter.drawRect(rangeRect);
             }
         }
@@ -554,7 +587,7 @@ namespace EMStudio
 
             m_timeString = AZStd::string::format("%.2d:%.2d", seconds, milSecs); // will only do an allocation once, reuses the memory
 
-            painter.setPen(QColor(175, 175, 175));
+            painter.setPen(TrackDataHeaderWidgetFlat::FiveSecondLabelText);
             painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
         }
 
@@ -602,7 +635,9 @@ namespace EMStudio
                             alpha = 1.0;
                         }
 
-                        painter.setPen(QColor(200, 200, 200, aznumeric_cast<int>(alpha * 255)));
+                        QColor labelColor = TrackDataHeaderWidgetFlat::SecondLabelText;
+                        labelColor.setAlpha(aznumeric_cast<int>(alpha * 255));
+                        painter.setPen(labelColor);
                         painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
                     }
                 }
@@ -659,7 +694,9 @@ namespace EMStudio
                             alpha = 1.0;
                         }
 
-                        painter.setPen(QColor(175, 175, 175, aznumeric_cast<int>(alpha * 255)));
+                        QColor labelColor = TrackDataHeaderWidgetFlat::HalfSecondLabelText;
+                        labelColor.setAlpha(aznumeric_cast<int>(alpha * 255));
+                        painter.setPen(labelColor);
                         painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
                     }
                 }
@@ -707,7 +744,9 @@ namespace EMStudio
                         }
 
                         m_timeString = AZStd::string::format("%.2d:%.2d", seconds, milSecs); // will only do an allocation once, reuses the memory
-                        painter.setPen(QColor(110, 110, 110, aznumeric_cast<int>(alpha * 255)));
+                        QColor labelColor = TrackDataHeaderWidgetFlat::HundredMsLabelText;
+                        labelColor.setAlpha(aznumeric_cast<int>(alpha * 255));
+                        painter.setPen(labelColor);
                         painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
                     }
                 }
@@ -753,7 +792,9 @@ namespace EMStudio
                         }
 
                         m_timeString = AZStd::string::format("%.2d:%.2d", seconds, milSecs); // will only do an allocation once, reuses the memory
-                        painter.setPen(QColor(80, 80, 80, aznumeric_cast<int>(alpha * 255)));
+                        QColor labelColor = TrackDataHeaderWidgetFlat::FiftyMsLabelText;
+                        labelColor.setAlpha(aznumeric_cast<int>(alpha * 255));
+                        painter.setPen(labelColor);
                         painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
                     }
                 }
@@ -797,7 +838,9 @@ namespace EMStudio
                         }
 
                         m_timeString = AZStd::string::format("%.2d:%.2d", seconds, milSecs); // will only do an allocation once, reuses the memory
-                        painter.setPen(QColor(60, 60, 60, aznumeric_cast<int>(alpha * 255)));
+                        QColor labelColor = TrackDataHeaderWidgetFlat::TenMsLabelText;
+                        labelColor.setAlpha(aznumeric_cast<int>(alpha * 255));
+                        painter.setPen(labelColor);
                         painter.drawText(QRect(aznumeric_cast<int>(curX - 25), aznumeric_cast<int>(yOffset - 23), 52, 20), m_timeString.c_str(), options);
                     }
                 }

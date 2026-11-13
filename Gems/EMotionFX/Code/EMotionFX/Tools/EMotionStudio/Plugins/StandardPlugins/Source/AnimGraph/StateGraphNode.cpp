@@ -16,14 +16,42 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/StateGraphNode.h>
 #include <MCore/Source/Compare.h>
 
+#include <QColor>
+
 
 namespace EMStudio
 {
-    const QColor StateMachineColors::s_transitionColor = QColor(125, 125, 125);
-    const QColor StateMachineColors::s_activeColor = QColor(4, 255, 0);
-    const QColor StateMachineColors::s_interruptedColor = QColor(255, 0, 255);
-    const QColor StateMachineColors::s_interruptionCandidateColor = QColor(63, 140, 62);
-    const QColor StateMachineColors::s_selectedColor = QColor(255, 128, 0);
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the state machine: the StateMachineColors, then the transition, condition, node and visualize colours.
+    // Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace StateGraphNodeFlat
+    {
+        constexpr QColor Transition(125, 125, 125);              // StateGraphNode.cpp:22 TOKENIZE: StateMachineTransition
+        constexpr QColor Active(4, 255, 0);                      // StateGraphNode.cpp:23 TOKENIZE: StateMachineActive
+        constexpr QColor Interrupted(255, 0, 255);               // StateGraphNode.cpp:24 TOKENIZE: StateMachineInterrupted
+        constexpr QColor InterruptionCandidate(63, 140, 62);     // StateGraphNode.cpp:25 TOKENIZE: StateMachineInterruptionCandidate
+        constexpr QColor Selected(255, 128, 0);                  // StateGraphNode.cpp:26 TOKENIZE: StateMachineSelected
+        constexpr QColor SyncedTransition(115, 125, 200);        // StateGraphNode.cpp:145 TOKENIZE: StateMachineSyncedTransition
+        const QColor ConditionPassed(Qt::green);                 // StateGraphNode.cpp:246 TOKENIZE: StateMachineConditionPassed
+        const QColor ConditionFailed(Qt::red);                   // StateGraphNode.cpp:246 TOKENIZE: StateMachineConditionFailed
+        const QColor ConditionNotTested(Qt::gray);               // StateGraphNode.cpp:250 TOKENIZE: StateMachineConditionNotTested
+        const QColor ActionMarker(Qt::yellow);                   // StateGraphNode.cpp:269 TOKENIZE: StateMachineActionMarker
+        constexpr QColor HighlightedHeadTail(0, 255, 0);         // StateGraphNode.cpp:501 TOKENIZE: StateMachineHighlightedHeadTail
+        constexpr QColor DefaultBorder(0, 0, 0);                 // StateGraphNode.cpp:708 TOKENIZE: StateMachineDefaultBorder
+        // QColor::fromRgbF is not constexpr. StateGraphNode.cpp:735 TOKENIZE: StateMachineSelectedFill
+        const QColor SelectedFill = QColor::fromRgbF(0.93f, 0.547f, 0.0f, 1.0f);
+        const QColor ErrorBlinkBorder(Qt::red);                  // StateGraphNode.cpp:752 TOKENIZE: StateMachineErrorBlinkBorder
+        const QColor SelectedText(Qt::black);                    // StateGraphNode.cpp:759 TOKENIZE: StateMachineSelectedText
+        const QColor UnselectedText(Qt::white);                  // StateGraphNode.cpp:759 TOKENIZE: StateMachineUnselectedText
+        const QColor VisualizeBorder(Qt::black);                 // StateGraphNode.cpp:862 TOKENIZE: StateMachineVisualizeBorder
+    } // namespace StateGraphNodeFlat
+
+    const QColor StateMachineColors::s_transitionColor = StateGraphNodeFlat::Transition;
+    const QColor StateMachineColors::s_activeColor = StateGraphNodeFlat::Active;
+    const QColor StateMachineColors::s_interruptedColor = StateGraphNodeFlat::Interrupted;
+    const QColor StateMachineColors::s_interruptionCandidateColor = StateGraphNodeFlat::InterruptionCandidate;
+    const QColor StateMachineColors::s_selectedColor = StateGraphNodeFlat::Selected;
 
     StateConnection::StateConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* sourceNode, GraphNode* targetNode, bool isWildcardConnection)
         : NodeConnection(parentGraph, modelIndex, targetNode, 0, sourceNode, 0)
@@ -142,7 +170,7 @@ namespace EMStudio
         }
         else if (m_isSynced)
         {
-            color.setRgb(115, 125, 200);
+            color = StateGraphNodeFlat::SyncedTransition;
         }
 
         // darken the color in case the transition is disabled
@@ -239,15 +267,18 @@ namespace EMStudio
             {
                 EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
 
+                using StateGraphNodeFlat::ConditionFailed;
+                using StateGraphNodeFlat::ConditionPassed;
+
                 // set the condition color either green if the test went okay or red if the test returned false
                 QColor conditionColor;
                 if (animGraphInstance)
                 {
-                    conditionColor = condition->TestCondition(animGraphInstance) ? Qt::green : Qt::red;
+                    conditionColor = condition->TestCondition(animGraphInstance) ? ConditionPassed : ConditionFailed;
                 }
                 else
                 {
-                    conditionColor = Qt::gray;
+                    conditionColor = StateGraphNodeFlat::ConditionNotTested;
                 }
 
                 // darken the color in case the transition is disabled
@@ -266,7 +297,7 @@ namespace EMStudio
                 painter->drawEllipse(QPointF(circleMid.GetX(), circleMid.GetY()), shapeDiameter, shapeDiameter);
             }
 
-            QColor actionColor = Qt::yellow;
+            QColor actionColor = StateGraphNodeFlat::ActionMarker;
             // darken the color in case the transition is disabled
             if (m_isDisabled)
             {
@@ -498,7 +529,7 @@ namespace EMStudio
 
         if (highlightHead)
         {
-            QColor headTailColor(0, 255, 0);
+            QColor headTailColor(StateGraphNodeFlat::HighlightedHeadTail);
             brush.setColor(headTailColor);
             painter.setBrush(brush);
             pen.setColor(headTailColor);
@@ -705,7 +736,7 @@ namespace EMStudio
             }
         }
 
-        m_borderColor.setRgb(0, 0, 0);
+        m_borderColor = StateGraphNodeFlat::DefaultBorder;
         if (isActive)
         {
             m_borderColor = StateMachineColors::s_activeColor;
@@ -732,7 +763,7 @@ namespace EMStudio
         QColor bgColor;
         if (isSelected)
         {
-            bgColor.setRgbF(0.93f, 0.547f, 0.0f, 1.0f); //  rgb(72, 63, 238)
+            bgColor = StateGraphNodeFlat::SelectedFill; //  rgb(72, 63, 238)
         }
         else
         {
@@ -749,14 +780,16 @@ namespace EMStudio
             }
             else
             {
-                borderColor = Qt::red;
+                borderColor = StateGraphNodeFlat::ErrorBlinkBorder;
             }
         }
 
         QColor bgColor2;
         bgColor2 = bgColor.lighter(30); // make darker actually, 30% of the old color, same as bgColor * 0.3f;
 
-        QColor textColor = isSelected ? Qt::black : Qt::white;
+        using StateGraphNodeFlat::SelectedText;
+        using StateGraphNodeFlat::UnselectedText;
+        QColor textColor = isSelected ? SelectedText : UnselectedText;
 
         // is highlighted/hovered (on-mouse-over effect)
         if (m_isHighlighted)
@@ -859,7 +892,7 @@ namespace EMStudio
         QColor vizBorder;
         if (m_visualize)
         {
-            vizBorder = Qt::black;
+            vizBorder = StateGraphNodeFlat::VisualizeBorder;
         }
         else
         {

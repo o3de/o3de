@@ -17,6 +17,17 @@
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Flattened values: the colours of the axis labels in the rich text of the node's properties. This runtime library has no
+    // Qt, so each colour stays inside its label's text, which carries the marker for the tokenization pass.
+    //////////////////////////////////////////////////////////////////////////
+    namespace BlendTreeRotationLimitNodeFlat
+    {
+        constexpr const char* AxisXLabel = "<font color='red'>X</font>";      // BlendTreeRotationLimitNode.cpp:47 TOKENIZE: AxisXLabelColor
+        constexpr const char* AxisYLabel = "<font color='green'>Y</font>";    // BlendTreeRotationLimitNode.cpp:50 TOKENIZE: AxisYLabelColor
+        constexpr const char* AxisZLabel = "<font color='blue'>Z</font>";     // BlendTreeRotationLimitNode.cpp:53 TOKENIZE: AxisZLabelColor
+    } // namespace BlendTreeRotationLimitNodeFlat
+
     AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode, AnimGraphAllocator)
     AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode::RotationLimit, AnimGraphAllocator)
 
@@ -44,13 +55,13 @@ namespace EMotionFX
         switch (m_axis)
         {
         case RotationLimit::Axis::AXIS_X:
-            label = "<font color='red'>X</font>";
+            label = BlendTreeRotationLimitNodeFlat::AxisXLabel;
             break;
         case RotationLimit::Axis::AXIS_Y:
-            label = "<font color='green'>Y</font>";
+            label = BlendTreeRotationLimitNodeFlat::AxisYLabel;
             break;
         case RotationLimit::Axis::AXIS_Z:
-            label = "<font color='blue'>Z</font>";
+            label = BlendTreeRotationLimitNodeFlat::AxisZLabel;
             break;
         default:
             AZ_Assert(false, "Unknown axis type for Rotation limit");

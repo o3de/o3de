@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/Internal/RectangleWidget.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/ElementCommon.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
@@ -454,16 +455,119 @@ namespace AzQtComponents
         Style::addClass(m_contextMenuButton, HeaderBarConstants::kCardHeaderMenuClassName);
     }
 
-    // error-conclict-state.svg is authored at 445x24 logical px; rasterized once per DPR.
-    static const QPixmap& cardHeaderWarningTile(qreal devicePixelRatio)
+    //! Private to this file: named, not anonymous, as a unity build merges the anonymous namespaces of its files
+    namespace CardHeaderInternal
     {
-        static QPixmap tile;
-        if (tile.isNull() || !qFuzzyCompare(tile.devicePixelRatio(), devicePixelRatio))
+        // ------------------------------------------------------------------------------
+        // Values
+        // ------------------------------------------------------------------------------
+
+        // ---- The box of #Background in a state: the edges and the corners the rules that reach it leave, in the cascade's order
+        // Card.qss:95-96 `border: 1px solid transparent; border-bottom: none`
+        // TOKENIZE: CardHeaderBorderWidth
+        constexpr int IdleBorderWidth = 1;
+        // Card.qss:103 `border: 1px solid #94D2FF; border-bottom: none` (:111 on the four edges)
+        // TOKENIZE: CardSelectedBorderWidth, CardSelectedBorderColor
+        constexpr int SelectedBorderWidth = 1;
+        constexpr QColor SelectedBorderColor(0x94, 0xD2, 0xFF);
+        // Card.qss:179-180 (warning) and :105-106 (selected) `border-top-left-radius: 2px; border-top-right-radius: 2px`, and :112
+        // `border-radius: 2px` on the four corners
+        // TOKENIZE: CardHeaderCornerRadius
+        constexpr int TopCornerRadius = 2;
+
+        // ---- The fill of the box of #Background by the class of the header
+        // Card.qss:153-158 (.primaryCardHeader) and :127-132 (ContainerCardHeader) `background-color: #333333`. CardHeader.cpp:501
+        // TOKENIZE: CardHeaderColor
+        constexpr QColor HeaderColor(0x33, 0x33, 0x33);
+        // Card.qss:160-164 (.secondaryCardHeader) `background-color: #555555`. CardHeader.cpp:501
+        // TOKENIZE: CardSecondaryHeaderColor
+        constexpr QColor SecondaryHeaderColor(0x55, 0x55, 0x55);
+
+        // ---- The warning tile: Card.qss:184
+        // TOKENIZE: CardWarningTile
+        constexpr const char* WarningTileResource = ":/Cards/img/UI20/Cards/error-conclict-state.svg";
+
+        //! What reaches the background frame of a header: its class and the state of the card it is the header of
+        struct BackgroundLook
         {
-            tile = QIcon(QStringLiteral(":/Cards/img/UI20/Cards/error-conclict-state.svg")).pixmap(QSize(445, 24), devicePixelRatio);
+            bool m_secondary = false;           //!< `.secondaryCardHeader #Background` (Card.qss:166-170): no border
+            bool m_warning = false;             //!< `CardHeader[warning=true] #Background` (Card.qss:177-185)
+            bool m_selected = false;            //!< `Card[selected=true] > CardHeader #Background` (Card.qss:101-107)
+            bool m_collapsed = false;           //!< with `[expanded=false]` (Card.qss:109-113)
+        };
+
+        //! The edges and the corners of the background frame, by specificity and, for equal ones, the later rule: Card.qss:91-99,
+        //! :166-170, :177-185, :101-107, :109-113 (0x101, 0x110, 0x111, 0x112, 0x122)
+        struct BackgroundBox
+        {
+            BoxElement::Edges m_edges;
+            BoxElement::Radii m_radii;
+        };
+
+        BackgroundBox backgroundBoxOf(const BackgroundLook& look)
+        {
+            const QColor invisible(Qt::transparent);
+            const BoxElement::Edge idle{ IdleBorderWidth, invisible };
+            const BoxElement::Edge selected{ SelectedBorderWidth, SelectedBorderColor };
+            const BoxElement::Edge none{ 0, invisible };
+            const BoxElement::Radii roundAtTheTop{ TopCornerRadius, TopCornerRadius, 0, 0 };
+            BackgroundBox box;
+
+            // Card.qss:95-96 (:168 for a secondary header: no border)
+            box.m_edges = look.m_secondary ? BoxElement::Edges{ none, none, none, none } : BoxElement::Edges{ idle, idle, none, idle };
+
+            // Card.qss:179-180
+            if (look.m_warning)
+            {
+                box.m_radii = roundAtTheTop;
+            }
+
+            // Card.qss:103-106: the edges at the top and at the sides, the bottom still none
+            if (look.m_selected)
+            {
+                box.m_edges = { selected, selected, none, selected };
+                box.m_radii = roundAtTheTop;
+            }
+
+            // Card.qss:111-112: `border` sets the bottom edge too, and `border-radius` the bottom corners
+            if (look.m_selected && look.m_collapsed)
+            {
+                box.m_edges = { selected, selected, selected, selected };
+                box.m_radii = { TopCornerRadius, TopCornerRadius, TopCornerRadius, TopCornerRadius };
+            }
+            return box;
         }
-        return tile;
-    }
+
+        // ------------------------------------------------------------------------------
+        // Helpers: painting, as QRenderRule paints the rule of the background frame
+        // ------------------------------------------------------------------------------
+
+        //! QRenderRule::drawBackgroundImage for an image that repeats in both directions from the top left of the border box
+        //! (`background-origin: border; background-clip: border`, Card.qss:182-183): the file at its natural size
+        //! (QStyleSheetStyle::loadPixmap), tiled by QPainter::drawTiledPixmap with the offset the sheet gives it, and clipped to the path
+        //! through the middle of the border (QRenderRule::borderClip) on the painter as the style hands it over: the clip is not
+        //! antialiased, and the tile is smoothed where it is scaled (QWidgetPrivate::drawWidget paints the background of a widget with
+        //! SmoothPixmapTransform set)
+        void drawWarningTile(QPainter& painter, const QRect& frame, const BackgroundBox& box)
+        {
+            const QPixmap tile = Style::cachedPixmap(QString::fromLatin1(WarningTileResource));
+            if (tile.isNull())
+            {
+                return;
+            }
+            painter.save();
+            painter.setRenderHint(QPainter::Antialiasing, false);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+            const QPainterPath clip = BoxElement::borderPath(frame, box.m_edges, box.m_radii);
+            if (!clip.isEmpty())
+            {
+                painter.setClipPath(clip, Qt::IntersectClip);
+            }
+            const QSize size = tile.size() / tile.devicePixelRatio();
+            painter.drawTiledPixmap(frame, tile, QPoint(size.width(), size.height()));
+            painter.restore();
+        }
+    } // namespace CardHeaderInternal
 
     void CardHeader::paintEvent(QPaintEvent* event)
     {
@@ -475,19 +579,18 @@ namespace AzQtComponents
         }
 
         // Card.qss header box, one layer (the underline widget sits below the box):
-        //   .primaryCardHeader: #333333, top corners 2px
-        //   ContainerCardHeader: #333333, square
-        //   .secondaryCardHeader: #555555 (same as the body), square
-        //   SectionCardHeader: transparent
-        //   [warning=true] #Background: error-conclict-state.svg tiled over the box
-        //   Card[selected=true] > CardHeader #Background: 1px #94D2FF, top corners 2px
-        //         (all four corners while the card is collapsed)
-        // TOKENIZE: CardHeaderColor, CardSecondaryHeaderColor, CardCornerRadius,
-        //           CardWarningTile, CardSelectedBorderColor
+        //   .primaryCardHeader (Card.qss:153-158): #333333, top corners 2px
+        //   ContainerCardHeader (Card.qss:127-132): #333333, square
+        //   .secondaryCardHeader (Card.qss:160-164): #555555 (same as the body), square
+        //   SectionCardHeader (Card.qss:146-151): transparent
+        //   [warning=true] #Background (Card.qss:177-185): error-conclict-state.svg tiled over the box
+        //   Card[selected=true] > CardHeader #Background (Card.qss:101-107): 1px #94D2FF, top corners 2px
+        //         (all four corners while the card is collapsed: Card.qss:109-113)
+        // TOKENIZE: CardCornerRadius, CardWarningTile, CardSelectedBorderColor
         const bool sectionHeader = Style::hasClass(this, g_sectionCardHeaderClass);
         const bool containerHeader = Style::hasClass(this, g_containerCardHeaderClass);
         const bool secondaryHeader = Style::hasClass(this, QStringLiteral("secondaryCardHeader"));
-        // ColorPicker.qss: PaletteCardBase CardHeader { background-color: transparent }
+        // ColorPicker.qss:51-54 PaletteCardBase CardHeader { background-color: transparent }
         const bool paletteHeader = Selectors::childOfClass(this, "AzQtComponents::PaletteCardBase");
         const qreal radius = (sectionHeader || containerHeader || secondaryHeader) ? 0.0 : 2.0;
         const QRectF box(m_backgroundFrame->geometry());
@@ -498,45 +601,53 @@ namespace AzQtComponents
 
         if (!sectionHeader && !paletteHeader)
         {
-            painter.setBrush(secondaryHeader ? QColor(0x55, 0x55, 0x55) : QColor(0x33, 0x33, 0x33));
-            painter.drawRoundedRect(box, radius, radius);
-            painter.drawRect(box.adjusted(0, radius, 0, 0)); // square bottom corners
-        }
+            using CardHeaderInternal::HeaderColor;
+            using CardHeaderInternal::SecondaryHeaderColor;
+            painter.setBrush(secondaryHeader ? SecondaryHeaderColor : HeaderColor);
 
-        if (m_warning)
-        {
-            QPainterPath clip;
-            clip.setFillRule(Qt::WindingFill);
-            clip.addRoundedRect(box, radius, radius);
-            clip.addRect(box.adjusted(0, radius, 0, 0));
-            painter.save();
-            painter.setClipPath(clip);
-            painter.setBrushOrigin(box.topLeft());
-            painter.fillRect(box, QBrush(cardHeaderWarningTile(devicePixelRatioF())));
-            painter.restore();
-        }
-
-        auto card = qobject_cast<Card*>(parentWidget());
-        if (card && card->isSelected() && card->header() == this)
-        {
-            const QRectF stroke = box.adjusted(0.5, 0.5, -0.5, -0.5);
-            painter.setPen(QPen(QColor(0x94, 0xD2, 0xFF), 1.0));
-            painter.setBrush(Qt::NoBrush);
-            if (card->isExpanded())
+            // One outline, painted once, as the style sheet filled one path (QRenderRule::drawBackground): a rounded rect and a rect
+            // painted over it paint the rows both cover twice, and a path of both adds their coverage at an edge both lie on. Either
+            // shows on an edge that falls between device pixels: the bottom of a header of 25px at ratio 1.5 (a card that is selected
+            // and collapsed from the start has one, Card.qss:109-113). The corners at the top are round, the ones at the bottom square.
+            QPainterPath fill;
+            if (radius > 0.0)
             {
-                QPainterPath outline;
-                outline.moveTo(stroke.left(), stroke.bottom());
-                outline.lineTo(stroke.left(), stroke.top() + radius);
-                outline.arcTo(QRectF(stroke.left(), stroke.top(), 2 * radius, 2 * radius), 180, -90);
-                outline.lineTo(stroke.right() - radius, stroke.top());
-                outline.arcTo(QRectF(stroke.right() - 2 * radius, stroke.top(), 2 * radius, 2 * radius), 90, -90);
-                outline.lineTo(stroke.right(), stroke.bottom());
-                painter.drawPath(outline);
+                fill.moveTo(box.left(), box.bottom());
+                fill.lineTo(box.left(), box.top() + radius);
+                fill.arcTo(QRectF(box.left(), box.top(), 2 * radius, 2 * radius), 180, -90);
+                fill.lineTo(box.right() - radius, box.top());
+                fill.arcTo(QRectF(box.right() - 2 * radius, box.top(), 2 * radius, 2 * radius), 90, -90);
+                fill.lineTo(box.right(), box.bottom());
+                fill.closeSubpath();
             }
             else
             {
-                painter.drawRoundedRect(stroke, radius, radius);
+                fill.addRect(box);
             }
+            painter.drawPath(fill);
+        }
+
+        // The background frame's own rule, over the fill: the warning tile, then the selected outline. They are the rule of the state of
+        // the card (CardHeaderInternal::backgroundBoxOf), whatever the class of the header: the rules name #Background, not the header.
+        const auto* card = qobject_cast<Card*>(parentWidget());
+        const bool selectedHeader = card && card->isSelected() && card->header() == this;
+        CardHeaderInternal::BackgroundLook look;
+        look.m_secondary = secondaryHeader;
+        look.m_warning = m_warning;
+        look.m_selected = selectedHeader;
+        look.m_collapsed = selectedHeader && !card->isExpanded();
+        const CardHeaderInternal::BackgroundBox background = CardHeaderInternal::backgroundBoxOf(look);
+        const QRect frame = m_backgroundFrame->geometry();
+
+        if (m_warning)
+        {
+            CardHeaderInternal::drawWarningTile(painter, frame, background);
+        }
+
+        if (selectedHeader)
+        {
+            // drawn as the style sheet style draws a border (qDrawBorder)
+            BoxElement::drawEdges(&painter, frame, background.m_edges, background.m_radii);
         }
     }
 

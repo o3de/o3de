@@ -89,10 +89,10 @@ namespace AzQtComponents
             return winner ? winner->m_element : nullptr;
         }
 
-        //! True if a row covers the widget's class or a base of it, whatever its matcher says
-        bool covers(const QWidget* widget) const
+        //! True if a row covers the widget's class or a base of it below stop (none: any base), whatever its matcher says
+        bool covers(const QWidget* widget, const QMetaObject* stop = nullptr) const
         {
-            for (const QMetaObject* meta = widget->metaObject(); meta; meta = meta->superClass())
+            for (const QMetaObject* meta = widget->metaObject(); meta && meta != stop; meta = meta->superClass())
             {
                 if (m_rows.contains(meta))
                 {
@@ -170,6 +170,10 @@ namespace AzQtComponents
         AZ_QT_COMPONENTS_API bool childOfClass(const QWidget* widget, const char* parentClass);             //!< Class > W
         AZ_QT_COMPONENTS_API bool within(const QWidget* widget, const char* ancestorName);                  //!< #name W
         AZ_QT_COMPONENTS_API bool withinClass(const QWidget* widget, const char* ancestorClass);            //!< Class W
+        //! .tag W: below an ancestor that has the class tag (a whole word of its `class` property, as `tagged` reads it). The sheet reads
+        //! the tag when the widget is polished, and so does an element: a tag set after that is read when the widget is polished again
+        //! (Style::addClass polishes the tagged widget; the widgets below it are the site's to polish again).
+        AZ_QT_COMPONENTS_API bool withinTagged(const QWidget* widget, const char* tag);
     } // namespace Selectors
 
     // ----------------------------------------------------------------------------------

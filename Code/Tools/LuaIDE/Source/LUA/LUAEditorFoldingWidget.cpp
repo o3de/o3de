@@ -12,6 +12,7 @@
 #include "LUAEditorPlainTextEdit.hxx"
 #include "LUAEditorStyleMessages.h"
 
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <QTextBlock>
 #include <QStyleOption>
@@ -106,6 +107,15 @@ namespace LUAEditor
         QStyleOption opt;
         opt.initFrom(this);
         QPainter p(this);
+        if (AzQtComponents::StyleManager::flatStylingActive())
+        {
+            // The legacy GUI's sheet filled the gutter at PE_Widget by its enabled state (LUAViewWidget::CreateStyleSheet); the flattened
+            // GUI sets none, and a widget with no element has no fill at PE_Widget, so the gutter fills itself from the same colours as
+            // its sibling LUAEditorBreakpointWidget does. The sheet carried each colour as `#rrggbb`: no alpha.
+            const QColor fill =
+                isEnabled() ? colors->GetFoldingFocusedBackgroundColor() : colors->GetFoldingUnfocusedBackgroundColor();
+            p.fillRect(rect(), QColor(fill.rgb()));
+        }
         style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
         AZ::u32 lastFoldLevel = 0;
         bool firstBlock = true;

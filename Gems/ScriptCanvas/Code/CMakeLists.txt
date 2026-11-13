@@ -366,6 +366,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Gem::${gem_name}.API
                     Gem::${gem_name}.Editor.Static
+                    3rdParty::Qt::Core
+                    3rdParty::Qt::Gui
+                    3rdParty::Qt::Widgets
+                    3rdParty::Qt::Test
+                    AZ::AzQtComponents
         )
         ly_add_googletest(
             NAME Gem::${gem_name}.Editor.Tests

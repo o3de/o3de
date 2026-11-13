@@ -8,6 +8,7 @@
 
 #include <AzCore/std/sort.h>
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatValues.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/KeyboardShortcutsWindow.h>
@@ -29,6 +30,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 // include Qt related
@@ -48,6 +51,7 @@
 #include <QSettings>
 #include <QStatusBar>
 #include <QTextEdit>
+#include <QColor>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -83,6 +87,19 @@ AZ_POP_DISABLE_WARNING
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the main window writes into its texts and style sheets: the save notifications and the error report.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace MainWindowFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);         // MainWindow.cpp:1510, :1542, :2740 TOKENIZE: MainWindowSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);         // MainWindow.cpp:1515, :1547, :2745 TOKENIZE: MainWindowSaveFailureText
+        constexpr QColor ErrorNumberText(244, 156, 28);      // MainWindow.cpp:147 TOKENIZE: MainWindowErrorNumberText
+        constexpr QColor ErrorMessageText(203, 203, 203);    // MainWindow.cpp:148 TOKENIZE: MainWindowErrorMessageText
+    } // namespace MainWindowFlat
+
     class UndoMenuCallback
         : public MCore::CommandManagerCallback
     {
@@ -120,7 +137,15 @@ namespace EMStudio
         setMinimumHeight(400);
         setLayout(mainLayout);
 
-        setStyleSheet("background-color: rgb(30,30,30);");
+        // The legacy GUI sets the dialog's sheet, which also filled the text edit, its margin and the lanes of its scroll bars. The
+        // flattened GUI sets none: an element fills the dialog (EMStudioFlat), and the text edit takes the colour for its viewport and
+        // scroll bars through the palette
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            this, QString("background-color: %1;").arg(EMStudioFlatValues::ErrorWindowBackground.name()));
+        if (AzQtComponents::StyleManager::flatStylingActive())
+        {
+            AzQtComponents::ScrollBar::setBackgroundColor(m_textEdit, EMStudioFlatValues::ErrorWindowBackground);
+        }
     }
 
     void ErrorWindow::Init(const AZStd::vector<AZStd::string>& errors)
@@ -144,8 +169,9 @@ namespace EMStudio
         AZStd::string text;
         for (size_t i = 0; i < numErrors; ++i)
         {
-            text += AZStd::string::format("<font color=\"#F49C1C\"><b>#%zu</b>:</font> ", i + 1);
-            text += "<font color=\"#CBCBCB\">";
+            text += AZStd::string::format("<font color=\"%s\"><b>#%zu</b>:</font> ",
+                MainWindowFlat::ErrorNumberText.name().toUtf8().data(), i + 1);
+            text += AZStd::string::format("<font color=\"%s\">", MainWindowFlat::ErrorMessageText.name().toUtf8().data());
             text += errors[i];
             text += "</font>";
             text += "<br><br>";
@@ -1507,12 +1533,13 @@ namespace EMStudio
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                "Workspace <font color=green>successfully</font> saved");
+                QString("Workspace <font color=%1>successfully</font> saved").arg(MainWindowFlat::SaveSuccessText.name()));
         }
         else
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                AZStd::string::format("Workspace <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                AZStd::string::format("Workspace <font color=%s>failed</font> to save<br/><br/>%s",
+                    MainWindowFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
         }
     }
 
@@ -1539,12 +1566,13 @@ namespace EMStudio
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result))
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                "Workspace <font color=green>successfully</font> saved");
+                QString("Workspace <font color=%1>successfully</font> saved").arg(MainWindowFlat::SaveSuccessText.name()));
         }
         else
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                AZStd::string::format("Workspace <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
+                AZStd::string::format("Workspace <font color=%s>failed</font> to save<br/><br/>%s",
+                    MainWindowFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
         }
     }
 
@@ -2493,7 +2521,7 @@ namespace EMStudio
                     fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
                 }
             }
-            LoadFiles(fileNames, event->position().x(), event->position().y());
+            LoadFiles(fileNames, static_cast<int32>(event->position().x()), static_cast<int32>(event->position().y()));
             event->acceptProposedAction();
 
         }
@@ -2737,12 +2765,13 @@ namespace EMStudio
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                "Autosave <font color=green>completed</font>");
+                QString("Autosave <font color=%1>completed</font>").arg(MainWindowFlat::SaveSuccessText.name()));
         }
         else
         {
             GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                AZStd::string::format("Autosave <font color=red>failed</font><br/><br/>%s", result.c_str()).c_str());
+                AZStd::string::format("Autosave <font color=%s>failed</font><br/><br/>%s",
+                    MainWindowFlat::SaveFailureText.name().toUtf8().data(), result.c_str()).c_str());
         }
     }
 

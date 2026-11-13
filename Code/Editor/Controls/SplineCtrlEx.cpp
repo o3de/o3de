@@ -22,13 +22,58 @@
 #include "Clipboard.h"
 #include "GridUtils.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  SPLINE EDITOR COLOURS
+//
+//  The spline editor's colours (SplineWidget), named so the legacy and the flattened GUI read one value: the panel and the time row,
+//  the grid and the axes, the curve, the keys and their tangent handles, the time marker. A named namespace, not an anonymous one:
+//  a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace SplineCtrlExFlat
+{
+    // SplineCtrlEx.cpp:687 (the fill of the whole panel). TOKENIZE: SplineEditorBackground
+    constexpr QColor Background(160, 160, 160);
+
+    // SplineCtrlEx.cpp:29 (the ACTIVE_BKG_COLOR macro: the fill of the time range and strip). TOKENIZE: SplineEditorActiveBackground
+    constexpr QColor ActiveBackground(190, 190, 190);
+
+    // SplineCtrlEx.cpp:30 (the GRID_COLOR macro: the left separator and the dotted grid lines). TOKENIZE: SplineEditorGrid
+    constexpr QColor Grid(110, 110, 110);
+
+    // SplineCtrlEx.cpp:783 (the value labels at the grid lines). TOKENIZE: SplineEditorGridLabel
+    constexpr QColor GridLabel(0, 0, 0);
+
+    // SplineCtrlEx.cpp:795 (the X and Y axes). TOKENIZE: SplineEditorAxis
+    constexpr QColor Axis(110, 100, 100);
+
+    // SplineCtrlEx.cpp:31 (the EDIT_SPLINE_COLOR macro: the curve before its dimension's colour is read). TOKENIZE: SplineEditorEditCurve
+    constexpr QColor EditCurve(128, 255, 128);
+
+    // SplineCtrlEx.cpp:944 (the outline of a key). TOKENIZE: SplineEditorKeyOutline
+    constexpr QColor KeyOutline(0, 0, 0);
+
+    // SplineCtrlEx.cpp:994 (the fill of a key). TOKENIZE: SplineEditorKeyFill
+    constexpr QColor KeyFill(220, 220, 0);
+
+    // SplineCtrlEx.cpp:997 (the fill of a selected key). TOKENIZE: SplineEditorKeySelected
+    constexpr QColor KeySelected(255, 0, 0);
+
+    // SplineCtrlEx.cpp:1026 (the in and out tangent lines of a selected key). TOKENIZE: SplineEditorTangentLine
+    constexpr QColor TangentLine(96, 96, 96);
+
+    // SplineCtrlEx.cpp:1037 (the end handles of a tangent). TOKENIZE: SplineEditorTangentHandle
+    constexpr QColor TangentHandle(0, 220, 0);
+
+    // SplineCtrlEx.cpp:1052 (the current-time marker). TOKENIZE: SplineEditorTimeMarker
+    constexpr QColor TimeMarker(255, 0, 255);
+} // namespace SplineCtrlExFlat
 
 #define DEFAULT_MIN_TIME_EPSILON 0.001f
 #define MIN_TIME_EPSILON_FOR_SCALING 0.1f
 
-#define ACTIVE_BKG_COLOR      QColor(190, 190, 190)
-#define GRID_COLOR            QColor(110, 110, 110)
-#define EDIT_SPLINE_COLOR     QColor(128, 255, 128)
+#define ACTIVE_BKG_COLOR      SplineCtrlExFlat::ActiveBackground
+#define GRID_COLOR            SplineCtrlExFlat::Grid
+#define EDIT_SPLINE_COLOR     SplineCtrlExFlat::EditCurve
 
 #define MIN_PIXEL_PER_GRID_X 50
 #define MIN_PIXEL_PER_GRID_Y 10
@@ -684,7 +729,7 @@ void SplineWidget::paintEvent(QPaintEvent* event)
 
     if (m_TimeUpdateRect != event->rect())
     {
-        painter.fillRect(event->rect(), QColor(160, 160, 160));
+        painter.fillRect(event->rect(), SplineCtrlExFlat::Background);
 
         m_grid.CalculateGridLines();
 
@@ -780,7 +825,7 @@ void SplineWidget::DrawGrid(QPainter* painter)
 
             if ((v >= m_valueRange.start && v <= m_valueRange.end) || fabs(v - m_valueRange.start) < 0.01f || fabs(v - m_valueRange.end) < 0.01f)
             {
-                painter->setPen(Qt::black);
+                painter->setPen(SplineCtrlExFlat::GridLabel);
                 painter->drawText(m_rcClient.left() + 2, py - 8, QString::number(v));
             }
         }
@@ -792,7 +837,7 @@ void SplineWidget::DrawGrid(QPainter* painter)
 
     //////////////////////////////////////////////////////////////////////////
     {
-        const QPen pen0(QColor(110, 100, 100), 2);
+        const QPen pen0(SplineCtrlExFlat::Axis, 2);
         const QPoint p = WorldToClient(Vec2(0, 0));
 
         painter->setPen(pen0);
@@ -941,7 +986,7 @@ void SplineWidget::DrawKeys(QPainter* painter, int splineIndex, [[maybe_unused]]
 
     // create and select a white pen - nope, black
     const QPen pOldPen = painter->pen();
-    painter->setPen(Qt::black);
+    painter->setPen(SplineCtrlExFlat::KeyOutline);
 
     int i;
 
@@ -991,10 +1036,10 @@ void SplineWidget::DrawKeys(QPainter* painter, int splineIndex, [[maybe_unused]]
                 continue;
             }
 
-            QColor clr(220, 220, 0);
+            QColor clr(SplineCtrlExFlat::KeyFill);
             if (pSpline->IsKeySelectedAtDimension(i, nCurrentDimension))
             {
-                clr = Qt::red;
+                clr = SplineCtrlExFlat::KeySelected;
                 DrawTangentHandle(painter, splineIndex, i, nCurrentDimension);
             }
 
@@ -1023,7 +1068,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 {
     // create and select a white pen
     const QPen pOldPen = painter->pen();
-    painter->setPen(QColor(96, 96, 96));
+    painter->setPen(SplineCtrlExFlat::TangentLine);
 
     // Draw in-tangent & out-tangent lines.
     QPoint a, b, pt;
@@ -1034,7 +1079,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 
         // Draw end-effectors.
         const QBrush pOldBrush = painter->brush();
-        painter->setBrush(QColor(0, 220, 0));
+        painter->setBrush(SplineCtrlExFlat::TangentHandle);
 
         painter->drawRect(QRect(QPoint(a.x() - m_nKeyDrawRadius, a.y() - m_nKeyDrawRadius), QPoint(a.x() + m_nKeyDrawRadius - 1, a.y() + m_nKeyDrawRadius - 1)));
         painter->drawRect(QRect(QPoint(b.x() - m_nKeyDrawRadius, b.y() - m_nKeyDrawRadius), QPoint(b.x() + m_nKeyDrawRadius - 1, b.y() + m_nKeyDrawRadius - 1)));
@@ -1049,7 +1094,7 @@ void SplineWidget::DrawTangentHandle(QPainter* painter, int nSpline, int nKey, i
 void SplineWidget::DrawTimeMarker(QPainter* painter)
 {
     const QPen pOldPen = painter->pen();
-    painter->setPen(QColor(255, 0, 255));
+    painter->setPen(SplineCtrlExFlat::TimeMarker);
     float x = TimeToXOfs(m_fTimeMarker);
     if (x >= m_rcSpline.left() && x <= m_rcSpline.right() + 1)
     {

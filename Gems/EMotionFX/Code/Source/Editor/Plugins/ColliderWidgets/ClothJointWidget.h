@@ -11,6 +11,8 @@
 #include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/SkeletonModelJointWidget.h>
 
+#include <QColor>
+
 namespace Physics
 {
     class CharacterColliderNodeConfiguration;
@@ -18,6 +20,14 @@ namespace Physics
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colour the cloth collider card underlines itself with. It was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace ClothJointWidgetFlat
+    {
+        inline const QColor Underline{ "#a675ff" };   // ClothJointWidget.h:39 TOKENIZE: ClothColliderCardUnderline
+    } // namespace ClothJointWidgetFlat
+
     class AddColliderButton;
     class ColliderContainerWidget;
 
@@ -36,7 +46,7 @@ namespace EMotionFX
         }
         QColor GetColor() const override
         {
-            return QColor{ "#a675ff" };
+            return ClothJointWidgetFlat::Underline;
         }
 
     public slots:

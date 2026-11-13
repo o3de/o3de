@@ -16,6 +16,17 @@ namespace AzToolsFramework
     {
         static constexpr const int LoadingThumbnailSize = 1;
 
+        // =======================================================================
+        // Paint Colours
+        // =======================================================================
+
+        //! The colour the placeholder of a loading thumbnail is filled with, named, so the legacy and the flattened GUI read one value. A
+        //! named namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+        namespace LoadingThumbnailFlatInternal
+        {
+            const QColor Fill(Qt::black);   // LoadingThumbnail.cpp:26. TOKENIZE: LoadingThumbnailFill
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
@@ -23,7 +34,7 @@ namespace AzToolsFramework
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
             m_pixmap = QPixmap(LoadingThumbnailSize, LoadingThumbnailSize);
-            m_pixmap.fill(Qt::black);
+            m_pixmap.fill(LoadingThumbnailFlatInternal::Fill);
             m_state = State::Ready;
         }
    } // namespace Thumbnailer

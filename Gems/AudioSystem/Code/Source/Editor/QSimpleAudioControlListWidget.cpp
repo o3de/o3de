@@ -19,6 +19,16 @@
 
 namespace AudioControls
 {
+    //===========================================================================================//
+    // MIDDLEWARE CONTROL LIST COLOURS (the text of a control row: connected, unassigned, localized)
+    //===========================================================================================//
+    namespace QSimpleAudioControlListWidgetFlat
+    {
+        constexpr QColor ConnectedText(0x99, 0x99, 0x99);  // QSimpleAudioControlListWidget.cpp:42. TOKENIZE: AudioControlConnectedText
+        constexpr QColor UnassignedText(0xf3, 0x81, 0x1d); // QSimpleAudioControlListWidget.cpp:43. TOKENIZE: AudioControlUnassignedText
+        constexpr QColor LocalizedText(0x42, 0x85, 0xf4);  // QSimpleAudioControlListWidget.cpp:44. TOKENIZE: AudioControlLocalizedText
+    } // namespace QSimpleAudioControlListWidgetFlat
+
     //-------------------------------------------------------------------------------------------//
     class QMiddlewareControlItem
         : public QTreeWidgetItem
@@ -39,9 +49,9 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     QSimpleAudioControlListWidget::QSimpleAudioControlListWidget(QWidget* parent)
         : QTreeWidget(parent)
-        , m_connectedColor(QColor(0x99, 0x99, 0x99))
-        , m_disconnectedColor(QColor(0xf3, 0x81, 0x1d))
-        , m_localizedColor(QColor(0x42, 0x85, 0xf4))
+        , m_connectedColor(QSimpleAudioControlListWidgetFlat::ConnectedText)
+        , m_disconnectedColor(QSimpleAudioControlListWidgetFlat::UnassignedText)
+        , m_localizedColor(QSimpleAudioControlListWidgetFlat::LocalizedText)
     {
         CATLControlsModel* pATLModel = CAudioControlsEditorPlugin::GetATLModel();
         if (pATLModel)

@@ -23,6 +23,17 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // =======================================================================
+    // Paint Colours
+    // =======================================================================
+
+    //! The colour the asset thumbnail control paints its background with, named, so the legacy and the flattened GUI read one value. A
+    //! named namespace, not an anonymous one: a unity build joins files into one translation unit, where anonymous namespaces merge.
+    namespace ThumbnailPropertyCtrlFlatInternal
+    {
+        constexpr QColor Background(0x11, 0x11, 0x11);   // ThumbnailPropertyCtrl.cpp:132. TOKENIZE: ThumbnailPropertyCtrlBackground
+    }
+
     ThumbnailPropertyCtrl::ThumbnailPropertyCtrl(QWidget* parent)
         : QWidget(parent)
     {
@@ -129,7 +140,7 @@ namespace AzToolsFramework
     {
         QPainter p(this);
         QRect targetRect(QPoint(), QSize(40, 24));
-        p.fillRect(targetRect, QColor("#111111"));
+        p.fillRect(targetRect, ThumbnailPropertyCtrlFlatInternal::Background);
         QWidget::paintEvent(e);
     }
 

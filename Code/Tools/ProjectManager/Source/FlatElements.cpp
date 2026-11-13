@@ -7,6 +7,9 @@
  */
 
 #include <FlatElements.h>
+#include <FlatValues.h>
+#include <GemCatalog/GemInspector.h>
+#include <LinkWidget.h>
 
 #include <AzQtComponents/Components/Elements/BoxElement.h>
 #include <AzQtComponents/Components/Elements/FrameElement.h>
@@ -15,6 +18,7 @@
 #include <AzQtComponents/Components/Elements/ItemViewElement.h>
 #include <AzQtComponents/Components/Elements/TabElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
 
 #include <QBrush>
 #include <QCheckBox>
@@ -62,21 +66,25 @@
 //   ledger, not here.
 // - m_nativeBorder is false where the winning declarations give the border a style of its own, a `border` or a `border-radius`
 //   (which cancels Qt's native border); its comment names that declaration. m_hasBox is set where a margin or padding of 0 is written.
-// - TOKENIZE: a colour that will become a token.
+// - TOKENIZE: a colour, an image or a size that will become a token.
 // - A declaration Qt ignores is not carried: ProjectManager.qss:393 `font-size: 12` (a font size needs px or pt, qcssparser.cpp:1188)
 //   and :472 `font-weight: 600px` (a weight is a number or a keyword, qcssparser.cpp:1247). A length in % is read as its number
 //   (`max-width: 20%` is 20px, qcssparser.cpp:439-467 and 2960-2963), and `font-weight: bold` is 700 (qcssparser.cpp:1242): an element
 //   carries what Qt applied.
-// - The inline sheets of the code (GemInspector.cpp:309, GemListHeaderWidget.cpp:28, GemFilterTagWidget.cpp:27 and :38,
-//   GemRequirementListView.cpp:19, LinkWidget.cpp:56 and :76) still run in the flattened GUI (QStyleSheetStyle proxies them),
-//   so they need nothing here: the widgets they style keep what Qt applies from them.
+// - The inline sheets of the code are the section "Inline sheets of the code" below: the legacy GUI sets them, the flattened GUI sets
+//   none (StyleManager::setLegacyStyleSheet) and that section's elements draw what they drew. The list of the 'Manual setup is
+//   required' dialog (GemRequirementListView.cpp:19) has no element: it hands its colour to its palette and to the lanes of its
+//   scroll bars (ScrollBar::setBackgroundColor), which the sheet gave them in every state.
 // - Declarations that change nothing a widget draws or is sized by are not carried: the text-align of a label (a label has its own
 //   alignment property), line-height (Qt reads it for rich text only), subcontrol-origin and -position, and outline. The text-align of
 //   a push button is carried (BoxElement::m_textAlign): a rule with a position has the sheet lay the icon and the text of its buttons
 //   out itself, 4px apart where the base style's are 2px. The spacing of a radio button and a check box is carried (BoxElement::m_spacing
 //   and the faces'), and the drop-down of a combo box (m_dropDownWidth, m_dropDownPadding). Sub-controls with no element family (the
-//   popup rows of the form combo box, ProjectManager.qss:170-174 and :334-338, ::chunk, the ::indicator of the tag chips) are not
-//   carried.
+//   popup rows of the form combo box, ProjectManager.qss:170-174 and :334-338) are not carried.
+// - The sub-controls that other elements carry: the ::indicator of the tag chips (ProjectManager.qss:242-247) is an IndicatorElement
+//   (FormTagChipIndicator), and the ::chunk of the progress bars (ProjectManager.qss:778-780) is drawn by the style for every bar, in
+//   the colour the application's sheet gives it too (ProgressBar.qss:21-24, ControlElements::drawProgressBar): the element of the
+//   bar here (ProgressBar) is its track, for the bars below the window the sheet is set on.
 // - Selectors name classes and ancestors as Qt matches them: `#a B` is any ancestor named a, `#a > B` the parent only, a type
 //   selector includes the subclasses (a QLabel is a QFrame), and a rule of a dead selector (a name no widget has: #createAGem
 //   #formFrame, #createGemTab #formFrame, #gemCatalogUninstallGemButton, #gemRepoHeaderRefreshButton) is not registered.
@@ -96,10 +104,13 @@ namespace O3DE::ProjectManager
         using AzQtComponents::ItemViewElement;
         using AzQtComponents::TabElement;
         using AzQtComponents::TextElement;
+        using AzQtComponents::ToolTipElement;
         using AzQtComponents::Selectors::childOf;
+        using AzQtComponents::Selectors::childOfClass;
         using AzQtComponents::Selectors::hasProperty;
         using AzQtComponents::Selectors::named;
         using AzQtComponents::Selectors::within;
+        using AzQtComponents::Selectors::withinClass;
 
         // ------------------------------------------------------------------------------
         // Selectors this file composes from AzQtComponents' (ElementCommon.h)
@@ -143,7 +154,6 @@ namespace O3DE::ProjectManager
         const QColor CardFill(0x00, 0x00, 0x00, 0xB4);        // TOKENIZE: StartCardFill (ProjectManager.qss:649: rgba(0,0,0,180))
         const QColor ScrimFill(0x00, 0x00, 0x00, 0xB2);       // TOKENIZE: CardScrimFill (ProjectManager.qss:738: rgba(0,0,0,0.7) is 178)
         const QColor CountBadgeFill(0x42, 0x85, 0xF4);        // TOKENIZE: CountBadgeFill (ProjectManager.qss:816)
-        const QColor CartFill(0x55, 0x55, 0x55);              // TOKENIZE: CartFill (ProjectManager.qss:811)
         const QColor ChipFill(0x55, 0x55, 0x55);              // TOKENIZE: ChipFill (ProjectManager.qss:233)
         const QColor SummaryLine(0x55, 0x55, 0x55);           // TOKENIZE: SummaryLine (ProjectManager.qss:538)
         const QColor FormBorder(0xDD, 0xDD, 0xDD);            // TOKENIZE: FormBorder (ProjectManager.qss:211)
@@ -154,6 +164,12 @@ namespace O3DE::ProjectManager
         const QColor AccentBlue(0x1E, 0x70, 0xEB);            // TOKENIZE: AccentFill (ProjectManager.qss:635, 693, 1004...)
         const QColor AccentBluePressed(0x0E, 0x60, 0xEB);     // TOKENIZE: AccentFillPressed (ProjectManager.qss:644)
         const QColor LinkBlue(0x94, 0xD2, 0xFF);              // TOKENIZE: LinkText (ProjectManager.qss:239, 1024)
+
+        // The colours the legacy GUI's code reads as well: FlatValues.h holds each one, so that both rungs read a single value
+        using FlatValues::CartFill;
+        using FlatValues::FilterTagFill;
+        using FlatValues::GemListHeaderFill;
+        using FlatValues::LinkLabelColor;
 
         // ---- The roles of a push button (ProjectManager.qss:15-59): a vertical gradient per state, flat; only the primary role has a
         // disabled rule
@@ -169,20 +185,20 @@ namespace O3DE::ProjectManager
         const ButtonRole Primary{
             BoxElement::vertical(QColor(0x00, 0x95, 0xF2), QColor(0x1E, 0x70, 0xEB)),
             BoxElement::vertical(QColor(0x10, 0xA5, 0xF2), QColor(0x2E, 0x80, 0xEB)),
-            BoxElement::vertical(QColor(0x00, 0x85, 0xE2), QColor(0x0E, 0x60, 0xDB)),
-            BoxElement::vertical(QColor(0x77, 0x77, 0x77), QColor(0x44, 0x44, 0x44)),
+            BoxElement::vertical(QColor(0x00, 0x85, 0xE2), QColor(0x0E, 0x60, 0xDB)),   // ProjectManager.qss:25-26
+            BoxElement::vertical(QColor(0x77, 0x77, 0x77), QColor(0x44, 0x44, 0x44)),   // ProjectManager.qss:29-30
         };
         //! ProjectManager.qss:35-36, :39-40, :43-44 $fill.button.secondary $fill.button.hover+secondary $fill.button.pressed+secondary
         const ButtonRole Secondary{
             BoxElement::vertical(QColor(0x88, 0x88, 0x88), QColor(0x55, 0x55, 0x55)),
             BoxElement::vertical(QColor(0x99, 0x99, 0x99), QColor(0x66, 0x66, 0x66)),
-            BoxElement::vertical(QColor(0x55, 0x55, 0x55), QColor(0x77, 0x77, 0x77)),
+            BoxElement::vertical(QColor(0x55, 0x55, 0x55), QColor(0x77, 0x77, 0x77)),   // ProjectManager.qss:43-44
         };
         //! ProjectManager.qss:49-50, :53-54, :57-58 $fill.button.danger $fill.button.hover+danger $fill.button.pressed+danger
         const ButtonRole Danger{
             BoxElement::vertical(QColor(0xE3, 0x2C, 0x27), QColor(0x95, 0x1D, 0x21)),
             BoxElement::vertical(QColor(0xFD, 0x31, 0x29), QColor(0xAF, 0x22, 0x21)),
-            BoxElement::vertical(QColor(0x95, 0x1D, 0x1F), QColor(0xC9, 0x27, 0x24)),
+            BoxElement::vertical(QColor(0x95, 0x1D, 0x1F), QColor(0xC9, 0x27, 0x24)),   // ProjectManager.qss:57-58
         };
 
         //! A push button of a role, in the box given (its name, margin, radius, sizes, text alignment): the role's faces, its own border
@@ -240,7 +256,17 @@ namespace O3DE::ProjectManager
 
         // ---- The window and the widgets of no particular place
 
-        //! A progress bar (QProgressBar): no border, a clear track.
+        //! The window the sheet is set on (Application.cpp:246-249): the widgets below it are the ones the sheet reached. A widget with
+        //! no such ancestor, like the dialog ProjectUtils::ExecuteCommandResultModalDialog makes with no parent, met the application's
+        //! sheets only.
+        constexpr const char* ProjectManagerWindowClass = "O3DE::ProjectManager::ProjectManagerWindow";
+
+        //! A progress bar below the window (QProgressBar): no border, a clear track. Its chunk,
+        //! `QProgressBar::chunk { background-color: #1E70EB }` (ProjectManager.qss:778-780), is the colour the application's sheet gives
+        //! the chunk of every bar (ProgressBar.qss:21-24), so the style draws it over this track for this bar as for any other
+        //! (ControlElements::drawProgressBar, its ProgressChunkFill) and the element holds none: a module with another colour for its
+        //! chunks would need the element to hold it. A bar with no window above it keeps the Global element, the application's grey
+        //! track (ProgressBar.qss:10-19).
         const BoxElement ProgressBar{
             .m_name = "ProjectManager.Box.ProgressBar",
             .m_hasBox = true,                                 // a margin or padding of 0: ProjectManager.qss:775 (QProgressBar)
@@ -628,9 +654,11 @@ namespace O3DE::ProjectManager
                 },
             };
         }
-        // 50px in (ProjectManager.qss:215); flush in the wizard and the dialogs (#createAGemRHS #formFrame :107, #addRemoteProjectDialog
-        // #formFrame :1136); 23px in under a template option of the wizard (#createAGemRadioButtonSubFormField #formFrame :397). The
-        // border: the frame's (:211), a focused entry's ([Focus="true"] :254), an invalid value's ([Valid="false"] :258).
+        // 50px in (ProjectManager.qss:215); flush in the wizard and the dialogs (#createAGemRHS #formFrame :107, #addGemRepoDialog
+        // #formFrame ProjectManager.qss:1077-1079, #addRemoteTemplateDialog #formFrame ProjectManager.qss:1131-1133,
+        // #addRemoteProjectDialog #formFrame :1136); 23px in under a template option of the wizard (#createAGemRadioButtonSubFormField
+        // #formFrame :397). The border: the frame's (:211), a focused entry's ([Focus="true"] :254), an invalid value's ([Valid="false"]
+        // :258).
         const BoxElement FormFrame = formFrame("ProjectManager.Box.FormFrame", 50, FormBorder);
         const BoxElement FormFrameFocused = formFrame("ProjectManager.Box.FormFrameFocused", 50, AccentBlue);
         const BoxElement FormFrameInvalid = formFrame("ProjectManager.Box.FormFrameInvalid", 50, FormBorderInvalid);
@@ -700,10 +728,11 @@ namespace O3DE::ProjectManager
             .m_idle = { .m_fill = QBrush(PageFill) },         // ProjectManager.qss:227 (#formTagField)
         };
 
-        //! A tag of that list (#formTagField QCheckBox): a chip.
+        //! A tag of that list (#formTagField QCheckBox): a chip. The mark at its end is its indicator (FormTagChipIndicator).
         const BoxElement FormTagChip{
             .m_name = "ProjectManager.Box.FormTagChip",
             .m_padding = QMargins(7, 2, 5, 2),                // ProjectManager.qss:234,235,236,237 (#formTagField QCheckBox)
+            .m_spacing = 0,                                   // TOKENIZE: FormTagChipSpacing; ProjectManager.qss:238
             .m_idle = { .m_fill = QBrush(ChipFill) },         // ProjectManager.qss:233 (#formTagField QCheckBox)
         };
 
@@ -747,6 +776,23 @@ namespace O3DE::ProjectManager
             .m_focusImageSize = QSize(18, 18),                // RadioButton.qss:31-32 (QRadioButton::indicator:focus)
             .m_focusMargin = 1,                               // RadioButton.qss:33
             .m_hidden = true,                                 // image: url(:/nothing.png), ProjectManager.qss:98
+        };
+
+        //! The mark at the end of a tag chip (`#formTagField QCheckBox::indicator`, ProjectManager.qss:242-247): the X of X.svg in every
+        //! state, where the application's sheet has an image for each (CheckBox.qss:30-73; the sheet of the window is deeper than the
+        //! application's, so its image outranks theirs whatever their pseudo-classes). The image is fitted in a box 10px wide (`width: 10%`
+        //! is the number of pixels, ValueExtractor::lengthValue) and 16px tall, with 3px of padding to its left and the 2px of margin the
+        //! check box has (CheckBox.qss:25-27): the box is 17px by 20px, at the end of the chip, which lays out right to left
+        //! (FormLineEditTagsWidget.cpp:148). The chip's `background-color: transparent` (ProjectManager.qss:243) draws nothing.
+        const IndicatorElement FormTagChipIndicator{
+            .m_name = "ProjectManager.Indicator.FormTagChip",
+            .m_imageSize = QSize(10, 16),                     // TOKENIZE: FormTagChipMarkSize; ProjectManager.qss:245, CheckBox.qss:26
+            .m_margin = 2,                                    // TOKENIZE: FormTagChipMarkMargin; CheckBox.qss:27
+            // The same box focused: the :focus rules (CheckBox.qss:35-37, :50-52, :65-67) set an image only
+            .m_focusImageSize = QSize(10, 16),                // TOKENIZE: FormTagChipMarkSize; ProjectManager.qss:245, CheckBox.qss:26
+            .m_focusMargin = 2,                               // TOKENIZE: FormTagChipMarkMargin; CheckBox.qss:27
+            .m_padding = QMargins(3, 0, 0, 0),                // TOKENIZE: FormTagChipMarkPadding; ProjectManager.qss:246
+            .m_image = ":/X.svg",                             // TOKENIZE: FormTagChipMark; ProjectManager.qss:244
         };
 
         // ---- Item views: the header of the gem list
@@ -1094,7 +1140,7 @@ namespace O3DE::ProjectManager
         const BoxElement GemListCount{
             .m_name = "ProjectManager.Box.GemListCount",
             .m_margin = QMargins(0, 1, 0, 1),                 // Text.qss:93,94 (QLabel)
-            .m_idle = { .m_fill = QBrush(PageFill) },         // GemListHeaderWidget.cpp:28 (*)
+            .m_idle = { .m_fill = QBrush(GemListHeaderFill) },    // GemListHeaderWidget.cpp:31 (*)
         };
 
         //! The refresh button over the gem list (#RefreshButton): 24x24, its icon.
@@ -1102,11 +1148,11 @@ namespace O3DE::ProjectManager
             .m_name = "ProjectManager.Box.GemListRefreshButton",
             .m_minSize = QSize(24, 24),                       // ProjectManager.qss:828,830 (#RefreshButton)
             .m_maxSize = QSize(24, 24),                       // ProjectManager.qss:827,829 (#RefreshButton)
-            // GemListHeaderWidget.cpp:28 (*); ProjectManager.qss:825 (#RefreshButton)
-            .m_idle = { .m_fill = QBrush(PageFill), .m_image = ":/Refresh.svg" },
+            // GemListHeaderWidget.cpp:31 (*); ProjectManager.qss:825 (#RefreshButton)
+            .m_idle = { .m_fill = QBrush(GemListHeaderFill), .m_image = ":/Refresh.svg" },
             .m_stateFaces = {
-                // GemListHeaderWidget.cpp:28 (*); ProjectManager.qss:834 (#RefreshButton:hover)
-                { BoxElement::Hover, { .m_fill = QBrush(PageFill), .m_image = ":/Refresh_Hover.svg" } },
+                // GemListHeaderWidget.cpp:31 (*); ProjectManager.qss:834 (#RefreshButton:hover)
+                { BoxElement::Hover, { .m_fill = QBrush(GemListHeaderFill), .m_image = ":/Refresh_Hover.svg" } },
             },
             .m_imageAlign = Qt::AlignCenter,                  // ProjectManager.qss:825 (#RefreshButton)
             .m_properties = { { "flat", true } },             // ProjectManager.qss:826 (#RefreshButton)
@@ -1186,6 +1232,10 @@ namespace O3DE::ProjectManager
             // `#createAGemLHS QRadioButton::indicator` (ProjectManager.qss:97-99): any radio button below the list of steps
             IndicatorElement::registerElement(&WizardStepIndicator, &QRadioButton::staticMetaObject,
                 [](const QWidget* w) { return within(w, "createAGemLHS"); });
+
+            // `#formTagField QCheckBox::indicator` (ProjectManager.qss:242-247): the check box of every tag chip, as the chip's box is
+            IndicatorElement::registerElement(&FormTagChipIndicator, &QCheckBox::staticMetaObject,
+                [](const QWidget* w) { return within(w, "formTagField"); });
         }
 
         void registerItemViews()
@@ -1197,8 +1247,9 @@ namespace O3DE::ProjectManager
 
         void registerBoxes()
         {
+            // `QProgressBar` (ProjectManager.qss:772-776): the sheet is the window's, so only the bars below the window
             BoxElement::registerElement(&ProgressBar, &QProgressBar::staticMetaObject,
-                [](const QWidget*) { return true; });
+                [](const QWidget* w) { return withinClass(w, ProjectManagerWindowClass); });
             BoxElement::registerElement(&ScreensCtrl, &QWidget::staticMetaObject,
                 [](const QWidget* w) { return named(w, "ScreensCtrl"); });
             BoxElement::registerElement(&MainWindow, &QMainWindow::staticMetaObject,
@@ -1647,6 +1698,8 @@ namespace O3DE::ProjectManager
         };
 
         // ---- The gem catalog and the gem repositories
+        // The header label of the gem repositories page (#gemRepoHeaderLabel { font-size: 12px }, ProjectManager.qss:1042-1044) states
+        // the size every QLabel has (Text.qss:92), so no element names it.
 
         //! The count beside a filter.
         const TextElement FilterCountText{
@@ -1656,7 +1709,9 @@ namespace O3DE::ProjectManager
             .m_color = QColor(0x94, 0xD2, 0xFF),
         };
 
-        //! The title of a filter category (#GemCatalogFilterCategoryTitle).
+        //! The title of a filter category (#GemCatalogFilterCategoryTitle). Its white is the flat palette's WindowText (Style.cpp), as
+        //! for every label of the filter pane: #GemCatalogFilterWidget #FilterByLabel and QLabel (ProjectManager.qss:990-995, color
+        //! #ffffff) restate it, so no element carries them. The count (FilterCountText) and the links set their own.
         const TextElement FilterCategoryTitleText{
             .m_name = "ProjectManager.Text.FilterCategoryTitle",
             .m_pixelSize = 12,                                // ProjectManager.qss:985 (#GemCatalogFilterCategoryTitle)
@@ -2050,7 +2105,279 @@ namespace O3DE::ProjectManager
             TabElement::registerElement(&HeaderTab, tabBar, [](const QWidget*) { return true; });
         }
 
+        // ------------------------------------------------------------------------------
+        // Inline sheets of the code
+        //
+        // Five classes of the Project Manager set a style sheet on a widget of their own. A sheet with no selector is `* { ... }`: it
+        // reaches the widget and every widget inside it, and outranks the application's rules for the declarations it holds
+        // (QStyleSheetStyle::styleRules). The legacy GUI sets these sheets (StyleManager::setLegacyStyleSheet); the flattened GUI sets
+        // none, and the elements below draw what they drew: the fill of the gem list's header and of the widgets in it, the tags of its
+        // filter, the text of the links and of the gem inspector's labels, and the popup of the tags field's completer. They are
+        // registered before every element above, which a widget of the same place may match as well: the first row that matches wins.
+        //
+        // The text rows of the links and of the inspector's labels sit ahead of every QLabel row, so each QLabel the application
+        // polishes meets them first: two casts to a link (the label and its parent) for each size, then one property read for each
+        // pair of the inspector. A few pointer compares and string compares for a label; not measured.
+        // ------------------------------------------------------------------------------
+
+        // ---- The header of the gem list and the tags of its filter
+
+        //! The classes whose instances held a sheet; the widgets inside them are the ones the sheet reached
+        constexpr const char* GemListHeaderClass = "O3DE::ProjectManager::GemListHeaderWidget";
+        constexpr const char* FilterTagClass = "O3DE::ProjectManager::FilterTagWidget";
+
+        //! The header (GemListHeaderWidget): the fill of its sheet. A plain widget in it (the tags' container) has no element: the fill
+        //! it had is this one's, and the header shows through. The count and the refresh button have their own (GemListCount,
+        //! GemListRefreshButton); the line below them is the next element.
+        const BoxElement GemListHeader{
+            .m_name = "ProjectManager.Box.GemListHeader",
+            .m_idle = { .m_fill = QBrush(GemListHeaderFill) },    // GemListHeaderWidget.cpp:31
+        };
+
+        //! The line under the header's widgets (a QFrame HLine named #horizontalSeparatingLine): the fill of the header's sheet, over
+        //! the divider's own (BaseStyleSheet.qss:41-48: the inline sheet outranks the application's), in the divider's colour, which
+        //! the header's sheet leaves alone (ProjectManager.qss:482). The sheet's rule names no shape; the shapes below are the divider's
+        //! list (BaseStyleSheet.qss:41-45), which holds the HLine the matcher names, and the line is the only widget it reaches.
+        const FrameElement GemListHeaderSeparator{
+            .m_name = "ProjectManager.Frame.GemListHeaderSeparator",
+            .m_fill = GemListHeaderFill,                          // GemListHeaderWidget.cpp:31
+            .m_fillShapes = FrameElement::PanelShapes,            // the divider's shapes, with the HLine (BaseStyleSheet.qss:41-45)
+            // TOKENIZE: HorizontalSeparatorColor (the divider's own; ProjectManager.qss:482 #horizontalSeparatingLine)
+            .m_foreground = QColor(0x66, 0x66, 0x66),
+        };
+
+        //! A tag of the filter (FilterTagWidget): the fill of its sheet, which also reached its label, on the same fill.
+        const BoxElement FilterTag{
+            .m_name = "ProjectManager.Box.FilterTag",
+            .m_idle = { .m_fill = QBrush(FilterTagFill) },        // GemFilterTagWidget.cpp:29
+        };
+
+        //! The button that removes a tag, a flat push button with no border and no fill of its own, which Qt sizes by its icon alone.
+        const BoxElement FilterTagClose{
+            .m_name = "ProjectManager.Box.FilterTagClose",
+            .m_nativeBorder = false,                              // border: GemFilterTagWidget.cpp:40 (also PushButton.qss:50)
+            .m_idle = { .m_fill = QBrush(Transparent) },          // background-color: GemFilterTagWidget.cpp:40
+        };
+
+        // ---- The popup of the tags field's completer
+
+        // TOKENIZE: CompleterPopupFill (ProjectManagerCompleterPopup.qss:2 `background: #333333;`)
+        const QColor CompleterPopupFill(0x33, 0x33, 0x33);
+        // TOKENIZE: CompleterPopupSelection (ProjectManagerCompleterPopup.qss:4 `selection-background-color:#444444;`)
+        const QColor CompleterPopupSelection(0x44, 0x44, 0x44);
+
+        //! The list the completer pops up (a QListView with no parent, named #formCompleterPopup, FormLineEditTagsWidget.cpp): the
+        //! fill of its sheet over the margin and the border an item view has (QDockWidget.qss:35, TableView.qss:28).
+        const BoxElement CompleterPopup{
+            .m_name = "ProjectManager.Box.CompleterPopup",
+            .m_hasBox = true,                                     // a margin or padding of 0: QDockWidget.qss:35 (QAbstractScrollArea)
+            .m_nativeBorder = false,                              // border: TableView.qss:28 (QListView)
+            .m_idle = { .m_fill = QBrush(CompleterPopupFill) },   // ProjectManagerCompleterPopup.qss:2
+        };
+
+        //! The roles of its items: the selection colours of the sheet, over the item rules of every list (TableView.qss:31-60, which the
+        //! sheet's `QListView` rule does not reach: a selected row is filled by the item's rule). `color: #ffffff` (:3) is the
+        //! application's own (BaseStyleSheet.qss:18).
+        const ItemViewElement CompleterPopupItems{
+            .m_name = "ProjectManager.ItemView.CompleterPopup",
+            .m_selection = CompleterPopupSelection,               // ProjectManagerCompleterPopup.qss:4
+            // TOKENIZE: CompleterPopupSelectionText (ProjectManagerCompleterPopup.qss:5 `selection-color: #ffffff;`)
+            .m_selectionText = QColor(0xFF, 0xFF, 0xFF),
+        };
+
+        // ---- The text of the links and of the gem inspector's labels: sheets built from a size and a colour
+
+        // The values the callers write. The elements, the matchers and HasFlatLinkLabelText / HasFlatStyledLabelText read these and
+        // nothing else, so they cannot disagree; a caller with a value outside them gets the warning of its constructor
+        constexpr int LinkSizeDefault = 10;                           // LinkWidget.h:28 (the constructor's default)
+        constexpr int LinkSizeBase = GemInspector::s_baseFontSize;    // GemInspector.h:62, 12 (GemRepoInspector.cpp:137 writes 12)
+        constexpr int InspectorNameSize = 18;                         // GemInspector.cpp:385
+
+        //! The two values a call of GemInspector::CreateStyledLabel writes into its sheet: the size in pixels, the colour as written
+        struct StyledLabelValues
+        {
+            int m_fontSize;
+            const char* m_color;
+        };
+
+        constexpr StyledLabelValues InspectorNameValues{ InspectorNameSize, GemInspector::s_headerColor };
+        constexpr StyledLabelValues InspectorHeaderValues{ GemInspector::s_baseFontSize, GemInspector::s_headerColor };
+        constexpr StyledLabelValues InspectorBodyValues{ GemInspector::s_baseFontSize, GemInspector::s_textColor };
+
+        // TOKENIZE: InspectorHeaderTextColor (GemInspector.h:65 s_headerColor)
+        const QColor InspectorHeaderColor(0xFF, 0xFF, 0xFF);
+        // TOKENIZE: InspectorBodyTextColor (GemInspector.h:66 s_textColor)
+        const QColor InspectorBodyColor(0xDD, 0xDD, 0xDD);
+
+        //! The link (LinkLabel) a widget is, or the one it is inside: a link keeps a label of its own to measure its text
+        //! (ElidingLabel::m_metricsLabel), which the link's sheet reached as it reaches every widget inside it
+        const LinkLabel* linkLabelOf(const QWidget* w)
+        {
+            const auto* link = qobject_cast<const LinkLabel*>(w);
+            return link ? link : qobject_cast<const LinkLabel*>(w->parentWidget());
+        }
+
+        bool isLinkLabelOfSize(const QWidget* w, int fontSize)
+        {
+            const LinkLabel* link = linkLabelOf(w);
+            return link && link->GetFontSize() == fontSize;
+        }
+
+        //! The same, while the pointer is over the link (LinkLabel::enterEvent marks the state; the label inside is the link's)
+        bool isHoveredLinkLabelOfSize(const QWidget* w, int fontSize)
+        {
+            const LinkLabel* link = linkLabelOf(w);
+            return link && link->GetFontSize() == fontSize && link->property(LinkLabel::HoverProperty).toBool();
+        }
+
+        //! A label that GemInspector::CreateStyledLabel made, with the two values of its sheet, which it hands over as properties
+        bool isStyledLabel(const QWidget* w, const StyledLabelValues& values)
+        {
+            return w->property(StyledLabelFontSizeProperty).toInt() == values.m_fontSize
+                && hasProperty(w, StyledLabelColorProperty, values.m_color);
+        }
+
+        bool isStyledValues(const StyledLabelValues& values, int fontSize, const QString& color)
+        {
+            return values.m_fontSize == fontSize && color == QLatin1String(values.m_color);
+        }
+
+        //! A link of 10px, the size LinkLabel's constructor defaults to (LinkWidget.h:28): the filter's "see all", the inspector's
+        //! directory, documentation and download links, the repository inspector's copy link. A font keeps what an element set, so
+        //! the link that leaves its hover state (LinkLabel10HoverText) is told to end the underline.
+        const TextElement LinkLabel10Text{
+            .m_name = "ProjectManager.Text.LinkLabel10",
+            .m_pixelSize = LinkSizeDefault,                       // font-size: LinkWidget.cpp:76, the size of LinkWidget.h:28
+            .m_underline = 0,                                     // LinkWidget.cpp:76 sets none (the hover sheet, :56, does)
+            .m_color = LinkLabelColor,                            // LinkWidget.cpp:76
+        };
+
+        //! A link of 12px: the license link (GemInspector.cpp:466, s_baseFontSize GemInspector.h:62) and the repository link
+        //! (GemRepoInspector.cpp:137).
+        const TextElement LinkLabel12Text{
+            .m_name = "ProjectManager.Text.LinkLabel12",
+            // font-size: LinkWidget.cpp:76, with the size of GemInspector.h:62 and of GemRepoInspector.cpp:137
+            .m_pixelSize = LinkSizeBase,
+            .m_underline = 0,                                     // LinkWidget.cpp:76 sets none (the hover sheet, :56, does)
+            .m_color = LinkLabelColor,                            // LinkWidget.cpp:76
+        };
+
+        //! A link of 10px under the pointer: the hover sheet of LinkLabel::enterEvent is the idle one with `text-decoration:
+        //! underline` (LinkWidget.cpp:56). TOKENIZE: LinkLabelHoverDecoration
+        const TextElement LinkLabel10HoverText{
+            .m_name = "ProjectManager.Text.LinkLabel10Hover",
+            .m_pixelSize = LinkSizeDefault,                       // font-size: LinkWidget.cpp:56
+            .m_underline = 1,                                     // text-decoration: LinkWidget.cpp:56
+            .m_color = LinkLabelColor,                            // LinkWidget.cpp:56
+        };
+
+        //! A link of 12px under the pointer (LinkWidget.cpp:56)
+        const TextElement LinkLabel12HoverText{
+            .m_name = "ProjectManager.Text.LinkLabel12Hover",
+            .m_pixelSize = LinkSizeBase,                          // font-size: LinkWidget.cpp:56
+            .m_underline = 1,                                     // text-decoration: LinkWidget.cpp:56
+            .m_color = LinkLabelColor,                            // LinkWidget.cpp:56
+        };
+
+        //! The tooltip of a link (ElidingLabel::elide sets the full text where it is elided): the sheet of the link had no selector
+        //! and so reached it. Qt resolved the tip through the link, which is under the pointer at the time of the tip: the text of the
+        //! hover sheet, underline and all, over the `QToolTip { font-family; font-size }` (ToolTip.qss:16, :19) and `color` (:12) the
+        //! link's declarations outranked. The tip takes the text elements of the link.
+        const ToolTipElement LinkLabel10ToolTip{ .m_name = "ProjectManager.ToolTip.LinkLabel10", .m_text = &LinkLabel10Text };
+        const ToolTipElement LinkLabel12ToolTip{ .m_name = "ProjectManager.ToolTip.LinkLabel12", .m_text = &LinkLabel12Text };
+        const ToolTipElement LinkLabel10HoverToolTip{
+            .m_name = "ProjectManager.ToolTip.LinkLabel10Hover", .m_text = &LinkLabel10HoverText
+        };
+        const ToolTipElement LinkLabel12HoverToolTip{
+            .m_name = "ProjectManager.ToolTip.LinkLabel12Hover", .m_text = &LinkLabel12HoverText
+        };
+
+        //! The gem's name over its inspector: 18px in the header colour (GemInspector.cpp:385).
+        const TextElement InspectorNameText{
+            .m_name = "ProjectManager.Text.InspectorName",
+            .m_pixelSize = InspectorNameSize,                     // font-size: GemInspector.cpp:385
+            .m_color = InspectorHeaderColor,                      // color: GemInspector.cpp:385
+        };
+
+        //! The creator, the summary and the license label of the inspector: the base size in the header colour (GemInspector.cpp:386,
+        //! :449, :463).
+        const TextElement InspectorHeaderText{
+            .m_name = "ProjectManager.Text.InspectorHeader",
+            .m_pixelSize = GemInspector::s_baseFontSize,          // font-size: GemInspector.h:62 (s_baseFontSize)
+            .m_color = InspectorHeaderColor,                      // color: GemInspector.h:65 (s_headerColor)
+        };
+
+        //! The last update and the binary size of the inspector: the base size in the text colour (GemInspector.cpp:513, :514).
+        const TextElement InspectorBodyText{
+            .m_name = "ProjectManager.Text.InspectorBody",
+            .m_pixelSize = GemInspector::s_baseFontSize,          // font-size: GemInspector.h:62 (s_baseFontSize)
+            .m_color = InspectorBodyColor,                        // color: GemInspector.h:66 (s_textColor)
+        };
+
+        void registerInlineSheets()
+        {
+            // The line of the header before the divider every other page has
+            FrameElement::registerElement(&GemListHeaderSeparator, &QFrame::staticMetaObject,
+                [](const QWidget* w) { return named(w, "horizontalSeparatingLine") && withinClass(w, GemListHeaderClass); });
+
+            BoxElement::registerElement(&GemListHeader, &QFrame::staticMetaObject,
+                [](const QWidget* w) { return w->inherits(GemListHeaderClass); });
+            BoxElement::registerElement(&FilterTag, &QFrame::staticMetaObject,
+                [](const QWidget* w) { return w->inherits(FilterTagClass); });
+            BoxElement::registerElement(&FilterTagClose, &QPushButton::staticMetaObject,
+                [](const QWidget* w) { return childOfClass(w, FilterTagClass); });
+
+            // The popup is a list with no parent, named by the code that makes it
+            BoxElement::registerElement(&CompleterPopup, &QListView::staticMetaObject,
+                [](const QWidget* w) { return named(w, "formCompleterPopup"); });
+            ItemViewElement::registerElement(&CompleterPopupItems, &QListView::staticMetaObject,
+                [](const QWidget* w) { return named(w, "formCompleterPopup"); });
+
+            // A link and the label inside it, by the size the link was made with, the hover state first; an inspector label, by the
+            // pair it was made with
+            TextElement::registerElement(&LinkLabel10HoverText, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isHoveredLinkLabelOfSize(w, LinkSizeDefault); });
+            TextElement::registerElement(&LinkLabel12HoverText, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isHoveredLinkLabelOfSize(w, LinkSizeBase); });
+            TextElement::registerElement(&LinkLabel10Text, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isLinkLabelOfSize(w, LinkSizeDefault); });
+            TextElement::registerElement(&LinkLabel12Text, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isLinkLabelOfSize(w, LinkSizeBase); });
+
+            // The tips of the links, in the same order
+            ToolTipElement::registerElement(&LinkLabel10HoverToolTip, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isHoveredLinkLabelOfSize(w, LinkSizeDefault); });
+            ToolTipElement::registerElement(&LinkLabel12HoverToolTip, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isHoveredLinkLabelOfSize(w, LinkSizeBase); });
+            ToolTipElement::registerElement(&LinkLabel10ToolTip, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isLinkLabelOfSize(w, LinkSizeDefault); });
+            ToolTipElement::registerElement(&LinkLabel12ToolTip, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isLinkLabelOfSize(w, LinkSizeBase); });
+            TextElement::registerElement(&InspectorNameText, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isStyledLabel(w, InspectorNameValues); });
+            TextElement::registerElement(&InspectorHeaderText, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isStyledLabel(w, InspectorHeaderValues); });
+            TextElement::registerElement(&InspectorBodyText, &QLabel::staticMetaObject,
+                [](const QWidget* w) { return isStyledLabel(w, InspectorBodyValues); });
+        }
+
     } // namespace FlatElementsInternal
+
+    // ----------------------------------------------------------------------------------
+    // The values the text elements of the inline sheets carry
+    // ----------------------------------------------------------------------------------
+
+    bool HasFlatLinkLabelText(int fontSize)
+    {
+        return fontSize == FlatElementsInternal::LinkSizeDefault || fontSize == FlatElementsInternal::LinkSizeBase;
+    }
+
+    bool HasFlatStyledLabelText(int fontSize, const QString& color)
+    {
+        return FlatElementsInternal::isStyledValues(FlatElementsInternal::InspectorNameValues, fontSize, color)
+            || FlatElementsInternal::isStyledValues(FlatElementsInternal::InspectorHeaderValues, fontSize, color)
+            || FlatElementsInternal::isStyledValues(FlatElementsInternal::InspectorBodyValues, fontSize, color);
+    }
 
     // ----------------------------------------------------------------------------------
     // Registration
@@ -2066,6 +2393,8 @@ namespace O3DE::ProjectManager
         }
         registered = true;
 
+        // First: the elements of the inline sheets win over those of the application sheet's places that a widget may match as well
+        FlatElementsInternal::registerInlineSheets();
         FlatElementsInternal::registerFrames();
         FlatElementsInternal::registerBoxes();
         FlatElementsInternal::registerIndicators();

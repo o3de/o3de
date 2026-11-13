@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/Debug/Trace.h>
 
 
@@ -73,13 +74,15 @@ namespace O3DE::ProjectManager
          * However, the current styling rules of the Project Manager make the background color blend in
          * with surroundings, making it difficult to see. Currently, attempts at rectifying this in the main
          * stylesheet proved very difficult, so a stop-gap measure of hard-coding the stylesheet was used.
+         * The legacy GUI sets this sheet; the flattened GUI sets none and its elements carry the popup's look (FlatElements.cpp,
+         * CompleterPopup).
          */
         QFile popupStyleSheetFile(":/ProjectManager/style/ProjectManagerCompleterPopup.qss");
         [[maybe_unused]] const bool res = popupStyleSheetFile.open(QFile::ReadOnly);
         AZ_Assert(res, "Failed to open project manager style");
         QString popupStyleSheet = QLatin1String(popupStyleSheetFile.readAll());
 
-        m_completer->popup()->setStyleSheet(popupStyleSheet);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_completer->popup(), popupStyleSheet);
 
         m_lineEdit->setCompleter(m_completer);
         connect(m_completer, QOverload<const QString&>::of(&QCompleter::highlighted), this, &FormLineEditTagsWidget::forceSetText);

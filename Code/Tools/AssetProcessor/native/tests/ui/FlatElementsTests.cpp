@@ -74,13 +74,8 @@ namespace AssetProcessor
                     m_application = AZStd::make_unique<QApplication>(m_argc, m_argv);
                 }
 
-                // The registries last for the process: a second call would only add the same rows again
-                static bool registered = false;
-                if (!registered)
-                {
-                    registered = true;
-                    RegisterFlatElements();
-                }
+                // The registries last for the process: the registrar ignores a second call
+                RegisterFlatElements();
             }
 
             ~FlatElementsTests() override
@@ -337,7 +332,7 @@ namespace AssetProcessor
             expectBox(status, "AssetProcessor.Box.SharedCacheStatus.Notice", QMargins(1, 2, 1, 2));
             EXPECT_TRUE(BoxElement::forWidget(status)->m_idle.m_fill.color() == QColor(88, 140, 188, 25));
 
-            // The label is repolished when the property changes (MainWindow.cpp:949-989): the element follows
+            // The label is repolished when the property changes (MainWindow::CheckAssetServerStates): the element follows
             status->setProperty("highlight", QStringLiteral("green"));
             BoxElement::resolve(status);
             expectBox(status, "AssetProcessor.Box.SharedCacheStatus.Active", QMargins(1, 2, 1, 2));

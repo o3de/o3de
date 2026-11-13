@@ -8,6 +8,7 @@
 
 #include <AssetImporter/ImporterRootDisplay.h>
 #include <AssetImporter/ui_ImporterRootDisplay.h>
+#include <EditorFlatValues.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -17,6 +18,7 @@
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
 #include <QDateTime>
@@ -25,6 +27,14 @@
 #include <QDockWidget>
 #include <QFileInfo>
 #include <QUrl>
+
+// ----------------------------------------------------------------------------------
+// Flattened GUI: the sheet of the form
+//
+// ImporterRootDisplay.ui gave the python builder frame (m_pythonBuilderLayout) a sheet. The legacy GUI sets it after setupUi; the
+// flattened GUI sets none, and the element of EditorFlatSheet (AssetImporterPythonBuilder) draws what it drew. The text of the sheet
+// (ImporterRootDisplay.ui:79 before the flattening) is written from the fill that element reads (EditorFlatValues.h).
+// ----------------------------------------------------------------------------------
 
 
 SceneSettingsRootDisplayScriptRequestHandler::SceneSettingsRootDisplayScriptRequestHandler()
@@ -75,6 +85,10 @@ ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* seria
     , m_filePath("")
 {
     ui->setupUi(this);
+
+    // The sheet the form gave the python builder frame, for the legacy GUI only
+    AzQtComponents::StyleManager::setLegacyStyleSheet(ui->m_pythonBuilderLayout, EditorFlatValues::AssetImporterPythonBuilderSheet());
+
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
     ui->m_timeStamp->setVisible(false);

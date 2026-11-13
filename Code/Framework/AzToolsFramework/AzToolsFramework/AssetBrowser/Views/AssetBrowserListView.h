@@ -40,6 +40,10 @@ namespace AzToolsFramework
             explicit AssetBrowserListView(QWidget* parent = nullptr);
             ~AssetBrowserListView() override;
 
+            //! Flattened GUI: the element that draws the header's bold font, which the legacy GUI draws with the sheet the constructor
+            //! gives the header (AssetBrowserListView.cpp). The first list view built in the flattened GUI registers it, once.
+            static void RegisterFlatElements();
+
             void setModel(QAbstractItemModel *model) override;
             void dragMoveEvent(QDragMoveEvent* event) override;
             void SetName(const QString& name);

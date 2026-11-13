@@ -1,0 +1,18 @@
+QWidget {
+    background-color: white;
+    color: black;
+}
+
+QLabel {
+    color: "green";
+}
+
+AzQtComponents--FilteredSearchWidget {
+    padding: 8px;
+    background-color: rgb(40,40,40);
+}
+
+QLineEdit {
+    background-color: #cccccc;
+    color: "blue";
+}

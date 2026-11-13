@@ -7,6 +7,9 @@
  */
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/SegmentBar.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
@@ -116,6 +119,224 @@ namespace AzToolsFramework
             }
         };
 
+        // ----------------------------------------------------------------------------------
+        // Flattened GUI: the preview image and the two buttons above it
+        //
+        // The constructor gave the label of the asset preview a sheet of one fill, and the two buttons that switch the inspector between
+        // the asset's details and its scene settings (Details, Scene Settings) a sheet each. The legacy GUI sets them; the flattened GUI
+        // sets none, and these elements draw what they drew. Each value cites the line of the constructor as it was before the
+        // flattening.
+        // ----------------------------------------------------------------------------------
+
+        //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+        //! unit, where anonymous namespaces merge.
+        namespace AssetBrowserEntityInspectorFlatInternal
+        {
+            //! The name the constructor gives the label in the flattened GUI, for the matcher: the inspector is a plain QWidget, with no
+            //! class a selector could name it by. The legacy GUI gives it no name, so that its widgets are named as they were.
+            constexpr const char* PreviewImageName = "m_previewImage";
+
+            //! background-color: AssetBrowserEntityInspectorWidget.cpp:169, the line before the flattening.
+            //! TOKENIZE: AssetBrowserPreviewImageFill
+            const QColor PreviewImageFill(0x33, 0x33, 0x33);
+
+            //! The sheet the constructor gave the preview image before the flattening (AssetBrowserEntityInspectorWidget.cpp:169), as it
+            //! was written, its fill read from the constant the element reads
+            const QString PreviewImageSheet = QStringLiteral("QLabel {background-color: %1;}").arg(PreviewImageFill.name());
+
+            //! `QLabel {background-color: #333333;}` on the preview image, an ExtendedLabel (a QLabel), over the box of every label
+            //! (`QLabel { margin-top: 1px; margin-bottom: 1px }`, Text.qss:93-94): an element is the whole definition of its frame, so it
+            //! carries that margin, which Style gives a label without one (Style::subElementRect, SE_ShapedFrameContents)
+            const AzQtComponents::BoxElement PreviewImage{
+                .m_name = "Editor.Box.AssetBrowserPreviewImage",
+                .m_margin = QMargins(0, AzQtComponents::Foundations::Label::MarginV, 0, AzQtComponents::Foundations::Label::MarginV),
+                .m_idle = {
+                    .m_fill = QBrush(PreviewImageFill),
+                },
+            };
+
+            //! The preview image of an inspector: the ExtendedLabel of that name
+            bool isPreviewImage(const QWidget* widget)
+            {
+                return AzQtComponents::Selectors::named(widget, PreviewImageName);
+            }
+
+            // ------------------------------------------------------------------------------
+            // The switch buttons (AssetBrowserEntityInspectorWidget.cpp:145-152 and :156-163 before the flattening)
+            //
+            // The two sheets have selectors (`QPushButton`, `QPushButton:checked`, ...), so they reach the button they are set on and
+            // no other widget: the button has no child, no tooltip and no context menu. Both buttons are flat (`setFlat(true)`, :145
+            // and :156), so the application's `QPushButton:flat { border: none; background-color: transparent }` (PushButton.qss:48-52)
+            // lies under the sheet, which wins the properties it sets.
+            //
+            // What Qt makes of the text of the sheets (the two differ in their corners and a margin only):
+            //  - `border-color #222222` (:147, :158) has no colon. The parser drops that declaration alone and keeps the rest of the rule.
+            //  - `QPushButton:pressed:!checked: {` (:152, :163) ends its selector with a colon. The first parse of the whole sheet stops
+            //    there, after the three rules before it were kept, and the second parse (the sheet inside `* { }`) keeps an empty rule.
+            //    So `:pressed:!checked` never existed: a button pressed under the pointer takes the `:hover:!checked` fill.
+            //  - With no `border-color`, the edges keep the colour `border: none` of `QPushButton:flat` gave them. That is not "no
+            //    brush", which Qt fills in with the colour of the text, but a brush of an invalid colour (ValueExtractor::borderValue,
+            //    qcssparser.cpp: `*color = QColor()`), which Qt draws as opaque black. The sheet meant #222222.
+            //  - The fill per state: `:checked` (:150, :161) over the base rule, `:hover:!checked` (:151, :162) for an unchecked
+            //    button, which the rule of a checked one outranks. The label is white (PushButton.qss:32, :40) and #999999 while
+            //    disabled (PushButton.qss:45).
+            // The buttons are in the page of a scene asset: the twin tests of AssetBrowserFlatSheetTests settle the reading above.
+            // ------------------------------------------------------------------------------
+
+            //! The tag the constructor gives each button in the flattened GUI, for the matchers: no class names the inspector's buttons
+            //! (the inspector is a plain QWidget) and an object name could be any form's, so the property is what the two rows reach. The
+            //! legacy GUI sets none, so that its widgets carry what they carried.
+            constexpr const char* SwitchButtonProperty = "assetInspectorSwitchButton";
+            constexpr const char* DetailsButtonTag = "details";
+            constexpr const char* SceneSettingsButtonTag = "sceneSettings";
+
+            //! background-color: :147, :158. TOKENIZE: AssetInspectorSwitchButtonFill
+            const QColor ButtonFill(0x33, 0x33, 0x33);
+            //! `QPushButton:hover:!checked { background-color }`: :151, :162. TOKENIZE: AssetInspectorSwitchButtonHoverFill
+            const QColor ButtonHoverFill(0x44, 0x44, 0x44);
+            //! `QPushButton:checked { background-color }`: :150, :161. TOKENIZE: AssetInspectorSwitchButtonCheckedFill
+            const QColor ButtonCheckedFill(0x1E, 0x70, 0xEB);
+            //! The colour of the edges: the sheet sets none (`border-color #222222`, :147, :158, is dropped); it is the invalid colour that
+            //! `border: none` (PushButton.qss:50) left, drawn black. TOKENIZE: AssetInspectorSwitchButtonBorder
+            const QColor ButtonBorder(0x00, 0x00, 0x00);
+            //! `QPushButton { color }` and its `:hover, :pressed` rule: PushButton.qss:32, :40, the label of every state but disabled.
+            //! TOKENIZE: AssetInspectorSwitchButtonText
+            const QColor ButtonText(0xFF, 0xFF, 0xFF);
+            //! `QPushButton:disabled { color }`: PushButton.qss:45. TOKENIZE: AssetInspectorSwitchButtonDisabledText
+            const QColor ButtonDisabledText(0x99, 0x99, 0x99);
+            constexpr int ButtonBorderWidth = 1;                // border-width: 1px, :147, :158
+            //! `height: 28px` (:149, :160), the height of the contents. TOKENIZE: AssetInspectorSwitchButtonHeight
+            constexpr int ButtonContentsHeight = 28;
+            //! `border-top-left-radius`, `border-bottom-left-radius` (Details) and `border-top-right-radius` (Scene Settings): 3px
+            //! (:148, :159). TOKENIZE: AssetInspectorSwitchButtonRadius
+            constexpr int ButtonRadius = 3;
+            //! `margin-left: -1px` (:160): the Scene Settings button lies this far over the Details button, so that the two borders are
+            //! one. TOKENIZE: AssetInspectorSwitchButtonOverlap
+            constexpr int ButtonOverlap = 1;
+
+            //! The sheets the constructor gave the buttons before the flattening (:146-152 and :157-163), as they were written, each
+            //! fill read from the constant the elements read: ButtonFill (%1), ButtonCheckedFill (%2), ButtonHoverFill (%3). The
+            //! `#222222` of `border-color #222222` stays text: Qt drops that declaration (see above), so it paints nothing and no
+            //! element reads it.
+            const QString DetailsButtonSheet = QStringLiteral(
+                "QPushButton {background-color: %1; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 0px;"
+                "border-bottom-right-radius: 0px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: %2;}"
+                "QPushButton:hover:!checked {background-color: %3;}"
+                "QPushButton:pressed:!checked: {background-color: %3;}")
+                .arg(ButtonFill.name()).arg(ButtonCheckedFill.name().toUpper()).arg(ButtonHoverFill.name());
+            const QString SceneSettingsButtonSheet = QStringLiteral(
+                "QPushButton {background-color: %1; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 3px;"
+                "border-bottom-right-radius: 0px; margin-left: -1px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: %2;}"
+                "QPushButton:hover:!checked {background-color: %3;}"
+                "QPushButton:pressed:!checked: {background-color: %3;}")
+                .arg(ButtonFill.name()).arg(ButtonCheckedFill.name().toUpper()).arg(ButtonHoverFill.name());
+
+            //! One face of a switch button: the fill of its state, the same four edges, and the colour of its label
+            AzQtComponents::BoxElement::Face buttonFace(const QColor& fill, const QColor& text)
+            {
+                return {
+                    .m_fill = QBrush(fill),
+                    .m_edges = AzQtComponents::BoxElement::border(ButtonBorderWidth, ButtonBorder),
+                    .m_text = text,
+                };
+            }
+
+            //! A switch button: the box of its rule (a border of its own, 28px of contents), the faces of its states in the order the
+            //! rules cascade (`:hover:!checked`, then `:checked`, which outranks it for a button that is both; `:disabled` keeps the fill
+            //! of its check state and takes the label colour), and the corners its sheet rounded
+            AzQtComponents::BoxElement switchButton(
+                const char* name, const QMargins& margin, const AzQtComponents::BoxElement::Radii& radii)
+            {
+                using AzQtComponents::BoxElement;
+                return {
+                    .m_name = name,
+                    .m_margin = margin,                         // margin-left: -1px, :160 (Scene Settings only; ButtonOverlap)
+                    .m_nativeBorder = false,                    // border-style: solid; border-width: 1px, :147, :158
+                    .m_radii = radii,
+                    .m_size = QSize(-1, ButtonContentsHeight), // height: 28px, :149, :160
+                    .m_idle = buttonFace(ButtonFill, ButtonText),
+                    .m_stateFaces = {
+                        { BoxElement::Hover, buttonFace(ButtonHoverFill, ButtonText) },
+                        { BoxElement::Checked, buttonFace(ButtonCheckedFill, ButtonText) },
+                        { BoxElement::Disabled, buttonFace(ButtonFill, ButtonDisabledText) },
+                        { BoxElement::Disabled | BoxElement::Checked, buttonFace(ButtonCheckedFill, ButtonDisabledText) },
+                    },
+                };
+            }
+
+            //! The Details button, the left of the pair: round on the left (border-top-left-radius, border-bottom-left-radius: 3px,
+            //! :148; border-top-right-radius, border-bottom-right-radius: 0px, :148, :149)
+            const AzQtComponents::BoxElement DetailsButton = switchButton(
+                "Editor.Box.AssetInspectorDetailsButton", QMargins(), { .m_topLeft = ButtonRadius, .m_bottomLeft = ButtonRadius });
+
+            //! The Scene Settings button, the right of the pair: round at the top right (border-top-right-radius: 3px, :159; the others
+            //! 0, :159, :160, so the bottom right is square, which looks like a typo) and one pixel over the Details button
+            //! (margin-left: -1px, :160), so that the two borders are one
+            const AzQtComponents::BoxElement SceneSettingsButton = switchButton(
+                "Editor.Box.AssetInspectorSceneSettingsButton", QMargins(-ButtonOverlap, 0, 0, 0), { .m_topRight = ButtonRadius });
+
+            //! A switch button the constructor tagged: it makes both flat before it tags them, and flat is read first, where the
+            //! property read ran for every push button of the Editor
+            bool isSwitchButton(const QWidget* widget, const char* tag)
+            {
+                const auto* button = qobject_cast<const QPushButton*>(widget);
+                return button && button->isFlat() && AzQtComponents::Selectors::hasProperty(widget, SwitchButtonProperty, tag);
+            }
+
+            //! The Details button of an inspector: the QPushButton the constructor tagged so
+            bool isDetailsButton(const QWidget* widget)
+            {
+                return isSwitchButton(widget, DetailsButtonTag);
+            }
+
+            //! The Scene Settings button of an inspector: the QPushButton the constructor tagged so
+            bool isSceneSettingsButton(const QWidget* widget)
+            {
+                return isSwitchButton(widget, SceneSettingsButtonTag);
+            }
+
+            //! The look of one switch button: in the legacy GUI its sheet; in the flattened GUI no sheet, but its tag, which the matchers
+            //! read, and the elements registered
+            void styleSwitchButton(QPushButton* button, const QString& sheet, const char* tag)
+            {
+                AzQtComponents::StyleManager::setLegacyStyleSheet(button, sheet);
+                if (AzQtComponents::StyleManager::stylesheetsDisabled())
+                {
+                    button->setProperty(SwitchButtonProperty, QString::fromLatin1(tag));
+                    AssetBrowserEntityInspectorWidget::RegisterFlatElements();
+                }
+            }
+        } // namespace AssetBrowserEntityInspectorFlatInternal
+
+        void AssetBrowserEntityInspectorWidget::RegisterFlatElements()
+        {
+            static bool registered = false;
+            if (!registered)
+            {
+                registered = true;
+                AzQtComponents::BoxElement::registerElement(
+                    &AssetBrowserEntityInspectorFlatInternal::PreviewImage, &AzQtComponents::ExtendedLabel::staticMetaObject,
+                    &AssetBrowserEntityInspectorFlatInternal::isPreviewImage);
+                AzQtComponents::BoxElement::registerElement(
+                    &AssetBrowserEntityInspectorFlatInternal::DetailsButton, &QPushButton::staticMetaObject,
+                    &AssetBrowserEntityInspectorFlatInternal::isDetailsButton);
+                AzQtComponents::BoxElement::registerElement(
+                    &AssetBrowserEntityInspectorFlatInternal::SceneSettingsButton, &QPushButton::staticMetaObject,
+                    &AssetBrowserEntityInspectorFlatInternal::isSceneSettingsButton);
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::StyleSwitchButtons(QPushButton* details, QPushButton* sceneSettings)
+        {
+            namespace Flat = AssetBrowserEntityInspectorFlatInternal;
+            Flat::styleSwitchButton(details, Flat::DetailsButtonSheet, Flat::DetailsButtonTag);
+            Flat::styleSwitchButton(sceneSettings, Flat::SceneSettingsButtonSheet, Flat::SceneSettingsButtonTag);
+        }
+
         AssetBrowserEntityInspectorWidget::AssetBrowserEntityInspectorWidget(QWidget* parent)
             : QWidget(parent)
             , m_databaseConnection(aznew AssetDatabase::AssetDatabaseConnection)
@@ -136,37 +357,30 @@ namespace AzToolsFramework
             auto populatedLayout = new QVBoxLayout(m_populatedLayoutWidget);
             populatedLayout->setContentsMargins(0, 0, 0, 0);
 
-            // Create the buttons to switch between asset details and scene settings
+            // Create the buttons to switch between asset details and scene settings. Their sheets are set in the legacy GUI alone; the
+            // flattened GUI's elements draw them (StyleSwitchButtons)
             auto buttonLayout = new QHBoxLayout(m_populatedLayoutWidget);
             buttonLayout->setSpacing(0);
             m_detailsButton = new QPushButton(m_populatedLayoutWidget);
             m_detailsButton->setText(QObject::tr("Details"));
             m_detailsButton->setCheckable(true);
             m_detailsButton->setFlat(true);
-            m_detailsButton->setStyleSheet(
-                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
-                "border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 0px;"
-                "border-bottom-right-radius: 0px; font-size: 12px; height: 28px;}"
-                "QPushButton:checked {background-color: #1E70EB;}"
-                "QPushButton:hover:!checked {background-color: #444444;}"
-                "QPushButton:pressed:!checked: {background-color: #444444;}");
             m_sceneSettingsButton = new QPushButton(m_populatedLayoutWidget);
             m_sceneSettingsButton->setText("Scene Settings");
             m_sceneSettingsButton->setCheckable(true);
             m_sceneSettingsButton->setFlat(true);
-            m_sceneSettingsButton->setStyleSheet(
-                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
-                "border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 3px;"
-                "border-bottom-right-radius: 0px; margin-left: -1px; font-size: 12px; height: 28px;}"
-                "QPushButton:checked {background-color: #1E70EB;}"
-                "QPushButton:hover:!checked {background-color: #444444;}"
-                "QPushButton:pressed:!checked: {background-color: #444444;}");
+            StyleSwitchButtons(m_detailsButton, m_sceneSettingsButton);
             buttonLayout->addWidget(m_detailsButton);
             buttonLayout->addWidget(m_sceneSettingsButton);
 
             // Create the layout for the asset icon preview
             m_previewImage = new AzQtComponents::ExtendedLabel(m_populatedLayoutWidget);
-            m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
+            AzQtComponents::StyleManager::setLegacyStyleSheet(m_previewImage, AssetBrowserEntityInspectorFlatInternal::PreviewImageSheet);
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                m_previewImage->setObjectName(QString::fromLatin1(AssetBrowserEntityInspectorFlatInternal::PreviewImageName));
+                RegisterFlatElements();
+            }
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
 

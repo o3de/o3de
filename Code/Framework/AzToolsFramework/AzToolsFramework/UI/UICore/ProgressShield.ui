@@ -13,15 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">QWidget #progressShield { background-color:qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(0, 0, 0, 90));  }
-
-QLabel
-{
-color:rgba(0,0,0,255);
-}
-</string>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="leftMargin">
     <number>32</number>
@@ -51,14 +42,6 @@ color:rgba(0,0,0,255);
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QFrame#frame 
-{
-background-color: rgba(255, 255, 255,128);
-border: 2px solid white;
-border-radius: 10px;
-}</string>
        </property>
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>

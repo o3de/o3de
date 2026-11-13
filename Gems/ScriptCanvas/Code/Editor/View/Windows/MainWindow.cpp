@@ -175,21 +175,30 @@ namespace ScriptCanvasEditor
         // Sources: AzQtComponents Components/Widgets/ stylesheets as file:line, and Editor.qss.
         const AzQtComponents::TabElement GraphTabs{
             .m_name = "ScriptCanvas.Tab.Graph",
-            .m_barFill = QColor(0x44, 0x44, 0x44),                                  // TabWidget.qss:26
+            .m_barFill = QColor(0x44, 0x44, 0x44),                                  // TabWidget.qss:28. TOKENIZE: GraphTabBarFill
             .m_barMinHeight = 28,                                                   // TabWidget.qss:46
-            // TabWidget.qss:136 (idle), :145 (hover), :158 (selected text and bottom edge)
+            // Each state is a fill, a text colour and a bottom edge (3px), at the lines of the declarations in TabWidget.qss. The rule of a
+            // state that gives none of them leaves the one of the rules before it (the selected rule has no fill: the fill of :138), and
+            // the later of two rules that both give one wins (the `:selected` rule, :158, is after the `:hover` rule, :145).
+            // Idle: TabWidget.qss:138 fill, :142 text, :140 edge. TOKENIZE: GraphTabIdleFill, GraphTabIdleText, GraphTabIdleEdge
             .m_idle = { QColor(0x44, 0x44, 0x44), QColor(0x95, 0x95, 0x95), { {}, {}, { 3, QColor(0x33, 0x33, 0x33) }, {} } },
+            // Hover: TabWidget.qss:147 fill, :149 text, :148 edge. TOKENIZE: GraphTabHoverFill, GraphTabHoverText, GraphTabHoverEdge
             .m_hover = { QColor(0xFF, 0xFF, 0xFF, 0x26), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x44, 0x44, 0x44) }, {} } },
+            // Selected: TabWidget.qss:138 fill, :161 text, :160 edge.
+            // TOKENIZE: GraphTabSelectedFill, GraphTabSelectedText, GraphTabSelectedEdge
             .m_selected = { QColor(0x44, 0x44, 0x44), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x00, 0x8D, 0xE5) }, {} } },
+            // Selected, under the pointer: TabWidget.qss:147 fill, :161 text, :160 edge.
+            // TOKENIZE: GraphTabSelectedHoverFill, GraphTabSelectedHoverText, GraphTabSelectedHoverEdge
             .m_selectedHover = { QColor(0xFF, 0xFF, 0xFF, 0x26), QColor(0xFF, 0xFF, 0xFF), { {}, {}, { 3, QColor(0x00, 0x8D, 0xE5) }, {} } },
             .m_padding = QMargins(14, 7, 14, 5),                                    // TabWidget.qss:136
             .m_maxContentWidth = 200,                                               // TabWidget.qss:16
+            .m_hideFocusRect = true,                                                // TabWidget.qss:95. TOKENIZE: TabBarFocusOutline
             .m_closeIcon = ":/stylesheet/img/close_small.svg",                      // TabWidget.qss:64
             .m_closeHoverFill = QColor(0xFF, 0xFF, 0xFF, 0x33),                     // TabWidget.qss:70
             .m_closeRadius = 2,                                                     // TabWidget.qss:70
             .m_closeMarginRight = 4,                                                // TabWidget.qss:64
-            .m_widgetFill = QColor(0x44, 0x44, 0x44),                               // TabWidget.qss:101
-            .m_paneEdges = { { 2, QColor(0x2B, 0x2B, 0x2B) }, {}, {}, {} },         // TabWidget.qss:111
+            .m_widgetFill = QColor(0x44, 0x44, 0x44),                               // TabWidget.qss:103. TOKENIZE: GraphTabWidgetFill
+            .m_paneEdges = { { 2, QColor(0x2B, 0x2B, 0x2B) }, {}, {}, {} },         // TabWidget.qss:114. TOKENIZE: GraphTabPaneEdge
             .m_panePadding = QMargins(3, 0, 3, 3),                                  // TabWidget.qss:111
             .m_paneEmptyOffset = 30,                                                // TabWidget.qss:41
             .m_barLeft = 1,                                                         // TabWidget.qss:119

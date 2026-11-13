@@ -16,6 +16,8 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 
+#include <SandboxAPI.h>
+
 #include "LevelRoots.h"
 
 // QListWidget icon-mode items render icons in white when selected in Qt6 because
@@ -49,7 +51,9 @@ namespace Ui {
     class CNewLevelDialog;
 }
 
-class CNewLevelDialog
+// Exported so that EditorLib.Tests builds the real dialog, to prove that the flattened GUI sets no sheet on it
+// (test_NewLevelWelcomeFlatSheet.cpp)
+class SANDBOX_API CNewLevelDialog
     : public QDialog
 {
     Q_OBJECT

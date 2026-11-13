@@ -9,6 +9,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionExtractionWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/ActorPropertiesWindow.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
@@ -129,7 +130,8 @@ namespace EMStudio
         m_rootMotionExtractionWidget->SetSizeHintOffset(QSize(0, 0));
         m_rootMotionExtractionWidget->SetAutoResizeLabels(false);
         m_rootMotionExtractionWidget->SetLeafIndentation(0);
-        m_rootMotionExtractionWidget->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            m_rootMotionExtractionWidget, "QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
         m_childVerticalLayout->addWidget(m_rootMotionExtractionWidget);
 
         // Create the save motion button.
@@ -164,7 +166,8 @@ namespace EMStudio
 
         QCheckBox* checkBox = new QCheckBox(tr("Motion Extraction"));
         checkBox->setChecked(true);
-        checkBox->setStyleSheet("QCheckBox::indicator\
+        checkBox->setObjectName(EMStudioFlat::CaretCheckName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(checkBox, "QCheckBox::indicator\
                 {\
                     width: 16px;\
                     height: 16px;\

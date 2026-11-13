@@ -8,6 +8,9 @@
 
 
 #include <AzQtComponents/Components/Widgets/Internal/OverlayWidgetLayer.h>
+#include <AzQtComponents/Components/Elements/ControlElements.h>
+#include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Components/Titlebar.h>
@@ -32,7 +35,27 @@ namespace AzQtComponents
 
     namespace Internal
     {
-        static const QString LayerStyle = QStringLiteral("background-color:rgba(0, 0, 0, 179)");
+        // The fill is the value the elements of the flattened GUI read (ControlElements::OverlayDimFill)
+        static const QString LayerStyle = QStringLiteral("background-color:rgba(%1, %2, %3, %4)")
+                                              .arg(ControlElements::OverlayDimFill.red())
+                                              .arg(ControlElements::OverlayDimFill.green())
+                                              .arg(ControlElements::OverlayDimFill.blue())
+                                              .arg(ControlElements::OverlayDimFill.alpha());
+
+        //! A layer that dims what is behind it, and the widgets below it with their own fill. The legacy GUI sets LayerStyle, a sheet with
+        //! no selector that reached the layer and everything below it. The flattened GUI sets none: it tags the layer, and the elements
+        //! of ControlElements dim it and the widgets below it. The layer is tagged before the widgets below it are polished: it has no
+        //! children yet when the breakout form calls this, and the widgets of the form that setupUi makes are polished later (when the
+        //! layer is shown or sized, and m_controls when AddButtons shows it), so no repolish of them is needed here.
+        static void dimLayer(OverlayWidgetLayer* layer)
+        {
+            StyleManager::setLegacyStyleSheet(layer, LayerStyle);
+            if (StyleManager::flatStylingActive())
+            {
+                ControlElements::registerOverlayLayer();
+                Style::addClass(layer, QString::fromLatin1(ControlElements::OverlayDimmedTag));
+            }
+        }
 
         OverlayWidgetLayer::OverlayWidgetLayer(OverlayWidget* parent, QWidget* centerWidget, QWidget* breakoutWidget, 
             const char* title, const OverlayWidgetButtonList& buttons)
@@ -66,7 +89,7 @@ namespace AzQtComponents
                 
             if (breakoutWidget)
             {
-                setStyleSheet(LayerStyle);
+                dimLayer(this);
                 setLayout(new QHBoxLayout());
                 
                 // close the overlay if either dependent widget is destroyed
@@ -100,7 +123,7 @@ namespace AzQtComponents
                 }
                 else
                 {
-                    setStyleSheet(LayerStyle);
+                    dimLayer(this);
                 }
                 AddButtons(*m_ui.data(), buttons, parent == nullptr);
             }

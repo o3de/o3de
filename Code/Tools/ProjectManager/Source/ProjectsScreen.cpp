@@ -56,6 +56,17 @@
 
 namespace O3DE::ProjectManager
 {
+    //! Everything private to this file that the flattened GUI adds. A named namespace, not an anonymous one: a unity build joins the files
+    //! of a target into one translation unit, where anonymous namespaces merge.
+    namespace ProjectsScreenFlat
+    {
+        // ------------------------------------------------------------------------------
+        // The overlay over the background artwork of the Projects screen (ProjectsScreen::paintEvent): the channels of its colour; the
+        // alpha is set at the use, from the overlay opacity (0.3f)
+        // ------------------------------------------------------------------------------
+        constexpr QColor BackgroundOverlay(0, 0, 0);    // ProjectsScreen.cpp:480. TOKENIZE: ProjectsBackgroundOverlay
+    } // namespace ProjectsScreenFlat
+
     ProjectsScreen::ProjectsScreen(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
         , m_downloadController(downloadController)
@@ -477,7 +488,9 @@ namespace O3DE::ProjectManager
         // Use SourceOver, DestinationIn will make background transparent on Mac
         painter.setCompositionMode (QPainter::CompositionMode_SourceOver);
         const float overlayTransparency = 0.3f;
-        painter.fillRect(backgroundRect, QColor(0, 0, 0, static_cast<int>(255.0f * overlayTransparency)));
+        QColor overlay = ProjectsScreenFlat::BackgroundOverlay;
+        overlay.setAlpha(static_cast<int>(255.0f * overlayTransparency));
+        painter.fillRect(backgroundRect, overlay);
     }
 
     void ProjectsScreen::HandleNewProjectButton()

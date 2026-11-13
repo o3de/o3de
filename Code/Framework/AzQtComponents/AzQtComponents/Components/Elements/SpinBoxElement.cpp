@@ -14,6 +14,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Utilities/IconUtilities.h>
 
+#include <QAbstractSpinBox>
 #include <QColor>
 #include <QDoubleSpinBox>
 #include <QGuiApplication>
@@ -46,6 +47,11 @@ namespace AzQtComponents
         constexpr const char* HoverImage = ":/SpinBox/hoverBackground.svg";         // SpinBox.qss:37 $asset.field.hover
         constexpr const char* HoverFocusImage = ":/SpinBox/focusedBackground.svg";  // SpinBox.qss:52 $asset.field.hover+focus
 
+        // ---- The error face has two states, one rule for the two selectors. Neither name is a property of the Qt classes
+        // (QAbstractSpinBox has `acceptableInput`, not `hasAcceptableInput`): a box is in either state when a caller sets the dynamic
+        // property (SpinBox::setHasError sets HasError), and a box with unacceptable input has no error face.
+        constexpr const char* AcceptableInputProperty = "hasAcceptableInput";   // SpinBox.qss:57-58 `[hasAcceptableInput=false]`
+
         // ---- In a vector element: flush with the coordinate label, in every state (one rule for its three selectors)
         // VectorInput.qss:25 $space.field.idle.margin-left.Alt1 $space.field.hover.margin-left $space.field.focus.margin-left
         constexpr int VectorMarginLeft = 0;
@@ -55,9 +61,14 @@ namespace AzQtComponents
         constexpr int VectorLeftRadius = 0;
 
         // ---- The glyphs of the buttons: their box, their inset from the right, and the images of each state (up, down)
+        // The box is the rect of the button too (QStyleSheetStyle::subControlRect, CC_SpinBox: the position rect of the rule)
         constexpr QSize GlyphSize(6, 10);           // SpinBox.qss:81-82 $size.field-button.idle.width.Alt1 $size.field-button.idle.height
         constexpr int UpGlyphInset = 2;                             // SpinBox.qss:96 $other.field-button.idle.right.Alt2
         constexpr int DownGlyphInset = 8;                           // SpinBox.qss:88 $other.field-button.idle.right.Alt1
+
+        // ---- In a color picker the buttons keep their place and height and have no width: the rule sets the width alone
+        // ColorPicker.qss:79 TOKENIZE: ColorPickerSpinButtonWidth
+        constexpr int PickerButtonWidth = 0;
 
         struct Glyphs
         {
@@ -89,7 +100,7 @@ namespace AzQtComponents
             bool m_enabled = true;
             bool m_hover = false;               //!< under the pointer (a disabled box is never)
             bool m_focus = false;
-            bool m_error = false;               //!< enabled, with the HasError property
+            bool m_error = false;               //!< enabled, with HasError true or hasAcceptableInput false
             bool m_vector = false;              //!< in a VectorElement: flush with the coordinate label
             bool m_colorPicker = false;         //!< in a color picker: no hover face, no buttons
         };
@@ -107,7 +118,8 @@ namespace AzQtComponents
         };
 
         //! The cascade, by specificity and, for equal ones, the later: BaseStyleSheet.qss's entry rule, SpinBox.qss's rule, `:focus,
-        //! :hover`, `:hover`, `:focus`, `:hover:focus`, `:enabled[HasError=true]`, `:disabled`; VectorInput.qss over them in a vector
+        //! :hover`, `:hover`, `:focus`, `:hover:focus`, `:enabled[hasAcceptableInput=false]` and `:enabled[HasError=true]` (one rule),
+        //! `:disabled`; VectorInput.qss over them in a vector
         //! element, ColorPicker.qss in a color picker
         Face faceOf(const Look& look)
         {
@@ -139,7 +151,7 @@ namespace AzQtComponents
                 face.m_image = HoverFocusImage;
             }
 
-            // ColorPicker.qss: `background: none` under the pointer, the fill and the image both. A rule with no background draws the
+            // ColorPicker.qss:66-72 `background: none` under the pointer, the fill and the image both. A rule with no background draws the
             // default one, the application palette's Base (Qt's default sheet gives a spin box `-qt-background-role: base`)
             if (look.m_colorPicker && look.m_hover)
             {
@@ -156,7 +168,7 @@ namespace AzQtComponents
                 face.m_radii.m_bottomLeft = VectorLeftRadius;
             }
 
-            // `:enabled[HasError=true]`, as specific as :hover:focus and later
+            // `:enabled[hasAcceptableInput=false]` and `:enabled[HasError=true]` (SpinBox.qss:57-67), as specific as :hover:focus and later
             if (look.m_error)
             {
                 face.m_margin = Field::ErrorMargin;
@@ -273,13 +285,20 @@ namespace AzQtComponents
             return pick(HoverGlyphs);
         }
 
-        //! A button's glyph: the image centered in the rect the sheet's position gave the button (QStyleSheetStyle::positionRect): the
-        //! glyph's box at the right of the padding box, centered vertically, moved left by the inset (left to right)
-        void paintGlyph(QPainter* painter, const QRect& rect, const Face& face, const QWidget* widget, bool up)
+        //! The rect the sheet's position gave a button (QStyleSheetStyle::positionRect): a box of the given size at the right of the
+        //! padding box, centered vertically, moved left by the button's inset (left to right)
+        QRect buttonBox(const QRect& rect, const Face& face, const QSize& size, bool up)
         {
             const QRect padding = rect.marginsRemoved(face.m_margin + face.m_border);
-            QRect glyph = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignRight | Qt::AlignVCenter, GlyphSize, padding);
-            glyph.translate(-(up ? UpGlyphInset : DownGlyphInset), 0);
+            QRect box = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignRight | Qt::AlignVCenter, size, padding);
+            box.translate(-(up ? UpGlyphInset : DownGlyphInset), 0);
+            return box;
+        }
+
+        //! A button's glyph: the image centered in the rect the sheet's position gave the button
+        void paintGlyph(QPainter* painter, const QRect& rect, const Face& face, const QWidget* widget, bool up)
+        {
+            const QRect glyph = buttonBox(rect, face, GlyphSize, up);
             CachedIcon(QString::fromLatin1(glyphImage(widget, up))).paint(painter, glyph, Qt::AlignCenter);
         }
 
@@ -289,15 +308,38 @@ namespace AzQtComponents
             return qobject_cast<const QSpinBox*>(widget) || qobject_cast<const QDoubleSpinBox*>(widget);
         }
 
-        //! The box around the contents, alike in every state (the margin and the border of each face add up to the same): the face at
-        //! rest where the spin box is, and the rule's padding with the buttons' room on the right (none in a color picker)
-        QMargins contentsBox(const QWidget* widget)
+        //! The state the pseudo-classes read and the place the rules name: :hover needs :enabled
+        Look lookOf(const QStyleOptionSpinBox* option, const QWidget* widget)
         {
             Look look;
+            look.m_enabled = option->state.testFlag(QStyle::State_Enabled);
+            look.m_hover = look.m_enabled && option->state.testFlag(QStyle::State_MouseOver);
+            look.m_focus = option->state.testFlag(QStyle::State_HasFocus);
+            // The selector `[hasAcceptableInput=false]` compares the property as text (QStyleSheetStyleSelector::attributeValue): only
+            // the bool false, or the text "false", is that state
+            look.m_error = look.m_enabled
+                && (widget->property(HasError).toBool() || Selectors::hasProperty(widget, AcceptableInputProperty, "false"));
             look.m_vector = Selectors::withinClass(widget, "AzQtComponents::VectorElement");
             look.m_colorPicker = Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
+            return look;
+        }
+
+        //! The width of a button's box: the glyph's, and none in a color picker (the rule sets the width alone)
+        int buttonWidth(const Look& look)
+        {
+            return look.m_colorPicker ? PickerButtonWidth : GlyphSize.width();
+        }
+
+        //! The box around the contents in the state of the option: the margin and the border of the face the state gives (they add up to
+        //! the same in every face but the left of a vector element, where the error face puts back the 2px the vector rule took away),
+        //! the rule's padding, and the room of the buttons on the right. A spin box with NoButtons has no buttons to leave room for
+        //! (QStyleSheetStyle::subControlRect, CC_SpinBox: the widest button on each side; QStyleSheetStyle::sizeFromContents, CT_SpinBox)
+        QMargins contentsBox(const QStyleOptionSpinBox* option, const QWidget* widget)
+        {
+            const Look look = lookOf(option, widget);
             const Face face = faceOf(look);
-            const int buttons = (look.m_colorPicker ? 0 : GlyphSize.width()) + ButtonsPadding;
+            const bool hasButtons = option->buttonSymbols != QAbstractSpinBox::NoButtons;
+            const int buttons = (hasButtons ? buttonWidth(look) : 0) + ButtonsPadding;
             return face.m_margin + face.m_border + QMargins(Field::PaddingLeft, Field::PaddingTop, buttons, Field::PaddingBottom);
         }
     } // namespace SpinBoxElementInternal
@@ -315,20 +357,12 @@ namespace AzQtComponents
             return false;
         }
 
-        // The state the pseudo-classes read: :hover needs :enabled
-        Look look;
-        look.m_enabled = option->state.testFlag(QStyle::State_Enabled);
-        look.m_hover = look.m_enabled && option->state.testFlag(QStyle::State_MouseOver);
-        look.m_focus = option->state.testFlag(QStyle::State_HasFocus);
-        look.m_error = look.m_enabled && widget->property(HasError).toBool();
-        look.m_vector = Selectors::withinClass(widget, "AzQtComponents::VectorElement");
-        look.m_colorPicker = Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
-
+        const Look look = lookOf(option, widget);
         const Face face = faceOf(look);
         paintBox(painter, option->rect, face);
 
         // Each button is drawn when the option asks for it, as the sheet does: a spin box without buttons leaves them out of its
-        // subcontrols. A color picker's buttons are 0px wide (ColorPicker.qss), and none is drawn.
+        // subcontrols. A color picker's buttons are 0px wide (ColorPicker.qss:74-81), and none is drawn.
         if (!look.m_colorPicker)
         {
             if (option->subControls.testFlag(QStyle::SC_SpinBoxUp))
@@ -347,22 +381,54 @@ namespace AzQtComponents
     // Geometry
     // ----------------------------------------------------------------------------------
 
-    QSize SpinBoxElement::extraSize(const QWidget* widget)
+    QSize SpinBoxElement::extraSize(const QStyleOptionSpinBox* option, const QWidget* widget)
     {
-        if (!widget || !SpinBoxElementInternal::isSpinBox(widget))
+        if (!option || !widget || !SpinBoxElementInternal::isSpinBox(widget))
         {
             return QSize();
         }
-        const QMargins box = SpinBoxElementInternal::contentsBox(widget);
+        const QMargins box = SpinBoxElementInternal::contentsBox(option, widget);
         return QSize(box.left() + box.right(), box.top() + box.bottom());
     }
 
-    QRect SpinBoxElement::editFieldRect(const QRect& rect, const QWidget* widget)
+    QRect SpinBoxElement::editFieldRect(const QStyleOptionSpinBox* option, const QWidget* widget)
     {
-        if (!widget || !SpinBoxElementInternal::isSpinBox(widget))
+        if (!option || !widget || !SpinBoxElementInternal::isSpinBox(widget))
         {
             return QRect();
         }
-        return rect.marginsRemoved(SpinBoxElementInternal::contentsBox(widget));
+        return option->rect.marginsRemoved(SpinBoxElementInternal::contentsBox(option, widget));
+    }
+
+    QRect SpinBoxElement::buttonRect(const QStyleOptionSpinBox* option, bool up, const QWidget* widget)
+    {
+        using namespace SpinBoxElementInternal;
+
+        if (!option || !widget || !isSpinBox(widget))
+        {
+            return QRect();
+        }
+
+        // SpinBox.qss:76-99: the button rules give every spin box the position rect of a glyph box, in the padding box of the face of
+        // the state (the margin and the border of every face add up to the same on the right). ColorPicker.qss:74-81 sets the width of
+        // a picker's buttons to 0 over SpinBox.qss:81's and keeps the height, the position and the inset of SpinBox.qss:82-96.
+        // TOKENIZE: SpinButtonRect
+        const Look look = lookOf(option, widget);
+        return buttonBox(option->rect, faceOf(look), QSize(buttonWidth(look), GlyphSize.height()), up);
+    }
+
+    QRect SpinBoxElement::frameRect(const QStyleOptionSpinBox* option, const QWidget* widget)
+    {
+        using namespace SpinBoxElementInternal;
+
+        if (!option || !widget || !isSpinBox(widget))
+        {
+            return QRect();
+        }
+
+        // QRenderRule::borderRect of the rule of the state: the rect inside the margin (SpinBox.qss:13 margin 2px, :27 margin 1px
+        // for :hover and :focus, :62 margin 0px for an error)
+        // TOKENIZE: SpinFrameRect
+        return option->rect.marginsRemoved(faceOf(lookOf(option, widget)).m_margin);
     }
 } // namespace AzQtComponents

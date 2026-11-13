@@ -14,6 +14,8 @@
 
 #include <AzCore/Math/MathUtils.h>
 
+#include <QColor>
+
 namespace
 {
     inline void DrawTriangle(QPainter& painter, const AZStd::vector<QPointF>& points, uint16_t vert1, uint16_t vert2, uint16_t vert3)
@@ -30,6 +32,26 @@ namespace
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the blend space 2D widget: edges, grid, labels, polygons, points and the info text.
+    // Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace BlendSpace2DNodeWidgetFlat
+    {
+        constexpr QColor Edge(0xBB, 0xBB, 0xBB);                  // BlendSpace2DNodeWidget.cpp:59 TOKENIZE: BlendSpace2DEdge
+        constexpr QColor HighlightedEdge(0xF5, 0xA6, 0x23);       // BlendSpace2DNodeWidget.cpp:63 TOKENIZE: BlendSpace2DHighlightedEdge
+        constexpr QColor Grid(61, 61, 61);                        // BlendSpace2DNodeWidget.cpp:71 TOKENIZE: BlendSpace2DGrid
+        constexpr QColor Subgrid(55, 55, 55);                     // BlendSpace2DNodeWidget.cpp:72 TOKENIZE: BlendSpace2DSubgrid
+        constexpr QColor AxisLabel(0xBB, 0xBB, 0xBB);             // BlendSpace2DNodeWidget.cpp:74 TOKENIZE: BlendSpace2DAxisLabel
+        constexpr QColor InfoText(0xBB, 0xBB, 0xBB);              // BlendSpace2DNodeWidget.cpp:78 TOKENIZE: BlendSpace2DInfoText
+        constexpr QColor BackgroundRect(0xDD, 0xDD, 0xDD, 0x11);  // BlendSpace2DNodeWidget.cpp:82 TOKENIZE: BlendSpace2DBackgroundRect
+        constexpr QColor NormalPoly(0xF5, 0xA6, 0x23, 0x13);      // BlendSpace2DNodeWidget.cpp:86 TOKENIZE: BlendSpace2DNormalPoly
+        constexpr QColor HighlightedPoly(0xF5, 0xA6, 0x23, 0x26); // BlendSpace2DNodeWidget.cpp:90 TOKENIZE: BlendSpace2DHighlightedPoly
+        constexpr QColor Point(0xBB, 0xBB, 0xBB);                 // BlendSpace2DNodeWidget.cpp:94 TOKENIZE: BlendSpace2DPoint
+        constexpr QColor InterpolatedPoint(0xF5, 0xA6, 0x23);     // BlendSpace2DNodeWidget.cpp:98 TOKENIZE: BlendSpace2DInterpolatedPoint
+        constexpr QColor InfoTextBackground(0x22, 0x22, 0x22);    // BlendSpace2DNodeWidget.cpp:102 TOKENIZE: BlendSpace2DInfoTextBackground
+    } // namespace BlendSpace2DNodeWidgetFlat
+
     const int       BlendSpace2DNodeWidget::s_motionPointCircleWidth = 4;
     const int       BlendSpace2DNodeWidget::s_leftMargin = 40;
     const int       BlendSpace2DNodeWidget::s_rightMargin = 20;
@@ -56,11 +78,11 @@ namespace EMStudio
 
         QColor color;
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace2DNodeWidgetFlat::Edge;
         m_edgePen.setColor(color);
         m_edgePen.setWidth(1);
 
-        color.setRgb(0xF5, 0xA6, 0x23);
+        color = BlendSpace2DNodeWidgetFlat::HighlightedEdge;
         m_highlightedEdgePen.setColor(color);
         m_highlightedEdgePen.setWidth(2);
 
@@ -68,38 +90,38 @@ namespace EMStudio
         m_highlightedDottedPen.setWidthF(0.7);
         m_highlightedDottedPen.setStyle(Qt::DotLine);
 
-        m_gridPen.setColor(QColor(61, 61, 61));
-        m_subgridPen.setColor(QColor(55, 55, 55));
+        m_gridPen.setColor(BlendSpace2DNodeWidgetFlat::Grid);
+        m_subgridPen.setColor(BlendSpace2DNodeWidgetFlat::Subgrid);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace2DNodeWidgetFlat::AxisLabel;
         m_axisLabelPen.setColor(color);
         m_axisLabelPen.setWidth(2);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace2DNodeWidgetFlat::InfoText;
         m_infoTextPen.setColor(color);
         m_infoTextPen.setWidth(1);
 
-        color.setRgb(0xDD, 0xDD, 0xDD, 0x11);
+        color = BlendSpace2DNodeWidgetFlat::BackgroundRect;
         m_backgroundRectBrush.setColor(color);
         m_backgroundRectBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0xF5, 0xA6, 0x23, 0x13);
+        color = BlendSpace2DNodeWidgetFlat::NormalPoly;
         m_normalPolyBrush.setColor(color);
         m_normalPolyBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0xF5, 0xA6, 0x23, 0x26);
+        color = BlendSpace2DNodeWidgetFlat::HighlightedPoly;
         m_highlightedPolyBrush.setColor(color);
         m_highlightedPolyBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0xBB, 0xBB, 0xBB);
+        color = BlendSpace2DNodeWidgetFlat::Point;
         m_pointBrush.setColor(color);
         m_pointBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0xF5, 0xA6, 0x23);
+        color = BlendSpace2DNodeWidgetFlat::InterpolatedPoint;
         m_interpolatedPointBrush.setColor(color);
         m_interpolatedPointBrush.setStyle(Qt::SolidPattern);
 
-        color.setRgb(0x22, 0x22, 0x22);
+        color = BlendSpace2DNodeWidgetFlat::InfoTextBackground;
         m_infoTextBackgroundBrush.setColor(color);
         m_infoTextBackgroundBrush.setStyle(Qt::SolidPattern);
 

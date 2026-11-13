@@ -16,6 +16,7 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioFlatSheet.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/ObjectEditor.h>
@@ -404,7 +405,8 @@ namespace EMotionFX
         // Add the name label
         QWidget* nameWidget = new QWidget();
         QBoxLayout* nameLayout = new QHBoxLayout(nameWidget);
-        m_nameLeftLabel->setStyleSheet("font-weight: bold;");
+        m_nameLeftLabel->setObjectName(EMStudioFlat::BoldLabelName);
+        AzQtComponents::StyleManager::setLegacyStyleSheet(m_nameLeftLabel, "font-weight: bold;");
         nameLayout->addWidget(m_nameLeftLabel);
         nameLayout->addWidget(m_nameRightLabel);
         nameLayout->setStretchFactor(m_nameLeftLabel, 3);

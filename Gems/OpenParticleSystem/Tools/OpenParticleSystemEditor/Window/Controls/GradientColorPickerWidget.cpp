@@ -17,13 +17,23 @@
 
 namespace OpenParticleSystemEditor
 {
+    //=========================================================================
+    // GRADIENT COLOUR PICKER COLOURS (the outline of a gradient key marker)
+    //=========================================================================
+    namespace GradientColorPickerWidgetFlat
+    {
+        const QColor KeyIdle(Qt::gray);      // GradientColorPickerWidget.cpp:24. TOKENIZE: ParticleGradientKeyIdle
+        const QColor KeyHovered(Qt::yellow); // GradientColorPickerWidget.cpp:25. TOKENIZE: ParticleGradientKeyHovered
+        const QColor KeySelected(Qt::blue);  // GradientColorPickerWidget.cpp:26. TOKENIZE: ParticleGradientKeySelected
+    } // namespace GradientColorPickerWidgetFlat
+
     GradientColorPickerWidget::GradientColorPickerWidget(QWidget* parent)
         : QWidget(parent)
         , m_gradientWidget(new GradientWidget(this))
         , m_gradientSize(QSize(20, 12))
-        , m_colorInactive(Qt::gray)
-        , m_colorHovered(Qt::yellow)
-        , m_colorSelected(Qt::blue)
+        , m_colorInactive(GradientColorPickerWidgetFlat::KeyIdle)
+        , m_colorHovered(GradientColorPickerWidgetFlat::KeyHovered)
+        , m_colorSelected(GradientColorPickerWidgetFlat::KeySelected)
         , m_addKey(true)
     {
         setLayout(&m_layout);

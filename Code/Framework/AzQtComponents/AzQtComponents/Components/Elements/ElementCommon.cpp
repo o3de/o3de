@@ -109,6 +109,18 @@ namespace AzQtComponents
             }
             return false;
         }
+
+        bool withinTagged(const QWidget* widget, const char* tag)
+        {
+            for (const QWidget* ancestor = widget->parentWidget(); ancestor; ancestor = ancestor->parentWidget())
+            {
+                if (tagged(ancestor, tag))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     } // namespace Selectors
 
     // ----------------------------------------------------------------------------------

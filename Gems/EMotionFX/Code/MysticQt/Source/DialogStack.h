@@ -29,6 +29,11 @@ namespace AzQtComponents
 
 namespace MysticQt
 {
+    //! The object name of a dialog stack's splitters and the class tag of one below a closed dialog, which the flattened GUI's elements
+    //! read (EMStudioFlat, EMStudioFlatSheet.cpp). The legacy GUI sets a sheet of the splitter instead and ignores both.
+    inline constexpr const char* DialogStackSplitterName = "EMFXDialogStackSplitter";
+    inline constexpr const char* DialogStackClosedTag = "EMFXDialogStackClosed";
+
     class DialogStackSplitter;
 
     class MYSTICQT_API DialogStack

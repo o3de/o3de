@@ -15,10 +15,25 @@
 #include <QTime>
 #include <QMenu>
 #include <QScrollBar>
+#include <QColor>
 
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the log window paints its rows with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace LogWindowCallbackFlat
+    {
+        // The message colours are SVG colour names: "darkgray" is rgb(169, 169, 169), "orange" is rgb(255, 165, 0)
+        constexpr QColor TimeText(105, 105, 105);       // LogWindowCallback.cpp:84 TOKENIZE: LogWindowTimeText
+        const QColor FatalText("red");                  // LogWindowCallback.cpp:92 TOKENIZE: LogWindowFatalText
+        const QColor ErrorText("red");                  // LogWindowCallback.cpp:95 TOKENIZE: LogWindowErrorText
+        const QColor WarningText("orange");             // LogWindowCallback.cpp:98 TOKENIZE: LogWindowWarningText
+        const QColor DetailedInfoText("darkgray");      // LogWindowCallback.cpp:101 TOKENIZE: LogWindowDetailedInfoText
+        const QColor DebugText("yellow");               // LogWindowCallback.cpp:104 TOKENIZE: LogWindowDebugText
+    } // namespace LogWindowCallbackFlat
+
     // constructor
     LogWindowCallback::LogWindowCallback(QWidget* parent)
         : QTableWidget(parent)
@@ -81,7 +96,7 @@ namespace EMStudio
         const QTime currentTime = QTime::currentTime();
         const QString currentDateTimeString = currentTime.toString("[hh:mm:ss]");
         QTableWidgetItem* timeItem = new QTableWidgetItem(currentDateTimeString);
-        timeItem->setForeground(QColor(105, 105, 105));
+        timeItem->setForeground(LogWindowCallbackFlat::TimeText);
         QTableWidgetItem* messageItem = new QTableWidgetItem(text);
         messageItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         messageItem->setData(Qt::UserRole, (int)logLevel);
@@ -89,19 +104,19 @@ namespace EMStudio
         {
         // MCore::LogCallback::LOGLEVEL_INFO not needed because it uses the default color on this case
         case MCore::LogCallback::LOGLEVEL_FATAL:
-            messageItem->setForeground(QColor("red"));
+            messageItem->setForeground(LogWindowCallbackFlat::FatalText);
             break;
         case MCore::LogCallback::LOGLEVEL_ERROR:
-            messageItem->setForeground(QColor("red"));
+            messageItem->setForeground(LogWindowCallbackFlat::ErrorText);
             break;
         case MCore::LogCallback::LOGLEVEL_WARNING:
-            messageItem->setForeground(QColor("orange"));
+            messageItem->setForeground(LogWindowCallbackFlat::WarningText);
             break;
         case MCore::LogCallback::LOGLEVEL_DETAILEDINFO:
-            messageItem->setForeground(QColor("darkgray"));
+            messageItem->setForeground(LogWindowCallbackFlat::DetailedInfoText);
             break;
         case MCore::LogCallback::LOGLEVEL_DEBUG:
-            messageItem->setForeground(QColor("yellow"));
+            messageItem->setForeground(LogWindowCallbackFlat::DebugText);
             break;
         default:
             ;

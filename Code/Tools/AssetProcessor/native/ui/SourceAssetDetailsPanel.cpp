@@ -14,6 +14,8 @@
 #include "SourceAssetTreeModel.h"
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
+#include <native/ui/AssetDetailsPanelPalettes.h>
+#include <native/ui/FlatElements.h>
 #include <native/ui/GoToButtonDelegate.h>
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
@@ -28,6 +30,21 @@ namespace AssetProcessor
         , m_ui(new Ui::SourceAssetDetailsPanel)
     {
         m_ui->setupUi(this);
+
+        // The palette the form gave the separator line (SourceAssetDetailsPanel.ui:58-175): both rungs read the named colours
+        // (native/ui/AssetDetailsPanelPalettes.h)
+        m_ui->AssetDetailsSeparator->setPalette(SourceAssetDetailsPanelFlat::SeparatorPalette());
+
+        // The sheets the form gave the panel and its labels: the legacy GUI sets them here, the flattened GUI sets none, and its elements
+        // draw their look (native/ui/FlatElements.cpp, "The inline sheets"). MainWindow::Activate replaces the panel's own sheet by
+        // AssetProcessor.qss before the window is shown.
+        SetLegacySheet(this, InlineSheets::PanelFill);
+        SetLegacySheet(m_ui->assetNameLabel, InlineSheets::PointFont);
+        for (QLabel* label : { m_ui->scanFolderTitleLabel, m_ui->sourceGuidTitleLabel, m_ui->sourceAssetTitleLabel })
+        {
+            SetLegacySheet(label, InlineSheets::BoldFont);
+        }
+
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
         ResetText();
 

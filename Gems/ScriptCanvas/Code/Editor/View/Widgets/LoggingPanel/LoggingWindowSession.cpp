@@ -26,6 +26,14 @@
 
 namespace ScriptCanvasEditor
 {
+    //=========================================================================
+    // LOGGING WINDOW SESSION COLOURS (the glow on the node a log entry highlights)
+    //=========================================================================
+    namespace LoggingWindowSessionFlat
+    {
+        constexpr QColor HighlightGlow(243, 129, 29); // LoggingWindowSession.cpp:411. TOKENIZE: ScriptCanvasHighlightGlow
+    } // namespace LoggingWindowSessionFlat
+
     /////////////////////////////
     // LoggingWindowFilterModel
     /////////////////////////////
@@ -408,7 +416,7 @@ namespace ScriptCanvasEditor
             glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
             glowConfiguration.m_pen = QPen();
-            glowConfiguration.m_pen.setBrush(QColor(243, 129, 29));
+            glowConfiguration.m_pen.setBrush(LoggingWindowSessionFlat::HighlightGlow);
             glowConfiguration.m_pen.setWidth(5);
 
             glowConfiguration.m_pulseRate = AZStd::chrono::milliseconds(2500);

@@ -19,6 +19,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 
 
@@ -36,6 +37,14 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
+        //=========================================================================
+        // CANVAS WIDGET COLOURS (the dimming overlay over a disabled graph view)
+        //=========================================================================
+        namespace CanvasWidgetFlat
+        {
+            constexpr QColor DisabledGraphOverlay(0, 0, 0); // CanvasWidget.cpp:116. TOKENIZE: ScriptCanvasDisabledGraphOverlay
+        } // namespace CanvasWidgetFlat
+
         CanvasWidget::CanvasWidget(const SourceHandle& assetId, QWidget* parent)
             : QWidget(parent)
             , ui(new Ui::CanvasWidget())
@@ -63,7 +72,23 @@ namespace ScriptCanvasEditor
 
             QString styleSheet = QString("QFrame#graphicsViewFrame { background-color: rgb(%1,%2,%3) }").arg(defaultBorderColor.GetR8()).arg(defaultBorderColor.GetG8()).arg(defaultBorderColor.GetB8());
 
-            ui->graphicsViewFrame->setStyleSheet(styleSheet);
+            // The sheet is the legacy GUI's. The flattened GUI sets none and hands the colour to the frame's palette, as the sheet's
+            // background did (QRenderRule::configurePalette: Base, Button and the background role, Window): the frame fills itself with
+            // it (CanvasWidget.ui:46-48, autoFillBackground) around the graph view, in the 5px of the layout's margins
+            // (CanvasWidget.ui:61-77). The colour is the one the sheet printed, the 8 bit channels (GetR8 and the others cut the floats
+            // down). The callers pass SourceDescription::GetDisplayColor() (Core.h:328, at GraphTabBar.cpp:81 and :154). Not at the
+            // passthrough rung, where a widget leaves out what it sets on itself (StyleManager::flatStylingActive).
+            AzQtComponents::StyleManager::setLegacyStyleSheet(ui->graphicsViewFrame, styleSheet);
+            if (AzQtComponents::StyleManager::flatStylingActive())
+            {
+                const QColor frameColor(defaultBorderColor.GetR8(), defaultBorderColor.GetG8(), defaultBorderColor.GetB8());
+                QPalette palette = ui->graphicsViewFrame->palette();
+                for (const QPalette::ColorRole role : { QPalette::Base, QPalette::Button, QPalette::Window })
+                {
+                    palette.setColor(role, frameColor);
+                }
+                ui->graphicsViewFrame->setPalette(palette);
+            }
         }
 
         void CanvasWidget::ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
@@ -113,7 +138,7 @@ namespace ScriptCanvasEditor
 
                     occluderConfiguration.m_bounds = m_graphicsView->sceneRect();
                     occluderConfiguration.m_opacity = 0.5f;
-                    occluderConfiguration.m_renderColor = QColor(0, 0, 0);
+                    occluderConfiguration.m_renderColor = CanvasWidgetFlat::DisabledGraphOverlay;
                     occluderConfiguration.m_zValue = 100000;
 
                     GraphCanvas::SceneRequestBus::EventResult(m_disabledOverlay, graphCanvasSceneId, &GraphCanvas::SceneRequests::CreateOccluder, occluderConfiguration);

@@ -12,14 +12,33 @@
 #include <QPainter>
 #include <QStyledItemDelegate>
 
+//////////////////////////////////////////////////////////////////////////
+//  PREFERENCES TREE COLOURS
+//
+//  The colours the Preferences page tree's delegate paints its items with (it draws the backgrounds and the text itself), named so
+//  the legacy and the flattened GUI read one value. A named namespace, not an anonymous one: a unity build merges the anonymous
+//  namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace EditorPreferencesTreeWidgetItemDelegateFlat
+{
+    // EditorPreferencesTreeWidgetItemDelegate.cpp:21 (the fill of the item under the mouse). TOKENIZE: PreferencesTreeItemHover
+    constexpr QColor ItemHover(0x40, 0x40, 0x40);
+
+    // EditorPreferencesTreeWidgetItemDelegate.cpp:22 (the fill of the selected item). TOKENIZE: PreferencesTreeItemSelected
+    constexpr QColor ItemSelected(0x47, 0x47, 0x47);
+
+    // EditorPreferencesTreeWidgetItemDelegate.cpp:59 (the text of an item). TOKENIZE: PreferencesTreeItemText
+    constexpr QColor ItemText(255, 255, 255);
+} // namespace EditorPreferencesTreeWidgetItemDelegateFlat
+
 static const int IconX = 26;
 static const int TextX = 27;
 
 EditorPreferencesTreeWidgetItemDelegate::EditorPreferencesTreeWidgetItemDelegate(QWidget* parent)
     : QStyledItemDelegate(parent)
 {
-    m_mouseOverBrush = QBrush(QColor(0x40, 0x40, 0x40));
-    m_selectedBrush = QBrush(QColor(0x47, 0x47, 0x47));
+    m_mouseOverBrush = QBrush(EditorPreferencesTreeWidgetItemDelegateFlat::ItemHover);
+    m_selectedBrush = QBrush(EditorPreferencesTreeWidgetItemDelegateFlat::ItemSelected);
 }
 
 void EditorPreferencesTreeWidgetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -56,7 +75,7 @@ void EditorPreferencesTreeWidgetItemDelegate::paint(QPainter* painter, const QSt
     }
 
     const QString& text = index.data(Qt::DisplayRole).toString();
-    painter->setPen(Qt::white);
+    painter->setPen(EditorPreferencesTreeWidgetItemDelegateFlat::ItemText);
     const auto textRect = QRect{ TextX, vCenter - textHeight/2, option.rect.width() - TextX, textHeight };
     painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
 

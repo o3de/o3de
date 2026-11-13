@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StringIdPool.h>
 #include "../StandardPluginsConfig.h"
+#include <QColor>
 #include <QItemSelectionModel>
 #include <QPainter>
 #include <QModelIndex>
@@ -30,6 +31,15 @@ namespace EMotionFX
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the anim graph nodes start with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace GraphNodeFlat
+    {
+        inline constexpr QColor PortDefault(50, 150, 250);   // GraphNode.h:45 TOKENIZE: GraphNodePortDefault
+        inline constexpr QColor Border(0, 0, 0);             // GraphNode.h:198 TOKENIZE: GraphNodeDefaultBorder
+    } // namespace GraphNodeFlat
+
     // forward declarations
     class NodeConnection;
     class NodeGraph;
@@ -42,7 +52,7 @@ namespace EMStudio
 
     public:
         NodePort()
-            : m_isHighlighted(false)  { m_node = nullptr; m_nameId = MCORE_INVALIDINDEX32; m_color.setRgb(50, 150, 250); }
+            : m_isHighlighted(false)  { m_node = nullptr; m_nameId = MCORE_INVALIDINDEX32; m_color = GraphNodeFlat::PortDefault; }
 
         MCORE_INLINE void SetName(const char* name)         { m_nameId = MCore::GetStringIdPool().GenerateIdForString(name); OnNameChanged(); }
         MCORE_INLINE const char* GetName() const            { return MCore::GetStringIdPool().GetName(m_nameId).c_str(); }
@@ -195,7 +205,7 @@ namespace EMStudio
 
         const QColor& GetBorderColor() const                                                    { return m_borderColor; }
         void SetBorderColor(const QColor& color)                                                { m_borderColor = color; }
-        void ResetBorderColor()                                                                 { m_borderColor = QColor(0, 0, 0); }
+        void ResetBorderColor()                                                                 { m_borderColor = GraphNodeFlat::Border; }
 
         virtual void UpdateTextPixmap();
         static void RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect);

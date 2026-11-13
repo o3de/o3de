@@ -8,6 +8,10 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzQtComponents/Components/Elements/BoxElement.h>
+#include <AzQtComponents/Components/Elements/ElementCommon.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
@@ -21,6 +25,9 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = ViewportUiLeftRightBottomBorderSize;
+    //! The colour of the highlight border and of the label on its top edge: the sheets of CreateViewportBorder and InitializeUiOverlay
+    //! are built from it, and so is the fill the flattened GUI's elements read (ViewportUiDisplayFlatInternal::HighlightBorderFill).
+    //! ViewportUiDisplay.cpp:24. TOKENIZE: ViewportUiHighlightBorderFill
     const static char* const HighlightBorderColor = "#4A90E2";
     const static int HighlightBorderBackButtonIconSize = 20;
     const static char* const HighlightBorderBackButtonIconFile = "X_axis.svg";
@@ -69,6 +76,148 @@ namespace AzToolsFramework::ViewportUi::Internal
         return Qt::AlignTop;
     }
 
+    // ----------------------------------------------------------------------------------
+    // Flattened GUI: the highlight border
+    //
+    // The legacy GUI draws the border a viewport mode puts around the viewport with two sheets: one on the overlay
+    // (CreateViewportBorder, RemoveViewportBorder) and one on the label on top of its top edge (InitializeUiOverlay). The flattened
+    // GUI sets neither (StyleManager::setLegacyStyleSheet), and these elements draw what they drew.
+    //
+    // The toolbars of the viewport UI, the clusters and the switcher, need no element: their sheet (PrepareWidgetForViewportUi,
+    // `QToolBar { border: none; }`) only took the bottom border `MainWindow QToolBar` gives a toolbar of the Editor's main window
+    // away (ToolBar.qss:31-34), and a viewport sits below a DockMainWindow, whose toolbars have none (ToolBar.qss:36-39). Style
+    // draws such a toolbar as ToolBar.qss does: the fill of ToolBar.qss:20 (ControlElements::drawToolBarPanel) and the padding
+    // of ToolBar.qss:28 (Style::polish). The switcher's spacing is its own (ViewportUiSwitcher.cpp).
+    //
+    // Not carried: a viewport toolbar below a MainWindow but outside an AzQtComponents::DockMainWindow. The sheet's `border: none`
+    // cancelled the 2px bottom line of `MainWindow QToolBar` there (ToolBar.qss:33), and drawToolBarPanel draws that line, as the
+    // viewport toolbars have no element. The Editor's viewport always sits below a DockMainWindow, and nothing else in the engine
+    // uses the viewport UI. If it is ever reached, drawToolBarPanel prefers the toolbar's BoxElement, and the viewport toolbars get
+    // one (fill #444444, no border).
+    // ----------------------------------------------------------------------------------
+
+    //! Everything private to this file. A named namespace, not an anonymous one: a unity build joins files into one translation
+    //! unit, where anonymous namespaces merge.
+    namespace ViewportUiDisplayFlatInternal
+    {
+        // ------------------------------------------------------------------------------
+        // Values
+        // ------------------------------------------------------------------------------
+
+        //! The dynamic property of the overlay that says the highlight border is shown: the flattened GUI's form of the sheet that
+        //! CreateViewportBorder sets on the overlay and RemoveViewportBorder replaces
+        constexpr const char* BorderProperty = "viewportBorder";
+
+        //! The dynamic property of the label on the border's top edge that says it is the label the sheet of InitializeUiOverlay
+        //! reached: the flattened GUI's form of setting that sheet on that one label
+        constexpr const char* BorderTextProperty = "viewportBorderText";
+
+        //! The colour of the border and of the label on it: HighlightBorderColor (`#4A90E2`), the colour of
+        //! `#ViewportUiOverlay { border }` (CreateViewportBorder) and of the label's `background-color` (InitializeUiOverlay). The
+        //! sheets are built from the same constant, so the colour has one source.
+        const QColor HighlightBorderFill(HighlightBorderColor);
+
+        //! `border: %1px solid %2` of CreateViewportBorder: the left, right and bottom edges, HighlightBorderSize wide
+        //! (ViewportUiLeftRightBottomBorderSize, ViewportUiDisplayLayout.h:29). TOKENIZE: ViewportUiHighlightBorderSideSize
+        const AzQtComponents::BoxElement::Edge BorderSideLine{ HighlightBorderSize, HighlightBorderFill };
+
+        //! `border-top: %3px solid %4` of CreateViewportBorder: the top edge, ViewportUiTopBorderSize wide
+        //! (ViewportUiDisplayLayout.h:27). TOKENIZE: ViewportUiHighlightBorderTopSize
+        const AzQtComponents::BoxElement::Edge BorderTopLine{ ViewportUiTopBorderSize, HighlightBorderFill };
+
+        // ------------------------------------------------------------------------------
+        // Elements
+        // ------------------------------------------------------------------------------
+
+        //! `#ViewportUiOverlay { border: ...; border-top: ... }` while the border is shown (CreateViewportBorder): the four edges, and
+        //! no fill (the overlay is transparent, BaseStyleSheet.qss:17), over the overlay's plain widget. The border is a border of its
+        //! own, so the style draws no frame of its own.
+        const AzQtComponents::BoxElement HighlightBorder{
+            .m_name = "Editor.Box.ViewportUiHighlightBorder",
+            .m_nativeBorder = false,
+            .m_idle = {
+                .m_edges = { BorderTopLine, BorderSideLine, BorderSideLine, BorderSideLine },       // top, right, bottom, left
+            },
+        };
+
+        //! `background-color; border: none` of the label on the border's top edge (InitializeUiOverlay), over the box of every label
+        //! (`QLabel { margin-top: 1px; margin-bottom: 1px }`, Text.qss:93-94): an element is the whole definition of its frame, so it
+        //! carries that margin, which Style gives a label without one (Style::subElementRect, SE_ShapedFrameContents). `border: none`
+        //! is a border of its own, none.
+        const AzQtComponents::BoxElement HighlightBorderText{
+            .m_name = "Editor.Box.ViewportUiHighlightBorderText",
+            .m_margin = QMargins(0, AzQtComponents::Foundations::Label::MarginV, 0, AzQtComponents::Foundations::Label::MarginV),
+            .m_nativeBorder = false,
+            .m_idle = {
+                .m_fill = QBrush(HighlightBorderFill),
+            },
+        };
+
+        // ------------------------------------------------------------------------------
+        // Matchers: the selectors that gave each sheet its widgets
+        // ------------------------------------------------------------------------------
+
+        //! `#ViewportUiOverlay`, the overlay of a viewport UI, while its highlight border is shown
+        bool isHighlightBorder(const QWidget* widget)
+        {
+            return AzQtComponents::Selectors::named(widget, "ViewportUiOverlay")
+                && AzQtComponents::Selectors::within(widget, "ViewportUiWindow")
+                && AzQtComponents::Selectors::hasProperty(widget, BorderProperty, "true");
+        }
+
+        //! The label the sheet of InitializeUiOverlay reached: the sheet was set on that one label, so the label says so
+        //! (markHighlightBorderText), and a label added to the overlay later is not taken for it
+        bool isHighlightBorderText(const QWidget* widget)
+        {
+            // The parent's name first: one step, where the property read would run for every label of the Editor
+            return AzQtComponents::Selectors::childOf(widget, "ViewportUiOverlay")
+                && AzQtComponents::Selectors::hasProperty(widget, BorderTextProperty, "true")
+                && AzQtComponents::Selectors::within(widget, "ViewportUiWindow");
+        }
+
+        // ------------------------------------------------------------------------------
+        // The state of the border and of its label
+        // ------------------------------------------------------------------------------
+
+        //! The flattened GUI's half of the sheet InitializeUiOverlay sets on the label of the border: the label says it is the one.
+        //! Nothing has shown or polished the label when this runs, so its element is resolved at its first polish.
+        void markHighlightBorderText(QWidget& label)
+        {
+            if (AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                label.setProperty(BorderTextProperty, true);
+            }
+        }
+
+        //! The flattened GUI's half of CreateViewportBorder and RemoveViewportBorder, which the legacy GUI does by setting a sheet on
+        //! the overlay: the overlay says whether the border is shown, and resolves its element again (the overlay is polished before a
+        //! mode asks for a border)
+        void setHighlightBorderShown(QWidget& overlay, bool shown)
+        {
+            if (!AzQtComponents::StyleManager::stylesheetsDisabled())
+            {
+                return;
+            }
+            overlay.setProperty(BorderProperty, shown);
+            AzQtComponents::BoxElement::resolve(&overlay);
+            overlay.update();
+        }
+    } // namespace ViewportUiDisplayFlatInternal
+
+    void ViewportUiDisplay::RegisterFlatElements()
+    {
+        static bool registered = false;
+        if (!registered)
+        {
+            registered = true;
+            namespace Flat = ViewportUiDisplayFlatInternal;
+            using AzQtComponents::BoxElement;
+            // The overlay's selector names no type (`#ViewportUiOverlay` reaches any widget of that name): it is a plain widget
+            BoxElement::registerElement(&Flat::HighlightBorder, &QWidget::staticMetaObject, &Flat::isHighlightBorder);
+            BoxElement::registerElement(&Flat::HighlightBorderText, &QLabel::staticMetaObject, &Flat::isHighlightBorderText);
+        }
+    }
+
     ViewportUiDisplay::ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay)
         : m_renderOverlay(renderOverlay)
         , m_uiMainWindow(parent)
@@ -79,6 +228,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_viewportBorderBackButton(&m_uiOverlay)
     {
         AzFramework::ViewportImGuiNotificationBus::Handler::BusConnect();
+
+        if (AzQtComponents::StyleManager::stylesheetsDisabled())
+        {
+            RegisterFlatElements();
+        }
     }
 
     ViewportUiDisplay::~ViewportUiDisplay()
@@ -332,10 +486,14 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::CreateViewportBorder(
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
-        m_uiOverlay.setStyleSheet(QString("#ViewportUiOverlay { border: %1px solid %2; border-top: %3px solid %4; }")
-                                      .arg(
-                                          QString::number(HighlightBorderSize), HighlightBorderColor,
-                                          QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
+        // The legacy GUI draws the border with a sheet on the overlay, the flattened GUI with its element (RegisterFlatElements)
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            &m_uiOverlay,
+            QString("#ViewportUiOverlay { border: %1px solid %2; border-top: %3px solid %4; }")
+                .arg(
+                    QString::number(HighlightBorderSize), HighlightBorderColor, QString::number(ViewportUiTopBorderSize),
+                    HighlightBorderColor));
+        ViewportUiDisplayFlatInternal::setHighlightBorderShown(m_uiOverlay, true);
 
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
 
@@ -371,7 +529,8 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_viewportBorderText.hide();
-        m_uiOverlay.setStyleSheet("#ViewportUiOverlay { border: none; }");
+        AzQtComponents::StyleManager::setLegacyStyleSheet(&m_uiOverlay, QString("#ViewportUiOverlay { border: none; }"));
+        ViewportUiDisplayFlatInternal::setHighlightBorderShown(m_uiOverlay, false);
         m_uiOverlayLayout.setContentsMargins(ViewportElementMargins());
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
@@ -430,7 +589,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.addLayout(&m_uiOverlayLayout, 0, 0, 1, 1);
 
         // style the label which will appear on top of the highlight border
-        m_viewportBorderText.setStyleSheet(QString("background-color: %1; border: none").arg(HighlightBorderColor));
+        AzQtComponents::StyleManager::setLegacyStyleSheet(
+            &m_viewportBorderText, QString("background-color: %1; border: none").arg(HighlightBorderColor));
+        ViewportUiDisplayFlatInternal::markHighlightBorderText(m_viewportBorderText);
         m_viewportBorderText.setFixedHeight(ViewportUiTopBorderSize);
         m_viewportBorderText.hide();
         m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
@@ -466,7 +627,17 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
         widget->setParent(&m_uiOverlay);
         // A bare "border: none;" cascades to child tool buttons and makes Qt skip the checked highlight, so scope toolbars to themselves.
-        widget->setStyleSheet(qobject_cast<QToolBar*>(widget) ? "QToolBar { border: none; }" : "border: none;");
+        if (qobject_cast<QToolBar*>(widget))
+        {
+            // The toolbars of the flattened GUI are drawn by Style as ToolBar.qss draws them (see the flat section above)
+            AzQtComponents::StyleManager::setLegacyStyleSheet(widget, QString("QToolBar { border: none; }"));
+        }
+        else
+        {
+            // A text field. Abandoned: nothing in the engine creates one (CreateTextField has no caller), so it has no flattened
+            // element and both GUIs set this sheet.
+            widget->setStyleSheet("border: none;");
+        }
     }
 
     void ViewportUiDisplay::SetUiOverlayContents(QPointer<QWidget> widget)

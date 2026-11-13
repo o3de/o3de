@@ -18,12 +18,24 @@
 #include <AzQtComponents/Components/FancyDocking.h>
 
 #include <QByteArray>
+#include <QColor>
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
 
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours of the layout save notification texts: the word that says the save worked or failed.
+    // Each was written in the text at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace LayoutManagerFlat
+    {
+        // The HTML colour name green is rgb(0, 128, 0), unlike Qt::green
+        constexpr QColor SaveSuccessText(0, 128, 0);    // LayoutManager.cpp:61 TOKENIZE: LayoutManagerSaveSuccessText
+        constexpr QColor SaveFailureText(255, 0, 0);    // LayoutManager.cpp:71 TOKENIZE: LayoutManagerSaveFailureText
+    } // namespace LayoutManagerFlat
+
     LayoutManager::LayoutManager()
     {
         m_isSwitching = false;
@@ -58,7 +70,8 @@ namespace EMStudio
             GetMainWindow()->UpdateLayoutsMenu();
 
             MCore::LogInfo("Successfully saved layout to file '%s'", filename.c_str());
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS, "Layout <font color=green>successfully</font> saved");
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
+                QString("Layout <font color=%1>successfully</font> saved").arg(LayoutManagerFlat::SaveSuccessText.name()));
         }
         else
         {
@@ -68,7 +81,8 @@ namespace EMStudio
             GetCommandManager()->AddError(errorMessage.c_str());
             GetCommandManager()->ShowErrorReport();
 
-            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR, "Layout <font color=red>failed</font> to save");
+            GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
+                QString("Layout <font color=%1>failed</font> to save").arg(LayoutManagerFlat::SaveFailureText.name()));
         }
 
         m_inputDialog->close();

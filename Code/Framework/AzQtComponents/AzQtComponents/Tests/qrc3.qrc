@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/EMotionFX">
+        <file alias="Visualization.svg">qrc3/Visualization.svg</file>
+        <file alias="VisualizationHidden.svg">qrc3/VisualizationHidden.svg</file>
+    </qresource>
+</RCC>

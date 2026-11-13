@@ -66,6 +66,16 @@ namespace AtomToolsFramework
             QWidget* parent = nullptr);
         ~GraphView();
 
+        //! Flattened GUI only (AzQtComponents::StyleManager::stylesheetsDisabled): registers the flat sheet of GraphView.qss with
+        //! the StyleManager, which runs RegisterFlatElements when that sheet is first set on a widget (the legacy GUI sets the sheet
+        //! and never runs it). The view calls it before it sets the sheet on its palettes, and the main window of each graph tool
+        //! before it sets the sheet on itself; once is enough, and the order of the calls does not matter.
+        static void RegisterFlatSheet();
+
+        //! Flattened GUI only: registers the elements that carry what GraphView.qss gave the node palettes of the graph tools. Once
+        //! is enough. Public for the tests; the product reaches it through RegisterFlatSheet.
+        static void RegisterFlatElements();
+
         // Assign the graph ID that will be rendered and edited within the view. Any connected buses will be disconnected from the old ID
         // before connecting to the new one.
         // @param activeGraphId ID of the graph that will be managed by this view. If the ID is invalid then the view will be cleared.

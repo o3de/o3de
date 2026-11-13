@@ -170,6 +170,10 @@ namespace GraphCanvas
     private:
         CommentTextGraphicsWidget(const CommentTextGraphicsWidget&) = delete;
 
+        //! Flattened GUI: the rows that pick the looks of the editor of a comment or a group title (CommentTextEditFlat.h) by the tags
+        //! UpdateStyles gives it, where the legacy GUI sets the sheet UpdateStyles builds. SetupProxyWidget registers them, once.
+        static void RegisterFlatElements();
+
         CommentMode m_commentMode;
         AZStd::string m_commentText;
 

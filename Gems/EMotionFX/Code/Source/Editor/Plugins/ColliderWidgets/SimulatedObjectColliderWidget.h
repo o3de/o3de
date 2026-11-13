@@ -12,6 +12,7 @@
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <QColor>
 #include <QPushButton>
 
 namespace Physics
@@ -21,6 +22,14 @@ namespace Physics
 
 namespace EMotionFX
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colour the simulated object collider card underlines itself with. It was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace SimulatedObjectColliderWidgetFlat
+    {
+        inline const QColor Underline{ "#1ad092" };   // SimulatedObjectColliderWidget.h:37 TOKENIZE: SimulatedObjectColliderCardUnderline
+    } // namespace SimulatedObjectColliderWidgetFlat
+
     class AddColliderButton;
     class ColliderContainerWidget;
     class NotificationWidget;
@@ -34,7 +43,7 @@ namespace EMotionFX
         SimulatedObjectColliderWidget(QWidget* parent = nullptr);
 
         QString GetCardTitle() const override { return "Object Collider "; }
-        QColor GetColor() const override { return QColor{"#1ad092"}; }
+        QColor GetColor() const override { return SimulatedObjectColliderWidgetFlat::Underline; }
 
         int WidgetCount() const override;
 

@@ -14,6 +14,8 @@ set(FILES
     Tests/EditorTestUtilities.cpp
     Tests/EditorTestUtilities.h
     Tests/PhysXEditorTest.cpp
+    Tests/PhysXFlatSheetTests.cpp
+    Tests/KinematicDescriptionDialogFlatSheetTests.cpp
     Tests/PolygonPrismMeshUtilsTest.cpp
     Tests/PhysXColliderComponentModeTests.cpp
     Tests/PhysXMeshColliderComponentModeTests.cpp

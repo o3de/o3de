@@ -28,6 +28,7 @@ AZ_POP_DISABLE_WARNING
 #include <QWidget>
 
 #include <AzQtComponents/Components/AutoCustomWindowDecorations.h>
+#include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/GuiPerfCounters.h>
 #include <AzQtComponents/Components/GuiPerfFloor.h>
 #include <AzQtComponents/Components/Style.h>
@@ -113,6 +114,23 @@ namespace AzQtComponents
             static QHash<QString, FlatSheet> sheets;
             return sheets;
         }
+
+        //! The sheet a sample page's widget gets for the file's text (setSampleStyleSheet). The legacy GUI sets the file's text as it is.
+        //! The flattened GUI sets it behind the margin that the application's sheet gives every label (Text.qss:93-94, `QLabel
+        //! { margin-top: 1px; margin-bottom: 1px; }`): the legacy GUI draws a label's fill from the sample's sheet inside that margin
+        //! (the rule is one, and a fill is drawn in the border box of the rule's margin: QRenderRule::drawBackground), and the sample's
+        //! sheet alone, with no application sheet to give the margin, would fill the label up to its edges. The margin comes first so
+        //! that a margin of the sample's own, which outranked the application's in the legacy GUI, outranks it here.
+        //! TOKENIZE: LabelMargin
+        QString sampleSheetText(const QString& fileText)
+        {
+            if (!areStyleSheetsDisabled())
+            {
+                return fileText;
+            }
+            const int margin = Foundations::Label::MarginV;
+            return QStringLiteral("QLabel { margin-top: %1px; margin-bottom: %1px; }\n").arg(margin) + fileText;
+        }
     } // namespace StyleManagerInternal
 
     void StyleManager::addSearchPaths(
@@ -128,6 +146,16 @@ namespace AzQtComponents
     }
 
     bool StyleManager::setStyleSheet(QWidget* widget, QString styleFileName)
+    {
+        return setFileStyleSheet(widget, styleFileName, true);
+    }
+
+    bool StyleManager::setSampleStyleSheet(QWidget* widget, QString styleFileName)
+    {
+        return setFileStyleSheet(widget, styleFileName, false);
+    }
+
+    bool StyleManager::setFileStyleSheet(QWidget* widget, QString styleFileName, bool carriedByElements)
     {
         if (!s_instance)
         {
@@ -153,8 +181,8 @@ namespace AzQtComponents
         }
 
         // The flattened GUI sets no sheet. The file is resolved as legacy resolved it (a sheet it never found
-        // replaced nothing), and the widget's own sheet goes as the file's replaced it.
-        if (areStyleSheetsDisabled())
+        // replaced nothing), and the widget's own sheet goes as the file's replaced it. A sample page's sheet is set in both.
+        if (carriedByElements && areStyleSheetsDisabled())
         {
             applyFlatSheet(widget, styleFileName);
             return false;
@@ -164,7 +192,7 @@ namespace AzQtComponents
 
         connect(widget, &QObject::destroyed, s_instance, &StyleManager::stopTrackingWidget, Qt::UniqueConnection);
 
-        widget->setStyleSheet(styleSheet);
+        widget->setStyleSheet(StyleManagerInternal::sampleSheetText(styleSheet));
 
         return true;
     }
@@ -221,6 +249,16 @@ namespace AzQtComponents
         }
     }
 
+    void StyleManager::setLegacyStyleSheet(QWidget* widget, const QString& styleSheet)
+    {
+        // The flattened GUI's elements carry the look: no sheet, so no QStyleSheetStyle and no setStyleSheet cost
+        if (areStyleSheetsDisabled())
+        {
+            return;
+        }
+        widget->setStyleSheet(styleSheet);
+    }
+
     QStyle* StyleManager::styleSheetStyle(const QWidget* widget)
     {
         Q_UNUSED(widget);
@@ -275,7 +313,6 @@ namespace AzQtComponents
         return true;
     }
 
-
     StyleManager::StyleManager(QObject* parent)
         : QObject(parent)
         , m_stylesheetPreprocessor(new StylesheetPreprocessor(this))
@@ -321,6 +358,10 @@ namespace AzQtComponents
         // titlebar overdraw handler has been initialized.
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
+
+        // The gate the Python tools read (FlatGuiProperty): set while the flattened GUI is in effect, absent in the legacy GUI (a null
+        // variant removes the dynamic property, so a second application of a test process starts clean)
+        application->setProperty(FlatGuiProperty, areStyleSheetsDisabled() ? QVariant(true) : QVariant());
 
         if (areStyleSheetsDisabled())
         {
@@ -429,15 +470,16 @@ namespace AzQtComponents
         {
             const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
             qApp->setStyleSheet(globalStyleSheet);
+        }
 
-            // Iterate widgets and update the stylesheet (the base style has already been set)
-            auto i = m_widgetToStyleSheetMap.constBegin();
-            while (i != m_widgetToStyleSheetMap.constEnd())
-            {
-                const auto styleSheet = m_stylesheetCache->loadStyleSheet(i.value());
-                i.key()->setStyleSheet(styleSheet);
-                ++i;
-            }
+        // Iterate widgets and update the stylesheet (the base style has already been set). The flattened GUI tracks the sample
+        // pages' sheets alone (setSampleStyleSheet), and reloads them as the legacy GUI reloads its own.
+        auto i = m_widgetToStyleSheetMap.constBegin();
+        while (i != m_widgetToStyleSheetMap.constEnd())
+        {
+            const auto styleSheet = m_stylesheetCache->loadStyleSheet(i.value());
+            i.key()->setStyleSheet(StyleManagerInternal::sampleSheetText(styleSheet));
+            ++i;
         }
 
         // QMessageBox uses "QMdiSubWindowTitleBar" class to query the titlebar font

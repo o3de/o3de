@@ -50,6 +50,10 @@ namespace AtomToolsFramework
         void SelectPath(const AZStd::string& path);
         AZStd::string GetSelectedPath() const;
 
+        //! Flattened GUI only (AzQtComponents::StyleManager::stylesheetsDisabled): registers the element that draws the fill the
+        //! sheet of a tile's header gave it, which the flattened GUI does not set (AddPath). The constructor calls it; once is enough.
+        static void RegisterFlatElements();
+
     Q_SIGNALS:
         void PathSelected(const AZStd::string& path);
         void PathRejected();

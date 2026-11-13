@@ -15,6 +15,20 @@
 // Editor
 #include "Util/ColumnGroupProxyModel.h"
 
+//////////////////////////////////////////////////////////////////////////
+//  COLUMN GROUP STRIP COLOURS
+//
+//  The colours of the strip drawn above a table header, named so the legacy and the flattened GUI read one value. A named namespace,
+//  not an anonymous one: a unity build merges the anonymous namespaces of a target's files.
+//////////////////////////////////////////////////////////////////////////
+namespace ColumnGroupHeaderViewFlat
+{
+    // ColumnGroupHeaderView.cpp:66 (the fill of the strip). TOKENIZE: ColumnGroupStripFill
+    constexpr QColor StripFill(145, 145, 145);
+
+    // ColumnGroupHeaderView.cpp:82 (the lines that join a group to its column). TOKENIZE: ColumnGroupStripLine
+    constexpr QColor StripLine(0, 0, 0);
+} // namespace ColumnGroupHeaderViewFlat
 
 ColumnGroupHeaderView::ColumnGroupHeaderView(QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)
@@ -63,7 +77,7 @@ bool ColumnGroupHeaderView::event(QEvent* event)
         }
 
         QPainter painter(this);
-        painter.fillRect(rect(), QColor(145, 145, 145));
+        painter.fillRect(rect(), ColumnGroupHeaderViewFlat::StripFill);
         int xOffset = 10;
         int yOffset = 10;
 
@@ -79,7 +93,7 @@ bool ColumnGroupHeaderView::event(QEvent* event)
 
             if (column != groups.last())
             {
-                painter.setPen(Qt::black);
+                painter.setPen(ColumnGroupHeaderViewFlat::StripLine);
                 painter.drawLine(r.bottomRight() + QPoint(-3, 0), r.bottomRight() + QPoint(-3, 3));
                 painter.drawLine(r.bottomRight() + QPoint(-3, 3), r.bottomRight() + QPoint(10, 3));
             }

@@ -18,8 +18,19 @@
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 
+#include <QColor>
+
 namespace EMStudio
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Colours the anim graph visual node paints with. Each was a literal at the line it cites.
+    //////////////////////////////////////////////////////////////////////////
+    namespace AnimGraphVisualNodeFlat
+    {
+        constexpr QColor TrackPlayedFill(255, 255, 255, 32);   // AnimGraphVisualNode.cpp:102 TOKENIZE: AnimGraphTrackPlayedFill
+        const QColor TrackPlayTimeLine(Qt::yellow);            // AnimGraphVisualNode.cpp:141 TOKENIZE: AnimGraphTrackPlayTimeLine
+    } // namespace AnimGraphVisualNodeFlat
+
     // constructor
     AnimGraphVisualNode::AnimGraphVisualNode(const QModelIndex& modelIndex, AnimGraphPlugin* plugin, EMotionFX::AnimGraphNode* node)
         : GraphNode(modelIndex, node->GetName(), 0, 0)
@@ -99,7 +110,7 @@ namespace EMStudio
         playRect.setLeft(rect.left() + 1);
         playRect.setTop(rect.top() + 1);
         playRect.setBottom(rect.bottom() - 1);
-        painter.setBrush(QColor(255, 255, 255, 32));
+        painter.setBrush(AnimGraphVisualNodeFlat::TrackPlayedFill);
         painter.setPen(Qt::NoPen);
         painter.drawRect(playRect);
 
@@ -138,7 +149,7 @@ namespace EMStudio
         }
 
         // draw the current play time
-        painter.setPen(Qt::yellow);
+        painter.setPen(AnimGraphVisualNodeFlat::TrackPlayTimeLine);
         x = aznumeric_cast<int32>(rect.left() + 1 + (rect.width() - 2) * (m_emfxNode->GetCurrentPlayTime(animGraphInstance) / duration));
         painter.drawLine(x, rect.top() + 1, x, rect.bottom());
     }

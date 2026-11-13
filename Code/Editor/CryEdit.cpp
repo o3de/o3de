@@ -1563,6 +1563,9 @@ bool CCryEditApp::InitInstance()
         engineRootPath);
     // The flattened GUI carries the sheet as elements: this runs when the sheet is first set on a widget
     AzQtComponents::StyleManager::registerFlatSheet(QStringLiteral("style:Editor.qss"), &EditorFlatSheet::RegisterElements);
+    // The sheet a dialog sets on itself (EditorPreferencesDialog.cpp:99)
+    AzQtComponents::StyleManager::registerFlatSheet(
+        QStringLiteral("style:EditorPreferencesDialog.qss"), &EditorFlatSheet::RegisterPreferencesDialogElements);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
     // Connect to the AssetProcessor at this point

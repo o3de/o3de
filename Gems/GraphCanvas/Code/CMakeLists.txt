@@ -117,6 +117,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     Gem::${gem_name}Widgets
+                    3rdParty::Qt::Core
+                    3rdParty::Qt::Gui
+                    3rdParty::Qt::Widgets
+                    3rdParty::Qt::Test
+                    AZ::AzQtComponents
         )
         ly_add_googletest(
             NAME Gem::${gem_name}.Tests

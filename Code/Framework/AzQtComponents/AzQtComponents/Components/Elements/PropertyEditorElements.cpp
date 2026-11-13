@@ -11,11 +11,15 @@
 #include <AzQtComponents/Components/Elements/Foundations.h>
 #include <AzQtComponents/Components/Elements/IndicatorElement.h>
 #include <AzQtComponents/Components/Elements/TextElement.h>
+#include <AzQtComponents/Components/Elements/ToolTipElement.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QBrush>
 #include <QCheckBox>
+#include <QFrame>
 #include <QLabel>
 #include <QMargins>
 #include <QPushButton>
@@ -66,6 +70,20 @@ namespace AzQtComponents
         constexpr const char* ContextMenuPlusIcon = ":/Gallery/Add.svg";    // Card.qss:241 $asset.button.idle.icon.Alt7
         // Card.qss:245-246 $size.button.idle.max-width.Alt14 $size.button.idle.max-height.Alt5
         constexpr QSize ContextMenuPlusMaxSize(18, 18);
+
+        // ---- The widgets below a card header that no rule of their own names, and the tips of a modified header
+        const QColor HeaderBodyFill(0x55, 0x55, 0x55);              // Card.qss:88 TOKENIZE: CardHeaderBodyFill
+        const QColor ModifiedTextColor(0xE5, 0x78, 0x29);           // Card.qss:174 TOKENIZE: CardModifiedTextColor
+        constexpr int ToolTipTextSize = 12;                         // ToolTip.qss:16 TOKENIZE: CardModifiedToolTipTextSize
+
+        // ---- The notification of a card: a block holding a header frame, which holds the icon and the message in a rounded pill
+        const QColor NotificationFill(0x55, 0x55, 0x55);            // Card.qss:53 TOKENIZE: CardNotificationFill
+        // Card.qss:54, :60 TOKENIZE: CardNotificationSpacing (a frame has nothing to space: the rule only gets a box of it)
+        constexpr int NotificationSpacing = 4;
+        // Card.qss:59 TOKENIZE: CardNotificationHeaderPadding
+        constexpr QMargins NotificationHeaderPadding(8, 0, 8, 0);
+        const QColor NotificationPillFill(0x44, 0x44, 0x44);        // Card.qss:67 TOKENIZE: CardNotificationPillFill
+        constexpr int NotificationPillRadius = 3;                   // Card.qss:68 TOKENIZE: CardNotificationPillRadius
 
         // ------------------------------------------------------------------------------
         // Elements
@@ -210,6 +228,69 @@ namespace AzQtComponents
             },
         };
 
+        //! AzQtComponents--CardHeader * (Card.qss:86-89) on a frame below a header that no rule of its own names: filled #555555, as
+        //! the rule fills it over the header's own fill. The background frame of a header names itself (#Background, Card.qss:91-99,
+        //! which is transparent); EMotionFX's RagdollCardHeader clears that name (RagdollNodeWidget.cpp:37), so the frame has the fill
+        //! of the rule that reaches every widget. A frame has no margin or padding of its own, and no rule gives it any.
+        const BoxElement CardHeaderFrame{
+            .m_name = "Global.Box.CardHeaderFrame",
+            .m_idle = {
+                .m_fill = QBrush(HeaderBodyFill),
+            },
+        };
+
+        //! The text of a tip shown for a widget of a modified card header: `CardHeader[contentModified=true] * { color: #E57829 }`
+        //! (Card.qss:172-175) reaches the tip through the widget it is shown for (QStyleSheetStyle::styleRules, `_q_stylesheet_parent`),
+        //! with a specificity over QToolTip's (ToolTip.qss:12). The tip keeps the font of the QToolTip rule (ToolTip.qss:16, :19) and the
+        //! weight of '*' (BaseStyleSheet.qss:20), which this element restates: it replaces the tooltip class element whole.
+        const TextElement CardHeaderModifiedToolTipText{
+            .m_name = "Global.Text.CardHeaderModifiedToolTip",
+            .m_pixelSize = ToolTipTextSize,
+            .m_color = ModifiedTextColor,
+        };
+
+        //! The tips of a modified card header and of the widgets in it
+        const ToolTipElement CardHeaderModifiedToolTip{
+            .m_name = "Global.ToolTip.CardHeaderModified",
+            .m_text = &CardHeaderModifiedToolTipText,
+        };
+
+        //! AzQtComponents--CardNotification: the block under a notification (Card.qss:51-55), filled #555555. Its `spacing` sets nothing
+        //! for a frame (QStyleSheetStyle::pixelMetric reads it for the items of tool bars and menu bars and the labels of check boxes and
+        //! radio buttons), but it gives the rule a box of zero margins and paddings (QRenderRule::hasBox). The border is the style's own.
+        const BoxElement NotificationBlock{
+            .m_name = "Global.Box.CardNotification",
+            .m_spacing = NotificationSpacing,
+            .m_idle = {
+                .m_fill = QBrush(NotificationFill),
+            },
+        };
+
+        //! AzQtComponents--CardNotification #HeaderFrame (Card.qss:57-61, :63-70): the pill that holds the icon and the message, a
+        //! padding of 8 at each side (the frame's contents, which the layout inside fills), #444444 with round corners and no border
+        const BoxElement NotificationPill{
+            .m_name = "Global.Box.CardNotificationPill",
+            .m_padding = NotificationHeaderPadding,
+            .m_spacing = NotificationSpacing,
+            .m_nativeBorder = false,                                // Card.qss:68-69 border-radius, border: none
+            .m_radius = NotificationPillRadius,
+            .m_idle = {
+                .m_fill = QBrush(NotificationPillFill),
+            },
+        };
+
+        //! AzQtComponents--CardNotification #Icon and #Title (Card.qss:63-70): the labels of the pill, filled and rounded as it is (the
+        //! fill is not seen over the pill's), with the 1px above and below Text.qss:93-94 gave every label, a box of their own now
+        const BoxElement NotificationLabel{
+            .m_name = "Global.Box.CardNotificationLabel",
+            .m_margin = QMargins(0, Foundations::Label::MarginV, 0, Foundations::Label::MarginV),
+            .m_nativeBorder = false,                                // Card.qss:68-69 border-radius, border: none
+            .m_radius = NotificationPillRadius,
+            .m_idle = {
+                .m_fill = QBrush(NotificationPillFill),
+            },
+        };
+
         // ------------------------------------------------------------------------------
         // Helpers
         // ------------------------------------------------------------------------------
@@ -230,6 +311,29 @@ namespace AzQtComponents
         bool inColorPicker(const QWidget* widget)
         {
             return Selectors::withinClass(widget, "AzQtComponents::ColorPicker");
+        }
+
+        //! `AzQtComponents--CardNotification W`
+        bool inCardNotification(const QWidget* widget)
+        {
+            return Selectors::withinClass(widget, "AzQtComponents::CardNotification");
+        }
+
+        //! `AzQtComponents--CardHeader * { }` for a frame that is not a label: a frame with no object name, below a header. (A label
+        //! has the box of its typography tier, which an element would replace; no label below a header lacks a name.) The one such
+        //! frame is the header's background frame when a header clears its name (RagdollCardHeader), which the header makes as its
+        //! own child (CardHeader.cpp:104): the parent decides it. A walk to the root would run for every unnamed frame of the Editor,
+        //! every row of a property editor among them.
+        bool isUnnamedHeaderFrame(const QWidget* widget)
+        {
+            return widget->objectName().isEmpty() && !qobject_cast<const QLabel*>(widget)
+                && Selectors::childOfClass(widget, "AzQtComponents::CardHeader");
+        }
+
+        //! `AzQtComponents--CardHeader[contentModified=true]`: the header, whose rows are on its class
+        bool isModifiedCardHeader(const QWidget* widget)
+        {
+            return Selectors::hasProperty(widget, "contentModified", "true");
         }
     } // namespace PropertyEditorElementsInternal
 
@@ -283,5 +387,19 @@ namespace AzQtComponents
             [](const QWidget* w) { return Selectors::named(w, "ContextMenu") && inCardHeader(w); }, global);
         BoxElement::registerElement(&CardHeaderContextMenuPlus, button,
             [](const QWidget* w) { return Selectors::named(w, "ContextMenuPlusIcon") && inCardHeader(w); }, global);
+        BoxElement::registerElement(&CardHeaderFrame, &QFrame::staticMetaObject, &isUnnamedHeaderFrame, global);
+
+        // The tips of the widgets of a header that is modified (the rule reaches them through the widget they are shown for)
+        ToolTipElement::registerElement(&CardHeaderModifiedToolTip, &CardHeader::staticMetaObject, &isModifiedCardHeader, global);
+
+        // A notification of a card: the type selector covers the class and what derives from it, the ids any depth below it
+        BoxElement::registerElement(&NotificationBlock, &CardNotification::staticMetaObject, [](const QWidget*) { return true; }, global);
+        BoxElement::registerElement(&NotificationPill, &QFrame::staticMetaObject,
+            [](const QWidget* w) { return Selectors::named(w, "HeaderFrame") && inCardNotification(w); }, global);
+        BoxElement::registerElement(&NotificationLabel, label,
+            [](const QWidget* w)
+            {
+                return (Selectors::named(w, "Icon") || Selectors::named(w, "Title")) && inCardNotification(w);
+            }, global);
     }
 } // namespace AzQtComponents
