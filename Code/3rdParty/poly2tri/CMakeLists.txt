@@ -16,9 +16,22 @@ o3de_fetch_content(poly2tri
 )
 FetchContent_MakeAvailable(poly2tri)
 
-file(COPY "${poly2tri_SOURCE_DIR}/poly2tri/"
+file(COPY
+    "${poly2tri_SOURCE_DIR}/poly2tri/poly2tri.h"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
-    FILES_MATCHING PATTERN "*.h"
+)
+file(COPY
+    "${poly2tri_SOURCE_DIR}/poly2tri/common/dll_symbol.h"
+    "${poly2tri_SOURCE_DIR}/poly2tri/common/shapes.h"
+    "${poly2tri_SOURCE_DIR}/poly2tri/common/utils.h"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include/common"
+)
+file(COPY
+    "${poly2tri_SOURCE_DIR}/poly2tri/sweep/advancing_front.h"
+    "${poly2tri_SOURCE_DIR}/poly2tri/sweep/cdt.h"
+    "${poly2tri_SOURCE_DIR}/poly2tri/sweep/sweep.h"
+    "${poly2tri_SOURCE_DIR}/poly2tri/sweep/sweep_context.h"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include/sweep"
 )
 
 o3de_disable_warnings()
@@ -45,5 +58,5 @@ ly_install_files(
     FILES
         LICENSE.txt
         PackageInfo.json
-    DESTINATION Gems/PhysX/Core/PhysX5/3rdParty/poly2tri
+    DESTINATION Code/3rdParty/poly2tri
 )
