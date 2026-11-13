@@ -110,7 +110,7 @@ class HelpMenu():
     # --method-set---------------------------------------------------------
     def set_specific_tool_help(self, label, obj_name='tool_action_help'):
         """"""
-        self.tool_action_help = QtWidgets.QAction(self.parent_widget)
+        self.tool_action_help = QtGui.QAction(self.parent_widget)
         self.tool_action_help.setObjectName(obj_name)
         self.help_menu.addAction(self.tool_action_help)
         self.menubar.addAction(self.help_menu.menuAction())
@@ -119,7 +119,7 @@ class HelpMenu():
 
     def set_generic_tool_help(self, label, obj_name='azpy_tool_action_help'):
         """"""
-        self.azpy_tool_action_help = QtWidgets.QAction(self.parent_widget)
+        self.azpy_tool_action_help = QtGui.QAction(self.parent_widget)
         self.azpy_tool_action_help.setObjectName(obj_name)
         self.help_menu.addAction(self.azpy_tool_action_help)
         self.menubar.addAction(self.help_menu.menuAction())
@@ -128,7 +128,7 @@ class HelpMenu():
 
     def set_tool_bug_report(self, label, obj_name='tool_action_bug_report'):
         """"""
-        self.tool_action_bug_report = QtWidgets.QAction(self.parent_widget)
+        self.tool_action_bug_report = QtGui.QAction(self.parent_widget)
         self.tool_action_bug_report.setObjectName(obj_name)
         self.help_menu.addAction(self.tool_action_bug_report)
         self.menubar.addAction(self.help_menu.menuAction())

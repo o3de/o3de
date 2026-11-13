@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Object to house all the Qt Objects used when testing and manipulating the Script Canvas editor and its tools
 """
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 import pyside_utils
 from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
 from editor_python_test_tools.QtPy.QtPyScriptCanvasVariableManager import QtPyScriptCanvasVariableManager
@@ -40,7 +40,7 @@ class QtPyScriptCanvasEditor(QtPyCommon):
 
         returns None
         """
-        undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
+        undo_redo_action = self.sc_editor.findChild(QtGui.QAction, "action_Undo")
 
         assert undo_redo_action is not None, "Unable to create undo action."
 
@@ -52,7 +52,7 @@ class QtPyScriptCanvasEditor(QtPyCommon):
 
         returns: None
         """
-        undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
+        undo_redo_action = self.sc_editor.findChild(QtGui.QAction, "action_Redo")
 
         assert undo_redo_action is not None, "Unable to create redo action."
 
@@ -65,7 +65,7 @@ class QtPyScriptCanvasEditor(QtPyCommon):
         returns: None
         """
         create_new_graph_action = pyside_utils.find_child_by_pattern(
-            self.sc_editor_main_pane, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+            self.sc_editor_main_pane, {"objectName": "action_New_Script", "type": QtGui.QAction}
         )
 
         assert create_new_graph_action is not None, "Unable to create new script canvas graph action."

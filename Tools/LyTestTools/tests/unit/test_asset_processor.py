@@ -142,9 +142,9 @@ class TestAssetProcessor(object):
 
         if no_stop:
             under_test.process_exists = mock.MagicMock()
-            under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+            under_test.stop(timeout=timesout) == StopProcess[test_id]
         else:
-            assert under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+            assert under_test.stop(timeout=timesout) == StopProcess[test_id]
 
         assert under_test._ap_proc is None
 

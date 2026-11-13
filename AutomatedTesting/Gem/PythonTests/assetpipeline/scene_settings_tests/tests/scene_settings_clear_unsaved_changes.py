@@ -13,7 +13,7 @@ def Scene_Settings_Clear_Unsaved_Changes():
         import asyncio
         from editor_python_test_tools.utils import Report
         import PySide6
-        from PySide6 import QtWidgets
+        from PySide6 import QtGui, QtWidgets
         import azlmbr.bus as bus
         import azlmbr.legacy.general as general
         import scene_settings_test_messages as tm
@@ -41,7 +41,7 @@ def Scene_Settings_Clear_Unsaved_Changes():
 
         Report.critical_result(tm.Test_Messages.scene_settings_has_unsaved_changes, has_unsaved_changes == True)
                 
-        clear_unsaved_changes_action = widget_main_window.findChild(QtWidgets.QAction, "m_actionClearUnsavedChanges")
+        clear_unsaved_changes_action = widget_main_window.findChild(QtGui.QAction, "m_actionClearUnsavedChanges")
         clear_unsaved_changes_action.trigger()
 
         # Wait for the UI to finish rebuilding.

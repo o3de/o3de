@@ -112,7 +112,11 @@ namespace UnitTest
             auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
             if (editorPythonEventsInterface)
             {
-                editorPythonEventsInterface->StartPython();
+                if (editorPythonEventsInterface->StartPython())
+                {
+                    // Keep the GIL for tests that call pybind11 directly.
+                    PyEval_RestoreThread(PyGILState_GetThisThreadState());
+                }
             }
         }
 

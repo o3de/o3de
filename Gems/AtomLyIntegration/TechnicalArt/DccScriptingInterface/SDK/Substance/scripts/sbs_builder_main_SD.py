@@ -9,11 +9,13 @@
 #
 # -------------------------------------------------------------------------
 
+import codecs
+import locale
 import sys
 import os
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 # from PySide6.QtCore import QTimer
-from PySide6.QtCore import QProcess, Signal, Slot, QTextCodec
+from PySide6.QtCore import QProcess, Signal, Slot
 from PySide6.QtGui import QTextCursor, QColor
 from PySide6.QtWidgets import QApplication, QPlainTextEdit
 import pysbs.batchtools as sbs
@@ -228,7 +230,7 @@ class Window(QtWidgets.QDialog):
         for i in range(len(files)):
             progressDialog.setValue(i)
             progressDialog.setLabelText("Searching file number %d of %d..." % (i, len(files)))
-            QtCore.qApp.processEvents()
+            QtWidgets.QApplication.processEvents()
 
             if progressDialog.wasCanceled():
                 break
@@ -516,10 +518,12 @@ class ProcessOutputReader(QProcess):
         # merge stderr channel into stdout channel
         self.setProcessChannelMode(QProcess.MergedChannels)
         # prepare decoding process' output to Unicode
-        self._codec = QTextCodec.codecForLocale()
-        self._decoder_stdout = self._codec.makeDecoder()
+        encoding = locale.getpreferredencoding(False)
+        if hasattr(locale, 'getencoding'):
+            encoding = locale.getencoding()
+        self._decoder_stdout = codecs.getincrementaldecoder(encoding)(errors='replace')
         # only necessary when stderr channel isn't merged into stdout:
-        # self._decoder_stderr = codec.makeDecoder()
+        # self._decoder_stderr = codecs.getincrementaldecoder(encoding)(errors='replace')
 
         self.readyReadStandardOutput.connect(self._ready_read_standard_output)
         # only necessary when stderr channel isn't merged into stdout:
@@ -528,14 +532,14 @@ class ProcessOutputReader(QProcess):
     @Slot()
     def _ready_read_standard_output(self):
         raw_bytes = self.readAllStandardOutput()
-        text = self._decoder_stdout.toUnicode(raw_bytes)
+        text = self._decoder_stdout.decode(bytes(raw_bytes))
         self.produce_output.emit(text)
 
     # only necessary when stderr channel isn't merged into stdout:
     # @Slot()
     # def _ready_read_standard_error(self):
     #     raw_bytes = self.readAllStandardError()
-    #     text = self._decoder_stderr.toUnicode(raw_bytes)
+    #     text = self._decoder_stderr.decode(bytes(raw_bytes))
     #     self.produce_output.emit(text)
 
 # Creaste Substance Builder QtWidget
@@ -554,7 +558,7 @@ if __name__ == '__main__':
     uiMgr = app.getQtForPythonUIMgr()
     menu = uiMgr.newMenu(menuTitle="Atom", objectName="atom")
     # Create a new action.
-    act = QtWidgets.QAction("Substance Builder", menu)
+    act = QtGui.QAction("Substance Builder", menu)
     act.triggered.connect(createWin)
     # Add the action to the menu.
     menu.addAction(act)

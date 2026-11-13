@@ -84,6 +84,9 @@ class TestAutomation_EntityTests(EditorTestSuite):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation_EditorTools(EditorTestSuite):
 
+    class Editor_PySide_Imports_Work(EditorBatchedTest):
+        from .tests import Editor_PySide_Imports_Work as test_module
+
     class Editor_PySide_Example_Works(EditorBatchedTest):
         from .tests import Editor_PySide_Example_Works as test_module
 

@@ -8,7 +8,7 @@ Base class for QtPy classes. Contains commonly used constants and generic behavi
 """
 
 import pyside_utils
-from PySide6 import QtWidgets, QtTest, QtCore
+from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 from enum import IntEnum
 from editor_python_test_tools.utils import TestHelper as helper
 from consts.general import (WAIT_TIME_SEC_3)
@@ -35,7 +35,7 @@ class QtPyCommon:
 
         returns None
         """
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"text": option_text, "type": QtGui.QAction})
 
         assert action is not None, "Unable to find QtWidgets type or menu option"
 

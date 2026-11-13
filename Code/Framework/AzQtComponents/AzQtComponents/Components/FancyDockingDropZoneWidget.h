@@ -10,8 +10,8 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
-#include <qglobal.h> // For qreal
-#include <qnamespace.h> // For Qt::DockArea
+#include <QtGlobal> // For qreal
+#include <Qt> // For Qt::DockArea
 #include <QColor>
 #include <QString>
 #include <QMap>

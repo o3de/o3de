@@ -26,10 +26,6 @@ from DccScriptingInterface.azpy.constants import FRMT_LOG_LONG
 from DccScriptingInterface.azpy import general_utils as helpers
 import DccScriptingInterface.azpy.config_utils
 
-# maya and pyside imports, etc.
-from PySide6 import QtWidgets
-
-
 _LOGGER = _logging.getLogger('DCCsi.azpy.o3de.renderer.materials.material_utilities')
 
 

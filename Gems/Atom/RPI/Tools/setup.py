@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 import platform
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -25,5 +25,5 @@ if __name__ == '__main__':
         version="1.0.0",
         description='Python interface to Atom RPI tools',
         long_description=long_description,
-        packages=find_packages(exclude=['tests'])
+        packages=find_namespace_packages(include=['atom_rpi_tools'])
     )
