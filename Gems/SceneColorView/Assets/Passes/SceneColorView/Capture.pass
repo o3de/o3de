@@ -1,0 +1,31 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SceneColorViewCaptureTemplate",
+            "PassClass": "SceneColorViewCapturePass",
+            "Slots": [
+                {
+                    "Name": "Source",
+                    "ShaderInputName": "m_source",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ScopeAttachmentStage": "FragmentShader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": { "LoadAction": "DontCare" }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "BindViewSrg": true,
+                "ShaderAsset": { "FilePath": "Shaders/SceneColorView/Capture.shader" }
+            }
+        }
+    }
+}
