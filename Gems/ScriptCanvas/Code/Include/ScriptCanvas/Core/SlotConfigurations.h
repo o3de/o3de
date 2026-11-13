@@ -96,31 +96,22 @@ namespace ScriptCanvas
 
         bool CanConnectTo(const SlotDescriptor& slotDescriptor) const
         {
-            bool validConnection = true;
-
             if (m_slotType != slotDescriptor.m_slotType)
             {
-                validConnection = false;
-            }
-            else
-            {
-                if (m_connectionType == ConnectionType::Input)
-                {
-                    if (slotDescriptor.m_connectionType != ConnectionType::Output)
-                    {
-                        validConnection = false;
-                    }
-                }
-                else if (m_connectionType == ConnectionType::Output)
-                {
-                    if (slotDescriptor.m_connectionType != ConnectionType::Input)
-                    {
-                        validConnection = false;
-                    }
-                }
+                return false;
             }
 
-            return validConnection;
+            if (IsInput())
+            {
+                return slotDescriptor.IsOutput();
+            }
+
+            if (IsOutput())
+            {
+                return slotDescriptor.IsInput();
+            }
+
+            return true;
         }
 
         constexpr bool operator==(const SlotDescriptor& other) const

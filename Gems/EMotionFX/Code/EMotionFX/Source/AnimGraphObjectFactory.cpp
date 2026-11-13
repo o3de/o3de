@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/BlendSpace2DNode.h>
 #include <EMotionFX/Source/BlendSpace1DNode.h>
 #include <EMotionFX/Source/BlendTreeFinalNode.h>
+#include <EMotionFX/Source/BlendTreeRerouteNode.h>
 #include <EMotionFX/Source/BlendTreeBlend2Node.h>
 #include <EMotionFX/Source/BlendTreeBlend2NodeBase.h>
 #include <EMotionFX/Source/BlendTreeBlend2AdditiveNode.h>
@@ -153,6 +154,7 @@ namespace EMotionFX
         BlendTree::Reflect(context);
         BlendTreeConnection::Reflect(context);
         BlendTreeFinalNode::Reflect(context);
+        BlendTreeRerouteNode::Reflect(context);
         BlendTreeBlend2NodeBase::Reflect(context);
         BlendTreeBlend2Node::Reflect(context);
         BlendTreeBlend2AdditiveNode::Reflect(context);

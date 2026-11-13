@@ -28,6 +28,7 @@
 #include <GraphModel/Integration/EditorMainWindow.h>
 
 // LandscapeCanvas
+#include <Editor/Core/ConnectionReconciliation.h>
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
 
 namespace AzToolsFramework
@@ -146,6 +147,8 @@ namespace LandscapeCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // AssetEditorRequestBus::Handler overrides
         GraphCanvas::ContextMenuAction::SceneReaction ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint) override;
+        GraphCanvas::ContextMenuAction::SceneReaction ShowConnectionContextMenu(
+            const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -224,6 +227,7 @@ namespace LandscapeCanvasEditor
 
         QString GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex = 0);
         void UpdateConnectionData(GraphModel::ConnectionPtr connection, bool added);
+        void RefreshRerouteTargets(GraphModel::NodePtr rerouteNode, GraphModel::NodePtrList visitedNodes = {});
         void HandleSetImageAssetPath(const AZ::EntityId& sourceEntityId, const AZ::EntityId& targetEntityId);
 
         AZ::u32 GetWrappedNodeLayoutOrder(GraphModel::NodePtr node);
@@ -250,8 +254,6 @@ namespace LandscapeCanvasEditor
         };
 
         using EntityComponentCallback = AZStd::function<void(const AZ::EntityId& entityId, AZ::Component* component, bool isDisabled)>;
-        using NodeSlotPair = AZStd::pair<GraphModel::NodePtr, GraphModel::SlotPtr>;
-        using ConnectionsList = AZStd::vector<AZStd::pair<NodeSlotPair, NodeSlotPair>>;
         void UpdateEntityIdNodeMap(GraphCanvas::GraphId, GraphModel::NodePtr node);
         EntityIdNodeMap* GetEntityIdNodeMap(GraphCanvas::GraphId, GraphModel::NodePtr node);
         void ParseNodeConnections(GraphCanvas::GraphId graphId, GraphModel::NodePtr node, ConnectionsList& connections);

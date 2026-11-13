@@ -173,6 +173,7 @@ namespace ScriptCanvasEditor
         void UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint);
 
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
+        bool IsSlotConnected(const GraphCanvas::Endpoint& endpoint) const override;
 
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
@@ -344,6 +345,7 @@ namespace ScriptCanvasEditor
 
         AZ::EntityId FindGraphCanvasSlotId(const AZ::EntityId& graphCanvasNodeId, const ScriptCanvas::SlotId& slotId);
         bool ConfigureConnectionUserData(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint, GraphCanvas::ConnectionId connectionId);
+        void RefreshRerouteInputDisplays(const ScriptCanvas::Endpoint& endpoint);
 
         void HandleQueuedUpdates();
         bool IsNodeVersionConverting(const AZ::EntityId& graphCanvasNodeId) const;

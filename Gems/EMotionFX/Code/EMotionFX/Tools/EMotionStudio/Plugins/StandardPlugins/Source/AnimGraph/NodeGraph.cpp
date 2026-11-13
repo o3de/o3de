@@ -86,6 +86,8 @@ namespace EMStudio
         connect(&m_scaleTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScale);
 
         m_replaceTransitionValid = false;
+        m_waypointConnection = nullptr;
+        m_waypointIndex = InvalidIndex;
 
         // Overlay
         m_font.setPixelSize(12);
@@ -1570,6 +1572,37 @@ namespace EMStudio
         m_replaceTransitionTail = nullptr;
     }
 
+
+    void NodeGraph::StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    {
+        m_waypointConnection = connection;
+        m_waypointIndex = waypointIndex;
+        m_waypointOldValues = oldWaypoints;
+    }
+
+
+    void NodeGraph::StopRepositionWaypoint()
+    {
+        m_waypointConnection = nullptr;
+        m_waypointIndex = InvalidIndex;
+        m_waypointOldValues.clear();
+    }
+
+    void NodeGraph::CancelRepositionWaypoint()
+    {
+        if (m_waypointConnection)
+        {
+            auto* transition = m_waypointConnection->GetModelIndex()
+                .data(AnimGraphModel::ROLE_TRANSITION_POINTER)
+                .value<EMotionFX::AnimGraphStateTransition*>();
+            if (transition)
+            {
+                transition->SetWaypoints(m_waypointOldValues);
+            }
+        }
+        StopRepositionWaypoint();
+    }
+
     // reset members
     void NodeGraph::StopRelinkConnection()
     {
@@ -1961,6 +1994,8 @@ namespace EMStudio
 
     void NodeGraph::OnRowsAboutToBeRemoved(const QModelIndexList& modelIndexes)
     {
+        CancelRepositionWaypoint();
+
         for (const QModelIndex& modelIndex : modelIndexes)
         {
             const AnimGraphModel::ModelItemType itemType = modelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
@@ -2018,6 +2053,12 @@ namespace EMStudio
 
     void NodeGraph::OnDataChanged(const QModelIndex& modelIndex, const QVector<int>& roles)
     {
+        if (m_waypointConnection && m_waypointConnection->GetModelIndex() == modelIndex)
+        {
+            // Keep the command's new values instead of restoring the drag preview over an undo.
+            StopRepositionWaypoint();
+        }
+
         const AnimGraphModel::ModelItemType itemType = modelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
         switch (itemType)
         {

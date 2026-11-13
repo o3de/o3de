@@ -41,6 +41,8 @@
 
 // Qt
 #include <QApplication>
+#include <QAction>
+#include <QKeySequence>
 #include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
@@ -50,6 +52,7 @@
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h>
 #include <GraphCanvas/Editor/EditorDockWidgetBus.h>
+#include <GraphCanvas/Utils/GraphUtils.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenus/SceneContextMenu.h>
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorCentralWidget.h>
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
@@ -62,6 +65,7 @@
 #include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
+#include <Editor/Core/ConnectionReconciliation.h>
 #include <Editor/Core/Core.h>
 #include <Editor/Core/GraphContext.h>
 #include <Editor/Menus/LayerExtenderContextMenu.h>
@@ -93,6 +97,7 @@
 #include <Editor/Nodes/Gradients/ShapeAreaFalloffGradientNode.h>
 #include <Editor/Nodes/Gradients/SlopeGradientNode.h>
 #include <Editor/Nodes/Gradients/SurfaceMaskGradientNode.h>
+#include <Editor/Nodes/RerouteNode.h>
 #include <Editor/Nodes/GradientModifiers/DitherGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/GradientMixerNode.h>
 #include <Editor/Nodes/GradientModifiers/InvertGradientModifierNode.h>
@@ -387,6 +392,10 @@ namespace LandscapeCanvasEditor
             REGISTER_NODE_PALETTE_ITEM(terrainCategory, TerrainSurfaceMaterialsListNode, editorId);
         }
 
+        GraphCanvas::IconDecoratedNodePaletteTreeItem* utilityCategory =
+            rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Utilities", editorId);
+        REGISTER_NODE_PALETTE_ITEM(utilityCategory, RerouteNode, editorId);
+
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, editorId);
 
         return rootItem;
@@ -525,6 +534,20 @@ namespace LandscapeCanvasEditor
         // Add our custom action to the scene context menu
         m_sceneContextMenu->AddMenuAction(aznew FindSelectedNodesAction(this));
 
+        QAction* rerouteAction = new QAction(tr("Reroute Selected Connection"), this);
+        rerouteAction->setShortcut(QKeySequence(Qt::Key_R));
+        rerouteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(rerouteAction);
+        connect(rerouteAction, &QAction::triggered, this,
+            [this]()
+            {
+                const GraphCanvas::GraphId graphId = GetActiveGraphCanvasGraphId();
+                if (graphId.IsValid())
+                {
+                    CreateRerouteOnSelectedConnections(graphId);
+                }
+            });
+
         UpdateGraphEnabled();
 
         static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
@@ -569,6 +592,11 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::OnGraphModelNodeRemoved(GraphModel::NodePtr node)
     {
+        if (IsVisualOnlyNode(node))
+        {
+            return;
+        }
+
         // Remove the cached EntityId mapping for this node
         GraphCanvas::GraphId graphId = (*GraphModelIntegration::GraphControllerNotificationBus::GetCurrentBusId());
         auto nodeMap = GetEntityIdNodeMap(graphId, node);
@@ -623,6 +651,11 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::PreOnGraphModelNodeRemoved(GraphModel::NodePtr node)
     {
+        if (IsVisualOnlyNode(node))
+        {
+            return;
+        }
+
         GraphCanvas::GraphId graphId = (*GraphModelIntegration::GraphControllerNotificationBus::GetCurrentBusId());
 
         // We need to track any wrapped nodes before the actually get deleted so we can handle
@@ -744,6 +777,11 @@ namespace LandscapeCanvasEditor
             }
 
             auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
+            if (baseNodePtr->IsVisualOnly())
+            {
+                continue;
+            }
+
             vegetationEntityIdsToSelect.insert(baseNodePtr->GetVegetationEntityId());
         }
 
@@ -803,9 +841,21 @@ namespace LandscapeCanvasEditor
             }
 
             auto baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
+            if (baseNodePtr->IsVisualOnly())
+            {
+                continue;
+            }
+
             AZ::EntityId entityId = baseNodePtr->GetVegetationEntityId();
 
             entitiesToDuplicate.push_back(entityId);
+        }
+
+        // Copying only visual helpers requires no entity duplication or remapping.
+        if (entitiesToDuplicate.empty())
+        {
+            m_ignoreGraphUpdates = false;
+            return;
         }
 
         // Duplicate the corresponding entities
@@ -1301,6 +1351,13 @@ namespace LandscapeCanvasEditor
         return AssetEditorMainWindow::HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
     }
 
+    GraphCanvas::ContextMenuAction::SceneReaction MainWindow::ShowConnectionContextMenu(
+        const AZ::EntityId& connectionId, const QPoint& screenPoint, const QPointF& scenePoint)
+    {
+        ConnectionContextMenu contextMenu;
+        return AssetEditorMainWindow::HandleContextMenu(contextMenu, connectionId, screenPoint, scenePoint);
+    }
+
     void MainWindow::GetChildrenTree(const AZ::EntityId& rootEntityId, AzToolsFramework::EntityIdList& childrenList)
     {
         AzToolsFramework::EntityIdList children;
@@ -1438,7 +1495,21 @@ namespace LandscapeCanvasEditor
         // target slot on the target node that have the same data type
         GraphModel::NodePtr targetNode = connection->GetTargetNode();
         GraphModel::SlotPtr targetSlot = connection->GetTargetSlot();
-        GraphModel::DataTypePtr dataType = connection->GetSourceSlot()->GetDataType();
+
+        // A connection into a reroute has no component property of its own. Instead, refresh every
+        // real downstream target so it sees the newly resolved (or disconnected) source entity.
+        if (IsVisualOnlyNode(targetNode))
+        {
+            RefreshRerouteTargets(targetNode);
+            return;
+        }
+
+        GraphModel::DataTypePtr dataType = targetSlot->GetDataType();
+        if (!dataType)
+        {
+            return;
+        }
+
         int elementIndexToModify = GetInboundDataSlotIndex(targetNode, dataType, targetSlot);
         if (elementIndexToModify == InvalidSlotIndex)
         {
@@ -1453,8 +1524,12 @@ namespace LandscapeCanvasEditor
         AZ::EntityId newEntityId;
         if (added)
         {
-            auto sourceNode = static_cast<LandscapeCanvas::BaseNode*>(connection->GetSourceNode().get());
-            newEntityId = sourceNode->GetVegetationEntityId();
+            const ResolvedConnectionSource source = ResolveConnectionSource(connection->GetSourceSlot());
+            if (source.m_node)
+            {
+                auto sourceNode = static_cast<LandscapeCanvas::BaseNode*>(source.m_node.get());
+                newEntityId = sourceNode->GetVegetationEntityId();
+            }
         }
 
         // Figure out the property path we are looking for based on the data type of the slot
@@ -1467,7 +1542,7 @@ namespace LandscapeCanvasEditor
             // are just AZ::EntityId under the hood and can be set directly on the property,
             // whereas the output asset comes as an AZ::IO::Path and the input is an actual
             // AZ::RPI::StreamingImageAsset, so we need to use the helper buses to get/set
-            if (added && dataTypeEnum == LandscapeCanvas::LandscapeCanvasDataTypeEnum::Path)
+            if (newEntityId.IsValid() && dataTypeEnum == LandscapeCanvas::LandscapeCanvasDataTypeEnum::Path)
             {
                 auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
                 HandleSetImageAssetPath(newEntityId, targetBaseNode->GetVegetationEntityId());
@@ -1681,6 +1756,46 @@ namespace LandscapeCanvasEditor
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_AttributesAndValues);
         });
+    }
+
+    void MainWindow::RefreshRerouteTargets(GraphModel::NodePtr rerouteNode, GraphModel::NodePtrList visitedNodes)
+    {
+        if (!IsVisualOnlyNode(rerouteNode))
+        {
+            return;
+        }
+
+        if (AZStd::find(visitedNodes.begin(), visitedNodes.end(), rerouteNode) != visitedNodes.end())
+        {
+            return;
+        }
+
+        visitedNodes.push_back(rerouteNode);
+
+        GraphModel::SlotPtr outputSlot = rerouteNode->GetSlot(LandscapeCanvas::RerouteNode::OUT_SLOT_ID);
+        if (!outputSlot)
+        {
+            return;
+        }
+
+        for (const GraphModel::ConnectionPtr& downstreamConnection : outputSlot->GetConnections())
+        {
+            if (!downstreamConnection)
+            {
+                continue;
+            }
+
+            if (IsVisualOnlyNode(downstreamConnection->GetTargetNode()))
+            {
+                RefreshRerouteTargets(downstreamConnection->GetTargetNode(), visitedNodes);
+            }
+            else
+            {
+                // Passing true asks UpdateConnectionData to resolve the current source. If this
+                // reroute is disconnected, resolution fails and the target property is cleared.
+                UpdateConnectionData(downstreamConnection, true);
+            }
+        }
     }
 
     void MainWindow::HandleSetImageAssetPath(const AZ::EntityId& sourceEntityId, const AZ::EntityId& targetEntityId)
@@ -2032,6 +2147,11 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::UpdateConnections(GraphModel::NodePtr node)
     {
+        if (IsVisualOnlyNode(node))
+        {
+            return;
+        }
+
         // Retrieve all the input data connections for this node that would be expected
         // based on the component property fields.  If this differs from what is actually
         // connected for the slots on this node, then we will need to update (add/remove)
@@ -2040,57 +2160,9 @@ namespace LandscapeCanvasEditor
         GraphCanvas::GraphId graphId = GetGraphId(node->GetGraph());
         ParseNodeConnections(graphId, node, expectedConnections);
 
-        // Iterate through the input data slots on this node to check for
-        // existing connections that satisfy our expected connections, and to
-        // remove any current connections that aren't in our expected list.
-        for (auto slotPair : node->GetSlots())
+        for (const auto& connection : ReconcileConnections(node, expectedConnections))
         {
-            GraphModel::SlotPtr slot = slotPair.second;
-
-            // We only care about input data slots because those are the only slots
-            // that could be modified when a Component on an Entity is changed,
-            // which is what triggers OnEntityComponentPropertyChanged
-            if (!slot->Is(GraphModel::SlotDirection::Input, GraphModel::SlotType::Data))
-            {
-                continue;
-            }
-
-            // If there aren't any connections to this slot, we can skip it
-            auto slotConnections = slot->GetConnections();
-            if (slotConnections.empty())
-            {
-                continue;
-            }
-
-            // Input data slots will only have one connection
-            GraphModel::ConnectionPtr connection = *slotConnections.begin();
-
-            // Check if this connection matches one in our list of expected connections
-            bool matchesExisting = false;
-            for (auto it = expectedConnections.begin(); it != expectedConnections.end(); ++it)
-            {
-                auto sourceNode = it->first.first;
-                auto sourceSlot = it->first.second;
-                auto targetNode = it->second.first;
-                auto targetSlot = it->second.second;
-
-                // If we found a matching connection, then remove it from our list of expected
-                // so we don't have to process it after we are done checking all the slots
-                // on the node
-                if (sourceNode == connection->GetSourceNode() && sourceSlot == connection->GetSourceSlot() &&
-                    targetNode == connection->GetTargetNode() && targetSlot == connection->GetTargetSlot())
-                {
-                    matchesExisting = true;
-                    expectedConnections.erase(it);
-                    break;
-                }
-            }
-
-            // If this connection doesn't match an expected connection, then it needs to be removed
-            if (!matchesExisting)
-            {
-                GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::RemoveConnection, connection);
-            }
+            GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::RemoveConnection, connection);
         }
 
         // For the remaining expected connections, this means they didn't exist already,
@@ -2416,6 +2488,10 @@ namespace LandscapeCanvasEditor
         GraphModel::GraphPtr graph = GetGraphById(graphId);
         GraphModel::NodePtrList loadedNodes, disabledNodes, createdNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(loadedNodes, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodes);
+
+        // Visual-only graph helpers have no Entity/Component counterpart and must survive component refreshes.
+        loadedNodes.erase(
+            AZStd::remove_if(loadedNodes.begin(), loadedNodes.end(), IsVisualOnlyNode), loadedNodes.end());
 
         EnumerateEntityComponentTree(
             targetEntityId,
@@ -3063,7 +3139,7 @@ namespace LandscapeCanvasEditor
         }
 
         auto* baseNodePtr = static_cast<BaseNode*>(node.get());
-        if (!baseNodePtr)
+        if (!baseNodePtr || baseNodePtr->IsVisualOnly())
         {
             return;
         }
@@ -3109,7 +3185,7 @@ namespace LandscapeCanvasEditor
     void MainWindow::AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId)
     {
         auto* baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-        if (!baseNodePtr)
+        if (!baseNodePtr || baseNodePtr->IsVisualOnly())
         {
             return;
         }
@@ -3132,7 +3208,7 @@ namespace LandscapeCanvasEditor
     void MainWindow::HandleNodeAdded(GraphModel::NodePtr node)
     {
         auto* baseNodePtr = static_cast<LandscapeCanvas::BaseNode*>(node.get());
-        if (!baseNodePtr)
+        if (!baseNodePtr || baseNodePtr->IsVisualOnly())
         {
             return;
         }

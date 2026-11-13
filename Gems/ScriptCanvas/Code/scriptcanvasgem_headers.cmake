@@ -191,6 +191,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Nodeling.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h
+    Include/ScriptCanvas/Libraries/Core/Reroute.h
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.h
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.ScriptCanvasGrammar.xml

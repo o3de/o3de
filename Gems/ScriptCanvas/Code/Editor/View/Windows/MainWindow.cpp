@@ -62,6 +62,7 @@
 
 #include <Editor/Settings.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
+#include <Editor/Nodes/NodeUtils.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -105,6 +106,7 @@
 #include <ScriptCanvas/Core/Graph.h>
 
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Reroute.h>
 
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -1997,6 +1999,28 @@ namespace ScriptCanvasEditor
         addAction(ui->action_Delete);
         addAction(ui->action_Duplicate);
 
+        QAction* rerouteAction = new QAction(tr("Reroute Selected Connection"), this);
+        rerouteAction->setShortcut(QKeySequence(Qt::Key_R));
+        rerouteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(rerouteAction);
+        connect(rerouteAction, &QAction::triggered, this,
+            [this]()
+            {
+                const GraphCanvas::GraphId graphId = GetActiveGraphCanvasGraphId();
+                if (!graphId.IsValid())
+                {
+                    return;
+                }
+
+                PushPreventUndoStateUpdate();
+                const bool created = CreateRerouteOnSelectedConnections(graphId);
+                PopPreventUndoStateUpdate();
+                if (created)
+                {
+                    PostUndoPoint(GetActiveScriptCanvasId());
+                }
+            });
+
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::OnEditMenuShow);
 
         // Edit Menu
@@ -3840,6 +3864,7 @@ namespace ScriptCanvasEditor
     GraphCanvas::ContextMenuAction::SceneReaction MainWindow::ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint)
     {
         GraphCanvas::NodeContextMenu contextMenu(ScriptCanvasEditor::AssetEditorId);
+        contextMenu.AddMenuAction(aznew DissolveRerouteNodeAction(&contextMenu));
         NodeDescriptorType descriptorType = NodeDescriptorType::Unknown;
         NodeDescriptorRequestBus::EventResult(descriptorType, nodeId, &NodeDescriptorRequests::GetType);
 
@@ -3918,10 +3943,30 @@ namespace ScriptCanvasEditor
                 GraphCanvas::Endpoint targetEndpoint;
                 GraphCanvas::ConnectionRequestBus::EventResult(targetEndpoint, connectionId, &GraphCanvas::ConnectionRequests::GetTargetEndpoint);
 
+                // Reroute defaults to data when created from the general palette. When it is selected
+                // from a connection context menu, adopt the connection kind before GraphCanvas splices it.
+                ScriptCanvas::ScriptCanvasId scriptCanvasId;
+                GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphCanvasGraphId);
+                auto reroute = Nodes::GetNode<ScriptCanvas::Nodes::Core::Reroute>(scriptCanvasId, finalNode);
+                const bool isRerouteNode = reroute != nullptr;
+                if (reroute)
+                {
+                    GraphCanvas::SlotType sourceSlotType = GraphCanvas::SlotTypes::Invalid;
+                    GraphCanvas::SlotRequestBus::EventResult(
+                        sourceSlotType, sourceEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::GetSlotType);
+
+                    reroute->ConfigureMode(sourceSlotType == GraphCanvas::SlotTypes::ExecutionSlot
+                        ? ScriptCanvas::Nodes::Core::Reroute::Mode::Execution
+                        : ScriptCanvas::Nodes::Core::Reroute::Mode::Data);
+                }
+
                 if (finalNode.m_graphCanvasId.IsValid())
                 {
                     GraphCanvas::ConnectionSpliceConfig spliceConfig;
-                    spliceConfig.m_allowOpportunisticConnections = true;
+                    // An AzEvent handler pairs its Connect execution slot with a restricted event-data
+                    // connection. A reroute belongs only on the selected wire; opportunistic splicing
+                    // would also try to route the paired data connection through this execution node.
+                    spliceConfig.m_allowOpportunisticConnections = !isRerouteNode;
 
                     if (!GraphCanvas::GraphUtils::SpliceNodeOntoConnection(finalNode.m_graphCanvasId, connectionId, spliceConfig))
                     {

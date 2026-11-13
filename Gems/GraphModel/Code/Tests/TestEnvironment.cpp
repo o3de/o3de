@@ -176,6 +176,7 @@ namespace GraphModelIntegrationTest
 
         // Create basic system entity
         AZ::ComponentApplication::StartupParameters startupParams;
+        startupParams.m_createEditContext = true;
         m_systemEntity = m_application->Create(appDesc, startupParams);
         m_systemEntity->AddComponent(aznew AZ::AssetManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());

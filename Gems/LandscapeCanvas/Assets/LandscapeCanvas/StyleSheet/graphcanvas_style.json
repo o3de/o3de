@@ -2038,5 +2038,90 @@
   {
     "selectors": [ "BookmarkAnchor_grouped" ],
     "z-value": 9
+  },
+  {
+    "selectors": [ "Sizing_WidthSteps" ],
+    "steps": "7|14|21|28"
+  },
+  {
+    "selectors": [ "node.reroute" ],
+
+    "background-color": "transparent",
+    "border-width": 1,
+    "border-color": "transparent",
+    "border-radius": 10,
+    "max-width": 35,
+    "margin": 0,
+    "spacing": 0,
+    "layout-orientation": "horizontal"
+  },
+  {
+    "selectors": [ "node.reroute > title" ],
+
+    "background-color": "transparent",
+    "height": 0,
+    "min-height": 0,
+    "max-height": 0,
+    "padding": 0,
+    "spacing": 0,
+    "margin": 0
+  },
+  {
+    "selectors": [ "node.reroute > .maintitle", "node.reroute > .subtitle" ],
+
+    "font-size": 1,
+    "width": 0,
+    "min-width": 0,
+    "max-width": 0,
+    "height": 0,
+    "min-height": 0,
+    "max-height": 0,
+    "padding": 0,
+    "spacing": 0,
+    "margin": 0
+  },
+  {
+    "selectors": [ "generalSlotLayout.reroute" ],
+
+    "background-color": "transparent",
+    "border-width": 0,
+    "border-color": "transparent",
+    "margin": 0,
+    "spacing": 0,
+    "padding": 0
+  },
+  {
+    "selectors": [ "dataSlot.reroute" ],
+
+    "spacing": 0,
+    "padding": 0,
+    "margin": 0
+  },
+  {
+    "selectors": [ "dataSlot.reroute > dataConnectionPin" ],
+
+    "min-width": 12,
+    "min-height": 12,
+    "width": 12,
+    "height": 12,
+    "max-width": 12,
+    "max-height": 12,
+    "padding": 1
+  },
+  {
+    "selectors": [
+      "dataSlot.reroute > .slotName",
+      "dataSlot.reroute > .inputSlotName",
+      "dataSlot.reroute > .outputSlotName"
+    ],
+
+    "font-size": 1,
+    "width": 0,
+    "min-width": 0,
+    "max-width": 0,
+    "min-height": 12,
+    "padding": 0,
+    "spacing": 0,
+    "margin": 0
   }
 ]

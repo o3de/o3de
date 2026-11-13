@@ -132,6 +132,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.cpp
     Include/ScriptCanvas/Libraries/Core/Nodeling.cpp
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.cpp
+    Include/ScriptCanvas/Libraries/Core/Reroute.cpp
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.cpp
     Include/ScriptCanvas/Libraries/Core/SendScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp

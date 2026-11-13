@@ -1088,6 +1088,7 @@ namespace ScriptCanvasEditor
             DisconnectById(scConnectionId);
 
             UpdateCorrespondingImplicitConnection(sourceEndpoint, targetEndpoint);
+            RefreshRerouteInputDisplays(targetEndpoint);
         }
     }
 
@@ -1138,6 +1139,10 @@ namespace ScriptCanvasEditor
         }
 
         UpdateCorrespondingImplicitConnection(scSourceEndpoint, scTargetEndpoint);
+        if (scConnected)
+        {
+            RefreshRerouteInputDisplays(scTargetEndpoint);
+        }
 
         return scConnected;
     }
@@ -1221,6 +1226,55 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Endpoint scTargetEndpoint = ConvertToScriptCanvasEndpoint(targetPoint);
 
         return CanCreateConnectionBetween(scSourceEndpoint, scTargetEndpoint).IsSuccess();
+    }
+
+    bool EditorGraph::IsSlotConnected(const GraphCanvas::Endpoint& endpoint) const
+    {
+        const ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
+        if (const ScriptCanvas::Node* node = FindNode(scEndpoint.GetNodeId()))
+        {
+            if (const ScriptCanvas::Slot* slot = node->GetSlot(scEndpoint.GetSlotId()); slot && slot->IsData() && slot->IsInput())
+            {
+                return !node->GetConnectedNodesForTranslation(*slot).empty();
+            }
+        }
+        return GraphCanvas::GraphModelRequests::IsSlotConnected(endpoint);
+    }
+
+    void EditorGraph::RefreshRerouteInputDisplays(const ScriptCanvas::Endpoint& endpoint)
+    {
+        const ScriptCanvas::Node* node = FindNode(endpoint.GetNodeId());
+        if (!node || !node->IsConnectionTransparentForTranslation())
+        {
+            return;
+        }
+
+        for (const ScriptCanvas::Slot* output : node->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut))
+        {
+            for (const ScriptCanvas::Endpoint& connectedEndpoint : GetConnectedEndpoints(output->GetEndpoint()))
+            {
+                const ScriptCanvas::Node* connectedNode = FindNode(connectedEndpoint.GetNodeId());
+                if (!connectedNode)
+                {
+                    continue;
+                }
+                const ScriptCanvas::Slot* connectedSlot = connectedNode->GetSlot(connectedEndpoint.GetSlotId());
+                if (!connectedSlot)
+                {
+                    continue;
+                }
+                for (const auto& [targetNode, targetSlot] : connectedNode->GetNonTransparentEndpoints(*connectedSlot))
+                {
+                    targetNode->GetSlot(targetSlot->GetId())->UpdateDatumVisibility();
+
+                    GraphCanvas::SlotId canvasSlot;
+                    SlotMappingRequestBus::EventResult(
+                        canvasSlot, targetNode->GetEntityId(), &SlotMappingRequests::MapToGraphCanvasId, targetSlot->GetId());
+                    GraphCanvas::DataSlotRequestBus::Event(canvasSlot, &GraphCanvas::DataSlotRequests::UpdatePropertyDisplayState);
+                }
+            }
+        }
+        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RebuildPropertyGrid);
     }
 
     AZStd::string EditorGraph::GetDataTypeString(const AZ::Uuid&)
@@ -2345,7 +2399,7 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        if (activeSlot->IsVariableReference())
+        if (activeSlot->IsVariableReference() || !activeSlot->CanConvertTypes())
         {
             return false;
         }
