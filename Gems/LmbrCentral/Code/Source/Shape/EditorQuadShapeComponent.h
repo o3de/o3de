@@ -10,6 +10,9 @@
 
 #include "EditorBaseShapeComponent.h"
 #include "QuadShapeComponent.h"
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/QuadManipulatorRequestBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 
@@ -19,6 +22,8 @@ namespace LmbrCentral
     class EditorQuadShapeComponent
         : public EditorBaseShapeComponent
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
+        , private AzToolsFramework::QuadManipulatorRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(LmbrCentral::EditorQuadShapeComponent, EditorQuadShapeComponentTypeId, EditorBaseShapeComponent);
@@ -46,8 +51,23 @@ namespace LmbrCentral
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
+        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
+        AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
+
+        // AzToolsFramework::QuadManipulatorRequestBus overrides ...
+        float GetWidth() const override;
+        void SetWidth(float width) override;
+        float GetHeight() const override;
+        void SetHeight(float width) override;
+
         void ConfigurationChanged();
 
         QuadShape m_quadShape; //! Stores underlying quad representation for this component.
+
+        using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
+        ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
     };
 } // namespace LmbrCentral
