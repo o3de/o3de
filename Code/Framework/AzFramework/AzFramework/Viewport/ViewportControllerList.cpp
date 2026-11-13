@@ -39,7 +39,7 @@ namespace AzFramework
         for (auto &controllerData : m_controllers)
         {
             auto& controllerList = controllerData.second;
-            controllerList.erase(AZStd::remove(controllerList.begin(), controllerList.end(), controller));
+            controllerList.erase(AZStd::remove(controllerList.begin(), controllerList.end(), controller), controllerList.end());
         }
     }
 
