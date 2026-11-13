@@ -127,7 +127,7 @@ namespace AZ
         static void SetInstance(TaskExecutor* executor);
 
         // Passing 0 for the threadCount requests for the thread count to match the hardware concurrency
-        explicit TaskExecutor(uint32_t threadCount = 0);
+        explicit TaskExecutor(uint32_t threadCount = 0, bool finishTasksBeforeQuit = false);
         ~TaskExecutor();
 
         // Submit a task graph for execution. Waitable task graphs cannot enqueue work on the task thread
@@ -151,6 +151,10 @@ namespace AZ
         uint32_t m_threadCount = 0;
         AZStd::atomic<uint32_t> m_lastSubmission;
         AZStd::atomic<uint64_t> m_graphsRemaining;
+        AZStd::atomic<bool> m_active;
+        const bool m_finishTasksBeforeQuit = false;
+
+        AZStd::atomic<uint32_t> m_taskCount = 0; // sum of queued tasks
 
         // Implement basic CompiledTaskGraph event breadcrumbs to help debug
         // https://github.com/o3de/o3de/issues/12015
