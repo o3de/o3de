@@ -11,8 +11,8 @@
 # Python package info
 ly_set(LY_PYTHON_VERSION 3.15.2)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.15)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev1-mac-arm64)
-ly_set(LY_PYTHON_PACKAGE_HASH 46fddb442ffead5ff1282e02a29f0460122d21948078dba5bd5c06083f22f9bb)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev2-mac-arm64)
+ly_set(LY_PYTHON_PACKAGE_HASH bf6c6f10e6b78f11426eb74eea86a338f3f7357c226ce034a2ef194e1140792f)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "python/Python.framework/Versions/Current/bin/")

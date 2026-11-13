@@ -11,8 +11,8 @@
 # Python package info
 ly_set(LY_PYTHON_VERSION 3.15.2)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.15)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev1-windows)
-ly_set(LY_PYTHON_PACKAGE_HASH 6a923f3bf90b32f7afb72fe87832388c201db595019a7c7dcf21ebdecd7f5a02)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.15.2-rev2-windows)
+ly_set(LY_PYTHON_PACKAGE_HASH 8dec6f4c853738e7a100072c97fe956e9c16ccb57ec44abe2538fd4bf49caa84)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "python")
