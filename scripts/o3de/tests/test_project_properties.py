@@ -216,7 +216,8 @@ class TestEditProjectProperties:
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch, \
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
-                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch:
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
+                patch('o3de.manifest.get_registered', return_value=None):
             result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_id,
                                                            project_origin, project_display, project_summary, project_icon,
                                                            add_tags, delete_tags, replace_tags,
@@ -257,4 +258,48 @@ class TestEditProjectProperties:
                 assert set(self.project_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
                 assert set(self.project_json.data.get('engine_api_dependencies', [])) == set(expected_engine_api_dependencies)
             elif not project_path:
-                assert not self.project_json.data
+                save_o3de_manifest_patch.assert_not_called()
+
+
+@pytest.mark.parametrize("user", [False, True])
+@pytest.mark.parametrize("use_project_name", [False, True])
+def test_edit_project_properties_by_name_or_path(tmp_path, user, use_project_name):
+    project_path = tmp_path / 'TestProject'
+    project_path.mkdir()
+    project_json_path = project_path / 'project.json'
+    project_json_path.write_text(TEST_PROJECT_JSON_PAYLOAD)
+    manifest_path = tmp_path / 'o3de_manifest.json'
+    manifest_path.write_text(json.dumps({'projects': [project_path.as_posix()]}))
+    target_path = project_path / 'user' / 'project.json' if user else project_json_path
+
+    with patch('o3de.manifest.get_o3de_manifest', return_value=manifest_path), \
+            patch('o3de.manifest.get_engine_projects', return_value=[]):
+        result = project_properties.edit_project_props(
+            proj_name='TestProject' if use_project_name else None,
+            proj_path=None if use_project_name else project_path,
+            new_summary='Updated summary', user=user)
+
+    assert result == 0
+    expected_data = {} if user else json.loads(TEST_PROJECT_JSON_PAYLOAD)
+    expected_data['summary'] = 'Updated summary'
+    assert json.loads(target_path.read_text()) == expected_data
+    if user:
+        assert project_json_path.read_text() == TEST_PROJECT_JSON_PAYLOAD
+    else:
+        assert not (project_path / 'user').exists()
+
+
+@pytest.mark.parametrize("user", [False, True])
+def test_edit_project_properties_unregistered_name(tmp_path, user):
+    manifest_path = tmp_path / 'o3de_manifest.json'
+    manifest_path.write_text(json.dumps({'projects': []}))
+
+    with patch('o3de.manifest.get_o3de_manifest', return_value=manifest_path), \
+            patch('o3de.manifest.get_engine_projects', return_value=[]), \
+            patch('o3de.manifest.save_o3de_manifest') as save_o3de_manifest_patch:
+        result = project_properties.edit_project_props(
+            proj_name='MissingProject', new_summary='Updated summary', user=user)
+
+    assert result == 1
+    save_o3de_manifest_patch.assert_not_called()
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['o3de_manifest.json']
