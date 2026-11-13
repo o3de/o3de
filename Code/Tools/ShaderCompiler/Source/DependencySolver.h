@@ -88,6 +88,8 @@ namespace AZ::ShaderCompiler
         unordered_set<ID> m_permMarks;
         unordered_set<ID> m_tempMarks;
         vector<ID> m_result; // L
+        // Permanent marks are only added during Solve(), so scanned nodes do not need revisiting.
+        size_t m_selectCursor = 0;
     };
 }
 
