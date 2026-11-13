@@ -71,6 +71,17 @@ function(o3de_find_3rdparty_package package)
     get_property(additional_module_paths GLOBAL PROPERTY LY_ADDITIONAL_MODULE_PATH)
     list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
     ly_download_associated_package("${package}")
+    # Qt's own CMake configs run nested find_package(Qt6*Tools) calls.
+    # Pin them to the O3DE bundle before loading FindQt: otherwise an
+    # unrelated system Qt or stale Qt6*Tools_DIR cache entry may be used.
+    if(package STREQUAL "Qt")
+        ly_get_package_association(Qt qt_package_name)
+        if(qt_package_name)
+            ly_package_get_target_folder("${qt_package_name}" qt_package_download_root)
+            include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/3rdParty/PinBundledQtPackages.cmake")
+            o3de_pin_bundled_qt_package_configs("${qt_package_download_root}/${qt_package_name}")
+        endif()
+    endif()
     find_package(${package} REQUIRED MODULE GLOBAL COMPONENTS ${ARGN})
 endfunction()
 
