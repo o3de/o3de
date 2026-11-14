@@ -67,8 +67,6 @@ def _get_build_directory(config):
         logger.debug(f'Custom build directory set via cli arg to: {custom_build_directory}')
         if not os.path.exists(custom_build_directory):
             raise ValueError(f'Pytest custom argument "--build-directory" does not exist at: {custom_build_directory}')
-        if custom_build_directory.endswith('debug'):
-            pytest.exit("Python debug modules are not available. LyTestTools test skipped.", 0)
     else:
         # only warn when unset, allowing non-LyTT tests to still use pytest
         logger.warning(f'Pytest custom argument "--build-directory" was not provided, tests using LyTestTools will fail')

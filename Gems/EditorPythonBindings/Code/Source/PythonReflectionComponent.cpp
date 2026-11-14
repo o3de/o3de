@@ -338,7 +338,11 @@ namespace EditorPythonBindings
 
     void PythonReflectionComponent::OnPreFinalize()
     {
-        m_staticPropertyHolderMap.reset();
+        if (m_staticPropertyHolderMap)
+        {
+            pybind11::gil_scoped_acquire acquire;
+            m_staticPropertyHolderMap.reset();
+        }
         EditorPythonBindings::EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
     }
 
