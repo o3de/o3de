@@ -11,8 +11,10 @@
 #include "WhiteBoxMaterial.h"
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ
@@ -46,6 +48,9 @@ namespace WhiteBox
 
         AZ::Vector3 m_position;
         AZ::Vector2 m_uv;
+        AZ::Vector3 m_normal = AZ::Vector3::CreateZero(); //!< Smoothed corner normal; zero uses the flat face normal.
+        AZ::Vector3 m_blend = AZ::Vector3::CreateZero();  //!< Vertex-blend layer weights (x layer 2, y layer 3).
+        AZ::Vector2 m_lightmapUv = AZ::Vector2::CreateZero(); //!< Render-time only: the UV1 / lightmap corner.
     };
 
     //! Triangle primitive with face normals
@@ -58,9 +63,27 @@ namespace WhiteBox
         WhiteBoxVertex m_v2;
         WhiteBoxVertex m_v3;
         AZ::Vector3 m_normal;
+        AZ::u32 m_paintColor = 0; //!< Packed face paint override; zero inherits the material/layer color.
+        //! Polygon override, or empty to inherit WhiteBoxMaterial::m_materialAsset.
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset{AZ::Data::AssetLoadBehavior::PreLoad};
+        AZ::Vector4 m_color = AZ::Vector4::CreateOne(); //!< Per-face tint (per-layer colour); white = untinted.
+        //! Render-time only, not stored: COLOR0 carries the corners' blend weights instead of the tint, because the face
+        //! is drawn with a custom material (the built-in one is the only user of the tint).
+        bool m_colorFromBlend = false;
+        //! Render-time only: the corners carry lightmap UVs (else UV1 repeats the texture UVs).
+        bool m_hasLightmapUv = false;
     };
 
     //! Builds a vector of visible faces by removing the degenerate faces from the source data
     WhiteBoxFaces BuildCulledWhiteBoxFaces(const WhiteBoxFaces& sourceData);
+
+    //! Packs render data sets into one byte blob, so serialization is a single string rather than a
+    //! prefab DOM node per triangle.
+    AZStd::vector<AZ::u8> PackWhiteBoxRenderData(const AZStd::vector<const WhiteBoxRenderData*>& renderDataSets);
+
+    //! Unpacks a blob produced by PackWhiteBoxRenderData into @p renderDataSets, in the packed order.
+    //! Sets beyond the blob's contents (and every set when the blob is empty or malformed) are cleared.
+    bool UnpackWhiteBoxRenderData(
+        const AZStd::vector<AZ::u8>& blob, const AZStd::vector<WhiteBoxRenderData*>& renderDataSets);
 
 } // namespace WhiteBox

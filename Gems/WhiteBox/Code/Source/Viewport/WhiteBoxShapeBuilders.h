@@ -17,12 +17,27 @@
 
 namespace WhiteBox
 {
+    //! Torus tube tessellation, separate from the ring's sides (they multiply).
+    inline constexpr int MinTubeSides = 3;
+    inline constexpr int MaxTubeSides = 64;
+    inline constexpr int DefaultTubeSides = 12;
+
     //! Free geometry helpers used by DrawShapeMode to build white box shape solids
     //! (boxes, prisms, cones/pyramids, cylinders, spheres and staircases) from a drawn
     //! footprint. Declared here so DrawShapeMode.cpp keeps only their definitions and so
     //! they can be reused/tested. All faces are wound outward.
     namespace Detail
     {
+        //! Plane, torus and hollow pipe builders shared by viewport drawing and parametric layers.
+        void BuildAdditionalShape(
+            WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld, const AZ::Vector3& center,
+            const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up,
+            float baseUp, float topUp, DrawShapeType shape, int sides, float holeRatio, int tubeSides);
+        //! Triangulate a simple planar outline (concave allowed); a nonzero height makes a closed solid.
+        //! False, leaving the mesh unchanged, for crossing or degenerate outlines.
+        bool BuildPolygonFace(
+            WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld,
+            const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& normal, float extrusionHeight = 0.0f);
         //! Build a right-handed basis with @p n (the surface normal) as the up axis.
         void BasisFromNormal(const AZ::Vector3& n, AZ::Vector3& right, AZ::Vector3& fwd, AZ::Vector3& up);
 
@@ -68,12 +83,23 @@ namespace WhiteBox
             const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up, float baseUp, float topUp,
             int segmentsIn);
 
+        //! A hollow room on z in [0, height] centred at the origin, with interior size width x depth x height.
+        //! A nonzero @p cavityGap makes double walls; optional floor and ceiling slabs. One closed shell, no CSG.
+        void BuildRoomSolid(
+            WhiteBoxMesh& mesh, float interiorWidth, float interiorDepth, float interiorHeight, float wallThickness,
+            float cavityGap, bool floor, bool ceiling);
+
         //! Build a closed shape solid from a footprint (centre + in-plane axes) extruded along
         //! @p up between the base plane and the top plane/apex. Dispatches to the dedicated
         //! sphere/staircase builders or builds a prism/pyramid. All faces wound outward.
         void BuildShapeSolid(
             WhiteBoxMesh& mesh, const AZ::Transform& localFromWorld, const AZ::Vector3& center,
             const AZ::Vector3& uAxis, const AZ::Vector3& vAxis, const AZ::Vector3& up, float baseUp, float topUp,
-            DrawShapeType shapeType, int sidesIn, int steps = 8);
+            DrawShapeType shapeType, int sidesIn, int steps = 8, float holeRatio = 0.5f,
+            int tubeSides = DefaultTubeSides,
+            //! Only read by the parametric shells (Room, Door, Circular Stairs); ignored by the rest.
+            float wallThickness = 0.15f, float cavityGap = 0.1f, bool floor = true, bool ceiling = false,
+            bool doorFrame = true, float archHeight = 0.0f, float innerRadius = 0.5f,
+            float sweepAngle = 270.0f);
     } // namespace Detail
 } // namespace WhiteBox

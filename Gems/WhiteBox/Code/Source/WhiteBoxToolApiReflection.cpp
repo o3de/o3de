@@ -6,6 +6,7 @@
  *
  */
 
+#include "EditorWhiteBoxAuthoringBus.h"
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "WhiteBoxToolApiReflection.h"
 
@@ -262,10 +263,7 @@ namespace WhiteBox
                 ->Event(
                     "OnWhiteBoxMeshModified", &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
 
-            behaviorContext->EBus<WhiteBoxComponentRequestBus>("WhiteBoxComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "whitebox.request.bus")
-                ->Event("WhiteBoxIsVisible", &WhiteBoxComponentRequestBus::Events::WhiteBoxIsVisible);
+            // WhiteBoxComponentRequestBus is reflected in WhiteBoxComponent::Reflect (Common scope).
 
             behaviorContext->Class<WhiteBoxUtil>("util")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -283,6 +281,9 @@ namespace WhiteBox
                         return AZ::EntityComponentIdPair(AZ::EntityId(entityId), componentId);
                     });
         }
+
+        // Entity-addressed authoring bus: the pane's values and the id-based mesh tools, for Python and MCP.
+        ReflectAuthoring(context);
     }
 } // namespace WhiteBox
 

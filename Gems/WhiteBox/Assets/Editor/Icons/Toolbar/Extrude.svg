@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg4"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <title
+     id="title1">Extrude</title>
+  <path
+     d="m 3.2577498,11.096586 9.0321892,-5.0236785 9.032188,5.0236785 -9.032188,5.023679 z"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.97476"
+     stroke-linejoin="round"
+     id="path1" />
+  <path
+     d="m 3.2433963,10.871555 v 5.771318 l 9.0326787,4.90562 9.032679,-4.90562 v -5.771318"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.95147"
+     stroke-linejoin="round"
+     id="path2" />
+  <path
+     d="M 12.3,12.264446 V 3.6128842"
+     fill="none"
+     stroke="#67c7e8"
+     stroke-width="2"
+     stroke-linecap="round"
+     id="path3" />
+  <path
+     d="m 8.9,6.2112118 3.4,-4.2148627 3.4,4.2148627 z"
+     fill="#67c7e8"
+     id="path4"
+     style="stroke-width:1.05317" />
+  <path
+     style="fill:#dadada;fill-opacity:1;stroke-width:0.00216911"
+     d="m 12.249052,22.337047 c -0.328944,-0.04851 -0.601044,-0.28637 -0.669743,-0.585469 -0.01503,-0.06545 -0.01871,-0.786832 -0.01478,-2.905226 l 0.0052,-2.818149 0.0399,-0.09221 c 0.0584,-0.13495 0.180416,-0.276867 0.304959,-0.354693 0.466231,-0.291342 1.093255,-0.07202 1.233969,0.431625 0.02292,0.08202 0.02601,0.427736 0.02583,2.888209 -1.65e-4,2.283201 -0.0044,2.809528 -0.02292,2.874194 -0.107249,0.373739 -0.503716,0.620518 -0.902437,0.56172 z"
+     id="path8" />
+</svg>

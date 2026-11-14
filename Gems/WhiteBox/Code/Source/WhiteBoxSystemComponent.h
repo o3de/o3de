@@ -41,6 +41,7 @@ namespace WhiteBox
 
         // WhiteBoxRequestBus ...
         AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface(AZ::EntityId entityId) override;
+        AZStd::unique_ptr<RenderMeshInterface> CreateAuxiliaryRenderMeshInterface(AZ::EntityId entityId) override;
         void SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder) override;
 
     protected:

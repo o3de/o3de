@@ -7,11 +7,16 @@
  */
 
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
+#include "Util/WhiteBoxEditorUtil.h"
 #include "Util/WhiteBoxMathUtil.h"
+#include "Util/WhiteBoxMeshUtil.h"
+#include "Util/WhiteBoxSnapUtil.h"
 #include "Viewport/WhiteBoxModifierUtil.h"
+#include "Viewport/WhiteBoxManipulatorViews.h"
 #include "WhiteBox/WhiteBoxToolApi.h"
 #include "WhiteBoxVertexTranslationModifier.h"
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -39,6 +44,8 @@ AZ_CVAR(
 AZ_CVAR(
     float, cl_whiteBoxVertexTranslationAxisWidth, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
     "The thickness of the line for the vertex translation axes");
+// note: the snap highlight colour/size CVARs live in Util/WhiteBoxSnapUtil.cpp so every
+// snapping tool draws the same marker.
 
 namespace WhiteBox
 {
@@ -47,6 +54,15 @@ namespace WhiteBox
     static bool IsAxisValid(const int axisIndex)
     {
         return axisIndex != VertexTranslationModifier::InvalidAxisIndex;
+    }
+
+    //! The snap target under the cursor, excluding @p excludeVertexHandle (the dragged vertex). Source indices
+    //! come from the evaluated mesh, so with a live boolean or stamps the exclusion can miss (harmlessly).
+    static AZStd::optional<AZ::Vector3> FindVertexSnapTargetWorld(
+        const AZ::EntityId entityId, const int viewportId, const Api::VertexHandle excludeVertexHandle)
+    {
+        const AZStd::vector<AZ::s64> exclude{aznumeric_cast<AZ::s64>(excludeVertexHandle.Index())};
+        return SnapUtil::FindSnapTargetWorld(entityId, viewportId, exclude);
     }
 
     VertexTranslationModifier::VertexTranslationModifier(
@@ -64,6 +80,8 @@ namespace WhiteBox
     {
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
 
+        // Safety net, as in the other modifiers (the invalidate callback only fires via Unregister).
+        CancelDrag(false);
         DestroyManipulator();
     }
 
@@ -72,7 +90,7 @@ namespace WhiteBox
         const AZStd::vector<AZStd::pair<AZ::Vector3, AZ::Vector3>>& edgeBeginEnds)
     {
         const auto cameraState = AzToolsFramework::GetCameraState(action.m_viewportId);
-        const auto worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityId);
+        const auto worldFromLocal = EditorSpaceFromLocal(entityId);
 
         int axisIndex = VertexTranslationModifier::InvalidAxisIndex;
         float maxLength = 0.0f;
@@ -110,7 +128,7 @@ namespace WhiteBox
 
         // create the manipulator in the local space of the entity the white box component is on
         m_translationManipulator = MultiLinearManipulator::MakeShared(
-            AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId()));
+            EditorSpaceFromLocal(m_entityComponentIdPair));
 
         m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_translationManipulator->AddEntityComponentIdPair(m_entityComponentIdPair);
@@ -129,9 +147,6 @@ namespace WhiteBox
             AZStd::vector<AZStd::pair<AZ::Vector3, AZ::Vector3>> m_edgeBeginEnds;
             // has the modifier moved during the action
             bool m_moved = false;
-            
-            // copy of the whitebox mesh before modifying
-            Api::WhiteBoxMeshPtr m_originalMesh = nullptr; 
         };
 
         auto sharedState = AZStd::make_shared<SharedState>();
@@ -148,9 +163,12 @@ namespace WhiteBox
 
                 sharedState->m_appendStage = AppendStage::None;
                 sharedState->m_moved = false;
-                sharedState->m_originalMesh = Api::CloneMesh(*whiteBox);
+                m_dragSnapshot = Api::CloneMesh(*whiteBox);
+                m_dragCancelled = false;
                 sharedState->m_edgeBeginEnds.clear();
                 m_actionIndex = InvalidAxisIndex;
+                m_snapTargetWorld.reset();
+                SnapUtil::ClearActiveSnapTarget();
 
                 m_localPositionAtMouseDown = m_translationManipulator->GetLocalPosition();
 
@@ -167,12 +185,23 @@ namespace WhiteBox
         m_translationManipulator->InstallMouseMoveCallback(
             [this, sharedState](const MultiLinearManipulator::Action& action)
             {
+                // the drag was abandoned with Escape - ignore movement until the button is released
+                if (m_dragCancelled)
+                {
+                    return;
+                }
+
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
                 m_actionIndex =
                     FindClosestAxis(m_entityComponentIdPair.GetEntityId(), action, sharedState->m_edgeBeginEnds);
+
+                // A snap target overrides the axis-constrained position; queried first so the marker clears.
+                m_snapTargetWorld = FindVertexSnapTargetWorld(
+                    m_entityComponentIdPair.GetEntityId(), action.m_viewportId, m_vertexHandle);
+                SnapUtil::SetActiveSnapTarget(m_snapTargetWorld);
 
                 if (m_actionIndex != InvalidAxisIndex)
                 {
@@ -181,8 +210,12 @@ namespace WhiteBox
                         action.m_actions[m_actionIndex].LocalPositionOffset().GetLength() >=
                             cl_whiteBoxMouseClickDeltaThreshold;
 
+                    const AZ::Vector3 targetLocalPosition = m_snapTargetWorld.has_value()
+                        ? SnapUtil::MeshLocalFromWorld(m_entityComponentIdPair.GetEntityId(), m_snapTargetWorld.value())
+                        : action.m_actions[m_actionIndex].LocalPosition();
+
                     // update vertex and position of manipulator
-                    Api::SetVertexPosition(*whiteBox, m_vertexHandle, action.m_actions[m_actionIndex].LocalPosition());
+                    Api::SetVertexPosition(*whiteBox, m_vertexHandle, targetLocalPosition);
                     m_translationManipulator->SetLocalPosition(Api::VertexPosition(*whiteBox, m_vertexHandle));
 
                     EditorWhiteBoxComponentModeRequestBus::Event(
@@ -221,18 +254,17 @@ namespace WhiteBox
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-                Api::WhiteBoxMeshStream clondData;
-                if (sharedState->m_originalMesh && Api::ReadMesh(*sharedState->m_originalMesh.get(), clondData) == Api::ReadResult::Full)
+                if (m_dragSnapshot)
                 {
-                    if (!Api::WriteMesh(*whiteBox, clondData))
-                    {
-                        AZ_Error("WhiteBox", false, "failed to restore WhiteBox mesh");
-                    }
+                    RestoreMeshFromSnapshot(*whiteBox, *m_dragSnapshot);
                 }
 
-                sharedState->m_originalMesh = nullptr;
+                m_dragSnapshot = nullptr;
+                m_dragCancelled = false;
                 m_pressTime = 0.0f;
                 m_actionIndex = InvalidAxisIndex;
+                m_snapTargetWorld.reset();
+                SnapUtil::ClearActiveSnapTarget();
                 this->AZ::TickBus::Handler::BusDisconnect();
             });
 
@@ -241,6 +273,19 @@ namespace WhiteBox
              translationManipulator = AZStd::weak_ptr<MultiLinearManipulator>(m_translationManipulator)](
                 [[maybe_unused]] const MultiLinearManipulator::Action& action)
             {
+                if (m_dragCancelled)
+                {
+                    // reverted by Escape - nothing to commit
+                    m_dragCancelled = false;
+                    m_dragSnapshot = nullptr;
+                    m_pressTime = 0.0f;
+                    m_actionIndex = InvalidAxisIndex;
+                    m_snapTargetWorld.reset();
+                    SnapUtil::ClearActiveSnapTarget();
+                    this->AZ::TickBus::Handler::BusDisconnect();
+                    return;
+                }
+
                 // we haven't moved, count as a click
                 if (!sharedState->m_moved)
                 {
@@ -261,13 +306,15 @@ namespace WhiteBox
                         manipulator->AddAxes(Api::VertexUserEdgeAxes(*whiteBox, m_vertexHandle));
                     }
 
-                    sharedState->m_originalMesh = nullptr;
+                    m_dragSnapshot = nullptr;
                     EditorWhiteBoxComponentRequestBus::Event(
                         m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
                 }
 
                 m_pressTime = 0.0f;
                 m_actionIndex = InvalidAxisIndex;
+                m_snapTargetWorld.reset();
+                SnapUtil::ClearActiveSnapTarget();
                 this->AZ::TickBus::Handler::BusDisconnect();
             });
     }
@@ -278,8 +325,8 @@ namespace WhiteBox
 
         if (!m_vertexView)
         {
-            m_vertexView = AzToolsFramework::CreateManipulatorViewSphere(
-                m_color, cl_whiteBoxVertexManipulatorSize,
+            m_vertexView = CreateManipulatorViewVertexDot(
+                m_color,
                 []([[maybe_unused]] const MouseInteraction& mouseInteraction, [[maybe_unused]] const bool mouseOver,
                    const AZ::Color& defaultColor)
                 {
@@ -320,13 +367,54 @@ namespace WhiteBox
         return m_translationManipulator->PerformingAction();
     }
 
+    bool VertexTranslationModifier::CancelDrag(const bool notify)
+    {
+        if (!PerformingAction() || m_dragCancelled || !m_dragSnapshot)
+        {
+            return false;
+        }
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+        if (whiteBox == nullptr)
+        {
+            return false;
+        }
+
+        RestoreMeshFromSnapshot(*whiteBox, *m_dragSnapshot);
+
+        // The manipulator keeps its own interaction state until the mouse is released, so rather
+        // than trying to abort it we latch a flag and ignore movement for the rest of the drag.
+        m_dragCancelled = true;
+        m_actionIndex = InvalidAxisIndex;
+        m_snapTargetWorld.reset();
+        SnapUtil::ClearActiveSnapTarget();
+
+        m_translationManipulator->SetLocalPosition(Api::VertexPosition(*whiteBox, m_vertexHandle));
+
+        if (notify)
+        {
+            EditorWhiteBoxComponentModeRequestBus::Event(
+                m_entityComponentIdPair,
+                &EditorWhiteBoxComponentModeRequestBus::Events::MarkWhiteBoxIntersectionDataDirty);
+
+            EditorWhiteBoxComponentNotificationBus::Event(
+                m_entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
+        }
+
+        return true;
+    }
+
     void VertexTranslationModifier::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        // The snap marker is drawn by EditorWhiteBoxComponentMode.
+
         if (PerformingAction() && m_pressTime >= cl_whiteBoxVertexTranslationPressTime)
         {
-            const auto worldFromLocal =
-                AzToolsFramework::WorldFromLocalWithUniformScale(m_entityComponentIdPair.GetEntityId());
+            const auto worldFromLocal = EditorSpaceFromLocal(m_entityComponentIdPair);
 
             debugDisplay.PushMatrix(worldFromLocal);
 

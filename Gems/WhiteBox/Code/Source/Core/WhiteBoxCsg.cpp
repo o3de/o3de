@@ -23,6 +23,7 @@
 #include <WhiteBox/WhiteBoxToolApi.h>
 
 #include <cmath>
+#include <cstdlib>
 
 namespace WhiteBox
 {
@@ -35,6 +36,101 @@ namespace WhiteBox
             // two adjacent triangles are merged into one polygon when their normals deviate
             // by less than this (dot product threshold, ~0.5 degrees)
             constexpr float CoplanarNormalDotThreshold = 0.99996f;
+            // The solvers keep one string per triangle, so a non-default UV projection rides after the material id.
+            constexpr char UvProjectionSeparator = '';
+            constexpr char SmoothingSeparator = '\x1e'; // smoothing groups ride at the end of the key
+
+            std::string EncodeFaceKey(const AZ::Data::AssetId& material, const UvProjection& projection, const AZ::u32 smoothing)
+            {
+                std::string key = material.IsValid() ? material.ToString<AZStd::string>().c_str() : "";
+                if (!projection.IsDefault())
+                {
+                    key += AZStd::string::format(
+                               "%c%u %.9g %.9g %.9g %.9g %.9g", UvProjectionSeparator, static_cast<unsigned>(projection.m_mode),
+                               projection.m_scale.GetX(), projection.m_scale.GetY(), projection.m_offset.GetX(),
+                               projection.m_offset.GetY(), projection.m_rotationDegrees)
+                               .c_str();
+                    // A Manual map is anchored at the origin and rounded, so the triangles of one flat polygon share a key.
+                    if (projection.m_mode == UvProjectionMode::Manual && projection.m_manual.IsValid())
+                    {
+                        const ManualUvMap& map = projection.m_manual;
+                        const AZ::Vector2 atOrigin = map.Evaluate(AZ::Vector3::CreateZero());
+                        key += AZStd::string::format(
+                                   " %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g %.6g", atOrigin.GetX(), atOrigin.GetY(),
+                                   map.m_uGradient.GetX(), map.m_uGradient.GetY(), map.m_uGradient.GetZ(), map.m_vGradient.GetX(),
+                                   map.m_vGradient.GetY(), map.m_vGradient.GetZ(), map.m_normal.GetX(), map.m_normal.GetY(),
+                                   map.m_normal.GetZ())
+                                   .c_str();
+                    }
+                }
+                if (smoothing != 0)
+                {
+                    key += AZStd::string::format("%c%u", SmoothingSeparator, static_cast<unsigned>(smoothing)).c_str();
+                }
+                return key;
+            }
+
+            void DecodeFaceKey(const std::string& fullKey, AZ::Data::AssetId& material, UvProjection& projection, AZ::u32& smoothing)
+            {
+                const size_t smoothingSplit = fullKey.find(SmoothingSeparator);
+                smoothing = smoothingSplit == std::string::npos
+                    ? 0u : static_cast<AZ::u32>(std::strtoul(fullKey.c_str() + smoothingSplit + 1, nullptr, 10));
+                const std::string key = fullKey.substr(0, smoothingSplit);
+                const size_t split = key.find(UvProjectionSeparator);
+                const std::string materialId = key.substr(0, split);
+                material = materialId.empty() ? AZ::Data::AssetId{} : AZ::Data::AssetId::CreateString(materialId.c_str());
+                projection = UvProjection{};
+                if (split == std::string::npos)
+                {
+                    return;
+                }
+                char* end = nullptr;
+                const unsigned long mode = std::strtoul(key.c_str() + split + 1, &end, 10);
+                float values[5] = { 1.0f, 1.0f, 0.0f, 0.0f, 0.0f };
+                for (float& value : values)
+                {
+                    const char* cursor = end;
+                    value = std::strtof(cursor, &end);
+                }
+                projection.m_mode = mode == static_cast<unsigned long>(UvProjectionMode::Planar)   ? UvProjectionMode::Planar
+                    : mode == static_cast<unsigned long>(UvProjectionMode::Manual) ? UvProjectionMode::Manual
+                                                                                   : UvProjectionMode::World;
+                projection.m_scale = AZ::Vector2(values[0], values[1]);
+                projection.m_offset = AZ::Vector2(values[2], values[3]);
+                projection.m_rotationDegrees = values[4];
+                if (projection.m_mode == UvProjectionMode::Manual)
+                {
+                    float map[11] = {};
+                    for (float& value : map)
+                    {
+                        const char* cursor = end;
+                        value = std::strtof(cursor, &end);
+                    }
+                    projection.m_manual.m_origin = AZ::Vector3::CreateZero();
+                    projection.m_manual.m_originUv = AZ::Vector2(map[0], map[1]);
+                    projection.m_manual.m_uGradient = AZ::Vector3(map[2], map[3], map[4]);
+                    projection.m_manual.m_vGradient = AZ::Vector3(map[5], map[6], map[7]);
+                    projection.m_manual.m_normal = AZ::Vector3(map[8], map[9], map[10]);
+                }
+            }
+
+            // A Manual map moved into the space the solver works in, so a cutter's authored UVs land where its faces do.
+            UvProjection TransformedProjection(UvProjection projection, const AZ::Transform& transform)
+            {
+                if (projection.m_mode != UvProjectionMode::Manual || !projection.m_manual.IsValid() || transform.IsClose(AZ::Transform::CreateIdentity()))
+                {
+                    return projection;
+                }
+                // For p' = sRp + t the gradient becomes Rg / s, which is TransformVector(g) / s^2.
+                const float scale = transform.GetUniformScale();
+                const float inverseScaleSq = scale > 0.0f ? 1.0f / (scale * scale) : 1.0f;
+                ManualUvMap& map = projection.m_manual;
+                map.m_origin = transform.TransformPoint(map.m_origin);
+                map.m_uGradient = transform.TransformVector(map.m_uGradient) * inverseScaleSq;
+                map.m_vGradient = transform.TransformVector(map.m_vGradient) * inverseScaleSq;
+                map.m_normal = transform.TransformVector(map.m_normal).GetNormalizedSafe();
+                return projection;
+            }
         } // namespace
 
         namespace Detail
@@ -49,9 +145,17 @@ namespace WhiteBox
                 triangleMesh.m_positions.reserve(faces.size() * 9);
                 triangleMesh.m_indices.reserve(faces.size() * 3);
 
+                const FaceHandles faceHandles = MeshFaceHandles(whiteBox);
+                size_t faceIndex = 0;
                 uint32_t index = 0;
                 for (const Face& face : faces)
                 {
+                    triangleMesh.m_colors.push_back(FacePaintColor(whiteBox, faceHandles[faceIndex]));
+                    triangleMesh.m_materials.emplace_back(EncodeFaceKey(
+                        FaceMaterial(whiteBox, faceHandles[faceIndex]),
+                        TransformedProjection(FaceUvProjection(whiteBox, faceHandles[faceIndex]), transform),
+                        FaceSmoothingGroups(whiteBox, faceHandles[faceIndex])));
+                    ++faceIndex;
                     for (const AZ::Vector3& position : face)
                     {
                         const AZ::Vector3 transformedPosition = transform.TransformPoint(position);
@@ -141,6 +245,8 @@ namespace WhiteBox
                             for (const size_t neighborTriangle : neighbors)
                             {
                                 if (!visited[neighborTriangle] &&
+                                    triangleMesh.Material(triangleIndex) == triangleMesh.Material(neighborTriangle) &&
+                                    triangleMesh.Color(triangleIndex) == triangleMesh.Color(neighborTriangle) &&
                                     triangleNormals[triangleIndex].Dot(triangleNormals[neighborTriangle]) >
                                         CoplanarNormalDotThreshold)
                                 {
@@ -790,7 +896,18 @@ namespace WhiteBox
                             FaceVertHandles{ handleFor(t[0]), handleFor(t[1]), handleFor(t[2]) });
                     }
 
-                    AddPolygon(whiteBox, faceVertHandlesList);
+                    const PolygonHandle polygon = AddPolygon(whiteBox, faceVertHandlesList);
+                    AZ::Data::AssetId material;
+                    UvProjection projection;
+                    AZ::u32 smoothing = 0;
+                    DecodeFaceKey(triangleMesh.Material(groups[gi].front()), material, projection, smoothing);
+                    SetPolygonMaterial(whiteBox, polygon, material);
+                    for (const FaceHandle face : polygon.m_faceHandles)
+                    {
+                        SetFacePaintColor(whiteBox, face, triangleMesh.Color(groups[gi].front()));
+                        SetFaceUvProjection(whiteBox, face, projection);
+                        SetFaceSmoothingGroups(whiteBox, face, smoothing);
+                    }
                 }
 
                 CalculateNormals(whiteBox);
@@ -798,9 +915,55 @@ namespace WhiteBox
             }
         } // namespace Detail
 
+        namespace
+        {
+            // Painted vertex-blend weights keyed by position, so a rebuild can hand them back to the vertices that survive it.
+            using BlendByPosition = AZStd::unordered_map<size_t, AZ::Vector3>;
+
+            size_t PositionKey(const AZ::Vector3& position)
+            {
+                size_t key = 0;
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetX() * 1e4)));
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetY() * 1e4)));
+                AZStd::hash_combine(key, static_cast<AZ::s64>(std::llround(position.GetZ() * 1e4)));
+                return key;
+            }
+
+            void CaptureBlend(const WhiteBoxMesh& whiteBox, const AZ::Transform& transform, BlendByPosition& blend)
+            {
+                if (!MeshHasVertexBlend(whiteBox))
+                {
+                    return;
+                }
+                for (const auto vertex : MeshVertexHandles(whiteBox))
+                {
+                    if (VertexBlendPainted(whiteBox, vertex))
+                    {
+                        blend[PositionKey(transform.TransformPoint(VertexPosition(whiteBox, vertex)))] = VertexBlend(whiteBox, vertex);
+                    }
+                }
+            }
+
+            // Vertices a cut created find nothing here, and blend in from their painted neighbours when drawn.
+            void RestoreBlend(WhiteBoxMesh& whiteBox, const BlendByPosition& blend)
+            {
+                if (blend.empty())
+                {
+                    return;
+                }
+                for (const auto vertex : MeshVertexHandles(whiteBox))
+                {
+                    if (const auto found = blend.find(PositionKey(VertexPosition(whiteBox, vertex))); found != blend.end())
+                    {
+                        SetVertexBlend(whiteBox, vertex, found->second);
+                    }
+                }
+            }
+        } // namespace
+
         bool ApplyMeshBoolean(
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
-            const BooleanOperation operation)
+            const BooleanOperation operation, const CsgSolver solver)
         {
             const auto csgOperation = [operation]
             {
@@ -818,16 +981,148 @@ namespace WhiteBox
 
             const Csg::TriangleMesh meshA = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
             const Csg::TriangleMesh meshB = Detail::ToTriangleMesh(operand, operandTransform);
+            BlendByPosition blend;
+            CaptureBlend(operand, operandTransform, blend);
+            CaptureBlend(whiteBox, AZ::Transform::CreateIdentity(), blend); // the target's own paint wins where both meet
 
             Csg::TriangleMesh result;
 
-            if (!Csg::MeshBoolean(meshA, meshB, csgOperation, result))
+            // Fast (BSP) composes inward-facing shells like Blender's Fast solver. Either solver falls
+            // back to the other when it returns nothing.
+            const bool preferBsp = (solver == CsgSolver::Fast);
+            const bool primaryOk = preferBsp ? Csg::MeshBooleanBsp(meshA, meshB, csgOperation, result)
+                                             : Csg::MeshBoolean(meshA, meshB, csgOperation, result);
+            if (!primaryOk)
+            {
+                const bool fallbackOk = preferBsp ? Csg::MeshBoolean(meshA, meshB, csgOperation, result)
+                                                  : Csg::MeshBooleanBsp(meshA, meshB, csgOperation, result);
+                if (!fallbackOk)
+                {
+                    return false;
+                }
+            }
+            Detail::RebuildFromTriangleMesh(whiteBox, result);
+            RestoreBlend(whiteBox, blend);
+
+            return true;
+        }
+
+        bool RepairMesh(WhiteBoxMesh& whiteBox)
+        {
+            // Round-trip through a triangle soup, exactly as the boolean does with its inputs.
+            const Csg::TriangleMesh soup = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
+            if (soup.m_indices.empty())
             {
                 return false;
             }
-            Detail::RebuildFromTriangleMesh(whiteBox, result);
-
+            BlendByPosition blend;
+            CaptureBlend(whiteBox, AZ::Transform::CreateIdentity(), blend);
+            Detail::RebuildFromTriangleMesh(whiteBox, soup);
+            RestoreBlend(whiteBox, blend);
             return true;
+        }
+
+        bool BuildFromTriangles(
+            WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<AZ::u32>& indices,
+            const AZStd::vector<AZ::Data::AssetId>& triangleMaterials)
+        {
+            Csg::TriangleMesh soup;
+            soup.m_positions.reserve(positions.size() * 3);
+            for (const AZ::Vector3& position : positions)
+            {
+                soup.m_positions.push_back(position.GetX());
+                soup.m_positions.push_back(position.GetY());
+                soup.m_positions.push_back(position.GetZ());
+            }
+            const size_t triangleCount = indices.size() / 3;
+            soup.m_indices.reserve(triangleCount * 3);
+            for (size_t triangle = 0; triangle < triangleCount; ++triangle)
+            {
+                const AZ::u32 a = indices[triangle * 3 + 0];
+                const AZ::u32 b = indices[triangle * 3 + 1];
+                const AZ::u32 c = indices[triangle * 3 + 2];
+                if (a >= positions.size() || b >= positions.size() || c >= positions.size() || a == b || b == c || a == c)
+                {
+                    continue;
+                }
+                soup.m_indices.insert(soup.m_indices.end(), { a, b, c });
+                const AZ::Data::AssetId material = triangle < triangleMaterials.size() ? triangleMaterials[triangle] : AZ::Data::AssetId{};
+                soup.m_materials.emplace_back(EncodeFaceKey(material, UvProjection{}, 0));
+            }
+            // Seams split for UVs or normals in the source weld back into one surface.
+            Csg::WeldVertices(soup, WeldTolerance);
+            if (soup.m_indices.empty())
+            {
+                return false;
+            }
+            Detail::RebuildFromTriangleMesh(whiteBox, soup);
+            return true;
+        }
+
+        bool BuildColliderTriangles(
+            const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
+        {
+            vertices.clear();
+            indices.clear();
+
+            // Weld into an indexed triangle soup, then group coplanar-adjacent triangles into regions.
+            const Csg::TriangleMesh triangleMesh = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
+            if (triangleMesh.m_indices.empty())
+            {
+                return false;
+            }
+            const AZStd::vector<AZStd::vector<size_t>> groups = Detail::GroupCoplanarTriangles(triangleMesh);
+            const AZStd::unordered_set<uint32_t> removable = Detail::ComputeRemovableVertices(triangleMesh, groups);
+
+            // Emit vertices lazily so the collider buffer only holds the vertices actually used.
+            AZStd::unordered_map<uint32_t, AZ::u32> remap;
+            const auto emitVertex = [&](uint32_t globalIndex) -> AZ::u32
+            {
+                const auto it = remap.find(globalIndex);
+                if (it != remap.end())
+                {
+                    return it->second;
+                }
+                const AZ::u32 index = static_cast<AZ::u32>(vertices.size());
+                vertices.push_back(Detail::TriangleMeshPosition(triangleMesh, globalIndex));
+                remap.emplace(globalIndex, index);
+                return index;
+            };
+
+            for (const AZStd::vector<size_t>& group : groups)
+            {
+                // Re-triangulate the coplanar region with collinear edge vertices removed; on any
+                // failure keep the region's original triangles (never worse than a per-face cook).
+                AZStd::vector<AZStd::array<uint32_t, 3>> tris;
+                if (!Detail::CleanCoplanarGroup(
+                        triangleMesh, group, Detail::GroupNormal(triangleMesh, group), removable, tris))
+                {
+                    tris.clear();
+                    tris.reserve(group.size());
+                    for (const size_t t : group)
+                    {
+                        tris.push_back(
+                            { triangleMesh.m_indices[t * 3 + 0], triangleMesh.m_indices[t * 3 + 1],
+                              triangleMesh.m_indices[t * 3 + 2] });
+                    }
+                }
+
+                for (const AZStd::array<uint32_t, 3>& t : tris)
+                {
+                    const AZ::u32 a = emitVertex(t[0]);
+                    const AZ::u32 b = emitVertex(t[1]);
+                    const AZ::u32 c = emitVertex(t[2]);
+                    if (a == b || b == c || a == c)
+                    {
+                        continue; // drop degenerate triangles
+                    }
+                    indices.push_back(a);
+                    indices.push_back(b);
+                    indices.push_back(c);
+                }
+            }
+
+            return !indices.empty();
         }
     } // namespace Api
 } // namespace WhiteBox

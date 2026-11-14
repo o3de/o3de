@@ -71,6 +71,26 @@ namespace WhiteBox
                                                       //!< vertex handles hidden or not.
     };
 
+    //! A small vertex dot, like a DCC tool's: drawn at cl_whiteBoxVertexDrawSize but picked within the larger
+    //! cl_whiteBoxVertexManipulatorSize so the handle stays easy to hit.
+    class ManipulatorViewVertexDot : public AzToolsFramework::ManipulatorViewSphere
+    {
+    public:
+        AZ_CLASS_ALLOCATOR_DECL
+
+        AZ_RTTI(ManipulatorViewVertexDot, "{6C0E4B3A-5F2D-4E88-9B71-3A1D7C52E0F4}", AzToolsFramework::ManipulatorViewSphere)
+
+        void Draw(
+            AzToolsFramework::ManipulatorManagerId managerId,
+            const AzToolsFramework::ManipulatorManagerState& managerState,
+            AzToolsFramework::ManipulatorId manipulatorId, const AzToolsFramework::ManipulatorState& manipulatorState,
+            AzFramework::DebugDisplayRequests& debugDisplay, const AzFramework::CameraState& cameraState,
+            const AzToolsFramework::ViewportInteraction::MouseInteraction& mouseInteraction) override;
+    };
+
+    AZStd::unique_ptr<ManipulatorViewVertexDot> CreateManipulatorViewVertexDot(
+        const AZ::Color& color, const AzToolsFramework::DecideColorFn& decideColor, bool enableDepthTest = false);
+
     void TranslatePoints(AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& offset);
 
     AZStd::unique_ptr<ManipulatorViewPolygon> CreateManipulatorViewPolygon(

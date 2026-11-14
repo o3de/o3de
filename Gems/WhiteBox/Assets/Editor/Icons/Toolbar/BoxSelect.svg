@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg4"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <title
+     id="title1">Box Select</title>
+  <path
+     d="M 3.189732,3.1212576 H 17.196115 V 17.407166 H 3.189732 Z"
+     fill="#67c7e8"
+     fill-opacity="0.2"
+     stroke="#67c7e8"
+     stroke-width="1.73779"
+     stroke-linejoin="round"
+     stroke-dasharray="2.6, 2"
+     id="path1" />
+  <ellipse
+     cx="7.2254696"
+     cy="7.2375364"
+     fill="#67c7e8"
+     id="circle1"
+     rx="1.8991705"
+     ry="1.9370724"
+     style="stroke-width:1.19877" />
+  <ellipse
+     cx="13.160378"
+     cy="7.2375364"
+     fill="#67c7e8"
+     id="circle2"
+     rx="1.8991705"
+     ry="1.9370724"
+     style="stroke-width:1.19877" />
+  <ellipse
+     cx="7.2254696"
+     cy="13.290887"
+     fill="#67c7e8"
+     id="circle3"
+     rx="1.8991705"
+     ry="1.9370724"
+     style="stroke-width:1.19877" />
+  <ellipse
+     cx="13.160378"
+     cy="13.290887"
+     fill="#67c7e8"
+     id="circle4"
+     rx="1.8991705"
+     ry="1.9370724"
+     style="stroke-width:1.19877" />
+  <path
+     d="m 14.109963,14.01729 7.359286,7.506156 M 14.109963,14.01729 v 5.326949 m 0,-5.326949 h 5.222719"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.8464"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path4" />
+</svg>

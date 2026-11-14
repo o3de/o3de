@@ -31,7 +31,10 @@ namespace WhiteBox
 
     void EdgeRestoreMode::Refresh()
     {
-        // noop
+        // Layer changes invalidate both hover handles and partially restored edges.
+        m_edgeIntersection.reset();
+        m_vertexIntersection.reset();
+        m_edgeHandlesBeingRestored.clear();
     }
 
     void EdgeRestoreMode::RegisterActionUpdaters()
@@ -150,6 +153,30 @@ namespace WhiteBox
         return false;
     }
 
+    bool EdgeRestoreMode::FlipHoveredEdge(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        if (!m_edgeIntersection.has_value())
+        {
+            return false;
+        }
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+        if (whiteBox == nullptr)
+        {
+            return false;
+        }
+
+        if (!Api::FlipEdge(*whiteBox, m_edgeIntersection->m_closestEdgeWithHandle.m_handle))
+        {
+            return false;
+        }
+
+        RecordWhiteBoxAction(*whiteBox, entityComponentIdPair, FlipEdgeUndoRedoDesc);
+        return true;
+    }
+
     void EdgeRestoreMode::Display(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Transform& worldFromLocal,
         const IntersectionAndRenderData& renderData, const AzFramework::ViewportInfo& viewportInfo,
@@ -166,15 +193,17 @@ namespace WhiteBox
         // Depth test off so edges are always visible on top of the mesh surface
         // (with depth-test on, co-planar edges z-fight into invisibility).
         debugDisplay.DepthTestOff();
+        debugDisplay.DepthWriteOff();
+        debugDisplay.SetDrawInFrontMode(true);
 
         // draw user (polygon border) edges in the standard dark colour
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user,
-            interactiveEdgeHandles);
+            interactiveEdgeHandles, m_lineBuffer);
         // draw hidden/mesh edges in a bright orange so they stand out as "restorable"
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeUnselected, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_mesh,
-            interactiveEdgeHandles);
+            interactiveEdgeHandles, m_lineBuffer);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
@@ -209,7 +238,7 @@ namespace WhiteBox
         }
 
         debugDisplay.PopMatrix();
-        debugDisplay.DepthTestOn(); // restore for vertex spheres
+        // Vertex markers are editing overlays too; keep them visible over the mesh.
 
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
 
@@ -233,7 +262,7 @@ namespace WhiteBox
 
             // calculate the radius of the manipulator based
             // on the distance from the camera
-            const float radius = cl_whiteBoxVertexManipulatorSize *
+            const float radius = (hoveredVertexHandle == vertex.m_handle ? cl_whiteBoxVertexHoverSize : cl_whiteBoxVertexDrawSize) *
                 AzToolsFramework::CalculateScreenToWorldMultiplier(
                                      worldFromLocal.TransformPoint(vertex.m_bound.m_center), cameraState);
 

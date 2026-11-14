@@ -29,6 +29,8 @@ namespace WhiteBox
 
         //! Create a render mesh for use with white box data.
         virtual AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface(AZ::EntityId) = 0;
+        //! Create an auxiliary render mesh (an extra per-layer mesh beside the primary one). Null if not Atom.
+        virtual AZStd::unique_ptr<RenderMeshInterface> CreateAuxiliaryRenderMeshInterface(AZ::EntityId) = 0;
         //! Control what concrete implementation of RenderMeshInterface CreateRenderMeshInterface returns.
         virtual void SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder) = 0;
 

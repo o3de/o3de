@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/Translation/TranslationDef.h>
 
 namespace WhiteBox
@@ -19,10 +20,14 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WhiteBoxMaterial>()
-                ->Version(1)
+                ->Version(4)
+                ->Field("MaterialAsset", &WhiteBoxMaterial::m_materialAsset)
+                ->Field("LightmapUvs", &WhiteBoxMaterial::m_lightmapUvs)
+                ->Field("LightmapMargin", &WhiteBoxMaterial::m_lightmapMargin)
                 ->Field("Tint", &WhiteBoxMaterial::m_tint)
                 ->Field("UseTexture", &WhiteBoxMaterial::m_useTexture)
-                ->Field("Visible", &WhiteBoxMaterial::m_visible);
+                ->Field("Visible", &WhiteBoxMaterial::m_visible)
+                ->Field("UseVertexColor", &WhiteBoxMaterial::m_useVertexColor);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {

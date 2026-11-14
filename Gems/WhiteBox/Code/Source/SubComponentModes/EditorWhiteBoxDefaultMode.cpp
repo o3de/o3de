@@ -580,7 +580,8 @@ namespace WhiteBox
 
     static void DrawVertices(
         AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Transform& worldFromLocal,
-        const AzFramework::CameraState& cameraState, const IntersectionAndRenderData& renderData)
+        const AzFramework::CameraState& cameraState, const IntersectionAndRenderData& renderData,
+        AZStd::vector<AZ::Vector3>& lineBuffer)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -588,18 +589,20 @@ namespace WhiteBox
         const float vertexIndicatorWidth = cl_whiteBoxVertexIndicatorWidth;
         const AZ::Color vertexIndicatorColor = cl_whiteBoxVertexIndicatorColor;
 
-        debugDisplay.SetLineWidth(vertexIndicatorWidth);
-        debugDisplay.SetColor(vertexIndicatorColor);
+        const auto& userEdges = renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user;
+        lineBuffer.clear();
+        lineBuffer.reserve(userEdges.size() * 4); // two tick marks per edge, two points each
 
-        const auto drawVertIndicator = [&debugDisplay, &worldFromLocal, &cameraState, vertexIndicatorLength](
-                                           const AZ::Vector3& start, const AZ::Vector3& axis, const float length)
+        const auto addVertIndicator = [&lineBuffer, &worldFromLocal, &cameraState, vertexIndicatorLength](
+                                          const AZ::Vector3& start, const AZ::Vector3& axis, const float length)
         {
             const auto scale =
                 AzToolsFramework::CalculateScreenToWorldMultiplier(worldFromLocal.TransformPoint(start), cameraState);
-            debugDisplay.DrawLine(start, start + axis * AZ::GetMin<float>(length, scale * vertexIndicatorLength));
+            lineBuffer.push_back(start);
+            lineBuffer.push_back(start + axis * AZ::GetMin<float>(length, scale * vertexIndicatorLength));
         };
 
-        for (const auto& edgeBound : renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user)
+        for (const auto& edgeBound : userEdges)
         {
             const auto& start = edgeBound.m_bound.m_start;
             const auto& end = edgeBound.m_bound.m_end;
@@ -609,12 +612,18 @@ namespace WhiteBox
             if (length > 0.0f)
             {
                 const auto axis = edge / length;
-                drawVertIndicator(start, axis, length);
-                drawVertIndicator(end, -axis, length);
+                addVertIndicator(start, axis, length);
+                addVertIndicator(end, -axis, length);
             }
         }
 
-        debugDisplay.SetLineWidth(1.0f);
+        if (!lineBuffer.empty())
+        {
+            debugDisplay.SetLineWidth(vertexIndicatorWidth);
+            debugDisplay.SetColor(vertexIndicatorColor);
+            debugDisplay.DrawLines(lineBuffer, vertexIndicatorColor);
+            debugDisplay.SetLineWidth(1.0f);
+        }
     }
 
     void DefaultMode::Display(
@@ -636,10 +645,11 @@ namespace WhiteBox
 
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxIntersectionData.m_edgeBounds,
-            FindInteractiveEdgeHandles(*whiteBox));
+            FindInteractiveEdgeHandles(*whiteBox), m_lineBuffer);
 
         DrawVertices(
-            debugDisplay, worldFromLocal, AzToolsFramework::GetCameraState(viewportInfo.m_viewportId), renderData);
+            debugDisplay, worldFromLocal, AzToolsFramework::GetCameraState(viewportInfo.m_viewportId), renderData,
+            m_lineBuffer);
 
         debugDisplay.PopMatrix();
 
@@ -743,6 +753,44 @@ namespace WhiteBox
         }
 
         return vertexIntersection;
+    }
+
+    bool DefaultMode::HandleEscape()
+    {
+        if (CancelActiveDrag())
+        {
+            return true;
+        }
+
+        if (m_numericInput.IsActive())
+        {
+            m_numericInput.Reset();
+            return true;
+        }
+
+        return false;
+    }
+
+    bool DefaultMode::CancelActiveDrag()
+    {
+        // Only one translation modifier can be mid-drag at a time, so the first one that reports
+        // a cancellable drag wins.
+        if (m_vertexTranslationModifier && m_vertexTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        if (m_edgeTranslationModifier && m_edgeTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        if (m_polygonTranslationModifier && m_polygonTranslationModifier->CancelDrag())
+        {
+            return true;
+        }
+
+        return false;
     }
 
     bool DefaultMode::HandleMouseInteraction(const ModeMouseInteraction& mouse)
@@ -1058,6 +1106,9 @@ namespace WhiteBox
             RecordWhiteBoxAction(*whiteBox, m_entityComponentIdPair, HideEdgeUndoRedoDesc);
         }
     }
+
+
+
 
     void DefaultMode::HideSelectedVertex()
     {

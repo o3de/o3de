@@ -4,125 +4,53 @@
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
+ * EditorWhiteBoxComponent - CORE translation unit: component lifecycle, reflection (serialize
+ * + edit context), tick-driven coalescing, game-entity bake and small bus glue. The other
+ * concerns live in sibling translation units:
+ *   EditorWhiteBoxComponentLayers.cpp  - layer system, combine pipeline, parametric shapes
+ *   EditorWhiteBoxComponentVoxel.cpp   - cube stamp gestures, cell records, mesh repair
+ *   EditorWhiteBoxComponentBoolean.cpp - entity boolean (one-shot + live) and bake caches
+ *   EditorWhiteBoxComponentRender.cpp  - render/physics meshes, bounds, selection, debug draw
+ *   EditorWhiteBoxComponentAsset.cpp   - serialize/deserialize, Save As Asset, obj exports
  */
 
 #include "Asset/EditorWhiteBoxMeshAsset.h"
-#include "Asset/WhiteBoxMeshAssetHandler.h"
+#include "EditorWhiteBoxAuthoring.h"
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
-#include "EditorWhiteBoxComponentModeBus.h"
 #include "Rendering/WhiteBoxNullRenderMesh.h"
-#include "Rendering/WhiteBoxRenderDataUtil.h"
-#include "Rendering/WhiteBoxRenderMeshInterface.h"
-#include "Util/WhiteBoxEditorUtil.h"
+#include "Tools/WhiteBoxLayerUtil.h"
 #include "WhiteBoxComponent.h"
 
+#include "Util/WhiteBoxMeshUtil.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/std/containers/array.h>
-#include <AzCore/std/containers/set.h>
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/sort.h>
-#include <cmath>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/Console.h>
-#include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/Maths/TransformUtils.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <QMessageBox>
-#include <WhiteBox/EditorWhiteBoxColliderBus.h>
-#include <WhiteBox/WhiteBoxBus.h>
-
-// developer debug properties for the White Box mesh to globally enable/disable
-AZ_CVAR(bool, cl_whiteBoxDebugVertexHandles, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display vertex handles");
-AZ_CVAR(bool, cl_whiteBoxDebugNormals, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display normals");
-AZ_CVAR(
-    bool, cl_whiteBoxDebugHalfedgeHandles, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display halfedge handles");
-AZ_CVAR(bool, cl_whiteBoxDebugEdgeHandles, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display edge handles");
-AZ_CVAR(bool, cl_whiteBoxDebugFaceHandles, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display face handles");
-AZ_CVAR(bool, cl_whiteBoxDebugAabb, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Display Aabb for the White Box");
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <Components/EditorWhiteBoxColliderComponent.h>
+#include <SubComponentModes/EditorWhiteBoxDefaultModeBus.h>
+#include <SubComponentModes/EditorWhiteBoxTransformModeBus.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace WhiteBox
 {
-    static const char* const AssetSavedUndoRedoDesc = "White Box Mesh asset saved";
-    static const char* const ObjExtension = "obj";
-
-    static void RefreshProperties()
-    {
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-    }
-
-    // build intermediate data to be passed to WhiteBoxRenderMeshInterface
-    // to be used to generate concrete render mesh
-    static WhiteBoxRenderData CreateWhiteBoxRenderData(const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        WhiteBoxRenderData renderData;
-        WhiteBoxFaces& faceData = renderData.m_faces;
-
-        const auto faceCount = Api::MeshFaceCount(whiteBox);
-        faceData.reserve(faceCount);
-
-        const auto createWhiteBoxFaceFromHandle = [&whiteBox](const Api::FaceHandle& faceHandle) -> WhiteBoxFace
-        {
-            const auto copyVertex = [&whiteBox](const Api::HalfedgeHandle& in, WhiteBoxVertex& out)
-            {
-                const auto vh = Api::HalfedgeVertexHandleAtTip(whiteBox, in);
-                out.m_position = Api::VertexPosition(whiteBox, vh);
-                out.m_uv = Api::HalfedgeUV(whiteBox, in);
-            };
-
-            WhiteBoxFace face;
-            face.m_normal = Api::FaceNormal(whiteBox, faceHandle);
-            const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
-
-            copyVertex(faceHalfedgeHandles[0], face.m_v1);
-            copyVertex(faceHalfedgeHandles[1], face.m_v2);
-            copyVertex(faceHalfedgeHandles[2], face.m_v3);
-
-            return face;
-        };
-
-        const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto& faceHandle : faceHandles)
-        {
-            faceData.push_back(createWhiteBoxFaceFromHandle(faceHandle));
-        }
-
-        renderData.m_material = material;
-
-        return renderData;
-    }
-
-    static bool IsWhiteBoxNullRenderMesh(const AZStd::optional<AZStd::unique_ptr<RenderMeshInterface>>& m_renderMesh)
-    {
-        return azrtti_cast<WhiteBoxNullRenderMesh*>((*m_renderMesh).get()) != nullptr;
-    }
-
-    static bool DisplayingAsset(const DefaultShapeType defaultShapeType)
-    {
-        // checks if the default shape is set to a custom asset
-        return defaultShapeType == DefaultShapeType::Asset;
-    }
-
     // callback for when the default shape field is changed
     AZ::Crc32 EditorWhiteBoxComponent::OnDefaultShapeChange()
     {
@@ -161,6 +89,8 @@ namespace WhiteBox
             break;
         case DrawShapeType::Cylinder:
         case DrawShapeType::Cone:
+        case DrawShapeType::Pipe:
+        case DrawShapeType::Torus:
             m_sides = 24;
             break;
         case DrawShapeType::Sphere:
@@ -175,397 +105,64 @@ namespace WhiteBox
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-    void EditorWhiteBoxComponent::ApplyBoolean()
+    // Tube Sides was split out of Draw Sides. Seed it from the old derived value so a torus drawn
+    // before the split keeps the tessellation it had.
+    int LegacyTubeSidesFromSides(const int sides)
     {
-        if (!m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Boolean Source is not set (or is this same entity).");
-            return;
-        }
-
-        WhiteBoxMesh* targetMesh = GetWhiteBoxMesh();
-        if (targetMesh == nullptr)
-        {
-            return;
-        }
-
-        AZ::Entity* sourceEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            sourceEntity, &AZ::ComponentApplicationRequests::FindEntity, m_booleanSourceEntity);
-        if (sourceEntity == nullptr)
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Boolean Source entity could not be found.");
-            return;
-        }
-
-        const auto sourceComponents = sourceEntity->FindComponents<EditorWhiteBoxComponent>();
-        if (sourceComponents.empty())
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Boolean Source entity has no White Box component.");
-            return;
-        }
-        WhiteBoxMesh* sourceMesh = sourceComponents[0]->GetWhiteBoxMesh();
-        if (sourceMesh == nullptr)
-        {
-            return;
-        }
-
-        // Bring the source mesh from its local space into this entity's local space:
-        // operandTransform = thisWorldFromLocal^-1 * sourceWorldFromLocal.
-        AZ::Transform thisWorldTM = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(thisWorldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        AZ::Transform sourceWorldTM = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(sourceWorldTM, m_booleanSourceEntity, &AZ::TransformBus::Events::GetWorldTM);
-        const AZ::Transform operandTransform = thisWorldTM.GetInverse() * sourceWorldTM;
-
-        AzToolsFramework::ScopedUndoBatch undoBatch("White Box Boolean");
-
-        if (!Api::ApplyMeshBoolean(*targetMesh, *sourceMesh, operandTransform, m_booleanOperation))
-        {
-            AZ_Warning(
-                "EditorWhiteBoxComponent", false,
-                "White Box boolean produced no result (the meshes may not overlap, or are not closed).");
-            return;
-        }
-
-        Api::CalculateNormals(*targetMesh);
-        Api::CalculatePlanarUVs(*targetMesh);
-
-        SerializeWhiteBox();
-        RebuildWhiteBox();
-        undoBatch.MarkEntityDirty(GetEntityId());
-
-        // Optionally tidy up the source entity once it has been consumed.
-        if (m_deleteSourceAfterApply)
-        {
-            const AZ::EntityId sourceId = m_booleanSourceEntity;
-            m_booleanSourceEntity = AZ::EntityId{}; // clear the now-dangling reference
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::DeleteEntityById, sourceId);
-        }
-        else if (m_hideSourceAfterApply)
-        {
-            AzToolsFramework::SetEntityVisibility(m_booleanSourceEntity, false);
-        }
+        return AZStd::clamp(sides / 2, 8, 32);
     }
 
-    namespace VoxelDetail
+    bool DrawShapeDataVersionConverter(
+        AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
-        // Pack/unpack integer cell coordinates into a single key (21 bits per axis,
-        // biased so negatives work; range ~ +/-1,000,000 cells per axis).
-        constexpr AZ::s64 CellBias = 1 << 20;
-        constexpr AZ::u64 CellMask = (AZ::u64(1) << 21) - 1;
-
-        AZ::u64 PackCell(int x, int y, int z)
+        if (classElement.GetVersion() <= 2)
         {
-            return ((AZ::u64(x + CellBias) & CellMask) << 42) | ((AZ::u64(y + CellBias) & CellMask) << 21) |
-                (AZ::u64(z + CellBias) & CellMask);
+            int sides = 4;
+            if (const int idx = classElement.FindElement(AZ_CRC_CE("Sides")); idx != -1)
+            {
+                classElement.GetSubElement(idx).GetData(sides);
+            }
+            classElement.AddElementWithData(context, "TubeSides", LegacyTubeSidesFromSides(sides));
         }
-        void UnpackCell(AZ::u64 key, int& x, int& y, int& z)
-        {
-            x = static_cast<int>((key >> 42) & CellMask) - CellBias;
-            y = static_cast<int>((key >> 21) & CellMask) - CellBias;
-            z = static_cast<int>(key & CellMask) - CellBias;
-        }
-
-        // Build a watertight, vertex-shared surface for a set of filled unit cells:
-        // for every cell, emit only the faces whose neighbour cell is empty.
-        void GenerateSurface(WhiteBoxMesh& mesh, const AZStd::unordered_set<AZ::u64>& cells)
-        {
-            AZStd::unordered_map<AZ::u64, Api::VertexHandle> verts;
-            const auto vert = [&](int x, int y, int z) -> Api::VertexHandle
-            {
-                const AZ::u64 key = PackCell(x, y, z);
-                const auto it = verts.find(key);
-                if (it != verts.end())
-                {
-                    return it->second;
-                }
-                const Api::VertexHandle h = Api::AddVertex(
-                    mesh, AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
-                verts.emplace(key, h);
-                return h;
-            };
-            const auto filled = [&](int x, int y, int z) { return cells.count(PackCell(x, y, z)) != 0; };
-
-            for (const AZ::u64 cellKey : cells)
-            {
-                int x, y, z;
-                UnpackCell(cellKey, x, y, z);
-                const auto corner = [&](int a, int b, int c) { return vert(x + a, y + b, z + c); };
-
-                // each quad wound CCW as seen from outside (so its normal points out)
-                if (!filled(x + 1, y, z)) // +X
-                    Api::AddQuadPolygon(mesh, corner(1, 0, 0), corner(1, 1, 0), corner(1, 1, 1), corner(1, 0, 1));
-                if (!filled(x - 1, y, z)) // -X
-                    Api::AddQuadPolygon(mesh, corner(0, 1, 0), corner(0, 0, 0), corner(0, 0, 1), corner(0, 1, 1));
-                if (!filled(x, y + 1, z)) // +Y
-                    Api::AddQuadPolygon(mesh, corner(1, 1, 0), corner(0, 1, 0), corner(0, 1, 1), corner(1, 1, 1));
-                if (!filled(x, y - 1, z)) // -Y
-                    Api::AddQuadPolygon(mesh, corner(0, 0, 0), corner(1, 0, 0), corner(1, 0, 1), corner(0, 0, 1));
-                if (!filled(x, y, z + 1)) // +Z
-                    Api::AddQuadPolygon(mesh, corner(0, 0, 1), corner(1, 0, 1), corner(1, 1, 1), corner(0, 1, 1));
-                if (!filled(x, y, z - 1)) // -Z
-                    Api::AddQuadPolygon(mesh, corner(0, 1, 0), corner(1, 1, 0), corner(1, 0, 0), corner(0, 0, 0));
-            }
-        }
-
-        // Quantize a vertex position to an integer lattice corner. Returns false if
-        // the position is not (near) an integer point - such a vertex cannot belong
-        // to the voxel surface, so its owning face is treated as freeform geometry.
-        bool QuantizeCorner(const AZ::Vector3& p, int& x, int& y, int& z)
-        {
-            constexpr float eps = 1e-3f;
-            const float rx = std::round(p.GetX());
-            const float ry = std::round(p.GetY());
-            const float rz = std::round(p.GetZ());
-            if (std::abs(p.GetX() - rx) > eps || std::abs(p.GetY() - ry) > eps || std::abs(p.GetZ() - rz) > eps)
-            {
-                return false;
-            }
-            x = static_cast<int>(rx);
-            y = static_cast<int>(ry);
-            z = static_cast<int>(rz);
-            return true;
-        }
-
-        // Order-independent identity of a voxel-surface triangle: the sorted packed
-        // keys of its three integer corners. Two triangles with the same three
-        // lattice corners (regardless of winding) compare equal.
-        using FaceSignature = AZStd::array<AZ::u64, 3>;
-
-        // AZStd::array provides no operator< in this engine version, so order the
-        // set explicitly (lexicographically over the three packed corner keys).
-        struct FaceSignatureLess
-        {
-            bool operator()(const FaceSignature& a, const FaceSignature& b) const
-            {
-                for (size_t i = 0; i < 3; ++i)
-                {
-                    if (a[i] != b[i])
-                    {
-                        return a[i] < b[i];
-                    }
-                }
-                return false;
-            }
-        };
-        using FaceSignatureSet = AZStd::set<FaceSignature, FaceSignatureLess>;
-
-        bool FaceSignatureFromPositions(const AZStd::vector<AZ::Vector3>& positions, FaceSignature& outSig)
-        {
-            if (positions.size() != 3)
-            {
-                return false;
-            }
-            for (size_t i = 0; i < 3; ++i)
-            {
-                int x, y, z;
-                if (!QuantizeCorner(positions[i], x, y, z))
-                {
-                    return false;
-                }
-                outSig[i] = PackCell(x, y, z);
-            }
-            AZStd::sort(outSig.begin(), outSig.end());
-            return true;
-        }
-
-        // The set of triangle signatures that make up the voxel surface for `cells`.
-        // Generated through the exact same path as the live mesh, so the signatures
-        // match the faces actually present after a stamp/load.
-        FaceSignatureSet SurfaceFaceSignatures(const AZStd::unordered_set<AZ::u64>& cells)
-        {
-            FaceSignatureSet sigs;
-            if (cells.empty())
-            {
-                return sigs;
-            }
-            Api::WhiteBoxMeshPtr temp = Api::CreateWhiteBoxMesh();
-            GenerateSurface(*temp, cells);
-            for (const Api::FaceHandle& fh : Api::MeshFaceHandles(*temp))
-            {
-                FaceSignature sig;
-                if (FaceSignatureFromPositions(Api::FaceVertexPositions(*temp, fh), sig))
-                {
-                    sigs.insert(sig);
-                }
-            }
-            return sigs;
-        }
-    } // namespace VoxelDetail
-
-    void EditorWhiteBoxComponent::RegenerateVoxelMesh(
-        const AZStd::unordered_set<AZ::u64>& oldCells, const AZStd::unordered_set<AZ::u64>& newCells)
-    {
-        WhiteBoxMesh* mesh = GetWhiteBoxMesh();
-        if (mesh == nullptr)
-        {
-            return;
-        }
-
-        // Remove ONLY the faces that belong to the previous voxel surface, leaving
-        // every freeform face (and any voxel face the user has since hand-edited off
-        // the integer lattice) untouched. Identifying the old faces by signature -
-        // rather than clearing the whole mesh - is what preserves manual edits.
-        const VoxelDetail::FaceSignatureSet oldSigs = VoxelDetail::SurfaceFaceSignatures(oldCells);
-        if (!oldSigs.empty())
-        {
-            Api::FaceHandles toRemove;
-            for (const Api::FaceHandle& fh : Api::MeshFaceHandles(*mesh))
-            {
-                VoxelDetail::FaceSignature sig;
-                if (VoxelDetail::FaceSignatureFromPositions(Api::FaceVertexPositions(*mesh, fh), sig) &&
-                    oldSigs.find(sig) != oldSigs.end())
-                {
-                    toRemove.push_back(fh);
-                }
-            }
-            if (!toRemove.empty())
-            {
-                // Single batched removal - handles are invalidated by garbage_collect.
-                Api::RemoveFaces(*mesh, toRemove);
-            }
-        }
-
-        // Add the new voxel surface (a self-welded, watertight shell).
-        VoxelDetail::GenerateSurface(*mesh, newCells);
-
-        Api::CalculateNormals(*mesh);
-        Api::CalculatePlanarUVs(*mesh);
-
-        SerializeWhiteBox();
-        RebuildWhiteBox();
+        return true;
     }
 
-    void EditorWhiteBoxComponent::SetVoxelCell(const AZ::Vector3& cellMin, const bool filled)
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::TubeSidesVisibility() const
     {
-        const AZ::u64 key = VoxelDetail::PackCell(
-            static_cast<int>(std::floor(cellMin.GetX())), static_cast<int>(std::floor(cellMin.GetY())),
-            static_cast<int>(std::floor(cellMin.GetZ())));
-
-        // rebuild the set from the serialized vector each time (keeps in sync with undo)
-        const AZStd::unordered_set<AZ::u64> oldCells(m_voxelCells.begin(), m_voxelCells.end());
-        AZStd::unordered_set<AZ::u64> newCells = oldCells;
-        const bool changed = filled ? newCells.insert(key).second : (newCells.erase(key) > 0);
-        if (!changed)
-        {
-            return; // already in the requested state
-        }
-
-        AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Voxel" : "Remove Voxel");
-        m_voxelCells.assign(newCells.begin(), newCells.end());
-        RegenerateVoxelMesh(oldCells, newCells);
-        undoBatch.MarkEntityDirty(GetEntityId());
-    }
-
-    WhiteBoxMesh* EditorWhiteBoxComponent::EvaluatedMesh()
-    {
-        // Non-destructive: render/collide/select against the evaluated result while
-        // the editable base (GetWhiteBoxMesh) stays untouched.
-        if (m_liveBoolean && m_displayMesh)
-        {
-            return m_displayMesh.get();
-        }
-        return GetWhiteBoxMesh();
-    }
-
-    void EditorWhiteBoxComponent::EvaluateLiveBoolean()
-    {
-        m_displayMesh.reset();
-
-        if (!m_liveBoolean || !m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
-        {
-            return;
-        }
-
-        WhiteBoxMesh* baseMesh = GetWhiteBoxMesh();
-        if (baseMesh == nullptr)
-        {
-            return;
-        }
-
-        AZ::Entity* sourceEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            sourceEntity, &AZ::ComponentApplicationRequests::FindEntity, m_booleanSourceEntity);
-        if (sourceEntity == nullptr)
-        {
-            return;
-        }
-        const auto sourceComponents = sourceEntity->FindComponents<EditorWhiteBoxComponent>();
-        if (sourceComponents.empty())
-        {
-            return;
-        }
-        WhiteBoxMesh* sourceMesh = sourceComponents[0]->GetWhiteBoxMesh();
-        if (sourceMesh == nullptr)
-        {
-            return;
-        }
-
-        AZ::Transform thisWorldTM = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(thisWorldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        AZ::Transform sourceWorldTM = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(sourceWorldTM, m_booleanSourceEntity, &AZ::TransformBus::Events::GetWorldTM);
-        const AZ::Transform operandTransform = thisWorldTM.GetInverse() * sourceWorldTM;
-
-        // Evaluate into a clone so the editable base is never modified.
-        Api::WhiteBoxMeshPtr evaluated = Api::CloneMesh(*baseMesh);
-        if (!evaluated)
-        {
-            return;
-        }
-        if (Api::ApplyMeshBoolean(*evaluated, *sourceMesh, operandTransform, m_booleanOperation))
-        {
-            Api::CalculateNormals(*evaluated);
-            Api::CalculatePlanarUVs(*evaluated);
-            m_displayMesh = AZStd::move(evaluated);
-        }
-        // on failure (no overlap) m_displayMesh stays null -> falls back to the base.
-    }
-
-    void EditorWhiteBoxComponent::UpdateBooleanSourceListener()
-    {
-        m_booleanSourceListener.BusDisconnect();
-        if (m_liveBoolean && m_booleanSourceEntity.IsValid() && m_booleanSourceEntity != GetEntityId())
-        {
-            m_booleanSourceListener.m_owner = this;
-            m_booleanSourceListener.BusConnect(m_booleanSourceEntity);
-        }
-    }
-
-    AZ::u32 EditorWhiteBoxComponent::OnLiveBooleanChange()
-    {
-        UpdateBooleanSourceListener();
-        RebuildWhiteBox(); // evaluates the live boolean (or reverts to base) + rebuilds render/physics
-        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-    }
-
-    AZ::u32 EditorWhiteBoxComponent::OnBooleanSourceChange()
-    {
-        OnLiveBooleanChange();
-        // The Boolean group's visibility depends on whether a source is set. EntityId
-        // fields don't reliably honor the ChangeNotify refresh-level return value, so
-        // force the property tree to rebuild explicitly so the group shows/hides.
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-            AzToolsFramework::Refresh_EntireTree);
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
-    }
-
-    AZ::Crc32 EditorWhiteBoxComponent::BooleanGroupVisibility() const
-    {
-        return m_booleanSourceEntity.IsValid() ? AZ::Edit::PropertyVisibility::Show
+        return m_shape == DrawShapeType::Torus ? AZ::Edit::PropertyVisibility::Show
                                                : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    void EditorWhiteBoxComponent::BooleanSourceListener::OnTransformChanged(
-        const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::SidesVisibility() const
     {
-        if (m_owner != nullptr)
-        {
-            m_owner->RebuildWhiteBox(); // source moved -> re-evaluate + rebuild
-        }
+        // Sides applies to every solid shape: it sets the footprint resolution for
+        // round shapes (Cylinder/Cone), the subdivision for the Sphere, and the
+        // N-gon footprint for Box/Pyramid (3 = triangular prism, 4 = box, etc.).
+        // Only the Staircase ignores it.
+        return (m_shape == DrawShapeType::Staircase || m_shape == DrawShapeType::Plane || m_shape == DrawShapeType::Polygon)
+            ? AZ::Edit::PropertyVisibility::Hide
+                                                   : AZ::Edit::PropertyVisibility::Show;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::StairVisibility() const
+    {
+        // The whole Stair group only shows for a Staircase. Within the group the
+        // step-count / step-height split is handled by DrawStairData itself.
+        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Show
+                                                   : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepsVisibility() const
+    {
+        // Step count only applies in step-count mode (the group is already hidden
+        // unless the draw shape is a Staircase).
+        return m_byHeight ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepHeightVisibility() const
+    {
+        // Step height only applies in step-height mode.
+        return m_byHeight ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     bool EditorWhiteBoxVersionConverter(
@@ -599,6 +196,154 @@ namespace WhiteBox
             else
             {
                 return false;
+            }
+        }
+
+        if (classElement.GetVersion() <= 2)
+        {
+            // v3 grouped the flat voxel / boolean / draw fields into structs; move each old field across.
+
+            // -- voxel / legacy grid fields -> VoxelData ("Voxel") --
+            {
+                EditorWhiteBoxComponent::VoxelData voxel;
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("VoxelCells")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_cells);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("VoxelCellSizes")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_sizes);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("VoxelCellSize")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_legacySize);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("VoxelMerged")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_legacyMerged);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("GridMeshData")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_legacyGridData);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("GridMergedData")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(voxel.m_legacyGridMergedData);
+                    classElement.RemoveElement(idx);
+                }
+                classElement.AddElementWithData(context, "Voxel", voxel);
+            }
+
+            // -- boolean fields -> BooleanSettings ("Boolean"); the two mutually exclusive
+            //    hide/delete bools collapse into the SourceAfterApply enum --
+            {
+                EditorWhiteBoxComponent::BooleanSettings boolean;
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanSource")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(boolean.m_sourceEntity);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanOp")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(boolean.m_operation);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanLive")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(boolean.m_live);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanAffectActive")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(boolean.m_affectActiveOnly);
+                    classElement.RemoveElement(idx);
+                }
+                bool hideSource = false;
+                bool deleteSource = false;
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanHideSource")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(hideSource);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("BooleanDeleteSource")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(deleteSource);
+                    classElement.RemoveElement(idx);
+                }
+                boolean.m_sourceAfterApply =
+                    deleteSource ? SourceAfterApply::Delete : (hideSource ? SourceAfterApply::Hide : SourceAfterApply::Keep);
+                classElement.AddElementWithData(context, "Boolean", boolean);
+            }
+
+            // -- loose draw fields fold into the existing nested DrawShapeData element --
+            {
+                bool carve = false;
+                bool mergeUnion = false;
+                bool unitCube = false;
+                float unitCubeSize = 1.0f;
+                bool unitCubeShowGrid = true;
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("DrawCarve")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(carve);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("DrawMergeUnion")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(mergeUnion);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("DrawUnitCube")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(unitCube);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("DrawUnitCubeSize")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(unitCubeSize);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("DrawUnitCubeShowGrid")); idx != -1)
+                {
+                    classElement.GetSubElement(idx).GetData(unitCubeShowGrid);
+                    classElement.RemoveElement(idx);
+                }
+                if (const int dsIdx = classElement.FindElement(AZ_CRC_CE("DrawShapeData")); dsIdx != -1)
+                {
+                    AZ::SerializeContext::DataElementNode& drawShapeNode = classElement.GetSubElement(dsIdx);
+                    drawShapeNode.AddElementWithData(context, "Carve", carve);
+                    drawShapeNode.AddElementWithData(context, "MergeUnion", mergeUnion);
+                    drawShapeNode.AddElementWithData(context, "UnitCube", unitCube);
+                    drawShapeNode.AddElementWithData(context, "UnitCubeSize", unitCubeSize);
+                    drawShapeNode.AddElementWithData(context, "UnitCubeShowGrid", unitCubeShowGrid);
+                }
+                // the "Merge With Mesh" feature was removed entirely
+                if (const int idx = classElement.FindElement(AZ_CRC_CE("MergeGridWithMesh")); idx != -1)
+                {
+                    classElement.RemoveElement(idx);
+                }
+            }
+        }
+
+        if (classElement.GetVersion() <= 5)
+        {
+            // v6 moved render data and bakes into byte-stream blobs; drop the old elements and rebake on load.
+            for (const AZ::Crc32 field :
+                 { AZ_CRC_CE("RenderData"), AZ_CRC_CE("BakedBooleanRenderData"), AZ_CRC_CE("BakedBaseRenderData"),
+                   AZ_CRC_CE("BakedPhysicsBaseRenderData"), AZ_CRC_CE("BakedPhysicsBooleanRenderData") })
+            {
+                if (const int idx = classElement.FindElement(field); idx != -1)
+                {
+                    classElement.RemoveElement(idx);
+                }
+            }
+            if (const int idx = classElement.FindElement(AZ_CRC_CE("PhysicsBaked")); idx != -1)
+            {
+                classElement.GetSubElement(idx).SetData(context, false);
             }
         }
 
@@ -661,10 +406,19 @@ namespace WhiteBox
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DrawShapeData>()
-                ->Version(1)
+                ->Version(4, &DrawShapeDataVersionConverter)
                 ->Field("Shape", &DrawShapeData::m_shape)
                 ->Field("Sides", &DrawShapeData::m_sides)
-                ->Field("Stair", &DrawShapeData::m_stair);
+                ->Field("HoleRatio", &DrawShapeData::m_holeRatio)
+                ->Field("TubeSides", &DrawShapeData::m_tubeSides)
+                ->Field("Stair", &DrawShapeData::m_stair)
+                ->Field("Carve", &DrawShapeData::m_carve)
+                ->Field("MergeUnion", &DrawShapeData::m_mergeUnion)
+                ->Field("PolygonExtrude", &DrawShapeData::m_polygonExtrude)
+                ->Field("Parametric", &DrawShapeData::m_parametric)
+                ->Field("UnitCube", &DrawShapeData::m_unitCube)
+                ->Field("UnitCubeSize", &DrawShapeData::m_unitCubeSize)
+                ->Field("UnitCubeShowGrid", &DrawShapeData::m_unitCubeShowGrid);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -683,6 +437,12 @@ namespace WhiteBox
                     ->EnumAttribute(DrawShapeType::Cone, QT_TRANSLATE_NOOP("WhiteBox", "Cone"))
                     ->EnumAttribute(DrawShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
                     ->EnumAttribute(DrawShapeType::Staircase, QT_TRANSLATE_NOOP("WhiteBox", "Staircase"))
+                    // Room, Door and Circular Stairs are parametric-only - they are created as a layer,
+                    // never dragged out as a brush - so they are not offered here.
+                    ->EnumAttribute(DrawShapeType::Plane, QT_TRANSLATE_NOOP("WhiteBox", "Plane"))
+                    ->EnumAttribute(DrawShapeType::Torus, QT_TRANSLATE_NOOP("WhiteBox", "Torus"))
+                    ->EnumAttribute(DrawShapeType::Pipe, QT_TRANSLATE_NOOP("WhiteBox", "Pipe"))
+                    ->EnumAttribute(DrawShapeType::Polygon, QT_TRANSLATE_NOOP("WhiteBox", "Freeform Polygon"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DrawShapeData::OnShapeChange)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_sides,
@@ -692,11 +452,92 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::Max, 128)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::SidesVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
+                        AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_tubeSides,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Tube Sides"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Segments around the torus tube's cross-section. A torus has Draw Sides x Tube Sides "
+                        "quads, so this is the other half of its triangle count."))
+                    ->Attribute(AZ::Edit::Attributes::Min, MinTubeSides)
+                    ->Attribute(AZ::Edit::Attributes::Max, MaxTubeSides)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::TubeSidesVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair, QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Staircase-specific settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::StairVisibility)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::VoxelData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<VoxelData>()
+                ->Version(1)
+                ->Field("Cells", &VoxelData::m_cells)
+                ->Field("Sizes", &VoxelData::m_sizes)
+                ->Field("LegacySize", &VoxelData::m_legacySize)
+                ->Field("LegacyMerged", &VoxelData::m_legacyMerged)
+                ->Field("LegacyGridData", &VoxelData::m_legacyGridData)
+                ->Field("LegacyGridMergedData", &VoxelData::m_legacyGridMergedData);
+        }
+    }
+
+    void EditorWhiteBoxComponent::BooleanSettings::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<BooleanSettings>()
+                ->Version(2)
+                ->Field("Source", &BooleanSettings::m_sourceEntity)
+                ->Field("Operation", &BooleanSettings::m_operation)
+                ->Field("Live", &BooleanSettings::m_live)
+                ->Field("AffectActiveOnly", &BooleanSettings::m_affectActiveOnly)
+                ->Field("SourceAfterApply", &BooleanSettings::m_sourceAfterApply)
+                ->Field("ExcludeFromBoolean", &BooleanSettings::m_excludeFromBoolean)
+                ->Field("BooleanOthers", &BooleanSettings::m_booleanOthers)
+                ->Field("CutterOperation", &BooleanSettings::m_cutterOperation);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<BooleanSettings>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "Boolean"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's."))
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BooleanSettings::m_sourceEntity,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Source"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Another entity whose White Box mesh is the operand."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &BooleanSettings::m_operation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Operation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "How the source mesh combines with this one."))
+                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_live, QT_TRANSLATE_NOOP("WhiteBox", "Live"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Evaluate for display only; the editable mesh underneath is left alone."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_affectActiveOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Active Layer Only"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut only the active layer instead of the whole combined mesh."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_booleanOthers,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut Others"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Make this entity a cutter: it booleans every overlapping entity that is not excluded."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &BooleanSettings::m_cutterOperation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cutter Operation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The operation this entity applies to the meshes it cuts."))
+                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &BooleanSettings::m_excludeFromBoolean,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Never Cut This"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Keep this entity out of every other entity's global boolean."));
             }
         }
     }
@@ -705,30 +546,48 @@ namespace WhiteBox
     {
         EditorWhiteBoxMeshAsset::Reflect(context);
         DrawShapeData::Reflect(context);
+        WhiteBoxLayer::Reflect(context);
+        TrimSheet::Reflect(context);
+        VoxelData::Reflect(context);
+        BooleanSettings::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorWhiteBoxComponent, EditorComponentBase>()
-                ->Version(2, &EditorWhiteBoxVersionConverter)
+                ->Version(6, &EditorWhiteBoxVersionConverter)
                 ->Field("WhiteBoxData", &EditorWhiteBoxComponent::m_whiteBoxData)
+                ->Field("Layers", &EditorWhiteBoxComponent::m_layers)
+                ->Field("ActiveLayer", &EditorWhiteBoxComponent::m_activeLayerIndex)
+                ->Field("NextLayerId", &EditorWhiteBoxComponent::m_nextLayerId)
                 ->Field("DefaultShape", &EditorWhiteBoxComponent::m_defaultShape)
                 ->Field("EditorMeshAsset", &EditorWhiteBoxComponent::m_editorMeshAsset)
                 ->Field("Material", &EditorWhiteBoxComponent::m_material)
-                ->Field("RenderData", &EditorWhiteBoxComponent::m_renderData)
                 ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate)
                 ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport)
                 ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
-                ->Field("DrawCarve", &EditorWhiteBoxComponent::m_drawCarve)
-                ->Field("DrawUnitCube", &EditorWhiteBoxComponent::m_drawUnitCube)
-                ->Field("VoxelCells", &EditorWhiteBoxComponent::m_voxelCells)
-                ->Field("BooleanSource", &EditorWhiteBoxComponent::m_booleanSourceEntity)
-                ->Field("BooleanOp", &EditorWhiteBoxComponent::m_booleanOperation)
-                ->Field("BooleanHideSource", &EditorWhiteBoxComponent::m_hideSourceAfterApply)
-                ->Field("BooleanDeleteSource", &EditorWhiteBoxComponent::m_deleteSourceAfterApply)
-                ->Field("BooleanLive", &EditorWhiteBoxComponent::m_liveBoolean);
+                ->Field("EdgesOnly", &EditorWhiteBoxComponent::m_edgesOnly)
+                ->Field("WireframeMode", &EditorWhiteBoxComponent::m_wireframeMode)
+                ->Field("UseGlobalTint", &EditorWhiteBoxComponent::m_useGlobalTint)
+                ->Field("MaterialOverride", &EditorWhiteBoxComponent::m_materialOverrideAssetId)
+                ->Field("DefaultMaterialAsset", &EditorWhiteBoxComponent::m_defaultMaterialAsset)
+                ->Field("MaterialPalette", &EditorWhiteBoxComponent::m_materialPalette)
+                ->Field("PaletteChoice", &EditorWhiteBoxComponent::m_paletteChoice)
+                ->Field("TrimSheets", &EditorWhiteBoxComponent::m_trimSheets)
+                ->Field("LightmapUvs", &EditorWhiteBoxComponent::m_lightmapUvs)
+                ->Field("LightmapMargin", &EditorWhiteBoxComponent::m_lightmapMargin)
+                ->Field("Voxel", &EditorWhiteBoxComponent::m_voxel)
+                ->Field("Boolean", &EditorWhiteBoxComponent::m_boolean)
+                // Whether this entity is an active global-boolean target (show the composed result by default).
+                ->Field("GlobalBooleanActive", &EditorWhiteBoxComponent::m_globalBooleanActive)
+                ->Field("CsgSolver", &EditorWhiteBoxComponent::m_csgSolver)
+                // Render data and game-mode bakes, as byte streams (see m_renderDataBlob / m_bakedDataBlob).
+                ->Field("RenderDataBlob", &EditorWhiteBoxComponent::m_renderDataBlob)
+                ->Field("BakedDataBlob", &EditorWhiteBoxComponent::m_bakedDataBlob)
+                ->Field("PhysicsBaked", &EditorWhiteBoxComponent::m_physicsBaked);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
+                // The editing UI lives in the White Box pane; the card only holds per-entity settings.
                 editContext->Class<EditorWhiteBoxComponent>(
                     QT_TRANSLATE_NOOP("WhiteBox", "White Box"),
                     QT_TRANSLATE_NOOP("WhiteBox", "White Box level editing"))
@@ -740,156 +599,449 @@ namespace WhiteBox
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Open the White Box pane, which holds the layer stack."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnOpenPane)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Open White Box Pane"))
+
+                    // Set-once per-entity state belongs on the card (search, collapsing, prefab overrides).
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape,
                         QT_TRANSLATE_NOOP("WhiteBox", "Default Shape"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Default shape of the white box mesh."))
+                        QT_TRANSLATE_NOOP("WhiteBox", "The shape a new or reset White Box mesh starts as."))
                     ->EnumAttribute(DefaultShapeType::Cube, QT_TRANSLATE_NOOP("WhiteBox", "Cube"))
                     ->EnumAttribute(DefaultShapeType::Tetrahedron, QT_TRANSLATE_NOOP("WhiteBox", "Tetrahedron"))
                     ->EnumAttribute(DefaultShapeType::Icosahedron, QT_TRANSLATE_NOOP("WhiteBox", "Icosahedron"))
                     ->EnumAttribute(DefaultShapeType::Cylinder, QT_TRANSLATE_NOOP("WhiteBox", "Cylinder"))
                     ->EnumAttribute(DefaultShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
-                    ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"))
+                    ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Material")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Add a Material component to this entity: swap any slot's material or edit this entity's own material instance."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAddMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Add Material"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawShapeData,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape tool settings."))
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_defaultMaterialAsset,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Older default material for this entity; clear it and use the Material component instead."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::LegacyDefaultMaterialVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultMaterialChange)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Polygon Materials")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_materialPalette,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Materials"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The materials to pick from when assigning to polygons."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialPaletteChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_paletteChoice,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The material Assign puts on the selected polygons."))
+                    ->Attribute(AZ::Edit::Attributes::StringList, &EditorWhiteBoxComponent::GetPaletteChoices)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnPaletteChoiceChange)
+                    // Buttons open their own group: the inspector only places a button at a group's start, not after a field.
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Assign to Selected Polygons")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Put the chosen material on the polygons selected in edit mode. Parametric layers become editable meshes."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAssignPaletteMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Assign"))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Return the polygons selected in edit mode to the entity's default material."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnResetPolygonMaterial)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Reset to Default"))
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Display")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_useGlobalTint,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Use Global Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Render every layer with the material tint below. Turn off to let each layer use its own."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnGlobalTintChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Tint, texture and game-mode visibility for this White Box."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::GlobalTintVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_edgesOnly,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Edges Only"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Hide the solid render mesh and draw only the mesh edges."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnEdgesOnlyChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_wireframeMode,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Wireframe"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw the mesh edges on the GPU. Overlay keeps the shaded mesh and draws dark edges over it; "
+                        "Wireframe Only hides the shaded mesh. Editor only: game mode is unaffected."))
+                    ->EnumAttribute(WireframeMode::Off, QT_TRANSLATE_NOOP("WhiteBox", "Off"))
+                    ->EnumAttribute(WireframeMode::Overlay, QT_TRANSLATE_NOOP("WhiteBox", "Overlay"))
+                    ->EnumAttribute(WireframeMode::WireframeOnly, QT_TRANSLATE_NOOP("WhiteBox", "Wireframe Only"))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnWireframeModeChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_lightmapUvs,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Lightmap UVs"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Give the mesh a second, non-overlapping UV set (UV1, exported as glTF TEXCOORD_1) for baked lighting. "
+                        "Flat regions become charts packed into the unit square in proportion to their size. Without it, "
+                        "UV1 repeats the texture UVs."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLightmapChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_lightmapMargin,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Lightmap Margin"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Gap between lightmap charts in UV units; about 2 / lightmap resolution keeps bleeding apart."))
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
+                    ->Attribute(AZ::Edit::Attributes::Decimals, 4)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::LightmapMarginVisibility)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLightmapChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Re-evaluate every non-excluded White Box in the level against the current Cut Others cutters."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnRefreshGlobalBooleans)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText,
+                    QT_TRANSLATE_NOOP("WhiteBox", "Refresh Global Booleans"))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_boolean, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cut this mesh with another entity's mesh."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_csgSolver,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Solver"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "CSG solver for every boolean on this component: the layer Combine modes and the entity boolean. "
+                        "Fast (BSP) is brush-style and face-based; it handles inward-facing rooms, inverted normals and "
+                        "open or non-manifold meshes, and suits blocky level geometry. Manifold is volumetric and precise, "
+                        "but needs closed watertight meshes and treats inverted normals as the shape's complement."))
+                    ->EnumAttribute(Api::CsgSolver::Manifold, QT_TRANSLATE_NOOP("WhiteBox", "Manifold"))
+                    ->EnumAttribute(Api::CsgSolver::Fast, QT_TRANSLATE_NOOP("WhiteBox", "Fast (BSP)"))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnCsgSolverChange)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Mesh / Asset")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Weld coincident vertices and regroup coplanar faces so the whole mesh is a clean manifold."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::FixNonManifoldMesh)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Fix Non-Manifold"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Remove every cube placed with the Cube Stamp tool."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ClearVoxelCubes)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Clear Cube Stamp"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Add a White Box collider component to this entity."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnAddCollision)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Add Collision"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Save this mesh as a shareable White Box asset."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Save As Asset..."))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Export this mesh to an obj file."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export"))
+                    ->UIElement(
+                        AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Export the rendered mesh (all layers, materials, paint and smoothing) as glTF 2.0; a .glb name writes binary. Always Y-up."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToGltf)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export glTF..."))
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_flipYZForExport,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Swap Y and Z on export, for tools that use a different up axis."))
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawCarve,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Carve (Boolean)"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "When on, drawing performs a CSG boolean (same as holding Ctrl): pull into the surface to "
-                        "carve/subtract, pull out to add/union."))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Unit Cube Stamp"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "In draw mode, click to stamp a grid-snapped 1x1x1 cube (CSG union; hold Ctrl to subtract) "
-                        "instead of click-drag-pull."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
                         QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),
                         QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::AssetVisibility)
-                    ->UIElement(AZ::Edit::UIHandlers::Button,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Save As ..."))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material,
-                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Material"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "The properties of the White Box material."))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_componentModeDelegate,
                         QT_TRANSLATE_NOOP("WhiteBox", "Component Mode"),
                         QT_TRANSLATE_NOOP("WhiteBox", "White Box Tool Component Mode"))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
-                        QT_TRANSLATE_NOOP("WhiteBox", "Export to obj"))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export"))
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
-                        QT_TRANSLATE_NOOP("WhiteBox", "Export all whiteboxes on descendant entities as a single obj (excluding this one)"))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportDescendantsToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export Descendants"))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &EditorWhiteBoxComponent::m_flipYZForExport,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z for Export"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up."))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_booleanSourceEntity,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Boolean Source"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Another entity with a White Box component to use as the boolean operand."))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnBooleanSourceChange)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("WhiteBox", "Boolean"))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    // Apply Boolean is placed as the FIRST child of the group: a UIElement
-                    // that is the LAST child of a group is dropped by the property editor.
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
-                        QT_TRANSLATE_NOOP("WhiteBox", "Apply the boolean using the source entity's mesh"))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ApplyBoolean)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Apply Boolean"))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_booleanOperation,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Boolean Operation"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "How to combine the source mesh with this one."))
-                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
-                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
-                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_liveBoolean,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Non-Destructive (Live)"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Keep this mesh editable and show the boolean result live (re-evaluates when the source "
-                        "moves or either mesh changes). Leave off to use the one-shot Apply Boolean button."))
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_hideSourceAfterApply,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Hide Source After Apply"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Hide the source entity once the boolean is applied."))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_deleteSourceAfterApply,
-                        QT_TRANSLATE_NOOP("WhiteBox", "Delete Source After Apply"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "Delete the source entity once the boolean is applied."))
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
 
-    void EditorWhiteBoxComponent::OnMaterialChange()
+    AZ::Crc32 EditorWhiteBoxComponent::OnAddMaterial()
     {
-        if (m_renderMesh.has_value())
+        AZ::Entity* entity = GetEntity();
+        if (entity == nullptr || entity->FindComponent(AZ::Render::EditorMaterialComponentTypeId) != nullptr)
         {
-            (*m_renderMesh)->UpdateMaterial(m_material);
-            m_renderData.m_material = m_material;
+            return AZ::Edit::PropertyRefreshLevels::None; // already has one
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Add White Box Material");
+        AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+            AZ::Failure(AZStd::string("uninitialized"));
+        AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+            outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ GetEntityId() }, AZ::ComponentTypeList{ AZ::Render::EditorMaterialComponentTypeId });
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    void EditorWhiteBoxComponent::TrimSheet::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<TrimSheet>()
+                ->Version(1)
+                ->Field("Material", &TrimSheet::m_material)
+                ->Field("Edges", &TrimSheet::m_edges);
         }
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::AssetVisibility() const
+    AZStd::vector<float> EditorWhiteBoxComponent::GetTrimEdges(const AZ::Data::AssetId& material) const
     {
-        return DisplayingAsset(m_defaultShape) ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
-                                               : AZ::Edit::PropertyVisibility::Hide;
+        for (const TrimSheet& sheet : m_trimSheets)
+        {
+            if (sheet.m_material == material)
+            {
+                return sheet.m_edges;
+            }
+        }
+        return {};
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::SidesVisibility() const
+    void EditorWhiteBoxComponent::SetTrimEdges(const AZ::Data::AssetId& material, AZStd::vector<float> edges)
     {
-        // Sides applies to every solid shape: it sets the footprint resolution for
-        // round shapes (Cylinder/Cone), the subdivision for the Sphere, and the
-        // N-gon footprint for Box/Pyramid (3 = triangular prism, 4 = box, etc.).
-        // Only the Staircase ignores it.
-        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Hide
-                                                   : AZ::Edit::PropertyVisibility::Show;
+        for (float& edge : edges)
+        {
+            edge = AZ::GetClamp(edge, 0.0f, 1.0f);
+        }
+        AZStd::sort(edges.begin(), edges.end());
+        edges.erase(AZStd::unique(edges.begin(), edges.end(), [](float a, float b) { return AZStd::abs(a - b) < 1e-5f; }), edges.end());
+        if (edges.size() < 2)
+        {
+            edges.clear(); // one edge makes no band
+        }
+        if (GetTrimEdges(material) == edges)
+        {
+            return;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("White Box Trim Sheet");
+        auto sheet = AZStd::find_if(
+            m_trimSheets.begin(), m_trimSheets.end(), [&material](const TrimSheet& entry) { return entry.m_material == material; });
+        if (edges.empty())
+        {
+            if (sheet != m_trimSheets.end())
+            {
+                m_trimSheets.erase(sheet);
+            }
+        }
+        else if (sheet != m_trimSheets.end())
+        {
+            sheet->m_edges = AZStd::move(edges);
+        }
+        else
+        {
+            TrimSheet added;
+            added.m_material = material;
+            added.m_edges = AZStd::move(edges);
+            m_trimSheets.push_back(AZStd::move(added));
+        }
+        undoBatch.MarkEntityDirty(GetEntityId());
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::StairVisibility() const
+    AZStd::string EditorWhiteBoxComponent::MaterialDisplayName(const AZ::Data::AssetId& material)
     {
-        // The whole Stair group only shows for a Staircase. Within the group the
-        // step-count / step-height split is handled by DrawStairData itself.
-        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Show
-                                                   : AZ::Edit::PropertyVisibility::Hide;
+        AZStd::string path;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(path, &AZ::Data::AssetCatalogRequests::GetAssetPathById, material);
+        return path.empty() ? material.ToString<AZStd::string>() : AZStd::string(AZ::IO::PathView(path).Stem().Native());
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepsVisibility() const
+    AZStd::vector<AZStd::pair<AZStd::string, AZ::Data::AssetId>> EditorWhiteBoxComponent::GetPaletteEntries() const
     {
-        // Step count only applies in step-count mode (the group is already hidden
-        // unless the draw shape is a Staircase).
-        return m_byHeight ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+        // Numbered, so two materials with the same file name stay apart.
+        AZStd::vector<AZStd::pair<AZStd::string, AZ::Data::AssetId>> entries;
+        for (size_t i = 0; i < m_materialPalette.size(); ++i)
+        {
+            const AZ::Data::AssetId id = m_materialPalette[i].GetId();
+            if (id.IsValid())
+            {
+                entries.emplace_back(AZStd::string::format("%zu. %s", i + 1, MaterialDisplayName(id).c_str()), id);
+            }
+        }
+        return entries;
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepHeightVisibility() const
+    AZStd::vector<AZStd::string> EditorWhiteBoxComponent::GetPaletteChoices() const
     {
-        // Step height only applies in step-height mode.
-        return m_byHeight ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        AZStd::vector<AZStd::string> choices;
+        for (const auto& entry : GetPaletteEntries())
+        {
+            choices.push_back(entry.first);
+        }
+        return choices;
+    }
+
+    AZ::Data::AssetId EditorWhiteBoxComponent::PaletteChoiceAsset() const
+    {
+        for (const auto& entry : GetPaletteEntries())
+        {
+            if (entry.first == m_paletteChoice)
+            {
+                return entry.second;
+            }
+        }
+        return {};
+    }
+
+    void EditorWhiteBoxComponent::SetPaletteChoice(const AZ::Data::AssetId& material)
+    {
+        for (const auto& entry : GetPaletteEntries())
+        {
+            if (entry.second == material && entry.first != m_paletteChoice)
+            {
+                m_paletteChoice = entry.first;
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
+                return;
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::AddToMaterialPalette(const AZ::Data::AssetId& material)
+    {
+        if (!material.IsValid())
+        {
+            return;
+        }
+        const bool listed = AZStd::any_of(
+            m_materialPalette.begin(), m_materialPalette.end(),
+            [&material](const AZ::Data::Asset<AZ::RPI::MaterialAsset>& entry) { return entry.GetId() == material; });
+        if (!listed)
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("White Box Add Material To List");
+            // NoLoad: the list only names materials; the render mesh loads whichever faces use.
+            m_materialPalette.emplace_back(material, azrtti_typeid<AZ::RPI::MaterialAsset>());
+            m_materialPalette.back().SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::NoLoad);
+            SetPaletteChoice(material);
+            undoBatch.MarkEntityDirty(GetEntityId());
+        }
+        else
+        {
+            SetPaletteChoice(material);
+        }
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnMaterialPaletteChange()
+    {
+        // Keep the choice pointing at a listed material, and pick up a newly added one straight away.
+        const AZStd::vector<AZStd::string> choices = GetPaletteChoices();
+        if (AZStd::find(choices.begin(), choices.end(), m_paletteChoice) == choices.end())
+        {
+            m_paletteChoice = choices.empty() ? AZStd::string() : choices.back();
+        }
+        OnPaletteChoiceChange();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnPaletteChoiceChange()
+    {
+        // The Paint Material brush follows the card's choice, as the card follows the brush.
+        if (const AZ::Data::AssetId chosen = PaletteChoiceAsset(); chosen.IsValid())
+        {
+            m_facePaintSettings.m_material = chosen;
+        }
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    Api::PolygonHandles EditorWhiteBoxComponent::SelectedPolygonsInEditMode() const
+    {
+        // Transform mode keeps its own polygon selection; the default mode has another.
+        const AZ::EntityComponentIdPair pair{ GetEntityId(), GetId() };
+        Api::PolygonHandles polygons;
+        EditorWhiteBoxTransformModeRequestBus::EventResult(polygons, pair, &EditorWhiteBoxTransformModeRequests::GetSelectedPolygons);
+        if (polygons.empty())
+        {
+            EditorWhiteBoxDefaultModeRequestBus::EventResult(polygons, pair, &EditorWhiteBoxDefaultModeRequests::SelectedPolygonHandles);
+        }
+        return polygons;
+    }
+
+    void EditorWhiteBoxComponent::AssignMaterialToSelection(const AZ::Data::AssetId& material, const char* undoLabel)
+    {
+        const Api::PolygonHandles polygons = SelectedPolygonsInEditMode();
+        if (polygons.empty())
+        {
+            AZ_Warning("WhiteBox", false, "Select polygons in White Box edit mode first.");
+            return;
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch(undoLabel);
+        AssignPolygonMaterial(polygons, material);
+        undoBatch.MarkEntityDirty(GetEntityId());
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnAssignPaletteMaterial()
+    {
+        const AZ::Data::AssetId material = PaletteChoiceAsset();
+        if (!material.IsValid())
+        {
+            AZ_Warning("WhiteBox", false, "Add a material to the list and choose it first.");
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        AssignMaterialToSelection(material, "White Box Assign Polygon Material");
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnResetPolygonMaterial()
+    {
+        AssignMaterialToSelection({}, "White Box Reset Polygon Material");
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnLightmapChange()
+    {
+        // The settings ride on the material so they reach the render mesh, the baked game data and the exporter.
+        m_material.m_lightmapUvs = m_lightmapUvs;
+        m_material.m_lightmapMargin = m_lightmapMargin;
+        RebuildWhiteBox();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::LightmapMarginVisibility() const
+    {
+        return m_lightmapUvs ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::LegacyDefaultMaterialVisibility() const
+    {
+        // Only shown while an older entity still carries one, so it can be cleared.
+        return m_defaultMaterialAsset.GetId().IsValid() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::OnAddCollision()
+    {
+        AZ::Entity* entity = GetEntity();
+        if (entity == nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+        if (entity->FindComponent<EditorWhiteBoxColliderComponent>() != nullptr)
+        {
+            return AZ::Edit::PropertyRefreshLevels::None; // already has a White Box collider
+        }
+        AzToolsFramework::ScopedUndoBatch undoBatch("Add White Box Collision");
+        AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+            AZ::Failure(AZStd::string("uninitialized"));
+        AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+            outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ GetEntityId() },
+            AZ::ComponentTypeList{ azrtti_typeid<EditorWhiteBoxColliderComponent>() });
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree; // refresh the inspector to show the new component
     }
 
     void EditorWhiteBoxComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -900,13 +1052,16 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("WhiteBoxService"));
+        provided.push_back(AZ_CRC_CE("MaterialConsumerService")); // lets a Material component override slots
     }
 
     void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        // Note: NonUniformScaleService is intentionally NOT listed - White Box supports the entity's
+        // Non-Uniform Scale component (render, collider and bounds all honour it via the bus).
         incompatible.push_back(AZ_CRC_CE("MeshService"));
         incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
+        incompatible.push_back(AZ_CRC_CE("MaterialConsumerService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
@@ -933,6 +1088,14 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::Activate()
     {
+        m_material.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
+            m_materialOverrideAssetId, azrtti_typeid<AZ::RPI::MaterialAsset>());
+        m_material.m_materialAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+        m_material.m_lightmapUvs = m_lightmapUvs;
+        m_material.m_lightmapMargin = m_lightmapMargin;
+        // Data saved before the card carried this control has no mirror stored, so derive it here
+        // rather than trusting what was serialized.
+        m_defaultMaterialAsset = m_material.m_materialAsset;
         const AZ::EntityId entityId = GetEntityId();
         const AZ::EntityComponentIdPair entityComponentIdPair{entityId, GetId()};
 
@@ -942,9 +1105,15 @@ namespace WhiteBox
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
         AzFramework::VisibleGeometryRequestBus::Handler::BusConnect(entityId);
+        // Answer scene raycasts; geometry changes are signalled from RebuildRenderMesh.
+        AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect(
+            AzFramework::RenderGeometry::EntityIdAndContext(entityId, AzToolsFramework::GetEntityContextId()));
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(entityId);
+        // Offer this mesh's vertices to the editor-wide vertex snapper.
+        AzToolsFramework::ViewportSnapping::ViewportSnapSourceRequestBus::Handler::BusConnect(entityId);
+        AZ::TickBus::Handler::BusConnect();
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorWhiteBoxComponent, EditorWhiteBoxComponentMode>(
             entityComponentIdPair, this);
@@ -954,28 +1123,66 @@ namespace WhiteBox
 
         m_editorMeshAsset->Associate(entityComponentIdPair);
 
+        // Restore the serialized render data and bakes first, for clones that never rebuild and for undo.
+        UnpackRenderDataBlobs();
+
         // deserialize the white box data into a mesh object or load the serialized asset ref
         // (the serialized stream already contains the full combined geometry - freeform
         // faces plus any voxel-stamped surface - so no voxel regeneration is needed here;
         // regenerating would discard freeform edits made before the level was saved).
         DeserializeWhiteBox();
 
+        // Script access (Python / MCP) to this entity's White Box values and mesh tools.
+        m_authoring = AZStd::make_unique<EditorWhiteBoxAuthoring>(*this);
+
+        // Refresh render/physics/bounds when the entity's non-uniform scale changes (it is separate
+        // from the Transform, so it does not raise OnTransformChanged).
+        m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
+            [this]([[maybe_unused]] const AZ::Vector3& scale)
+            {
+                m_worldAabb.reset();
+                InvalidateSnapVertexCache(); // cached snap vertices fold in the non-uniform scale
+                // Full rebuild: re-bakes the scale into the physics mesh and the render transform.
+                RebuildWhiteBox();
+            });
+        AZ::NonUniformScaleRequestBus::Event(
+            entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
+
         // re-evaluate the live boolean and listen for the source entity moving
         UpdateBooleanSourceListener();
         EvaluateLiveBoolean();
+        RebuildCombinedMesh(); // fold in the stamp/grid layer so it renders on load
+
+        // Older levels have no collision-filtered physics bake; make it now so game mode uses it.
+        if (!m_physicsBaked)
+        {
+            RebuildBakedRenderData();
+        }
 
         if (AzToolsFramework::IsEntityVisible(entityId))
         {
-            ShowRenderMesh();
+            if (m_edgesOnly)
+            {
+                HideRenderMesh();
+            }
+            else
+            {
+                ShowRenderMesh();
+            }
             OnMaterialChange();
         }
     }
 
     void EditorWhiteBoxComponent::Deactivate()
     {
+        m_authoring.reset();
+        m_nonUniformScaleChangedHandler.Disconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportSnapping::ViewportSnapSourceRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+        AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
         AzFramework::VisibleGeometryRequestBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -987,31 +1194,62 @@ namespace WhiteBox
 
         m_componentModeDelegate.Disconnect();
         m_editorMeshAsset->Release();
+        m_layerRenderMeshes.clear();
+        m_wireframeRenderMesh.reset();
         m_renderMesh.reset();
         m_whiteBox.reset();
         m_displayMesh.reset();
     }
 
-    void EditorWhiteBoxComponent::DeserializeWhiteBox()
+    void EditorWhiteBoxComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
     {
-        // create WhiteBoxMesh object from internal data
-        m_whiteBox = Api::CreateWhiteBoxMesh();
-
-        if (m_editorMeshAsset->InUse())
+        // The layer container's own add/remove/reorder does not always notify, so poll the id order.
+        if (LayerSignature() != m_layerRuntime.m_lastSignature)
         {
-            m_editorMeshAsset->Load();
+            SyncLayerStructure();
         }
-        else
-        {
-            // attempt to load the mesh
-            const auto result = Api::ReadMesh(*m_whiteBox, m_whiteBoxData);
-            AZ_Error("EditorWhiteBoxComponent", result != WhiteBox::Api::ReadResult::Error, "Error deserializing white box mesh stream");
 
-            // if the read was successful but the byte stream is empty
-            // (there was nothing to load), create a default mesh
-            if (result == Api::ReadResult::Empty)
+        // The boolean source moved: re-evaluate once per frame, deferring physics until it settles.
+        if (m_rebuild.m_liveBooleanPending)
+        {
+            m_rebuild.m_liveBooleanPending = false;
+            EvaluateLiveBoolean();
+            RebuildCombinedMesh();
+            RebuildRenderMesh();
+            m_rebuild.m_physicsPending = true;
+            m_rebuild.m_physicsTimer = 0.0f;
+        }
+        else if (m_rebuild.m_physicsPending)
+        {
+            m_rebuild.m_physicsTimer += deltaTime;
+            if (m_rebuild.m_physicsTimer >= 0.25f)
             {
-                Api::InitializeAsUnitCube(*m_whiteBox);
+                m_rebuild.m_physicsPending = false;
+                RebuildPhysicsMesh();
+            }
+        }
+
+        // Debounced game-mode bake for drags; discrete edits bake synchronously in RebuildWhiteBox.
+        if (m_rebuild.m_bakedDataDirty)
+        {
+            m_rebuild.m_bakedDataDelay += deltaTime;
+            if (m_rebuild.m_bakedDataDelay >= 0.5f)
+            {
+                m_rebuild.m_bakedDataDirty = false;
+                m_rebuild.m_bakedDataDelay = 0.0f;
+                if (m_rebuild.m_workingMeshUnwritten)
+                {
+                    SerializeWhiteBox(); // a preview left the working mesh out of the layer's stream
+                }
+                RebuildBakedRenderData();
+                // The bake writes serialized members, so mark the entity dirty - but never outside the prefab
+                // being edited, where it would propagate through the template endlessly.
+                const auto* focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+                if (focusModeInterface == nullptr || focusModeInterface->IsInFocusSubTree(GetEntityId()))
+                {
+                    AzToolsFramework::ScopedUndoBatch undoBatch("White Box Bake");
+                    undoBatch.MarkEntityDirty(GetEntityId());
+                }
             }
         }
     }
@@ -1019,17 +1257,127 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::RebuildWhiteBox()
     {
         EvaluateLiveBoolean(); // refresh m_displayMesh so render/physics/bounds use the latest result
+        RebuildCombinedMesh(); // fold the stamp/grid layer into the mesh used for output
         RebuildRenderMesh();
         RebuildPhysicsMesh();
+
+        // Bake synchronously for discrete edits: play-in-editor spawns from the serialized state captured
+        // when the edit marks the entity dirty, so a debounced bake would leave game mode one edit behind.
+        m_rebuild.m_bakedDataDirty = false;
+        m_rebuild.m_bakedDataDelay = 0.0f;
+        m_rebuild.m_physicsPending = false; // cooked synchronously just above
+        RebuildBakedRenderData();
+    }
+
+    void EditorWhiteBoxComponent::RebuildWhiteBoxDeferred()
+    {
+        // Update geometry and display now; the collider cook and game-mode bake wait for OnTick until edits stop.
+        EvaluateLiveBoolean();
+        RebuildCombinedMesh();
+
+        m_rebuild.m_streaming = true;
+        RebuildRenderMesh();
+        m_rebuild.m_streaming = false;
+
+        m_rebuild.m_physicsPending = true;
+        m_rebuild.m_physicsTimer = 0.0f;
+        m_rebuild.m_bakedDataDirty = true;
+        m_rebuild.m_bakedDataDelay = 0.0f;
     }
 
     void EditorWhiteBoxComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        if (auto* whiteBoxComponent = gameEntity->CreateComponent<WhiteBoxComponent>())
+        auto* whiteBoxComponent = gameEntity->CreateComponent<WhiteBoxComponent>();
+        if (whiteBoxComponent == nullptr)
         {
-            // note: it is important no edit time only functions are called here as BuildGameEntity
-            // will be called by the Asset Processor when creating dynamic slices
+            return;
+        }
+
+        // Every fallback below reads the live render data, which on a never-activated clone exists
+        // only in the serialized blobs.
+        EnsureRenderDataUnpacked();
+
+        // note: it is important no edit time only functions are called here as BuildGameEntity
+        // will be called by the Asset Processor when creating dynamic slices
+
+        // Flush a pending debounced bake so the game entity is built from current data.
+        if (m_rebuild.m_bakedDataDirty)
+        {
+            m_rebuild.m_bakedDataDirty = false;
+            RebuildBakedRenderData();
+        }
+
+        // Base render geometry: the live base mesh, else the cached base data (m_renderData may be the cut result).
+        if (WhiteBoxMesh* baseMesh = GetWhiteBoxMesh())
+        {
+            // Per-layer tint / inverted-normal layers must bake the coloured (winding-flipped) faces
+            // so the effect survives into game mode; otherwise use the plain CSG-combined faces.
+            if (PerLayerRenderActive())
+            {
+                whiteBoxComponent->GenerateWhiteBoxMesh(BuildColoredRenderData(baseMesh));
+            }
+            else
+            {
+                // Full combine, so the game entity matches the editor view.
+                const Api::WhiteBoxMeshPtr combined = BuildCombined(baseMesh);
+                whiteBoxComponent->GenerateWhiteBoxMesh(
+                    CreateWhiteBoxRenderData(combined ? *combined : *baseMesh, m_material));
+            }
+        }
+        else if (!m_bakedBaseRenderData.m_faces.empty())
+        {
+            whiteBoxComponent->GenerateWhiteBoxMesh(m_bakedBaseRenderData);
+        }
+        else
+        {
             whiteBoxComponent->GenerateWhiteBoxMesh(m_renderData);
+        }
+
+        // The baked physics render data drives the runtime "Draw Collider" wireframe. Once baked, empty
+        // means collision off - never fall back to the visual geometry; only legacy data does.
+        if (m_physicsBaked)
+        {
+            whiteBoxComponent->SetPhysicsGeometryData(m_bakedPhysicsBaseRenderData);
+        }
+        else
+        {
+            // Legacy data with no physics bake: fall back to the visual geometry.
+            whiteBoxComponent->SetPhysicsGeometryData(m_renderData);
+        }
+        // The boolean variant can only be evaluated in the Editor, and its source is not resolvable during
+        // the game build, so use the cached display mesh, or the serialized render data on a clone.
+        WhiteBoxRenderData booleanRenderData;
+        if (WhiteBoxMesh* displayMesh = GetLiveBooleanDisplayMesh())
+        {
+            if (PerLayerRenderActive())
+            {
+                booleanRenderData = BuildColoredRenderData(displayMesh);
+            }
+            else
+            {
+                const Api::WhiteBoxMeshPtr combined = CombinedWithGrid(displayMesh);
+                booleanRenderData = CreateWhiteBoxRenderData(combined ? *combined : *displayMesh, m_material);
+            }
+        }
+        else
+        {
+            booleanRenderData = m_bakedBooleanRenderData;
+        }
+
+        if (!booleanRenderData.m_faces.empty())
+        {
+            whiteBoxComponent->SetBooleanRenderData(booleanRenderData);
+            // A single-source target starts live only if its Live flag is set; a global-boolean
+            // target shows its composed result by default (the manual refresh is the "apply").
+            whiteBoxComponent->SetLiveBooleanState(true, m_boolean.m_live || m_globalBooleanActive);
+
+            if (!m_bakedPhysicsBooleanRenderData.m_faces.empty()) {
+                whiteBoxComponent->SetBooleanPhysicsGeometryData(m_bakedPhysicsBooleanRenderData);
+            }
+        }
+        else
+        {
+            whiteBoxComponent->SetLiveBooleanState(false, false);
         }
     }
 
@@ -1062,623 +1410,34 @@ namespace WhiteBox
         }
     }
 
-    void EditorWhiteBoxComponent::RebuildRenderMesh()
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        // reset caches when the mesh changes
-        m_worldAabb.reset();
-        m_localAabb.reset();
-        m_faces.reset();
-
-        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
-
-        // must have been created in Activate or have had the Entity made visible again
-        if (m_renderMesh.has_value())
-        {
-            // cache the white box render data
-            m_renderData = CreateWhiteBoxRenderData(*EvaluatedMesh(), m_material);
-
-            // it's possible the white box mesh data isn't yet ready (for example if it's stored
-            // in an asset which hasn't finished loading yet) so don't attempt to create a render
-            // mesh with no data
-            if (!m_renderData.m_faces.empty())
-            {
-                // check if we need to instantiate a concrete render mesh implementation
-                if (IsWhiteBoxNullRenderMesh(m_renderMesh))
-                {
-                    // create a concrete implementation of the render mesh
-                    WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
-                }
-
-                // generate the mesh
-                (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
-                OnMaterialChange();
-            }
-        }
-
-        EditorWhiteBoxComponentModeRequestBus::Event(
-            AZ::EntityComponentIdPair{GetEntityId(), GetId()},
-            &EditorWhiteBoxComponentModeRequests::MarkWhiteBoxIntersectionDataDirty);
-    }
-
-    void EditorWhiteBoxComponent::WriteAssetToComponent()
-    {
-        if (m_editorMeshAsset->Loaded())
-        {
-            Api::WriteMesh(*m_editorMeshAsset->GetWhiteBoxMesh(), m_whiteBoxData);
-        }
-    }
-
-    void EditorWhiteBoxComponent::SerializeWhiteBox()
-    {
-        if (m_editorMeshAsset->Loaded())
-        {
-            m_editorMeshAsset->Serialize();
-        }
-        else
-        {
-            Api::WriteMesh(*m_whiteBox, m_whiteBoxData);
-        }
-    }
-
     void EditorWhiteBoxComponent::SetDefaultShape(const DefaultShapeType defaultShape)
     {
         m_defaultShape = defaultShape;
         OnDefaultShapeChange();
     }
 
-    void EditorWhiteBoxComponent::OnTransformChanged(
-        [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
+    AZ::Crc32 EditorWhiteBoxComponent::CreateChildLayer()
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        m_worldAabb.reset();
-        m_localAabb.reset();
-
-        m_worldFromLocal = world;
-
-        if (m_renderMesh.has_value())
-        {
-            (*m_renderMesh)->UpdateTransform(world);
-        }
-
-        if (m_liveBoolean)
-        {
-            RebuildWhiteBox(); // moving this entity changes the cut relative to the source
-        }
+        // All of the entity/component-mode work lives in the standalone layer utility.
+        CreateChildWhiteBoxLayer(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    void EditorWhiteBoxComponent::RebuildPhysicsMesh()
+    AZ::Crc32 EditorWhiteBoxComponent::OnOpenPane()
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        EditorWhiteBoxColliderRequestBus::Event(
-            GetEntityId(), &EditorWhiteBoxColliderRequests::CreatePhysics, *EvaluatedMesh());
+        // All White Box editing UI lives in the dockable pane - this button is the only
+        // affordance left on the component card (besides entering component mode).
+        AzToolsFramework::OpenViewPane("White Box");
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    static AZStd::string WhiteBoxPathAtProjectRoot(const AZStd::string_view name, const AZStd::string_view extension)
+    void EditorWhiteBoxComponent::EnterComponentMode()
     {
-        AZ::IO::Path whiteBoxPath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(whiteBoxPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-        }
-        whiteBoxPath /= AZ::IO::FixedMaxPathString::format("%.*s.%.*s", AZ_STRING_ARG(name), AZ_STRING_ARG(extension));
-        return whiteBoxPath.Native();
-    }
-
-    void EditorWhiteBoxComponent::ExportToFile()
-    {
-        const AZStd::string initialAbsolutePathToExport =
-            WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
-
-        const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
-        const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
-            nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
-
-        if (m_flipYZForExport)
-        {
-            Api::VertexHandles vHandles = Api::MeshVertexHandles(*GetWhiteBoxMesh());
-            for (auto& handle : vHandles)
-            {
-                AZ::Vector3 p = Api::VertexPosition(*GetWhiteBoxMesh(), handle);
-                float temp = p.GetY();
-                p.SetY(p.GetZ());
-                p.SetZ(-temp);
-                Api::SetVertexPosition(*GetWhiteBoxMesh(), handle, p);
-            }
-        }
-
-        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
-        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
-        if (WhiteBox::Api::SaveToObj(*GetWhiteBoxMesh(), absoluteSaveFilePathCstr))
-        {
-            AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
-            RequestEditSourceControl(absoluteSaveFilePathCstr);
-        }
-        else
-        {
-            AZ_Warning(
-                "EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
-        }
-    }
-
-    void EditorWhiteBoxComponent::ExportDescendantsToFile()
-    {
-        // Get all child entities in the viewport
-        AzToolsFramework::EntityIdList children;
-        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
-
-        if (children.empty())
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export descendant whitebox meshes: No descendant entities found.");
-            return;
-        }
-
-        const AZStd::string initialAbsolutePathToExport = WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
-
-        const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
-        const QString absoluteSaveFilePath =
-            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
-
-        // Create a new empty white box mesh
-        Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();
-        for (auto& id : children)
-        {
-            AZ::Entity* e;
-            AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationRequests::FindEntity, id);
-            AZ::Transform worldTM = e->GetTransform()->GetWorldTM();
-
-            // Add all polys from selected white boxes
-            for (auto component : e->FindComponents<EditorWhiteBoxComponent>())
-            {
-                WhiteBoxMesh* m = component->GetWhiteBoxMesh();
-                Api::PolygonHandles polys = Api::MeshPolygonHandles(*m);
-                for (auto& poly : polys)
-                {
-                    AZStd::vector<AZ::Vector3> verts = Api::PolygonVertexPositions(*m, poly);
-                    if (verts.size() == 4) // if this is in fact a quad
-                    {
-                        Api::VertexHandle vertexHandles[4];
-
-                        for (unsigned int i = 0; i < 4; i++)
-                        {
-                            AZ::Vector3 worldV = worldTM.TransformPoint(verts[i]);
-                            if (m_flipYZForExport)
-                            {
-                                float temp = worldV.GetY();
-                                worldV.SetY(worldV.GetZ());
-                                worldV.SetZ(-temp);
-                            }
-                            vertexHandles[i] = Api::AddVertex(*mesh.get(), worldV);
-                        }
-                        Api::AddQuadPolygon(*mesh.get(), vertexHandles[0], vertexHandles[1], vertexHandles[2], vertexHandles[3]);
-                    }
-                }
-            }
-        }
-
-        Api::CalculateNormals(*mesh.get());
-        Api::CalculatePlanarUVs(*mesh.get());
-
-        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
-        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
-        if (WhiteBox::Api::SaveToObj(*mesh.get(), absoluteSaveFilePathCstr))
-        {
-            AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
-            RequestEditSourceControl(absoluteSaveFilePathCstr);
-        }
-        else
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
-        }
-    }
-
-    AZStd::optional<WhiteBoxSaveResult> TrySaveAs(
-        const AZStd::string_view entityName,
-        const AZStd::function<AZStd::string(const AZStd::string&)>& absoluteSavePathFn,
-        const AZStd::function<AZStd::optional<AZStd::string>(const AZStd::string&)>& relativePathFn,
-        const AZStd::function<int()>& saveDecisionFn)
-    {
-        const AZStd::string initialAbsolutePathToSave =
-            WhiteBoxPathAtProjectRoot(entityName, Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension);
-
-        const QString absoluteSaveFilePath = QString(absoluteSavePathFn(initialAbsolutePathToSave).c_str());
-
-        // user pressed cancel
-        if (absoluteSaveFilePath.isEmpty())
-        {
-            return AZStd::nullopt;
-        }
-
-        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
-        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
-
-        const AZStd::optional<AZStd::string> relativePath =
-            relativePathFn(AZStd::string(absoluteSaveFilePathCstr, absoluteSaveFilePathUtf8.length()));
-
-        if (!relativePath.has_value())
-        {
-            int saveDecision = saveDecisionFn();
-
-            // save the file but do not attempt to create an asset
-            if (saveDecision == QMessageBox::Save)
-            {
-                return WhiteBoxSaveResult{AZStd::nullopt, AZStd::string(absoluteSaveFilePathCstr)};
-            }
-
-            // the user decided not to save the asset outside the project folder after the prompt
-            return AZStd::nullopt;
-        }
-
-        return WhiteBoxSaveResult{relativePath, AZStd::string(absoluteSaveFilePathCstr)};
-    }
-
-    AZ::Crc32 EditorWhiteBoxComponent::SaveAsAsset()
-    {
-        // let the user select final location of the saved asset
-        const auto absoluteSavePathFn = [](const AZStd::string& initialAbsolutePath)
-        {
-            const QString fileFilter =
-                AZStd::string::format("WhiteBoxMesh (*.%s)", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath =
-                AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
-
-            return AZStd::string(absolutePath.toUtf8());
-        };
-
-        // ask the asset system to try and convert the absolutePath to a cache relative path
-        const auto relativePathFn = [](const AZStd::string& absolutePath) -> AZStd::optional<AZStd::string>
-        {
-            AZStd::string relativePath;
-            bool foundRelativePath = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                foundRelativePath,
-                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
-                absolutePath,
-                relativePath);
-
-            if (foundRelativePath)
-            {
-                return relativePath;
-            }
-
-            return AZStd::nullopt;
-        };
-
-        // present the user with the option of accepting saving outside the project folder or allow them to cancel the
-        // operation
-        const auto saveDecisionFn = []()
-        {
-            return QMessageBox::warning(
-                AzToolsFramework::GetActiveWindow(),
-                "Warning",
-                "Saving a White Box Mesh Asset (.wbm) outside of the project root will not create an Asset for the "
-                "Component to use. The file will be saved but will not be processed. For live updates to happen the "
-                "asset must be saved somewhere in the current project folder. Would you like to continue?",
-                (QMessageBox::Save | QMessageBox::Cancel),
-                QMessageBox::Cancel);
-        };
-
-        const AZStd::optional<WhiteBoxSaveResult> saveResult =
-            TrySaveAs(GetEntity()->GetName(), absoluteSavePathFn, relativePathFn, saveDecisionFn);
-
-        // user pressed cancel
-        if (!saveResult.has_value())
-        {
-            return AZ::Edit::PropertyRefreshLevels::None;
-        }
-
-        const char* const absoluteSaveFilePath = saveResult.value().m_absoluteFilePath.c_str();
-        if (saveResult.value().m_relativeAssetPath.has_value())
-        {
-            const auto& relativeAssetPath = saveResult.value().m_relativeAssetPath.value();
-
-            // notify undo system the entity has been changed (m_meshAsset)
-            AzToolsFramework::ScopedUndoBatch undoBatch(AssetSavedUndoRedoDesc);
-
-            // if there was a previous asset selected, it has to be cloned to a new one
-            // otherwise the internal mesh can simply be moved into the new asset
-            m_editorMeshAsset->TakeOwnershipOfWhiteBoxMesh(
-                relativeAssetPath,
-                m_editorMeshAsset->InUse() ? Api::CloneMesh(*GetWhiteBoxMesh()) : AZStd::exchange(m_whiteBox, Api::CreateWhiteBoxMesh()));
-
-            // change default shape to asset
-            m_defaultShape = DefaultShapeType::Asset;
-
-            // ensure this change gets tracked
-            undoBatch.MarkEntityDirty(GetEntityId());
-
-            RefreshProperties();
-
-            m_editorMeshAsset->Save(absoluteSaveFilePath);
-        }
-        else
-        {
-            // save the asset to disk outside the project folder
-            if (Api::SaveToWbm(*GetWhiteBoxMesh(), absoluteSaveFilePath))
-            {
-                RequestEditSourceControl(absoluteSaveFilePath);
-            }
-        }
-
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
-    }
-
-    template<typename TransformFn>
-    AZ::Aabb CalculateAabb(const WhiteBoxMesh& whiteBox, TransformFn&& transformFn)
-    {
-        const auto vertexHandles = Api::MeshVertexHandles(whiteBox);
-        return AZStd::accumulate(
-            AZStd::cbegin(vertexHandles), AZStd::cend(vertexHandles), AZ::Aabb::CreateNull(), transformFn);
-    }
-
-    AZ::Aabb EditorWhiteBoxComponent::GetEditorSelectionBoundsViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
-    {
-        return GetWorldBounds();
-    }
-
-    AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds() const
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        if (!m_worldAabb.has_value())
-        {
-            m_worldAabb = GetLocalBounds();
-            m_worldAabb->ApplyTransform(m_worldFromLocal);
-        }
-
-        return m_worldAabb.value();
-    }
-
-    AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds() const
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        if (!m_localAabb.has_value())
-        {
-            auto& whiteBoxMesh = *const_cast<EditorWhiteBoxComponent*>(this)->EvaluatedMesh();
-
-            m_localAabb = CalculateAabb(
-                whiteBoxMesh,
-                [&whiteBox = whiteBoxMesh](AZ::Aabb aabb, const Api::VertexHandle vertexHandle)
-                {
-                    aabb.AddPoint(Api::VertexPosition(whiteBox, vertexHandle));
-                    return aabb;
-                });
-        }
-
-        return m_localAabb.value();
-    }
-
-    void EditorWhiteBoxComponent::BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
-    {
-        // Only add the white box geometry if its bounds overlap the input bounds
-        if (bounds.IsValid() && !bounds.Overlaps(GetWorldBounds()))
-        {
-            return;
-        }
-
-        // Extract white box geometry data to convert to visible geometry vertices and indices
-        const WhiteBoxRenderData renderData =
-            CreateWhiteBoxRenderData(*const_cast<EditorWhiteBoxComponent*>(this)->EvaluatedMesh(), m_material);
-
-        // Convert the white box render data into visible geometry data
-        const AzFramework::VisibleGeometry geometry = BuildVisibleGeometryFromWhiteBoxRenderData(GetEntityId(), renderData);
-
-        if (!geometry.m_indices.empty() && !geometry.m_vertices.empty())
-        {
-            geometryContainer.push_back(geometry);
-        }
-    }
-
-    bool EditorWhiteBoxComponent::EditorSelectionIntersectRayViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir,
-        float& distance)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        if (!m_faces.has_value())
-        {
-            m_faces = Api::MeshFaces(*EvaluatedMesh());
-        }
-
-        // must have at least one triangle
-        if (m_faces->empty())
-        {
-            return false;
-        }
-
-        // transform ray into local space
-        const AZ::Transform localFromWorld = m_worldFromLocal.GetInverse();
-
-        // setup beginning/end of segment
-        const float rayLength = 1000.0f;
-        const AZ::Vector3 localRayOrigin = localFromWorld.TransformPoint(src);
-        const AZ::Vector3 localRayDirection = localFromWorld.TransformVector(dir);
-        const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
-
-        bool intersection = false;
-        AZ::Intersect::SegmentTriangleHitTester hitTester(localRayOrigin, localRayEnd);
-        for (const auto& face : m_faces.value())
-        {
-            float t;
-            AZ::Vector3 normal;
-            if (hitTester.IntersectSegmentTriangle(face[0], face[1], face[2], normal, t))
-            {
-                intersection = true;
-
-                // find closest intersection
-                const float dist = t * rayLength;
-                if (dist < distance)
-                {
-                    distance = dist;
-                }
-            }
-        }
-
-        return intersection;
-    }
-
-    void EditorWhiteBoxComponent::OnEntityVisibilityChanged(const bool visibility)
-    {
-        if (visibility)
-        {
-            ShowRenderMesh();
-        }
-        else
-        {
-            HideRenderMesh();
-        }
-    }
-
-    void EditorWhiteBoxComponent::ShowRenderMesh()
-    {
-        // if we wish to display the render mesh, set a null render mesh indicating a mesh can exist
-        // note: if the optional remains empty, no render mesh will be created
-        m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
-        RebuildRenderMesh();
-    }
-
-    void EditorWhiteBoxComponent::HideRenderMesh()
-    {
-        // clear the optional
-        m_renderMesh.reset();
-    }
-
-    bool EditorWhiteBoxComponent::AssetInUse() const
-    {
-        return m_editorMeshAsset->InUse();
-    }
-
-    bool EditorWhiteBoxComponent::HasRenderMesh() const
-    {
-        // if the optional has a value we know a render mesh exists
-        // note: This implicitly implies that the Entity is visible
-        return m_renderMesh.has_value();
-    }
-
-    void EditorWhiteBoxComponent::OverrideEditorWhiteBoxMeshAsset(EditorWhiteBoxMeshAsset* editorMeshAsset)
-    {
-        // ensure we do not leak resources
-        delete m_editorMeshAsset;
-
-        m_editorMeshAsset = editorMeshAsset;
-    }
-
-    static bool DebugDrawingEnabled()
-    {
-        return cl_whiteBoxDebugVertexHandles || cl_whiteBoxDebugNormals || cl_whiteBoxDebugHalfedgeHandles ||
-            cl_whiteBoxDebugEdgeHandles || cl_whiteBoxDebugFaceHandles || cl_whiteBoxDebugAabb;
-    }
-
-    static void WhiteBoxDebugRendering(
-        const WhiteBoxMesh& whiteBoxMesh, const AZ::Transform& worldFromLocal,
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Aabb& editorBounds)
-    {
-        const AZ::Quaternion worldOrientationFromLocal = worldFromLocal.GetRotation();
-
-        debugDisplay.DepthTestOn();
-
-        for (const auto& faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
-        {
-            const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBoxMesh, faceHandle);
-
-            const AZ::Vector3 localFaceCenter =
-                AZStd::accumulate(
-                    faceHalfedgeHandles.cbegin(), faceHalfedgeHandles.cend(), AZ::Vector3::CreateZero(),
-                    [&whiteBoxMesh](AZ::Vector3 start, const Api::HalfedgeHandle halfedgeHandle)
-                    {
-                        return start +
-                            Api::VertexPosition(
-                                   whiteBoxMesh, Api::HalfedgeVertexHandleAtTip(whiteBoxMesh, halfedgeHandle));
-                    }) /
-                3.0f;
-
-            for (const auto& halfedgeHandle : faceHalfedgeHandles)
-            {
-                const Api::VertexHandle vertexHandleAtTip =
-                    Api::HalfedgeVertexHandleAtTip(whiteBoxMesh, halfedgeHandle);
-                const Api::VertexHandle vertexHandleAtTail =
-                    Api::HalfedgeVertexHandleAtTail(whiteBoxMesh, halfedgeHandle);
-
-                const AZ::Vector3 localTailPoint = Api::VertexPosition(whiteBoxMesh, vertexHandleAtTail);
-                const AZ::Vector3 localTipPoint = Api::VertexPosition(whiteBoxMesh, vertexHandleAtTip);
-                const AZ::Vector3 localFaceNormal = Api::FaceNormal(whiteBoxMesh, faceHandle);
-                const AZ::Vector3 localHalfedgeCenter = (localTailPoint + localTipPoint) * 0.5f;
-
-                // offset halfedge slightly based on the face it is associated with
-                const AZ::Vector3 localHalfedgePositionWithOffset =
-                    localHalfedgeCenter + ((localFaceCenter - localHalfedgeCenter).GetNormalized() * 0.1f);
-
-                const AZ::Vector3 worldVertexPosition = worldFromLocal.TransformPoint(localTipPoint);
-                const AZ::Vector3 worldHalfedgePosition =
-                    worldFromLocal.TransformPoint(localHalfedgePositionWithOffset);
-                const AZ::Vector3 worldNormal =
-                    (worldOrientationFromLocal.TransformVector(localFaceNormal)).GetNormalized();
-
-                if (cl_whiteBoxDebugVertexHandles)
-                {
-                    debugDisplay.SetColor(AZ::Colors::Cyan);
-                    const AZStd::string vertex = AZStd::string::format("%d", vertexHandleAtTip.Index());
-                    debugDisplay.DrawTextLabel(worldVertexPosition, 3.0f, vertex.c_str(), true, 0, 1);
-                }
-
-                if (cl_whiteBoxDebugHalfedgeHandles)
-                {
-                    debugDisplay.SetColor(AZ::Colors::LawnGreen);
-                    const AZStd::string halfedge = AZStd::string::format("%d", halfedgeHandle.Index());
-                    debugDisplay.DrawTextLabel(worldHalfedgePosition, 2.0f, halfedge.c_str(), true);
-                }
-
-                if (cl_whiteBoxDebugNormals)
-                {
-                    debugDisplay.SetColor(AZ::Colors::White);
-                    debugDisplay.DrawBall(worldVertexPosition, 0.025f);
-                    debugDisplay.DrawLine(worldVertexPosition, worldVertexPosition + worldNormal * 0.4f);
-                }
-            }
-
-            if (cl_whiteBoxDebugFaceHandles)
-            {
-                debugDisplay.SetColor(AZ::Colors::White);
-                const AZ::Vector3 worldFacePosition = worldFromLocal.TransformPoint(localFaceCenter);
-                const AZStd::string face = AZStd::string::format("%d", faceHandle.Index());
-                debugDisplay.DrawTextLabel(worldFacePosition, 2.0f, face.c_str(), true);
-            }
-        }
-
-        if (cl_whiteBoxDebugEdgeHandles)
-        {
-            for (const auto& edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
-            {
-                const AZ::Vector3 localEdgeMidpoint = Api::EdgeMidpoint(whiteBoxMesh, edgeHandle);
-                const AZ::Vector3 worldEdgeMidpoint = worldFromLocal.TransformPoint(localEdgeMidpoint);
-                debugDisplay.SetColor(AZ::Colors::CornflowerBlue);
-                const AZStd::string edge = AZStd::string::format("%d", edgeHandle.Index());
-                debugDisplay.DrawTextLabel(worldEdgeMidpoint, 2.0f, edge.c_str(), true);
-            }
-        }
-
-        if (cl_whiteBoxDebugAabb)
-        {
-            debugDisplay.SetColor(AZ::Colors::Blue);
-            debugDisplay.DrawWireBox(editorBounds.GetMin(), editorBounds.GetMax());
-        }
-    }
-
-    void EditorWhiteBoxComponent::DisplayEntityViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        if (DebugDrawingEnabled())
-        {
-            WhiteBoxDebugRendering(
-                *GetWhiteBoxMesh(), m_worldFromLocal, debugDisplay,
-                GetEditorSelectionBoundsViewport(AzFramework::ViewportInfo{}));
-        }
+        // Go through the "edit selected components" request so the card's enter/exit button stays in sync.
+        // The entity must be selected first.
+        namespace Cmf = AzToolsFramework::ComponentModeFramework;
+        Cmf::ComponentModeSystemRequestBus::Broadcast(
+            &Cmf::ComponentModeSystemRequests::AddSelectedComponentModesOfType,
+            azrtti_typeid<EditorWhiteBoxComponent>());
     }
 } // namespace WhiteBox

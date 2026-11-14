@@ -17,6 +17,10 @@ namespace AZ
 
 namespace WhiteBox
 {
+    //! Compute a unit triangle normal from two edges sharing an origin.
+    //! Rejects non-finite, collapsed and numerically collinear input, independent of mesh scale.
+    bool TryCalculateTriangleNormal(const AZ::Vector3& edge0, const AZ::Vector3& edge1, AZ::Vector3& normal);
+
     //! Intersect a segment with a cylinder
     //! Reference: Real-Time Collision Detection - 5.3.7 Intersecting Ray or Segment Against Cylinder
     //! @note: This exists because the version in AzCore has bugs. Should consider moving this to AzCore

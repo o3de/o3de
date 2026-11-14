@@ -31,6 +31,7 @@ namespace WhiteBox
         const AZStd::vector<AZ::PackedVector3f>& GetBitangents() const;
         const AZStd::vector<PackedFloat2>& GetUVs() const;
         const AZStd::vector<AZ::Vector4>& GetColors() const;
+        const AZStd::vector<PackedFloat2>& GetLightmapUVs() const;
         AZ::Aabb GetAabb() const;
 
     private:
@@ -41,6 +42,7 @@ namespace WhiteBox
         AZStd::vector<AZ::PackedVector3f> m_bitangents;
         AZStd::vector<PackedFloat2> m_uvs;
         AZStd::vector<AZ::Vector4> m_colors;
+        AZStd::vector<PackedFloat2> m_lightmapUvs; //!< UV1: lightmap corners, or the texture UVs when none were made.
         AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
     };
 } // namespace WhiteBox

@@ -22,7 +22,8 @@ namespace WhiteBox
         Default,
         EdgeRestore,
         Transform,
-        DrawShape       // Lumberyard-style click-drag-release-pull shape drawing
+        DrawShape,      // Lumberyard-style click-drag-release-pull shape drawing
+        VertexPaint
     };
 
     using KeyboardModifierQueryFn = AZStd::function<AzToolsFramework::ViewportInteraction::KeyboardModifiers()>;
@@ -35,6 +36,9 @@ namespace WhiteBox
         virtual void MarkWhiteBoxIntersectionDataDirty() = 0;
         //! Get the current sub-mode that White Box is in (Default Mode or Edge Restore mode).
         virtual SubMode GetCurrentSubMode() const = 0;
+        //! Switch the White Box ComponentMode to a specific sub-mode (used to mirror one component's
+        //! sub-mode onto another, e.g. a newly created layer). Default no-op.
+        virtual void SetSubMode([[maybe_unused]] SubMode subMode) {}
         //! Provides the ability to customize how keyboard modifier keys are queried.
         //! @note This could be overridden to return nothing or a fixed modifier value.
         virtual void OverrideKeyboardModifierQuery(const KeyboardModifierQueryFn& keyboardModifierQueryFn) = 0;

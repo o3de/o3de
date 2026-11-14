@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <title>Trim Sheet</title>
+  <path d="M 3.3,3.3 H 21.3 V 21.3 H 3.3 Z" fill="none" stroke="#dadada" stroke-width="1.2" stroke-linejoin="round" />
+  <path d="M 3.9,3.9 H 20.7 V 7.6 H 3.9 Z" fill="#dadada" fill-opacity="0.25" />
+  <path d="M 3.9,9.6 H 20.7 V 14.6 H 3.9 Z" fill="#67c7e8" fill-opacity="0.7" />
+  <path d="M 3.9,16.6 H 20.7 V 20.7 H 3.9 Z" fill="#dadada" fill-opacity="0.25" />
+  <path d="M 3.3,8.6 H 21.3 M 3.3,15.6 H 21.3" stroke="#dadada" stroke-width="0.9" />
+</svg>

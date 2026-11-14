@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <string>
 
 namespace WhiteBox
 {
@@ -31,6 +32,20 @@ namespace WhiteBox
         {
             std::vector<double> m_positions; //!< Flattened vertex positions (x0, y0, z0, x1, y1, z1, ...).
             std::vector<uint32_t> m_indices; //!< Triangle list indices (three per triangle, CCW winding).
+
+            //! Optional per-triangle material asset IDs. Empty values inherit the entity default.
+            std::vector<std::string> m_materials;
+            std::vector<uint32_t> m_colors;
+
+            uint32_t Color(size_t triangle) const
+            {
+                return triangle < m_colors.size() ? m_colors[triangle] : 0;
+            }
+
+            std::string Material(size_t triangle) const
+            {
+                return triangle < m_materials.size() ? m_materials[triangle] : std::string{};
+            }
 
             size_t VertexCount() const
             {
@@ -59,6 +74,13 @@ namespace WhiteBox
         //! either mesh is not a closed two-manifold or if the result is empty (e.g. an
         //! intersection of non-overlapping meshes, or A completely inside B for subtraction).
         bool MeshBoolean(
+            const TriangleMesh& meshA, const TriangleMesh& meshB, BooleanOperation operation, TriangleMesh& result);
+
+        //! CSG boolean with a face-based BSP solver (like Blender's "Fast") instead of Manifold. Closed
+        //! inward-facing inputs are normalized and the result takes meshA's orientation; less robust
+        //! than Manifold on slivers and may emit non-manifold output.
+        //! @return True if the operation produced a non-empty mesh in @p result.
+        bool MeshBooleanBsp(
             const TriangleMesh& meshA, const TriangleMesh& meshB, BooleanOperation operation, TriangleMesh& result);
     } // namespace Csg
 } // namespace WhiteBox

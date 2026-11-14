@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="2 2 20.6 20.6">
+  <title>Cube Stamp</title>
+  <path d="M3.4 18.2 12.3 21.9 21.2 18.2" fill="none" stroke="#DADADA" stroke-width="1.1" stroke-linejoin="round" stroke-dasharray="2.2 1.8"/>
+  <path d="M3.4 18.2 12.3 14.5 21.2 18.2 12.3 21.9Z" fill="none" stroke="#DADADA" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M7.9 16.35 16.75 20.05M16.75 16.35 7.9 20.05" fill="none" stroke="#DADADA" stroke-width="0.9"/>
+  <path d="M6.4 8.3 12.3 5.6 18.2 8.3 12.3 11Z" fill="#67C7E8" fill-opacity="0.55"/>
+  <path d="M6.4 8.3 12.3 5.6 18.2 8.3 18.2 13.2 12.3 15.9 6.4 13.2Z" fill="none" stroke="#DADADA" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M6.4 8.3 12.3 11 18.2 8.3M12.3 11 12.3 15.9" fill="none" stroke="#DADADA" stroke-width="1.6" stroke-linejoin="round"/>
+</svg>

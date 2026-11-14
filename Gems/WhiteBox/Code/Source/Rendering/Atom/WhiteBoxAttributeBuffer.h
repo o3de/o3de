@@ -23,11 +23,12 @@ namespace WhiteBox
         Tangent,
         Bitangent,
         UV,
-        Color
+        Color,
+        LightmapUV
     };
 
     //! The number of attributes required by the white box mesh.
-    inline constexpr uint32_t NumAttributes = 6;
+    inline constexpr uint32_t NumAttributes = 7;
 
     //! Trait to describe white box mesh vertex attribute format.
     template<AttributeType AttributeTypeT>
@@ -40,6 +41,7 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::Position>
     {
         static constexpr const char* ShaderSemantic = "POSITION";
+        static constexpr size_t ShaderSemanticIndex = 0;
         using BufferType = Vector3Buffer;
     };
 
@@ -48,6 +50,7 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::Normal>
     {
         static constexpr const char* ShaderSemantic = "NORMAL";
+        static constexpr size_t ShaderSemanticIndex = 0;
         using BufferType = Vector3Buffer;
     };
 
@@ -56,6 +59,7 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::Tangent>
     {
         static constexpr const char* ShaderSemantic = "TANGENT";
+        static constexpr size_t ShaderSemanticIndex = 0;
         using BufferType = Vector4Buffer;
     };
 
@@ -64,6 +68,7 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::Bitangent>
     {
         static constexpr const char* ShaderSemantic = "BITANGENT";
+        static constexpr size_t ShaderSemanticIndex = 0;
         using BufferType = Vector3Buffer;
     };
 
@@ -72,6 +77,16 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::UV>
     {
         static constexpr const char* ShaderSemantic = "UV";
+        static constexpr size_t ShaderSemanticIndex = 0;
+        using BufferType = Vector2Buffer;
+    };
+
+    //! Attribute trait specialization for the second (lightmap) uv set.
+    template<>
+    struct AttributeTrait<AttributeType::LightmapUV>
+    {
+        static constexpr const char* ShaderSemantic = "UV";
+        static constexpr size_t ShaderSemanticIndex = 1;
         using BufferType = Vector2Buffer;
     };
 
@@ -80,6 +95,7 @@ namespace WhiteBox
     struct AttributeTrait<AttributeType::Color>
     {
         static constexpr const char* ShaderSemantic = "COLOR";
+        static constexpr size_t ShaderSemanticIndex = 0;
         using BufferType = Vector4Buffer;
     };
 
@@ -128,7 +144,7 @@ namespace WhiteBox
     template<typename VertexStreamDataType>
     AttributeBuffer<AttributeTypeT>::AttributeBuffer(const AZStd::vector<VertexStreamDataType>& data)
         : m_buffer(data)
-        , m_shaderSemantic(AZ::Name(Trait::ShaderSemantic))
+        , m_shaderSemantic(AZ::Name(Trait::ShaderSemantic), Trait::ShaderSemanticIndex)
     {
         if (!IsValid())
         {
@@ -212,4 +228,7 @@ namespace WhiteBox
 
     //! Attribute buffer alias for color attributes.
     using ColorAttribute = AttributeBuffer<AttributeType::Color>;
+
+    //! Attribute buffer alias for the lightmap uv attribute.
+    using LightmapUVAttribute = AttributeBuffer<AttributeType::LightmapUV>;
 } // namespace WhiteBox

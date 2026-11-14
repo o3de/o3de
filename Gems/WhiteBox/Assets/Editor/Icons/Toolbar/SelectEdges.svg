@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs5" />
+  <title
+     id="title1">Edge Select</title>
+  <path
+     d="M 4.28743,4.3008375 H 20.256016 V 20.242609 H 4.28743 Z"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.73891"
+     stroke-linejoin="round"
+     id="path1" />
+  <path
+     d="M 4.28743,20.242609 H 20.256016"
+     fill="none"
+     stroke="#67c7e8"
+     stroke-width="3.24597"
+     stroke-linecap="round"
+     id="path2" />
+  <ellipse
+     cx="4.2874303"
+     cy="4.3008375"
+     fill="#dadada"
+     id="circle2"
+     rx="2.1291449"
+     ry="2.1255696"
+     style="stroke-width:1.32959" />
+  <ellipse
+     cx="20.256016"
+     cy="4.3008375"
+     fill="#dadada"
+     id="circle3"
+     rx="2.1291449"
+     ry="2.1255696"
+     style="stroke-width:1.32959" />
+  <ellipse
+     cx="4.2874303"
+     cy="20.242609"
+     fill="#dadada"
+     id="circle4"
+     rx="2.1291449"
+     ry="2.1255696"
+     style="stroke-width:1.32959" />
+  <ellipse
+     cx="20.256016"
+     cy="20.242609"
+     fill="#dadada"
+     id="circle5"
+     rx="2.1291449"
+     ry="2.1255696"
+     style="stroke-width:1.32959" />
+</svg>

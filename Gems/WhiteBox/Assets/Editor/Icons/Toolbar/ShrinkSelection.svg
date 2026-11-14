@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="ShrinkSelection.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="12.13"
+     inkscape:cx="49.95878"
+     inkscape:cy="63.190437"
+     inkscape:window-width="2560"
+     inkscape:window-height="1494"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <title
+     id="title1">Shrink Selection</title>
+  <rect
+     x="2.9961615"
+     y="2.9452133"
+     width="18.522762"
+     height="18.726555"
+     fill="#67c7e8"
+     fill-opacity="0.2"
+     stroke="#67c7e8"
+     stroke-width="1.23973"
+     stroke-dasharray="2.2, 1.6"
+     stroke-opacity="0.8"
+     id="rect1" />
+  <rect
+     x="9.0639629"
+     y="9.0797749"
+     width="6.3871598"
+     height="6.4574332"
+     fill="#67c7e8"
+     fill-opacity="0.55"
+     stroke="#67c7e8"
+     stroke-width="1.44635"
+     stroke-linejoin="round"
+     id="rect2" />
+  <path
+     d="m 4.6994041,4.6671956 2.874222,2.9058448 M 19.815682,4.6671956 16.94146,7.5730404 M 4.6994041,19.949787 7.5736261,17.043943 M 19.815682,19.949787 16.94146,17.043943"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.54966"
+     stroke-linecap="round"
+     id="path2" />
+  <path
+     d="M 7.7865315,5.4205628 V 7.7882882 H 5.4445728 M 16.728555,5.4205628 v 2.3677254 h 2.341959 M 7.7865315,19.19642 V 16.828695 H 5.4445728 M 16.728555,19.19642 v -2.367725 h 2.341959"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.34304"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path3" />
+</svg>

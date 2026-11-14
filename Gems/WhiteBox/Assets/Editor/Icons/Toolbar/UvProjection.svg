@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="UvProjection.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="12.13"
+     inkscape:cx="49.95878"
+     inkscape:cy="50"
+     inkscape:window-width="2560"
+     inkscape:window-height="1494"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <title
+     id="title1">UV Projection</title>
+  <path
+     d="M 7.5785777,8.0882716 H 21.416188 V 21.484332 H 7.5785777 Z"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.4809"
+     stroke-linejoin="round"
+     id="path1" />
+  <path
+     d="M 8.2882265,8.8318858 H 14.887985 V 15.193886 H 8.2882265 Z m 6.5997585,6.3620002 h 6.599758 v 6.362001 h -6.599758 z"
+     fill="#67c7e8"
+     fill-opacity="0.6"
+     id="path2"
+     style="stroke-width:1.11721" />
+  <path
+     d="m 3.1150138,3.0303136 5.27952,5.3234408 M 8.6057146,5.3726276 V 8.566692 h -3.167712"
+     fill="none"
+     stroke="#67c7e8"
+     stroke-width="1.44069"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path3" />
+  <path
+     d="M 3.1150138,7.9278791 V 3.0303136 h 4.8571584"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.23488"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path4" />
+</svg>

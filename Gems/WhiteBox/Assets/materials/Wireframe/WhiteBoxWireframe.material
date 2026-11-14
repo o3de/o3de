@@ -1,0 +1,7 @@
+{
+    "materialType": "WhiteBoxWireframe.materialtype",
+    "materialTypeVersion": 3,
+    "propertyValues": {
+        "settings.gridThickness": 1.2000000476837158
+    }
+}

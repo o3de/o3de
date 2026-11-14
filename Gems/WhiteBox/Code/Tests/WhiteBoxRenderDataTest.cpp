@@ -11,6 +11,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <vector>
+#include <limits>
 
 namespace UnitTest
 {
@@ -66,6 +67,42 @@ namespace UnitTest
          // Tri 6: degenerate
          AZ::Vector3{0.0f, 0.0f, 0.0f}, AZ::Vector3{0.0f, 0.0f, 0.0f}, AZ::Vector3{0.0f, 0.0f, 0.0f}},
         3};
+
+    TEST_F(WhiteBoxTestFixture, RenderCullingKeepsSmallValidFacesAtDifferentScales)
+    {
+        for (const float scale : {1e-6f, 1e-4f, 0.01f, 1.0f, 10000.0f})
+        {
+            WhiteBoxFace valid{};
+            valid.m_v1.m_position = AZ::Vector3::CreateZero();
+            valid.m_v2.m_position = AZ::Vector3(0, scale, 0);
+            valid.m_v3.m_position = AZ::Vector3(0, 0, scale);
+            valid.m_normal = AZ::Vector3::CreateAxisX();
+            valid.m_v1.m_uv = AZ::Vector2(0, 0);
+            valid.m_v2.m_uv = AZ::Vector2(1, 0);
+            valid.m_v3.m_uv = AZ::Vector2(0, 1);
+            valid.m_paintColor = 0xFF00FF00u;
+            auto collapsed = valid;
+            collapsed.m_v3.m_position = collapsed.m_v2.m_position;
+            auto collinear = valid;
+            collinear.m_v3.m_position = AZ::Vector3(0, 2.0f * scale, 0);
+            const auto result = BuildCulledWhiteBoxFaces({collapsed, valid, collinear});
+            ASSERT_EQ(result.size(), 1);
+            EXPECT_TRUE(result.front().m_v3.m_position.IsClose(valid.m_v3.m_position));
+            EXPECT_EQ(result.front().m_paintColor, valid.m_paintColor);
+        }
+    }
+
+    TEST_F(WhiteBoxTestFixture, RenderCullingRejectsNonFiniteTriangles)
+    {
+        WhiteBoxFace face{};
+        face.m_v1.m_position = AZ::Vector3::CreateZero();
+        face.m_v2.m_position = AZ::Vector3::CreateAxisX();
+        for (const float invalid : {std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN()})
+        {
+            face.m_v3.m_position = AZ::Vector3(0, invalid, 0);
+            EXPECT_TRUE(BuildCulledWhiteBoxFaces({face}).empty());
+        }
+    }
 
     TEST_P(WhiteBoxVertexDataTestFixture, BuildCulledTriangleList)
     {

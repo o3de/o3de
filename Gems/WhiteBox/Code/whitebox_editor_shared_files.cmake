@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Source/Resources/WhiteBoxToolbar.qrc
     Source/WhiteBoxModule.h
     Source/WhiteBoxModule.cpp
     Source/WhiteBoxEditorModule.h
