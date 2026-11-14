@@ -24,6 +24,7 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
+#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -106,7 +107,7 @@ namespace AZ
 
         bool DiffuseProbeGridRayTracingPass::IsEnabled() const
         {
-            if (!RenderPass::IsEnabled())
+            if (!RenderPass::IsEnabled() || IsDiffuseProbeGridSoftwareTracing())
             {
                 return false;
             }
@@ -135,7 +136,7 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::BuildInternal()
         {
-            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
+            if (!IsDiffuseProbeGridSoftwareTracing() && RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
             {
                 CreateRayTracingPipelineState();
             }
@@ -143,6 +144,16 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
+            // A pipeline can be created with Software selected and switch to Hardware later.
+            if (!m_rayTracingPipelineState)
+            {
+                CreateRayTracingPipelineState();
+                if (!m_rayTracingPipelineState)
+                {
+                    return;
+                }
+            }
+
             RPI::Scene* scene = m_pipeline->GetScene();
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
 

@@ -312,6 +312,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
                 RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const override;
 
+            void EnumerateRayTracingMeshes(const AZStd::function<void(ModelDataInstanceInterface&)>& visitor) override;
             const RHI::Ptr<MeshInfoEntry> GetMeshInfoEntry(const MeshInfoHandle handle) override;
             MeshInfoHandle AcquireMeshInfoEntry() override;
             void ReleaseMeshInfoEntry(const MeshInfoHandle handle) override;
