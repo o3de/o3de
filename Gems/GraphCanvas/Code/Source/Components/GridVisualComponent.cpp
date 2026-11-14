@@ -11,7 +11,10 @@
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 
+#include <AzQtComponents/Components/StyleManager.h>
+
 #include <Components/GridVisualComponent.h>
+#include <Components/GridVisualFlat.h>
 #include <GraphCanvas/Editor/GraphCanvasProfiler.h>
 #include <GraphCanvas/Utils/QtDrawingUtils.h>
 
@@ -296,12 +299,18 @@ namespace GraphCanvas
         m_levelOfDetails[0] = stencil;
 
         QPainter painter(stencil);
-        QColor backgroundColor = m_style.GetColor(Styling::Attribute::BackgroundColor);
+
+        // The flattened GUI draws the values of GridVisualFlat, the ones the tool sheets give the `graph` rule: it reads no sheet for them
+        const bool flat = AzQtComponents::StyleManager::stylesheetsDisabled();
+
+        QColor backgroundColor = flat ? GridVisualFlat::Background : m_style.GetColor(Styling::Attribute::BackgroundColor);
 
         painter.fillRect(0, 0, majorX, majorY, backgroundColor);
 
-        QPen majorPen = m_style.GetPen(Styling::Attribute::GridMajorWidth, Styling::Attribute::GridMajorStyle, Styling::Attribute::GridMajorColor, Styling::Attribute::CapStyle, true);
-        QPen minorPen = m_style.GetPen(Styling::Attribute::GridMinorWidth, Styling::Attribute::GridMinorStyle, Styling::Attribute::GridMinorColor, Styling::Attribute::CapStyle, true);
+        QPen majorPen = flat ? GridVisualFlat::MajorPen()
+            : m_style.GetPen(Styling::Attribute::GridMajorWidth, Styling::Attribute::GridMajorStyle, Styling::Attribute::GridMajorColor, Styling::Attribute::CapStyle, true);
+        QPen minorPen = flat ? GridVisualFlat::MinorPen()
+            : m_style.GetPen(Styling::Attribute::GridMinorWidth, Styling::Attribute::GridMinorStyle, Styling::Attribute::GridMinorColor, Styling::Attribute::CapStyle, true);
 
         painter.setPen(majorPen);
 

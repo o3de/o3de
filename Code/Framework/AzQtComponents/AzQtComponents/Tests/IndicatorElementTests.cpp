@@ -18,14 +18,20 @@
 #include <QAbstractButton>
 #include <QApplication>
 #include <QCheckBox>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QImage>
 #include <QPainter>
+#include <QPixmap>
+#include <QPixmapCache>
 #include <QRadioButton>
 #include <QStyleFactory>
 #include <QStyleOption>
+#include <QSvgRenderer>
 #include <QtMath>
 
+#include <climits>
+#include <cstdio>
 #include <string>
 
 namespace AzQtComponents
@@ -116,6 +122,72 @@ namespace AzQtComponents
         {
             return QStringLiteral("(%1 x %2)").arg(size.width()).arg(size.height()).toStdString();
         }
+
+        //! A transparent image of a logical size at a device ratio, as a high-DPI screen gives a painter
+        QImage transparentIndicatorImage(const QSize& size, qreal ratio)
+        {
+            QImage image(size * ratio, QImage::Format_ARGB32_Premultiplied);
+            image.setDevicePixelRatio(ratio);
+            image.fill(Qt::transparent);
+            return image;
+        }
+
+        //! What an SVG of an indicator gave: the pipeline Style::drawSvg had before the toggle switch and the radio button were drawn from
+        //! values. Rendered once into a pixmap of the rect's logical size at the device ratio (the logical bounds given to the renderer),
+        //! then drawn in the rect.
+        QImage indicatorSvgImage(const QString& resource, const QSize& size, qreal ratio)
+        {
+            QPixmap pixmap(size * ratio);
+            pixmap.setDevicePixelRatio(ratio);
+            pixmap.fill(Qt::transparent);
+            QPainter pixmapPainter(&pixmap);
+            QSvgRenderer renderer(resource);
+            renderer.render(&pixmapPainter, QRectF(QPointF(0.0, 0.0), QSizeF(size)));
+            pixmapPainter.end();
+
+            QImage image = transparentIndicatorImage(size, ratio);
+            QPainter painter(&image);
+            painter.drawPixmap(QRect(QPoint(0, 0), size), pixmap);
+            painter.end();
+            return image;
+        }
+
+        //! The largest difference of one channel of one pixel between two images; INT_MAX where their sizes differ
+        int indicatorMaxChannelDifference(const QImage& first, const QImage& second)
+        {
+            if (first.size() != second.size())
+            {
+                return INT_MAX;
+            }
+            int largest = 0;
+            for (int y = 0; y < first.height(); ++y)
+            {
+                for (int x = 0; x < first.width(); ++x)
+                {
+                    const QRgb a = first.pixel(x, y);
+                    const QRgb b = second.pixel(x, y);
+                    largest = qMax(largest, qAbs(qAlpha(a) - qAlpha(b)));
+                    largest = qMax(largest, qAbs(qRed(a) - qRed(b)));
+                    largest = qMax(largest, qAbs(qGreen(a) - qGreen(b)));
+                    largest = qMax(largest, qAbs(qBlue(a) - qBlue(b)));
+                }
+            }
+            return largest;
+        }
+
+        //! The pixels of an image that are not transparent
+        int indicatorOpaquePixels(const QImage& image)
+        {
+            int opaque = 0;
+            for (int y = 0; y < image.height(); ++y)
+            {
+                for (int x = 0; x < image.width(); ++x)
+                {
+                    opaque += qAlpha(image.pixel(x, y)) > 0 ? 1 : 0;
+                }
+            }
+            return opaque;
+        }
     } // namespace
 
     // ----------------------------------------------------------------------------------
@@ -164,6 +236,23 @@ namespace AzQtComponents
             QPainter painter(&image);
             const bool radio = qobject_cast<const QRadioButton*>(button) != nullptr;
             m_style->drawControl(radio ? QStyle::CE_RadioButton : QStyle::CE_CheckBox, &option, &painter, button);
+            painter.end();
+            return image;
+        }
+
+        //! The indicator of a toggle switch (a check box with its class) or of a radio button, painted through the style as a button's
+        //! draw does (PE_IndicatorCheckBox, PE_IndicatorRadioButton) over transparent, at a device ratio
+        QImage paintIndicator(const QWidget* widget, QStyle::State state, const QSize& size, qreal ratio) const
+        {
+            QStyleOptionButton option;
+            option.initFrom(widget);
+            option.rect = QRect(QPoint(0, 0), size);
+            option.state = state;
+
+            QImage image = transparentIndicatorImage(size, ratio);
+            QPainter painter(&image);
+            const bool radio = qobject_cast<const QRadioButton*>(widget) != nullptr;
+            m_style->drawPrimitive(radio ? QStyle::PE_IndicatorRadioButton : QStyle::PE_IndicatorCheckBox, &option, &painter, widget);
             painter.end();
             return image;
         }
@@ -636,5 +725,214 @@ namespace AzQtComponents
                 EXPECT_GE(indicatorFirstInkColumn(hidden, box.width()), 0);
             }
         }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // T-IND.7: the toggle switch and the radio button, drawn from values: the pixels of the SVGs they replaced
+    // (img/UI20/toggleswitch/ and img/UI20/radiobutton/, still in the library as the twins)
+    // ----------------------------------------------------------------------------------
+
+    namespace
+    {
+        //! A state of an indicator and the SVG that gave it. The ring (focus) images are the larger of the two sizes of an indicator.
+        struct IndicatorSvgCase
+        {
+            QStyle::State m_state;
+            const char* m_image;
+            bool m_ring;
+        };
+
+        const IndicatorSvgCase g_indicatorSvgCases[] = {
+            { QStyle::State_Enabled | QStyle::State_Off, "unchecked", false },
+            { QStyle::State_Enabled | QStyle::State_Off | QStyle::State_HasFocus, "unchecked-focus", true },
+            { QStyle::State_Off, "unchecked-disabled", false },
+            { QStyle::State_Enabled | QStyle::State_On, "checked", false },
+            { QStyle::State_Enabled | QStyle::State_On | QStyle::State_HasFocus, "checked-focus", true },
+            { QStyle::State_On, "checked-disabled", false },
+            // A disabled widget has no focus ring
+            { QStyle::State_Off | QStyle::State_HasFocus, "unchecked-disabled", false },
+            { QStyle::State_On | QStyle::State_HasFocus, "checked-disabled", false },
+        };
+
+        //! One channel of one pixel of slack between a draw from values and the SVG renderer's: they place the same curves with the same
+        //! pen, and the path numbers go through two parsers
+        constexpr int IndicatorChannelSlack = 2;
+    } // namespace
+
+    TEST_F(IndicatorElementTests, Draw_ToggleSwitchFromValuesIsTheImageOfItsSvg)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+        ASSERT_TRUE(indicatorImageRegistered(":/stylesheet/img/UI20/toggleswitch/checked.svg"));
+
+        QCheckBox toggle;
+        CheckBox::applyToggleSwitchStyle(&toggle);
+
+        for (const qreal ratio : { 1.0, 1.5, 2.0 })
+        {
+            for (const IndicatorSvgCase& look : g_indicatorSvgCases)
+            {
+                const QSize size = look.m_ring ? QSize(34, 18) : QSize(32, 16);
+                SCOPED_TRACE(QStringLiteral("%1 ratio %2").arg(QLatin1String(look.m_image)).arg(ratio).toStdString());
+
+                const QImage drawn = paintIndicator(&toggle, look.m_state, size, ratio);
+                const QImage svg = indicatorSvgImage(
+                    QStringLiteral(":/stylesheet/img/UI20/toggleswitch/%1.svg").arg(QLatin1String(look.m_image)), size, ratio);
+                ASSERT_GT(indicatorOpaquePixels(svg), 0);
+                EXPECT_GT(indicatorOpaquePixels(drawn), 0);
+                EXPECT_LE(indicatorMaxChannelDifference(drawn, svg), IndicatorChannelSlack);
+            }
+        }
+    }
+
+    TEST_F(IndicatorElementTests, Draw_RadioButtonFromValuesIsTheImageOfItsSvg)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+        ASSERT_TRUE(indicatorImageRegistered(":/stylesheet/img/UI20/radiobutton/checked.svg"));
+
+        QRadioButton radio;
+
+        for (const qreal ratio : { 1.0, 1.5, 2.0 })
+        {
+            for (const IndicatorSvgCase& look : g_indicatorSvgCases)
+            {
+                const QSize size = look.m_ring ? QSize(18, 18) : QSize(16, 16);
+                SCOPED_TRACE(QStringLiteral("%1 ratio %2").arg(QLatin1String(look.m_image)).arg(ratio).toStdString());
+
+                const QImage drawn = paintIndicator(&radio, look.m_state, size, ratio);
+                const QImage svg = indicatorSvgImage(
+                    QStringLiteral(":/stylesheet/img/UI20/radiobutton/%1.svg").arg(QLatin1String(look.m_image)), size, ratio);
+                ASSERT_GT(indicatorOpaquePixels(svg), 0);
+                EXPECT_GT(indicatorOpaquePixels(drawn), 0);
+                EXPECT_LE(indicatorMaxChannelDifference(drawn, svg), IndicatorChannelSlack);
+            }
+        }
+    }
+
+    TEST_F(IndicatorElementTests, Draw_IndicatorsFromValuesScaleToTheirRectAsTheSvgsDid)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+        ASSERT_TRUE(indicatorImageRegistered(":/stylesheet/img/UI20/toggleswitch/checked.svg"));
+
+        QCheckBox toggle;
+        CheckBox::applyToggleSwitchStyle(&toggle);
+        QRadioButton radio;
+
+        // A module's rule may give an indicator another size than the SVG's own: the view is scaled to the rect
+        for (const qreal ratio : { 1.0, 2.0 })
+        {
+            for (const IndicatorSvgCase& look : g_indicatorSvgCases)
+            {
+                SCOPED_TRACE(QStringLiteral("%1 ratio %2").arg(QLatin1String(look.m_image)).arg(ratio).toStdString());
+
+                const QSize toggleSize = look.m_ring ? QSize(51, 27) : QSize(48, 24);
+                EXPECT_LE(indicatorMaxChannelDifference(paintIndicator(&toggle, look.m_state, toggleSize, ratio),
+                              indicatorSvgImage(QStringLiteral(":/stylesheet/img/UI20/toggleswitch/%1.svg").arg(QLatin1String(look.m_image)),
+                                  toggleSize, ratio)),
+                    IndicatorChannelSlack);
+
+                const QSize radioSize = look.m_ring ? QSize(27, 27) : QSize(24, 24);
+                EXPECT_LE(indicatorMaxChannelDifference(paintIndicator(&radio, look.m_state, radioSize, ratio),
+                              indicatorSvgImage(QStringLiteral(":/stylesheet/img/UI20/radiobutton/%1.svg").arg(QLatin1String(look.m_image)),
+                                  radioSize, ratio)),
+                    IndicatorChannelSlack);
+            }
+        }
+    }
+
+    TEST_F(IndicatorElementTests, Draw_IndicatorsFromValuesShareTheirColours)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+
+        QCheckBox toggle;
+        CheckBox::applyToggleSwitchStyle(&toggle);
+        QRadioButton radio;
+
+        // The body of an indicator that is on, and its mark, are one colour in both: the blue, and white (disabled: the dark blue, and
+        // light grey). The corner pixel of a switch is outside its track, so the sample is its knob and the middle of the radio's dot.
+        const QImage toggleOn = paintIndicator(&toggle, QStyle::State_Enabled | QStyle::State_On, QSize(32, 16), 1.0);
+        const QImage radioOn = paintIndicator(&radio, QStyle::State_Enabled | QStyle::State_On, QSize(16, 16), 1.0);
+        EXPECT_EQ(toggleOn.pixelColor(24, 8), QColor(0xFF, 0xFF, 0xFF));     // the knob
+        EXPECT_EQ(radioOn.pixelColor(8, 8), QColor(0xFF, 0xFF, 0xFF));       // the dot
+        EXPECT_EQ(toggleOn.pixelColor(4, 8), QColor(0x1E, 0x70, 0xEB));      // the track
+        EXPECT_EQ(radioOn.pixelColor(2, 8), QColor(0x1E, 0x70, 0xEB));       // the disc
+
+        const QImage toggleDisabled = paintIndicator(&toggle, QStyle::State_On, QSize(32, 16), 1.0);
+        const QImage radioDisabled = paintIndicator(&radio, QStyle::State_On, QSize(16, 16), 1.0);
+        EXPECT_EQ(toggleDisabled.pixelColor(24, 8), QColor(0xBB, 0xBB, 0xBB));
+        EXPECT_EQ(radioDisabled.pixelColor(8, 8), QColor(0xBB, 0xBB, 0xBB));
+        EXPECT_EQ(toggleDisabled.pixelColor(4, 8), QColor(0x2A, 0x48, 0x75));
+        EXPECT_EQ(radioDisabled.pixelColor(2, 8), QColor(0x2A, 0x48, 0x75));
+    }
+
+    // ----------------------------------------------------------------------------------
+    // Timing, run on demand (--gtest_also_run_disabled_tests): the cost of drawing a toggle switch from values against the SVG's.
+    // Warm is a draw that finds its pixmap in the cache; cold renders it.
+    // ----------------------------------------------------------------------------------
+
+    TEST_F(IndicatorElementTests, DISABLED_Perf_ToggleSwitchFromValuesAgainstSvg)
+    {
+        ASSERT_TRUE(StyleManager::stylesheetsDisabled());
+        ASSERT_TRUE(indicatorImageRegistered(":/stylesheet/img/UI20/toggleswitch/checked.svg"));
+
+        QCheckBox toggle;
+        CheckBox::applyToggleSwitchStyle(&toggle);
+        QCheckBox check;                                // still drawn from its SVG through the same cache
+        const QSize size(32, 16);
+        const QStyle::State state = QStyle::State_Enabled | QStyle::State_On;
+
+        // Warm: the cache holds the pixmap
+        constexpr int warmDraws = 200000;
+        QStyleOptionButton option;
+        option.initFrom(&toggle);
+        option.rect = QRect(QPoint(0, 0), size);
+        option.state = state;
+        QImage target = transparentIndicatorImage(size, 1.0);
+        QPainter painter(&target);
+
+        m_style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &painter, &toggle);
+        m_style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &painter, &check);
+        QElapsedTimer timer;
+        timer.start();
+        for (int i = 0; i < warmDraws; ++i)
+        {
+            m_style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &painter, &toggle);
+        }
+        const double toggleWarm = timer.nsecsElapsed() / 1000.0 / warmDraws;
+        timer.restart();
+        for (int i = 0; i < warmDraws; ++i)
+        {
+            m_style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &painter, &check);
+        }
+        const double svgWarm = timer.nsecsElapsed() / 1000.0 / warmDraws;
+        painter.end();
+
+        // Cold: each draw renders (the cache cleared before it; the clear is in both timings)
+        constexpr int coldDraws = 2000;
+        timer.start();
+        for (int i = 0; i < coldDraws; ++i)
+        {
+            QPixmapCache::clear();
+            paintIndicator(&toggle, state, size, 1.0);
+        }
+        const double toggleCold = timer.nsecsElapsed() / 1000.0 / coldDraws;
+        timer.restart();
+        for (int i = 0; i < coldDraws; ++i)
+        {
+            QPixmapCache::clear();
+            paintIndicator(&check, state, size, 1.0);
+        }
+        const double checkSvgCold = timer.nsecsElapsed() / 1000.0 / coldDraws;
+        timer.restart();
+        for (int i = 0; i < coldDraws; ++i)
+        {
+            QPixmapCache::clear();
+            indicatorSvgImage(QStringLiteral(":/stylesheet/img/UI20/toggleswitch/checked.svg"), size, 1.0);
+        }
+        const double toggleSvgCold = timer.nsecsElapsed() / 1000.0 / coldDraws;
+
+        std::printf("[ PERF ] toggle switch warm: %.3f us a draw from values, %.3f us a draw from an SVG (the check box)\n", toggleWarm, svgWarm);
+        std::printf("[ PERF ] toggle switch cold: %.2f us from values, %.2f us the SVG's own render, %.2f us a check box from its SVG\n",
+            toggleCold, toggleSvgCold, checkSvgCold);
+        std::fflush(stdout);
     }
 } // namespace AzQtComponents

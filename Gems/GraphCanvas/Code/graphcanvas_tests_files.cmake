@@ -9,10 +9,14 @@
 set(FILES
     Tests/CommentTextEditFlatSheetTests.cpp
     Tests/GraphCanvasTesting.cpp
+    Tests/GridVisualFlatTests.cpp
 
     Tests/GraphCanvasTranslation.cpp
 
     # The home of the looks of the comment editor, which the twins of the tests compile: it depends on Qt and AzQtComponents only
     Source/Components/Nodes/Comment/CommentTextEditFlat.cpp
     Source/Components/Nodes/Comment/CommentTextEditFlat.h
+
+    # The home of the looks of the graph grid, which the twins of the tests compile: it depends on Qt and AzQtComponents only
+    Source/Components/GridVisualFlat.h
 )

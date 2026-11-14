@@ -24,6 +24,7 @@ set(FILES
     Source/Components/GridComponent.h
     Source/Components/GridVisualComponent.cpp
     Source/Components/GridVisualComponent.h
+    Source/Components/GridVisualFlat.h
     Source/Components/LayerControllerComponent.cpp
     Source/Components/LayerControllerComponent.h
     Source/Components/PersistentIdComponent.cpp

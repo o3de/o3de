@@ -1370,8 +1370,31 @@ namespace AzQtComponents
 
     //////////////////////////////////////////////////////////////////////////
     // Flattened indicator images (GUI flattening): the images CheckBox.qss, RadioButton.qss and Card.qss give each state of an
-    // indicator, and EntityOutliner.qss each toggle of the outliner, drawn from their SVG resources through the pixmap cache
+    // indicator, and EntityOutliner.qss each toggle of the outliner, drawn from their SVG resources through the pixmap cache. The
+    // toggle switch and the radio button are the exception: drawn from values (further down), through the same cache.
     //////////////////////////////////////////////////////////////////////////
+
+    //! An image rendered once for each size and device ratio into a pixmap of the pixmap cache, then drawn in the rect. `render` paints
+    //! on the pixmap in the logical size of the rect: a painter given the pixmap's device size draws too large at a high device ratio.
+    template<typename Render>
+    static void drawCachedImage(QPainter* painter, const QString& key, const QRect& rect, const Render& render)
+    {
+        const qreal devicePixelRatio = painter->device() ? painter->device()->devicePixelRatio() : 1.0;
+        const QString cacheKey = QString::fromLatin1("%1|%2x%3|%4")
+            .arg(key).arg(rect.width()).arg(rect.height()).arg(devicePixelRatio);
+        QPixmap pixmap;
+        if (!QPixmapCache::find(cacheKey, &pixmap))
+        {
+            pixmap = QPixmap(rect.size() * devicePixelRatio);
+            pixmap.setDevicePixelRatio(devicePixelRatio);
+            pixmap.fill(Qt::transparent);
+            QPainter pixmapPainter(&pixmap);
+            render(pixmapPainter);
+            pixmapPainter.end();
+            QPixmapCache::insert(cacheKey, pixmap);
+        }
+        painter->drawPixmap(rect, pixmap);
+    }
 
     //! An SVG resource drawn into a rect, rendered once for each size and device ratio. The logical bounds are given: render(painter)
     //! alone takes the pixmap's device size and draws the image too large at a high device ratio.
@@ -1381,22 +1404,11 @@ namespace AzQtComponents
         {
             return;
         }
-        const qreal devicePixelRatio = painter->device() ? painter->device()->devicePixelRatio() : 1.0;
-        const QString cacheKey = QString::fromLatin1("O3DEFlatInd|%1|%2x%3|%4")
-            .arg(resource).arg(rect.width()).arg(rect.height()).arg(devicePixelRatio);
-        QPixmap pixmap;
-        if (!QPixmapCache::find(cacheKey, &pixmap))
-        {
-            QSvgRenderer renderer(resource);
-            pixmap = QPixmap(rect.size() * devicePixelRatio);
-            pixmap.setDevicePixelRatio(devicePixelRatio);
-            pixmap.fill(Qt::transparent);
-            QPainter pixmapPainter(&pixmap);
-            renderer.render(&pixmapPainter, QRectF(QPointF(0.0, 0.0), QSizeF(rect.size())));
-            pixmapPainter.end();
-            QPixmapCache::insert(cacheKey, pixmap);
-        }
-        painter->drawPixmap(rect, pixmap);
+        drawCachedImage(painter, QStringLiteral("O3DEFlatInd|") + resource, rect, [&](QPainter& imagePainter)
+            {
+                QSvgRenderer renderer(resource);
+                renderer.render(&imagePainter, QRectF(QPointF(0.0, 0.0), QSizeF(rect.size())));
+            });
     }
 
     //! The image of a rule drawn in the rect of the rule's contents: the svg at its own aspect, as large as the rect lets it be, centered
@@ -1444,11 +1456,8 @@ namespace AzQtComponents
     // $asset.check-indicator.indeterminate+focus $asset.check-indicator.indeterminate+disabled
     static constexpr FlatIndicator g_checkBoxImages{ ":/stylesheet/img/UI20/checkbox/%1.svg", { "off", "off-focus", "off-disabled" },
         { "on", "on-focus", "on-disabled" }, { "partial-selected", "partial-selected-focus", "partial-selected-disabled" } };
-    // CheckBox.qss:85, :99, :90; :104, :118, :109 $asset.check-indicator.unchecked.Alt3 $asset.check-indicator.unchecked+focus.Alt3
-    // $asset.check-indicator.disabled $asset.check-indicator.checked.Alt3 $asset.check-indicator.checked+focus.Alt3
-    // $asset.check-indicator.checked+disabled.Alt2
-    static constexpr FlatIndicator g_toggleSwitchImages{ ":/stylesheet/img/UI20/toggleswitch/%1.svg",
-        { "unchecked", "unchecked-focus", "unchecked-disabled" }, { "checked", "checked-focus", "checked-disabled" }, {} };
+    // The toggle switch's images (CheckBox.qss:85, :99, :90; :104, :118, :109) and the radio button's (RadioButton.qss:53, :63, :58;
+    // :38, :48, :43) are drawn from values, in the section after flatIndicatorImage
     // CheckBox.qss:157 (at rest and focused), :162; :145 (at rest and focused), :150 $asset.check-indicator.unchecked.Alt2
     // $asset.check-indicator.unchecked+focus.Alt2 $asset.check-indicator.unchecked+disabled.Alt2 $asset.check-indicator.checked.Alt2
     // $asset.check-indicator.checked+focus.Alt2 $asset.check-indicator.checked+disabled.Alt3
@@ -1458,11 +1467,6 @@ namespace AzQtComponents
     // $asset.check-indicator.checked+disabled.Alt4
     static constexpr FlatIndicator g_cardHeaderExpanderImages{ ":/Cards/img/UI20/Cards/%1.svg", { "caret-right", nullptr, "caret-right" },
         { "caret-down", nullptr, "caret-down" }, {} };
-    // RadioButton.qss:53, :63, :58; :38, :48, :43 $asset.check-indicator.unchecked.Alt4 $asset.check-indicator.unchecked+focus.Alt4
-    // $asset.check-indicator.unchecked+disabled.Alt4 $asset.check-indicator.checked.Alt4 $asset.check-indicator.checked+focus.Alt4
-    // $asset.check-indicator.checked+disabled.Alt5
-    static constexpr FlatIndicator g_radioButtonImages{ ":/stylesheet/img/UI20/radiobutton/%1.svg",
-        { "unchecked", "unchecked-focus", "unchecked-disabled" }, { "checked", "checked-focus", "checked-disabled" }, {} };
 
     // `QAbstractItemView[class~='VisibilityMode']::indicator:checked` and `:unchecked` (CheckBox.qss:165-173): the eye of an item view in
     // visibility mode (CheckBox::setVisibilityMode), open for a checked item and struck through for an unchecked one. The rules are
@@ -1480,14 +1484,10 @@ namespace AzQtComponents
         { "stylesheet/img/UI20/checkbox/partial-selected", "stylesheet/img/UI20/checkbox/partial-selected-focus",
             "stylesheet/img/UI20/checkbox/partial-selected-disabled" } };
 
-    //! The images of a check box's indicator: a toggle switch's, an expander's, or a check box's, which an item view's check boxes share
-    //! (an item view in visibility mode has its own)
+    //! The images of a check box's indicator: an expander's, or a check box's, which an item view's check boxes share (an item view in
+    //! visibility mode has its own). A toggle switch is no image: flatToggleSwitch
     static const FlatIndicator& flatCheckBoxImages(const QWidget* widget)
     {
-        if (widget && Style::hasClass(widget, QStringLiteral("ToggleSwitch")))
-        {
-            return g_toggleSwitchImages;
-        }
         if (widget && Style::hasClass(widget, QStringLiteral("Expander")))
         {
             return Selectors::withinClass(widget, "AzQtComponents::CardHeader") ? g_cardHeaderExpanderImages : g_expanderImages;
@@ -1507,6 +1507,296 @@ namespace AzQtComponents
         const char* image = !state.testFlag(QStyle::State_Enabled) ? images.m_disabled
             : state.testFlag(QStyle::State_HasFocus) ? images.m_focus : nullptr;
         return QString::fromLatin1(indicator.m_folder).arg(QLatin1String(image ? image : images.m_idle));
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Toggle switch and radio button (GUI flattening): drawn from values, not from images. The twelve SVGs
+    // (img/UI20/toggleswitch/ and img/UI20/radiobutton/) held their colours inside the files; the colours the two share are here once,
+    // each with the lines of the SVGs that give it. Drawn as the SVGs were: rendered once for each state, size and device ratio into
+    // the pixmap cache (drawCachedImage), anti-aliased, with the pen QSvgRenderer starts from (1px, flat caps, miter joins, miter
+    // limit 4), in the view of the SVG (32 x 16, or 34 x 18 with the focus ring; 16 x 16, or 18 x 18) scaled to the rect.
+    //////////////////////////////////////////////////////////////////////////
+
+    // ---- Colours, shared by the toggle switch and the radio button (file:line is toggleswitch/ or radiobutton/ of img/UI20/)
+
+    // The outline of an indicator that is off: toggleswitch/unchecked.svg:8, radiobutton/unchecked.svg:7 TOKENIZE: IndicatorOffLine
+    static constexpr QColor g_indicatorOffLine(0xFF, 0xFF, 0xFF);
+    // The outline of an indicator that is off and disabled: toggleswitch/unchecked-disabled.svg:8, radiobutton/unchecked-disabled.svg:7
+    // TOKENIZE: IndicatorOffLineDisabled
+    static constexpr QColor g_indicatorOffLineDisabled(0x99, 0x99, 0x99);
+    // The ring of an indicator that has the focus, on or off: toggleswitch/unchecked-focus.svg:8, toggleswitch/checked-focus.svg:8,
+    // radiobutton/unchecked-focus.svg:7, radiobutton/checked-focus.svg:7 TOKENIZE: IndicatorFocusLine
+    static constexpr QColor g_indicatorFocusLine(0x4B, 0x8C, 0xEF);
+    // The body of an indicator that is on: toggleswitch/checked.svg:8, toggleswitch/checked-focus.svg:8, radiobutton/checked.svg:8,
+    // radiobutton/checked-focus.svg:7 TOKENIZE: IndicatorOnFill
+    static constexpr QColor g_indicatorOnFill(0x1E, 0x70, 0xEB);
+    // The body of an indicator that is on and disabled: toggleswitch/checked-disabled.svg:8, radiobutton/checked-disabled.svg:7
+    // TOKENIZE: IndicatorOnFillDisabled
+    static constexpr QColor g_indicatorOnFillDisabled(0x2A, 0x48, 0x75);
+    // What marks an indicator on, the knob of a toggle switch and the dot of a radio button: toggleswitch/checked.svg:9,
+    // toggleswitch/checked-focus.svg:9, radiobutton/checked.svg:9, radiobutton/checked-focus.svg:8 TOKENIZE: IndicatorMark
+    static constexpr QColor g_indicatorMark(0xFF, 0xFF, 0xFF);
+    // The same, disabled: toggleswitch/checked-disabled.svg:9, radiobutton/checked-disabled.svg:8 TOKENIZE: IndicatorMarkDisabled
+    static constexpr QColor g_indicatorMarkDisabled(0xBB, 0xBB, 0xBB);
+
+    // ---- Colours of one of the two
+
+    // The knob of a toggle switch that is off: toggleswitch/unchecked.svg:9, toggleswitch/unchecked-focus.svg:9
+    // TOKENIZE: ToggleSwitchKnobOff
+    static constexpr QColor g_toggleSwitchKnobOff(0xFF, 0xFF, 0xFF);
+    // The knob of a toggle switch that is off and disabled: toggleswitch/unchecked-disabled.svg:9
+    // TOKENIZE: ToggleSwitchKnobOffDisabled
+    static constexpr QColor g_toggleSwitchKnobOffDisabled(0x99, 0x99, 0x99);
+    // The fill of a radio button that is off and disabled: radiobutton/unchecked-disabled.svg:7 TOKENIZE: RadioButtonOffFillDisabled
+    static constexpr QColor g_radioButtonOffFillDisabled(0x66, 0x66, 0x66);
+
+    // ---- Sizes (the view of an SVG is its viewBox: toggleswitch/*.svg:2, radiobutton/*.svg:2)
+
+    static constexpr QSize g_toggleSwitchView(32, 16);
+    static constexpr QSize g_toggleSwitchFocusView(34, 18);     // 1px of ring around the 32 x 16 switch
+    static constexpr QSize g_radioButtonView(16, 16);
+    static constexpr QSize g_radioButtonFocusView(18, 18);      // 1px of ring around the 16 x 16 button
+    static constexpr qreal g_indicatorFocusInset = 1.0;         // the translate(1, 1) of the focus SVGs
+
+    // The radius of the knob of a toggle switch: toggleswitch/*.svg:9 TOKENIZE: ToggleSwitchKnobRadius
+    static constexpr qreal g_toggleSwitchKnobRadius = 6.0;
+    // The centre of the knob, at left when off and at right when on: toggleswitch/unchecked.svg:9, toggleswitch/checked.svg:9
+    // TOKENIZE: ToggleSwitchKnobOffX, ToggleSwitchKnobOnX
+    static constexpr qreal g_toggleSwitchKnobOffX = 8.0;
+    static constexpr qreal g_toggleSwitchKnobOnX = 24.0;
+    // The centre of a radio button in both directions, and of the knob halfway down the switch: toggleswitch/*.svg:9,
+    // radiobutton/unchecked.svg:8
+    static constexpr qreal g_indicatorCentre = 8.0;
+    // The radius of a radio button: its outline is centred on 7.5 when it is off (radiobutton/unchecked.svg:8), its fill is 8 when it is
+    // on (radiobutton/checked.svg:8), and the focus ring is centred on 8.5 (radiobutton/unchecked-focus.svg:8, checked-focus.svg:7)
+    // TOKENIZE: RadioButtonOffRadius, RadioButtonOnRadius, RadioButtonFocusRadius
+    static constexpr qreal g_radioButtonOffRadius = 7.5;
+    static constexpr qreal g_radioButtonOnRadius = 8.0;
+    static constexpr qreal g_radioButtonFocusRadius = 8.5;
+    // The radius of the dot of a radio button that is on: radiobutton/checked.svg:9 TOKENIZE: RadioButtonDotRadius
+    static constexpr qreal g_radioButtonDotRadius = 4.0;
+
+    // ---- The track of a toggle switch: the curves of the SVGs' `track` paths (toggleswitch/unchecked.svg:8, unchecked-focus.svg:8,
+    // unchecked-disabled.svg:8, checked.svg:8 (the same as checked-disabled.svg:8), checked-focus.svg:8), exact, in the 32 x 16 view
+    // (the focused ones before the translate of the ring). A track outlined is inset 0.5, so that the 1px line is inside the view; one
+    // that is the body, filled, is not; the focus ring's is outset 0.5 to be inside the 34 x 18 view with the translate.
+
+    static QPainterPath toggleSwitchTrackOff()
+    {
+        QPainterPath path(QPointF(25.1067869, 15.5));
+        path.cubicTo(28.5443593, 15.5, 31.5, 12.1274135, 31.5, 8);
+        path.cubicTo(31.5, 3.8725865, 28.5443593, 0.5, 25.1067869, 0.5);
+        path.lineTo(7.14352223, 0.5);
+        path.cubicTo(3.65164113, 0.5, 0.5, 3.92665599, 0.5, 8);
+        path.cubicTo(0.5, 12.073344, 3.65164113, 15.5, 7.14352223, 15.5);
+        path.lineTo(25.1067869, 15.5);
+        path.closeSubpath();
+        return path;
+    }
+
+    static QPainterPath toggleSwitchTrackOffDisabled()
+    {
+        QPainterPath path(QPointF(24.9921399, 15.5));
+        path.cubicTo(28.454651, 15.5, 31.5, 12.1020706, 31.5, 8);
+        path.cubicTo(31.5, 3.89792943, 28.454651, 0.5, 24.9921399, 0.5);
+        path.lineTo(7.08166329, 0.5);
+        path.cubicTo(3.60315573, 0.5, 0.5, 3.9137212, 0.5, 8);
+        path.cubicTo(0.5, 12.0862788, 3.60315573, 15.5, 7.08166329, 15.5);
+        path.lineTo(24.9921399, 15.5);
+        path.closeSubpath();
+        return path;
+    }
+
+    static QPainterPath toggleSwitchTrackOffFocus()
+    {
+        QPainterPath path(QPointF(25.0231909, 16.5));
+        path.lineTo(7.01632718, 16.5);
+        path.cubicTo(2.97419648, 16.5, -0.5, 12.6299076, -0.5, 8);
+        path.cubicTo(-0.5, 3.37009242, 2.97419648, -0.5, 7.01632718, -0.5);
+        path.lineTo(25.0231909, -0.5);
+        path.cubicTo(29.0586432, -0.5, 32.5, 3.36297526, 32.5, 8);
+        path.cubicTo(32.5, 12.6370247, 29.0586432, 16.5, 25.0231909, 16.5);
+        path.closeSubpath();
+        return path;
+    }
+
+    static QPainterPath toggleSwitchTrackOn()
+    {
+        QPainterPath path(QPointF(25.4117647, 16));
+        path.lineTo(6.58823529, 16);
+        path.cubicTo(2.91764706, 16, 0, 12.4571429, 0, 8);
+        path.cubicTo(0, 3.54285714, 2.91764706, 0, 6.58823529, 0);
+        path.lineTo(25.4117647, 0);
+        path.cubicTo(29.0823529, 0, 32, 3.54285714, 32, 8);
+        path.cubicTo(32, 12.4571429, 29.0823529, 16, 25.4117647, 16);
+        path.closeSubpath();
+        return path;
+    }
+
+    static QPainterPath toggleSwitchTrackOnFocus()
+    {
+        QPainterPath path(QPointF(25.4117647, 16.5));
+        path.lineTo(6.58823529, 16.5);
+        path.cubicTo(2.61773665, 16.5, -0.5, 12.7141769, -0.5, 8);
+        path.cubicTo(-0.5, 3.28582307, 2.61773665, -0.5, 6.58823529, -0.5);
+        path.lineTo(25.4117647, -0.5);
+        path.cubicTo(29.3822634, -0.5, 32.5, 3.28582307, 32.5, 8);
+        path.cubicTo(32.5, 12.7141769, 29.3822634, 16.5, 25.4117647, 16.5);
+        path.closeSubpath();
+        return path;
+    }
+
+    // ---- The state of an indicator
+
+    //! The three facts of the state that both indicators draw by. A disabled widget has no focus ring (flatIndicatorImage).
+    struct FlatIndicatorLook
+    {
+        explicit FlatIndicatorLook(QStyle::State state)
+            : m_on(state.testFlag(QStyle::State_On))
+            , m_enabled(state.testFlag(QStyle::State_Enabled))
+            , m_focused(m_enabled && state.testFlag(QStyle::State_HasFocus))
+        {
+        }
+
+        bool m_on;
+        bool m_enabled;
+        bool m_focused;
+
+        //! The key the look is cached by
+        int code() const
+        {
+            return (m_on ? 1 : 0) | (m_enabled ? 2 : 0) | (m_focused ? 4 : 0);
+        }
+
+        //! The outline of the indicator: the ring while it has the focus, none for an indicator that is on (its body is its fill), else
+        //! the line of an indicator that is off. Invalid: no outline.
+        QColor outline() const
+        {
+            if (m_focused)
+            {
+                return g_indicatorFocusLine;
+            }
+            if (m_on)
+            {
+                return QColor();
+            }
+            return m_enabled ? g_indicatorOffLine : g_indicatorOffLineDisabled;
+        }
+
+        //! The fill of the body of an indicator that is on (the radio button's off and disabled fill is its own)
+        QColor onFill() const
+        {
+            return m_enabled ? g_indicatorOnFill : g_indicatorOnFillDisabled;
+        }
+
+        QColor mark() const
+        {
+            return m_enabled ? g_indicatorMark : g_indicatorMarkDisabled;
+        }
+    };
+
+    //! The pen and brush of a shape: the outline as QSvgRenderer strokes it (QSvgTinyDocument::initPainter), and the fill. Invalid
+    //! colours are none.
+    static void setIndicatorPaint(QPainter& painter, const QColor& outline, const QColor& fill)
+    {
+        if (outline.isValid())
+        {
+            QPen pen(QBrush(outline), 1.0, Qt::SolidLine, Qt::FlatCap, Qt::SvgMiterJoin);
+            pen.setMiterLimit(4.0);
+            painter.setPen(pen);
+        }
+        else
+        {
+            painter.setPen(Qt::NoPen);
+        }
+        painter.setBrush(fill.isValid() ? QBrush(fill) : QBrush(Qt::NoBrush));
+    }
+
+    //! Sets a painter on an image of the rect up to draw in the view of the SVG: scaled from the view to the rect, and inside the ring's
+    //! inset while the indicator has the focus
+    static void beginIndicatorImage(QPainter& painter, const QRect& rect, const QSize& view, const FlatIndicatorLook& look)
+    {
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.scale(static_cast<qreal>(rect.width()) / view.width(), static_cast<qreal>(rect.height()) / view.height());
+        if (look.m_focused)
+        {
+            painter.translate(g_indicatorFocusInset, g_indicatorFocusInset);
+        }
+    }
+
+    // ---- Drawing
+
+    //! A toggle switch drawn in the rect: the track (outlined when off, filled when on, ringed with the focus), then the knob
+    static void drawFlatToggleSwitch(QPainter* painter, QStyle::State state, const QRect& rect)
+    {
+        if (!rect.isValid())
+        {
+            return;
+        }
+        const FlatIndicatorLook look(state);
+        const QString key = QString::fromLatin1("O3DEFlatToggleSwitch|%1").arg(look.code());
+        drawCachedImage(painter, key, rect, [&](QPainter& imagePainter)
+            {
+                beginIndicatorImage(imagePainter, rect, look.m_focused ? g_toggleSwitchFocusView : g_toggleSwitchView, look);
+
+                QPainterPath track;
+                if (look.m_on)
+                {
+                    track = look.m_focused ? toggleSwitchTrackOnFocus() : toggleSwitchTrackOn();
+                }
+                else
+                {
+                    track = look.m_focused ? toggleSwitchTrackOffFocus()
+                        : look.m_enabled ? toggleSwitchTrackOff() : toggleSwitchTrackOffDisabled();
+                }
+                setIndicatorPaint(imagePainter, look.outline(), look.m_on ? look.onFill() : QColor());
+                imagePainter.drawPath(track);
+
+                QColor knob = look.mark();
+                if (!look.m_on)
+                {
+                    knob = look.m_enabled ? g_toggleSwitchKnobOff : g_toggleSwitchKnobOffDisabled;
+                }
+                setIndicatorPaint(imagePainter, QColor(), knob);
+                imagePainter.drawEllipse(
+                    QPointF(look.m_on ? g_toggleSwitchKnobOnX : g_toggleSwitchKnobOffX, g_indicatorCentre),
+                    g_toggleSwitchKnobRadius, g_toggleSwitchKnobRadius);
+            });
+    }
+
+    //! A radio button drawn in the rect: the disc (outlined when off, filled when on, ringed with the focus), then the dot when on
+    static void drawFlatRadioButton(QPainter* painter, QStyle::State state, const QRect& rect)
+    {
+        if (!rect.isValid())
+        {
+            return;
+        }
+        const FlatIndicatorLook look(state);
+        const QString key = QString::fromLatin1("O3DEFlatRadioButton|%1").arg(look.code());
+        drawCachedImage(painter, key, rect, [&](QPainter& imagePainter)
+            {
+                beginIndicatorImage(imagePainter, rect, look.m_focused ? g_radioButtonFocusView : g_radioButtonView, look);
+
+                QColor fill;
+                if (look.m_on)
+                {
+                    fill = look.onFill();
+                }
+                else if (!look.m_enabled)
+                {
+                    fill = g_radioButtonOffFillDisabled;
+                }
+                const qreal radius = look.m_focused ? g_radioButtonFocusRadius : look.m_on ? g_radioButtonOnRadius : g_radioButtonOffRadius;
+                const QPointF centre(g_indicatorCentre, g_indicatorCentre);
+                setIndicatorPaint(imagePainter, look.outline(), fill);
+                imagePainter.drawEllipse(centre, radius, radius);
+
+                if (look.m_on)
+                {
+                    setIndicatorPaint(imagePainter, QColor(), look.mark());
+                    imagePainter.drawEllipse(centre, g_radioButtonDotRadius, g_radioButtonDotRadius);
+                }
+            });
     }
 
     //! A toggle of the outliner (EntityOutliner.qss:37-166), by name: its image unchecked and checked (in :/Outliner/), the top of its
@@ -2194,6 +2484,12 @@ namespace AzQtComponents
                     {
                         break;
                     }
+                    // A toggle switch is drawn from values, a check box from its images
+                    if (widget && Style::hasClass(widget, QStringLiteral("ToggleSwitch")))
+                    {
+                        drawFlatToggleSwitch(painter, option->state, option->rect);
+                        return;
+                    }
                     drawSvg(painter, flatIndicatorImage(flatCheckBoxImages(widget), option->state), option->rect);
                     return;
                 }
@@ -2350,7 +2646,7 @@ namespace AzQtComponents
                 if (StyleManager::stylesheetsDisabled())
                 {
                     // In the indicator element's image rect (IndicatorElement::imageRect), the focus size while the button has the focus
-                    drawSvg(painter, flatIndicatorImage(g_radioButtonImages, option->state), option->rect);
+                    drawFlatRadioButton(painter, option->state, option->rect);
                     return;
                 }
             }
