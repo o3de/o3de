@@ -1,0 +1,12 @@
+{
+    "PackageName": "pugixml",
+    "Version": "1.16",
+    "URL": "https://github.com/zeux/pugixml",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/zeux/pugixml/archive/c8033ce9d039e7f9d134877c363397b3cfe20816.tar.gz",
+        "Revision": "c8033ce9d039e7f9d134877c363397b3cfe20816",
+        "SHA256": "4ae8941bc2c19e176c13153e5f53cefa8498aacab0063823b1efdebc719797d9"
+    }
+}
