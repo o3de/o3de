@@ -948,8 +948,11 @@ namespace WhiteBox
             { "Plane", DrawShapeType::Plane }, { "Torus", DrawShapeType::Torus }, { "Pipe", DrawShapeType::Pipe },
         };
         int shapeButtonIndex = 0;
-        for (const auto& [label, shapeType] : shapeDefs)
+        for (const auto& shapeDef : shapeDefs)
         {
+            // Plain locals, not a structured binding: clang before 16 cannot capture bindings in lambdas.
+            const char* const label = shapeDef.first;
+            const DrawShapeType shapeType = shapeDef.second;
             auto* button = new QPushButton(tr(label));
             createGrid->addWidget(button, shapeButtonIndex / 3, shapeButtonIndex % 3);
             ++shapeButtonIndex;
