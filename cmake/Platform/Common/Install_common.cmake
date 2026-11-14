@@ -366,9 +366,8 @@ function(ly_setup_subdirectories)
 endfunction()
 
 #! ly_setup_3p_target: Export enough data such that the script-only mode knows about the runtime dependencies
-#! for the given target.  This function returns a string which is a setup function that can be called
-#! in script only mode to create a fake target for the 3p library that just includes its copy dependencies.
-function(ly_setup_3p_target OUTVAR_GENERATED_DATA_FILENAME OUTVAR_FILE_NAME_TO_GENERATE ALIAS_TARGET_NAME)
+#! for the given target. Return a postprocessor call and the lowercase mapping filename.
+function(ly_setup_3p_target OUTVAR_GENERATED_DATA OUTVAR_FILE_NAME_TO_GENERATE ALIAS_TARGET_NAME)
     ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
     o3de_get_dependencies_for_target(
             TARGET "${TARGET_NAME}"
@@ -380,12 +379,10 @@ function(ly_setup_3p_target OUTVAR_GENERATED_DATA_FILENAME OUTVAR_FILE_NAME_TO_G
     # but get the data from the de-aliased target.  So except for the call above
     # we use the aliased target name.
     string(REPLACE "::" "__" CLEAN_TARGET_NAME "${ALIAS_TARGET_NAME}")  
+    string(TOLOWER "${CLEAN_TARGET_NAME}" CLEAN_TARGET_NAME)
 
     unset(copy_dependencies_target_rel_path)
     unset(copy_dependencies_source_file_path)
-    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-        unset(copy_dependencies_${conf})
-    endforeach()
 
     foreach(dependency_for_target IN LISTS target_target_dependencies)
         if (NOT TARGET ${dependency_for_target})
@@ -421,23 +418,9 @@ function(ly_setup_3p_target OUTVAR_GENERATED_DATA_FILENAME OUTVAR_FILE_NAME_TO_G
         endif()
     endif()
 
-    unset(${OUTVAR_GENERATED_DATA_FILENAME} PARENT_SCOPE)
-
-    # the absolute source paths of files to copy can have generator expressions that are per-config.
-    # use file(GENERATE ...) to evaluate the genexes, by writing it as a build file
-    # since GENERATE only happens during generate step, this is as far as we can go during
-    # configure.  It will be up to a build step to read these generated files back and
-    # do a final transform that removes things like absolute paths.
-    # note that we generate a file for every 3p target, as they must exist.
-    set(generate_content "set(target_name ${ALIAS_TARGET_NAME})\n")
-    if (copy_dependencies_source_file_path)
-        string(APPEND generate_content "set(copy_dependencies_source_file_path \"${copy_dependencies_source_file_path}\")\n")
-        string(APPEND generate_content "set(copy_dependencies_target_rel_path \"${copy_dependencies_target_rel_path}\")\n")
-    endif()
-
-    file(GENERATE OUTPUT  "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" 
-                  CONTENT "${generate_content}")
-    set(${OUTVAR_GENERATED_DATA_FILENAME} "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" PARENT_SCOPE)
+    set(${OUTVAR_GENERATED_DATA}
+        "o3de_process_script_only_target(${ALIAS_TARGET_NAME}\n    \"${copy_dependencies_source_file_path}\"\n    \"${copy_dependencies_target_rel_path}\")\n"
+        PARENT_SCOPE)
     set(${OUTVAR_FILE_NAME_TO_GENERATE} ${CLEAN_TARGET_NAME} PARENT_SCOPE)
 
 endfunction()
@@ -461,14 +444,23 @@ function(ly_setup_3p_dependencies)
     set(final_3p_output_dir "${CMAKE_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
     get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
 
-    # call the ly_setup_3p_target for each 3p target.  It will create a GENERATE step
-    # that will output a file, and also return the file name of the generated file.
+    # Keep each spelling's dependencies, but generate each lowercase mapping only once.
+    unset(mapping_filenames)
     foreach(target_3p IN LISTS o3de_all_3rdparty_targets)
-        ly_setup_3p_target(file_to_process output_filename ${target_3p})
-        if (file_to_process)
-            list(APPEND list_of_files_to_process ${file_to_process})
-            list(APPEND expected_output_files ${final_3p_output_dir}/${output_filename}.cmake)
+        ly_setup_3p_target(generated_content output_filename ${target_3p})
+        if(NOT output_filename IN_LIST mapping_filenames)
+            list(APPEND mapping_filenames "${output_filename}")
+            set(mapping_content_${output_filename} "")
         endif()
+        string(APPEND mapping_content_${output_filename} "${generated_content}")
+    endforeach()
+
+    foreach(output_filename IN LISTS mapping_filenames)
+        set(file_to_process "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${output_filename}.cmake")
+        # Evaluate configuration expressions before the postprocessor strips build paths.
+        file(GENERATE OUTPUT "${file_to_process}" CONTENT "${mapping_content_${output_filename}}")
+        list(APPEND list_of_files_to_process "${file_to_process}")
+        list(APPEND expected_output_files "${final_3p_output_dir}/${output_filename}.cmake")
     endforeach()
     
     # note that generate only occurs during the generate step.  The above file will not be available until the build step
