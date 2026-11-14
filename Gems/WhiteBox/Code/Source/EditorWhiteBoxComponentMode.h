@@ -70,51 +70,51 @@ namespace WhiteBox
         // Modeling cluster. Each says what it needs selected, because a disabled button with no
         // explanation is the same as a broken one.
         constexpr static const char* const WhiteboxModelingClusterBridgeTooltip =
-            "Bridge — connect two selected boundary edges, or two facing polygons";
+            "Bridge - connect two selected boundary edges, or two facing polygons";
         constexpr static const char* const WhiteboxModelingClusterWeldTooltip =
-            "Weld — choose how to merge two or more selected vertices";
+            "Weld - choose how to merge two or more selected vertices";
         constexpr static const char* const WhiteboxModelingClusterFillHoleTooltip =
-            "Fill Hole — close the flat hole bordered by the selected open edges";
+            "Fill Hole - close the flat hole bordered by the selected open edges";
         constexpr static const char* const WhiteboxMergePolygonsTooltip =
-            "Merge Polygons — hide every border the selected polygons share, making them one";
+            "Merge Polygons - hide every border the selected polygons share, making them one";
         constexpr static const char* const WhiteboxSelectLinkedTooltip =
-            "Select Linked — grow the selection to every part joined to it";
+            "Select Linked - grow the selection to every part joined to it";
         constexpr static const char* const WhiteboxSelectCoplanarTooltip =
-            "Select Coplanar — grow the selection over neighbours facing the same way";
+            "Select Coplanar - grow the selection over neighbours facing the same way";
         constexpr static const char* const WhiteboxGrowSelectionTooltip =
-            "Grow Selection — add every neighbour of the selection, one step out";
+            "Grow Selection - add every neighbour of the selection, one step out";
         constexpr static const char* const WhiteboxShrinkSelectionTooltip =
-            "Shrink Selection — drop every selected element that touches something unselected";
+            "Shrink Selection - drop every selected element that touches something unselected";
         constexpr static const char* const WhiteboxDetachTooltip =
-            "Detach to Layer — move the selected polygons into a new layer, keeping materials, colours and UVs";
+            "Detach to Layer - move the selected polygons into a new layer, keeping materials, colours and UVs";
         constexpr static const char* const WhiteboxConnectVerticesTooltip =
-            "Connect Vertices — split polygons with straight edges between the selected vertices";
+            "Connect Vertices - split polygons with straight edges between the selected vertices";
         constexpr static const char* const WhiteboxInsertVertexTooltip =
-            "Insert Vertex — click polygon edges to add vertices; Ctrl snaps to the midpoint, Shift to tenths";
+            "Insert Vertex - click polygon edges to add vertices; Ctrl snaps to the midpoint, Shift to tenths";
         constexpr static const char* const WhiteboxUvProjectionTooltip =
-            "UV Projection — set how textures map onto the selected polygons";
+            "UV Projection - set how textures map onto the selected polygons";
         constexpr static const char* const WhiteboxSmoothingTooltip =
-            "Smoothing Groups — shade the selected polygons smooth by group, or Auto Smooth by angle";
+            "Smoothing Groups - shade the selected polygons smooth by group, or Auto Smooth by angle";
         constexpr static const char* const WhiteboxSubdivideTooltip =
-            "Subdivide — split each selected polygon into quads meeting at its centre";
+            "Subdivide - split each selected polygon into quads meeting at its centre";
         constexpr static const char* const WhiteboxSelectSimilarTooltip =
-            "Select Similar — add polygons matching by material, facing, area, sides or smoothing; edges by length; vertices by edge count";
+            "Select Similar - add polygons matching by material, facing, area, sides or smoothing; edges by length; vertices by edge count";
         constexpr static const char* const WhiteboxStickySelectTooltip =
-            "Sticky Select — drag across the mesh and everything the cursor crosses joins the selection";
+            "Sticky Select - drag across the mesh and everything the cursor crosses joins the selection";
         constexpr static const char* const WhiteboxBoxSelectTooltip =
-            "Box Select — drag a rectangle to select everything inside it";
+            "Box Select - drag a rectangle to select everything inside it";
         constexpr static const char* const WhiteboxSelectVerticesTooltip =
-            "Vertex Select — only vertices can be picked and the selection converts. Ctrl: touching. Click again for all three";
+            "Vertex Select - only vertices can be picked and the selection converts. Ctrl: touching. Click again for all three";
         constexpr static const char* const WhiteboxSelectEdgesTooltip =
-            "Edge Select — only edges can be picked and the selection converts. Ctrl: touching. Click again for all three";
+            "Edge Select - only edges can be picked and the selection converts. Ctrl: touching. Click again for all three";
         constexpr static const char* const WhiteboxSelectPolygonsTooltip =
-            "Face Select — only polygons can be picked and the selection converts. Ctrl: touching. Click again for all three";
+            "Face Select - only polygons can be picked and the selection converts. Ctrl: touching. Click again for all three";
         constexpr static const char* const WhiteboxModelingClusterDeletePolygonTooltip =
-            "Delete Polygon — remove the selected polygons and keep their vertices";
+            "Delete Polygon - remove the selected polygons and keep their vertices";
         constexpr static const char* const WhiteboxModelingClusterLoopCutTooltip =
-            "Loop Cut — hover a face or edge, wheel for count, click to cut";
+            "Loop Cut - hover a face or edge, wheel for count, click to cut";
         constexpr static const char* const WhiteboxModelingClusterBevelTooltip =
-            "Bevel — start a live bevel on the selected edges or polygons";
+            "Bevel - start a live bevel on the selected edges or polygons";
         
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;

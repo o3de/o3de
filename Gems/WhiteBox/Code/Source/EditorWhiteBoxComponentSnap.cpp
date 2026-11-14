@@ -1,9 +1,13 @@
 /*
- * EditorWhiteBoxComponent - publishes the mesh to the editor's viewport snapper
- * (ViewportSnapSourceRequestBus).
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
  */
+
+// EditorWhiteBoxComponent - publishes the mesh to the editor's viewport snapper
+// (ViewportSnapSourceRequestBus).
 
 #include "EditorWhiteBoxComponent.h"
 
