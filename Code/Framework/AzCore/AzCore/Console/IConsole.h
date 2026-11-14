@@ -200,6 +200,9 @@ namespace AZ
         }
         return cvarFunctor->GetValue(outValue);
     }
+
+    //! The console's `?text` name test: text anywhere in name, any case; `*` matches any run, `?` any one character.
+    AZCORE_API bool ConsoleNameMatches(AZStd::string_view name, AZStd::string_view text);
 }
 
 template <typename _TYPE, typename = void>

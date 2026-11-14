@@ -8,6 +8,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Locale.h>
@@ -18,6 +19,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/sort.h>
 #include <cctype>
 
 namespace AZ
@@ -35,6 +37,60 @@ namespace AZ
         }
 
         return count;
+    }
+
+    bool ConsoleNameMatches(AZStd::string_view name, AZStd::string_view text)
+    {
+        // Wildcard match anywhere in the name, ignoring case: `*` matches any run of characters, `?` matches one.
+        // The pattern is wrapped in `*` so the text can match anywhere in the name.
+        const AZStd::string pattern = AZStd::string("*") + AZStd::string(text) + "*";
+        size_t nameIndex = 0;
+        size_t patternIndex = 0;
+        size_t lastStarPatternIndex = 0;
+        size_t lastStarNameIndex = 0;
+        while (nameIndex < name.size())
+        {
+            const bool havePatternChar = patternIndex < pattern.size();
+            if (havePatternChar && pattern[patternIndex] == '*')
+            {
+                // Remember the star, and first try matching it against nothing.
+                lastStarPatternIndex = patternIndex++;
+                lastStarNameIndex = nameIndex;
+            }
+            else if (havePatternChar && (pattern[patternIndex] == '?' ||
+                tolower(static_cast<unsigned char>(pattern[patternIndex])) == tolower(static_cast<unsigned char>(name[nameIndex]))))
+            {
+                ++patternIndex;
+                ++nameIndex;
+            }
+            else
+            {
+                // Mismatch: let the last star swallow one more name character and retry after it.
+                // The pattern starts with `*`, so there is always a star to fall back to.
+                patternIndex = lastStarPatternIndex + 1;
+                nameIndex = ++lastStarNameIndex;
+            }
+        }
+        while (patternIndex < pattern.size() && pattern[patternIndex] == '*')
+        {
+            ++patternIndex;
+        }
+        return patternIndex == pattern.size();
+    }
+
+    //! One `?` reply line, `  name = value - help`, printed whatever the logger's level.
+    static void PrintConsoleEntry(const ConsoleFunctorBase& functor)
+    {
+        AZStd::string line = AZStd::string::format("  %s", functor.GetName());
+        if (CVarFixedString value; functor.GetValue(value) == GetValueResult::Success)
+        {
+            line = line + " = " + value.c_str();
+        }
+        if (functor.GetDesc() && functor.GetDesc()[0])
+        {
+            line = line + " - " + functor.GetDesc();
+        }
+        Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s\n", line.c_str());
     }
 
     Console::Console()
@@ -111,6 +167,37 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+        // `?text` (or `? text`) lists the visible commands and cvars whose name matches text (ConsoleNameMatches); `?`
+        // lists all. `cvar ?` prints that cvar. A command still receives `?` as an ordinary argument.
+        if (!command.empty() && command.front() == '?')
+        {
+            const AZStd::string_view text = command.size() > 1 ? command.substr(1) : commandArgs.empty() ? AZStd::string_view() : commandArgs.front();
+            AZStd::vector<ConsoleFunctorBase*> matches;
+            VisitRegisteredFunctors([text, &matches](ConsoleFunctorBase* functor)
+            {
+                if ((functor->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::Null &&
+                    ConsoleNameMatches(functor->GetName(), text))
+                {
+                    matches.push_back(functor);
+                }
+            });
+            AZStd::sort(matches.begin(), matches.end(), [](auto* l, auto* r) { return azstricmp(l->GetName(), r->GetName()) < 0; });
+            Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "?%.*s: %zu matches\n", AZ_STRING_ARG(text), matches.size());
+            for (const ConsoleFunctorBase* functor : matches)
+            {
+                PrintConsoleEntry(*functor);
+            }
+            return AZ::Success();
+        }
+        if (commandArgs.size() == 1 && commandArgs.front() == "?")
+        {
+            if (const ConsoleFunctorBase* functor = FindCommand(command); functor && !functor->GetTypeId().IsNull())
+            {
+                PrintConsoleEntry(*functor);
+                return AZ::Success();
+            }
+        }
+
         if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
         {
             // If the command could not be dispatched at this time add it to the deferred commands queue
