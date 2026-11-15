@@ -58,12 +58,16 @@ set_target_properties(gtest gmock PROPERTIES
     SYSTEM TRUE
 )
 
+# Keep exception handling private so consumers retain their own compiler settings.
+set(exception_options ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})
+list(REMOVE_ITEM exception_options PRIVATE PUBLIC INTERFACE)
+
 target_compile_options(gtest
     PUBLIC
         ${O3DE_COMPILE_OPTION_EXPORT_SYMBOLS}
         ${O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH}
     PRIVATE
-        ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS}
+        ${exception_options}
 )
 
 target_compile_options(gmock
@@ -71,7 +75,7 @@ target_compile_options(gmock
         ${O3DE_COMPILE_OPTION_EXPORT_SYMBOLS}
         ${O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH}
     PRIVATE
-        ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS}
+        ${exception_options}
 )
 
 ly_create_alias(NAME GTest NAMESPACE 3rdParty::googletest TARGETS 3rdParty::gtest)

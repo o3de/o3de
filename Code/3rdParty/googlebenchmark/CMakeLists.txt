@@ -72,7 +72,11 @@ set_target_properties(GoogleBenchmark PROPERTIES
     SYSTEM TRUE
 )
 
-target_compile_options(GoogleBenchmark PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})
+# Keep exception handling private so consumers retain their own compiler settings.
+set(exception_options ${O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS})
+list(REMOVE_ITEM exception_options PRIVATE PUBLIC INTERFACE)
+
+target_compile_options(GoogleBenchmark PRIVATE ${exception_options})
 
 if(WIN32)
     ly_target_link_libraries(GoogleBenchmark PRIVATE shlwapi)
