@@ -330,7 +330,7 @@ namespace Benchmark
             for (auto& testData : m_testDataArray)
             {
                 const AZ::Quaternion& result = testData.t1.GetRotation();
-                benchmark::DoNotOptimize(result);
+                benchmark::DoNotOptimize(&result);
             }
         }
     }
