@@ -13,14 +13,11 @@
 # ARGV4 and onwards are the names of input files, generated during the engine configure/generate
 # containing information about the 3p libraries available.
 
-#[[ there is 1 input file for each 3p library, and each input file contains a set of "set" commands in this format:
-    set(target_name ${TARGET_NAME})
-    set(copy_dependencies_source_file_path ${copy_dependencies_source_file_path})
-    set(copy_dependencies_target_rel_path ${copy_dependencies_target_rel_path})
+#[[ Each lowercase input file contains calls for all referenced target spellings:
+    o3de_process_script_only_target(target_name "source_paths" "destination_paths")
 
-    The goal of this file is to generate one output_filename/target_name.cmake for each input file such 
-    that it contains the ability to register the given 3p library target
-    libraries as fake ones (which have the appropriate dependencies so that files get copied).
+    Generate one mapping with the same filename, preserving each exact target name
+    and its runtime copy dependencies for script-only builds.
 ]]#
 
 if (${CMAKE_ARGC} LESS 5)
@@ -55,14 +52,8 @@ set(copyright_and_preamble [[#
 # during game deploy.  It should ONLY be used in script-only mode.
 ]])
 
-foreach(data_file IN LISTS file_list)
-    unset(target_name)
-    unset(copy_dependencies_source_file_path)
-    unset(copy_dependencies_target_rel_path)
+function(o3de_process_script_only_target target_name copy_dependencies_source_file_path copy_dependencies_target_rel_path)
     unset(trimmed_source_paths)
-    set(final_data ${copyright_and_preamble})
-
-    include(${data_file})
 
     if (NOT target_name)
         message(FATAL_ERROR "Error parsing data file ${data_file} - consider cleaning it out and rebuilding.")
@@ -108,7 +99,17 @@ foreach(data_file IN LISTS file_list)
     endif()
     string(APPEND final_data "endif() # NOT TARGET ${target_name}\n")
 
-    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${target_name}")  
-    file(WRITE "${output_directory}/${CLEAN_TARGET_NAME}.cmake" "${final_data}")
+    set(final_data "${final_data}" PARENT_SCOPE)
+    set(processed_target TRUE PARENT_SCOPE)
+endfunction()
 
+foreach(data_file IN LISTS file_list)
+    set(final_data "${copyright_and_preamble}")
+    unset(processed_target)
+    include("${data_file}")
+    if(NOT processed_target)
+        message(FATAL_ERROR "No target records in data file ${data_file}")
+    endif()
+    cmake_path(GET data_file FILENAME output_filename)
+    file(WRITE "${output_directory}/${output_filename}" "${final_data}")
 endforeach()
