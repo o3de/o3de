@@ -1,0 +1,12 @@
+{
+    "PackageName": "d3d12-memory-allocator",
+    "Version": "3.3.0",
+    "URL": "https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator/archive/refs/tags/v3.3.0.tar.gz",
+        "Revision": "600949266be004553f74c9ef809384380a9d44cf",
+        "SHA256": "04e3ef68cf2608c14c74a0b0190fb3c5e3cbb62e22fb8282ea62a9411d054133"
+    }
+}
