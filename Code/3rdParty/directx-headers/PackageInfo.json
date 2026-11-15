@@ -1,0 +1,12 @@
+{
+    "PackageName": "directx-headers",
+    "Version": "1.620.2",
+    "URL": "https://github.com/microsoft/DirectX-Headers",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/microsoft/DirectX-Headers/archive/refs/tags/v1.620.2.tar.gz",
+        "Revision": "61c7718954ec73dbdd43c723240fe1a0452a3724",
+        "SHA256": "2b916ef1be5db35313f56d60499274fed39db37b54a1f0befa8aa49041c14855"
+    }
+}
