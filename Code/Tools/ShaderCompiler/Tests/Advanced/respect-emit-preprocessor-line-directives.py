@@ -101,10 +101,10 @@ def testErrorReportUsesPreprocessorLineDirectives(theFile, compilerPath, silent,
         print (fg.CYAN+ style.BRIGHT+
                "testSyntaxErrorReportUsesPreprocessorLineDirectives: "+
                "Compiling and expecting errors..."+ style.RESET_ALL)
-    stderr, failed = testfuncs.buildAndGetError(filePathOfTmpFile, compilerPath, silent, [])
+    _, stderr, exitCode = testfuncs.launchCompiler(compilerPath, [filePathOfTmpFile], silent)
     stderr = stderr.decode('utf-8')
-    if not failed:
-        print(fg.RED + "fail: expected non-buildable didn't report a build error." + fg.RESET)
+    if exitCode != 1:
+        print(fg.RED + f"fail: expected compiler exit code 1, got {exitCode}." + fg.RESET)
         return False
     if not silent:
         print (fg.CYAN+ style.BRIGHT+

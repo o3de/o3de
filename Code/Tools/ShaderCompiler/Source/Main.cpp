@@ -516,7 +516,6 @@ int main(int argc, const char* argv[])
         IntermediateRepresentation ir(&lexer);
         // Buffer all tokens, including off-channel line directives needed by the line map.
         tokens.fill();
-        tokens.fill();
         if (lexer.getNumberOfSyntaxErrors() > 0)
         {
             throw std::runtime_error("syntax errors present");
@@ -537,10 +536,9 @@ int main(int argc, const char* argv[])
         {
             parser.reset();
             simulator->setPredictionMode(atn::PredictionMode::LL);
+            parser.addErrorListener(&azslParserEventListener);
             tree = parser.compilationUnit();
         }
-
-        parser.addErrorListener(&azslParserEventListener);
 
         if (ast)
         {
