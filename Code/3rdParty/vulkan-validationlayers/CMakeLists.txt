@@ -87,6 +87,13 @@ elseif(APPLE)
 
     set(JSON_LIBRARY_PATH "./libVkLayer_khronos_validation.dylib")
 elseif(ANDROID)
+    # The prebuilt validation layer also required API 26, independently of the engine's API level.
+    if(LY_TOOLCHAIN_NDK_API_LEVEL LESS 26)
+        string(REGEX REPLACE "[0-9]+$" "26" vvl_android_target "${CMAKE_CXX_COMPILER_TARGET}")
+        target_compile_options(vulkan-validationlayers PRIVATE "--target=${vvl_android_target}")
+        target_link_options(vulkan-validationlayers PRIVATE "--target=${vvl_android_target}")
+    endif()
+
     ly_target_link_libraries(vulkan-validationlayers PRIVATE
         log
         android
