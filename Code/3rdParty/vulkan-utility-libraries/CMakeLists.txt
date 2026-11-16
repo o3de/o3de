@@ -54,9 +54,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_compile_definitions(vulkan-utility-libraries PUBLIC
         VK_USE_PLATFORM_XCB_KHR
         VK_USE_PLATFORM_XLIB_KHR
-        VK_USE_PLATFORM_XLIB_XRANDR_EXT
         VK_USE_PLATFORM_WAYLAND_KHR
     )
+
+    if(X11_Xrandr_INCLUDE_PATH)
+        target_compile_definitions(vulkan-utility-libraries PUBLIC VK_USE_PLATFORM_XLIB_XRANDR_EXT)
+    endif()
 endif()
 
 set_target_properties(vulkan-utility-libraries PROPERTIES
