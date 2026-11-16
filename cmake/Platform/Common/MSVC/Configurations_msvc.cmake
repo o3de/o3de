@@ -9,7 +9,7 @@
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 
 # Exceptions are disabled by default.  Use this to turn them on just for a specific target.
-set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc)
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc /U_HAS_EXCEPTIONS)
 
 # O3DE Sets visibility to hidden by default, requiring explicit export on non-windows platforms
 # But on MSVC or MS-Clang, these compilers use MSVC compiler options and behavior, which means
