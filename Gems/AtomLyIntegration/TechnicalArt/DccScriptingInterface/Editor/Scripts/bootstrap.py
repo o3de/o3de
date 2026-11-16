@@ -154,7 +154,6 @@ _LOGGER.debug(f'qtPluginsFolder: {params.qtPluginsFolder}')
 _LOGGER.debug(f'qtBinaryFolder: {params.qtBinaryFolder}')
 
 #PySide imports
-from PySide6 import QtWidgets
 from PySide6.QtWidgets import QMenuBar, QMenu
 from PySide6 import QtGui
 from PySide6.QtCore import Slot, QObject, QUrl

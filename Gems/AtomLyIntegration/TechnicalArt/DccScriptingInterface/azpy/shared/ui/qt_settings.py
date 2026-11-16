@@ -30,7 +30,7 @@ _config.init_o3de_pyside(settings.O3DE_DEV)
 
 # now we can import lumberyards PySide
 import PySide6.QtCore as QtCore
-import PySide6.QtWidgets as QtWidgets
+from PySide6 import QtWidgets
 
 # -------------------------------------------------------------------------
 #  global space debug flag

@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 import pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
@@ -69,7 +69,7 @@ class TestGraphClose_Default_SavePrompt:
         # 3) Trigger File->New action
         initial_tabs_count = sc_tabs.count()
         action = pyside_utils.find_child_by_pattern(
-            sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+            sc_main, {"objectName": "action_New_Script", "type": QtGui.QAction}
         )
         action.trigger()
 
