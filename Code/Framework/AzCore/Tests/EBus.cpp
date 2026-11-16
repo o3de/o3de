@@ -4315,14 +4315,14 @@ namespace Benchmark
             static const int Many = 1000;
         }
 
-        void Common(::benchmark::internal::Benchmark* benchmark)
+        void Common(::benchmark::Benchmark* benchmark)
         {
             benchmark
                 ->Unit(::benchmark::kNanosecond)
                 ;
         }
 
-        void OneToOne(::benchmark::internal::Benchmark* benchmark)
+        void OneToOne(::benchmark::Benchmark* benchmark)
         {
             Common(benchmark);
             benchmark
@@ -4332,7 +4332,7 @@ namespace Benchmark
                 ;
         }
 
-        void OneToMany(::benchmark::internal::Benchmark* benchmark)
+        void OneToMany(::benchmark::Benchmark* benchmark)
         {
             OneToOne(benchmark);
             benchmark
@@ -4340,7 +4340,7 @@ namespace Benchmark
                 ;
         }
 
-        void ManyToOne(::benchmark::internal::Benchmark* benchmark)
+        void ManyToOne(::benchmark::Benchmark* benchmark)
         {
             OneToOne(benchmark);
             benchmark
@@ -4348,7 +4348,7 @@ namespace Benchmark
                 ;
         }
 
-        void ManyToMany(::benchmark::internal::Benchmark* benchmark)
+        void ManyToMany(::benchmark::Benchmark* benchmark)
         {
             OneToOne(benchmark);
             benchmark
@@ -4359,7 +4359,7 @@ namespace Benchmark
         }
 
         // Expected that this will be called after one of the above, so Common not called
-        void Multithreaded(::benchmark::internal::Benchmark* benchmark)
+        void Multithreaded(::benchmark::Benchmark* benchmark)
         {
             benchmark
                 ->ThreadRange(1, 8)
