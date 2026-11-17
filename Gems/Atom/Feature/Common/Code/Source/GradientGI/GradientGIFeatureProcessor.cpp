@@ -53,8 +53,9 @@ namespace AZ::Render
             "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
 
         // If Dynamic mode was requested, check platform support; fall back to Static if needed.
-        const UpdateMode resolvedMode =
-            GradientGI::ResolveUpdateMode(m_updateMode, GradientGICubemapPass::IsGpuComputeSupported());
+        const UpdateMode resolvedMode = GradientGI::ResolveUpdateMode(
+            m_updateMode,
+            m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning("GradientGI", resolvedMode == m_updateMode,
             "GPU compute UAV cubemaps are not supported on this platform. "
             "GradientGI falling back to Static mode.");
@@ -721,9 +722,15 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode requestedMode)
     {
+        if (m_updateMode == requestedMode)
+        {
+            return;
+        }
+
         // GPU/Dynamic requires compute UAV cubemap support; fall back to Static if unavailable.
-        const UpdateMode mode =
-            GradientGI::ResolveUpdateMode(requestedMode, GradientGICubemapPass::IsGpuComputeSupported());
+        const UpdateMode mode = GradientGI::ResolveUpdateMode(
+            requestedMode,
+            requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning("GradientGI", mode == requestedMode,
             "GPU compute UAV cubemaps not supported. Staying in Static mode.");
 
