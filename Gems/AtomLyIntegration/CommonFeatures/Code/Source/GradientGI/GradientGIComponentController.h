@@ -121,21 +121,27 @@ namespace AZ
             //! Queue an async load of the detail/specular texture assets (connects AssetBus).
             void LoadDetailTexture();
             void LoadSpecularTexture();
+
             //! Push the resolved textures to the feature processor.
             void PushDetailToFeatureProcessor();
             void PushSpecularToFeatureProcessor();
+
             //! Push the (mapping, blend, strength) params for each layer to the feature processor.
             void PushDetailParams();
             void PushSpecularParams();
 
-            EntityId                         m_entityId;
-            GradientGIComponentConfig        m_configuration;
+            EntityId m_entityId;
+            GradientGIComponentConfig m_configuration;
             GradientGIFeatureProcessorInterface* m_featureProcessor = nullptr;
-            GradientGIFeatureProcessorInterface::OwnerChangedEvent::Handler m_ownerChangedHandler{
+
+            GradientGIFeatureProcessorInterface::OwnerChangedEvent::Handler m_ownerChangedHandler
+            {
                 [this](EntityId owner)
                 {
                     OnOwnerChanged(owner);
-                }};
+                }
+            };
+
             bool m_detailTextureNeedsUpdate = false;
             bool m_specularTextureNeedsUpdate = false;
         };

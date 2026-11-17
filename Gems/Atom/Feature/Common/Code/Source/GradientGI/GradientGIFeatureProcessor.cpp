@@ -47,23 +47,23 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Activate()
     {
-        m_iblFeatureProcessor =
-            GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
-        AZ_Error("GradientGI", m_iblFeatureProcessor,
-            "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
+        m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
+        AZ_Error(
+            "GradientGI", m_iblFeatureProcessor, "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
 
         // If Dynamic mode was requested, check platform support; fall back to Static if needed.
         const UpdateMode resolvedMode = GradientGI::ResolveUpdateMode(
-            m_updateMode,
-            m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
-        AZ_Warning("GradientGI", resolvedMode == m_updateMode,
+            m_updateMode, m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
+        AZ_Warning(
+            "GradientGI",
+            resolvedMode == m_updateMode,
             "GPU compute UAV cubemaps are not supported on this platform. "
             "GradientGI falling back to Static mode.");
         m_updateMode = resolvedMode;
 
         // The feature processor starts inert. It produces nothing until a component takes
         // ownership via Enable(), so it can never light the scene with no owner alive.
-        m_enabled      = false;
+        m_enabled = false;
         m_needsRebuild = false;
 
         // Cache the scene SRG IBL slot indices for Dynamic mode's direct writes.
@@ -87,10 +87,10 @@ namespace AZ::Render
         ReleaseGeneratedImages();
 
         m_owners.Clear();
-        m_enabled               = false;
-        m_teardownCountdown     = 0;
-        m_iblFeatureProcessor   = nullptr;
-        m_sceneSrg              = nullptr;
+        m_enabled = false;
+        m_teardownCountdown = 0;
+        m_iblFeatureProcessor = nullptr;
+        m_sceneSrg = nullptr;
         m_sceneSrgIndicesCached = false;
     }
 
@@ -148,7 +148,7 @@ namespace AZ::Render
         // level reload, where every owner deregisters and re-registers within a single frame -- the
         // check never samples a count below two, so the latch would suppress the warning for a
         // level that genuinely does contain duplicates.
-        m_multiOwnerFrames   = 0;
+        m_multiOwnerFrames = 0;
         m_reportedOwnerCount = 0;
 
         // Stop only once nobody wants us any more. While another component is still registered --
@@ -228,7 +228,7 @@ namespace AZ::Render
         if (ownerCount < 2)
         {
             // Back to a single owner -- re-arm so a later duplicate is reported again.
-            m_multiOwnerFrames   = 0;
+            m_multiOwnerFrames = 0;
             m_reportedOwnerCount = 0;
             return;
         }
@@ -262,21 +262,24 @@ namespace AZ::Render
             entityList += AZStd::string::format(" [%llu]", static_cast<AZ::u64>(owner));
         }
 
-        AZ_Warning("GradientGI", false,
+        AZ_Warning(
+            "GradientGI",
+            false,
             "%zu Gradient GI components are lighting this scene at the same time: %s. "
             "Only the most recently activated one has any effect -- the others are redundant. "
             "If this is not deliberate, one of them is probably a duplicated entity or prefab.",
-            m_owners.Count(), entityList.c_str());
+            m_owners.Count(),
+            entityList.c_str());
     }
 
     void GradientGIFeatureProcessor::ReleaseGeneratedImages()
     {
         DestroyPass();
-        m_diffuseImage  = nullptr;
+        m_diffuseImage = nullptr;
         m_specularImage = nullptr;
-        m_cubemapImage  = nullptr;
-        m_imageAsset    = {};
-        m_needsRebuild  = false;
+        m_cubemapImage = nullptr;
+        m_imageAsset = {};
+        m_needsRebuild = false;
     }
 
     // =========================================================================
@@ -289,8 +292,8 @@ namespace AZ::Render
         if (m_sceneSrg)
         {
             m_specularEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_specularEnvMap"));
-            m_diffuseEnvMapIndex  = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
-            m_iblExposureIndex    = m_sceneSrg->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
+            m_diffuseEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
+            m_iblExposureIndex = m_sceneSrg->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
             m_sceneSrgIndicesCached = true;
         }
         else
@@ -324,10 +327,10 @@ namespace AZ::Render
             // Release the previous cubemap before building its replacement so we never hold
             // two full cubemaps in the streaming pool at once.
             m_cubemapImage = nullptr;
-            m_imageAsset   = {};
+            m_imageAsset = {};
 
-            m_cubemapImage     = BuildGradientCubemap();
-            m_needsRebuild     = false;
+            m_cubemapImage = BuildGradientCubemap();
+            m_needsRebuild = false;
             m_rebuiltThisFrame = true;
         }
     }
@@ -454,7 +457,7 @@ namespace AZ::Render
             m_gradientPass->QueueForRemoval();
         }
         m_gradientPass = nullptr;
-        m_passPipelineId  = RPI::RenderPipelineId();
+        m_passPipelineId = RPI::RenderPipelineId();
     }
 
     void GradientGIFeatureProcessor::EnsureIblFloor()
@@ -472,8 +475,7 @@ namespace AZ::Render
     // =========================================================================
 
     void GradientGIFeatureProcessor::OnRenderPipelineChanged(
-        RPI::RenderPipeline* renderPipeline,
-        RPI::SceneNotification::RenderPipelineChangeType changeType)
+        RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         using ChangeType = RPI::SceneNotification::RenderPipelineChangeType;
 
@@ -592,7 +594,7 @@ namespace AZ::Render
         // so a resolution change simply allocates a new pair rather than reusing a mismatched one.
         if (m_gradientPass->HasWrittenOutputs())
         {
-            m_diffuseImage  = m_gradientPass->GetDiffuseImage();
+            m_diffuseImage = m_gradientPass->GetDiffuseImage();
             m_specularImage = m_gradientPass->GetSpecularImage();
         }
 
@@ -606,7 +608,7 @@ namespace AZ::Render
         // thread after all Simulate() jobs have completed, so there is no race with the IBL FP.
         // The cubemap SRV (default view set at image creation) is used for sampling.
         m_sceneSrg->SetImageView(m_specularEnvMapIndex, m_specularImage->GetImageView());
-        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  m_diffuseImage->GetImageView());
+        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex, m_diffuseImage->GetImageView());
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
@@ -627,8 +629,8 @@ namespace AZ::Render
             return;
         }
 
-        m_lowColor  = low;
-        m_midColor  = mid;
+        m_lowColor = low;
+        m_midColor = mid;
         m_highColor = high;
 
         if (m_updateMode == UpdateMode::Static)
@@ -692,7 +694,7 @@ namespace AZ::Render
             return;
         }
 
-        m_faceResolution        = value;
+        m_faceResolution = value;
         m_faceResolutionApplied = true;
 
         if (m_updateMode == UpdateMode::Static)
@@ -726,10 +728,8 @@ namespace AZ::Render
 
         // GPU/Dynamic requires compute UAV cubemap support; fall back to Static if unavailable.
         const UpdateMode mode = GradientGI::ResolveUpdateMode(
-            requestedMode,
-            requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
-        AZ_Warning("GradientGI", mode == requestedMode,
-            "GPU compute UAV cubemaps not supported. Staying in Static mode.");
+            requestedMode, requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
+        AZ_Warning("GradientGI", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
 
         if (m_updateMode == mode)
         {
@@ -754,7 +754,7 @@ namespace AZ::Render
             // Release the GPU path entirely -- the cached output cubemaps are of no use to the CPU
             // path and would otherwise sit in the attachment pool until the scene is torn down.
             DestroyPass();
-            m_diffuseImage  = nullptr;
+            m_diffuseImage = nullptr;
             m_specularImage = nullptr;
 
             // Rebuild the CPU cubemap so the IBL FP picks it up again -- but only if a component
@@ -779,7 +779,7 @@ namespace AZ::Render
                 m_iblFeatureProcessor->Reset();
             }
             m_cubemapImage = nullptr;
-            m_imageAsset   = {};
+            m_imageAsset = {};
 
             if (m_enabled)
             {
@@ -792,9 +792,7 @@ namespace AZ::Render
     {
         // Resolve the asset to a resident runtime instance once. Color edits never touch this;
         // they only update SRG constants, so the texture stays loaded (the cheap-rebuild goal).
-        m_detailTexture = texture.GetId().IsValid()
-            ? RPI::StreamingImage::FindOrCreate(texture)
-            : Data::Instance<RPI::Image>{};
+        m_detailTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
 
         if (m_gradientPass)
         {
@@ -804,8 +802,8 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetDetailParams(uint8_t mapping, uint8_t blend, float strength)
     {
-        m_detailMapping  = mapping;
-        m_detailBlend    = blend;
+        m_detailMapping = mapping;
+        m_detailBlend = blend;
         m_detailStrength = strength;
 
         if (m_gradientPass)
@@ -816,9 +814,7 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
-        m_specularTexture = texture.GetId().IsValid()
-            ? RPI::StreamingImage::FindOrCreate(texture)
-            : Data::Instance<RPI::Image>{};
+        m_specularTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
 
         if (m_gradientPass)
         {
@@ -828,8 +824,8 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetSpecularParams(uint8_t mapping, uint8_t blend, float strength)
     {
-        m_specularMapping  = mapping;
-        m_specularBlend    = blend;
+        m_specularMapping = mapping;
+        m_specularBlend = blend;
         m_specularStrength = strength;
 
         if (m_gradientPass)
@@ -859,13 +855,20 @@ namespace AZ::Render
         // so side faces use -vc for Y (up) to keep the gradient oriented correctly.
         switch (face)
         {
-        case 0: return Vector3( 1.0f,  -vc,  -uc);   // +X
-        case 1: return Vector3(-1.0f,  -vc,   uc);   // -X
-        case 2: return Vector3(   uc,  1.0f,   vc);   // +Y (zenith)
-        case 3: return Vector3(   uc, -1.0f,  -vc);   // -Y (nadir)
-        case 4: return Vector3(   uc,  -vc,  1.0f);   // +Z
-        case 5: return Vector3(  -uc,  -vc, -1.0f);   // -Z
-        default: return Vector3(0.0f, 1.0f, 0.0f);
+        case 0:
+            return Vector3(1.0f, -vc, -uc); // +X
+        case 1:
+            return Vector3(-1.0f, -vc, uc); // -X
+        case 2:
+            return Vector3(uc, 1.0f, vc); // +Y (zenith)
+        case 3:
+            return Vector3(uc, -1.0f, -vc); // -Y (nadir)
+        case 4:
+            return Vector3(uc, -vc, 1.0f); // +Z
+        case 5:
+            return Vector3(-uc, -vc, -1.0f); // -Z
+        default:
+            return Vector3(0.0f, 1.0f, 0.0f);
         }
     }
 
@@ -873,10 +876,7 @@ namespace AZ::Render
     // Face Pixel Generation
     // =========================================================================
 
-    void GradientGIFeatureProcessor::GenerateFacePixels(
-        uint32_t face,
-        uint32_t faceSize,
-        AZStd::vector<uint8_t>& outPixels) const
+    void GradientGIFeatureProcessor::GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const
     {
         const size_t bpp = RHI::GetFormatSize(RHI::Format::R16G16B16A16_FLOAT);
         outPixels.resize(faceSize * faceSize * bpp);
@@ -919,7 +919,7 @@ namespace AZ::Render
         // Snap to a power of two: O3DE's runtime StreamingImage upload renders certain non-power-of-
         // two face sizes black (observed dead band ~91..127 at R16G16B16A16). Imperceptible for a
         // smooth gradient. See GradientGI::SnapCpuFaceResolutionToPow2.
-        const uint32_t    faceSize = GradientGI::SnapCpuFaceResolutionToPow2(m_faceResolution);
+        const uint32_t faceSize = GradientGI::SnapCpuFaceResolutionToPow2(m_faceResolution);
 
         // Step 1: Generate pixel data for each of the 6 faces
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
@@ -942,9 +942,11 @@ namespace AZ::Render
             mipCreator.BeginMip(faceLayout);
             for (uint32_t face = 0; face < 6; ++face)
             {
-                AZ_Assert(facePixels[face].size() >= bytesPerFace,
+                AZ_Assert(
+                    facePixels[face].size() >= bytesPerFace,
                     "GradientGI: Face pixel data too small (expected %zu, got %zu)",
-                    bytesPerFace, facePixels[face].size());
+                    bytesPerFace,
+                    facePixels[face].size());
 
                 mipCreator.AddSubImage(facePixels[face].data(), bytesPerFace);
             }

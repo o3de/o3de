@@ -78,11 +78,11 @@ namespace AZ::Render
     {
         const bool faceSizeChanged = (faceSize != m_faceSize);
 
-        m_lowColor  = low;
-        m_midColor  = mid;
+        m_lowColor = low;
+        m_midColor = mid;
         m_highColor = high;
-        m_faceSize  = faceSize;
-        m_dirty     = true;
+        m_faceSize = faceSize;
+        m_dirty = true;
 
         // The output cubemap is allocated at m_faceSize in BuildInternal(). A resolution
         // change therefore requires reallocating it -- otherwise the compute dispatch grid
@@ -112,21 +112,20 @@ namespace AZ::Render
     {
         // No reallocation here -- only SRG state changes. The resident texture and constants are
         // (re)bound in CompileResources on the next dirty pass, so this stays cheap.
-        m_detailTexture  = texture;
-        m_detailMapping  = mapping;
-        m_detailBlend    = blend;
+        m_detailTexture = texture;
+        m_detailMapping = mapping;
+        m_detailBlend = blend;
         m_detailStrength = strength;
-        m_dirty          = true;
+        m_dirty = true;
     }
 
-    void GradientGICubemapPass::SetSpecularLayer(
-        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    void GradientGICubemapPass::SetSpecularLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
     {
-        m_specularTexture  = texture;
-        m_specularMapping  = mapping;
-        m_specularBlend    = blend;
+        m_specularTexture = texture;
+        m_specularMapping = mapping;
+        m_specularBlend = blend;
         m_specularStrength = strength;
-        m_dirty            = true;
+        m_dirty = true;
     }
 
     // =========================================================================
@@ -189,14 +188,16 @@ namespace AZ::Render
         // unwritten cubemap to the scene. Otherwise allocate a fresh pair.
         if (!OutputImagesMatchFaceSize())
         {
-            m_diffuseImage   = CreateOutputCubemap("GradientGI_Diffuse");
-            m_specularImage  = CreateOutputCubemap("GradientGI_Specular");
+            m_diffuseImage = CreateOutputCubemap("GradientGI_Diffuse");
+            m_specularImage = CreateOutputCubemap("GradientGI_Specular");
             m_outputsWritten = false;
         }
 
         if (!m_diffuseImage || !m_specularImage)
         {
-            AZ_Error("GradientGICubemapPass", false,
+            AZ_Error(
+                "GradientGICubemapPass",
+                false,
                 "Failed to create AttachmentImage(s) for gradient cubemap. "
                 "GPU compute (UAV cubemap) is not supported on this platform.");
             SetEnabled(false);
@@ -206,9 +207,16 @@ namespace AZ::Render
         // ---- Empty scope that transitions the outputs for sampling after a write ----
         m_sampleAccessScope = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
             RHI::ScopeId(AZStd::string::format("%s.SampleAccess", GetPathName().GetCStr())),
-            [this](RHI::FrameGraphInterface frameGraph) { DeclareSampleAccess(frameGraph); },
-            [](const RHI::FrameGraphCompileContext&) {},
-            [](const RHI::FrameGraphExecuteContext&) {},
+            [this](RHI::FrameGraphInterface frameGraph)
+            {
+                DeclareSampleAccess(frameGraph);
+            },
+            [](const RHI::FrameGraphCompileContext&)
+            {
+            },
+            [](const RHI::FrameGraphExecuteContext&)
+            {
+            },
             RHI::HardwareQueueClass::Graphics,
             RPI::Pass::GetDeviceIndex());
 
@@ -216,10 +224,9 @@ namespace AZ::Render
     }
 
     void GradientGICubemapPass::AdoptOutputImages(
-        const Data::Instance<RPI::AttachmentImage>& diffuse,
-        const Data::Instance<RPI::AttachmentImage>& specular)
+        const Data::Instance<RPI::AttachmentImage>& diffuse, const Data::Instance<RPI::AttachmentImage>& specular)
     {
-        m_diffuseImage  = diffuse;
+        m_diffuseImage = diffuse;
         m_specularImage = specular;
 
         // The feature processor only caches outputs that have been written. BuildInternal clears
@@ -256,9 +263,7 @@ namespace AZ::Render
         }
 
         RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
-            RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite,
-            m_faceSize,
-            RHI::Format::R16G16B16A16_FLOAT);
+            RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite, m_faceSize, RHI::Format::R16G16B16A16_FLOAT);
 
         // Cubemap SRV as default view -- used when the FP binds this image to scene SRG slots.
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
@@ -330,17 +335,23 @@ namespace AZ::Render
     }
 
     void GradientGICubemapPass::BindTextureLayer(
-        const AZ::Name& tex2DName, const AZ::Name& texCubeName,
-        const AZ::Name& mappingName, const AZ::Name& blendName,
-        const AZ::Name& strengthName, const AZ::Name& enabledName,
-        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+        const AZ::Name& tex2DName,
+        const AZ::Name& texCubeName,
+        const AZ::Name& mappingName,
+        const AZ::Name& blendName,
+        const AZ::Name& strengthName,
+        const AZ::Name& enabledName,
+        const Data::Instance<RPI::Image>& texture,
+        uint8_t mapping,
+        uint8_t blend,
+        float strength)
     {
-        const auto tex2DIdx   = m_passSrg->FindShaderInputImageIndex(tex2DName);
+        const auto tex2DIdx = m_passSrg->FindShaderInputImageIndex(tex2DName);
         const auto texCubeIdx = m_passSrg->FindShaderInputImageIndex(texCubeName);
-        const auto mapIdx     = m_passSrg->FindShaderInputConstantIndex(mappingName);
-        const auto blendIdx   = m_passSrg->FindShaderInputConstantIndex(blendName);
-        const auto strIdx     = m_passSrg->FindShaderInputConstantIndex(strengthName);
-        const auto enIdx      = m_passSrg->FindShaderInputConstantIndex(enabledName);
+        const auto mapIdx = m_passSrg->FindShaderInputConstantIndex(mappingName);
+        const auto blendIdx = m_passSrg->FindShaderInputConstantIndex(blendName);
+        const auto strIdx = m_passSrg->FindShaderInputConstantIndex(strengthName);
+        const auto enIdx = m_passSrg->FindShaderInputConstantIndex(enabledName);
 
         // Detect whether the assigned texture is actually a cubemap.
         bool isCube = false;
@@ -351,7 +362,7 @@ namespace AZ::Render
         }
 
         const bool cubeRequested = (mapping == 2); // GradientGITextureMapping::Cube
-        const bool useCube       = cubeRequested && isCube;
+        const bool useCube = cubeRequested && isCube;
         // Disable mismatched texture types so neither SRG slot receives an incompatible view.
         const bool enabled = GradientGI::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
 
@@ -360,7 +371,7 @@ namespace AZ::Render
 
         // Both slots must stay bound with valid SRVs; the shader samples only the one matching
         // the active mapping mode.
-        Data::Instance<RPI::Image> tex2D   = (enabled && !useCube) ? texture : systemWhite2D;
+        Data::Instance<RPI::Image> tex2D = (enabled && !useCube) ? texture : systemWhite2D;
         Data::Instance<RPI::Image> texCube = useCube ? texture : GetOrCreateWhiteFallbackCube();
 
         m_passSrg->SetImage(tex2DIdx, tex2D);
@@ -368,10 +379,10 @@ namespace AZ::Render
         {
             m_passSrg->SetImage(texCubeIdx, texCube);
         }
-        m_passSrg->SetConstant(mapIdx,   static_cast<uint32_t>(mapping));
+        m_passSrg->SetConstant(mapIdx, static_cast<uint32_t>(mapping));
         m_passSrg->SetConstant(blendIdx, static_cast<uint32_t>(blend));
-        m_passSrg->SetConstant(strIdx,   strength);
-        m_passSrg->SetConstant(enIdx,    enabled ? 1u : 0u);
+        m_passSrg->SetConstant(strIdx, strength);
+        m_passSrg->SetConstant(enIdx, enabled ? 1u : 0u);
     }
 
     // =========================================================================
@@ -392,7 +403,7 @@ namespace AZ::Render
         {
             params.m_frameGraphBuilder->ImportScopeProducer(*m_sampleAccessScope);
 
-            m_dirty          = false;
+            m_dirty = false;
             m_outputsWritten = true;
         }
     }
@@ -429,7 +440,7 @@ namespace AZ::Render
                 /*mipSliceMax=*/0,
                 /*arraySliceMin=*/0,
                 /*arraySliceMax=*/5);
-            uavDesc.m_loadStoreAction.m_loadAction  = RHI::AttachmentLoadAction::DontCare;
+            uavDesc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
             uavDesc.m_loadStoreAction.m_storeAction = RHI::AttachmentStoreAction::Store;
 
             frameGraph.UseShaderAttachment(uavDesc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
@@ -477,15 +488,15 @@ namespace AZ::Render
         if (m_writeThisFrame)
         {
             // ---- Bind gradient color constants ----
-            const auto lowIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
-            const auto midIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
-            const auto highIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
-            const auto sizeIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
-            const auto diffIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputDiffuse"));
-            const auto specIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputSpecular"));
+            const auto lowIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
+            const auto midIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
+            const auto highIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
+            const auto sizeIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
+            const auto diffIdx = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputDiffuse"));
+            const auto specIdx = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputSpecular"));
 
-            m_passSrg->SetConstant(lowIdx,  AZ::Vector3(m_lowColor.GetR(),  m_lowColor.GetG(),  m_lowColor.GetB()));
-            m_passSrg->SetConstant(midIdx,  AZ::Vector3(m_midColor.GetR(),  m_midColor.GetG(),  m_midColor.GetB()));
+            m_passSrg->SetConstant(lowIdx, AZ::Vector3(m_lowColor.GetR(), m_lowColor.GetG(), m_lowColor.GetB()));
+            m_passSrg->SetConstant(midIdx, AZ::Vector3(m_midColor.GetR(), m_midColor.GetG(), m_midColor.GetB()));
             m_passSrg->SetConstant(highIdx, AZ::Vector3(m_highColor.GetR(), m_highColor.GetG(), m_highColor.GetB()));
             m_passSrg->SetConstant(sizeIdx, m_faceSize);
 
@@ -507,16 +518,28 @@ namespace AZ::Render
 
             // ---- Texture layers (resident SRVs + parameters) ----
             BindTextureLayer(
-                AZ::Name("m_detailTex2D"), AZ::Name("m_detailTexCube"),
-                AZ::Name("m_detailMapping"), AZ::Name("m_detailBlend"),
-                AZ::Name("m_detailStrength"), AZ::Name("m_detailEnabled"),
-                m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
+                AZ::Name("m_detailTex2D"),
+                AZ::Name("m_detailTexCube"),
+                AZ::Name("m_detailMapping"),
+                AZ::Name("m_detailBlend"),
+                AZ::Name("m_detailStrength"),
+                AZ::Name("m_detailEnabled"),
+                m_detailTexture,
+                m_detailMapping,
+                m_detailBlend,
+                m_detailStrength);
 
             BindTextureLayer(
-                AZ::Name("m_specularTex2D"), AZ::Name("m_specularTexCube"),
-                AZ::Name("m_specularMapping"), AZ::Name("m_specularBlend"),
-                AZ::Name("m_specularStrength"), AZ::Name("m_specularEnabled"),
-                m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
+                AZ::Name("m_specularTex2D"),
+                AZ::Name("m_specularTexCube"),
+                AZ::Name("m_specularMapping"),
+                AZ::Name("m_specularBlend"),
+                AZ::Name("m_specularStrength"),
+                AZ::Name("m_specularEnabled"),
+                m_specularTexture,
+                m_specularMapping,
+                m_specularBlend,
+                m_specularStrength);
         }
 
         m_passSrg->Compile();
@@ -543,9 +566,9 @@ namespace AZ::Render
         directArgs.m_totalNumberOfThreadsX = groupsX * 8;
         directArgs.m_totalNumberOfThreadsY = groupsY * 8;
         directArgs.m_totalNumberOfThreadsZ = groupsZ;
-        directArgs.m_threadsPerGroupX      = 8;
-        directArgs.m_threadsPerGroupY      = 8;
-        directArgs.m_threadsPerGroupZ      = 1;
+        directArgs.m_threadsPerGroupX = 8;
+        directArgs.m_threadsPerGroupY = 8;
+        directArgs.m_threadsPerGroupZ = 1;
 
         RHI::DispatchItem dispatchItem(RHI::MultiDevice::AllDevices);
         dispatchItem.SetArguments(RHI::DispatchArguments(directArgs));

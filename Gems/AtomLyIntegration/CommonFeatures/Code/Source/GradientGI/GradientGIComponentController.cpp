@@ -30,10 +30,8 @@ namespace AZ
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<GradientGIComponentController>()
-                    ->Version(0)
-                    ->Field("Configuration", &GradientGIComponentController::m_configuration)
-                    ;
+                serializeContext->Class<GradientGIComponentController>()->Version(0)->Field(
+                    "Configuration", &GradientGIComponentController::m_configuration);
             }
 
             if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
@@ -56,59 +54,58 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     // Single-layer color setters/getters
-                    ->Event("SetLowColor",    &GradientGIComponentRequestBus::Events::SetLowColor)
-                    ->Event("GetLowColor",    &GradientGIComponentRequestBus::Events::GetLowColor)
-                    ->Event("SetMidColor",    &GradientGIComponentRequestBus::Events::SetMidColor)
-                    ->Event("GetMidColor",    &GradientGIComponentRequestBus::Events::GetMidColor)
-                    ->Event("SetHighColor",   &GradientGIComponentRequestBus::Events::SetHighColor)
-                    ->Event("GetHighColor",   &GradientGIComponentRequestBus::Events::GetHighColor)
+                    ->Event("SetLowColor", &GradientGIComponentRequestBus::Events::SetLowColor)
+                    ->Event("GetLowColor", &GradientGIComponentRequestBus::Events::GetLowColor)
+                    ->Event("SetMidColor", &GradientGIComponentRequestBus::Events::SetMidColor)
+                    ->Event("GetMidColor", &GradientGIComponentRequestBus::Events::GetMidColor)
+                    ->Event("SetHighColor", &GradientGIComponentRequestBus::Events::SetHighColor)
+                    ->Event("GetHighColor", &GradientGIComponentRequestBus::Events::GetHighColor)
                     // Set all three gradient layers at once
                     ->Event("SetGradientColors", &GradientGIComponentRequestBus::Events::SetGradientColors)
                     // Exposure
-                    ->Event("SetExposure",    &GradientGIComponentRequestBus::Events::SetExposure)
-                    ->Event("GetExposure",    &GradientGIComponentRequestBus::Events::GetExposure)
+                    ->Event("SetExposure", &GradientGIComponentRequestBus::Events::SetExposure)
+                    ->Event("GetExposure", &GradientGIComponentRequestBus::Events::GetExposure)
                     // Resolution
                     ->Event("SetFaceResolution", &GradientGIComponentRequestBus::Events::SetFaceResolution)
                     ->Event("GetFaceResolution", &GradientGIComponentRequestBus::Events::GetFaceResolution)
                     // Update mode (Static / Dynamic)
-                    ->Event("SetUpdateMode",  &GradientGIComponentRequestBus::Events::SetUpdateMode)
-                    ->Event("GetUpdateMode",  &GradientGIComponentRequestBus::Events::GetUpdateMode)
+                    ->Event("SetUpdateMode", &GradientGIComponentRequestBus::Events::SetUpdateMode)
+                    ->Event("GetUpdateMode", &GradientGIComponentRequestBus::Events::GetUpdateMode)
                     // Detail texture layer (scripting uses AssetId; the AssetPath route is not
                     // reflected -- a raw path can't resolve to a processed product asset, so only
                     // the AssetId node is exposed to Script Canvas).
-                    ->Event("SetDetailTextureAssetId",   &GradientGIComponentRequestBus::Events::SetDetailTextureAssetId)
-                    ->Event("GetDetailTextureAssetId",   &GradientGIComponentRequestBus::Events::GetDetailTextureAssetId)
-                    ->Event("SetDetailMapping",  &GradientGIComponentRequestBus::Events::SetDetailMapping)
-                    ->Event("GetDetailMapping",  &GradientGIComponentRequestBus::Events::GetDetailMapping)
-                    ->Event("SetDetailBlend",    &GradientGIComponentRequestBus::Events::SetDetailBlend)
-                    ->Event("GetDetailBlend",    &GradientGIComponentRequestBus::Events::GetDetailBlend)
+                    ->Event("SetDetailTextureAssetId", &GradientGIComponentRequestBus::Events::SetDetailTextureAssetId)
+                    ->Event("GetDetailTextureAssetId", &GradientGIComponentRequestBus::Events::GetDetailTextureAssetId)
+                    ->Event("SetDetailMapping", &GradientGIComponentRequestBus::Events::SetDetailMapping)
+                    ->Event("GetDetailMapping", &GradientGIComponentRequestBus::Events::GetDetailMapping)
+                    ->Event("SetDetailBlend", &GradientGIComponentRequestBus::Events::SetDetailBlend)
+                    ->Event("GetDetailBlend", &GradientGIComponentRequestBus::Events::GetDetailBlend)
                     ->Event("SetDetailStrength", &GradientGIComponentRequestBus::Events::SetDetailStrength)
                     ->Event("GetDetailStrength", &GradientGIComponentRequestBus::Events::GetDetailStrength)
                     // Specular texture layer (scripting uses AssetId; AssetPath not reflected, see above)
-                    ->Event("SetSpecularTextureAssetId",   &GradientGIComponentRequestBus::Events::SetSpecularTextureAssetId)
-                    ->Event("GetSpecularTextureAssetId",   &GradientGIComponentRequestBus::Events::GetSpecularTextureAssetId)
-                    ->Event("SetSpecularMapping",  &GradientGIComponentRequestBus::Events::SetSpecularMapping)
-                    ->Event("GetSpecularMapping",  &GradientGIComponentRequestBus::Events::GetSpecularMapping)
-                    ->Event("SetSpecularBlend",    &GradientGIComponentRequestBus::Events::SetSpecularBlend)
-                    ->Event("GetSpecularBlend",    &GradientGIComponentRequestBus::Events::GetSpecularBlend)
+                    ->Event("SetSpecularTextureAssetId", &GradientGIComponentRequestBus::Events::SetSpecularTextureAssetId)
+                    ->Event("GetSpecularTextureAssetId", &GradientGIComponentRequestBus::Events::GetSpecularTextureAssetId)
+                    ->Event("SetSpecularMapping", &GradientGIComponentRequestBus::Events::SetSpecularMapping)
+                    ->Event("GetSpecularMapping", &GradientGIComponentRequestBus::Events::GetSpecularMapping)
+                    ->Event("SetSpecularBlend", &GradientGIComponentRequestBus::Events::SetSpecularBlend)
+                    ->Event("GetSpecularBlend", &GradientGIComponentRequestBus::Events::GetSpecularBlend)
                     ->Event("SetSpecularStrength", &GradientGIComponentRequestBus::Events::SetSpecularStrength)
                     ->Event("GetSpecularStrength", &GradientGIComponentRequestBus::Events::GetSpecularStrength)
                     // Virtual properties for Script Canvas property nodes
-                    ->VirtualProperty("LowColor",       "GetLowColor",       "SetLowColor")
-                    ->VirtualProperty("MidColor",       "GetMidColor",       "SetMidColor")
-                    ->VirtualProperty("HighColor",      "GetHighColor",      "SetHighColor")
-                    ->VirtualProperty("Exposure",       "GetExposure",       "SetExposure")
+                    ->VirtualProperty("LowColor", "GetLowColor", "SetLowColor")
+                    ->VirtualProperty("MidColor", "GetMidColor", "SetMidColor")
+                    ->VirtualProperty("HighColor", "GetHighColor", "SetHighColor")
+                    ->VirtualProperty("Exposure", "GetExposure", "SetExposure")
                     ->VirtualProperty("FaceResolution", "GetFaceResolution", "SetFaceResolution")
-                    ->VirtualProperty("UpdateMode",     "GetUpdateMode",     "SetUpdateMode")
-                    ->VirtualProperty("DetailTextureAssetId",   "GetDetailTextureAssetId",   "SetDetailTextureAssetId")
-                    ->VirtualProperty("DetailMapping",  "GetDetailMapping",  "SetDetailMapping")
-                    ->VirtualProperty("DetailBlend",    "GetDetailBlend",    "SetDetailBlend")
+                    ->VirtualProperty("UpdateMode", "GetUpdateMode", "SetUpdateMode")
+                    ->VirtualProperty("DetailTextureAssetId", "GetDetailTextureAssetId", "SetDetailTextureAssetId")
+                    ->VirtualProperty("DetailMapping", "GetDetailMapping", "SetDetailMapping")
+                    ->VirtualProperty("DetailBlend", "GetDetailBlend", "SetDetailBlend")
                     ->VirtualProperty("DetailStrength", "GetDetailStrength", "SetDetailStrength")
-                    ->VirtualProperty("SpecularTextureAssetId",   "GetSpecularTextureAssetId",   "SetSpecularTextureAssetId")
-                    ->VirtualProperty("SpecularMapping",  "GetSpecularMapping",  "SetSpecularMapping")
-                    ->VirtualProperty("SpecularBlend",    "GetSpecularBlend",    "SetSpecularBlend")
-                    ->VirtualProperty("SpecularStrength", "GetSpecularStrength", "SetSpecularStrength")
-                    ;
+                    ->VirtualProperty("SpecularTextureAssetId", "GetSpecularTextureAssetId", "SetSpecularTextureAssetId")
+                    ->VirtualProperty("SpecularMapping", "GetSpecularMapping", "SetSpecularMapping")
+                    ->VirtualProperty("SpecularBlend", "GetSpecularBlend", "SetSpecularBlend")
+                    ->VirtualProperty("SpecularStrength", "GetSpecularStrength", "SetSpecularStrength");
             }
         }
 
@@ -143,9 +140,10 @@ namespace AZ
         {
             m_entityId = entityId;
 
-            m_featureProcessor =
-                RPI::Scene::GetFeatureProcessorForEntity<GradientGIFeatureProcessorInterface>(m_entityId);
-            AZ_Error("GradientGIComponentController", m_featureProcessor,
+            m_featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<GradientGIFeatureProcessorInterface>(m_entityId);
+            AZ_Error(
+                "GradientGIComponentController",
+                m_featureProcessor,
                 "Unable to find GradientGIFeatureProcessorInterface on this entity's scene.");
 
             if (m_featureProcessor)
@@ -162,6 +160,7 @@ namespace AZ
             AZ::TickBus::Handler::BusDisconnect();
             GradientGIComponentRequestBus::Handler::BusDisconnect();
             Data::AssetBus::MultiHandler::BusDisconnect();
+
             m_detailTextureNeedsUpdate = false;
             m_specularTextureNeedsUpdate = false;
 
@@ -181,8 +180,10 @@ namespace AZ
         {
             AZ::TickBus::Handler::BusDisconnect();
             Data::AssetBus::MultiHandler::BusDisconnect();
+
             m_detailTextureNeedsUpdate = false;
             m_specularTextureNeedsUpdate = false;
+
             m_configuration = config;
 
             if (IsActiveOwner())
@@ -238,11 +239,10 @@ namespace AZ
             return m_configuration.m_highColor;
         }
 
-        void GradientGIComponentController::SetGradientColors(
-            const Color& low, const Color& mid, const Color& high)
+        void GradientGIComponentController::SetGradientColors(const Color& low, const Color& mid, const Color& high)
         {
-            m_configuration.m_lowColor  = low;
-            m_configuration.m_midColor  = mid;
+            m_configuration.m_lowColor = low;
+            m_configuration.m_midColor = mid;
             m_configuration.m_highColor = high;
             UpdateColors();
         }
@@ -250,6 +250,7 @@ namespace AZ
         void GradientGIComponentController::SetExposure(float exposure)
         {
             m_configuration.m_exposure = exposure;
+
             if (IsActiveOwner())
             {
                 m_featureProcessor->SetExposure(exposure);
@@ -267,6 +268,7 @@ namespace AZ
             // into the supported range before storing into the unsigned config field.
             m_configuration.m_faceResolution = GradientGI::RoundAndClampFaceResolution(resolution);
             SnapResolutionForCurrentMode();
+
             if (IsActiveOwner())
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
@@ -280,11 +282,9 @@ namespace AZ
             // value so the slider and the scripting getter agree with what is actually rendered, with
             // no hidden clip. GPU/Dynamic composites any size on the GPU and is left untouched.
             if (m_configuration.m_updateMode == GradientGIUpdateMode::Static ||
-                (IsActiveOwner() &&
-                    m_featureProcessor->GetUpdateMode() == GradientGIFeatureProcessorInterface::UpdateMode::Static))
+                (IsActiveOwner() && m_featureProcessor->GetUpdateMode() == GradientGIFeatureProcessorInterface::UpdateMode::Static))
             {
-                m_configuration.m_faceResolution =
-                    GradientGI::SnapCpuFaceResolutionToPow2(m_configuration.m_faceResolution);
+                m_configuration.m_faceResolution = GradientGI::SnapCpuFaceResolutionToPow2(m_configuration.m_faceResolution);
             }
         }
 
@@ -296,12 +296,14 @@ namespace AZ
         void GradientGIComponentController::SetUpdateMode(GradientGIUpdateMode mode)
         {
             m_configuration.m_updateMode = mode;
+
             if (IsActiveOwner())
             {
-                m_featureProcessor->SetUpdateMode(
-                    static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(mode));
+                m_featureProcessor->SetUpdateMode(static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(mode));
             }
+
             SnapResolutionForCurrentMode();
+
             if (IsActiveOwner())
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
@@ -320,10 +322,12 @@ namespace AZ
         void GradientGIComponentController::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
             m_detailTextureNeedsUpdate = false;
+
             if (m_configuration.m_detailTexture.GetId() != m_configuration.m_specularTexture.GetId())
             {
                 Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_detailTexture.GetId());
             }
+
             m_configuration.m_detailTexture = texture;
             LoadDetailTexture();
         }
@@ -346,8 +350,9 @@ namespace AZ
 
         void GradientGIComponentController::SetDetailTextureAssetPath(const AZStd::string& path)
         {
-            SetDetailTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                GradientGI::NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
+            SetDetailTexture(
+                GetAssetFromPath<RPI::StreamingImageAsset>(
+                    GradientGI::NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetDetailTextureAssetPath() const
@@ -398,10 +403,12 @@ namespace AZ
         void GradientGIComponentController::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
             m_specularTextureNeedsUpdate = false;
+
             if (m_configuration.m_specularTexture.GetId() != m_configuration.m_detailTexture.GetId())
             {
                 Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_specularTexture.GetId());
             }
+
             m_configuration.m_specularTexture = texture;
             LoadSpecularTexture();
         }
@@ -424,8 +431,9 @@ namespace AZ
 
         void GradientGIComponentController::SetSpecularTextureAssetPath(const AZStd::string& path)
         {
-            SetSpecularTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                GradientGI::NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
+            SetSpecularTexture(
+                GetAssetFromPath<RPI::StreamingImageAsset>(
+                    GradientGI::NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetSpecularTextureAssetPath() const
@@ -505,10 +513,13 @@ namespace AZ
                 static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
             UpdateColors();
             m_featureProcessor->SetExposure(m_configuration.m_exposure);
+
             SnapResolutionForCurrentMode();
             m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
+
             PushDetailParams();
             PushSpecularParams();
+
             LoadDetailTexture();
             LoadSpecularTexture();
 
@@ -525,12 +536,14 @@ namespace AZ
         void GradientGIComponentController::LoadDetailTexture()
         {
             m_detailTextureNeedsUpdate = false;
+
             auto& asset = m_configuration.m_detailTexture;
             if (asset.GetId().IsValid())
             {
                 // If already loaded, BusConnect triggers OnAssetReady immediately.
                 Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
                 asset.QueueLoad();
+
                 if (asset.IsReady())
                 {
                     OnAssetReady(asset);
@@ -546,11 +559,13 @@ namespace AZ
         void GradientGIComponentController::LoadSpecularTexture()
         {
             m_specularTextureNeedsUpdate = false;
+
             auto& asset = m_configuration.m_specularTexture;
             if (asset.GetId().IsValid())
             {
                 Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
                 asset.QueueLoad();
+
                 if (asset.IsReady())
                 {
                     OnAssetReady(asset);
@@ -627,7 +642,7 @@ namespace AZ
 
         void GradientGIComponentController::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            const bool isDetail   = (asset.GetId() == m_configuration.m_detailTexture.GetId());
+            const bool isDetail = (asset.GetId() == m_configuration.m_detailTexture.GetId());
             const bool isSpecular = (asset.GetId() == m_configuration.m_specularTexture.GetId());
             if (!isDetail && !isSpecular)
             {
@@ -639,6 +654,7 @@ namespace AZ
                 m_configuration.m_detailTexture = asset;
                 m_detailTextureNeedsUpdate = true;
             }
+
             if (isSpecular)
             {
                 m_configuration.m_specularTexture = asset;
@@ -652,11 +668,13 @@ namespace AZ
         void GradientGIComponentController::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         {
             AZ::TickBus::Handler::BusDisconnect();
+
             if (m_detailTextureNeedsUpdate)
             {
                 m_detailTextureNeedsUpdate = false;
                 PushDetailToFeatureProcessor();
             }
+
             if (m_specularTextureNeedsUpdate)
             {
                 m_specularTextureNeedsUpdate = false;

@@ -46,9 +46,9 @@ namespace UnitTest
         EXPECT_EQ(ClampFaceResolution(64), 64u);
         EXPECT_EQ(ClampFaceResolution(MinFaceResolution), MinFaceResolution);
         EXPECT_EQ(ClampFaceResolution(MaxFaceResolution), MaxFaceResolution);
-        EXPECT_EQ(ClampFaceResolution(0), MinFaceResolution);     // below floor
-        EXPECT_EQ(ClampFaceResolution(2), MinFaceResolution);     // below floor
-        EXPECT_EQ(ClampFaceResolution(1000), MaxFaceResolution);  // above ceiling
+        EXPECT_EQ(ClampFaceResolution(0), MinFaceResolution); // below floor
+        EXPECT_EQ(ClampFaceResolution(2), MinFaceResolution); // below floor
+        EXPECT_EQ(ClampFaceResolution(1000), MaxFaceResolution); // above ceiling
     }
 
     TEST_F(GradientGILogicFixture, SnapCpuFaceResolutionToPow2_AvoidsTheBlackBand)
@@ -60,7 +60,7 @@ namespace UnitTest
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(256), 256u);
 
         // The observed dead band (91..127 at 16-bit RGBA) snaps out to a safe power of two.
-        EXPECT_EQ(SnapCpuFaceResolutionToPow2(91), 64u);   // nearer 64
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(91), 64u); // nearer 64
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(127), 128u); // nearer 128
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(100), 128u);
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(200), 256u);
@@ -245,7 +245,7 @@ namespace UnitTest
             committed = debounce.AdvanceFrame();
         }
         ASSERT_TRUE(committed.has_value());
-        EXPECT_EQ(*committed, 256u);          // only the final size is ever applied
+        EXPECT_EQ(*committed, 256u); // only the final size is ever applied
         EXPECT_EQ(debounce.Committed(), 256u);
     }
 
@@ -357,7 +357,7 @@ namespace UnitTest
     {
         uint8_t bytes[9]{};
         WriteRgba16FloatPixel(bytes + 1, -1.0f, 0.5f, 2.0f, 1.0f);
-        const uint16_t expected[] = {0xBC00, 0x3800, 0x4000, 0x3C00};
+        const uint16_t expected[] = { 0xBC00, 0x3800, 0x4000, 0x3C00 };
         EXPECT_EQ(std::memcmp(bytes + 1, expected, sizeof(expected)), 0);
         EXPECT_EQ(bytes[0], 0);
     }

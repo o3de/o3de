@@ -21,12 +21,14 @@ namespace AZ::Render
 {
     class GradientGICubemapPass;
 
-    class GradientGIFeatureProcessor final
-        : public GradientGIFeatureProcessorInterface
+    class GradientGIFeatureProcessor final : public GradientGIFeatureProcessorInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(GradientGIFeatureProcessor, AZ::SystemAllocator)
-        AZ_RTTI(AZ::Render::GradientGIFeatureProcessor, "{F2E7A3B1-D5C8-4F9A-B0E6-7C1D3A8F5E02}", AZ::Render::GradientGIFeatureProcessorInterface);
+        AZ_RTTI(
+            AZ::Render::GradientGIFeatureProcessor,
+            "{F2E7A3B1-D5C8-4F9A-B0E6-7C1D3A8F5E02}",
+            AZ::Render::GradientGIFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,8 +49,7 @@ namespace AZ::Render
         //! entering/exiting maximized play mode. Without this our injected compute pass (Dynamic) is
         //! left orphaned and the scene IBL slots stale, so the gradient lighting stops applying.
         void OnRenderPipelineChanged(
-            RPI::RenderPipeline* renderPipeline,
-            RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+            RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         //! Per-frame, main-thread health check for the injected compute pass.
         //!
@@ -167,11 +168,11 @@ namespace AZ::Render
         ImageBasedLightFeatureProcessorInterface* m_iblFeatureProcessor = nullptr;
 
         // Gradient parameters
-        Color    m_lowColor       = Color(0.05f, 0.06f, 0.08f, 1.0f);
-        Color    m_midColor       = Color(0.20f, 0.30f, 0.55f, 1.0f);
-        Color    m_highColor      = Color(0.85f, 0.95f, 1.0f,  1.0f);
-        float    m_exposure       = 0.0f;
-        uint32_t m_faceResolution = 64;   // size builds actually use; held steady during a scrub
+        Color m_lowColor = Color(0.05f, 0.06f, 0.08f, 1.0f);
+        Color m_midColor = Color(0.20f, 0.30f, 0.55f, 1.0f);
+        Color m_highColor = Color(0.85f, 0.95f, 1.0f, 1.0f);
+        float m_exposure = 0.0f;
+        uint32_t m_faceResolution = 64; // size builds actually use; held steady during a scrub
 
         // --- Resolution scrub debounce ---------------------------------------------------
         // A CPU/Static resolution change rebuilds a different-sized tiled StreamingImage from the
@@ -181,20 +182,20 @@ namespace AZ::Render
         // throttle holds m_faceResolution steady during a scrub and yields the final size only once
         // the slider settles. See GradientGI::ResolutionDebounce and SetFaceResolution.
         GradientGI::ResolutionDebounce m_resolutionDebounce;
-        bool                                m_faceResolutionApplied = false; // first push applies immediately
+        bool m_faceResolutionApplied = false; // first push applies immediately
 
         // Detail texture layer (GPU/Dynamic mode). Resolved instance is resident; mapping/blend
         // codes match the component enums. Bound to the pass once, recombined cheaply on color edits.
         Data::Instance<RPI::Image> m_detailTexture;
-        uint8_t                    m_detailMapping  = 1;   // Stretched
-        uint8_t                    m_detailBlend    = 3;   // Overlay
-        float                      m_detailStrength = 1.0f;
+        uint8_t m_detailMapping = 1; // Stretched
+        uint8_t m_detailBlend = 3; // Overlay
+        float m_detailStrength = 1.0f;
 
         // Specular texture layer (GPU/Dynamic mode). Composites into the specular output only.
         Data::Instance<RPI::Image> m_specularTexture;
-        uint8_t                    m_specularMapping  = 1; // Stretched
-        uint8_t                    m_specularBlend    = 3; // Overlay
-        float                      m_specularStrength = 1.0f;
+        uint8_t m_specularMapping = 1; // Stretched
+        uint8_t m_specularBlend = 3; // Overlay
+        float m_specularStrength = 1.0f;
 
         UpdateMode m_updateMode = UpdateMode::Static;
 
@@ -205,8 +206,8 @@ namespace AZ::Render
         // OnRenderPipelineChanged -- checks it, so a pipeline rebuild can never resurrect the
         // gradient while no component is alive to own it.
         GradientGI::OwnerRegistry m_owners;
-        OwnerChangedEvent         m_ownerChangedEvent;
-        bool                      m_enabled = false;
+        OwnerChangedEvent m_ownerChangedEvent;
+        bool m_enabled = false;
 
         // Duplicate reporting. Several components driving the scene at once is legal but almost
         // always a mistake -- a duplicated entity or prefab that the author has not noticed, since
@@ -218,16 +219,16 @@ namespace AZ::Render
         // the signal. Reported once per distinct count, so going from two to three warns again but
         // a steady two does not repeat.
         static constexpr uint32_t MultiOwnerReportFrames = 30;
-        uint32_t                  m_multiOwnerFrames     = 0;
-        size_t                    m_reportedOwnerCount   = 0;
+        uint32_t m_multiOwnerFrames = 0;
+        size_t m_reportedOwnerCount = 0;
 
         // =====================================================================
         // State -- Static Mode
         // =====================================================================
 
-        Data::Instance<RPI::StreamingImage>     m_cubemapImage;
-        Data::Asset<RPI::StreamingImageAsset>   m_imageAsset;
-        bool                                    m_needsRebuild = false;
+        Data::Instance<RPI::StreamingImage> m_cubemapImage;
+        Data::Asset<RPI::StreamingImageAsset> m_imageAsset;
+        bool m_needsRebuild = false;
 
         // Rebuild throttle: StreamingImage is immutable, so every parameter change allocates a
         // new one. A single rebuild per frame is safe (matches a tick-driven runtime script).
@@ -235,7 +236,7 @@ namespace AZ::Render
         // flag (cleared each frame in Render()) caps us to one rebuild per frame. The latest
         // parameters are always buffered in the member colors, so a coalesced rebuild uses the
         // final values.
-        bool                                    m_rebuiltThisFrame = false;
+        bool m_rebuiltThisFrame = false;
 
         // =====================================================================
         // State -- Dynamic Mode
@@ -244,7 +245,7 @@ namespace AZ::Render
         // The GPU compute pass (owned via intrusive_ptr by the render pipeline;
         // m_gradientPass keeps an additional reference so we can call into it).
         using PassPtr = AZStd::intrusive_ptr<GradientGICubemapPass>;
-        PassPtr                m_gradientPass;
+        PassPtr m_gradientPass;
 
         // Which pipeline currently hosts the pass. Maximized play mode does not merely rebuild
         // passes -- it removes the editor's pipeline and adds a new one. The orphaned pass keeps a
@@ -275,18 +276,17 @@ namespace AZ::Render
         // A disable therefore starts a short grace period -- a re-enable inside it cancels the
         // teardown and costs nothing, and outliving it releases everything.
         static constexpr uint8_t TeardownGraceFrames = 5;
-        uint8_t                  m_teardownCountdown = 0;
+        uint8_t m_teardownCountdown = 0;
 
         // Direct scene SRG access (borrowed; scene owns the SRG lifetime).
         Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
-        RHI::ShaderInputImageIndex               m_specularEnvMapIndex;
-        RHI::ShaderInputImageIndex               m_diffuseEnvMapIndex;
-        RHI::ShaderInputConstantIndex            m_iblExposureIndex;
-        bool                                     m_sceneSrgIndicesCached = false;
+        RHI::ShaderInputImageIndex m_specularEnvMapIndex;
+        RHI::ShaderInputImageIndex m_diffuseEnvMapIndex;
+        RHI::ShaderInputConstantIndex m_iblExposureIndex;
+        bool m_sceneSrgIndicesCached = false;
 
         //! Cache scene SRG indices (extracted for reuse during runtime mode switches).
         void CacheSceneSrgIndices();
-
     };
 
 } // namespace AZ::Render

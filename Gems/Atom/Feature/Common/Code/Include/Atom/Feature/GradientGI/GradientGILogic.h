@@ -50,10 +50,12 @@ namespace AZ::Render::GradientGI
         {
             return MinFaceResolution;
         }
+
         if (value >= static_cast<float>(MaxFaceResolution))
         {
             return MaxFaceResolution;
         }
+
         return static_cast<uint32_t>(AZStd::lround(value));
     }
 
@@ -73,12 +75,14 @@ namespace AZ::Render::GradientGI
         {
             lower <<= 1;
         }
+
         const uint32_t upper = lower << 1;
         uint32_t nearest = upper;
         if (clamped - lower <= upper - clamped)
         {
             nearest = lower;
         }
+
         return ClampFaceResolution(nearest);
     }
 
@@ -89,13 +93,16 @@ namespace AZ::Render::GradientGI
     //! GPU/Dynamic mode requires compute UAV cubemap support. When that is unavailable the feature
     //! falls back to CPU/Static; every other request is honoured as-is.
     inline GradientGIFeatureProcessorInterface::UpdateMode ResolveUpdateMode(
-        GradientGIFeatureProcessorInterface::UpdateMode requested, bool gpuComputeSupported)
+        GradientGIFeatureProcessorInterface::UpdateMode requested,
+        bool gpuComputeSupported)
     {
         using UpdateMode = GradientGIFeatureProcessorInterface::UpdateMode;
+
         if (requested == UpdateMode::Dynamic && !gpuComputeSupported)
         {
             return UpdateMode::Static;
         }
+
         return requested;
     }
 
@@ -139,7 +146,10 @@ namespace AZ::Render::GradientGI
         }
 
         //! True when nobody wants the feature running any more.
-        bool Empty() const { return m_owners.empty(); }
+        bool Empty() const
+        {
+            return m_owners.empty();
+        }
 
         //! The entity currently driving the feature; invalid when empty.
         AZ::EntityId Current() const
@@ -148,15 +158,25 @@ namespace AZ::Render::GradientGI
             {
                 return AZ::EntityId();
             }
+
             return m_owners.back();
         }
 
-        size_t Count() const { return m_owners.size(); }
+        size_t Count() const
+        {
+            return m_owners.size();
+        }
 
         //! Every registered owner, oldest first. Used to name them when reporting duplicates.
-        const AZStd::vector<AZ::EntityId>& Entities() const { return m_owners; }
+        const AZStd::vector<AZ::EntityId>& Entities() const
+        {
+            return m_owners;
+        }
 
-        void Clear() { m_owners.clear(); }
+        void Clear()
+        {
+            m_owners.clear();
+        }
 
     private:
         AZStd::vector<AZ::EntityId> m_owners; // most recently enabled last
@@ -227,6 +247,7 @@ namespace AZ::Render::GradientGI
                 m_pending = value;
                 m_settleFrames = 0;
             }
+
             m_changePending = (m_pending != m_committed);
         }
 
@@ -238,14 +259,17 @@ namespace AZ::Render::GradientGI
             {
                 return AZStd::nullopt;
             }
+
             if (m_settleFrames < m_threshold)
             {
                 ++m_settleFrames;
                 return AZStd::nullopt;
             }
+
             m_committed = m_pending;
             m_changePending = false;
             m_settleFrames = 0;
+
             return m_committed;
         }
 
@@ -259,11 +283,31 @@ namespace AZ::Render::GradientGI
             m_settleFrames = 0;
         }
 
-        uint32_t Committed() const { return m_committed; }
-        uint32_t Pending() const { return m_pending; }
-        bool HasPendingCommit() const { return m_changePending; }
-        uint8_t SettleFrames() const { return m_settleFrames; }
-        uint8_t Threshold() const { return m_threshold; }
+        uint32_t Committed() const
+        {
+
+            return m_committed;
+        }
+
+        uint32_t Pending() const
+        {
+            return m_pending;
+        }
+
+        bool HasPendingCommit() const
+        {
+            return m_changePending;
+        }
+
+        uint8_t SettleFrames() const
+        {
+            return m_settleFrames;
+        }
+
+        uint8_t Threshold() const
+        {
+            return m_threshold;
+        }
 
     private:
         uint32_t m_committed = 0;

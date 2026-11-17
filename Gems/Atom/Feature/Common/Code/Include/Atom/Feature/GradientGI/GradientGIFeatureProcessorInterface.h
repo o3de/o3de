@@ -25,8 +25,7 @@ namespace AZ::Render
     //! Two update modes are supported:
     //!   Static  -- CPU-generated StreamingImage (mobile-safe, one rebuild per change)
     //!   Dynamic -- GPU compute AttachmentImage  (desktop-only, updates on change)
-    class GradientGIFeatureProcessorInterface
-        : public RPI::FeatureProcessor
+    class GradientGIFeatureProcessorInterface : public RPI::FeatureProcessor
     {
     public:
         AZ_RTTI(AZ::Render::GradientGIFeatureProcessorInterface, "{8A3D1F9E-C4B2-4E6D-A7F0-3B5C8D2E1A09}", AZ::RPI::FeatureProcessor);
