@@ -27,13 +27,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<GradientGIComponentController>()->Version(0)->Field(
-                    "Configuration", &GradientGIComponentController::m_configuration);
+                    "Configuration",
+                    &GradientGIComponentController::m_configuration);
             }
 
             if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext
-                    ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Static)>("GradientGIUpdateMode_Static")
+                behaviorContext->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Static)>("GradientGIUpdateMode_Static")
                     ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Dynamic)>("GradientGIUpdateMode_Dynamic")
                     ->Enum<static_cast<uint32_t>(GradientGITextureMapping::Tiled)>("GradientGITextureMapping_Tiled")
                     ->Enum<static_cast<uint32_t>(GradientGITextureMapping::Stretched)>("GradientGITextureMapping_Stretched")
@@ -42,8 +42,7 @@ namespace AZ
                     ->Enum<static_cast<uint32_t>(GradientGIBlendMode::Add)>("GradientGIBlendMode_Add")
                     ->Enum<static_cast<uint32_t>(GradientGIBlendMode::Screen)>("GradientGIBlendMode_Screen")
                     ->Enum<static_cast<uint32_t>(GradientGIBlendMode::Overlay)>("GradientGIBlendMode_Overlay")
-                    ->Enum<static_cast<uint32_t>(GradientGIBlendMode::Replace)>("GradientGIBlendMode_Replace")
-                    ;
+                    ->Enum<static_cast<uint32_t>(GradientGIBlendMode::Replace)>("GradientGIBlendMode_Replace");
 
                 behaviorContext->EBus<GradientGIComponentRequestBus>("GradientGIComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
@@ -299,8 +298,7 @@ namespace AZ
 
         void GradientGIComponentController::SetDetailTextureAssetId(const Data::AssetId& id)
         {
-            SetDetailTexture(GetAssetFromId<RPI::StreamingImageAsset>(
-                id, m_configuration.m_detailTexture.GetAutoLoadBehavior()));
+            SetDetailTexture(GetAssetFromId<RPI::StreamingImageAsset>(id, m_configuration.m_detailTexture.GetAutoLoadBehavior()));
         }
 
         Data::AssetId GradientGIComponentController::GetDetailTextureAssetId() const
@@ -312,14 +310,17 @@ namespace AZ
         {
             SetDetailTexture(
                 GetAssetFromPath<RPI::StreamingImageAsset>(
-                    GradientGI::NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
+                    GradientGI::NormalizeAssetPath(path),
+                    m_configuration.m_detailTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetDetailTextureAssetPath() const
         {
             AZStd::string path;
             Data::AssetCatalogRequestBus::BroadcastResult(
-                path, &Data::AssetCatalogRequests::GetAssetPathById, m_configuration.m_detailTexture.GetId());
+                path,
+                &Data::AssetCatalogRequests::GetAssetPathById,
+                m_configuration.m_detailTexture.GetId());
             return path;
         }
 
@@ -376,8 +377,7 @@ namespace AZ
 
         void GradientGIComponentController::SetSpecularTextureAssetId(const Data::AssetId& id)
         {
-            SetSpecularTexture(GetAssetFromId<RPI::StreamingImageAsset>(
-                id, m_configuration.m_specularTexture.GetAutoLoadBehavior()));
+            SetSpecularTexture(GetAssetFromId<RPI::StreamingImageAsset>(id, m_configuration.m_specularTexture.GetAutoLoadBehavior()));
         }
 
         Data::AssetId GradientGIComponentController::GetSpecularTextureAssetId() const
@@ -389,14 +389,17 @@ namespace AZ
         {
             SetSpecularTexture(
                 GetAssetFromPath<RPI::StreamingImageAsset>(
-                    GradientGI::NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
+                    GradientGI::NormalizeAssetPath(path),
+                    m_configuration.m_specularTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetSpecularTextureAssetPath() const
         {
             AZStd::string path;
             Data::AssetCatalogRequestBus::BroadcastResult(
-                path, &Data::AssetCatalogRequests::GetAssetPathById, m_configuration.m_specularTexture.GetId());
+                path,
+                &Data::AssetCatalogRequests::GetAssetPathById,
+                m_configuration.m_specularTexture.GetId());
             return path;
         }
 
@@ -437,18 +440,13 @@ namespace AZ
         {
             if (IsActiveOwner())
             {
-                m_featureProcessor->SetGradientColors(
-                    m_configuration.m_lowColor,
-                    m_configuration.m_midColor,
-                    m_configuration.m_highColor);
+                m_featureProcessor->SetGradientColors(m_configuration.m_lowColor, m_configuration.m_midColor, m_configuration.m_highColor);
             }
         }
 
         bool GradientGIComponentController::IsActiveOwner() const
         {
-            return m_featureProcessor &&
-                m_entityId.IsValid() &&
-                m_featureProcessor->GetCurrentOwner() == m_entityId;
+            return m_featureProcessor && m_entityId.IsValid() && m_featureProcessor->GetCurrentOwner() == m_entityId;
         }
 
         void GradientGIComponentController::OnOwnerChanged(EntityId owner)
@@ -461,8 +459,7 @@ namespace AZ
 
         void GradientGIComponentController::ApplyConfiguration()
         {
-            m_featureProcessor->SetUpdateMode(
-                static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
+            m_featureProcessor->SetUpdateMode(static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
             UpdateColors();
             m_featureProcessor->SetExposure(m_configuration.m_exposure);
 

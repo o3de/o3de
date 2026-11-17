@@ -210,7 +210,8 @@ namespace AZ
             {
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyBoxFeatureProcessor, SkyBoxFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ImageBasedLightFeatureProcessor, ImageBasedLightFeatureProcessorInterface>();
-                AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<GradientGIFeatureProcessor, GradientGIFeatureProcessorInterface>();
+                AZ::RPI::FeatureProcessorFactory::Get()
+                    ->RegisterFeatureProcessorWithInterface<GradientGIFeatureProcessor, GradientGIFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DecalTextureArrayFeatureProcessor, DecalFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PostProcessFeatureProcessor, PostProcessFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<AcesDisplayMapperFeatureProcessor, DisplayMapperFeatureProcessorInterface>();

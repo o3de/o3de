@@ -38,20 +38,9 @@ namespace AZ::Render::GradientGI
         return static_cast<uint16_t>(sign | halfExponent | halfMantissa);
     }
 
-    inline void WriteRgba16FloatPixel(
-        uint8_t* destination,
-        float red,
-        float green,
-        float blue,
-        float alpha)
+    inline void WriteRgba16FloatPixel(uint8_t* destination, float red, float green, float blue, float alpha)
     {
-        const uint16_t pixel[] =
-        {
-            FloatToHalf(red),
-            FloatToHalf(green),
-            FloatToHalf(blue),
-            FloatToHalf(alpha)
-        };
+        const uint16_t pixel[] = { FloatToHalf(red), FloatToHalf(green), FloatToHalf(blue), FloatToHalf(alpha) };
         std::memcpy(destination, pixel, sizeof(pixel));
     }
 

@@ -24,9 +24,7 @@ namespace AZ
 
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<GradientGIComponent, BaseClass>()
-                    ->Version(0)
-                    ;
+                serializeContext->Class<GradientGIComponent, BaseClass>()->Version(0);
             }
 
             if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))

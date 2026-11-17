@@ -21,8 +21,7 @@ namespace AZ
     {
         //! Per-entity configuration. Only the most recently activated component drives scene output.
         //! Texture binding changes are deferred to tick.
-        class GradientGIComponentRequests
-            : public ComponentBus
+        class GradientGIComponentRequests : public ComponentBus
         {
         public:
             virtual void SetLowColor(const Color& color) = 0;

@@ -19,15 +19,14 @@ namespace AZ
 
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorGradientGIComponent, BaseClass>()
-                    ->Version(1, ConvertToEditorRenderComponentAdapter<1>)
-                    ;
+                serializeContext->Class<EditorGradientGIComponent, BaseClass>()->Version(1, ConvertToEditorRenderComponentAdapter<1>);
 
                 if (auto* editContext = serializeContext->GetEditContext())
                 {
                     editContext
                         ->Class<EditorGradientGIComponent>(
-                            "Gradient GI (IBL)", "Procedural gradient cubemap for ambient image-based lighting (IBL)")
+                            "Gradient GI (IBL)",
+                            "Procedural gradient cubemap for ambient image-based lighting (IBL)")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -35,16 +34,13 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                    editContext->Class<GradientGIComponentController>(
-                        "GradientGIComponentController", "")
+                    editContext->Class<GradientGIComponentController>("GradientGIComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &GradientGIComponentController::m_configuration, "Configuration", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ;
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
-                    editContext->Class<GradientGIComponentConfig>(
-                        "GradientGIComponentConfig", "")
+                    editContext->Class<GradientGIComponentConfig>("GradientGIComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 

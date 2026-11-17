@@ -41,8 +41,8 @@ namespace AZ::Render
         void Render(const FeatureProcessor::RenderPacket& packet) override;
         void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
 
-        void OnRenderPipelineChanged(
-            RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+        void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+            override;
 
         //! Publish CPU IBL state and repair GPU pass hosting after simulation jobs complete.
         void OnBeginPrepareRender() override;
@@ -66,10 +66,7 @@ namespace AZ::Render
 
         GradientGIFeatureProcessor(const GradientGIFeatureProcessor&) = delete;
 
-        void GenerateFacePixels(
-            uint32_t face,
-            uint32_t faceSize,
-            AZStd::vector<uint8_t>& outPixels) const;
+        void GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const;
 
         Data::Instance<RPI::StreamingImage> BuildGradientCubemap();
 

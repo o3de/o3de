@@ -20,8 +20,7 @@ namespace UnitTest
     using namespace AZ;
     using namespace AZ::Render;
 
-    class GradientGIFeatureProcessorStub final
-        : public GradientGIFeatureProcessorInterface
+    class GradientGIFeatureProcessorStub final : public GradientGIFeatureProcessorInterface
     {
     public:
         void SetGradientColors(const Color& low, const Color&, const Color&) override
@@ -109,8 +108,7 @@ namespace UnitTest
         uint32_t m_specularWrites = 0;
     };
 
-    class GradientGIComponentControllerFixture
-        : public ::testing::Test
+    class GradientGIComponentControllerFixture : public ::testing::Test
     {
     protected:
         void Attach(GradientGIComponentController& controller, EntityId id)
@@ -157,11 +155,7 @@ namespace UnitTest
 
             RPI::StreamingImageAssetCreator creator;
             creator.Begin(Data::AssetId(Uuid::CreateRandom()));
-            creator.SetImageDescriptor(RHI::ImageDescriptor::Create2D(
-                RHI::ImageBindFlags::ShaderRead,
-                1,
-                1,
-                RHI::Format::R8G8B8A8_UNORM));
+            creator.SetImageDescriptor(RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderRead, 1, 1, RHI::Format::R8G8B8A8_UNORM));
             creator.AddMipChainAsset(*mip);
 
             Data::Asset<RPI::StreamingImageAsset> image;

@@ -16,14 +16,14 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2DArray<float4> m_outputDiffuse;
     RWTexture2DArray<float4> m_outputSpecular;
 
-    float3 m_lowColor;      // nadir  (-Y)
-    float3 m_midColor;      // horizon (equator)
-    float3 m_highColor;     // zenith (+Y)
+    float3 m_lowColor; // nadir (-Y)
+    float3 m_midColor; // horizon (equator)
+    float3 m_highColor; // zenith (+Y)
 
     uint m_faceSize;
 
-    Texture2D<float4>   m_detailTex2D;
-    TextureCube<float4> m_detailTexCube;   // used when m_detailMapping == Cube (2)
+    Texture2D<float4> m_detailTex2D;
+    TextureCube<float4> m_detailTexCube; // used when m_detailMapping == Cube (2)
     Sampler m_detailSampler
     {
         AddressU = Wrap;
@@ -33,17 +33,17 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         MipFilter = Linear;
     };
     // Mapping and blend values match GradientGIComponentConstants.h.
-    uint  m_detailMapping;
-    uint  m_detailBlend;
+    uint m_detailMapping;
+    uint m_detailBlend;
     float m_detailStrength;
-    uint  m_detailEnabled;
+    uint m_detailEnabled;
 
-    Texture2D<float4>   m_specularTex2D;
+    Texture2D<float4> m_specularTex2D;
     TextureCube<float4> m_specularTexCube;
-    uint  m_specularMapping;
-    uint  m_specularBlend;
+    uint m_specularMapping;
+    uint m_specularBlend;
     float m_specularStrength;
-    uint  m_specularEnabled;
+    uint m_specularEnabled;
 }
 
 // Match GradientGIFeatureProcessor::CubeFaceDirection. Texture V increases downward.
@@ -52,13 +52,27 @@ float3 GetCubemapDirection(uint face, float uc, float vc)
     float3 dir;
     switch (face)
     {
-    case 0: dir = float3( 1.0f, -vc, -uc); break;  // +X
-    case 1: dir = float3(-1.0f, -vc,  uc); break;  // -X
-    case 2: dir = float3(  uc,  1.0f,  vc); break;  // +Y zenith
-    case 3: dir = float3(  uc, -1.0f, -vc); break;  // -Y nadir
-    case 4: dir = float3(  uc,  -vc, 1.0f); break;  // +Z
-    case 5: dir = float3( -uc,  -vc,-1.0f); break;  // -Z
-    default: dir = float3(0.0f, 1.0f, 0.0f); break;
+    case 0:
+        dir = float3(1.0f, -vc, -uc);
+        break; // +X
+    case 1:
+        dir = float3(-1.0f, -vc, uc);
+        break; // -X
+    case 2:
+        dir = float3(uc, 1.0f, vc);
+        break; // +Y zenith
+    case 3:
+        dir = float3(uc, -1.0f, -vc);
+        break; // -Y nadir
+    case 4:
+        dir = float3(uc, -vc, 1.0f);
+        break; // +Z
+    case 5:
+        dir = float3(-uc, -vc, -1.0f);
+        break; // -Z
+    default:
+        dir = float3(0.0f, 1.0f, 0.0f);
+        break;
     }
     return normalize(dir);
 }
@@ -84,23 +98,26 @@ float3 BlendLayer(float3 base, float3 layer, uint mode)
 {
     switch (mode)
     {
-    case 1: return base + layer;                           // Add
-    case 2: return 1.0f - (1.0f - base) * (1.0f - layer);  // Screen
-    case 3:                                                // Overlay
+    case 1:
+        return base + layer; // Add
+    case 2:
+        return 1.0f - (1.0f - base) * (1.0f - layer); // Screen
+    case 3: // Overlay
         return float3(
             base.r < 0.5f ? (2.0f * base.r * layer.r) : (1.0f - 2.0f * (1.0f - base.r) * (1.0f - layer.r)),
             base.g < 0.5f ? (2.0f * base.g * layer.g) : (1.0f - 2.0f * (1.0f - base.g) * (1.0f - layer.g)),
             base.b < 0.5f ? (2.0f * base.b * layer.b) : (1.0f - 2.0f * (1.0f - base.b) * (1.0f - layer.b)));
-    case 4: return layer;                                  // Replace
-    default: return base * layer;                          // Multiply (0)
+    case 4:
+        return layer; // Replace
+    default:
+        return base * layer; // Multiply (0)
     }
 }
 
-[numthreads(8, 8, 1)]
-void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
+[numthreads(8, 8, 1)] void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
 {
-    uint x    = dispatch_thread_id.x;
-    uint y    = dispatch_thread_id.y;
+    uint x = dispatch_thread_id.x;
+    uint y = dispatch_thread_id.y;
     uint face = dispatch_thread_id.z;
 
     // Dispatch dimensions are rounded up to whole thread groups.
@@ -160,6 +177,6 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
         specularColor = lerp(color, blended, saturate(PassSrg::m_specularStrength));
     }
 
-    PassSrg::m_outputDiffuse[uint3(x, y, face)]  = float4(color, 1.0f);
+    PassSrg::m_outputDiffuse[uint3(x, y, face)] = float4(color, 1.0f);
     PassSrg::m_outputSpecular[uint3(x, y, face)] = float4(specularColor, 1.0f);
 }

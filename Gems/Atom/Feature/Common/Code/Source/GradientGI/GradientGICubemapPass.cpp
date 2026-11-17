@@ -49,8 +49,7 @@ namespace AZ::Render
             /*width=*/4,
             RHI::Format::R16G16B16A16_FLOAT);
 
-        auto testImage = RPI::AttachmentImage::Create(
-            *attachmentPool, testDesc, AZ::Name("GradientGI_CapProbe"), nullptr, nullptr);
+        auto testImage = RPI::AttachmentImage::Create(*attachmentPool, testDesc, AZ::Name("GradientGI_CapProbe"), nullptr, nullptr);
 
         return testImage != nullptr;
     }
@@ -60,9 +59,7 @@ namespace AZ::Render
     {
     }
 
-    void GradientGICubemapPass::SetGradientColors(
-        const Color& low, const Color& mid, const Color& high,
-        uint32_t faceSize)
+    void GradientGICubemapPass::SetGradientColors(const Color& low, const Color& mid, const Color& high, uint32_t faceSize)
     {
         const bool faceSizeChanged = (faceSize != m_faceSize);
 
@@ -89,8 +86,7 @@ namespace AZ::Render
         return m_specularImage;
     }
 
-    void GradientGICubemapPass::SetDetailLayer(
-        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    void GradientGICubemapPass::SetDetailLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
     {
         m_detailTexture = texture;
         m_detailMapping = mapping;
@@ -141,10 +137,7 @@ namespace AZ::Render
         auto srgLayout = m_shader->FindShaderResourceGroupLayout(AZ::Name("PassSrg"));
         if (srgLayout)
         {
-            m_passSrg = RPI::ShaderResourceGroup::Create(
-                m_shader->GetAsset(),
-                m_shader->GetSupervariantIndex(),
-                srgLayout->GetName());
+            m_passSrg = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), srgLayout->GetName());
 
             AZ_Error("GradientGICubemapPass", m_passSrg, "Failed to create PassSrg for GradientGICubemap.");
         }
@@ -193,7 +186,8 @@ namespace AZ::Render
     }
 
     void GradientGICubemapPass::AdoptOutputImages(
-        const Data::Instance<RPI::AttachmentImage>& diffuse, const Data::Instance<RPI::AttachmentImage>& specular)
+        const Data::Instance<RPI::AttachmentImage>& diffuse,
+        const Data::Instance<RPI::AttachmentImage>& specular)
     {
         m_diffuseImage = diffuse;
         m_specularImage = specular;
@@ -229,15 +223,13 @@ namespace AZ::Render
         }
 
         RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
-            RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite, m_faceSize, RHI::Format::R16G16B16A16_FLOAT);
+            RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite,
+            m_faceSize,
+            RHI::Format::R16G16B16A16_FLOAT);
 
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
 
-        return RPI::AttachmentImage::Create(
-            *attachmentPool, imageDesc,
-            AZ::Name(debugName),
-            nullptr,
-            &cubemapViewDesc);
+        return RPI::AttachmentImage::Create(*attachmentPool, imageDesc, AZ::Name(debugName), nullptr, &cubemapViewDesc);
     }
 
     Data::Instance<RPI::Image> GradientGICubemapPass::GetOrCreateWhiteFallbackCube()
@@ -329,8 +321,7 @@ namespace AZ::Render
         // Do not bind a cubemap to a 2D slot or a 2D texture to the cube slot.
         const bool enabled = GradientGI::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
 
-        const Data::Instance<RPI::Image>& systemWhite2D =
-            RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
+        const Data::Instance<RPI::Image>& systemWhite2D = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
 
         // Keep the unused slot valid even though the shader selects only the active mapping.
         Data::Instance<RPI::Image> tex2D = (enabled && !useCube) ? texture : systemWhite2D;
@@ -377,9 +368,7 @@ namespace AZ::Render
         // Compute addresses the six cube faces through a writable 2D-array view.
         auto declareUav = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
         {
-            frameGraph.GetAttachmentDatabase().ImportImage(
-                image->GetAttachmentId(),
-                image->GetRHIImage());
+            frameGraph.GetAttachmentDatabase().ImportImage(image->GetAttachmentId(), image->GetRHIImage());
 
             RHI::ImageScopeAttachmentDescriptor uavDesc;
             uavDesc.m_attachmentId = image->GetAttachmentId();
@@ -511,8 +500,7 @@ namespace AZ::Render
         const RHI::ShaderResourceGroup* srgRhi = m_passSrg->GetRHIShaderResourceGroup();
         dispatchItem.SetShaderResourceGroups(AZStd::span<const RHI::ShaderResourceGroup*>(&srgRhi, 1));
 
-        context.GetCommandList()->Submit(
-            dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
+        context.GetCommandList()->Submit(dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
 
         // Avoid a second dispatch if the scope is split across command lists.
         m_writeThisFrame = false;

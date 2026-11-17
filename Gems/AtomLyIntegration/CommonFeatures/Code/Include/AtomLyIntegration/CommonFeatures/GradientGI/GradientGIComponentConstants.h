@@ -21,7 +21,7 @@ namespace AZ
         enum class GradientGIUpdateMode : uint8_t
         {
             //! CPU-generated StreamingImage.
-            Static  = 0,
+            Static = 0,
 
             //! GPU-generated AttachmentImage. Falls back to Static if writable cubemap allocation is unavailable.
             Dynamic = 1,
@@ -30,19 +30,19 @@ namespace AZ
         //! Texture mapping codes shared with GradientGICubemap.azsl. Preserve their numeric values.
         enum class GradientGITextureMapping : uint8_t
         {
-            Tiled     = 0,  //! 2D texture repeated per cube face using the face's UV basis.
-            Stretched = 1,  //! 2D texture wrapped over the sphere (equirectangular).
-            Cube      = 2,  //! Cubemap sampled by direction.
+            Tiled = 0, //! 2D texture repeated per cube face using the face's UV basis.
+            Stretched = 1, //! 2D texture wrapped over the sphere (equirectangular).
+            Cube = 2, //! Cubemap sampled by direction.
         };
 
         //! Blend codes shared with GradientGICubemap.azsl. Preserve their numeric values.
         enum class GradientGIBlendMode : uint8_t
         {
             Multiply = 0,
-            Add      = 1,
-            Screen   = 2,
-            Overlay  = 3,
-            Replace  = 4,  //! Use the texture without the base color.
+            Add = 1,
+            Screen = 2,
+            Overlay = 3,
+            Replace = 4, //! Use the texture without the base color.
         };
 
     } // namespace Render

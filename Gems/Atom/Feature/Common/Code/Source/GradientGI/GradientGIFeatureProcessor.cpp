@@ -32,8 +32,7 @@ namespace AZ::Render
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GradientGIFeatureProcessor, RPI::FeatureProcessor>()
-                ->Version(0);
+            serializeContext->Class<GradientGIFeatureProcessor, RPI::FeatureProcessor>()->Version(0);
         }
     }
 
@@ -41,10 +40,13 @@ namespace AZ::Render
     {
         m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
         AZ_Error(
-            "GradientGI", m_iblFeatureProcessor, "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
+            "GradientGI",
+            m_iblFeatureProcessor,
+            "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
 
         const UpdateMode resolvedMode = GradientGI::ResolveUpdateMode(
-            m_updateMode, m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
+            m_updateMode,
+            m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning(
             "GradientGI",
             resolvedMode == m_updateMode,
@@ -201,8 +203,7 @@ namespace AZ::Render
         for (const EntityId& owner : m_owners.Entities())
         {
             AZStd::string name;
-            AZ::ComponentApplicationBus::BroadcastResult(
-                name, &AZ::ComponentApplicationRequests::GetEntityName, owner);
+            AZ::ComponentApplicationBus::BroadcastResult(name, &AZ::ComponentApplicationRequests::GetEntityName, owner);
 
             if (!entityList.empty())
             {
@@ -383,7 +384,8 @@ namespace AZ::Render
     }
 
     void GradientGIFeatureProcessor::OnRenderPipelineChanged(
-        RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        RPI::RenderPipeline* renderPipeline,
+        RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         using ChangeType = RPI::SceneNotification::RenderPipelineChangeType;
 
@@ -396,8 +398,7 @@ namespace AZ::Render
         m_failedHostPipelineId = RPI::RenderPipelineId();
 
         // Drop the pass when its host is removed, even if its parent pointer remains non-null.
-        if (changeType == ChangeType::Removed && renderPipeline &&
-            renderPipeline->GetId() == m_passPipelineId)
+        if (changeType == ChangeType::Removed && renderPipeline && renderPipeline->GetId() == m_passPipelineId)
         {
             m_gradientPass = nullptr;
             m_passPipelineId = RPI::RenderPipelineId();
@@ -415,7 +416,6 @@ namespace AZ::Render
                 EnsurePass(renderPipeline);
             }
         }
-
     }
 
     void GradientGIFeatureProcessor::OnBeginPrepareRender()
@@ -431,9 +431,7 @@ namespace AZ::Render
         // Simulation jobs have finished. IBL consumes these values in its next simulation.
         if (m_updateMode == UpdateMode::Static)
         {
-            if (m_iblFeatureProcessor &&
-                m_cubemapImage &&
-                m_imageAsset.GetId().IsValid())
+            if (m_iblFeatureProcessor && m_cubemapImage && m_imageAsset.GetId().IsValid())
             {
                 if (!OwnsIblSlots())
                 {
@@ -490,8 +488,7 @@ namespace AZ::Render
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
-    void GradientGIFeatureProcessor::SetGradientColors(
-        const Color& low, const Color& mid, const Color& high)
+    void GradientGIFeatureProcessor::SetGradientColors(const Color& low, const Color& mid, const Color& high)
     {
         // Editor reactivation reapplies configuration, so unchanged colors must not trigger an upload.
         if (low == m_lowColor && mid == m_midColor && high == m_highColor)
@@ -579,7 +576,8 @@ namespace AZ::Render
         }
 
         const UpdateMode mode = GradientGI::ResolveUpdateMode(
-            requestedMode, requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
+            requestedMode,
+            requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning("GradientGI", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
 
         if (m_updateMode == mode)
@@ -679,8 +677,7 @@ namespace AZ::Render
 
     bool GradientGIFeatureProcessor::OwnsIblSlots() const
     {
-        return m_iblFeatureProcessor && m_cubemapImage &&
-               m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
+        return m_iblFeatureProcessor && m_cubemapImage && m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
     }
 
     Vector3 GradientGIFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
@@ -778,10 +775,7 @@ namespace AZ::Render
             }
         }
 
-        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
-            RHI::ImageBindFlags::ShaderRead,
-            faceSize,
-            format);
+        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(RHI::ImageBindFlags::ShaderRead, faceSize, format);
 
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         if (!imageSystem)

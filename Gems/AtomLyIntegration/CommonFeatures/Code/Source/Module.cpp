@@ -107,7 +107,9 @@ namespace AZ
             AtomLyIntegrationCommonFeaturesModule()
                 : AZ::Module()
             {
-                m_descriptors.insert(m_descriptors.end(), {
+                m_descriptors.insert(
+                    m_descriptors.end(),
+                    {
                         AtomLyIntegrationCommonFeaturesSystemComponent::CreateDescriptor(),
                         AreaLightComponent::CreateDescriptor(),
                         DecalComponent::CreateDescriptor(),
