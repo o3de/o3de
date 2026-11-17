@@ -734,6 +734,14 @@ namespace AZ::Render
 
         m_updateMode = mode;
 
+        // A mode switch ends a CPU scrub. Carry its latest request into the new backend.
+        if (m_resolutionThrottle.HasPendingCommit())
+        {
+            const uint32_t resolution = m_resolutionThrottle.Pending();
+            m_resolutionThrottle.Commit(resolution);
+            ApplyFaceResolution(resolution);
+        }
+
         // =================================================================
         // Switch TO Static
         // =================================================================
