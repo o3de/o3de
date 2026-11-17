@@ -377,6 +377,11 @@ function(ly_add_target)
                 VERBATIM
             )
 
+            # Link again when runtime dependencies change (e.g. a Gem is added), so the post build step copies them.
+            set_property(TARGET ${ly_add_target_NAME} APPEND PROPERTY
+                LINK_DEPENDS ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
+            )
+
         else()
 
             # the stamp file will be the one that triggers the execution of the custom rule. At the end
@@ -623,6 +628,7 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
         if(NOT TARGET "${dependency}")
             if(O3DE_SCRIPT_ONLY)
                 string(REPLACE "::" "__" clean_target_name "${dependency}")
+                string(TOLOWER "${clean_target_name}" clean_target_name)
                 include("${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${clean_target_name}.cmake" OPTIONAL)
             else()
                 o3de_resolve_3rdparty_target("${dependency}" resolved)

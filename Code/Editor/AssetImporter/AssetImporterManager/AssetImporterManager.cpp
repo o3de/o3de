@@ -130,6 +130,10 @@ void AssetImporterManager::Exec()
             {
                 OnOpenSelectDestinationDialog();
             }
+            else
+            {
+                reject();
+            }
         });
 
     m_fileDialog->open();

@@ -318,6 +318,25 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.open", "Ctrl+O");
     }
 
+    // Import Files
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.file.importFiles";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Import Files...";
+        actionProperties.m_description = "Import files into the current project's asset folder";
+        actionProperties.m_category = "Assets";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [mainWindow = m_mainWindow]
+            {
+                mainWindow->OpenAssetImporter();
+            });
+    }
+
     // Recent Files
     {
         RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
@@ -2005,6 +2024,7 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.new", 100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.newComponent", 110);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.open", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.importFiles", 250);
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::FileMenuIdentifier, EditorIdentifiers::RecentFilesMenuIdentifier, 300);
         {
             for (int index = 0; index < maxRecentFiles; ++index)

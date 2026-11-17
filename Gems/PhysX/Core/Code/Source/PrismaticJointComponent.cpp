@@ -160,6 +160,7 @@ namespace PhysX
             AZ_Warning("PrismaticJointComponent", false, "Cannot set velocity because the underlying PhysX joint is not a D6 joint.");
             return;
         }
+        PHYSX_SCENE_WRITE_LOCK(m_nativeD6Joint->getScene());
         m_nativeD6Joint->setDriveVelocity({ velocity, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
     };
 
@@ -171,6 +172,7 @@ namespace PhysX
             return;
         }
         const physx::PxD6JointDrive drive(0.f , PX_MAX_F32, force, true);
+        PHYSX_SCENE_WRITE_LOCK(m_nativeD6Joint->getScene());
         m_nativeD6Joint->setDrive(physx::PxD6Drive::eX, drive);
     };
 

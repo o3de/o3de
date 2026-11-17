@@ -1,0 +1,12 @@
+{
+    "PackageName": "freetype",
+    "Version": "2.14.3",
+    "URL": "https://github.com/freetype/freetype",
+    "License": "FTL",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-3.tar.gz",
+        "Revision": "VER-2-14-3",
+        "SHA256": "dc49de6b01a266eef4876a4dd34d9842c475d3e28ff2eff63bd2fb760ab56261"
+    }
+}

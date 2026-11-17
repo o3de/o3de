@@ -21,6 +21,9 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::AddAdapter(DocumentAdapterPtr sourceAdapter)
     {
+        // the source may have a reset queued that has not run yet; run it now so its contents are current before they are read below
+        sourceAdapter->ExecuteQueuedReset();
+
         // capture the actual adapter, not just the index, as adding or removing adapters could change the index
         auto& newAdapterInfo = m_adapters.emplace_back(AZStd::make_unique<AdapterInfo>());
         newAdapterInfo->adapter = sourceAdapter;

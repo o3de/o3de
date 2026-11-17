@@ -1,0 +1,101 @@
+--- a/code/AssetLib/3MF/D3MFExporter.cpp
++++ b/code/AssetLib/3MF/D3MFExporter.cpp
+@@ -56,7 +56,7 @@
+ #ifdef ASSIMP_USE_HUNTER
+ #include <zip/zip.h>
+ #else
+-#include <contrib/zip/src/zip.h>
++#include <zip/zip.h>
+ #endif
+ 
+ namespace Assimp {
+--- a/code/AssetLib/Blender/BlenderTessellator.h
++++ b/code/AssetLib/Blender/BlenderTessellator.h
+@@ -143,7 +143,7 @@
+ 
+ #if ASSIMP_BLEND_WITH_POLY_2_TRI
+ 
+-#include "contrib/poly2tri/poly2tri/poly2tri.h"
++#include <poly2tri.h>
+ 
+ namespace Assimp
+ {
+--- a/code/AssetLib/IFC/IFCGeometry.cpp
++++ b/code/AssetLib/IFC/IFCGeometry.cpp
+@@ -45,8 +45,8 @@
+ #include "IFCUtil.h"
+ #include "Common/PolyTools.h"
+ #include "PostProcessing/ProcessHelper.h"
+-#include "contrib/poly2tri/poly2tri/poly2tri.h"
++#include <poly2tri.h>
+ #include "contrib/clipper/clipper.hpp"
+ 
+ #include <iterator>
+ #include <memory>
+--- a/code/AssetLib/IFC/IFCLoader.cpp
++++ b/code/AssetLib/IFC/IFCLoader.cpp
+@@ -53,7 +53,7 @@
+ #ifdef ASSIMP_USE_HUNTER
+ #include <minizip/unzip.h>
+ #else
+-#include <unzip.h>
++#include <minizip/unzip.h>
+ #endif
+ #endif
+ 
+--- a/code/AssetLib/IFC/IFCOpenings.cpp
++++ b/code/AssetLib/IFC/IFCOpenings.cpp
+@@ -47,8 +47,8 @@
+ #include "IFCUtil.h"
+ #include "Common/PolyTools.h"
+ #include "PostProcessing/ProcessHelper.h"
+-#include "contrib/poly2tri/poly2tri/poly2tri.h"
++#include <poly2tri.h>
+ #include "contrib/clipper/clipper.hpp"
+ 
+ #include <deque>
+ #include <forward_list>
+--- a/code/AssetLib/glTF/glTFAsset.inl
++++ b/code/AssetLib/glTF/glTFAsset.inl
+@@ -50,7 +50,7 @@
+ #ifdef ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC
+ // Header files, Open3DGC.
+-#include <Open3DGC/o3dgcSC3DMCDecoder.h>
++#include <contrib/Open3DGC/o3dgcSC3DMCDecoder.h>
+ #endif
+ 
+ using namespace Assimp;
+ 
+--- a/code/AssetLib/glTF/glTFExporter.cpp
++++ b/code/AssetLib/glTF/glTFExporter.cpp
+@@ -70,7 +70,7 @@
+ #ifdef ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC
+ 	// Header files, Open3DGC.
+-#	include <Open3DGC/o3dgcSC3DMCEncoder.h>
++#	include <contrib/Open3DGC/o3dgcSC3DMCEncoder.h>
+ #endif
+ 
+ using namespace rapidjson;
+ 
+--- a/code/Common/ZipArchiveIOSystem.cpp
++++ b/code/Common/ZipArchiveIOSystem.cpp
+@@ -54,7 +54,7 @@
+ #ifdef ASSIMP_USE_HUNTER
+ #    include <minizip/unzip.h>
+ #else
+-#    include <unzip.h>
++#    include <minizip/unzip.h>
+ #endif
+ 
+ namespace Assimp {
+--- a/code/PostProcessing/TriangulateProcess.cpp
++++ b/code/PostProcessing/TriangulateProcess.cpp
+@@ -62,7 +62,7 @@
+ #include "PostProcessing/TriangulateProcess.h"
+ #include "PostProcessing/ProcessHelper.h"
+ #include "Common/PolyTools.h"
+-#include "contrib/earcut-hpp/earcut.hpp"
++#include <mapbox/earcut.hpp>
+ 
+ #include <memory>
+ #include <cstdint>

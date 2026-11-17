@@ -19,7 +19,7 @@
 
 #include "native/utilities/JobDiagnosticTracker.h"
 
-#include <qstorageinfo.h>
+#include <QStorageInfo>
 #include <native/utilities/ProductOutputUtil.h>
 
 namespace

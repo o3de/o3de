@@ -55,7 +55,6 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         zlib1g-dev
         mesa-common-dev
         libunwind-dev
-        libzstd-dev
         pkg-config
         # Project Manager helper tools (editor bundled-Python GUI)
         libtk8.6                                # Bundled Python tkinter: Tk 8.6 runtime (Export Settings, Android Project Generator)

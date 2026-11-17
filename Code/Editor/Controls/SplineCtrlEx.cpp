@@ -519,7 +519,7 @@ void AbstractSplineWidget::MoveKeyTimes(int numChanges, int* indices, float scal
         int index = (indices ? indices[changeIndex] : 0);
 
         float oldTime = m_keyTimes[index].time;
-        float time = __max(m_timeRange.start, __min(m_timeRange.end, scale * oldTime + offset));
+        float time = AZStd::max(m_timeRange.start, AZStd::min(m_timeRange.end, scale * oldTime + offset));
 
         for (int splineIndex = 0; splineIndex < int(m_splines.size()); ++splineIndex)
         {

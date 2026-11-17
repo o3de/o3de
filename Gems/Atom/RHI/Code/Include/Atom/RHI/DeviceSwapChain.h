@@ -41,7 +41,18 @@ namespace AZ::RHI
         //!      N - Sync to every N vertical refresh.
         //!
         //! A value of 1 syncs to the refresh rate of the monitor.
+        //! Logs a warning and keeps the active interval if native presentation cannot honor the request.
         void SetVerticalSyncInterval(uint32_t verticalSyncInterval);
+
+        //! Returns Unimplemented without changing the active interval when the backend cannot honor it.
+        ResultCode TrySetVerticalSyncInterval(uint32_t verticalSyncInterval);
+
+        //! Largest interval honored by native presentation. No CPU timer or sleep emulation is used.
+        //! Query the active swap chain: support can depend on the platform and enabled extensions.
+        virtual uint32_t GetMaximumVerticalSyncInterval() const
+        {
+            return 1;
+        }
 
         //! Resizes the display resolution of the swap chain. Ideally, this matches the platform window
         //! resolution. Typically, the resize operation will occur in reaction to a platform window size

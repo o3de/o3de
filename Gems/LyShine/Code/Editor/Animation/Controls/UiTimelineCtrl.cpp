@@ -168,8 +168,8 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     const QBrush keySelectedBrush(QColor(100, 255, 255));
     for (int keyTimeIndex = 0; m_pKeyTimeSet && keyTimeIndex < m_pKeyTimeSet->GetKeyTimeCount(); ++keyTimeIndex)
     {
-        int keyCountBound = __max(m_pKeyTimeSet->GetKeyCountBound(), 1);
-        int keyCount = __min(m_pKeyTimeSet->GetKeyCount(keyTimeIndex), keyCountBound);
+        int keyCountBound = AZStd::max(m_pKeyTimeSet->GetKeyCountBound(), 1);
+        int keyCount = AZStd::min(m_pKeyTimeSet->GetKeyCount(keyTimeIndex), keyCountBound);
         float colorCodeFraction = float(keyCount) / keyCountBound;
         const QColor keyMarkerCol = InterpolateColor(Qt::green, Qt::red, colorCodeFraction);
 

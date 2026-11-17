@@ -162,7 +162,7 @@ public:
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
-    virtual bool OnIdle(LONG lCount);
+    virtual bool OnIdle(AZ::s64 lCount);
     virtual CCryEditDoc* OpenDocumentFile(const char* filename,
         bool addToMostRecentFileList=true,
         COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
@@ -264,7 +264,7 @@ private:
     // Level load test mode
     bool m_bLevelLoadTestMode = false;
     //! Current file in preview mode.
-    char m_sPreviewFile[_MAX_PATH];
+    char m_sPreviewFile[AZ_TRAIT_OS_MAX_PATH_LEN];
     //! True if "/runpythontest" was passed as a flag.
     bool m_bRunPythonTestScript = false;
     //! True if "/runpython" was passed as a flag.
@@ -396,7 +396,7 @@ public:
     // avoid creating another CMainFrame
     // close other type docs before opening any things
     virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = true);
     virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
 private:

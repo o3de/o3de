@@ -99,7 +99,7 @@ namespace AZ
 
             bool alreadyLoaded = false;
 
-            wchar_t fileNameW[MAX_PATH];
+            wchar_t fileNameW[AZ_TRAIT_OS_MAX_PATH_LEN];
             size_t numCharsConverted;
             errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1);
             if (wcharResult == 0)

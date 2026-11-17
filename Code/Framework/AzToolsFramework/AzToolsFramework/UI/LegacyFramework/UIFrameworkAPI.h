@@ -16,7 +16,7 @@
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 
-#include <qwindowdefs.h>
+#include <QtGui/qwindowdefs.h>
 
 class QMenu;
 class QToolBar;

@@ -9,9 +9,14 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/functional.h>
+#include <AzCore/std/string/string.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
@@ -24,6 +29,21 @@ namespace AzToolsFramework
             SaveAll,
             SaveNone
         };
+
+        //! Parses an alternate-format Prefab Template file into a PrefabDom laid out like a .prefab
+        //! JSON document.
+        //! @param fileContent Content to parse.
+        //! @param filePath Origin path of the content, whose extension selected this handler; for error reporting.
+        //! @return The parsed PrefabDom, or an error message.
+        using PrefabTemplateLoadFileHandler =
+            AZStd::function<AZ::Outcome<PrefabDom, AZStd::string>(AZStd::string_view fileContent, AZ::IO::PathView filePath)>;
+
+        //! Writes a PrefabDom, already collapsed into the on-disk format, to disk in an alternate format.
+        //! @param dom The Prefab DOM to serialize.
+        //! @param absolutePath Absolute path to write to.
+        //! @return Success, or an error message.
+        using PrefabTemplateSaveFileHandler =
+            AZStd::function<AZ::Outcome<void, AZStd::string>(const PrefabDom& dom, AZ::IO::PathView absolutePath)>;
 
         /*!
          * PrefabLoaderInterface
@@ -83,6 +103,7 @@ namespace AzToolsFramework
              * Saves a Prefab Template into the provided output string.
              * Converts Prefab Template form into .prefab form by collapsing nested Template info
              * into a source path and patches.
+             * Registered alternate formats do not apply here; the output is always JSON.
              * @param templateId Id of the template to be saved
              * @param outputJson Will contain the serialized template json on success
              * @return bool on whether the operation succeeded or not
@@ -101,6 +122,24 @@ namespace AzToolsFramework
 
             virtual SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const = 0;
             virtual void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) = 0;
+
+            //! Registers an alternate on-disk format for Prefab Template files, so Prefabs can be stored
+            //! as something other than the built-in .prefab JSON. Registration is not synchronized against
+            //! loading or saving, so register before any Prefab is loaded.
+            //! @param extension File extension to match, leading dot included, case-insensitive. Every file
+            //!        with it is treated as a Prefab, so pick one no other asset type uses. ".prefab" is reserved.
+            //! @param loadHandler Parses the content of a matching file into a PrefabDom.
+            //! @param saveHandler Writes a PrefabDom back to disk in this format.
+            //! @return False if an argument was rejected.
+            virtual bool RegisterTemplateFileHandler(
+                AZStd::string_view extension, PrefabTemplateLoadFileHandler loadHandler, PrefabTemplateSaveFileHandler saveHandler) = 0;
+
+            //! Unregisters a format added through RegisterTemplateFileHandler.
+            //! @return True if a format was registered under that extension.
+            virtual bool UnregisterTemplateFileHandler(AZStd::string_view extension) = 0;
+
+            //! Returns the registered alternate format extensions, lower-cased. Excludes ".prefab".
+            virtual AZStd::vector<AZStd::string> GetRegisteredTemplateFileExtensions() const = 0;
 
         protected:
             // Generates a new path

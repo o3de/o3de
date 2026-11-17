@@ -484,6 +484,7 @@ namespace PhysX
 
     float CharacterController::GetStepHeight() const
     {
+        PHYSX_SCENE_READ_LOCK(m_pxController ? m_pxController->getScene() : nullptr);
         return CheckValidAndReturn(m_pxController, m_pxController ? m_pxController->getStepOffset() : 0.0f);
     }
 
@@ -524,7 +525,7 @@ namespace PhysX
             return;
         }
 
-        PHYSX_SCENE_READ_LOCK(m_pxController->getScene());
+        PHYSX_SCENE_WRITE_LOCK(m_pxController->getScene());
         m_pxController->setUpDirection(PxMathConvert(upDirection));
     }
 
