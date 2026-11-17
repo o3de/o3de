@@ -17,7 +17,8 @@ void OnVsyncIntervalChanged(uint32_t const& interval)
 
 // NOTE: On change, broadcasts the new requested vsync interval to all windows.
 // The active RHI swap chain validates native interval support.
-AZ_CVAR(uint32_t, vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
+// Presentation pacing is local to each player's display.
+AZ_CVAR(uint32_t, vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::DontReplicate, "Set swapchain vsync interval");
 
 namespace AzFramework
 {
