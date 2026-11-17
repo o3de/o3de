@@ -311,24 +311,6 @@ namespace AZ::Render
             m_needsRebuild     = false;
             m_rebuiltThisFrame = true;
         }
-
-        if (!m_cubemapImage || !m_imageAsset.GetId().IsValid())
-        {
-            return;
-        }
-
-        // --- IBL delegation ------------------------------------------------------
-        // The IBL feature processor is the sole writer of the scene SRG IBL slots, so we hand
-        // it our cubemap rather than writing the slots ourselves. Re-assert whenever the slots
-        // drift away from our image -- a fresh rebuild, a pipeline rebuild, or another IBL
-        // provider resetting them. One pointer compare per frame makes the delegation
-        // self-healing, instead of depending on lifecycle events firing in a particular order.
-        if (!OwnsIblSlots())
-        {
-            m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
-            m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
-        }
-        m_iblFeatureProcessor->SetExposure(m_exposure);
     }
 
     // =========================================================================
@@ -516,7 +498,7 @@ namespace AZ::Render
             }
         }
 
-        // Static needs nothing here: Simulate() re-asserts the cubemap whenever the IBL slots
+        // Static needs nothing here: OnBeginPrepareRender() re-asserts the cubemap whenever the IBL slots
         // drift away from it, so a pipeline swap repairs itself on the next frame.
     }
 
@@ -534,6 +516,23 @@ namespace AZ::Render
         }
 
         TickMultipleOwnerReport();
+
+        // IBL consumes these values next simulation, after this frame's parallel readers have finished.
+        if (m_updateMode == UpdateMode::Static)
+        {
+            if (m_iblFeatureProcessor &&
+                m_cubemapImage &&
+                m_imageAsset.GetId().IsValid())
+            {
+                if (!OwnsIblSlots())
+                {
+                    m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
+                    m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
+                }
+                m_iblFeatureProcessor->SetExposure(m_exposure);
+            }
+            return;
+        }
 
         if (m_updateMode != UpdateMode::Dynamic || !NeedsPassRehost())
         {
@@ -632,7 +631,7 @@ namespace AZ::Render
 
         // The cubemaps hold unexposed values in both modes. The IBL samplers apply exposure once,
         // through the scene SRG's m_iblExposure, so an exposure change never rewrites a cubemap.
-        // Static: exposure is pushed to the IBL FP from Simulate(), and only while we own
+        // Static: exposure is pushed to the IBL FP from OnBeginPrepareRender(), and only while we own
         // the slots -- so a foreign IBL's exposure is never disturbed, and the floor value
         // (~2^-20) reads as effectively black without conflicting with other lighting.
         // Dynamic: exposure is written to the scene SRG from Render().

@@ -54,6 +54,7 @@ namespace AZ::Render
         virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
         //! Set IBL exposure in EV stops. Final intensity = base * 2^exposure.
+        //! CPU changes reach the scene SRG on the simulation after publication.
         virtual void SetExposure(float exposureStops) = 0;
 
         //! Set cubemap face resolution in pixels (default 64). Clamped to [4..256].
