@@ -115,6 +115,7 @@ namespace AZ
             void PushDetailParams();
             void PushSpecularParams();
 
+        private:
             EntityId m_entityId;
             GradientGIComponentConfig m_configuration;
             GradientGIFeatureProcessorInterface* m_featureProcessor = nullptr;

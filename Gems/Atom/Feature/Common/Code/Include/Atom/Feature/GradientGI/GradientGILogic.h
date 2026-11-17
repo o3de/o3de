@@ -165,8 +165,6 @@ namespace AZ::Render::GradientGI
     class ResolutionDebounce
     {
     public:
-        static constexpr uint8_t DefaultSettleFrames = 3;
-
         ResolutionDebounce() = default;
         explicit ResolutionDebounce(uint8_t settleFrameThreshold)
             : m_threshold(settleFrameThreshold)
@@ -239,6 +237,9 @@ namespace AZ::Render::GradientGI
         {
             return m_threshold;
         }
+
+    public:
+        static constexpr uint8_t DefaultSettleFrames = 3;
 
     private:
         uint32_t m_committed = 0;

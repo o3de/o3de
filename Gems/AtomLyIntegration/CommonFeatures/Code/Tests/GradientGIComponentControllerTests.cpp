@@ -96,6 +96,7 @@ namespace UnitTest
             return m_owners.Current();
         }
 
+    public:
         GradientGI::OwnerRegistry m_owners;
         OwnerChangedEvent m_ownerChanged;
         UpdateMode m_mode = UpdateMode::Static;
@@ -253,6 +254,7 @@ namespace UnitTest
             m_controller.TickBus::Handler::BusConnect();
         }
 
+    protected:
         RPI::AssetHandler<RPI::StreamingImageAsset> m_imageHandler;
         RPI::AssetHandler<RPI::ImageMipChainAsset> m_mipHandler;
         GradientGIFeatureProcessorStub m_processor;

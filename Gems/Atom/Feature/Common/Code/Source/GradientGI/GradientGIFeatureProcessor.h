@@ -62,6 +62,8 @@ namespace AZ::Render
         EntityId GetCurrentOwner() const override;
 
     private:
+        using PassPtr = AZStd::intrusive_ptr<GradientGICubemapPass>;
+
         GradientGIFeatureProcessor(const GradientGIFeatureProcessor&) = delete;
 
         void GenerateFacePixels(
@@ -105,6 +107,9 @@ namespace AZ::Render
         //! True when IBL still holds our CPU specular image, allowing us to reset its bindings.
         bool OwnsIblSlots() const;
 
+        void CacheSceneSrgIndices();
+
+    private:
         // CPU output is published through IBL. GPU output binds directly to the scene SRG.
         ImageBasedLightFeatureProcessorInterface* m_iblFeatureProcessor = nullptr;
 
@@ -147,7 +152,6 @@ namespace AZ::Render
         // Coalesce repeated simulation updates until Render starts the next frame.
         bool m_rebuiltThisFrame = false;
 
-        using PassPtr = AZStd::intrusive_ptr<GradientGICubemapPass>;
         PassPtr m_gradientPass;
 
         // A removed pipeline can leave a non-null pass parent, so track the host ID as well.
@@ -170,8 +174,6 @@ namespace AZ::Render
         RHI::ShaderInputImageIndex m_diffuseEnvMapIndex;
         RHI::ShaderInputConstantIndex m_iblExposureIndex;
         bool m_sceneSrgIndicesCached = false;
-
-        void CacheSceneSrgIndices();
     };
 
 } // namespace AZ::Render

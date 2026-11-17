@@ -68,6 +68,24 @@ namespace AZ::Render
         void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
     private:
+        Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const char* debugName) const;
+
+        //! Check both image dimensions before reusing them for a resized dispatch.
+        bool OutputImagesMatchFaceSize() const;
+
+        //! Declare output reads that are not tracked through the scene SRG.
+        void DeclareSampleAccess(RHI::FrameGraphInterface frameGraph);
+
+        Data::Instance<RPI::Image> GetOrCreateWhiteFallbackCube();
+
+        //! Bind both SRG image slots and disable a layer whose texture does not match its mapping.
+        void BindTextureLayer(
+            const AZ::Name& tex2DName, const AZ::Name& texCubeName,
+            const AZ::Name& mappingName, const AZ::Name& blendName,
+            const AZ::Name& strengthName, const AZ::Name& enabledName,
+            const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength);
+
+    private:
         Data::Instance<RPI::Shader>              m_shader;
         const RHI::PipelineState*                m_pipelineState = nullptr;
         Data::Instance<RPI::ShaderResourceGroup> m_passSrg;
@@ -75,16 +93,8 @@ namespace AZ::Render
         Data::Instance<RPI::AttachmentImage> m_diffuseImage;
         Data::Instance<RPI::AttachmentImage> m_specularImage;
 
-        Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const char* debugName) const;
-
-        //! Check both image dimensions before reusing them for a resized dispatch.
-        bool OutputImagesMatchFaceSize() const;
-
         //! Orders shader-read access after compute writes on frames that update output.
         AZStd::shared_ptr<RHI::ScopeProducer> m_sampleAccessScope;
-
-        //! Declare output reads that are not tracked through the scene SRG.
-        void DeclareSampleAccess(RHI::FrameGraphInterface frameGraph);
 
         Color    m_lowColor  = Color(0.05f, 0.06f, 0.08f, 1.0f);
         Color    m_midColor  = Color(0.20f, 0.30f, 0.55f, 1.0f);
@@ -103,14 +113,6 @@ namespace AZ::Render
 
         // Both texture slots need valid SRVs, including when a layer is disabled.
         Data::Instance<RPI::Image> m_whiteFallbackCube;
-        Data::Instance<RPI::Image> GetOrCreateWhiteFallbackCube();
-
-        //! Bind both SRG image slots and disable a layer whose texture does not match its mapping.
-        void BindTextureLayer(
-            const AZ::Name& tex2DName, const AZ::Name& texCubeName,
-            const AZ::Name& mappingName, const AZ::Name& blendName,
-            const AZ::Name& strengthName, const AZ::Name& enabledName,
-            const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength);
 
         bool m_dirty = true;
 

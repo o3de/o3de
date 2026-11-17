@@ -27,6 +27,9 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            AZ::Crc32 GetGpuLayerVisibility() const;
+
+        public:
             Color m_lowColor  = Color(0.05f, 0.06f, 0.08f, 1.0f);
             Color m_midColor  = Color(0.20f, 0.30f, 0.55f, 1.0f);
             Color m_highColor = Color(0.85f, 0.95f, 1.0f,  1.0f);
@@ -46,8 +49,6 @@ namespace AZ
             GradientGITextureMapping m_specularMapping = GradientGITextureMapping::Stretched;
             GradientGIBlendMode      m_specularBlend    = GradientGIBlendMode::Overlay;
             float                    m_specularStrength = 1.0f;
-
-            AZ::Crc32 GetGpuLayerVisibility() const;
         };
 
     } // namespace Render

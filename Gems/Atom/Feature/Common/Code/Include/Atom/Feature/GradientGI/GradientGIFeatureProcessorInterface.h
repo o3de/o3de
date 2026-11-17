@@ -34,6 +34,8 @@ namespace AZ::Render
             Dynamic = 1,
         };
 
+        using OwnerChangedEvent = AZ::Event<EntityId>;
+
         //! Set linear HDR colors at the nadir (-Y), horizon, and zenith (+Y).
         virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
@@ -66,8 +68,6 @@ namespace AZ::Render
 
         //! Remove an owner and promote the newest survivor. Stop output when no owners remain.
         virtual void Disable(EntityId owner) = 0;
-
-        using OwnerChangedEvent = AZ::Event<EntityId>;
 
         //! Notifications run synchronously on the main thread so a promoted owner can stage its configuration.
         virtual void ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler) = 0;
