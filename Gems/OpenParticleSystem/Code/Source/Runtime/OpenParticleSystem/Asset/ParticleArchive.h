@@ -22,6 +22,8 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Public/Model/Model.h>
 
+#include <OpenParticleSystem/MaterialPropertyOverride.h>
+
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
 
@@ -57,6 +59,9 @@ namespace OpenParticle
             AZ::u32 m_config = 0;
             AZStd::pair<AZ::Uuid, AZ::u32> m_render;
             AZ::Data::Asset<AZ::RPI::MaterialAsset> m_material;
+            //! Property values that differ from m_material for this emitter only. Applied to the emitter's
+            //! own material instance at load, so two emitters can share a material asset and still look different.
+            MaterialPropertyOverrideMap m_materialOverrides;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_model;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_skeletonModel;
             AZStd::vector<AZStd::tuple<AZ::Uuid, AZ::u32>> m_effectors;
@@ -78,6 +83,8 @@ namespace OpenParticle
         ParticleArchive& RenderConfig(const AZStd::any& val);
 
         ParticleArchive& Material(const AZ::Data::Asset<AZ::RPI::MaterialAsset>& asset);
+
+        ParticleArchive& MaterialOverrides(const MaterialPropertyOverrideMap& overrides);
 
         ParticleArchive& Model(const AZ::Data::Asset<AZ::RPI::ModelAsset>& asset);
 

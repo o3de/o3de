@@ -29,7 +29,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator);
 
-        PropertyCRCCtrl(QWidget* pParent = NULL);
+        PropertyCRCCtrl(QWidget* pParent = nullptr);
         virtual ~PropertyCRCCtrl();
 
         AZ::u32 value() const;

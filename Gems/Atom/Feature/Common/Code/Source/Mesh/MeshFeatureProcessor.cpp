@@ -32,10 +32,9 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>

@@ -1361,9 +1361,9 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiTextInputComponent::m_changeAction, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on each character typed."));
-                editInfo->DataElement(0, &UiTextInputComponent::m_endEditAction, QT_TRANSLATE_NOOP("LyShine", "End edit"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on either focus change or enter."));
-                editInfo->DataElement(0, &UiTextInputComponent::m_enterAction, QT_TRANSLATE_NOOP("LyShine", "Enter"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when enter is pressed."));
+                editInfo->DataElement(nullptr, &UiTextInputComponent::m_changeAction, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on each character typed."));
+                editInfo->DataElement(nullptr, &UiTextInputComponent::m_endEditAction, QT_TRANSLATE_NOOP("LyShine", "End edit"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on either focus change or enter."));
+                editInfo->DataElement(nullptr, &UiTextInputComponent::m_enterAction, QT_TRANSLATE_NOOP("LyShine", "Enter"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when enter is pressed."));
             }
         }
     }

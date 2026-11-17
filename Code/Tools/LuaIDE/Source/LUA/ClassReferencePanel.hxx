@@ -25,7 +25,7 @@ public:
     // class allocator inteintionally removed so that Qt gui designer can make us
     //AZ_CLASS_ALLOCATOR(DHClassReferenceWidget,AZ::SystemAllocator,0);
 
-    DHClassReferenceWidget( QWidget * parent = 0 );
+    DHClassReferenceWidget( QWidget * parent = nullptr );
     virtual ~DHClassReferenceWidget();
 
     public slots:

@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
     void ProjectBuilderController::Start()
     {
         m_workerThread.start();
-        UpdateUIProgress(0);
+        UpdateUIProgress(nullptr);
     }
 
     void ProjectBuilderController::SetProjectButton(ProjectButton* projectButton)

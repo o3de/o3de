@@ -1,0 +1,47 @@
+ShaderResourceGroupSemantic F1{FrequencyId = 1;};
+ShaderResourceGroup Srg1 : F1
+{
+    StructuredBuffer<struct E { float seed; }> m_ext;
+};
+
+struct Vertex
+{
+    float3 m_position : POSITION;
+};
+
+float AccessSeed()
+{
+    return Srg1::m_ext[0].seed;
+}
+
+class Random
+{
+    // early declaration to be callable in the body of Init (AZSL specificity)
+    void Next();            // seenat *1
+
+    // **
+    float cur;
+
+    // ***
+    void Init()
+    {
+        cur = AccessSeed(); // seenat **1
+        Next();             // seenat *2
+    }
+};
+
+// deported definition *
+void Random::Next()  // not a seenat. definition is not a reference (but there is a seenat of Random as part of the idexpression)
+{
+    // call hereunder is a recursion; binding point analysis must diagnose an error.
+    Init();                 // seenat ***1
+    cur += 1;               // seenat **2
+}
+
+// VERTEX ENTRY
+Vertex MainVS(Vertex input)
+{
+    Random r;
+    r.Init();               // seenat ***2
+    return input;
+}

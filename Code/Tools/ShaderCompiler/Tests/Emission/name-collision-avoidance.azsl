@@ -1,0 +1,45 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+    };
+    ConstantBuffer<InnerStruct> m_materialConstants;
+
+    // meta attack -> repeat a translation with a risk of colliding with the renamed translation of the previous symbol.
+    struct InnerStruct3
+    {
+        half4 m_specularColor;
+    };
+};
+
+// vector of attack
+struct MySRGOne_InnerStruct
+{
+    float4 clr;
+};
+
+// waiting at the corner !
+struct MySRGOne_InnerStruct1{};
+struct MySRGOne_InnerStruct2
+{
+    float2 uv;
+};
+
+float4 main(float2 uv) : SV_Target0
+{
+    MySRGOne::InnerStruct mystruct = MySRGOne::m_materialConstants;
+    float4 d1 = mystruct.clr;
+    float4 d2 = MySRGOne::m_materialConstants.m_diffuseColor;
+
+    MySRGOne::InnerStruct3 meta;
+
+    MySRGOne_InnerStruct2 myuv;
+    myuv.uv = uv;
+    return (float4)0;
+}

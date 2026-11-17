@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_DATA_OVERLAY_PROVIDER_MSGS_H
-#define AZCORE_DATA_OVERLAY_PROVIDER_MSGS_H
+
+#pragma once
 
 #include <AzCore/Serialization/DataOverlay.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -81,6 +81,3 @@ namespace AZ
         Parse(classPtr, classData);
     }
 }   // namespace AZ
-
-#endif  // AZCORE_DATA_OVERLAY_PROVIDER_MSGS_H
-#pragma once

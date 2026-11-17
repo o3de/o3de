@@ -30,8 +30,10 @@
 #include <MCore/Source/ReflectionSerializer.h>
 #include <QCheckBox>
 #include <QContextMenuEvent>
+#include <QGuiApplication>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <Editor/InspectorBus.h>
 #include <Source/Editor/ObjectEditor.h>
@@ -158,11 +160,14 @@ namespace EMStudio
             }
         }
 
-        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
-            {
-                UpdateAndShowInInspector();
-            });
+        m_deferredUpdateTimer = new QTimer(this);
+        m_deferredUpdateTimer->setSingleShot(true);
+        m_deferredUpdateTimer->setInterval(50);
+        connect(m_deferredUpdateTimer, &QTimer::timeout, this, &AttributesWindow::OnSelectionChanged);
+
+        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &AttributesWindow::OnSelectionChanged);
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &AttributesWindow::OnDataChanged);
+        connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::rowsAboutToBeRemoved, this, &AttributesWindow::OnRowsAboutToBeRemoved);
 
         Init(QModelIndex(), true);
 
@@ -195,15 +200,7 @@ namespace EMStudio
 
         if (!modelIndex.isValid())
         {
-            m_objectEditor->ClearInstances(false);
-            for (const CachedWidgets& widget : m_conditionsCachedWidgets)
-            {
-                widget.m_objectEditor->ClearInstances(false);
-            }
-            for (const CachedWidgets& widget : m_actionsCachedWidgets)
-            {
-                widget.m_objectEditor->ClearInstances(false);
-            }
+            ClearEditors();
         }
 
         // This only works on TRANSITIONS and NODES
@@ -548,8 +545,75 @@ namespace EMStudio
         EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, this);
     }
 
+    void AttributesWindow::OnSelectionChanged()
+    {
+        // Rebuilding the property editors stalls the UI, so a click or drag in the graph finishes first and the inspector catches up on release.
+        if (QGuiApplication::mouseButtons() != Qt::NoButton)
+        {
+            // The release flushes the update; the timer covers a release this application never sees.
+            qApp->installEventFilter(this);
+            m_deferredUpdateTimer->start();
+            return;
+        }
+
+        StopDeferredUpdate();
+        UpdateAndShowInInspector();
+    }
+
+    void AttributesWindow::StopDeferredUpdate()
+    {
+        m_deferredUpdateTimer->stop();
+        qApp->removeEventFilter(this);
+    }
+
+    bool AttributesWindow::eventFilter(QObject* watched, QEvent* event)
+    {
+        // Catch up as the button comes up, so whoever made the selection sees the inspector showing it.
+        if (event->type() == QEvent::MouseButtonRelease && m_deferredUpdateTimer->isActive())
+        {
+            StopDeferredUpdate();
+            UpdateAndShowInInspector();
+        }
+
+        return QWidget::eventFilter(watched, event);
+    }
+
+    void AttributesWindow::ClearEditors()
+    {
+        m_objectEditor->ClearInstances(false);
+        for (const CachedWidgets& widget : m_conditionsCachedWidgets)
+        {
+            widget.m_objectEditor->ClearInstances(false);
+        }
+        for (const CachedWidgets& widget : m_actionsCachedWidgets)
+        {
+            widget.m_objectEditor->ClearInstances(false);
+        }
+    }
+
+    void AttributesWindow::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
+    {
+        // The inspector holds raw pointers into the displayed object, so it lets go before the model frees it, even when locked or waiting on the deferred update.
+        for (QModelIndex index = m_displayingModelIndex; index.isValid(); index = index.parent())
+        {
+            if (index.parent() == parent && index.row() >= first && index.row() <= last)
+            {
+                StopDeferredUpdate();
+                ClearEditors();
+                m_displayingModelIndex = QModelIndex();
+                break;
+            }
+        }
+    }
+
     void AttributesWindow::OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
     {
+        // A pending selection update rebuilds the inspector anyway, so refreshing the outgoing object would be wasted work.
+        if (m_deferredUpdateTimer->isActive())
+        {
+            return;
+        }
+
         QItemSelection changes(topLeft, bottomRight);
         if (changes.contains(m_displayingModelIndex))
         {

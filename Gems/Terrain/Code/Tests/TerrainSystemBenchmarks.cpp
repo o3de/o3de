@@ -355,7 +355,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                    benchmark::DoNotOptimize(&surfacePoint.m_normal);
                 };
                 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -387,7 +387,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                    benchmark::DoNotOptimize(&surfacePoint.m_normal);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -434,7 +434,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                    benchmark::DoNotOptimize(&surfacePoint.m_normal);
                 };
                 
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
@@ -465,7 +465,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                    benchmark::DoNotOptimize(&surfacePoint.m_normal);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -538,7 +538,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                    benchmark::DoNotOptimize(&surfacePoint.m_surfaceTags);
                 };
                 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -570,7 +570,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                    benchmark::DoNotOptimize(&surfacePoint.m_surfaceTags);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -617,7 +617,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                    benchmark::DoNotOptimize(&surfacePoint.m_surfaceTags);
                 };
                 
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
@@ -648,7 +648,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                    benchmark::DoNotOptimize(&surfacePoint.m_surfaceTags);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -721,7 +721,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
                 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -754,7 +754,7 @@ namespace UnitTest
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
                     const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -801,7 +801,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
                 
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
@@ -832,7 +832,7 @@ namespace UnitTest
 
                 auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -879,7 +879,7 @@ namespace UnitTest
                 auto perPositionCallback =
                     [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 constexpr uint32_t maxParallelQueries = 16;
@@ -1009,7 +1009,7 @@ namespace UnitTest
                 auto perPositionCallback =
                     [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
@@ -1042,7 +1042,7 @@ namespace UnitTest
                 auto perPositionCallback =
                     [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 AZStd::semaphore completionEvent;
@@ -1090,7 +1090,7 @@ namespace UnitTest
                 auto perPositionCallback =
                     [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                 {
-                    benchmark::DoNotOptimize(surfacePoint);
+                    benchmark::DoNotOptimize(&surfacePoint);
                 };
 
                 constexpr uint32_t maxParallelQueries = 16;
@@ -1157,7 +1157,7 @@ namespace UnitTest
                             auto perPositionCallback =
                                 [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
                             {
-                                benchmark::DoNotOptimize(surfacePoint);
+                                benchmark::DoNotOptimize(&surfacePoint);
                             };
 
                             syncThreads.acquire();

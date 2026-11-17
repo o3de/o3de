@@ -137,6 +137,7 @@ namespace OpenParticle
         runtimeData.localSpace = editData.localSpace;
         runtimeData.maxSize = editData.maxSize;
         runtimeData.loop = editData.loop;
+        runtimeData.disabled = !editData.enabled;
     }
 
     void DataConvertor::ToRuntime(OpenParticle::EmitBurstList& editData, SimuCore::ParticleCore::EmitBurstList& runtimeData)
@@ -255,14 +256,13 @@ namespace OpenParticle
         else if (runtimeData.torusAxis.GetY())
         {
             runtimeData.xAxis = {
-                1.f, 1.f, -(runtimeData.torusAxis.GetX() + runtimeData.torusAxis.GetZ()) / runtimeData.torusAxis.GetY()
-
+                1.f, -(runtimeData.torusAxis.GetX() + runtimeData.torusAxis.GetZ()) / runtimeData.torusAxis.GetY(), 1.f
             };
         }
-        else if (runtimeData.torusAxis.GetZ())
+        else if (runtimeData.torusAxis.GetX())
         {
             runtimeData.xAxis = {
-                1.f,  1.f, -(runtimeData.torusAxis.GetY() + runtimeData.torusAxis.GetZ()) / runtimeData.torusAxis.GetX()
+                -(runtimeData.torusAxis.GetY() + runtimeData.torusAxis.GetZ()) / runtimeData.torusAxis.GetX(), 1.f, 1.f
             };
         }
         runtimeData.xAxis.Normalize();

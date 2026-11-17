@@ -402,7 +402,9 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        AZStd::unique_ptr<AZ::Component> placeholder1{entity->CreateComponent<PlaceholderEditorComponent>()};
+
+        // In this case, the CreateComponent function also retains ownership of the created component (in the entity).
+        AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
         entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
@@ -413,10 +415,10 @@ namespace UnitTest
         EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
 
         // Then if one component is disabled, there should only be one component on the switcher
-        // Disabling the component removes it from the entity, which is why its ownership is maintained here in a
-        // unique_ptr
+        // Disabling the component removes it from the entity, but then adds it straight back to the "pending components" list on the same entity
+        // which maintains ownership of the component, and will still cause it to be erased.  (So don't keep it in a smart pointer).
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1.get() });
+            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
 
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
 

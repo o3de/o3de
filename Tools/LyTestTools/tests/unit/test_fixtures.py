@@ -20,6 +20,19 @@ pytestmark = pytest.mark.SUITE_smoke
 
 class TestFixtures(object):
 
+    @pytest.mark.parametrize('configuration', ['debug', 'profile', 'release'])
+    @mock.patch('ly_test_tools._internal.pytest_plugin.test_tools_fixtures.pytest.exit')
+    def test_BuildDirectory_ValidConfiguration_ReturnsDirectory(self, mock_exit, tmp_path, configuration):
+        build_directory = tmp_path / configuration
+        build_directory.mkdir()
+        mock_config = mock.MagicMock()
+        mock_config.getoption.return_value = str(build_directory)
+
+        actual = test_tools_fixtures._get_build_directory(mock_config)
+
+        assert actual == str(build_directory)
+        mock_exit.assert_not_called()
+
     def test_AddOptionForLogs_MockParser_OptionAdded(self):
         mock_parser = mock.MagicMock()
 

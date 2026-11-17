@@ -146,19 +146,19 @@ CLog::CLog(ISystem* pSystem)
     memset(m_sBackupFilename, 0, MAX_FILENAME_SIZE);
     //memset(m_szTemp,0,MAX_TEMP_LENGTH_SIZE);
     m_pSystem = pSystem;
-    m_pLogVerbosity = 0;
-    m_pLogWriteToFile = 0;
-    m_pLogWriteToFileVerbosity = 0;
-    m_pLogVerbosityOverridesWriteToFile = 0;
-    m_pLogSpamDelay = 0;
-    m_pLogModule = 0;
+    m_pLogVerbosity = nullptr;
+    m_pLogWriteToFile = nullptr;
+    m_pLogWriteToFileVerbosity = nullptr;
+    m_pLogVerbosityOverridesWriteToFile = nullptr;
+    m_pLogSpamDelay = nullptr;
+    m_pLogModule = nullptr;
     m_fLastLoadingUpdateTime = -1.f;    // for streaming engine update
     m_backupLogs = true;
 
 #if defined(SUPPORT_LOG_IDENTER)
     m_indentation = 0;
     BuildIndentString();
-    m_topIndenter = NULL;
+    m_topIndenter = nullptr;
 #endif
 
     m_nMainThreadId = AZStd::this_thread::get_id();
@@ -244,11 +244,11 @@ CLog::~CLog()
 
 void CLog::UnregisterConsoleVariables()
 {
-    m_pLogVerbosity = 0;
-    m_pLogWriteToFile = 0;
-    m_pLogWriteToFileVerbosity = 0;
-    m_pLogVerbosityOverridesWriteToFile = 0;
-    m_pLogSpamDelay = 0;
+    m_pLogVerbosity = nullptr;
+    m_pLogWriteToFile = nullptr;
+    m_pLogWriteToFileVerbosity = nullptr;
+    m_pLogVerbosityOverridesWriteToFile = nullptr;
+    m_pLogSpamDelay = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1457,8 +1457,8 @@ void CLog::CreateBackupFile() const
     AZStd::string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
 
     {
-        assert(::strstr(sFileWithoutExt.c_str(), ":") == 0);
-        assert(::strstr(sFileWithoutExt.c_str(), "\\") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), ":") == nullptr);
+        assert(::strstr(sFileWithoutExt.c_str(), "\\") == nullptr);
     }
 
     PathUtil::RemoveExtension(sFileWithoutExt);

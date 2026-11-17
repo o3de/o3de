@@ -31,6 +31,11 @@ namespace AzQtComponents
 
     AZ_QT_COMPONENTS_API QString MakePropertyDisplayStringInts(const QColor& color, bool includeAlphaChannel);
     AZ_QT_COMPONENTS_API QString MakePropertyDisplayStringFloats(const QColor& color, bool includeAlphaChannel);
+
+    AZ_QT_COMPONENTS_API QColor AzColorToQtColor(const AZ::Color& color);
+    AZ_QT_COMPONENTS_API AZ::Color QtColorToAzColor(const QColor& color);
+    AZ_QT_COMPONENTS_API QColor ARGBToQColor(uint32_t argb);
+    AZ_QT_COMPONENTS_API uint32_t QColorToARGB(const QColor& color);
 };
 
 

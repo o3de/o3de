@@ -28,6 +28,7 @@ namespace Maestro
         CLayerNode();
         CLayerNode(const int id);
         static void Initialize();
+        static void Shutdown();
 
         //-----------------------------------------------------------------------------
         //! Overrides from CAnimNode

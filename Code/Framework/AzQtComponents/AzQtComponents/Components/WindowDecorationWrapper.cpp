@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include <qglobal.h> // For Q_OS_WIN
+#include <QtGlobal> // For Q_OS_WIN
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Components/DockBarButton.h>

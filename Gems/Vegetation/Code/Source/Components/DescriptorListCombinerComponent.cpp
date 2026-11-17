@@ -36,7 +36,7 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &DescriptorListCombinerConfig::m_descriptorProviders, QT_TRANSLATE_NOOP("Vegetation", "Descriptor Providers"), QT_TRANSLATE_NOOP("Vegetation", "Ordered list of descriptor providers."))
+                    ->DataElement(nullptr, &DescriptorListCombinerConfig::m_descriptorProviders, QT_TRANSLATE_NOOP("Vegetation", "Descriptor Providers"), QT_TRANSLATE_NOOP("Vegetation", "Ordered list of descriptor providers."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationDescriptorProviderService"));

@@ -606,7 +606,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::GetTrackForAzField(const UiAnimParamData& par
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

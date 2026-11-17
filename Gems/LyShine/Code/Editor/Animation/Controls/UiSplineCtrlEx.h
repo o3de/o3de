@@ -84,8 +84,8 @@ public:
     void SetTooltipValueScale(float x, float y) { m_fTooltipScaleX = x; m_fTooltipScaleY = y; };
     void SetSplineSet(ISplineSet* pSplineSet);
 
-    void AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, COLORREF color);
-    void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, COLORREF anColorArray[4]);
+    void AddSpline(ISplineInterpolator* pSpline, ISplineInterpolator* pDetailSpline, const AZ::Color& color);
+    void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, const AZ::Color anColorArray[4]);
     void RemoveSpline(ISplineInterpolator* pSpline);
     void RemoveAllSplines();
     int  GetSplineCount() const { return static_cast<int>(m_splines.size()); }
@@ -107,7 +107,7 @@ public:
 
     float SnapTimeToGridVertical(float time);
 
-    void OnUserCommand(UINT cmd);
+    void OnUserCommand(unsigned int cmd);
     void FitSplineToViewWidth();
     void FitSplineToViewHeight();
 
@@ -230,7 +230,7 @@ protected:
 
     virtual void captureMouseImpl() = 0;
     virtual void releaseMouseImpl() = 0;
-    virtual void setCursorImpl(UINT cursor) = 0;
+    virtual void setCursorImpl(unsigned int cursor) = 0;
 
     virtual ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer);
 
@@ -386,7 +386,7 @@ protected:
 
     void captureMouseImpl() override { grabMouse(); }
     void releaseMouseImpl() override { releaseMouse(); }
-    void setCursorImpl(UINT cursor) override { setCursor(CMFCUtils::LoadCursor(cursor)); }
+    void setCursorImpl(unsigned int cursor) override { setCursor(CMFCUtils::LoadCursor(cursor)); }
 
 protected:
     QRubberBand* m_rubberBand;

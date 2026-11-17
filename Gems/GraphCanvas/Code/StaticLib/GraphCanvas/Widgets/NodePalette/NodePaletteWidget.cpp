@@ -64,7 +64,7 @@ namespace GraphCanvas
             QModelIndex sourceIndex = static_cast<const NodePaletteSortFilterProxyModel*>(index.model())->mapToSource(index);
             NodePaletteTreeItem* treeItem = static_cast<NodePaletteTreeItem*>(sourceIndex.internalPointer());
 
-            const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, options.widget) + 1;
+            const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, options.widget) + 1;
             QRect textRect = options.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &options);
             textRect = textRect.adjusted(textMargin, 0, -textMargin, 0);
 

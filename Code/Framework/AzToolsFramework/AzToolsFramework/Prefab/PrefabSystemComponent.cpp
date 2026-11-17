@@ -135,7 +135,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::OnSystemTick()
         {
-            m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue();
+            m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue(/*flush=*/false);
             GarbageCollectTemplates(false);
         }
 

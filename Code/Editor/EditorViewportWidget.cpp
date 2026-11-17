@@ -1226,7 +1226,7 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
     float x, y;
 
     ProjectToScreen(wp.x, wp.y, wp.z, &x, &y);
-    if (_finite(x) && _finite(y))
+    if (azisfinite(x) && azisfinite(y))
     {
         out.x = (x / 100) * m_rcClient.width();
         out.y = (y / 100) * m_rcClient.height();
@@ -1259,7 +1259,7 @@ Vec3 EditorViewportWidget::ViewToWorld(
     const float maxDistance = 10000.f;
     Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
-    if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
+    if (!azisfinite(v.x) || !azisfinite(v.y) || !azisfinite(v.z))
     {
         return Vec3(0, 0, 0);
     }
@@ -1328,7 +1328,7 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
     float wx, wy, wz;
     UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), &wx, &wy, &wz);
 
-    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
+    if (!azisfinite(wx) || !azisfinite(wy) || !azisfinite(wz))
     {
         return;
     }

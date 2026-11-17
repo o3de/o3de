@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/IO/SystemFile.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/PlatformIncl.h>
 
 #include "Source/DataSource/FileDataSource.h"

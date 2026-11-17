@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Class that collects error reports to present them later.
 
-
-#ifndef CRYINCLUDE_EDITOR_ERRORREPORT_H
-#define CRYINCLUDE_EDITOR_ERRORREPORT_H
-#pragma once
 
 #include "ErrorRecorder.h"
 #include "Include/EditorCoreAPI.h"
@@ -110,6 +107,3 @@ private:
     bool m_bShowErrors;
     QString m_currentFilename;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_ERRORREPORT_H

@@ -9,11 +9,10 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
-
-#include <AtomCore/Instance/Instance.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -91,7 +90,7 @@ namespace Terrain
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     private:
-        
+
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
 
     public:
@@ -153,7 +152,7 @@ namespace Terrain
             };
 
             AZStd::array<MeshGroup, 5> m_meshGroups; // 0 is the primary, 1-4 are the quadrants.
-            
+
         };
 
         struct Sector

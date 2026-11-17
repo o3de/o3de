@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_TIMEPOINT_H_
-#define AZCORE_TIMEPOINT_H_
+
+#pragma once
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/chrono/chrono.h>
@@ -72,6 +72,3 @@ namespace AZ
         return AZStd::chrono::duration_cast<double_ms>(m_timePoint.time_since_epoch()).count();
     }
 }
-
-
-#endif // AZCORE_TIMEPOINT_H_

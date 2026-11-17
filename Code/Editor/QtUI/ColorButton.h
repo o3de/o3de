@@ -6,10 +6,7 @@
  *
  */
 
-
 #pragma once
-#ifndef CRYINCLUDE_EDITORCOMMON_COLORBUTTON_H
-#define CRYINCLUDE_EDITORCOMMON_COLORBUTTON_H
 
 #include <Include/EditorCoreAPI.h>
 
@@ -48,5 +45,3 @@ signals:
 private slots:
     void OnClick();
 };
-
-#endif // CRYINCLUDE_EDITORCOMMON_COLORBUTTON_H

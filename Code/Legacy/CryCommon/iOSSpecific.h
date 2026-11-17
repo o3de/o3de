@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : iOS specific declarations
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H
-#pragma once
 
 
 #include "AppleSpecific.h"
@@ -38,17 +35,6 @@
 #define MOBILE
 #endif
 
-// stubs for virtual keys, isn't used on iOS
-#define VK_UP               0
-#define VK_DOWN         0
-#define VK_RIGHT        0
-#define VK_LEFT         0
-#define VK_CONTROL  0
-#define VK_SCROLL       0
-
-
 #if !defined(PLATFORM_64BIT)
 #error "IOS build only supports the 64bit architecture"
 #endif
-
-#endif // CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H

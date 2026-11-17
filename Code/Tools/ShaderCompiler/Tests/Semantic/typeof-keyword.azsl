@@ -1,0 +1,552 @@
+class getter
+{
+    float2x2 fval();
+};
+
+class intermediate
+{
+    getter getgetter();
+};
+
+class top
+{
+    intermediate many[3];
+    struct inner {};
+    void innerfunc() {}
+};
+
+top gettop();
+
+class A
+{
+    int a;
+};
+
+class B : A
+{
+};
+
+struct Half{};
+struct Double{};
+half   returnThings(Half);
+double returnThings(Double);
+
+struct UniformFoo{};
+UniformFoo returnSame(int);
+UniformFoo returnSame(float1x1);
+
+struct S { int i; };
+
+ShaderResourceGroupSemantic freq
+{ FrequencyId = 1; }
+ShaderResourceGroup MySRG : freq
+{
+    // Buffer-views are chameleons mimicking "T[]" (collapsed to T in azslc)
+    Buffer<float> m_buf;
+    RasterizerOrderedBuffer<float> m_rob_f;
+    RasterizerOrderedStructuredBuffer<struct R { int i; float f; }> m_rosb_R;
+    struct Ext { R r; };
+    RWStructuredBuffer<Ext> m_rwsb_E;
+    RWBuffer<int4x2> m_rwb_i42;
+
+    // CB is chameleon to "(one element of) type S"
+    ConstantBuffer<S> m_cb_S;
+
+    StructuredBuffer<S> m_sb_S;
+
+    // SRG Constants
+    int m_i;  // scalar
+    vector<float,2> m_vec_f2;  // generic vector
+    matrix<half,2,2> m_mat_h22;  // generic matrix
+
+    // other view types
+    Sampler m_samp {};
+    Texture2D m_tex;
+    Texture2D<float4> m_tex_f4;
+};
+
+void h()
+{
+    // typeof exists to support the seenat feature.
+    // therefore the only accepted parameters are dependencies of idExpressions: idExpressions and MemberAccessExpression.
+    // at level 2, MemberAccessExpression depends on 'expression' but only a subset can return UserDefinedType.
+    //
+    // supported:
+    //   idExpressions                 stuff::name
+    //   MemberAccessExpression        stuff.name
+    //   FunctionCallExpression        stuff()
+    //   ArrayIndexExpression          stuff[i]
+    //   ParenthesizedExpression       (stuff)
+    //   CastExpression                (stuff)thing
+    //   ConditionalExpression         stuff ? thenthat : otherwisethat
+    //   AssignmentExpression          stuff = thing
+    //   NumericConstructorExpression  float2(0,0)
+    //   LiteralExpression             42
+    //   CommaExpression               X, Y
+    //   PostfixUnaryExpression        i++
+    //   PrefixUnaryExpression         ++i
+    //   BinaryExpression              i + j
+
+    // mathematics
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1 + 3), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // literals
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1u), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'uint'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1l), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1ul), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'uint'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1lu), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'uint'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.0), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.0f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.h), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'half'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.H), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'half'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.0L), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(true), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'bool'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(false), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'bool'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof("stuff"), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == '<fail>'\n");
+
+    // direct type (identity)
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'top'\n");
+
+    // same, as fully qualified
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/top'\n");
+
+    float f;
+
+    // local symbol
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    // same as fully qualified
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(f), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '?float'\n");
+
+    S s;
+
+    // member access
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(s.i), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // the qualified unevaluated-expression access can probably also be supported as a bonus:
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(S::i), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // legit qualified id (just names a type directly):
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::inner), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/top/inner'\n");
+
+    // class inheritance: parent member access using scope resolution operator
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(B::a), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // function call, the return type is returned
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'top'\n");
+
+    // function type is not a citizen in HLSL nor AZSL.
+    // the typeof keyword thus simply returns the function symbol itself.
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/gettop()'\n");  // resolved to the unique concrete function candidate if no overloads
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(returnThings), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/returnThings'\n");  // but remains undetermined in case of the presence of overloads
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::innerfunc), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'top/innerfunc'\n");  // least qualification removes the argument mangling.
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::innerfunc), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/top/innerfunc()'\n");  // full qualification preserves them
+
+    // though call expression should work (this is not a compound because that function reference is an idExpression, be it qualified or not)
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::innerfunc()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'void'\n");
+
+    // overloaded calls also work as long as the resolve of arguments is possible, or the overloadSet has a uniform return type
+
+    //  resolved arguments
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(returnThings((Half)0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'half'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(returnThings((Double)0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double'\n");
+
+    //  unresolved arguments
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(returnSame(0+0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'UniformFoo'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(returnSame((float1x1)0+(float1x1)0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'UniformFoo'\n");
+
+    // array index
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::many[1]), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'intermediate'\n");
+
+    // compound: member access + (function call & array index)
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop().many[1]), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'intermediate'\n");
+
+    // for now array-types are coalesced to their underlying type
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(top::many), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'intermediate'\n");
+
+    // ultimate compound
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop().many[1].getgetter().fval()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2x2'\n");
+
+    // ultimate compound with over-qualification in the middle
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop().top::many[1].getgetter().fval()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2x2'\n");
+
+    // ultimate compound with full qualification in the middle
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(gettop().::top::many[1].getgetter().fval()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2x2'\n");
+
+    // check what's going on with generic predefineds
+
+    // SRG Constants
+
+    // == check chameleon types ==
+    //    chameleon= have a generic type as parameter, but end up being a forward for its behavior. (like typedef)
+    // typeof can't see the non-canonicalized type. So we lose the original chameleon type, and all we "see" is its mimicked type: the canonical type.
+
+    // from SRG references
+    // plain Buffer<>
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_buf), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");  // this is really a Buffer<float> but we see float.
+
+    // ROB in SRG
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_rob_f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    // ROSB in SRG
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_rosb_R), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'MySRG/R'\n");
+
+    // RWB in SRG
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_rwb_i42), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int4x2'\n");
+
+    // RWSB in SRG
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_rwsb_E), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'MySRG/Ext'\n");  // this is really a RWStructuredBuffer<Ext> but we see Ext.
+
+    // SB in SRG
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_sb_S), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'S'\n");
+
+    // CB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_cb_S), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'S'\n");
+
+    // int
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_i), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // vector<float,2> m_vec_f2;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_vec_f2), __azslc_prtsym_least_qualified);
+    //__azslc_print_message(" == 'float2'\n");  // canonicalized form  // WIP
+    __azslc_print_message(" == 'vector'\n");
+
+    // matrix<half,2,2> m_mat_h22;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_mat_h22), __azslc_prtsym_least_qualified);
+    //__azslc_print_message(" == 'half2x2'\n"); // WIP
+    __azslc_print_message(" == 'matrix'\n"); // for now it returns the core type since I didn't create the canonicalization system for GenericArithmetic
+
+    // other view types
+    // Sampler m_samp;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_samp), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'Sampler'\n");
+
+    // Texture2D m_tex;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_tex), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'Texture2D'\n");
+
+    // Texture2D<float4> m_tex_f4;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::m_tex_f4), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'Texture2D'\n");  // texture generic types are ignored
+
+    // fail get test
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(MySRG::inexistent), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == '<fail>'\n");
+
+    // from local references (local view-data-types don't have extern binding. they are pure aliases.)
+    RasterizerOrderedBuffer<float> rob_f;
+    RasterizerOrderedStructuredBuffer<struct R { int i; float f; }> rosb_R;
+    struct Ext { R r; };  // using R here is possible in azsl; because above generic clause is not hygienic in the Kohlbecker sense.
+    RWStructuredBuffer<Ext> rwsb_E;
+    RWBuffer<int4x2> rwb_i42;
+    StructuredBuffer<S> sb_S;
+    vector<float,2> vec_f2;
+    matrix<half,2,2> mat_h22;
+
+    // ROB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(rob_f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    // ROSB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(rosb_R), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'R'\n");   // R refers to the 'struct R' passed in rosb_R generic parameter.
+
+    // RWB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(rwb_i42), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int4x2'\n");
+
+    // RWSB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(rwsb_E), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'Ext'\n");
+
+    // SB
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(sb_S), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'S'\n");
+
+    // generic vector
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(vec_f2), __azslc_prtsym_least_qualified);
+    //__azslc_print_message(" == 'float2'\n");  // canonicalized form // WIP
+    __azslc_print_message(" == 'vector'\n");
+
+    // generic matrix
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(mat_h22), __azslc_prtsym_least_qualified);
+    //__azslc_print_message(" == 'half2x2'\n");  // WIP
+    __azslc_print_message(" == 'matrix'\n");
+
+    // == end check chameleon types ==
+
+    // simple (already canonical) vector
+    half3 h3;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(h3), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'half3'\n");
+
+    // cast
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof((top)0), __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == '/top'\n");
+
+    // conditional
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(true ? (int)1 : (int)2), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // parenthesis
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof((s.i)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // cast compounded with typeof
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof( (typeof(s.i))0 ), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // numeric constructor expression
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(float2(0,0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(uint(0)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'uint'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(uint()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'uint'\n");
+
+    // comma expression:
+    int INTVAR;
+    double DOUBLEVAR;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(INTVAR, INTVAR, DOUBLEVAR), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double'\n");
+
+    // binary arithmetic expression
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1 + 1), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'int'\n");
+
+    // with float promotion
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1 + 1.f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    // with half promotion
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1 + 1.h), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'half'\n");
+
+    // half and float to float promotion
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.f + 1.h), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float'\n");
+
+    // int16_t to double promotion
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.l + int16_t(1)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double'\n");
+
+    // bool binary
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(1.l && int16_t(1)), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'bool'\n");
+
+    // lookedup
+    double d;
+    int64_t i64;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(d || i64), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'bool'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(d - i64), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double'\n");
+
+    // vector scalar
+    float4 f4;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(2.f * f4), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float4'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(f4 * 2.f), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float4'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(d * f4), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double4'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(f4 * d), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double4'\n");
+
+    // matrix scalar
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(float() * float3x2()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float3x2'\n");
+
+    // matrix scalar with base type promotion
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(half3x2() * double()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double3x2'\n");
+
+    // truncations
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(float3() * float2()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2'\n");
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(float4x4() * float2x2()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'float2x2'\n");
+
+    // truncate & upcast
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(float4x4() * double2x2()), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double2x2'\n");
+
+    // through alias
+    typealias d34m = double3x4;
+    typealias real = half;
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof((d34m)0 * (real)0), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double3x4'\n");
+    // note: the parser takes d32m() as a function call, this is the "most verxing parse" problem
+    //       float() is understood by the parser as a NumericConstructorExpression because it
+    //       has a list of the tokens representing all fundamental types.
+    //       but, with user defined identifiers, it can't branch into the "intended" context,
+    //       because ALL(*) Antlr4 parsers recognizes context free grammar only.
+    //       We could adopt a universal construction syntax Obj{} a la C++ for AZSL but it's not
+    //       compliant with the philosophy of not deviating from HLSL, which on its side doesn't really
+    //       accept constructor-type constructs. DXC just does it better here because clang parser is Turing complete.
+
+    d34m d34var;
+    real rVar;
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(typeof(rVar - d34var ), __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == 'double3x4'\n");
+}

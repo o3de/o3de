@@ -179,12 +179,6 @@
                         "args": {
                             "file": "Materials/Pipelines/Common/DoubleSided.lua"
                         }
-                    },
-                    {
-                        "type": "Lua",
-                        "args": {
-                            "file": "Materials/Types/Unlit_GeneralState.lua"
-                        }
                     }
                 ]
             },
@@ -193,7 +187,14 @@
             }
         ]
     },
-    "functors": [],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/Unlit_GeneralState.lua"
+            }
+        }
+    ],
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"

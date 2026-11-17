@@ -20,7 +20,7 @@ include(${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 # + link from Linux builds where it's unused. Other platforms (Mac/iOS/Android/
 # Windows) keep PAL_TRAIT_MICROPHONE_USES_LIBSAMPLERATE=TRUE, preserving
 # existing behavior.
-set(MICROPHONE_BUILD_DEPENDENCIES Gem::AudioSystem.API Legacy::CryCommon)
+set(MICROPHONE_BUILD_DEPENDENCIES Gem::AudioSystem.API)
 set(MICROPHONE_COMPILE_DEFINITIONS "")
 if (PAL_TRAIT_MICROPHONE_USES_LIBSAMPLERATE)
     list(APPEND MICROPHONE_BUILD_DEPENDENCIES 3rdParty::libsamplerate)
@@ -39,6 +39,8 @@ ly_add_target(
         PUBLIC
             Source
     BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzFramework
         PUBLIC
             ${MICROPHONE_BUILD_DEPENDENCIES}
     COMPILE_DEFINITIONS

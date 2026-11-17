@@ -6,10 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_EDITORFILEMONITOR_H
-#define CRYINCLUDE_EDITOR_EDITORFILEMONITOR_H
 #pragma once
+
 #include "Include/IEditorFileMonitor.h"
 #include "Util/FileChangeMonitor.h"
 
@@ -54,5 +52,3 @@ private:
 
     std::vector<SFileChangeCallback> m_vecFileChangeCallbacks;
 };
-
-#endif // CRYINCLUDE_EDITOR_EDITORFILEMONITOR_H

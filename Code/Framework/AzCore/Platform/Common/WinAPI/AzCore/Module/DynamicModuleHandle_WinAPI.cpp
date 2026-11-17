@@ -99,7 +99,7 @@ namespace AZ
 
             bool alreadyLoaded = false;
 
-            wchar_t fileNameW[MAX_PATH];
+            wchar_t fileNameW[AZ_TRAIT_OS_MAX_PATH_LEN];
             size_t numCharsConverted;
             errno_t wcharResult = mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1);
             if (wcharResult == 0)
@@ -108,7 +108,7 @@ namespace AZ
                 if (m_handle == nullptr && !CheckBitsAny(flags, LoadFlags::NoLoad))
                 {
                     // Note: Windows LoadLibrary has no concept of specifying that the module symbols are global or local
-                    m_handle = LoadLibraryExW(fileNameW, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+                    m_handle = LoadLibraryExW(fileNameW, nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
                     if (!m_handle)
                     {
                         // If the first time failed, most likely occurred because @fileNameW is not a fully qualified path.
@@ -121,7 +121,7 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Failed to convert %s to wchar with error %d!", m_fileName.c_str(), wcharResult);
-                m_handle = NULL;
+                m_handle = nullptr;
                 return LoadStatus::LoadFailure;
             }
 
@@ -148,7 +148,7 @@ namespace AZ
             if (m_handle)
             {
                 result = FreeLibrary(m_handle) ? true : false;
-                m_handle = 0;
+                m_handle = nullptr;
             }
             return result;
         }

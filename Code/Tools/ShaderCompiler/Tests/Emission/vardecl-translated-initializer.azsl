@@ -1,0 +1,9 @@
+ShaderResourceGroupSemantic sem0 {FrequencyId = 0;};
+ShaderResourceGroup SRG : sem0
+{
+    float4 m_clr;
+};
+
+void F(float4 color = SRG::m_clr)
+{
+}

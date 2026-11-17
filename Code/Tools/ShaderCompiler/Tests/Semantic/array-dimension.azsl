@@ -1,0 +1,10 @@
+void psmain(): SV_target0
+{
+    static const int dim = 3 + 5;  // even though azslc is not capable to fold this constant, dxc can.
+    int array[dim][dim];  // valid
+}
+
+struct S
+{
+    int arr[var];
+};

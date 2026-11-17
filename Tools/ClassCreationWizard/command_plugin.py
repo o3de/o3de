@@ -27,6 +27,8 @@ import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Callable, Type
+from cmake_text import find_calls
+from wizard_logging import wizard_log
 
 
 # ============================================================================
@@ -51,10 +53,6 @@ class CMakeTarget:
 class CMakeAnalyzer:
     """Analyzes CMake files to discover build targets"""
 
-    LY_MACRO_PAT = re.compile(
-        r'(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*',
-        re.S | re.M
-    )
     ADD_LIB_PAT = re.compile(r'add_library\s*\(\s*(?P<name>[^\s\)]+)')
     ADD_EXE_PAT = re.compile(r'add_executable\s*\(\s*(?P<name>[^\s\)]+)')
 
@@ -106,8 +104,8 @@ class CMakeAnalyzer:
                 continue
 
             # Parse o3de_add_target / ly_add_target
-            for match in cls.LY_MACRO_PAT.finditer(text):
-                body = match.group("body") or ""
+            for call in find_calls(text, "o3de_add_target", "ly_add_target"):
+                body = call.code_body
                 name_match = re.search(r'\bNAME\s+(".*?"|[^\s\)]+)', body)
                 if not name_match:
                     continue
@@ -321,7 +319,7 @@ class CommandPluginLoader:
     ENGINE_COMMANDS_DIR = "commands"
 
     def __init__(self, logger: Optional[Callable[[str], None]] = None):
-        self.logger = logger or print
+        self.logger = logger or wizard_log
         self._loaded_modules: Dict[str, Any] = {}
 
     def log(self, message: str):

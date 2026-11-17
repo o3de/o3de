@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 #include "TextureAtlasSystemComponent.h"
 
@@ -14,19 +15,16 @@
 #include "Editor/AtlasBuilderComponent.h"
 #endif
 
-#include <IGem.h>
-
 namespace TextureAtlasNamespace
 {
     class TextureAtlasModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(TextureAtlasModule, "{D3997F41-8117-4E0F-9BFE-937C4AE7E71F}", CryHooksModule);
+        AZ_RTTI(TextureAtlasModule, "{D3997F41-8117-4E0F-9BFE-937C4AE7E71F}", AZ::Module);
         AZ_CLASS_ALLOCATOR(TextureAtlasModule, AZ::SystemAllocator);
 
         TextureAtlasModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

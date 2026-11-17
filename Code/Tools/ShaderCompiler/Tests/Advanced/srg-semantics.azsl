@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+struct VSInput
+{
+    float3 m_position : PoSITIoN;
+    float4 m_color : CoLoR0;
+};
+
+struct VSOutput     
+{
+    float4 m_position : sv_position;
+    float4 m_color : color0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_target;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    OUT.m_position = float4(vsInput.m_position, 1.0);
+    OUT.m_color = vsInput.m_color;
+    return OUT;
+}
+
+PSOutput MainPS(VSOutput vsOutput)
+{
+    PSOutput OUT;
+    OUT.m_color.rgb = OUT.m_color.rgb;
+    return OUT;
+}

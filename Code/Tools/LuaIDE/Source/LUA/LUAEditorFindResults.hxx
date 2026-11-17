@@ -78,7 +78,7 @@ namespace LUAEditor
     public:
         AZ_CLASS_ALLOCATOR(FindResults, AZ::SystemAllocator);
 
-        FindResults(QWidget *parent = 0);
+        FindResults(QWidget *parent = nullptr);
         ~FindResults();
 
         void Clear();

@@ -710,13 +710,13 @@ AZStd::string CEditorImpl::LoadProjectIdFromProjectData()
 void CEditorImpl::DetectVersion()
 {
 #if defined(AZ_PLATFORM_WINDOWS)
-    char exe[_MAX_PATH];
+    char exe[AZ_TRAIT_OS_MAX_PATH_LEN];
     DWORD dwHandle;
     UINT len;
 
     wchar_t ver[1024 * 8];
 
-    AZ::Utils::GetExecutablePath(exe, _MAX_PATH);
+    AZ::Utils::GetExecutablePath(exe, AZ_TRAIT_OS_MAX_PATH_LEN);
     AZStd::wstring exeW;
     AZStd::to_wstring(exeW, exe);
 

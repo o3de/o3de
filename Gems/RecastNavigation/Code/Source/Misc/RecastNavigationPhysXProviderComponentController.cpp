@@ -287,7 +287,8 @@ namespace RecastNavigation
         int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
         int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
 
-        const AZ::Vector3& worldMin = worldVolume.GetMin();
+        // Same grid origin as the async path and the Detour mesh, or tiles land offset from where queries look for them.
+        const AZ::Vector3 worldMin = GetAdjustedOriginBasedOnTileSize(worldVolume, tileSize);
         const AZ::Vector3& worldMax = worldVolume.GetMax();
 
         const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
@@ -329,29 +330,6 @@ namespace RecastNavigation
 
         m_updateInProgress = false;
         return tiles;
-    }
-
-    // Adjust the origin, so that any tile over-extension is even across all sides.
-    // Note, navigation mesh is made up of square tiles. Recast does not support uneven tiles,
-    // so the best we can do is even them out. Additionally, users can set their own tile size on @RecastNavigationMeshComponent.
-    AZ::Vector3 GetAdjustedOriginBasedOnTileSize(const AZ::Aabb& worldVolume, float tileSize)
-    {
-        if (tileSize <= 0.f)
-        {
-            AZ_Warning("Recast Navigation", true, "Tile size is invalid. It should be a positive number.");
-            return AZ::Vector3::CreateZero();
-        }
-
-        AZ::Vector3 origin = worldVolume.GetMin();
-        const AZ::Vector3& extents = worldVolume.GetExtents();
-
-        const float tileOverExtensionOnX = AZStd::ceil(extents.GetX() / tileSize) * tileSize - extents.GetX();
-        origin.SetX(origin.GetX() - tileOverExtensionOnX / 2.f);
-
-        const float tileOverExtensionOnY = AZStd::ceil(extents.GetY() / tileSize) * tileSize - extents.GetY();
-        origin.SetY(origin.GetY() - tileOverExtensionOnY / 2.f);
-
-        return origin;
     }
 
     bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(

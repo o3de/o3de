@@ -6,13 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : Collection of Named data blocks
 
 
-#ifndef CRYINCLUDE_EDITOR_UTIL_NAMEDDATA_H
-#define CRYINCLUDE_EDITOR_UTIL_NAMEDDATA_H
-#pragma once
 #include "MemoryBlock.h"
 #include "QtUtil.h"
 
@@ -57,4 +55,3 @@ private:
     typedef std::map<QString, DataBlock*, stl::less_stricmp<QString> > TBlocks;
     TBlocks m_blocks;
 };
-#endif // CRYINCLUDE_EDITOR_UTIL_NAMEDDATA_H

@@ -64,7 +64,7 @@ class CTrackViewDopeSheetBase
     , public ITrackViewSequenceListener
 {
 public:
-    CTrackViewDopeSheetBase(QWidget* parent = 0);
+    CTrackViewDopeSheetBase(QWidget* parent = nullptr);
     virtual ~CTrackViewDopeSheetBase();
 
     void SetNodesCtrl(CTrackViewNodesCtrl* pNodesCtrl) { m_pNodesCtrl = pNodesCtrl; }
@@ -86,7 +86,7 @@ public:
 
     void SetSnappingMode(ESnappingMode mode) { m_snappingMode = mode; }
     ESnappingMode GetSnappingMode() const { return m_snappingMode; }
-    void SetSnapFPS(UINT fps);
+    void SetSnapFPS(unsigned int fps);
 
     ETVTickMode GetTickDisplayMode() const { return m_tickDisplayMode; }
     void SetTickDisplayMode(ETVTickMode mode);

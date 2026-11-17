@@ -27,6 +27,7 @@ namespace Maestro
         ~CAnimScreenFaderNode();
 
         static void Initialize();
+        static void Shutdown();
 
         //! Overrides from CAnimNode
         void Activate(bool bActivate) override;

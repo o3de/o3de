@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONSOLEDIALOG_H
-#define CRYINCLUDE_EDITOR_CONSOLEDIALOG_H
-
 #pragma once
 
 #include "IEditor.h"
@@ -31,5 +27,3 @@ public:
 private:
     CConsoleSCB* const m_consoleWidget;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONSOLEDIALOG_H

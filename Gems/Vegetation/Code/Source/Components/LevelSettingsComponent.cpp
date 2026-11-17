@@ -39,8 +39,8 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &LevelSettingsConfig::m_areaSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Area System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Area management settings."))
-                    ->DataElement(0, &LevelSettingsConfig::m_instanceSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Instance System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Instance management settings."))
+                    ->DataElement(nullptr, &LevelSettingsConfig::m_areaSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Area System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Area management settings."))
+                    ->DataElement(nullptr, &LevelSettingsConfig::m_instanceSystemConfig, QT_TRANSLATE_NOOP("Vegetation", "Instance System Settings"), QT_TRANSLATE_NOOP("Vegetation", "Instance management settings."))
                     ;
             }
         }

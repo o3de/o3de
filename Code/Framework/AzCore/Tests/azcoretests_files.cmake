@@ -21,9 +21,11 @@ set(FILES
     AZStd/Allocators.cpp
     AZStd/Atomics.cpp
     AZStd/Any.cpp
+    AZStd/BitTests.cpp
     AZStd/Bitset.cpp
     AZStd/Charconv.cpp
     AZStd/ConceptsTests.cpp
+    AZStd/ConcurrencyCheckerTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
@@ -36,6 +38,7 @@ set(FILES
     AZStd/Hashed.cpp
     AZStd/Invoke.cpp
     AZStd/Iterators.cpp
+    AZStd/LruCache.cpp
     AZStd/Lists.cpp
     AZStd/ListsFixed.cpp
     AZStd/ListsIntrusive.cpp
@@ -64,6 +67,7 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
+    AZStd/VectorSet.cpp
     AssetManager.cpp
     AttributeDomInteropTests.cpp
     TestCatalog.h
@@ -110,6 +114,7 @@ set(FILES
     FixedWidthIntegers.cpp
     GenericStreamMock.h
     GenericStreamTests.cpp
+    Instance/InstanceDatabaseTests.cpp
     Math/AabbTests.cpp
     Math/CapsuleTests.cpp
     Math/ColorTests.cpp
@@ -166,8 +171,7 @@ set(FILES
     Math/VectorNPerformanceTests.cpp
     Math/PackedVectorTest.cpp
     Memory/AllocatorBenchmarks.cpp
-    Memory/HphaAllocator.cpp
-    Memory/HphaAllocatorErrorDetection.cpp
+    Memory/MimallocAllocator.cpp
     Memory/LeakDetection.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
@@ -268,6 +272,7 @@ set(FILES
     TaskTests.cpp
     TickBusTest.cpp
     Time/TimeTests.cpp
+    Utils/ScopedValueTests.cpp
     UUIDTests.cpp
     XML.cpp
 )
@@ -275,6 +280,5 @@ set(FILES
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     EnumTests.cpp
-    Memory/HphaAllocator.cpp
-    Memory/HphaAllocatorErrorDetection.cpp
+    Memory/MimallocAllocator.cpp
 )

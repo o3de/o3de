@@ -5,11 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 // RPIUtils is for dumping common functionality that is used in several places across the RPI
- 
-#include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/DeviceDispatchItem.h>
 #include <Atom/RPI.Public/Base.h>
@@ -18,6 +17,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/optional.h>
 
@@ -134,4 +134,3 @@ namespace AZ
             bool beforeReferencePass);
     }   // namespace RPI
 }   // namespace AZ
-

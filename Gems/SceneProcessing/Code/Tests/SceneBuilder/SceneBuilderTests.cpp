@@ -299,27 +299,25 @@ struct SourceDependencyMockedIOTests : UnitTest::LeakDetectionFixture
         using namespace ::testing;
 
         ON_CALL(m_ioMock, Open(_, _, _))
-            .WillByDefault(Invoke(
-                [](auto, auto, IO::HandleType& handle)
+            .WillByDefault([](auto, auto, IO::HandleType& handle)
                 {
                     handle = 1234;
                     return AZ::IO::Result(AZ::IO::ResultCode::Success);
-                }));
+                });
 
-        ON_CALL(m_ioMock, Size(An<AZ::IO::HandleType>(), _)).WillByDefault(Invoke([](auto, AZ::u64& size)
+        ON_CALL(m_ioMock, Size(An<AZ::IO::HandleType>(), _)).WillByDefault([](auto, AZ::u64& size)
         {
             size = strlen(SourceDependencyJson::TestJson);
             return AZ::IO::ResultCode::Success;
-        }));
+        });
 
         EXPECT_CALL(m_ioMock, Read(_, _, _, _, _))
-            .WillRepeatedly(Invoke(
-                [](auto, void* buffer, auto, auto, AZ::u64* bytesRead)
+            .WillRepeatedly([](auto, void* buffer, auto, auto, AZ::u64* bytesRead)
                 {
                     memcpy(buffer, SourceDependencyJson::TestJson, strlen(SourceDependencyJson::TestJson));
                     *bytesRead = strlen(SourceDependencyJson::TestJson);
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         EXPECT_CALL(m_ioMock, Close(_)).WillRepeatedly(Return(AZ::IO::ResultCode::Success));
     }

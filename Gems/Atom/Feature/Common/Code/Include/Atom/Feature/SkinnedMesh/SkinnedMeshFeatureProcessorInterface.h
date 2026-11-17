@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {

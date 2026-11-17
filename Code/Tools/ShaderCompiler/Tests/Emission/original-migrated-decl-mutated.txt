@@ -1,0 +1,5 @@
+"class PSMain_vd_S"
+"void GetDiffuseHolderInCB ( )"
+"void PSMain ( )"
+":: PSMain_vd_S local_s ;"
+"local_s . GetDiffuseHolderInCB ( ) ;"

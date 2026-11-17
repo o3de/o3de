@@ -326,8 +326,7 @@ namespace UnitTests
         using namespace AZ;
 
         ON_CALL(*m_fileIOMock, Open(_, _, _))
-            .WillByDefault(Invoke(
-                [this](auto filePath, IO::OpenMode mode, IO::HandleType& handle)
+            .WillByDefault([this](auto filePath, IO::OpenMode mode, IO::HandleType& handle)
                 {
                     AZStd::string normalizedPath(filePath);
                     AzFramework::StringFunc::Path::Normalize(normalizedPath);
@@ -342,30 +341,27 @@ namespace UnitTests
                     }
 
                     return AZ::IO::Result(AZ::IO::ResultCode::Success);
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Tell(_, _))
-            .WillByDefault(Invoke(
-                [](auto, auto& offset)
+            .WillByDefault([](auto, auto& offset)
                 {
                     offset = 0;
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Size(An<AZ::IO::HandleType>(), _))
-            .WillByDefault(Invoke(
-                [this](auto handle, AZ::u64& size)
+            .WillByDefault([this](auto handle, AZ::u64& size)
                 {
                     auto itr = m_mockFiles.find(handle);
 
                     size = itr != m_mockFiles.end() ? itr->second.second.size() : 0;
 
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Size(An<const char*>(), _))
-            .WillByDefault(Invoke(
-                [this](const char* filePath, AZ::u64& size)
+            .WillByDefault([this](const char* filePath, AZ::u64& size)
                 {
                     AZStd::string normalizedPath(filePath);
                     AzFramework::StringFunc::Path::Normalize(normalizedPath);
@@ -375,22 +371,20 @@ namespace UnitTests
                     size = itr != m_mockFiles.end() ? itr->second.second.size() : 0;
 
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Exists(_))
-            .WillByDefault(Invoke(
-                [this](const char* filePath)
+            .WillByDefault([this](const char* filePath)
                 {
                     AZStd::string normalizedPath(filePath);
                     AzFramework::StringFunc::Path::Normalize(normalizedPath);
                     auto handle = ComputeHandle(AZ::IO::PathView(normalizedPath));
                     auto itr = m_mockFiles.find(handle);
                     return itr != m_mockFiles.end();
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Rename(_, _))
-            .WillByDefault(Invoke(
-                [this](const char* originalPath, const char* newPath)
+            .WillByDefault([this](const char* originalPath, const char* newPath)
                 {
                     AZStd::string normalizedOriginalPath(originalPath);
                     AzFramework::StringFunc::Path::Normalize(normalizedOriginalPath);
@@ -417,11 +411,10 @@ namespace UnitTests
                     }
 
                     return AZ::IO::ResultCode::Error;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Remove(_))
-            .WillByDefault(Invoke(
-                [this](const char* filePath)
+            .WillByDefault([this](const char* filePath)
                 {
                     AZStd::string normalizedPath(filePath);
                     AzFramework::StringFunc::Path::Normalize(normalizedPath);
@@ -430,11 +423,10 @@ namespace UnitTests
                     m_mockFiles.erase(handle);
 
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Read(_, _, _, _, _))
-            .WillByDefault(Invoke(
-                [this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
+            .WillByDefault([this](auto handle, void* buffer, auto, auto, AZ::u64* bytesRead)
                 {
                     auto itr = m_mockFiles.find(handle);
 
@@ -446,11 +438,10 @@ namespace UnitTests
                     memcpy(buffer, itr->second.second.c_str(), itr->second.second.size());
                     *bytesRead = itr->second.second.size();
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, Write(_, _, _, _))
-            .WillByDefault(Invoke(
-                [this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
+            .WillByDefault([this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
                 {
                     auto& pair = m_mockFiles[fileHandle];
 
@@ -463,11 +454,10 @@ namespace UnitTests
                     }
 
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, FindFiles(_, _, _))
-            .WillByDefault(Invoke(
-                [this](const char* filePath, const char* filter, auto callback)
+            .WillByDefault([this](const char* filePath, const char* filter, auto callback)
                 {
                     if ((!filePath)||(filePath[0] == 0))
                     {
@@ -531,11 +521,10 @@ namespace UnitTests
                         }
                     }
                     return AZ::IO::ResultCode::Success;
-                }));
+                });
 
         ON_CALL(*m_fileIOMock, IsDirectory(_))
-            .WillByDefault(Invoke(
-                [this](const char* filePath)
+            .WillByDefault([this](const char* filePath)
                 {
                     AZStd::string normalizedPath(filePath);
                     AzFramework::StringFunc::Path::Normalize(normalizedPath);
@@ -564,7 +553,7 @@ namespace UnitTests
                         }
                     }
                     return false;
-                }));
+                });
         }
 
         MockVirtualFileIO::~MockVirtualFileIO()

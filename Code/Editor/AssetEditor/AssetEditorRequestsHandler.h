@@ -26,6 +26,7 @@ public:
     void CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) override;
     void OpenAssetEditor(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
     void OpenAssetEditorById(const AZ::Data::AssetId assetId) override;
+    void OpenAssetEditorByPath(const AZStd::string& path) override;
 
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorEvents::Bus::Handler

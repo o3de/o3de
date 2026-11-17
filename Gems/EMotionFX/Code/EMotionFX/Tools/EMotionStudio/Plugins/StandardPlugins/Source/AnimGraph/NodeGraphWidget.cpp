@@ -165,6 +165,53 @@ namespace EMStudio
         return m_activeGraph;
     }
 
+    bool NodeGraphWidget::GetNeedsRedraw() const
+    {
+        if (m_redrawRequested || m_activeGraph != m_paintedGraph)
+        {
+            return true;
+        }
+
+        return m_activeGraph && (m_activeGraph->GetScrollOffset() != m_paintedScrollOffset || m_activeGraph->GetScale() != m_paintedScale);
+    }
+
+    bool NodeGraphWidget::GetHasLiveContent() const
+    {
+        // An anim graph instance changes active states, blend weights and condition results every frame.
+        return m_activeGraph && m_activeGraph->GetModelIndex().data(AnimGraphModel::ROLE_ANIM_GRAPH_INSTANCE).value<EMotionFX::AnimGraphInstance*>() != nullptr;
+    }
+
+    bool NodeGraphWidget::event(QEvent* event)
+    {
+        // Any input can change hover, selection or the view, so repaint on the next frame.
+        switch (event->type())
+        {
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::Wheel:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+        case QEvent::Enter:
+        case QEvent::Leave:
+        case QEvent::Resize:
+        case QEvent::Show:
+        case QEvent::DragEnter:
+        case QEvent::DragMove:
+        case QEvent::DragLeave:
+        case QEvent::Drop:
+            m_redrawRequested = true;
+            break;
+        default:
+            break;
+        }
+
+        return QWidget::event(event);
+    }
+
     void NodeGraphWidget::paintEvent(QPaintEvent* event)
     {
         QWidget::paintEvent(event);
@@ -176,6 +223,14 @@ namespace EMStudio
         if (PreparePainting() == false)
         {
             return;
+        }
+
+        m_redrawRequested = false;
+        m_paintedGraph = m_activeGraph;
+        if (m_activeGraph)
+        {
+            m_paintedScrollOffset = m_activeGraph->GetScrollOffset();
+            m_paintedScale = m_activeGraph->GetScale();
         }
 
         // calculate the time passed since the last render

@@ -1,0 +1,59 @@
+static int a;  // global variable
+static const int b;  // same genre & namespace but with different qualifiers
+
+class S
+{
+    bool c;  // member variable
+
+    bool retc()
+    {
+        c = b;  // ref to S::c and ::b
+        return c; // ref to S::c
+    }
+
+    struct N
+    {
+        struct NN
+        {
+            struct NNN  // super nested
+            {
+                bool d;
+            } nnn;
+        } nn;
+    } n;
+};
+
+static S s;  // of user defined type
+
+void func(S param)
+{
+    bool c = param.c; // reference to func::param and S::c
+    bool d = param.c && true && param.c; // disturb the MemberAccess/idExpression state machine (in the end there is none)
+}
+
+float4 main():SV_TARGET0
+{
+    func(s);  // reference to ::s
+
+    int c;  // local variable
+    sampler s1{}, s2;  // 2 vars on the same decl
+
+    c = // reference to local var c
+      a + b;   // references to global ::a and ::b
+
+    if (s.n.nn.nnn.d)  // ref to nested d
+    {
+    }
+
+    S::N::NN nn = s.n.nn;
+
+    if (nn.nnn.d)  // ref to nested d
+    {
+        Texture2D tex;
+        ((Texture2D)tex).Sample(s1, float2(0,0));  // ref to tex and s1
+    }
+
+    Texture2D tex;
+    return float4((float)(c), tex.Sample(s2, float2(0,0)).r, 0, 1); // ref to local c, ref to tex, ref to s2
+}
+// WARNING: be careful in these files, any change will disrupt line and column numbers as checked by the seenat.py test

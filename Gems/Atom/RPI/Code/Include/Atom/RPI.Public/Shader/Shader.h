@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Public/Configuration.h>
@@ -19,8 +20,8 @@
 #include <Atom/RHI/PipelineLibrary.h>
 #include <Atom/RHI/PipelineState.h>
 
-#include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -37,11 +38,11 @@ namespace AZ
         //! Shader is effectively an 'uber-shader' containing a collection of 'variants'. Variants are
         //! designed to be 'variations' on the same core shader technique. To enforce this, every variant
         //! in the shader shares the same pipeline layout (i.e. set of shader resource groups).
-        //! 
+        //!
         //! A shader owns a library of pipeline states. When a variant is resolved to a pipeline state, its
         //! lifetime is determined by the lifetime of the Shader (unless an explicit reference is taken). If
         //! an asset reload event occurs, the pipeline state cache is reset.
-        //! 
+        //!
         //! To use Shader:
         //!  1) Construct a ShaderOptionGroup instance using CreateShaderOptionGroup.
         //!  2) Configure the group by setting values on shader options.
@@ -49,7 +50,7 @@ namespace AZ
         //!  4) Acquire the ShaderVariant instance using the ShaderVariantStableId.
         //!  5) Configure a pipeline state descriptor on the variant; make local overrides as necessary (e.g. to configure runtime render state).
         //!  6) Acquire a RHI::PipelineState instance from the shader using the configured pipeline state descriptor.
-        //! 
+        //!
         //! Remember that the returned RHI::PipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
         class ATOM_RPI_PUBLIC_API Shader final
@@ -65,7 +66,7 @@ namespace AZ
             //! Returns the shader instance associated with the provided asset.
             static Data::Instance<Shader> FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName);
 
-            //! Same as above, but uses the default supervariant 
+            //! Same as above, but uses the default supervariant
             static Data::Instance<Shader> FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset);
 
             ~Shader();
@@ -122,7 +123,7 @@ namespace AZ
 
             //! Returns the ShaderOutputContract which describes which outputs the shader requires
             const ShaderOutputContract& GetOutputContract() const;
-            
+
             //! Acquires a pipeline state directly from a descriptor.
             const RHI::PipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
 
@@ -172,7 +173,7 @@ namespace AZ
 
             AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
-            
+
             const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
 
             // AssetBus overrides...
@@ -188,11 +189,11 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////
             //! The following variables are necessary to reliably reload the Shader
             //! whenever the Shader source assets and dependencies change.
-            //! 
+            //!
             //! Each time the Shader is initialized, this variable
             //! caches all the Assets that we are expecting to be reloaded whenever
             //! the Shader asset changes. This includes m_asset + each Supervariant ShaderVariantAsset.
-            //! Typically most shaders only contain one Supervariant, so this variable becomes 2. 
+            //! Typically most shaders only contain one Supervariant, so this variable becomes 2.
             size_t m_expectedAssetReloadCount = 0;
             //! Each time one of the assets is reloaded we store it here, and when the
             //! size of this dictionary equals @m_expectedAssetReloadCount then we know it is safe
@@ -222,7 +223,7 @@ namespace AZ
             //! Local cache of ShaderVariants (except for the root variant), searchable by StableId.
             //! Gets populated when GetVariant() is called.
             AZStd::unordered_map<ShaderVariantStableId, ShaderVariant> m_shaderVariants;
-            
+
             //! DrawListTag associated with this shader.
             RHI::DrawListTag m_drawListTag;
 

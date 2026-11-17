@@ -10,7 +10,7 @@
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RPI.Public/Configuration.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {

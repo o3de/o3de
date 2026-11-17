@@ -55,7 +55,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &LevelsGradientConfig::m_outputMax, QT_TRANSLATE_NOOP("GradientSignal", "Output Max"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &LevelsGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
+                    ->DataElement(nullptr, &LevelsGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be transformed in relation to threshold."))
                     ;
             }
         }

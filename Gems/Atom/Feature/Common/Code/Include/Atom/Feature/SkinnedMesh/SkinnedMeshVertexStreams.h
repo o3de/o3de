@@ -10,7 +10,7 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Interface/Interface.h>
 

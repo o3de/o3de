@@ -66,7 +66,7 @@ class AssetCatalogModel
 public:
     AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator);
 
-    AssetCatalogModel(QObject* parent = 0);
+    AssetCatalogModel(QObject* parent = nullptr);
     ~AssetCatalogModel() override;
 
     QString RootPath() const { return m_rootPath; }

@@ -31,7 +31,7 @@ class FindEntityWidget : public QWidget
 public:
     AZ_CLASS_ALLOCATOR(FindEntityWidget, AZ::SystemAllocator)
 
-    FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
+    FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
     virtual ~FindEntityWidget();
 
 Q_SIGNALS:

@@ -16,7 +16,7 @@ class BatchApplicationServer
 {
     Q_OBJECT
 public:
-    explicit BatchApplicationServer(QObject* parent = 0);
+    explicit BatchApplicationServer(QObject* parent = nullptr);
     ~BatchApplicationServer() override;
 
     bool startListening(unsigned short port = 0) override;

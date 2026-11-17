@@ -31,7 +31,7 @@ QEntityOutlinerWindow::~QEntityOutlinerWindow()
     gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 }
 
-void QEntityOutlinerWindow::OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
+void QEntityOutlinerWindow::OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] uintptr_t wparam, [[maybe_unused]] uintptr_t lparam)
 {
 }
 

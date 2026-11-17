@@ -41,7 +41,7 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &DitherGradientConfig::m_patternOffset, QT_TRANSLATE_NOOP("GradientSignal", "Pattern Offset"), QT_TRANSLATE_NOOP("GradientSignal", "Shift pattern lookup indices"))
+                    ->DataElement(nullptr, &DitherGradientConfig::m_patternOffset, QT_TRANSLATE_NOOP("GradientSignal", "Pattern Offset"), QT_TRANSLATE_NOOP("GradientSignal", "Shift pattern lookup indices"))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DitherGradientConfig::m_patternType, QT_TRANSLATE_NOOP("GradientSignal", "Pattern Type"), "")
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_4x4, QT_TRANSLATE_NOOP("GradientSignal", "4x4"))
                     ->EnumAttribute(DitherGradientConfig::BayerPatternType::PATTERN_SIZE_8x8, QT_TRANSLATE_NOOP("GradientSignal", "8x8"))
@@ -55,7 +55,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                     ->EndGroup()
 
-                    ->DataElement(0, &DitherGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be dithered."))
+                    ->DataElement(nullptr, &DitherGradientConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Input gradient whose values will be dithered."))
                     ;
             }
         }

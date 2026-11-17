@@ -867,7 +867,7 @@ namespace AZ
                             {
                                 case  RHI::ShaderInputBufferAccess::Read:
                                 {
-                                    entryAddedSuccessfully = AddExistingResourceEntry("const device type_StructuredBuffer", resourceStartPos, regId, argBufferStr);
+                                    entryAddedSuccessfully = AddExistingResourceEntry("device type_StructuredBuffer", resourceStartPos, regId, argBufferStr);
                                     break;
                                 }
                                 case RHI::ShaderInputBufferAccess::ReadWrite:
@@ -897,7 +897,7 @@ namespace AZ
                             {
                                 case  RHI::ShaderInputBufferAccess::Read:
                                 {
-                                    entryAddedSuccessfully = AddExistingResourceEntry("const device type_ByteAddressBuffer", resourceStartPos, regId, argBufferStr);
+                                    entryAddedSuccessfully = AddExistingResourceEntry("device type_ByteAddressBuffer", resourceStartPos, regId, argBufferStr);
                                     break;
                                 }
                                 case RHI::ShaderInputBufferAccess::ReadWrite:

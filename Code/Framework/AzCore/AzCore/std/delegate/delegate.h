@@ -188,7 +188,7 @@ namespace AZStd
                 // Unsupported member function type -- force a compile failure.
                 // (it's illegal to have a array with negative size).
                 static_assert((N - 100) > 0, "Unsupported member function pointer on this compiler");
-                return 0;
+                return nullptr;
             }
         };
 
@@ -453,9 +453,9 @@ namespace AZStd
         }
     #else
         delegate_memento()
-            : m_pthis(0)
-            , m_pFunction(0) {};
-        void clear() {  m_pthis = 0; m_pFunction = 0;   }
+            : m_pthis(nullptr)
+            , m_pFunction(nullptr) {};
+        void clear() {  m_pthis = nullptr; m_pFunction = nullptr;   }
     #endif
     public:
     #if !defined(FASTDELEGATE_USESTATICFUNCTIONHACK)
@@ -509,9 +509,9 @@ namespace AZStd
         // We can't just compare m_pFunction because on Metrowerks,
         // m_pFunction can be zero even if the delegate is not empty!
         inline bool operator ! () const     // Is it bound to anything?
-        { return m_pthis == 0 && m_pFunction == 0; }
+        { return m_pthis == nullptr && m_pFunction == nullptr; }
         inline bool empty() const       // Is it bound to anything?
-        { return m_pthis == 0 && m_pFunction == 0; }
+        { return m_pthis == nullptr && m_pFunction == nullptr; }
     public:
         delegate_memento& operator = (const delegate_memento& right)
         {
@@ -674,7 +674,7 @@ namespace AZStd
             {
                 if (function_to_bind == 0) // cope with assignment to 0
                 {
-                    m_pFunction = 0;
+                    m_pFunction = nullptr;
                 }
                 else
                 {

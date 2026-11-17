@@ -411,7 +411,7 @@ void CSequenceBatchRenderDialog::OnAddRenderItem()
 void CSequenceBatchRenderDialog::OnRemoveRenderItem()
 {
     const int index = m_ui->m_renderList->currentIndex().row();
-    AZ_Assert(index != CB_ERR, "Invalid row index");
+    AZ_Assert(index != -1, "Invalid row index");
 
     m_ui->m_renderList->model()->removeRow(index);
     m_renderItems.erase(m_renderItems.begin() + index);
@@ -444,7 +444,7 @@ void CSequenceBatchRenderDialog::OnClearRenderItems()
 void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 {
     const int index = m_ui->m_renderList->currentIndex().row();
-    AZ_Assert(index != CB_ERR, "Invalid row index");
+    AZ_Assert(index != -1, "Invalid row index");
 
     // Set up a new render item.
     SRenderItem item;
@@ -759,7 +759,7 @@ bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
     XmlNodeRef resolutionNode = batchRenderOptionsNode->findChild("resolution");
     if (resolutionNode)
     {
-        int curSel = CB_ERR;
+        int curSel = -1;
         resolutionNode->getAttr("cursel", curSel);
         if (curSel == arraysize(resolutions))
         {
@@ -793,10 +793,10 @@ bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
     XmlNodeRef imageNode = batchRenderOptionsNode->findChild("image");
     if (imageNode)
     {
-        int curSel = CB_ERR;
+        int curSel = -1;
         imageNode->getAttr("format", curSel);
         m_ui->m_imageFormatCombo->setCurrentIndex(curSel);
-        curSel = CB_ERR;
+        curSel = -1;
         m_ui->BATCH_RENDER_FILE_PREFIX->setText(imageNode->getAttr("prefix"));
         bool disableDebugInfo = false;
         imageNode->getAttr("disabledebuginfo", disableDebugInfo);

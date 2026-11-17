@@ -1,0 +1,6 @@
+/*
+    Cmdargs: ['--namespace', 'mt']
+*/
+"Texture2D SRG_m_sub : register ( t0 , space0 ) ;"
+"return spi . Load ( int3 ( 0 , 0 , 0 ) ) ;"
+"MainPS"

@@ -98,7 +98,6 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::TIFF
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzToolsFramework
             AZ::SceneCore

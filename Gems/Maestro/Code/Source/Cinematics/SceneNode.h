@@ -54,6 +54,7 @@ namespace Maestro
         CAnimSceneNode();
         ~CAnimSceneNode();
         static void Initialize();
+        static void Shutdown();
 
         //////////////////////////////////////////////////////////////////////////
         // Overrides from CAnimNode

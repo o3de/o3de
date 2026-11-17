@@ -1,0 +1,12 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup srg : sem
+{
+    struct InnerStruct
+    {
+        enum SpecMode { Gloss, Rough } m_spec;
+    };
+};

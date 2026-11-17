@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CONNECTIONMANAGER_H
-#define CONNECTIONMANAGER_H
+
+#pragma once
 
 #include "native/utilities/AssetUtilEBusHelper.h"
 
@@ -73,7 +73,7 @@ public:
         UserConnectionRole = Qt::UserRole + 1,
     };
 
-    explicit ConnectionManager(QObject* parent = 0);
+    explicit ConnectionManager(QObject* parent = nullptr);
     virtual ~ConnectionManager();
     // Singleton pattern:
     static ConnectionManager* Get();
@@ -217,6 +217,3 @@ private:
     QStringList m_allowedListAddresses;
     QStringList m_rejectedAddresses;
 };
-
-
-#endif // CONNECTIONMANAGER_H

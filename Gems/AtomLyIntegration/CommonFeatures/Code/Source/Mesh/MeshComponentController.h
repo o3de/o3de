@@ -11,7 +11,6 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
@@ -21,6 +20,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzFramework/Visibility/VisibleGeometryBus.h>

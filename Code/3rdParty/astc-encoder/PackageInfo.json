@@ -1,0 +1,12 @@
+{
+    "PackageName": "astc-encoder",
+    "Version": "3.2",
+    "URL": "https://github.com/ARM-software/astc-encoder",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/ARM-software/astc-encoder/archive/refs/tags/3.2.tar.gz",
+        "Revision": "f32d8d4dd9e06f8986cd5e10f12e199fc023f150",
+        "SHA256": "ed24d600b3b18178df3c6375e2ba8f256ccfc1f20e57863f2f21a1c9e39f820e"
+    }
+}

@@ -10,7 +10,7 @@ import azlmbr.qt_helpers
 import asyncio
 import re
 from shiboken6 import wrapInstance, getCppPointer
-from PySide6 import QtCore, QtWidgets, QtGui, QtTest
+from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
@@ -91,8 +91,13 @@ class LmbrQtEventLoop(asyncio.AbstractEventLoop):
         self.running = True
         self.shutdown.clear()
         azlmbr.qt_helpers.set_loop_callback(self.event_loop)
-        while not self.shutdown.is_set():
-            qApp.processEvents(QtCore.QEventLoop.AllEvents, 0)
+        previous_loop = asyncio.events._get_running_loop()
+        asyncio.events._set_running_loop(self)
+        try:
+            while not self.shutdown.is_set():
+                qApp.processEvents(QtCore.QEventLoop.AllEvents, 0)
+        finally:
+            asyncio.events._set_running_loop(previous_loop)
 
     def run_forever(self):
         self._wait_future = None
@@ -484,9 +489,9 @@ def find_child_by_pattern(obj=None, pattern=None, recursive=True, **kw):
     with "Foo_"
 
     For convenience, these parameter types may also be specified as keyword arguments:
-    find_child_by_pattern(obj, text="foo", type=QtWidgets.QAction)
+    find_child_by_pattern(obj, text="foo", type=QtGui.QAction)
     is equivalent to
-    find_child_by_pattern(obj, {"text": "foo", "type": QtWidgets.QAction})
+    find_child_by_pattern(obj, {"text": "foo", "type": QtGui.QAction})
 
     If pattern is specified as a string, it will turn into a pattern matching "text":
     find_child_by_pattern(obj, "foo")

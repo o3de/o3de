@@ -8,7 +8,6 @@
 
 #include <SkyAtmosphere/SkyAtmosphereTypeIds.h>
 #include <SkyAtmosphereModuleInterface.h>
-#include "SkyAtmosphereSystemComponent.h"
 
 #include <AzCore/RTTI/RTTI.h>
 
@@ -27,14 +26,8 @@ namespace SkyAtmosphere
         {
             m_descriptors.insert(m_descriptors.end(),
                 {
-                    SkyAtmosphereSystemComponent::CreateDescriptor(),
                     SkyAtmosphereComponent::CreateDescriptor(),
                 });
-        }
-
-        AZ::ComponentTypeList GetRequiredSystemComponents() const
-        {
-            return AZ::ComponentTypeList{ azrtti_typeid<SkyAtmosphereSystemComponent>() };
         }
     };
 }// namespace SkyAtmosphere

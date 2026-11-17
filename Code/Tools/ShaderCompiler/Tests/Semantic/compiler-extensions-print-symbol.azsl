@@ -1,0 +1,21 @@
+static int var;
+
+__azslc_print_message("@check predicate ");  // convention recognized by testapp.py
+__azslc_print_symbol(var, __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == /var\n");
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(var, __azslc_prtsym_least_qualified);
+__azslc_print_message(" == var\n");
+
+void f()
+{
+    int a;
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(a, __azslc_prtsym_least_qualified);
+    __azslc_print_message(" == a\n");
+    
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(a, __azslc_prtsym_fully_qualified);
+    __azslc_print_message(" == /f()/a\n");
+}

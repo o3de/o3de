@@ -1,0 +1,164 @@
+ShaderResourceGroupSemantic Sem0 { FrequencyId = 0; };
+ShaderResourceGroupSemantic Sem1 { FrequencyId = 1; };
+ShaderResourceGroupSemantic Sem2 { FrequencyId = 2; };
+ShaderResourceGroupSemantic Sem3 { FrequencyId = 3; };
+
+struct Matrix22  {             float2x2 m_matrix;    float A; };      struct Matrix22B { Matrix22 m_matrix; float B; };
+struct Matrix23  {             float2x3 m_matrix;    float A; };      struct Matrix23B { Matrix23 m_matrix; float B; };
+struct Matrix32  {             float3x2 m_matrix;    float A; };      struct Matrix32B { Matrix32 m_matrix; float B; };
+struct Matrix24  {             float2x4 m_matrix;    float A; };      struct Matrix24B { Matrix24 m_matrix; float B; };
+struct Matrix42  {             float4x2 m_matrix;    float A; };      struct Matrix42B { Matrix42 m_matrix; float B; };
+struct Matrix33  {             float3x3 m_matrix;    float A; };      struct Matrix33B { Matrix33 m_matrix; float B; };
+struct Matrix34  {             float3x4 m_matrix;    float A; };      struct Matrix34B { Matrix34 m_matrix; float B; };
+struct Matrix43  {             float4x3 m_matrix;    float A; };      struct Matrix43B { Matrix43 m_matrix; float B; };
+struct Matrix44  {             float4x4 m_matrix;    float A; };      struct Matrix44B { Matrix44 m_matrix; float B; };
+
+typealias M22R = struct Matrix22R {   row_major float2x2 m_matrix;    float A; };      typealias M22RB = struct Matrix22RB { M22R m_matrix; float B; };
+typedef struct Matrix23R {   row_major float2x3 m_matrix;    float A; } M23R;          typedef struct Matrix23RB { M23R m_matrix; float B; } M23RB;
+struct Matrix32R {   row_major float3x2 m_matrix;    float A; };      struct Matrix32RB { Matrix32R m_matrix; float B; };
+struct Matrix24R {   row_major float2x4 m_matrix;    float A; };      struct Matrix24RB { Matrix24R m_matrix; float B; };
+struct Matrix42R {   row_major float4x2 m_matrix;    float A; };      struct Matrix42RB { Matrix42R m_matrix; float B; };
+struct Matrix33R {   row_major float3x3 m_matrix;    float A; };      struct Matrix33RB { Matrix33R m_matrix; float B; };
+struct Matrix34R {   row_major float3x4 m_matrix;    float A; };      struct Matrix34RB { Matrix34R m_matrix; float B; };
+struct Matrix43R {   row_major float4x3 m_matrix;    float A; };      struct Matrix43RB { Matrix43R m_matrix; float B; };
+struct Matrix44R {   row_major float4x4 m_matrix;    float A; };      struct Matrix44RB { Matrix44R m_matrix; float B; };
+
+ShaderResourceGroup ColMajorCB : Sem0
+{
+    // X Y - -
+    // X Y A B
+    ConstantBuffer<Matrix22B> m_constant22;  // 32 = (6+1+1) x 4 bytes
+
+    // X Y - -
+    // X Y - -
+    // X Y A B
+    ConstantBuffer<Matrix23B> m_constant23;  // 48 = (10+1+1) x 4 bytes
+
+    // X Y Z -
+    // X Y Z A
+    // B
+    ConstantBuffer<Matrix32B> m_constant32;  // 36 = (7+1+1) x 4 bytes
+
+    // X Y - -
+    // X Y - -
+    // X Y - -
+    // X Y A B
+    ConstantBuffer<Matrix24B> m_constant24;  // 64 = (14+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix42B> m_constant42;  // 40 = (8+1+1) x 4 bytes
+
+    // X Y Z -
+    // X Y Z -
+    // X Y Z A
+    // B
+    ConstantBuffer<Matrix33B> m_constant33;  // 52 = (11+1+1) x 4 bytes
+
+    // X Y Z -
+    // X Y Z -
+    // X Y Z -
+    // X Y Z A
+    // B
+    ConstantBuffer<Matrix34B> m_constant34;  // 68 = (15+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix43B> m_constant43;  // 56 = (12+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix44B> m_constant44;  // 72 = (16+1+1) x 4 bytes
+};
+
+ShaderResourceGroup RowMajorCB : Sem1
+{
+    // X Y - -
+    // X Y A B
+    ConstantBuffer<M22RB>      m_constant22;  // 32 = (6+1+1) x 4 bytes
+
+    // X Y Z -
+    // X Y Z A
+    // B
+    ConstantBuffer<M23RB>      m_constant23;  // 36 = (7+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y A B
+    typealias M32R_CB = ConstantBuffer<Matrix32RB>;
+    M32R_CB                    m_constant32;  // 48 = (10+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix24RB> m_constant24;  // 40 = (8+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // X Y A B
+    ConstantBuffer<Matrix42RB> m_constant42;  // 64 = (14+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z A
+    // B
+    ConstantBuffer<Matrix33RB> m_constant33;  // 52 = (11+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix34RB> m_constant34;  // 56 = (12+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // X Y Z A
+    // B
+    ConstantBuffer<Matrix43RB> m_constant43;  // 68 = (15+1+1) x 4 bytes
+
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // X Y Z W
+    // A B
+    ConstantBuffer<Matrix44RB> m_constant44;  // 72 = (16+1+1) x 4 bytes
+};
+
+ShaderResourceGroup ColMajorSB : Sem2
+{
+    typedef StructuredBuffer<Matrix22> M22_SB;
+    M22_SB                     m_struct22;  // 16 + 4
+    StructuredBuffer<Matrix23> m_struct23;  // 24 + 4
+    StructuredBuffer<Matrix32> m_struct32;  // 24 + 4
+    StructuredBuffer<Matrix24> m_struct24;  // 32 + 4
+    StructuredBuffer<Matrix42> m_struct42;  // 32 + 4
+    StructuredBuffer<Matrix33> m_struct33;  // 36 + 4
+    StructuredBuffer<Matrix34> m_struct34;  // 48 + 4
+    StructuredBuffer<Matrix43> m_struct43;  // 48 + 4
+    StructuredBuffer<Matrix44> m_struct44;  // 64 + 4
+};
+
+typealias M34R = Matrix34R;
+typedef StructuredBuffer<Matrix43R> M43R_SB;
+
+ShaderResourceGroup RowMajorSB : Sem3
+{
+    StructuredBuffer<Matrix22R> m_struct22;  // 16 + 4
+    StructuredBuffer<Matrix23R> m_struct23;  // 24 + 4
+    StructuredBuffer<Matrix32R> m_struct32;  // 24 + 4
+    StructuredBuffer<Matrix24R> m_struct24;  // 32 + 4
+    StructuredBuffer<Matrix42R> m_struct42;  // 32 + 4
+    StructuredBuffer<Matrix33R> m_struct33;  // 36 + 4
+    StructuredBuffer<M34R>      m_struct34;  // 48 + 4
+    M43R_SB                     m_struct43;  // 48 + 4
+    StructuredBuffer<Matrix44R> m_struct44;  // 64 + 4
+};
+

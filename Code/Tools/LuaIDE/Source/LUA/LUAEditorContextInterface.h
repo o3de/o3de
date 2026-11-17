@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef LUAEDITORCONTEXTINTERFACE_H
-#define LUAEDITORCONTEXTINTERFACE_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/string/string.h>
@@ -122,5 +121,3 @@ namespace LUAEditor
         virtual void ShowLUAEditorView() = 0;
     };
 }
-
-#endif

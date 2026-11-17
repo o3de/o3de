@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <Serializer/ParticleBase.h>
 #include <Serializer/ParticleSourceData.h>
 #include "core/math/Constants.h"
@@ -557,6 +558,81 @@ namespace OpenParticle
         distInfos.Clear();
     }
 
+    void Distribution::NormalizeCurves()
+    {
+        // The used curves move to the front in the order the settings are listed, each setting getting a curve of its own. Renumbering afterwards
+        // (RebuildDistributionIndex) takes a setting's position in the sorted list as its curve index, which only holds when the curve list is
+        // exactly the used curves. Curves nobody uses (left behind by turning modules off and on, or by an emitter copy) sit between them and made a
+        // module that was turned on again pick up one of them, so its gradient changed every time.
+        AZStd::unordered_set<Curve*> taken;
+        AZStd::vector<Curve*> compact;
+        for (ParamDistInfo& info : distInfos.curveIndexInfos)
+        {
+            if (info.distIndex == 0 || info.distIndex > curves.size())
+            {
+                continue;
+            }
+            Curve* source = curves[info.distIndex - 1];
+            Curve* use = taken.insert(source).second ? source : aznew Curve(*source);
+            compact.emplace_back(use);
+            info.distIndex = compact.size();
+        }
+
+        AZStd::unordered_set<Curve*> cached;
+        for (const auto& cache : curveCaches)
+        {
+            for (Curve* curve : cache.second.curves)
+            {
+                cached.insert(curve);
+            }
+        }
+        for (Curve* curve : curves)
+        {
+            // The caches of the editor may still point at an unused curve, so it is kept alive (and freed with the distribution) instead of deleted.
+            if (taken.find(curve) == taken.end() && cached.find(curve) == cached.end())
+            {
+                retiredCurves.emplace_back(curve);
+            }
+        }
+        curves = compact;
+    }
+
+    void Distribution::NormalizeRandoms()
+    {
+        // Keep exactly the used randoms in settings order, one per setting, so renumbering cannot shift a setting onto a neighbour's range
+        AZStd::unordered_set<Random*> taken;
+        AZStd::vector<Random*> compact;
+        for (ParamDistInfo& info : distInfos.randomIndexInfos)
+        {
+            if (info.distIndex == 0 || info.distIndex > randoms.size())
+            {
+                continue;
+            }
+            Random* source = randoms[info.distIndex - 1];
+            Random* use = taken.insert(source).second ? source : aznew Random(*source);
+            compact.emplace_back(use);
+            info.distIndex = compact.size();
+        }
+
+        AZStd::unordered_set<Random*> cached;
+        for (const auto& cache : randomCaches)
+        {
+            for (Random* random : cache.second)
+            {
+                cached.insert(random);
+            }
+        }
+        for (Random* random : randoms)
+        {
+            // The editor caches may still point at an unused random, so it is kept alive (and freed with the distribution) instead of deleted
+            if (taken.find(random) == taken.end() && cached.find(random) == cached.end())
+            {
+                retiredRandoms.emplace_back(random);
+            }
+        }
+        randoms = compact;
+    }
+
     void SortIndex(AZStd::vector<ParamDistInfo>& indexInfo)
     {
         AZStd::sort(
@@ -635,6 +711,10 @@ namespace OpenParticle
             if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjVec4>())
             {
                 static_cast<ValueObjVec4*>(indexInfo[index].valueObjPtr)->distIndex[indexInfo[index].paramIndex] = index + 1;
+            }
+            if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjColor>())
+            {
+                static_cast<ValueObjColor*>(indexInfo[index].valueObjPtr)->distIndex[indexInfo[index].paramIndex] = index + 1;
             }
             if (indexInfo[index].valueTypeId == azrtti_typeid<ValueObjLinear>())
             {

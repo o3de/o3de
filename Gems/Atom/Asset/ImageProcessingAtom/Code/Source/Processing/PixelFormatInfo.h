@@ -126,11 +126,11 @@ namespace ImageProcessingAtom
         uint32_t    fourCC;         // fourCC to identify a none d3d10 format
 
         PixelFormatInfo()
-            : szAlpha(0)
+            : szAlpha(nullptr)
             , bitsPerBlock(0)
             , d3d10Format(DXGI_FORMAT_UNKNOWN)
-            , szName(0)
-            , szDescription(0)
+            , szName(nullptr)
+            , szDescription(nullptr)
             , fourCC(0)
         {
         }

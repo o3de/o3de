@@ -6,42 +6,18 @@
 #
 #
 
+# DEPRECATED: The contents of AtomCore have been relocated into AzCore.
+# This target now exists only as a set of forwarding-header shims that redirect to their <AzCore/...> counterparts,
+# plus an interface dependency on AZ::AzCore so existing consumers of AZ::AtomCore keep resolving.
 ly_add_target(
-    NAME AtomCore STATIC
+    NAME AtomCore HEADERONLY
     NAMESPACE AZ
     FILES_CMAKE
         AtomCore/atomcore_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
+        INTERFACE
             .
     BUILD_DEPENDENCIES
-        PRIVATE
+        INTERFACE
             AZ::AzCore
-        PUBLIC
-            3rdParty::RapidJSON
 )
-
-
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_add_target(
-        NAME AtomCore.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE AZ
-        FILES_CMAKE
-            Tests/atomcore_tests_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Tests
-                Source
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                AZ::AtomCore
-    )
-    ly_add_googletest(
-        NAME AZ::AtomCore.Tests
-        LABELS REQUIRES_tiaf
-    )
-endif()

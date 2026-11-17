@@ -152,6 +152,6 @@ private:
     void DefaultValue(AZStd::string& str) const { str = ""; }
     void DefaultValue([[maybe_unused]] const AZStd::string& str) const {}
     void DefaultValue([[maybe_unused]] SSerializeString& str) const {}
-    void DefaultValue(XmlNodeRef& ref) const { ref = NULL; }
+    void DefaultValue(XmlNodeRef& ref) const { ref = nullptr; }
     //////////////////////////////////////////////////////////////////////////
 };

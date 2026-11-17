@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
-#ifndef AZCORE_SCRIPT_SCRIPTPROPERTYTABLE_H
-#define AZCORE_SCRIPT_SCRIPTPROPERTYTABLE_H
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -463,5 +462,3 @@ namespace AZ
         AZ::ScriptPropertyGenericClass* m_genericProperty;
     };
 }
-
-#endif

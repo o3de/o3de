@@ -39,6 +39,8 @@ function(ly_add_dependencies TARGET)
         ly_de_alias_target(${TARGET} de_aliased_target)
         add_dependencies(${de_aliased_target} ${extra_function_args})
     else()
+        # Preserve the declarations search scope for forward dependencies.
+        ly_parse_third_party_dependencies("${extra_function_args}")
         set_property(GLOBAL APPEND PROPERTY LY_DELAYED_DEPENDENCIES_${TARGET} ${extra_function_args})
     endif()
 

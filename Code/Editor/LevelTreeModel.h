@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_LEVEL_ITEM_MODEL_H
-#define CRYINCLUDE_EDITOR_LEVEL_ITEM_MODEL_H
 #pragma once
 
 #include "Editor/LevelRoots.h"
@@ -64,5 +62,3 @@ public:
 private:
     void ReloadTree(QStandardItem* root, bool recurseIfNoLevels);
 };
-
-#endif

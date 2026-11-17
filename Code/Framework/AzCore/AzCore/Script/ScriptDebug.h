@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPTDEBUG_H_
-#define AZCORE_SCRIPTDEBUG_H_
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,6 +30,3 @@ namespace AZ
         static void Reflect(AZ::ReflectContext* context);
     };
 }
-
-
-#endif // AZCORE_SCRIPTDEBUG_H_

@@ -24,7 +24,7 @@ bool CMailer::SendMail(const char* subject,
     bool bShowDialog)
 {
     // Preserve directory, (Can be changed if attachment specified)
-    WCHAR dir[MAX_PATH];
+    WCHAR dir[AZ_TRAIT_OS_MAX_PATH_LEN];
     GetCurrentDirectoryW(sizeof(dir), dir);
 
     // Load MAPI dll

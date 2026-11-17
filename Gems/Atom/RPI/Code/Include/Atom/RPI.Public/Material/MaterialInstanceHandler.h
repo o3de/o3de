@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Material/MaterialInstanceData.h>
 #include <Atom/RPI.Public/Material/SharedSamplerState.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/Instance.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Interface/Interface.h>
 
 namespace AZ::RPI

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETPROCESSOR_RCQUEUESORTMODEL_H
-#define ASSETPROCESSOR_RCQUEUESORTMODEL_H
+
+#pragma once
 
 #include <QSortFilterProxyModel>
 #include <QSet>
@@ -40,7 +40,7 @@ namespace AssetProcessor
         Q_OBJECT
         friend class ::RCcontrollerUnitTests;
     public:
-        explicit RCQueueSortModel(QObject* parent = 0);
+        explicit RCQueueSortModel(QObject* parent = nullptr);
 
         void AttachToModel(RCJobListModel* target);
         RCJob* GetNextPendingJob();
@@ -80,5 +80,3 @@ namespace AssetProcessor
         void ProcessPlatformChangeMessage(QString platformName, bool connected);
     };
 } // namespace AssetProcessor
-
-#endif //ASSETPROCESSOR_RCQUEUESORTMODEL_H

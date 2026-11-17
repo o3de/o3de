@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef RCCONTROLLER_H
-#define RCCONTROLLER_H
+
+#pragma once
 
 #include "RCCommon.h"
 
@@ -42,7 +42,7 @@ namespace AssetProcessor
             cmdExecute,
             cmdTerminate
         };
-        explicit RCController(QObject* parent = 0);
+        explicit RCController(QObject* parent = nullptr);
         virtual ~RCController();
 
         AssetProcessor::RCJobListModel* GetQueueModel();
@@ -140,6 +140,3 @@ namespace AssetProcessor
 
     };
 } // namespace AssetProcessor
-
-
-#endif // RCCONTROLLER_H

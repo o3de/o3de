@@ -1,0 +1,16 @@
+// Error: Option (Size) must be of type bool, int, or enum
+option float Size = 5;
+
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 128;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+// Emitter Error 265: Option (optionName) must be of type bool, int, or enum
+// #EC 265

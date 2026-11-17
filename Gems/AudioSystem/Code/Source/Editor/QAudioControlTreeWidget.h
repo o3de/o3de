@@ -46,7 +46,7 @@ class QAudioControlSortProxy
     : public QSortFilterProxyModel
 {
 public:
-    explicit QAudioControlSortProxy(QObject* pParent = 0);
+    explicit QAudioControlSortProxy(QObject* pParent = nullptr);
     bool setData(const QModelIndex& index, const QVariant& value, int role /* = Qt::EditRole */) override;
 
     QStandardItem* GetStandardItemFromIndex(const QModelIndex& index);
@@ -60,7 +60,7 @@ class QAudioControlsTreeView
     : public QTreeView
 {
 public:
-    explicit QAudioControlsTreeView(QWidget* pParent = 0);
+    explicit QAudioControlsTreeView(QWidget* pParent = nullptr);
     void scrollTo(const QModelIndex& index, ScrollHint hint = QAbstractItemView::EnsureVisible) override;
     bool IsEditing();
 };

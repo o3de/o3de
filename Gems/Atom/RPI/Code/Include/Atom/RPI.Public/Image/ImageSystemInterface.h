@@ -10,7 +10,7 @@
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RPI.Public/Configuration.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Instance/Instance.h>
 
 namespace AZ
 {

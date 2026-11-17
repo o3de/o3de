@@ -203,7 +203,7 @@ namespace AZ
         AZ_TYPE_INFO(ScriptDataContext, "{7ec9e09e-6559-49bd-8826-5eef8880d970}");
 
         ScriptDataContext()
-            : m_nativeContext(NULL)
+            : m_nativeContext(nullptr)
             , m_numArguments(0)
             , m_numResults(0)
             , m_startVariableIndex(0)

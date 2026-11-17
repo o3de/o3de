@@ -104,7 +104,7 @@ namespace Maestro
 
     void CCharacterTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
 
         const auto numKeys = GetNumKeys();

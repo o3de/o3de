@@ -1,0 +1,6 @@
+"struct srg_InnerStruct"
+"enum SpecMode"
+"Gloss"
+"Rough"
+":: srg_InnerStruct :: SpecMode m_spec ;"
+"} ;"

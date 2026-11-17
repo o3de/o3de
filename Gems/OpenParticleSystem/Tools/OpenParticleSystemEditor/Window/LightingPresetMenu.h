@@ -21,7 +21,7 @@ namespace OpenParticleSystemEditor
     {
         Q_OBJECT
     public:
-        LightingPresetMenu(const QString& title, QWidget* parent = 0);
+        LightingPresetMenu(const QString& title, QWidget* parent = nullptr);
         ~LightingPresetMenu();
         void Refresh();
     Q_SIGNALS:

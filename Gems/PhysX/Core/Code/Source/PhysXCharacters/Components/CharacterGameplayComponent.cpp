@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <PhysX/PhysXLocks.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -130,16 +131,19 @@ namespace PhysX
             // use a box shape for the overlap, even if the character geometry is a capsule, to avoid difficulties with
             // the curved base of the capsule
             AZ::Vector3 footBoxDimensions(0.0f, 0.0f, m_groundDetectionBoxHeight);
-            if (pxController->getType() == physx::PxControllerShapeType::eCAPSULE)
             {
-                const float radius = static_cast<physx::PxCapsuleController*>(pxController)->getRadius();
-                footBoxDimensions = AZ::Vector3(2.0f * radius, 2.0f * radius, m_groundDetectionBoxHeight);
-            }
-            else if (pxController->getType() == physx::PxControllerShapeType::eBOX)
-            {
-                const auto* boxController = static_cast<physx::PxBoxController*>(pxController);
-                footBoxDimensions = AZ::Vector3(
-                    2.0f * boxController->getHalfSideExtent(), 2.0f * boxController->getHalfForwardExtent(), m_groundDetectionBoxHeight);
+                PHYSX_SCENE_READ_LOCK(pxController->getScene());
+                if (pxController->getType() == physx::PxControllerShapeType::eCAPSULE)
+                {
+                    const float radius = static_cast<physx::PxCapsuleController*>(pxController)->getRadius();
+                    footBoxDimensions = AZ::Vector3(2.0f * radius, 2.0f * radius, m_groundDetectionBoxHeight);
+                }
+                else if (pxController->getType() == physx::PxControllerShapeType::eBOX)
+                {
+                    const auto* boxController = static_cast<physx::PxBoxController*>(pxController);
+                    footBoxDimensions = AZ::Vector3(
+                        2.0f * boxController->getHalfSideExtent(), 2.0f * boxController->getHalfForwardExtent(), m_groundDetectionBoxHeight);
+                }
             }
 
             AZ::Transform footBoxTransform = AZ::Transform::CreateFromQuaternionAndTranslation(

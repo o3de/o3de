@@ -6,14 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : Generic image class
 
 
 #include <ITexture.h>
-#ifndef CRYINCLUDE_EDITOR_UTIL_IMAGE_H
-#define CRYINCLUDE_EDITOR_UTIL_IMAGE_H
-#pragma once
 #include "MemoryBlock.h"
 
 
@@ -36,7 +34,7 @@ class TImage
 {
 public:
     TImage()
-        : m_data(0)
+        : m_data(nullptr)
         , m_width(0)
         , m_height(0)
         , m_bHasAlphaChannel(false)
@@ -76,7 +74,7 @@ public:
     //  size in bytes
     int GetSize() const { return m_width * m_height * sizeof(T); }
 
-    bool IsValid() const { return m_data != 0; }
+    bool IsValid() const { return m_data != nullptr; }
 
     void Attach(T* data, int width, int height)
     {
@@ -99,8 +97,8 @@ public:
     }
     void Detach()
     {
-        m_memory = 0;
-        m_data = 0;
+        m_memory = nullptr;
+        m_data = nullptr;
         m_width = 0;
         m_height = 0;
         m_strDccFilename = "";
@@ -137,7 +135,7 @@ public:
 
     void Release()
     {
-        m_memory = 0;
+        m_memory = nullptr;
         m_data = 0;
         m_width = 0;
         m_height = 0;
@@ -445,7 +443,7 @@ void    TImage<T>::Serialize(CXmlArchive& ar)
             m_format = eTF_Unknown;
         }
         Allocate(m_width, m_height);
-        void* pData = 0;
+        void* pData = nullptr;
         int nDataSize = 0;
         bool bHaveBlock = ar.pNamedData->GetDataBlock(ar.root->getTag(), pData, nDataSize);
         if (bHaveBlock && nDataSize == GetSize())
@@ -496,5 +494,3 @@ public:
 private:
     bool m_bGetHistogramEqualization;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_IMAGE_H

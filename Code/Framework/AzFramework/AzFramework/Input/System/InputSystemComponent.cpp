@@ -9,6 +9,7 @@
 #include <AzFramework/Input/System/InputSystemComponent.h>
 
 #include <AzFramework/Input/Buses/Notifications/InputSystemNotificationBus.h>
+#include <AzFramework/Input/Buses/Requests/InputHapticFeedbackRequestBus.h>
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -134,6 +135,11 @@ namespace AzFramework
             behaviorContext->EBus<InputSystemRequestBus>("InputSystemRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Input")
                 ->Event("RecreateEnabledInputDevices", &InputSystemRequestBus::Events::RecreateEnabledInputDevices)
+                ;
+
+            behaviorContext->EBus<InputHapticFeedbackRequestBus>("InputHapticFeedbackRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Input")
+                ->Event("SetVibration", &InputHapticFeedbackRequestBus::Events::SetVibration)
                 ;
         }
 

@@ -226,6 +226,20 @@ namespace AzFramework
         }
     }
 
+    void OctreeNode::Enumerate(const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        callback({ m_bounds, m_entries });
+
+        if (m_children)
+        {
+            const AZ::u32 childCount = GetChildNodeCount();
+            for (AZ::u32 child = 0; child < childCount; ++child)
+            {
+                m_children[child].Enumerate(callback);
+            }
+        }
+    }
+
     const AZStd::vector<VisibilityEntry*>& OctreeNode::GetEntries() const
     {
         return m_entries;
@@ -450,6 +464,12 @@ namespace AzFramework
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.EnumerateNoCull(callback);
+    }
+
+    void OctreeScene::Enumerate(const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(callback);
     }
 
     uint32_t OctreeScene::GetEntryCount() const

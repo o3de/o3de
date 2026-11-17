@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H
-#define CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H
-
 #pragma once
 
 #include "Undo/Undo.h"
@@ -128,18 +124,18 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     /** Set current animation time in active sequence.
-        @param seq New active time.
+        @param t New active time.
     */
     void SetTime(float t);
 
     /** Set time in active sequence for reset animation.
-        @param seq New active time.
+        @param t New active time.
     */
     void SetResetTime(float t) {m_resetTime = t; };
 
     /** Start animation recording.
         Automatically stop playing.
-        @param recording True to start recording, false to stop.
+        @param playing True to start recording, false to stop.
     */
     void SetRecording(bool playing);
 
@@ -331,5 +327,3 @@ private:
     //! Listeners
     std::vector<IAnimationContextListener*> m_contextListeners;
 };
-
-#endif // CRYINCLUDE_EDITOR_ANIMATIONCONTEXT_H

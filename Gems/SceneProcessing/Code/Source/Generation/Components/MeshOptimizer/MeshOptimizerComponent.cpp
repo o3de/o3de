@@ -372,7 +372,8 @@ namespace AZ::SceneGenerationComponents
             const AZStd::vector<AZStd::reference_wrapper<const ISkinWeightData>> skinWeightDatas(skinWeightDatasView.begin(), skinWeightDatasView.end());
             const AZStd::vector<AZStd::reference_wrapper<const IMeshVertexColorData>> colorDatas(colorDatasView.begin(), colorDatasView.end());
 
-            const AZStd::string_view nodePath(graph.GetNodeName(nodeIndex).GetPath(), graph.GetNodeName(nodeIndex).GetPathLength());
+            // Own the path: graph.AddChild() further down can grow the graph's name storage and leave a view into it dangling.
+            const AZStd::string nodePath(graph.GetNodeName(nodeIndex).GetPath(), graph.GetNodeName(nodeIndex).GetPathLength());
 
             for (const IMeshGroup& meshGroup : meshGroups)
             {

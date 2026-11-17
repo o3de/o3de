@@ -235,7 +235,7 @@ void CTrackViewCurveEditor::OnSplineChange()
     m_ui->m_wndSpline->setFocus();
 }
 
-void CTrackViewCurveEditor::OnSplineCmd(UINT cmd)
+void CTrackViewCurveEditor::OnSplineCmd(unsigned int cmd)
 {
     m_ui->m_wndSpline->OnUserCommand(cmd);
     OnSplineCmdUpdateUI();

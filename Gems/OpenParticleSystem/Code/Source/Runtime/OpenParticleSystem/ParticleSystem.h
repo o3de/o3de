@@ -15,10 +15,9 @@
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-#include <AtomCore/Instance/InstanceData.h>
-
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Instance/InstanceData.h>
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -115,6 +114,7 @@ namespace OpenParticle
         AZStd::unordered_map <AZ::u32,
             AZStd::vector<AZ::Render::SimplePointLightFeatureProcessorInterface::LightHandle>> lightHandles;
         AZStd::vector<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>> m_drawPacket;
+        AZ::u32 m_drawOrder = 0; // position of the emitter being drawn in the sorted emitter list
 
         bool m_changedDiffuseMap;
         AZStd::unordered_map<AZ::u32, AZ::RPI::MaterialPropertyValue> m_diffuseMapInstances;

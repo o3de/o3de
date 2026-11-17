@@ -28,7 +28,7 @@
 
 #define MAX_PATH_LENGTH 1024
 
-static HWND hwndException = 0;
+static HWND hwndException = nullptr;
 static bool g_bUserDialog = true; // true=on crash show dialog box, false=supress user interaction
 
 static constexpr const char* SettingKey_IssueReportLink = "/O3DE/Settings/Links/Issue/Create";
@@ -89,11 +89,11 @@ IDebugCallStack* IDebugCallStack::instance()
 // Sets up the symbols for functions in the debug file.
 //------------------------------------------------------------------------------------------------------------------------
 DebugCallStack::DebugCallStack()
-    : prevExceptionHandler(0)
-    , m_pSystem(0)
+    : prevExceptionHandler(nullptr)
+    , m_pSystem(nullptr)
     , m_nSkipNumFunctions(0)
     , m_bCrash(false)
-    , m_szBugMessage(NULL)
+    , m_szBugMessage(nullptr)
 {
 }
 
@@ -112,7 +112,7 @@ void DebugCallStack::RemoveFile(const char* szFileName)
 {
     FILE* pFile = nullptr;
     azfopen(&pFile, szFileName, "r");
-    const bool bFileExists = (pFile != NULL);
+    const bool bFileExists = (pFile != nullptr);
 
     if (bFileExists)
     {
@@ -210,7 +210,7 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
     AZ_TracePrintf("Exit", "Exception with exit code: 0x%x", exception_pointer->ExceptionRecord->ExceptionCode);
     AZ::Debug::Trace::Instance().PrintCallstack("Exit");
 
-    if (gEnv == NULL)
+    if (gEnv == nullptr)
     {
         return EXCEPTION_EXECUTE_HANDLER;
     }
@@ -331,8 +331,8 @@ void DebugCallStack::ReportBug(const char* szErrorMessage)
 
     m_szBugMessage = szErrorMessage;
     m_context = CaptureCurrentContext();
-    SubmitBugAndAskToRecoverOrCrash(NULL);
-    m_szBugMessage = NULL;
+    SubmitBugAndAskToRecoverOrCrash(nullptr);
+    m_szBugMessage = nullptr;
 }
 
 void DebugCallStack::dumpCallStack(AZStd::vector<AZStd::string>& funcs)
@@ -612,7 +612,7 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
         if (res == "Yes")
         {
             AZStd::wstring arg(path.begin(), path.end());
-            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
+            ShellExecuteW(nullptr, L"open", arg.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 
             AZStd::string reportIssueUrl;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -622,7 +622,7 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
                 reportIssueUrl = IssueReportLinkFallback;
 
             arg = AZStd::wstring(reportIssueUrl.begin(), reportIssueUrl.end());
-            ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
+            ShellExecuteW(nullptr, L"open", arg.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
         }
     }
 

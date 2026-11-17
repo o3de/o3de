@@ -97,8 +97,6 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-        PUBLIC
-            AZ::AtomCore
 )
 
 ly_add_target(
@@ -139,7 +137,6 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AtomCore
             Gem::${gem_name}.Public
 )
 
@@ -187,7 +184,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzToolsFramework
-                    AZ::AtomCore
                     Gem::${gem_name}.Public
         )
     endif()

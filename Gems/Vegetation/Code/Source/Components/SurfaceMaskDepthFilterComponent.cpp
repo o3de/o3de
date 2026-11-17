@@ -50,10 +50,10 @@ namespace Vegetation
                     ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
                     ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
                     ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_upperDistance, QT_TRANSLATE_NOOP("Vegetation", "Upper Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Highest distance between the comparison tag elevation and the current instance, negative for below"))
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_lowerDistance, QT_TRANSLATE_NOOP("Vegetation", "Lower Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Lowest distance between the comparison tag elevation and the current instance, negative for below"))
-                    ->DataElement(0, &SurfaceMaskDepthFilterConfig::m_depthComparisonTags, QT_TRANSLATE_NOOP("Vegetation", "Depth Comparison Tags"), QT_TRANSLATE_NOOP("Vegetation", "The surface tag mask to query the elevation to compare against"))
+                    ->DataElement(nullptr, &SurfaceMaskDepthFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(nullptr, &SurfaceMaskDepthFilterConfig::m_upperDistance, QT_TRANSLATE_NOOP("Vegetation", "Upper Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Highest distance between the comparison tag elevation and the current instance, negative for below"))
+                    ->DataElement(nullptr, &SurfaceMaskDepthFilterConfig::m_lowerDistance, QT_TRANSLATE_NOOP("Vegetation", "Lower Distance Range"), QT_TRANSLATE_NOOP("Vegetation", "Lowest distance between the comparison tag elevation and the current instance, negative for below"))
+                    ->DataElement(nullptr, &SurfaceMaskDepthFilterConfig::m_depthComparisonTags, QT_TRANSLATE_NOOP("Vegetation", "Depth Comparison Tags"), QT_TRANSLATE_NOOP("Vegetation", "The surface tag mask to query the elevation to compare against"))
                     ;
             }
         }

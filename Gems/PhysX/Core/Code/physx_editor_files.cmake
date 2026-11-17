@@ -30,6 +30,8 @@ set(FILES
     Source/EditorForceRegionComponent.h
     Source/EditorBallJointComponent.cpp
     Source/EditorBallJointComponent.h
+    Source/EditorD6JointComponent.cpp
+    Source/EditorD6JointComponent.h
     Source/EditorFixedJointComponent.cpp
     Source/EditorFixedJointComponent.h
     Source/EditorHingeJointComponent.cpp

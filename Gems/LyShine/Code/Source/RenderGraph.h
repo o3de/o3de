@@ -10,15 +10,15 @@
 
 #include <LyShine/IRenderGraph.h>
 #include <LyShine/UiRenderFormats.h>
-#include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/std/containers/stack.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/stack.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
-#include <AtomCore/Instance/Instance.h>
 
 #include "UiRenderer.h"
 #include "LyShinePass.h"

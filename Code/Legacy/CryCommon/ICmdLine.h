@@ -6,15 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : This is the interface to access command line arguments.
 //               This will avoid the need to parse command line in multiple
 //               places  and thus  reduce unnecessary code duplication
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ICMDLINE_H
-#define CRYINCLUDE_CRYCOMMON_ICMDLINE_H
-#pragma once
 
 // The type of command line argument
 enum ECmdLineArgType
@@ -115,5 +112,3 @@ public:
     virtual const ICmdLineArg* FindArg(const ECmdLineArgType ArgType, const char* name, bool caseSensitive = false) const = 0;
     // </interfuscator:shuffle>
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_ICMDLINE_H

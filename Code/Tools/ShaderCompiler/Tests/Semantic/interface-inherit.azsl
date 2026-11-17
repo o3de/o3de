@@ -1,0 +1,2 @@
+interface my_name {};
+class s : my_name {};

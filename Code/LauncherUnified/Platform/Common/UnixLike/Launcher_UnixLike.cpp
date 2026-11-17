@@ -79,12 +79,12 @@ namespace O3DELauncher
         AZ_Assert(absolutePathBufferSize>0,"Input buffer size for absolutePathBuffer must be greater than zero.");
 
         char normalizedFullPathBuffer[PATH_MAX];
-        const char* normalizedFullPath = NULL;
+        const char* normalizedFullPath = nullptr;
         if (strlen(inputPath)>0)
         {
             normalizedFullPath = realpath(inputPath, normalizedFullPathBuffer);
         }
-        if (normalizedFullPath == NULL)
+        if (normalizedFullPath == nullptr)
         {
             // Unable to resolve the absolute path, set the buffer to blank
             absolutePathBuffer[0] = '\0';

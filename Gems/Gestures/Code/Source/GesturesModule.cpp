@@ -7,22 +7,20 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 #include "GesturesSystemComponent.h"
-
-#include <IGem.h>
 
 namespace Gestures
 {
     class GesturesModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(GesturesModule, "{5648A92C-04A3-4E30-B4E2-B0AEB280CA44}", CryHooksModule);
+        AZ_RTTI(GesturesModule, "{5648A92C-04A3-4E30-B4E2-B0AEB280CA44}", AZ::Module);
         AZ_CLASS_ALLOCATOR(GesturesModule, AZ::SystemAllocator);
 
         GesturesModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

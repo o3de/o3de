@@ -15,6 +15,7 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
+#include <QToolBar>
 #include <QWidget>
 
 namespace AzToolsFramework::ViewportUi::Internal
@@ -464,7 +465,8 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
         widget->setParent(&m_uiOverlay);
-        widget->setStyleSheet("border: none;");
+        // A bare "border: none;" cascades to child tool buttons and makes Qt skip the checked highlight, so scope toolbars to themselves.
+        widget->setStyleSheet(qobject_cast<QToolBar*>(widget) ? "QToolBar { border: none; }" : "border: none;");
     }
 
     void ViewportUiDisplay::SetUiOverlayContents(QPointer<QWidget> widget)

@@ -64,6 +64,8 @@ namespace PhysXDebug
         bool m_mbpRegions = false;
         bool m_actorAxes = false;
 
+        bool m_bodySleepState = false;
+
         /// Determine if the PhysX Debug Gem Visualization is currently enabled (for the editor context)
         inline bool IsPhysXDebugEnabled() { return m_visualizationEnabled; };
     };
@@ -96,6 +98,10 @@ namespace PhysXDebug
         AZ::Color m_darkRed;
         AZ::Color m_darkGreen;
         AZ::Color m_darkBlue;
+
+        // colors of the body center markers, these are not PhysX debug color mappings
+        AZ::Color m_bodyActive;
+        AZ::Color m_bodySleeping;
     };
 
     class SystemComponent
@@ -161,6 +167,15 @@ namespace PhysXDebug
         /// @param cullingBoxAabb culling box Aabb to debug draw.
         void DrawDebugCullingBox(const AZ::Aabb& cullingBoxAabb);
 
+        /// Draw the center of every body in the scene, colored by whether the body is active or asleep.
+        void DrawBodyCenters();
+
+        /// Draw the center of a single body, if it is not culled away.
+        /// @param debugDisplay the debug display to draw with.
+        /// @param rigidBody the body to draw the center of.
+        /// @param sleeping whether the body is currently asleep.
+        void DrawBodyCenter(AzFramework::DebugDisplayRequests& debugDisplay, const physx::PxRigidBody& rigidBody, bool sleeping);
+
         /// Configure primary debug draw settings for PhysX
         /// @param context the reflect context to utilize.
         static void ReflectPhysXDebugSettings(AZ::ReflectContext* context);
@@ -206,6 +221,11 @@ namespace PhysXDebug
         AZStd::vector<AZ::Color> m_lineColors;
         AZStd::vector<AZ::Vector3> m_trianglePoints;
         AZStd::vector<AZ::Color> m_triangleColors;
+
+        // scratch buffers used when querying the scene for the bodies to draw the centers of
+        AZStd::vector<physx::PxActor*> m_bodyCenterActors;
+        AZStd::vector<physx::PxArticulationReducedCoordinate*> m_bodyCenterArticulations;
+        AZStd::vector<physx::PxArticulationLink*> m_bodyCenterArticulationLinks;
 
         // joint limit buffers
         AZStd::vector<AZ::Vector3> m_jointVertexBuffer;

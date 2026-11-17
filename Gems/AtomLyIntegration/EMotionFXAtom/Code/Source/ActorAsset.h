@@ -10,9 +10,9 @@
 #pragma once
 
 #include <Integration/Rendering/RenderActorInstance.h>
-#include <AtomCore/Instance/Instance.h>
-#include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX

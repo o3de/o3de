@@ -263,7 +263,7 @@ void UiCheckboxComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Value"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiCheckboxComponent::m_isOn, QT_TRANSLATE_NOOP("LyShine", "Checked"), QT_TRANSLATE_NOOP("LyShine", "The initial state of the Checkbox."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_isOn, QT_TRANSLATE_NOOP("LyShine", "Checked"), QT_TRANSLATE_NOOP("LyShine", "The initial state of the Checkbox."));
             }
 
             // Actions group
@@ -271,9 +271,9 @@ void UiCheckboxComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiCheckboxComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes either way."));
-                editInfo->DataElement(0, &UiCheckboxComponent::m_turnOnActionName, QT_TRANSLATE_NOOP("LyShine", "On"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned on."));
-                editInfo->DataElement(0, &UiCheckboxComponent::m_turnOffActionName, QT_TRANSLATE_NOOP("LyShine", "Off"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned off."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_changedActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when value changes either way."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_turnOnActionName, QT_TRANSLATE_NOOP("LyShine", "On"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned on."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_turnOffActionName, QT_TRANSLATE_NOOP("LyShine", "Off"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when turned off."));
             }
         }
     }

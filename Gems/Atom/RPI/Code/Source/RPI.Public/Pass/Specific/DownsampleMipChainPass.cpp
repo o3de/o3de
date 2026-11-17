@@ -8,8 +8,8 @@
 
 #include <math.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
-#include <AtomCore/std/containers/vector_set.h>
+#include <AzCore/Instance/InstanceDatabase.h>
+#include <AzCore/std/containers/vector_set.h>
 
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>

@@ -11,6 +11,8 @@ set(FILES
     Source/DebugDrawModule.cpp
     Source/DebugDrawLineComponent.cpp
     Source/DebugDrawLineComponent.h
+    Source/DebugDrawOctreeComponent.cpp
+    Source/DebugDrawOctreeComponent.h
     Source/DebugDrawRayComponent.cpp
     Source/DebugDrawRayComponent.h
     Source/DebugDrawSphereComponent.cpp
@@ -25,6 +27,8 @@ set(FILES
     Source/EditorDebugDrawComponentCommon.h
     Source/EditorDebugDrawLineComponent.cpp
     Source/EditorDebugDrawLineComponent.h
+    Source/EditorDebugDrawOctreeComponent.cpp
+    Source/EditorDebugDrawOctreeComponent.h
     Source/EditorDebugDrawRayComponent.cpp
     Source/EditorDebugDrawRayComponent.h
     Source/EditorDebugDrawSphereComponent.cpp

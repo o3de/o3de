@@ -78,7 +78,7 @@ namespace SurfaceData
                     QT_TRANSLATE_NOOP("SurfaceData", "Manages discovery and registration of surface tag list assets"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorSurfaceDataSystemComponent::m_configuration,
+                    ->DataElement(nullptr, &EditorSurfaceDataSystemComponent::m_configuration,
                         QT_TRANSLATE_NOOP("SurfaceData", "Configuration"), "")
                     ;
             }

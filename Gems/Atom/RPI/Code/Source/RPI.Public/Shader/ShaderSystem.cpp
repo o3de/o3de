@@ -20,7 +20,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 
 namespace AZ
 {

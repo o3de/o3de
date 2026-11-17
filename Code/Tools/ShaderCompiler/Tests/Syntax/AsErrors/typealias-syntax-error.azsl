@@ -1,0 +1,10 @@
+interface interf
+{
+    associatedType T;
+};
+
+struct s : interf
+{
+    // an error we are likely to encounter a lot: people using the C typedef syntax.
+    typealias T I_am_undeclared;  // Error: need an '=' token (swift syntax)
+};

@@ -121,6 +121,7 @@ namespace O3DE::ProjectManager
         bool ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths);
     
         bool m_pythonStarted = false;
+        PyThreadState* m_initialThreadState = nullptr;
 
         AZ::IO::FixedMaxPath m_enginePath;
         mutable AZStd::recursive_mutex m_lock;

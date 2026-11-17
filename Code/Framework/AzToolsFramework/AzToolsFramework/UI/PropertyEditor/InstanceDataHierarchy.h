@@ -300,7 +300,7 @@ namespace AzToolsFramework
             AddComparisonInstance(instance, instance->RTTI_GetType());
         }
 
-        InstanceDataNode*   GetRootNode()   { return m_matched ? this : NULL; }
+        InstanceDataNode*   GetRootNode()   { return m_matched ? this : nullptr; }
 
         /// Sets flags that can mutate building behavior.
         /// @see InstanceDataHierarchy::Flags

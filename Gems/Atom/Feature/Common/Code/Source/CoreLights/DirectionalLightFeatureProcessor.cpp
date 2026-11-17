@@ -21,10 +21,10 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Obb.h>
-#include <AzCore/Console/Console.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
 

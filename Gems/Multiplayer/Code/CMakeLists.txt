@@ -228,7 +228,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AtomCore
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Public
@@ -250,7 +249,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AtomCore
             AZ::AzFramework
             AZ::AzNetworking
             Gem::Atom_Feature_Common.Public

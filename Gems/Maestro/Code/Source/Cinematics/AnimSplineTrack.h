@@ -396,7 +396,7 @@ namespace Maestro
 
         void GetKeyInfo([[maybe_unused]] int keyIndex, const char*& description, float& duration) const override
         {
-            description = 0;
+            description = nullptr;
             duration = 0;
             AZ_Assert(false, "Not expected to be used");
         }

@@ -37,12 +37,12 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawObb.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawObb.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(0, &EditorDebugDrawObbComponent::m_element,
+                    ->DataElement(nullptr, &EditorDebugDrawObbComponent::m_element,
                         QT_TRANSLATE_NOOP("DebugDraw", "Obb element settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Settings for the obb element."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawObbComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorDebugDrawObbComponent::m_settings,
+                    ->DataElement(nullptr, &EditorDebugDrawObbComponent::m_settings,
                         QT_TRANSLATE_NOOP("DebugDraw", "Visibility settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawObbComponent::OnPropertyUpdate)

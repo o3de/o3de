@@ -510,7 +510,7 @@ public:
 struct SharedData
 {
     bool raise = false;
-    char text[_MAX_PATH];
+    char text[AZ_TRAIT_OS_MAX_PATH_LEN];
 };
 /////////////////////////////////////////////////////////////////////////////
 // CTheApp::FirstInstance
@@ -539,7 +539,7 @@ bool CCryEditApp::FirstInstance(bool bForceNewInstance)
         if (m_bPreviewMode)
         {
             // IF in preview mode send this window copy data message to load new preview file.
-            azstrcpy(data->text, MAX_PATH, m_sPreviewFile);
+            azstrcpy(data->text, AZ_TRAIT_OS_MAX_PATH_LEN, m_sPreviewFile);
         }
         return false;
     }
@@ -738,11 +738,6 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char
 namespace
 {
     AZStd::mutex g_splashScreenStateLock;
-    enum ESplashScreenState
-    {
-        eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
-    };
-    ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
     IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
     QWidget* g_splashScreen = nullptr;
 }
@@ -780,7 +775,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     g_pInitializeUIInfo = splashScreen;
     g_splashScreen = splashScreen;
-    g_splashScreenState = eSplashScreenState_Started;
 
     g_splashScreenStateLock.unlock();
 
@@ -820,9 +814,6 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.lock();
-        g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.unlock();
     }
 
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);
@@ -860,7 +851,7 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
         if (!m_bRunPythonScript && IsPreviewableFileType(cmdInfo.m_strFileName.toUtf8().constData()))
         {
             m_bPreviewMode = true;
-            azstrncpy(m_sPreviewFile, _MAX_PATH, cmdInfo.m_strFileName.toUtf8().constData(), _MAX_PATH);
+            azstrncpy(m_sPreviewFile, AZ_TRAIT_OS_MAX_PATH_LEN, cmdInfo.m_strFileName.toUtf8().constData(), AZ_TRAIT_OS_MAX_PATH_LEN);
         }
     }
 
@@ -873,7 +864,7 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSystem)
+AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(void* hwndForInputSystem)
 {
     CGameEngine* pGameEngine = new CGameEngine;
 
@@ -1556,7 +1547,7 @@ bool CCryEditApp::InitInstance()
     // it returns an invalid handle unless the widget has been shown and polished and even then
     // it sometimes returns an invalid handle.
     // So instead, we use winId(), which does consistently work
-    HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
+    void* mainWindowWrapperHwnd = reinterpret_cast<void*>(mainWindowWrapper->winId());
 
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -2108,7 +2099,7 @@ void CCryEditApp::EnableIdleProcessing()
     AZ_Assert(m_disableIdleProcessingCounter >= 0, "m_disableIdleProcessingCounter must be nonnegative");
 }
 
-bool CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
+bool CCryEditApp::OnIdle([[maybe_unused]] AZ::s64 lCount)
 {
     if (0 == m_disableIdleProcessingCounter)
     {
@@ -2574,8 +2565,8 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
-    //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
-    if (fullyQualifiedLevelName.length() >= _MAX_PATH-1)
+    //AZ_TRAIT_OS_MAX_PATH_LEN includes null terminator, so we actually want to cap at AZ_TRAIT_OS_MAX_PATH_LEN-1
+    if (fullyQualifiedLevelName.length() >= AZ_TRAIT_OS_MAX_PATH_LEN-1)
     {
         GetIEditor()->Notify(eNotify_OnEndCreate);
         return ECLR_MAX_PATH_EXCEEDED;
@@ -2786,7 +2777,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             "The fully-qualified path is made up of the project folder (\"%3\", %4 characters), the \"Levels\" sub-folder, a folder named for the level (\"%5\", %6 characters) and the level file (\"%7\", %8 characters), plus necessary separators.\n\n"
             "Please also note that on most platforms, individual components of the path (folder/file names can't exceed  approximately 255 characters)\n\n"
             "Click \"Copy to Clipboard\" to copy the fully-qualified name and close this message.")
-            .arg(_MAX_PATH - 1).arg(fullyQualifiedLevelName.size())
+            .arg(AZ_TRAIT_OS_MAX_PATH_LEN - 1).arg(fullyQualifiedLevelName.size())
             .arg(projectDirectory).arg(projectDirectory.size())
             .arg(elidedLevelName).arg(levelName.size())
             .arg(elidedLevelFileName).arg(info.fileName().size());

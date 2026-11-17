@@ -55,6 +55,12 @@ namespace Maestro
         }
     }
 
+    void CCommentNode::Shutdown()
+    {
+        s_nodeParamsInit = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_nodeParameters);
+    }
+
     void CCommentNode::Animate([[maybe_unused]] SAnimContext& ac)
     {
         // It's only for valid operation of key time editing.
@@ -70,7 +76,7 @@ namespace Maestro
     {
         CreateTrack(AnimParamType::CommentText);
 
-        C2DSplineTrack* pTrack = 0;
+        C2DSplineTrack* pTrack = nullptr;
 
         pTrack = (C2DSplineTrack*)CreateTrack(AnimParamType::PositionX);
         pTrack->SetDefaultValue(Vec2(0, 50));

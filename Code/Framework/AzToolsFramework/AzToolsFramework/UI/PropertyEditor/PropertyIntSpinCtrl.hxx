@@ -26,7 +26,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyIntSpinCtrl, AZ::SystemAllocator);
 
-        PropertyIntSpinCtrl(QWidget* parent = NULL);
+        PropertyIntSpinCtrl(QWidget* parent = nullptr);
         virtual ~PropertyIntSpinCtrl();
 
     public slots:

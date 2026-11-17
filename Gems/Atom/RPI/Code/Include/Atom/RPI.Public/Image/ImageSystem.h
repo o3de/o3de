@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Instance/InstanceId.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -24,9 +26,6 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
-
-#include <AtomCore/Instance/Instance.h>
-#include <AtomCore/Instance/InstanceId.h>
 
 namespace AZ
 {

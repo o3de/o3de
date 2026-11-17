@@ -253,8 +253,8 @@ namespace PythonCoverage
         m_scriptPath = filename;
         const auto coverageFile = m_coverageDir / CompileParentFolderName(m_parentScriptPath) / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
 
-#ifdef MAX_PATH
-        if (strlen(coverageFile.c_str()) >= (MAX_PATH - 1))
+#ifdef AZ_TRAIT_OS_MAX_PATH_LEN
+        if (strlen(coverageFile.c_str()) >= (AZ_TRAIT_OS_MAX_PATH_LEN - 1))
         {
             AZ_Error(
                 LogCallSite,

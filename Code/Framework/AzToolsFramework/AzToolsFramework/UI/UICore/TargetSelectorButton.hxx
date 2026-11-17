@@ -27,7 +27,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator);
 
-        TargetSelectorButton(AZ::Crc32 key, QWidget* pParent = 0);
+        TargetSelectorButton(AZ::Crc32 key, QWidget* pParent = nullptr);
         virtual ~TargetSelectorButton() = default;
 
         // implement AzFramework::TargetManagerClient::Bus::Handler

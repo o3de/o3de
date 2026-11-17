@@ -17,7 +17,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AtomCore
             Gem::EMotionFXStaticLib
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common

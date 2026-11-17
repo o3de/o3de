@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H
-#define CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H
 #pragma once
 
 #include "ErrorReport.h"
@@ -81,5 +78,3 @@ protected:
     int m_sortIndicatorColumn;
     Qt::SortOrder m_sortIndicatorOrder;
 };
-
-#endif // CRYINCLUDE_EDITOR_ERRORREPORTDIALOG_H

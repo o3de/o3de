@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include <QRect>
 #include <QPoint>

@@ -157,8 +157,7 @@ namespace UnitTest
 
         void SetupMocks()
         {
-            ON_CALL(*this, Open(_, _, _)).WillByDefault(testing::Invoke(
-                [&](const char* filePath, AZ::IO::OpenMode mode, AZ::IO::HandleType& fileHandle)
+            ON_CALL(*this, Open(_, _, _)).WillByDefault([&](const char* filePath, AZ::IO::OpenMode mode, AZ::IO::HandleType& fileHandle)
                 {
                     auto found = m_fileHandleContentMap.find(AZ::Uuid::CreateName(filePath));
                     if (found == m_fileHandleContentMap.end())
@@ -168,11 +167,9 @@ namespace UnitTest
 
                     fileHandle = found->second.first;
                     return AZ::IO::Result(AZ::IO::ResultCode::Success);
-                }
-            ));
+                });
 
-            ON_CALL(*this, Read(_, _, _, _, _)).WillByDefault(testing::Invoke(
-                [&](AZ::IO::HandleType fileHandle, void* buffer, AZ::u64 size, bool failOnFewerThanSizeBytesRead, AZ::u64* bytesRead)
+            ON_CALL(*this, Read(_, _, _, _, _)).WillByDefault([&](AZ::IO::HandleType fileHandle, void* buffer, AZ::u64 size, bool failOnFewerThanSizeBytesRead, AZ::u64* bytesRead)
                 {
                     for (auto iter = m_fileHandleContentMap.begin(); iter != m_fileHandleContentMap.end(); iter++)
                     {
@@ -184,11 +181,9 @@ namespace UnitTest
                     }
 
                     return AZ::IO::Result(AZ::IO::ResultCode::Error);
-                }
-            ));
+                });
 
-            ON_CALL(*this, Size(testing::Matcher<AZ::IO::HandleType>(_), testing::Matcher<AZ::u64&>(_))).WillByDefault(testing::Invoke(
-                [&](AZ::IO::HandleType fileHandle, AZ::u64& size)
+            ON_CALL(*this, Size(testing::Matcher<AZ::IO::HandleType>(_), testing::Matcher<AZ::u64&>(_))).WillByDefault([&](AZ::IO::HandleType fileHandle, AZ::u64& size)
                 {
                     for (auto iter = m_fileHandleContentMap.begin(); iter != m_fileHandleContentMap.end(); iter++)
                     {
@@ -200,11 +195,9 @@ namespace UnitTest
                     }
 
                     return AZ::IO::Result(AZ::IO::ResultCode::Error);
-                }
-            ));
+                });
 
-            ON_CALL(*this, Exists(_)).WillByDefault(testing::Invoke(
-                [&](const char* filePath)
+            ON_CALL(*this, Exists(_)).WillByDefault([&](const char* filePath)
                 {
                     auto found = m_fileHandleContentMap.find(AZ::Uuid::CreateName(filePath));
                     if (found == m_fileHandleContentMap.end())
@@ -213,8 +206,7 @@ namespace UnitTest
                     }
 
                     return true;
-                }
-            ));
+                });
 
             ON_CALL(*this, Close(_))
                 .WillByDefault(

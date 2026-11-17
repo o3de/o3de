@@ -27,7 +27,7 @@ import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 settings = _config.get_config_settings(setup_ly_pyside=True)
 
-import PySide6.QtWidgets as QtWidgets
+from PySide6 import QtWidgets
 import PySide6.QtCore as QtCore
 from shiboken6 import wrapInstance
 
@@ -279,7 +279,7 @@ class BaseQwidgetAzpy(object):
 
     def _make_standalone_app(self, name):
         useGUI = not '-no-gui' in sys.argv
-        self.qapp = QtWidgets.QApplication(sys.argv) if useGUI else QtWidgets.QCoreApplication(sys.argv)
+        self.qapp = QtWidgets.QApplication(sys.argv) if useGUI else QtCore.QCoreApplication(sys.argv)
         self.qapp.setOrganizationName(self.__class__._ORG_TAG)
         self.qapp.setApplicationName('{app}:{tool}'.format(app=self.__class__._APP_TAG,
                                                            tool=name))

@@ -1,0 +1,25 @@
+ShaderResourceGroupSemantic ExampleBinding 
+{
+    FrequencyId = 0; 
+    ShaderVariantFallback = 64;
+};
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    float4 exampleColor;
+};
+
+ShaderResourceGroupSemantic AnotherBinding 
+{
+    FrequencyId = 1; 
+    ShaderVariantFallback = 32;
+};
+
+ShaderResourceGroup AnotherSRG : AnotherBinding
+{
+    float4 exampleColor;
+};
+
+// IR Error 35:  'Two or more SRGs cannot all be designated as the default ShaderVariantFallback'
+// #EC 128 
+

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_OS_ALLOCATOR_H
-#define AZCORE_OS_ALLOCATOR_H
+
+#pragma once
 
 #include <AzCore/Memory/AllocatorBase.h>
 #include <AzCore/Memory/Memory.h>
@@ -59,8 +59,3 @@ namespace AZ
 
     typedef AZStdAlloc<OSAllocator> OSStdAllocator;
 }
-
-#endif // AZCORE_OS_ALLOCATOR_H
-#pragma once
-
-

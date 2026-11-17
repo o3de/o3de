@@ -45,7 +45,7 @@ namespace AzFramework
 
     void DrawSplash(HWND hWnd)
     {
-        const HINSTANCE hInstance = GetModuleHandle(0);
+        const HINSTANCE hInstance = GetModuleHandle(nullptr);
         auto hImage = (HBITMAP)LoadImageA(hInstance, MAKEINTRESOURCEA(IDB_SPLASH1), IMAGE_BITMAP, 0, 0, 0);
         if (hImage)
         {
@@ -73,7 +73,7 @@ namespace AzFramework
         const WindowGeometry& geometry,
         const WindowStyleMasks& styleMasks)
     {
-        const HINSTANCE hInstance = GetModuleHandle(0);
+        const HINSTANCE hInstance = GetModuleHandle(nullptr);
 
         // register window class if it does not exist
         WNDCLASSEX windowClass;
@@ -86,9 +86,9 @@ namespace AzFramework
             windowClass.cbWndExtra = 0;
             windowClass.hInstance = hInstance;
             windowClass.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-            windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+            windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
             windowClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-            windowClass.lpszMenuName = NULL;
+            windowClass.lpszMenuName = nullptr;
             windowClass.lpszClassName = s_defaultClassName;
             windowClass.hIconSm = LoadIcon(hInstance, IDI_APPLICATION);
 
@@ -122,7 +122,7 @@ namespace AzFramework
             s_defaultClassName, titleW.c_str(),
             windowStyle,
             geometry.m_posX, geometry.m_posY, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
-            NULL, NULL, hInstance, NULL);
+            nullptr, nullptr, hInstance, nullptr);
 
         if (m_win32Handle == nullptr)
         {
@@ -134,7 +134,7 @@ namespace AzFramework
         }
 
         DEVMODE DisplayConfig;
-        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+        EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &DisplayConfig);
         m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
     }
 
@@ -304,7 +304,7 @@ namespace AzFramework
         {
             UINT rawInputSize;
             const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
+            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
 
             AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
             LPBYTE rawInputBytes = rawInputBytesArray.data();
@@ -395,7 +395,7 @@ namespace AzFramework
             // It appears this notification also triggers even if you change the refresh rate on the same monitor and don't
             // actually change the window position at all.
             DEVMODE displayConfig;
-            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &displayConfig);
+            EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &displayConfig);
             if (displayConfig.dmDisplayFrequency != nativeWindowImpl->m_mainDisplayRefreshRate)
             {
                 nativeWindowImpl->m_mainDisplayRefreshRate = displayConfig.dmDisplayFrequency;

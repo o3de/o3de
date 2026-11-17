@@ -8,18 +8,17 @@
 
 #include "MicrophoneSystemComponent.h"
 
-#include <IGem.h>
+#include <AzCore/Module/Module.h>
 
 namespace Audio
 {
     class MicrophoneModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(MicrophoneModule, "{99939704-566A-42B1-8A7A-567E01C63D9C}", CryHooksModule);
+        AZ_RTTI(MicrophoneModule, "{99939704-566A-42B1-8A7A-567E01C63D9C}", AZ::Module);
 
         MicrophoneModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), { MicrophoneSystemComponent::CreateDescriptor() });

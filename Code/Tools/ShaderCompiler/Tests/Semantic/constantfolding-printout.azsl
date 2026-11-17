@@ -1,0 +1,74 @@
+static const int neg = -32l;   // PrefixUnaryExpression
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(neg, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <folding_failed>\n");
+
+static const int one = 1l;
+static const int copyone = one;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(copyone, __azslc_prtsym_constint_value);
+__azslc_print_message(" == 1\n");
+
+static const int non_init;
+
+static const int indirect[2] = {1,2};
+static const int complex_init = indirect[1];
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(complex_init, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <folding_failed>\n");
+
+static int nonconst = 1;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(nonconst, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <folding_failed>\n");
+
+static int actually_cb = 1; // default storage-class in HLSL for globals is `extern`. Initializers are ignored by fxc.
+static const int inited_from_nonconst = actually_cb;  // fxc considers this an alias to a cb register. not a const value !
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(inited_from_nonconst, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <folding_failed>\n");
+
+static const int eight = 010; // octal
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(eight, __azslc_prtsym_constint_value);
+__azslc_print_message(" == 8\n");
+
+static const int fifteen = 0xF;  // hexadecimal
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(fifteen, __azslc_prtsym_constint_value);
+__azslc_print_message(" == 15\n");
+
+static const uint suffix = 20u;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(suffix, __azslc_prtsym_constint_value);
+__azslc_print_message(" == 20\n");
+
+static const uint math_expr = 5 + 6;  // can't yet fold expressions
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(math_expr, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <folding_failed>\n");
+
+int main() : SV_Target0
+{
+    int localnonconst = 1;
+    ++localnonconst;
+
+    __azslc_print_message("@check predicate ");
+    __azslc_print_symbol(localnonconst, __azslc_prtsym_constint_value);
+    __azslc_print_message(" == <folding_failed>\n");
+    
+    return inited_from_nonconst;  // code emitted by fxc: dcl_constantbuffer CB0[1], immediateIndexed | mov o0.x, cb0[0].y | ret
+}
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(main, __azslc_prtsym_constint_value);
+__azslc_print_message(" == <not_a_var>\n");

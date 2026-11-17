@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Utility classes used by Editor.
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-#define CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-#pragma once
 
 #include <CryCommon/platform.h>
 #include <IXml.h>
@@ -323,8 +320,6 @@ class QColor;
 QColor ColorLinearToGamma(const AZ::Color& col);
 AZ::Color ColorGammaToLinear(const QColor& col);
 
-QColor ColorToQColor(uint32 color);
-
 class QCursor;
 class QPixmap;
 
@@ -531,6 +526,3 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
 }
 
 #endif
-
-#endif // CRYINCLUDE_EDITOR_UTIL_EDITORUTILS_H
-

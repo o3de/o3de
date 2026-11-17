@@ -21,7 +21,7 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
 
-#include <dx12ma/D3D12MemAlloc.h>
+#include <D3D12MemAlloc.h>
 
 namespace AZ
 {
@@ -782,7 +782,7 @@ namespace AZ
                 return;
             }
             m_deviceFence = fencePtr.Get();
-            HANDLE deviceRemovedEvent = CreateEventW(NULL, FALSE, FALSE, NULL);
+            HANDLE deviceRemovedEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
             m_deviceFence->SetEventOnCompletion(UINT64_MAX, deviceRemovedEvent);
 
             RegisterWaitForSingleObject(

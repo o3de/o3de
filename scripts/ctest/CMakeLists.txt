@@ -49,3 +49,17 @@ if(PAL_TRAIT_TEST_PYTEST_SUPPORTED)
      )
 
 endif()
+
+ly_add_test(
+    NAME cmake_third_party_resolver
+    TEST_SUITE smoke
+    TIMEOUT 120
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+    TEST_COMMAND
+        ${CMAKE_COMMAND}
+        "-DO3DE_ROOT=${LY_ROOT_FOLDER}"
+        "-DTEST_BINARY_ROOT=${CMAKE_CURRENT_BINARY_DIR}/third_party_resolver/$<CONFIG>"
+        "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+        -P "${CMAKE_CURRENT_LIST_DIR}/third_party_resolver_test.cmake"
+    TEST_LIBRARY cmake
+)

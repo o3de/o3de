@@ -2134,7 +2134,7 @@ namespace AZ
                 {
                     workBuffer[0] = text[0];
                     workBuffer[1] = text[1];
-                    AZ::u8 value = static_cast<AZ::u8>(strtoul(workBuffer, NULL, 16));
+                    AZ::u8 value = static_cast<AZ::u8>(strtoul(workBuffer, nullptr, 16));
                     stream.Write(sizeof(AZ::u8), &value);
                 }
                 return minDataSize;

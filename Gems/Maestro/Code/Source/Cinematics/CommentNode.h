@@ -25,6 +25,7 @@ namespace Maestro
         CCommentNode();
 
         static void Initialize();
+        static void Shutdown();
 
         //-----------------------------------------------------------------------------
         //! Overrides from CAnimNode
