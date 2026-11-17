@@ -6,15 +6,16 @@
  *
  */
 
+#include <GradientGI/GradientGIImageUtils.h>
+#include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <limits>
-#include <Atom/Feature/GradientGI/GradientGILogic.h>
 
 // =============================================================================================
 // GradientGI logic unit tests
 //
 // These cover the pure decision/state pieces behind the GradientGI feature's known instabilities:
-//   * ResolutionScrubThrottle -- the debounce that fixed the DX12 tiled-pool churn crash when the
+//   * ResolutionDebounce -- the debounce that fixed the DX12 tiled-pool churn crash when the
 //     resolution slider is scrubbed (different-sized cubemap allocated every frame).
 //   * ResolveUpdateMode       -- the GPU/Dynamic -> CPU/Static fallback when compute is unsupported.
 //   * OwnerRegistry          -- the ownership rule that keeps a component which is shutting down
@@ -174,100 +175,100 @@ namespace UnitTest
     // Resolution scrub debounce
     // =========================================================================================
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_DefaultsToThreeFrameSettle)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_DefaultsToThreeFrameSettle)
     {
-        EXPECT_EQ(ResolutionScrubThrottle::DefaultSettleFrames, 3);
-        ResolutionScrubThrottle throttle;
-        EXPECT_EQ(throttle.Threshold(), 3);
+        EXPECT_EQ(ResolutionDebounce::DefaultSettleFrames, 3);
+        ResolutionDebounce debounce;
+        EXPECT_EQ(debounce.Threshold(), 3);
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_CommitSetsBaselineWithNoPendingChange)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_CommitSetsBaselineWithNoPendingChange)
     {
-        ResolutionScrubThrottle throttle;
-        throttle.Commit(64);
-        EXPECT_EQ(throttle.Committed(), 64u);
-        EXPECT_EQ(throttle.Pending(), 64u);
-        EXPECT_FALSE(throttle.HasPendingCommit());
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
+        ResolutionDebounce debounce;
+        debounce.Commit(64);
+        EXPECT_EQ(debounce.Committed(), 64u);
+        EXPECT_EQ(debounce.Pending(), 64u);
+        EXPECT_FALSE(debounce.HasPendingCommit());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_RequestingCommittedValueIsNoOp)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_RequestingCommittedValueIsNoOp)
     {
-        ResolutionScrubThrottle throttle;
-        throttle.Commit(64);
-        throttle.Request(64);
-        EXPECT_FALSE(throttle.HasPendingCommit());
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
+        ResolutionDebounce debounce;
+        debounce.Commit(64);
+        debounce.Request(64);
+        EXPECT_FALSE(debounce.HasPendingCommit());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_StableRequestCommitsOnceAfterSettle)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_StableRequestCommitsOnceAfterSettle)
     {
-        ResolutionScrubThrottle throttle(/*threshold*/ 3);
-        throttle.Commit(64);
-        throttle.Request(128);
-        EXPECT_TRUE(throttle.HasPendingCommit());
+        ResolutionDebounce debounce(/*threshold*/ 3);
+        debounce.Commit(64);
+        debounce.Request(128);
+        EXPECT_TRUE(debounce.HasPendingCommit());
 
         // Held steady: nothing commits until the settle window elapses.
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
 
-        const AZStd::optional<uint32_t> committed = throttle.AdvanceFrame();
+        const AZStd::optional<uint32_t> committed = debounce.AdvanceFrame();
         ASSERT_TRUE(committed.has_value());
         EXPECT_EQ(*committed, 128u);
-        EXPECT_EQ(throttle.Committed(), 128u);
-        EXPECT_FALSE(throttle.HasPendingCommit());
+        EXPECT_EQ(debounce.Committed(), 128u);
+        EXPECT_FALSE(debounce.HasPendingCommit());
 
         // Already committed: no further commits.
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_ActiveScrubNeverCommitsThenSettlesOnFinalValue)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_ActiveScrubNeverCommitsThenSettlesOnFinalValue)
     {
-        ResolutionScrubThrottle throttle(/*threshold*/ 3);
-        throttle.Commit(64);
+        ResolutionDebounce debounce(/*threshold*/ 3);
+        debounce.Commit(64);
 
         // Simulate a slider scrub: the value moves every frame, advancing one frame per move.
         const uint32_t scrub[] = { 70, 80, 96, 120, 160, 200, 256 };
         for (uint32_t value : scrub)
         {
-            throttle.Request(value);
-            EXPECT_FALSE(throttle.AdvanceFrame().has_value()) << "must not commit mid-scrub";
+            debounce.Request(value);
+            EXPECT_FALSE(debounce.AdvanceFrame().has_value()) << "must not commit mid-scrub";
         }
         // The build size stayed put for the whole scrub -- this is what avoids the RHI churn crash.
-        EXPECT_EQ(throttle.Committed(), 64u);
+        EXPECT_EQ(debounce.Committed(), 64u);
 
         // Slider released: hold the final value and let it settle.
         AZStd::optional<uint32_t> committed;
         for (int frame = 0; frame < 16 && !committed.has_value(); ++frame)
         {
-            committed = throttle.AdvanceFrame();
+            committed = debounce.AdvanceFrame();
         }
         ASSERT_TRUE(committed.has_value());
         EXPECT_EQ(*committed, 256u);          // only the final size is ever applied
-        EXPECT_EQ(throttle.Committed(), 256u);
+        EXPECT_EQ(debounce.Committed(), 256u);
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_ReturningToCommittedValueCancelsPending)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_ReturningToCommittedValueCancelsPending)
     {
-        ResolutionScrubThrottle throttle(/*threshold*/ 3);
-        throttle.Commit(64);
-        throttle.Request(128);
-        EXPECT_TRUE(throttle.HasPendingCommit());
+        ResolutionDebounce debounce(/*threshold*/ 3);
+        debounce.Commit(64);
+        debounce.Request(128);
+        EXPECT_TRUE(debounce.HasPendingCommit());
 
-        throttle.Request(64); // moved back to the committed size before it settled
-        EXPECT_FALSE(throttle.HasPendingCommit());
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value());
-        EXPECT_EQ(throttle.Committed(), 64u);
+        debounce.Request(64); // moved back to the committed size before it settled
+        EXPECT_FALSE(debounce.HasPendingCommit());
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value());
+        EXPECT_EQ(debounce.Committed(), 64u);
     }
 
-    TEST_F(GradientGILogicFixture, ScrubThrottle_RespectsCustomThreshold)
+    TEST_F(GradientGILogicFixture, ResolutionDebounce_RespectsCustomThreshold)
     {
-        ResolutionScrubThrottle throttle(/*threshold*/ 1);
-        throttle.Commit(10);
-        throttle.Request(20);
-        EXPECT_FALSE(throttle.AdvanceFrame().has_value()); // one settle frame
-        const AZStd::optional<uint32_t> committed = throttle.AdvanceFrame();
+        ResolutionDebounce debounce(/*threshold*/ 1);
+        debounce.Commit(10);
+        debounce.Request(20);
+        EXPECT_FALSE(debounce.AdvanceFrame().has_value()); // one settle frame
+        const AZStd::optional<uint32_t> committed = debounce.AdvanceFrame();
         ASSERT_TRUE(committed.has_value());
         EXPECT_EQ(*committed, 20u);
     }
@@ -350,6 +351,15 @@ namespace UnitTest
 
         owners.Remove(entity);
         EXPECT_TRUE(owners.Empty());
+    }
+
+    TEST_F(GradientGILogicFixture, Rgba16FloatWriterPreservesHdrValuesAndSupportsUnalignedDestination)
+    {
+        uint8_t bytes[9]{};
+        WriteRgba16FloatPixel(bytes + 1, -1.0f, 0.5f, 2.0f, 1.0f);
+        const uint16_t expected[] = {0xBC00, 0x3800, 0x4000, 0x3C00};
+        EXPECT_EQ(std::memcmp(bytes + 1, expected, sizeof(expected)), 0);
+        EXPECT_EQ(bytes[0], 0);
     }
 
 } // namespace UnitTest

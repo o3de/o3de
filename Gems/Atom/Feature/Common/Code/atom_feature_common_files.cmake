@@ -17,7 +17,7 @@ set(FILES
     Source/DisplayMapper/DisplayMapperFullScreenPass.h
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
     Source/DisplayMapper/OutputTransformPass.h
-    Source/GradientGI/GradientGIConstants.h
+    Source/GradientGI/GradientGIImageUtils.h
     Source/GradientGI/GradientGICubemapPass.h
     Source/GradientGI/GradientGIFeatureProcessor.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h

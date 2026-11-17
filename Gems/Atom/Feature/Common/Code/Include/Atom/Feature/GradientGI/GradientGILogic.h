@@ -74,7 +74,11 @@ namespace AZ::Render::GradientGI
             lower <<= 1;
         }
         const uint32_t upper = lower << 1;
-        const uint32_t nearest = (clamped - lower <= upper - clamped) ? lower : upper;
+        uint32_t nearest = upper;
+        if (clamped - lower <= upper - clamped)
+        {
+            nearest = lower;
+        }
         return ClampFaceResolution(nearest);
     }
 
@@ -88,7 +92,11 @@ namespace AZ::Render::GradientGI
         GradientGIFeatureProcessorInterface::UpdateMode requested, bool gpuComputeSupported)
     {
         using UpdateMode = GradientGIFeatureProcessorInterface::UpdateMode;
-        return (requested == UpdateMode::Dynamic && !gpuComputeSupported) ? UpdateMode::Static : requested;
+        if (requested == UpdateMode::Dynamic && !gpuComputeSupported)
+        {
+            return UpdateMode::Static;
+        }
+        return requested;
     }
 
     // =========================================================================================
@@ -134,7 +142,14 @@ namespace AZ::Render::GradientGI
         bool Empty() const { return m_owners.empty(); }
 
         //! The entity currently driving the feature; invalid when empty.
-        AZ::EntityId Current() const { return m_owners.empty() ? AZ::EntityId() : m_owners.back(); }
+        AZ::EntityId Current() const
+        {
+            if (m_owners.empty())
+            {
+                return AZ::EntityId();
+            }
+            return m_owners.back();
+        }
 
         size_t Count() const { return m_owners.size(); }
 
@@ -172,7 +187,14 @@ namespace AZ::Render::GradientGI
         AZStd::string path(rawPath);
         AZStd::replace(path.begin(), path.end(), '\\', '/');
         const size_t firstReal = path.find_first_not_of('/');
-        path.erase(0, (firstReal == AZStd::string::npos) ? path.size() : firstReal);
+        if (firstReal == AZStd::string::npos)
+        {
+            path.clear();
+        }
+        else
+        {
+            path.erase(0, firstReal);
+        }
         return path;
     }
 
@@ -185,13 +207,13 @@ namespace AZ::Render::GradientGI
     //! tiled StreamingImage; doing that on every frame of a slider scrub churns the DX12 streaming
     //! pool and crashes the RHI. Buffering until the value settles means only the final size is
     //! ever built. Pure state machine -- no engine dependency -- so the behaviour is unit-testable.
-    class ResolutionScrubThrottle
+    class ResolutionDebounce
     {
     public:
         static constexpr uint8_t DefaultSettleFrames = 3; // ~50ms @60fps after the slider is released
 
-        ResolutionScrubThrottle() = default;
-        explicit ResolutionScrubThrottle(uint8_t settleFrameThreshold)
+        ResolutionDebounce() = default;
+        explicit ResolutionDebounce(uint8_t settleFrameThreshold)
             : m_threshold(settleFrameThreshold)
         {
         }

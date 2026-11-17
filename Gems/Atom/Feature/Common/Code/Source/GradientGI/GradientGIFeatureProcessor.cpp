@@ -8,7 +8,7 @@
 
 #include "GradientGIFeatureProcessor.h"
 #include "GradientGICubemapPass.h"
-#include "GradientGIConstants.h"
+#include "GradientGIImageUtils.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -348,13 +348,13 @@ namespace AZ::Render
 
     bool GradientGIFeatureProcessor::NeedsPassRehost() const
     {
-        if (!m_gradientPassPtr)
+        if (!m_gradientPass)
         {
             return true;
         }
 
         // Detached from its pass tree by a rebuild.
-        if (!m_gradientPassPtr->GetParent())
+        if (!m_gradientPass->GetParent())
         {
             return true;
         }
@@ -409,8 +409,7 @@ namespace AZ::Render
         DestroyPass();
 
         RPI::PassDescriptor passDescriptor(AZ::Name("GradientGICubemapPass"));
-        m_gradientPassPtr = aznew GradientGICubemapPass(passDescriptor);
-        m_gradientPass    = m_gradientPassPtr.get();
+        m_gradientPass = aznew GradientGICubemapPass(passDescriptor);
 
         // Hand over the output cubemaps from the previous instance of the pass. When they match the
         // current face size the replacement adopts them, so a pass-tree rebuild costs no allocation
@@ -425,7 +424,7 @@ namespace AZ::Render
 
         // Inject before DepthPrePass so it runs early in the frame.
         // The cubemap is ready by the time IBL sampling occurs later in the pipeline.
-        const bool injected = renderPipeline->AddPassBefore(m_gradientPassPtr, AZ::Name("DepthPrePass"));
+        const bool injected = renderPipeline->AddPassBefore(m_gradientPass, AZ::Name("DepthPrePass"));
 
         if (!injected)
         {
@@ -443,19 +442,18 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::DestroyPass()
     {
-        if (!m_gradientPassPtr)
+        if (!m_gradientPass)
         {
             return;
         }
 
         // A pipeline rebuild can orphan the pass (null parent). Only queue removal while it is
         // still in the tree; otherwise just release our reference.
-        if (m_gradientPassPtr->GetParent())
+        if (m_gradientPass->GetParent())
         {
-            m_gradientPassPtr->QueueForRemoval();
+            m_gradientPass->QueueForRemoval();
         }
-        m_gradientPassPtr = nullptr;
-        m_gradientPass    = nullptr;
+        m_gradientPass = nullptr;
         m_passPipelineId  = RPI::RenderPipelineId();
     }
 
@@ -496,9 +494,8 @@ namespace AZ::Render
         if (changeType == ChangeType::Removed && renderPipeline &&
             renderPipeline->GetId() == m_passPipelineId)
         {
-            m_gradientPassPtr = nullptr;
-            m_gradientPass    = nullptr;
-            m_passPipelineId  = RPI::RenderPipelineId();
+            m_gradientPass = nullptr;
+            m_passPipelineId = RPI::RenderPipelineId();
         }
 
         if (m_updateMode == UpdateMode::Dynamic)
@@ -667,7 +664,7 @@ namespace AZ::Render
         // pool and crashes the RHI on a size change -- needs the debounce below.
         if (m_updateMode == UpdateMode::Dynamic)
         {
-            m_resolutionThrottle.Commit(clamped);
+            m_resolutionDebounce.Commit(clamped);
             ApplyFaceResolution(clamped);
             return;
         }
@@ -676,14 +673,14 @@ namespace AZ::Render
         // build uses the configured resolution with no transient flash at the default size.
         if (!m_faceResolutionApplied)
         {
-            m_resolutionThrottle.Commit(clamped);
+            m_resolutionDebounce.Commit(clamped);
             ApplyFaceResolution(clamped);
             return;
         }
 
-        // CPU/Static while editing: defer to the scrub throttle. The build keeps using the previous
+        // CPU/Static while editing: debounce resolution changes. The build keeps using the previous
         // stable size until the slider settles -- safe, exactly like a colour scrub.
-        m_resolutionThrottle.Request(clamped);
+        m_resolutionDebounce.Request(clamped);
     }
 
     void GradientGIFeatureProcessor::ApplyFaceResolution(uint32_t value)
@@ -714,7 +711,7 @@ namespace AZ::Render
     void GradientGIFeatureProcessor::TickResolutionSettle()
     {
         // Commit the one and only reallocation at the final size once the slider has settled.
-        if (const AZStd::optional<uint32_t> settled = m_resolutionThrottle.AdvanceFrame())
+        if (const AZStd::optional<uint32_t> settled = m_resolutionDebounce.AdvanceFrame())
         {
             ApplyFaceResolution(*settled);
         }
@@ -742,10 +739,10 @@ namespace AZ::Render
         m_updateMode = mode;
 
         // A mode switch ends a CPU scrub. Carry its latest request into the new backend.
-        if (m_resolutionThrottle.HasPendingCommit())
+        if (m_resolutionDebounce.HasPendingCommit())
         {
-            const uint32_t resolution = m_resolutionThrottle.Pending();
-            m_resolutionThrottle.Commit(resolution);
+            const uint32_t resolution = m_resolutionDebounce.Pending();
+            m_resolutionDebounce.Commit(resolution);
             ApplyFaceResolution(resolution);
         }
 
@@ -853,15 +850,6 @@ namespace AZ::Render
     }
 
     // =========================================================================
-    // Format Selection
-    // =========================================================================
-
-    RHI::Format GradientGIFeatureProcessor::ChooseBestFormat() const
-    {
-        return RHI::Format::R16G16B16A16_FLOAT;
-    }
-
-    // =========================================================================
     // Cubemap Direction Mapping
     // =========================================================================
 
@@ -888,10 +876,9 @@ namespace AZ::Render
     void GradientGIFeatureProcessor::GenerateFacePixels(
         uint32_t face,
         uint32_t faceSize,
-        RHI::Format format,
         AZStd::vector<uint8_t>& outPixels) const
     {
-        const size_t bpp = GradientGI::GetBytesPerPixel(format);
+        const size_t bpp = RHI::GetFormatSize(RHI::Format::R16G16B16A16_FLOAT);
         outPixels.resize(faceSize * faceSize * bpp);
 
         for (uint32_t y = 0; y < faceSize; ++y)
@@ -917,7 +904,7 @@ namespace AZ::Render
                 }
 
                 size_t offset = (static_cast<size_t>(y) * faceSize + x) * bpp;
-                GradientGI::WritePixel(outPixels.data() + offset, c.GetR(), c.GetG(), c.GetB(), 1.0f, format);
+                GradientGI::WriteRgba16FloatPixel(outPixels.data() + offset, c.GetR(), c.GetG(), c.GetB(), 1.0f);
             }
         }
     }
@@ -928,7 +915,7 @@ namespace AZ::Render
 
     Data::Instance<RPI::StreamingImage> GradientGIFeatureProcessor::BuildGradientCubemap()
     {
-        const RHI::Format format   = ChooseBestFormat();
+        constexpr RHI::Format format = RHI::Format::R16G16B16A16_FLOAT;
         // Snap to a power of two: O3DE's runtime StreamingImage upload renders certain non-power-of-
         // two face sizes black (observed dead band ~91..127 at R16G16B16A16). Imperceptible for a
         // smooth gradient. See GradientGI::SnapCpuFaceResolutionToPow2.
@@ -938,7 +925,7 @@ namespace AZ::Render
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
         for (uint32_t face = 0; face < 6; ++face)
         {
-            GenerateFacePixels(face, faceSize, format, facePixels[face]);
+            GenerateFacePixels(face, faceSize, facePixels[face]);
         }
 
         // Step 2: Compute subresource layout for one face

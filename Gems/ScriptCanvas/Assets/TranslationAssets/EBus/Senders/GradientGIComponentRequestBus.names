@@ -147,24 +147,6 @@
                     ]
                 },
                 {
-                    "base": "SetDetailTextureAssetPath",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Texture (Path)" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Texture (Path) is invoked" },
-                    "details": { "name": "Set Detail Texture (Path)", "tooltip": "Sets the detail texture layer by source asset path. GPU mode only." },
-                    "params": [
-                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
-                    ]
-                },
-                {
-                    "base": "GetDetailTextureAssetPath",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Texture (Path)" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Texture (Path) is invoked" },
-                    "details": { "name": "Get Detail Texture (Path)", "tooltip": "Gets the detail texture's source asset path" },
-                    "results": [
-                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
-                    ]
-                },
-                {
                     "base": "SetDetailMapping",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Mapping" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Mapping is invoked" },
@@ -234,24 +216,6 @@
                     "details": { "name": "Get Specular Texture (Asset Id)", "tooltip": "Gets the specular texture's asset id" },
                     "results": [
                         { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
-                    ]
-                },
-                {
-                    "base": "SetSpecularTextureAssetPath",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Texture (Path)" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Texture (Path) is invoked" },
-                    "details": { "name": "Set Specular Texture (Path)", "tooltip": "Sets the specular texture layer by source asset path. GPU mode only." },
-                    "params": [
-                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
-                    ]
-                },
-                {
-                    "base": "GetSpecularTextureAssetPath",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Texture (Path)" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Texture (Path) is invoked" },
-                    "details": { "name": "Get Specular Texture (Path)", "tooltip": "Gets the specular texture's source asset path" },
-                    "results": [
-                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
                     ]
                 },
                 {

@@ -24,7 +24,7 @@ namespace AZ::Render
     //!
     //! Two update modes are supported:
     //!   Static  -- CPU-generated StreamingImage (mobile-safe, one rebuild per change)
-    //!   Dynamic -- GPU compute AttachmentImage  (desktop-only, runs every frame)
+    //!   Dynamic -- GPU compute AttachmentImage  (desktop-only, updates on change)
     class GradientGIFeatureProcessorInterface
         : public RPI::FeatureProcessor
     {
@@ -41,7 +41,7 @@ namespace AZ::Render
             //! Works on all platforms including mobile.
             Static = 0,
 
-            //! GPU compute pass writing an AttachmentImage every frame.
+            //! GPU compute pass updating an AttachmentImage when inputs change.
             //! Requires compute shader UAV cubemap support (DX12 / Vulkan desktop).
             //! Falls back to Static automatically if the platform does not support it.
             Dynamic = 1,
@@ -59,7 +59,7 @@ namespace AZ::Render
         virtual void SetExposure(float exposureStops) = 0;
 
         //! Set cubemap face resolution in pixels (default 64). Clamped to [4..256].
-        //! Resolution changes only take effect on next component activation for Dynamic mode.
+        //! CPU changes are debounced. GPU changes apply to the live pass.
         virtual void SetFaceResolution(uint32_t resolution) = 0;
 
         //! Set the update mode (Static CPU or Dynamic GPU).

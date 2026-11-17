@@ -84,12 +84,9 @@ namespace AZ::Render
         // Static Mode -- CPU StreamingImage Path
         // =====================================================================
 
-        RHI::Format ChooseBestFormat() const;
-
         void GenerateFacePixels(
             uint32_t face,
             uint32_t faceSize,
-            RHI::Format format,
             AZStd::vector<uint8_t>& outPixels) const;
 
         Data::Instance<RPI::StreamingImage> BuildGradientCubemap();
@@ -182,8 +179,8 @@ namespace AZ::Render
         // the pool's tile allocations and crashes inside the DX12 RHI (GetResourceTiling,
         // Device.cpp). Colour is safe to rebuild live because every rebuild is the SAME size. The
         // throttle holds m_faceResolution steady during a scrub and yields the final size only once
-        // the slider settles. See GradientGI::ResolutionScrubThrottle and SetFaceResolution.
-        GradientGI::ResolutionScrubThrottle m_resolutionThrottle;
+        // the slider settles. See GradientGI::ResolutionDebounce and SetFaceResolution.
+        GradientGI::ResolutionDebounce m_resolutionDebounce;
         bool                                m_faceResolutionApplied = false; // first push applies immediately
 
         // Detail texture layer (GPU/Dynamic mode). Resolved instance is resident; mapping/blend
@@ -245,10 +242,9 @@ namespace AZ::Render
         // =====================================================================
 
         // The GPU compute pass (owned via intrusive_ptr by the render pipeline;
-        // m_gradientPassPtr keeps an additional reference so we can call into it).
+        // m_gradientPass keeps an additional reference so we can call into it).
         using PassPtr = AZStd::intrusive_ptr<GradientGICubemapPass>;
-        PassPtr                m_gradientPassPtr;
-        GradientGICubemapPass* m_gradientPass = nullptr;
+        PassPtr                m_gradientPass;
 
         // Which pipeline currently hosts the pass. Maximized play mode does not merely rebuild
         // passes -- it removes the editor's pipeline and adds a new one. The orphaned pass keeps a

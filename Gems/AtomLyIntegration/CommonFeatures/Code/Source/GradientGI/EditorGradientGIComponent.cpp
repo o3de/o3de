@@ -96,7 +96,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_updateMode,
                             "Update Mode",
                             "CPU: CPU-generated StreamingImage (mobile-safe, updates on change).\n"
-                            "GPU: GPU compute pass writing every frame (falls back to CPU if unsupported).")
+                            "GPU: GPU compute pass updating on change (falls back to CPU if unsupported).")
                             // RefreshEntireTree so the GPU-only texture fields show/hide when the mode toggles.
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                             ->EnumAttribute(GradientGIUpdateMode::Static,  "CPU")
@@ -115,8 +115,8 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &GradientGIComponentConfig::GetGpuLayerVisibility)
                             ->EnumAttribute(GradientGITextureMapping::Tiled,     "Tiled")
-                            ->EnumAttribute(GradientGITextureMapping::Stretched, "Stretched")
-                            ->EnumAttribute(GradientGITextureMapping::Cube,      "Cube")
+                            ->EnumAttribute(GradientGITextureMapping::Stretched, "Equirectangular")
+                            ->EnumAttribute(GradientGITextureMapping::Cube,      "Cubemap")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_detailBlend,
                             "Blend", "How the texture combines with the gradient color beneath it.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
@@ -137,7 +137,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &GradientGIComponentConfig::GetGpuLayerVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &GradientGIComponentConfig::m_specularTexture,
-                            "Texture", "Optional specular texture; composites into the specular reflection only (GPU mode only).")
+                            "Texture", "Optional specular texture that composites into the specular reflection only (GPU mode only).")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &GradientGIComponentConfig::GetGpuLayerVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_specularMapping,
@@ -145,8 +145,8 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &GradientGIComponentConfig::GetGpuLayerVisibility)
                             ->EnumAttribute(GradientGITextureMapping::Tiled,     "Tiled")
-                            ->EnumAttribute(GradientGITextureMapping::Stretched, "Stretched")
-                            ->EnumAttribute(GradientGITextureMapping::Cube,      "Cube")
+                            ->EnumAttribute(GradientGITextureMapping::Stretched, "Equirectangular")
+                            ->EnumAttribute(GradientGITextureMapping::Cube,      "Cubemap")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_specularBlend,
                             "Blend", "How the specular texture combines with the base color (Replace = use the texture alone).")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
