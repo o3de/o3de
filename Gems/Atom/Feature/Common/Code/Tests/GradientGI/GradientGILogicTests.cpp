@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <limits>
 #include <Atom/Feature/GradientGI/GradientGILogic.h>
 
 // =============================================================================================
@@ -87,6 +88,15 @@ namespace UnitTest
         EXPECT_EQ(RoundAndClampFaceResolution(9000.0f), MaxFaceResolution);
     }
 
+    TEST_F(GradientGILogicFixture, RoundAndClampFaceResolution_HandlesNonFiniteAndExtremeValues)
+    {
+        EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::max()), MaxFaceResolution);
+        EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::lowest()), MinFaceResolution);
+        EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::infinity()), MaxFaceResolution);
+        EXPECT_EQ(RoundAndClampFaceResolution(-std::numeric_limits<float>::infinity()), MinFaceResolution);
+        EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::quiet_NaN()), MinFaceResolution);
+    }
+
     // =========================================================================================
     // Update mode fallback (GPU/Dynamic -> CPU/Static)
     // =========================================================================================
@@ -117,10 +127,10 @@ namespace UnitTest
         EXPECT_FALSE(IsTextureLayerEnabled(false, true, true));
     }
 
-    TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_EnabledForNonCubeMapping)
+    TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_NonCubeMappingRequires2DTexture)
     {
         EXPECT_TRUE(IsTextureLayerEnabled(true, /*cubeRequested*/ false, /*textureIsCube*/ false));
-        EXPECT_TRUE(IsTextureLayerEnabled(true, false, true));
+        EXPECT_FALSE(IsTextureLayerEnabled(true, false, true));
     }
 
     TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_CubeMappingRequiresCubeTexture)

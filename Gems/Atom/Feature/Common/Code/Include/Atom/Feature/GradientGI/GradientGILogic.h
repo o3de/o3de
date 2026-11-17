@@ -43,13 +43,18 @@ namespace AZ::Render::GradientGI
     }
 
     //! Script Canvas / Lua hand resolution in as a Number (floating point). Round to the nearest
-    //! whole pixel, then clamp into range. Negative or NaN-free out-of-range inputs clamp cleanly.
+    //! whole pixel within the supported range. NaN resolves to the minimum resolution.
     inline uint32_t RoundAndClampFaceResolution(float value)
     {
-        const int rounded = static_cast<int>(AZStd::lround(value));
-        const int clamped = AZStd::clamp(
-            rounded, static_cast<int>(MinFaceResolution), static_cast<int>(MaxFaceResolution));
-        return static_cast<uint32_t>(clamped);
+        if (!(value >= static_cast<float>(MinFaceResolution)))
+        {
+            return MinFaceResolution;
+        }
+        if (value >= static_cast<float>(MaxFaceResolution))
+        {
+            return MaxFaceResolution;
+        }
+        return static_cast<uint32_t>(AZStd::lround(value));
     }
 
     //! Snap a CPU/Static face size to the nearest power of two in [4..256].
@@ -149,12 +154,11 @@ namespace AZ::Render::GradientGI
     // Texture layer fallback (detail / specular)
     // =========================================================================================
 
-    //! A detail/specular texture layer only contributes when a texture is present AND -- when Cube
-    //! mapping is requested -- the texture is actually a cubemap. Otherwise the layer falls back to
-    //! "off" and the gradient (or, for specular, the diffuse gradient) shows through unmodified.
+    //! A detail/specular texture layer only contributes when its texture type matches the mapping.
+    //! Otherwise the layer is disabled and the gradient (or diffuse, for specular) shows through.
     inline bool IsTextureLayerEnabled(bool hasTexture, bool cubeMappingRequested, bool textureIsCube)
     {
-        return hasTexture && (!cubeMappingRequested || textureIsCube);
+        return hasTexture && (cubeMappingRequested == textureIsCube);
     }
 
     // =========================================================================================
