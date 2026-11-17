@@ -28,10 +28,6 @@
 
 namespace AZ::Render
 {
-    // =========================================================================
-    // Reflect
-    // =========================================================================
-
     void GradientGIFeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -41,17 +37,12 @@ namespace AZ::Render
         }
     }
 
-    // =========================================================================
-    // Feature Processor Lifecycle
-    // =========================================================================
-
     void GradientGIFeatureProcessor::Activate()
     {
         m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
         AZ_Error(
             "GradientGI", m_iblFeatureProcessor, "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
 
-        // If Dynamic mode was requested, check platform support; fall back to Static if needed.
         const UpdateMode resolvedMode = GradientGI::ResolveUpdateMode(
             m_updateMode, m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning(
@@ -61,19 +52,14 @@ namespace AZ::Render
             "GradientGI falling back to Static mode.");
         m_updateMode = resolvedMode;
 
-        // The feature processor starts inert. It produces nothing until a component takes
-        // ownership via Enable(), so it can never light the scene with no owner alive.
         m_enabled = false;
         m_needsRebuild = false;
 
-        // Cache the scene SRG IBL slot indices for Dynamic mode's direct writes.
         if (m_updateMode == UpdateMode::Dynamic && !m_sceneSrgIndicesCached)
         {
             CacheSceneSrgIndices();
         }
 
-        // Listen for pipeline pass rebuilds so we can re-establish our compute pass
-        // (e.g. when maximized play mode tears down and recreates the render pipeline).
         EnableSceneNotification();
     }
 
@@ -81,8 +67,6 @@ namespace AZ::Render
     {
         DisableSceneNotification();
 
-        // Scene teardown -- release immediately rather than waiting out a grace period that will
-        // never tick, since OnBeginPrepareRender stops arriving once the notification bus is off.
         ReleaseOutput();
         ReleaseGeneratedImages();
 
@@ -94,35 +78,21 @@ namespace AZ::Render
         m_sceneSrgIndicesCached = false;
     }
 
-    // =========================================================================
-    // Ownership -- one component drives the feature at a time
-    // =========================================================================
-
     void GradientGIFeatureProcessor::Enable(EntityId owner)
     {
-        // Register this owner and let it drive. Earlier owners stay registered so that when this
-        // one leaves the feature is handed back to them instead of switching off.
         m_owners.Add(owner);
 
-        // We are wanted again -- cancel any pending teardown and keep what we already generated.
         m_teardownCountdown = 0;
 
-        // Stage the new owner's configuration before enabling output.
+        // Notify before enabling output so the new owner can stage its configuration.
         m_ownerChangedEvent.Signal(owner);
         m_enabled = true;
 
-        // Give the scene a sane ambient floor before we start driving it, so any frame we are not
-        // writing (a pipeline swap, a mode switch) reads as the engine default rather than black.
         EnsureIblFloor();
 
         if (m_updateMode == UpdateMode::Static)
         {
-            // Only force a rebuild when there is nothing to publish. The controller pushes the whole
-            // configuration before enabling us, so a rebuild it has already requested (colours,
-            // resolution) must never be cleared here -- otherwise a newly activated component would
-            // inherit the previous one's gradient. Retaining the cubemap across a disable makes the
-            // common re-enable (property edit, game mode transition) allocation-free: Simulate sees
-            // the IBL slots no longer hold our image and simply re-publishes it.
+            // Preserve any rebuild requested by the owner while reusing an unchanged cached image.
             if (!m_cubemapImage)
             {
                 m_needsRebuild = true;
@@ -144,17 +114,10 @@ namespace AZ::Render
         const EntityId previousOwner = m_owners.Current();
         m_owners.Remove(owner);
 
-        // Re-arm the duplicate report. Clearing this only from the per-frame check would miss a
-        // level reload, where every owner deregisters and re-registers within a single frame -- the
-        // check never samples a count below two, so the latch would suppress the warning for a
-        // level that genuinely does contain duplicates.
+        // A level can reload all owners between frames, so reset the warning here too.
         m_multiOwnerFrames = 0;
         m_reportedOwnerCount = 0;
 
-        // Stop only once nobody wants us any more. While another component is still registered --
-        // a duplicate deleted with the original still alive, or the interleaved teardown of a
-        // spawned prefab copy -- we keep running and it simply takes over. See
-        // GradientGI::OwnerRegistry.
         if (!m_owners.Empty())
         {
             if (m_owners.Current() != previousOwner)
@@ -180,24 +143,19 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::ReleaseOutput()
     {
-        // Static: hand the IBL slots back, but only if they still hold our cubemap, so we never
-        // wipe another provider's IBL. The cubemap itself is kept -- see the grace period below.
+        // Reset IBL only while its bindings still reference our CPU image.
         if (OwnsIblSlots())
         {
             m_iblFeatureProcessor->Reset();
         }
         m_needsRebuild = false;
 
-        // Dynamic: silence the compute dispatch. Render() stops rebinding the scene SRG, so the
-        // IBL feature processor's own values take effect again on the next frame.
         if (m_gradientPass)
         {
             m_gradientPass->SetEnabled(false);
         }
 
-        // Keep everything we generated for a short grace period. A re-enable within it (a property
-        // edit, a game mode transition) cancels the teardown and costs nothing; outliving it
-        // releases the lot.
+        // Reuse resources if an editor reactivation occurs before the grace period expires.
         if (m_gradientPass || m_cubemapImage)
         {
             m_teardownCountdown = TeardownGraceFrames;
@@ -217,24 +175,18 @@ namespace AZ::Render
         }
     }
 
-    // =========================================================================
-    // Duplicate reporting
-    // =========================================================================
-
     void GradientGIFeatureProcessor::TickMultipleOwnerReport()
     {
         const size_t ownerCount = m_owners.Count();
 
         if (ownerCount < 2)
         {
-            // Back to a single owner -- re-arm so a later duplicate is reported again.
             m_multiOwnerFrames = 0;
             m_reportedOwnerCount = 0;
             return;
         }
 
-        // Only report once the overlap has persisted. Handing over between an editor-only component
-        // and its spawned counterpart can register both for a frame; a real duplicate never clears.
+        // Tolerate brief editor/play overlap before reporting duplicate components.
         ++m_multiOwnerFrames;
         if (m_multiOwnerFrames >= MultiOwnerReportFrames && ownerCount != m_reportedOwnerCount)
         {
@@ -245,8 +197,6 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::ReportMultipleOwners() const
     {
-        // Name the entities, so the redundant one can be found without hunting the level. Only the
-        // newest has any visible effect, which is exactly why a duplicate goes unnoticed.
         AZStd::string entityList;
         for (const EntityId& owner : m_owners.Entities())
         {
@@ -282,10 +232,6 @@ namespace AZ::Render
         m_needsRebuild = false;
     }
 
-    // =========================================================================
-    // CacheSceneSrgIndices -- cache IBL slot indices from the scene SRG
-    // =========================================================================
-
     void GradientGIFeatureProcessor::CacheSceneSrgIndices()
     {
         m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
@@ -302,10 +248,6 @@ namespace AZ::Render
         }
     }
 
-    // =========================================================================
-    // Simulate -- Static mode cubemap rebuild (runs on a job thread)
-    // =========================================================================
-
     void GradientGIFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Simulate");
@@ -315,17 +257,9 @@ namespace AZ::Render
             return;
         }
 
-        // --- Rebuild the CPU cubemap when parameters changed (max once per frame) ----
-        // Each rebuild allocates a fresh StreamingImage (the type is immutable, so it cannot
-        // be updated in place). One rebuild per frame is safe and matches a tick-driven script
-        // changing colors at runtime. The editor color picker, however, can fire several
-        // changes within a single frame; m_rebuiltThisFrame (cleared each frame in Render())
-        // caps us to one rebuild per frame regardless. The latest values are buffered in the
-        // member colors, so a coalesced rebuild always uses the final values.
+        // StreamingImage is immutable. Coalesce changes to at most one replacement per rendered frame.
         if (m_needsRebuild && !m_rebuiltThisFrame)
         {
-            // Release the previous cubemap before building its replacement so we never hold
-            // two full cubemaps in the streaming pool at once.
             m_cubemapImage = nullptr;
             m_imageAsset = {};
 
@@ -334,10 +268,6 @@ namespace AZ::Render
             m_rebuiltThisFrame = true;
         }
     }
-
-    // =========================================================================
-    // Dynamic Mode -- GPU compute pass lifecycle
-    // =========================================================================
 
     void GradientGIFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
@@ -356,15 +286,12 @@ namespace AZ::Render
             return true;
         }
 
-        // Detached from its pass tree by a rebuild.
         if (!m_gradientPass->GetParent())
         {
             return true;
         }
 
-        // Host pipeline no longer present in the scene. A removed pipeline can leave our pass with
-        // a stale but non-null parent, in which case the pass never dispatches again and the
-        // cubemap we keep binding to the scene SRG is never written.
+        // Pipeline removal can leave a stale, non-null parent on the pass.
         return GetParentScene()->GetRenderPipeline(m_passPipelineId) == nullptr;
     }
 
@@ -380,9 +307,7 @@ namespace AZ::Render
             return;
         }
 
-        // Choose the host BEFORE tearing the old pass down, since DestroyPass clears the recorded
-        // host id: an explicitly supplied pipeline first, then the pipeline that hosted us if it is
-        // still alive, then the scene's default.
+        // Choose a host before DestroyPass clears its recorded ID.
         RPI::RenderPipelinePtr keepAlive;
         if (!renderPipeline)
         {
@@ -396,45 +321,35 @@ namespace AZ::Render
 
         if (!renderPipeline)
         {
-            // No pipeline yet -- normal when a component activates before the scene's pipeline is
-            // registered. AddRenderPasses injects the pass once one appears.
+            // AddRenderPasses will retry when a pipeline becomes available.
             return;
         }
 
-        // Do not re-attempt a host we already know we cannot anchor into; the per-frame health
-        // check would otherwise allocate and discard a pass every frame.
+        // Retry failed hosts only after a pipeline change.
         if (renderPipeline->GetId() == m_failedHostPipelineId)
         {
             return;
         }
 
-        // Drop the stale pass before hosting a fresh one.
         DestroyPass();
 
         RPI::PassDescriptor passDescriptor(AZ::Name("GradientGICubemapPass"));
         m_gradientPass = aznew GradientGICubemapPass(passDescriptor);
 
-        // Hand over the output cubemaps from the previous instance of the pass. When they match the
-        // current face size the replacement adopts them, so a pass-tree rebuild costs no allocation
-        // and the scene keeps sampling valid contents instead of an unwritten (black) cubemap.
+        // Keep initialized output available while replacing the pass.
         m_gradientPass->AdoptOutputImages(m_diffuseImage, m_specularImage);
 
-        // Push current gradient state into the pass before it starts running.
         m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_faceResolution);
         m_gradientPass->SetDetailLayer(m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
         m_gradientPass->SetSpecularLayer(m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
         m_gradientPass->SetEnabled(m_enabled);
 
-        // Inject before DepthPrePass so it runs early in the frame.
-        // The cubemap is ready by the time IBL sampling occurs later in the pipeline.
+        // Dispatch before passes that sample IBL.
         const bool injected = renderPipeline->AddPassBefore(m_gradientPass, AZ::Name("DepthPrePass"));
 
         if (!injected)
         {
-            // Auxiliary pipelines (the BRDF LUT pipeline, for one) have no DepthPrePass to anchor
-            // against. Never keep a pass we could not inject: Render() would bind the cubemap of a
-            // pass that never dispatches and the scene would go black, instead of falling through
-            // to the IBL default.
+            // Some auxiliary pipelines have no DepthPrePass. Do not retain an uninjected pass.
             m_failedHostPipelineId = renderPipeline->GetId();
             DestroyPass();
             return;
@@ -450,8 +365,7 @@ namespace AZ::Render
             return;
         }
 
-        // A pipeline rebuild can orphan the pass (null parent). Only queue removal while it is
-        // still in the tree; otherwise just release our reference.
+        // An orphaned pass is no longer in a tree that can process its removal.
         if (m_gradientPass->GetParent())
         {
             m_gradientPass->QueueForRemoval();
@@ -462,37 +376,26 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::EnsureIblFloor()
     {
-        // Only when nothing has ever populated the IBL slots. A provider that has set an image
-        // (a Global Skylight, or our own Static cubemap) is left strictly alone.
         if (m_iblFeatureProcessor && !m_iblFeatureProcessor->GetSpecularImage())
         {
             m_iblFeatureProcessor->Reset();
         }
     }
 
-    // =========================================================================
-    // OnRenderPipelineChanged -- re-establish state after a pipeline pass rebuild
-    // =========================================================================
-
     void GradientGIFeatureProcessor::OnRenderPipelineChanged(
         RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         using ChangeType = RPI::SceneNotification::RenderPipelineChangeType;
 
-        // Nothing to re-establish while no component owns us. Doing so would resurrect the gradient
-        // with nothing alive to drive it -- which is exactly how the lighting used to survive into
-        // game mode and fight the spawned copy of itself.
         if (!m_enabled)
         {
             return;
         }
 
-        // The set of pipelines changed, so a host we previously failed to inject into is worth
-        // trying again.
+        // A pipeline change can make a previously unsupported host usable.
         m_failedHostPipelineId = RPI::RenderPipelineId();
 
-        // Our host pipeline is going away and takes the pass with it. Release the reference now
-        // rather than waiting to notice: the pass keeps a stale non-null parent through the swap.
+        // Drop the pass when its host is removed, even if its parent pointer remains non-null.
         if (changeType == ChangeType::Removed && renderPipeline &&
             renderPipeline->GetId() == m_passPipelineId)
         {
@@ -502,31 +405,21 @@ namespace AZ::Render
 
         if (m_updateMode == UpdateMode::Dynamic)
         {
-            // The scene SRG can be rebuilt across a pipeline change, so re-cache the slot indices.
+            // Pipeline changes can replace the scene SRG.
             m_sceneSrgIndicesCached = false;
             CacheSceneSrgIndices();
 
-            // Re-host promptly when a pipeline is added, so the gradient is present on the very
-            // first frame it renders. Every other case is left to the per-frame health check in
-            // OnBeginPrepareRender -- a PassChanged notification arrives *before* the rebuild
-            // detaches our pass, so repairing from this notification alone always misses it.
+            // PassChanged can precede detachment. OnBeginPrepareRender handles the eventual orphan.
             if (changeType == ChangeType::Added)
             {
                 EnsurePass(renderPipeline);
             }
         }
 
-        // Static needs nothing here: OnBeginPrepareRender() re-asserts the cubemap whenever the IBL slots
-        // drift away from it, so a pipeline swap repairs itself on the next frame.
     }
-
-    // =========================================================================
-    // OnBeginPrepareRender -- per-frame pass health check (main thread)
-    // =========================================================================
 
     void GradientGIFeatureProcessor::OnBeginPrepareRender()
     {
-        // While no component wants us, run down the teardown grace period instead of re-hosting.
         if (!m_enabled)
         {
             TickDeferredTeardown();
@@ -535,7 +428,7 @@ namespace AZ::Render
 
         TickMultipleOwnerReport();
 
-        // IBL consumes these values next simulation, after this frame's parallel readers have finished.
+        // Simulation jobs have finished. IBL consumes these values in its next simulation.
         if (m_updateMode == UpdateMode::Static)
         {
             if (m_iblFeatureProcessor &&
@@ -560,19 +453,13 @@ namespace AZ::Render
         EnsurePass();
     }
 
-    // =========================================================================
-    // Render -- Dynamic mode: write AttachmentImage to scene SRG IBL slots
-    // =========================================================================
-
     void GradientGIFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Render");
 
-        // Frame boundary: Render() is called every frame (Simulate() may not be), so this is
-        // the reliable place to re-arm the once-per-frame CPU rebuild cap.
+        // Render runs even when simulation is skipped, keeping the rebuild cap frame-based.
         m_rebuiltThisFrame = false;
 
-        // Commit a deferred resolution change once the slider has settled (both modes).
         TickResolutionSettle();
 
         if (!m_enabled || m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
@@ -585,13 +472,7 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::WriteSceneSrgFromPass()
     {
-        // Take the pass's outputs only once they have been written. Before that they have no contents
-        // and have not been transitioned for sampling, so keep publishing the previous pair, which
-        // also lets a resolution change swap over without a flash.
-        //
-        // Caching them also lets them outlive the pass. A pass-tree rebuild discards the pass and we
-        // host a replacement; EnsurePass hands these back to it. The size is re-checked on adoption,
-        // so a resolution change simply allocates a new pair rather than reusing a mismatched one.
+        // Keep the previous output pair until the replacement has scheduled a write.
         if (m_gradientPass->HasWrittenOutputs())
         {
             m_diffuseImage = m_gradientPass->GetDiffuseImage();
@@ -600,30 +481,19 @@ namespace AZ::Render
 
         if (!m_diffuseImage || !m_specularImage)
         {
-            // Nothing written yet, so the IBL feature processor's values stay in the slots.
             return;
         }
 
-        // Write the gradient cubemaps to their respective IBL slots. This runs on the render
-        // thread after all Simulate() jobs have completed, so there is no race with the IBL FP.
-        // The cubemap SRV (default view set at image creation) is used for sampling.
+        // Render preparation follows simulation, so IBL is no longer updating these SRG slots.
         m_sceneSrg->SetImageView(m_specularEnvMapIndex, m_specularImage->GetImageView());
         m_sceneSrg->SetImageView(m_diffuseEnvMapIndex, m_diffuseImage->GetImageView());
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
-    // =========================================================================
-    // Public API
-    // =========================================================================
-
     void GradientGIFeatureProcessor::SetGradientColors(
         const Color& low, const Color& mid, const Color& high)
     {
-        // Idempotent. The controller re-pushes the entire configuration on every Activate, and the
-        // editor cycles Deactivate/Activate on every property edit and every game mode transition.
-        // Treating an identical push as a change would rebuild the CPU cubemap (a fresh
-        // StreamingImage and GPU upload) each time, which reads as a flicker on the way back into
-        // the editor.
+        // Editor reactivation reapplies configuration, so unchanged colors must not trigger an upload.
         if (low == m_lowColor && mid == m_midColor && high == m_highColor)
         {
             return;
@@ -647,23 +517,14 @@ namespace AZ::Render
     {
         m_exposure = exposureStops;
 
-        // The cubemaps hold unexposed values in both modes. The IBL samplers apply exposure once,
-        // through the scene SRG's m_iblExposure, so an exposure change never rewrites a cubemap.
-        // Static: exposure is pushed to the IBL FP from OnBeginPrepareRender(), and only while we own
-        // the slots -- so a foreign IBL's exposure is never disturbed, and the floor value
-        // (~2^-20) reads as effectively black without conflicting with other lighting.
-        // Dynamic: exposure is written to the scene SRG from Render().
+        // Apply exposure at IBL sampling, without rebuilding the cubemaps.
     }
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
         const uint32_t clamped = GradientGI::ClampFaceResolution(resolution);
 
-        // GPU/Dynamic mode reallocates a lightweight AttachmentImage (NOT the DX12 tiled streaming
-        // pool), so a resolution change is cheap and safe to apply live every tick. Applying it
-        // immediately also avoids the settle delay, which otherwise reads as a flicker while the
-        // resolution slider is scrubbed. Only CPU/Static mode -- which churns the tiled streaming
-        // pool and crashes the RHI on a size change -- needs the debounce below.
+        // GPU output resizes attachment images directly. Only CPU StreamingImage allocations are debounced.
         if (m_updateMode == UpdateMode::Dynamic)
         {
             m_resolutionDebounce.Commit(clamped);
@@ -671,8 +532,7 @@ namespace AZ::Render
             return;
         }
 
-        // The very first push (component activation, no scrub) applies immediately so the initial
-        // build uses the configured resolution with no transient flash at the default size.
+        // Apply the initial size immediately so the first image uses the configured resolution.
         if (!m_faceResolutionApplied)
         {
             m_resolutionDebounce.Commit(clamped);
@@ -680,15 +540,11 @@ namespace AZ::Render
             return;
         }
 
-        // CPU/Static while editing: debounce resolution changes. The build keeps using the previous
-        // stable size until the slider settles -- safe, exactly like a colour scrub.
         m_resolutionDebounce.Request(clamped);
     }
 
     void GradientGIFeatureProcessor::ApplyFaceResolution(uint32_t value)
     {
-        // Idempotent for the same reason as SetGradientColors -- an unchanged resolution must not
-        // cost a rebuild. The first push still applies, so activation always establishes a size.
         if (m_faceResolutionApplied && value == m_faceResolution)
         {
             return;
@@ -703,16 +559,12 @@ namespace AZ::Render
         }
         else if (m_gradientPass)
         {
-            // Dynamic mode: push the new resolution to the live pass, which reallocates its
-            // output cubemap (GradientGICubemapPass::SetGradientColors queues a pass rebuild
-            // when the face size changes).
             m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_faceResolution);
         }
     }
 
     void GradientGIFeatureProcessor::TickResolutionSettle()
     {
-        // Commit the one and only reallocation at the final size once the slider has settled.
         if (const AZStd::optional<uint32_t> settled = m_resolutionDebounce.AdvanceFrame())
         {
             ApplyFaceResolution(*settled);
@@ -726,7 +578,6 @@ namespace AZ::Render
             return;
         }
 
-        // GPU/Dynamic requires compute UAV cubemap support; fall back to Static if unavailable.
         const UpdateMode mode = GradientGI::ResolveUpdateMode(
             requestedMode, requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
         AZ_Warning("GradientGI", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
@@ -738,7 +589,7 @@ namespace AZ::Render
 
         m_updateMode = mode;
 
-        // A mode switch ends a CPU scrub. Carry its latest request into the new backend.
+        // Consume a pending CPU size before switching backends.
         if (m_resolutionDebounce.HasPendingCommit())
         {
             const uint32_t resolution = m_resolutionDebounce.Pending();
@@ -746,24 +597,14 @@ namespace AZ::Render
             ApplyFaceResolution(resolution);
         }
 
-        // =================================================================
-        // Switch TO Static
-        // =================================================================
         if (mode == UpdateMode::Static)
         {
-            // Release the GPU path entirely -- the cached output cubemaps are of no use to the CPU
-            // path and would otherwise sit in the attachment pool until the scene is torn down.
             DestroyPass();
             m_diffuseImage = nullptr;
             m_specularImage = nullptr;
 
-            // Rebuild the CPU cubemap so the IBL FP picks it up again -- but only if a component
-            // is actually driving us; an idle feature processor stays idle.
             m_needsRebuild = m_enabled;
         }
-        // =================================================================
-        // Switch TO Dynamic
-        // =================================================================
         else
         {
             if (!m_sceneSrgIndicesCached)
@@ -771,9 +612,7 @@ namespace AZ::Render
                 CacheSceneSrgIndices();
             }
 
-            // Disengage the IBL FP from our Static image so it stops writing it in Simulate();
-            // Dynamic drives the scene SRG slots directly from Render(). Guarded so we never
-            // wipe another provider's IBL.
+            // GPU output bypasses IBL. Release only the CPU bindings we still own.
             if (OwnsIblSlots())
             {
                 m_iblFeatureProcessor->Reset();
@@ -790,8 +629,7 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
-        // Resolve the asset to a resident runtime instance once. Color edits never touch this;
-        // they only update SRG constants, so the texture stays loaded (the cheap-rebuild goal).
+        // Retain the runtime texture so color edits do not reload it.
         m_detailTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
 
         if (m_gradientPass)
@@ -845,14 +683,9 @@ namespace AZ::Render
                m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
     }
 
-    // =========================================================================
-    // Cubemap Direction Mapping
-    // =========================================================================
-
     Vector3 GradientGIFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
     {
-        // Standard cubemap convention: vc increases downward in texture space,
-        // so side faces use -vc for Y (up) to keep the gradient oriented correctly.
+        // Match the shader: texture V points downward, so side faces negate it for Y.
         switch (face)
         {
         case 0:
@@ -871,10 +704,6 @@ namespace AZ::Render
             return Vector3(0.0f, 1.0f, 0.0f);
         }
     }
-
-    // =========================================================================
-    // Face Pixel Generation
-    // =========================================================================
 
     void GradientGIFeatureProcessor::GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const
     {
@@ -909,31 +738,21 @@ namespace AZ::Render
         }
     }
 
-    // =========================================================================
-    // Cubemap Asset Construction (Static mode)
-    // =========================================================================
-
     Data::Instance<RPI::StreamingImage> GradientGIFeatureProcessor::BuildGradientCubemap()
     {
         constexpr RHI::Format format = RHI::Format::R16G16B16A16_FLOAT;
-        // Snap to a power of two: O3DE's runtime StreamingImage upload renders certain non-power-of-
-        // two face sizes black (observed dead band ~91..127 at R16G16B16A16). Imperceptible for a
-        // smooth gradient. See GradientGI::SnapCpuFaceResolutionToPow2.
         const uint32_t faceSize = GradientGI::SnapCpuFaceResolutionToPow2(m_faceResolution);
 
-        // Step 1: Generate pixel data for each of the 6 faces
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
         for (uint32_t face = 0; face < 6; ++face)
         {
             GenerateFacePixels(face, faceSize, facePixels[face]);
         }
 
-        // Step 2: Compute subresource layout for one face
         RHI::Size faceDimensions(faceSize, faceSize, 1);
         RHI::DeviceImageSubresourceLayout faceLayout = RHI::GetImageSubresourceLayout(faceDimensions, format);
         const size_t bytesPerFace = faceLayout.m_bytesPerImage;
 
-        // Step 3: Build ImageMipChainAsset (1 mip level, 6 array slices)
         Data::Asset<RPI::ImageMipChainAsset> mipChainAsset;
         {
             RPI::ImageMipChainAssetCreator mipCreator;
@@ -959,7 +778,6 @@ namespace AZ::Render
             }
         }
 
-        // Step 4: Build StreamingImageAsset
         RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
             RHI::ImageBindFlags::ShaderRead,
             faceSize,
@@ -988,7 +806,6 @@ namespace AZ::Render
             }
         }
 
-        // Step 5: Create runtime GPU image instance
         Data::Instance<RPI::StreamingImage> image = RPI::StreamingImage::FindOrCreate(m_imageAsset);
         if (!image)
         {

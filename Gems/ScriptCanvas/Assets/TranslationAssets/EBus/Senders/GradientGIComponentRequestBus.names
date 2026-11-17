@@ -78,7 +78,7 @@
                     "base": "SetExposure",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Exposure" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Exposure is invoked" },
-                    "details": { "name": "Set Exposure", "tooltip": "Sets the exposure in EV stops applied to the gradient GI. The minimum value dims the ambient fill to black." },
+                    "details": { "name": "Set Exposure", "tooltip": "Set exposure in EV stops. IBL sampling multiplies intensity by 2^exposure." },
                     "params": [
                         { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure (EV)" } }
                     ]
@@ -96,7 +96,7 @@
                     "base": "SetFaceResolution",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Resolution" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Resolution is invoked" },
-                    "details": { "name": "Set Resolution", "tooltip": "Sets the cubemap face size in pixels. Clamped to 4-256." },
+                    "details": { "name": "Set Resolution", "tooltip": "Set face size in pixels, rounded and clamped to 4-256. CPU mode snaps to a power of two." },
                     "params": [
                         { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
                     ]
@@ -105,7 +105,7 @@
                     "base": "GetFaceResolution",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Resolution" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Resolution is invoked" },
-                    "details": { "name": "Get Resolution", "tooltip": "Gets the cubemap face size in pixels" },
+                    "details": { "name": "Get Resolution", "tooltip": "Get the configured face size. CPU output can lag while resolution edits settle." },
                     "results": [
                         { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
                     ]
@@ -114,7 +114,7 @@
                     "base": "SetUpdateMode",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Update Mode" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Update Mode is invoked" },
-                    "details": { "name": "Set Update Mode", "tooltip": "Sets how the gradient cubemap is produced.\n0: CPU (StreamingImage rebuild, mobile-safe)\n1: GPU (compute pass; desktop, falls back to CPU if unsupported)" },
+                    "details": { "name": "Set Update Mode", "tooltip": "Select a generation backend.\n0: CPU gradient only\n1: GPU gradient and texture layers, with CPU fallback if unavailable" },
                     "params": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Update Mode", "tooltip": "0: CPU, 1: GPU" } }
                     ]
@@ -123,7 +123,7 @@
                     "base": "GetUpdateMode",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Update Mode" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Update Mode is invoked" },
-                    "details": { "name": "Get Update Mode", "tooltip": "Gets the active update mode.\n0: CPU\n1: GPU" },
+                    "details": { "name": "Get Update Mode", "tooltip": "Get the configured mode. The active backend may have fallen back to CPU.\n0: CPU\n1: GPU" },
                     "results": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Update Mode", "tooltip": "0: CPU, 1: GPU" } }
                     ]
@@ -132,7 +132,7 @@
                     "base": "SetDetailTextureAssetId",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Texture (Asset Id)" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Texture (Asset Id) is invoked" },
-                    "details": { "name": "Set Detail Texture (Asset Id)", "tooltip": "Sets the detail texture layer by asset id. GPU mode only; overlays detail/grit onto the gradient." },
+                    "details": { "name": "Set Detail Texture (Asset Id)", "tooltip": "Set the detail texture by asset ID. Affects GPU output only." },
                     "params": [
                         { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
                     ]
@@ -150,7 +150,7 @@
                     "base": "SetDetailMapping",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Mapping" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Mapping is invoked" },
-                    "details": { "name": "Set Detail Mapping", "tooltip": "Sets how the detail texture is mapped onto the cubemap.\n0: Tiled (2D texture repeated per face)\n1: Stretched (2D texture wrapped equirectangular)\n2: Cube (authored cubemap sampled by direction)" },
+                    "details": { "name": "Set Detail Mapping", "tooltip": "Select texture mapping.\n0: Tiled per face\n1: Equirectangular (Stretched)\n2: Cubemap (Cube)" },
                     "params": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
                     ]
@@ -159,7 +159,7 @@
                     "base": "GetDetailMapping",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Mapping" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Mapping is invoked" },
-                    "details": { "name": "Get Detail Mapping", "tooltip": "Gets the detail mapping mode.\n0: Tiled, 1: Stretched, 2: Cube" },
+                    "details": { "name": "Get Detail Mapping", "tooltip": "Get texture mapping.\n0: Tiled, 1: Equirectangular (Stretched), 2: Cubemap (Cube)" },
                     "results": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
                     ]
@@ -204,7 +204,7 @@
                     "base": "SetSpecularTextureAssetId",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Texture (Asset Id)" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Texture (Asset Id) is invoked" },
-                    "details": { "name": "Set Specular Texture (Asset Id)", "tooltip": "Sets the specular texture layer by asset id. GPU mode only; composites into the specular reflection." },
+                    "details": { "name": "Set Specular Texture (Asset Id)", "tooltip": "Set the specular texture by asset ID. Affects GPU output only. Without this layer, specular uses the diffuse base." },
                     "params": [
                         { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
                     ]
@@ -222,7 +222,7 @@
                     "base": "SetSpecularMapping",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Mapping" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Mapping is invoked" },
-                    "details": { "name": "Set Specular Mapping", "tooltip": "Sets how the specular texture is mapped onto the cubemap.\n0: Tiled (2D texture repeated per face)\n1: Stretched (2D texture wrapped equirectangular)\n2: Cube (authored cubemap sampled by direction)" },
+                    "details": { "name": "Set Specular Mapping", "tooltip": "Select texture mapping.\n0: Tiled per face\n1: Equirectangular (Stretched)\n2: Cubemap (Cube)" },
                     "params": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
                     ]
@@ -231,7 +231,7 @@
                     "base": "GetSpecularMapping",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Mapping" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Mapping is invoked" },
-                    "details": { "name": "Get Specular Mapping", "tooltip": "Gets the specular mapping mode.\n0: Tiled, 1: Stretched, 2: Cube" },
+                    "details": { "name": "Get Specular Mapping", "tooltip": "Get texture mapping.\n0: Tiled, 1: Equirectangular (Stretched), 2: Cubemap (Cube)" },
                     "results": [
                         { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
                     ]

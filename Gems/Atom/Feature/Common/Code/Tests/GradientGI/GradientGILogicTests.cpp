@@ -11,22 +11,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <limits>
 
-// =============================================================================================
-// GradientGI logic unit tests
-//
-// These cover the pure decision/state pieces behind the GradientGI feature's known instabilities:
-//   * ResolutionDebounce -- the debounce that fixed the DX12 tiled-pool churn crash when the
-//     resolution slider is scrubbed (different-sized cubemap allocated every frame).
-//   * ResolveUpdateMode       -- the GPU/Dynamic -> CPU/Static fallback when compute is unsupported.
-//   * OwnerRegistry          -- the ownership rule that keeps a component which is shutting down
-//     from switching the feature off while another one is still alive and driving it.
-//   * IsTextureLayerEnabled   -- the detail/specular "no texture falls back" decision.
-//   * Clamp/Round + NormalizeAssetPath -- value/path normalisation for the scripting API.
-//
-// The actual GPU compute compositing (specular rendering as diffuse, detail-absent showing pure
-// gradient) is shader behaviour and is verified as a behavioural proof, not here.
-// =============================================================================================
-
 namespace UnitTest
 {
     using namespace AZ::Render;
@@ -36,10 +20,6 @@ namespace UnitTest
     class GradientGILogicFixture : public LeakDetectionFixture
     {
     };
-
-    // =========================================================================================
-    // Face resolution clamp / round
-    // =========================================================================================
 
     TEST_F(GradientGILogicFixture, ClampFaceResolution_HoldsRangeBounds)
     {
@@ -53,19 +33,19 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, SnapCpuFaceResolutionToPow2_AvoidsTheBlackBand)
     {
-        // Powers of two pass through unchanged.
+        // Existing powers of two remain unchanged.
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(4), 4u);
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(64), 64u);
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(128), 128u);
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(256), 256u);
 
-        // The observed dead band (91..127 at 16-bit RGBA) snaps out to a safe power of two.
+        // Non-power-of-two requests snap to the nearest supported size.
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(91), 64u); // nearer 64
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(127), 128u); // nearer 128
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(100), 128u);
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(200), 256u);
 
-        // Result is always a power of two within [4..256], whatever the input.
+        // Check range and power-of-two invariants across the full supported interval.
         for (uint32_t v = MinFaceResolution; v <= MaxFaceResolution; ++v)
         {
             const uint32_t snapped = SnapCpuFaceResolutionToPow2(v);
@@ -77,13 +57,12 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, RoundAndClampFaceResolution_RoundsThenClamps)
     {
-        // Script Canvas Numbers arrive as float -- round to nearest whole pixel.
         EXPECT_EQ(RoundAndClampFaceResolution(63.4f), 63u);
         EXPECT_EQ(RoundAndClampFaceResolution(63.6f), 64u);
         EXPECT_EQ(RoundAndClampFaceResolution(127.5f), 128u); // round half away from zero
         EXPECT_EQ(RoundAndClampFaceResolution(64.0f), 64u);
 
-        // Out-of-range floats clamp cleanly (negatives must not wrap to a huge unsigned value).
+        // Negative requests must not wrap when converted to an unsigned size.
         EXPECT_EQ(RoundAndClampFaceResolution(-5.0f), MinFaceResolution);
         EXPECT_EQ(RoundAndClampFaceResolution(3.2f), MinFaceResolution);
         EXPECT_EQ(RoundAndClampFaceResolution(9000.0f), MaxFaceResolution);
@@ -97,10 +76,6 @@ namespace UnitTest
         EXPECT_EQ(RoundAndClampFaceResolution(-std::numeric_limits<float>::infinity()), MinFaceResolution);
         EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::quiet_NaN()), MinFaceResolution);
     }
-
-    // =========================================================================================
-    // Update mode fallback (GPU/Dynamic -> CPU/Static)
-    // =========================================================================================
 
     TEST_F(GradientGILogicFixture, ResolveUpdateMode_DynamicFallsBackWhenGpuUnsupported)
     {
@@ -118,10 +93,6 @@ namespace UnitTest
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Static, true), UpdateMode::Static);
     }
 
-    // =========================================================================================
-    // Texture layer fallback (no detail / no specular -> gradient shows through)
-    // =========================================================================================
-
     TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_DisabledWhenNoTexture)
     {
         EXPECT_FALSE(IsTextureLayerEnabled(/*hasTexture*/ false, /*cubeRequested*/ false, /*textureIsCube*/ false));
@@ -136,14 +107,9 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_CubeMappingRequiresCubeTexture)
     {
-        // Cube mapping requested but a 2D texture supplied -> disabled (don't bind 2D to a cube slot).
         EXPECT_FALSE(IsTextureLayerEnabled(true, /*cubeRequested*/ true, /*textureIsCube*/ false));
         EXPECT_TRUE(IsTextureLayerEnabled(true, true, true));
     }
-
-    // =========================================================================================
-    // Asset path normalisation
-    // =========================================================================================
 
     TEST_F(GradientGILogicFixture, NormalizeAssetPath_UnifiesSeparators)
     {
@@ -160,7 +126,6 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, NormalizeAssetPath_AllSeparatorsOrEmptyYieldEmpty)
     {
-        // The case Kyler flagged: all-slash / empty input must not be UB -- erase is bounded.
         EXPECT_EQ(NormalizeAssetPath("/"), "");
         EXPECT_EQ(NormalizeAssetPath("///"), "");
         EXPECT_EQ(NormalizeAssetPath(""), "");
@@ -170,10 +135,6 @@ namespace UnitTest
     {
         EXPECT_EQ(NormalizeAssetPath("envhdri/photo.streamingimage"), "envhdri/photo.streamingimage");
     }
-
-    // =========================================================================================
-    // Resolution scrub debounce
-    // =========================================================================================
 
     TEST_F(GradientGILogicFixture, ResolutionDebounce_DefaultsToThreeFrameSettle)
     {
@@ -208,7 +169,6 @@ namespace UnitTest
         debounce.Request(128);
         EXPECT_TRUE(debounce.HasPendingCommit());
 
-        // Held steady: nothing commits until the settle window elapses.
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
@@ -219,7 +179,6 @@ namespace UnitTest
         EXPECT_EQ(debounce.Committed(), 128u);
         EXPECT_FALSE(debounce.HasPendingCommit());
 
-        // Already committed: no further commits.
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
@@ -228,17 +187,15 @@ namespace UnitTest
         ResolutionDebounce debounce(/*threshold*/ 3);
         debounce.Commit(64);
 
-        // Simulate a slider scrub: the value moves every frame, advancing one frame per move.
+        // Change the request before each frame advance, then allow the final value to settle.
         const uint32_t scrub[] = { 70, 80, 96, 120, 160, 200, 256 };
         for (uint32_t value : scrub)
         {
             debounce.Request(value);
             EXPECT_FALSE(debounce.AdvanceFrame().has_value()) << "must not commit mid-scrub";
         }
-        // The build size stayed put for the whole scrub -- this is what avoids the RHI churn crash.
         EXPECT_EQ(debounce.Committed(), 64u);
 
-        // Slider released: hold the final value and let it settle.
         AZStd::optional<uint32_t> committed;
         for (int frame = 0; frame < 16 && !committed.has_value(); ++frame)
         {
@@ -273,10 +230,6 @@ namespace UnitTest
         EXPECT_EQ(*committed, 20u);
     }
 
-    // =========================================================================================
-    // Ownership arbitration
-    // =========================================================================================
-
     TEST_F(GradientGILogicFixture, OwnerRegistry_LatestOwnerDrives)
     {
         OwnerRegistry owners;
@@ -293,9 +246,7 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, OwnerRegistry_PromotesEarlierOwnerInsteadOfStopping)
     {
-        // Duplicating a GradientGI entity makes the duplicate the owner while the original is
-        // still alive. Deleting the duplicate must hand the feature back, not switch it off --
-        // that left the scene black until something happened to re-activate the original.
+        // Removing the newest owner must restore the surviving one.
         OwnerRegistry owners;
         const AZ::EntityId original(0x1111);
         const AZ::EntityId duplicate(0x2222);
@@ -310,8 +261,7 @@ namespace UnitTest
 
     TEST_F(GradientGILogicFixture, OwnerRegistry_StaleDisableIsHarmless)
     {
-        // The game mode transition case: the spawned copy tears down after the editor-only copy
-        // has already re-registered. Removing an entity that is not registered changes nothing.
+        // Teardown from an earlier activation must not disable its replacement.
         OwnerRegistry owners;
         const AZ::EntityId editorCopy(0x1111);
         const AZ::EntityId spawnedCopy(0x2222);
@@ -333,15 +283,12 @@ namespace UnitTest
         EXPECT_TRUE(owners.Empty());
         EXPECT_FALSE(owners.Current().IsValid());
 
-        // A repeated disable must not misbehave.
         owners.Remove(only);
         EXPECT_TRUE(owners.Empty());
     }
 
     TEST_F(GradientGILogicFixture, OwnerRegistry_ReEnableDoesNotDuplicateAnOwner)
     {
-        // The editor cycles a component through Deactivate/Activate on every property edit, and
-        // Enable is also re-issued on game mode transitions.
         OwnerRegistry owners;
         const AZ::EntityId entity(0x1234);
 

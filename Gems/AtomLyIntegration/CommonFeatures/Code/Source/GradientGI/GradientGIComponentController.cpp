@@ -20,10 +20,6 @@ namespace AZ
 {
     namespace Render
     {
-        // =====================================================================
-        // Reflect
-        // =====================================================================
-
         void GradientGIComponentController::Reflect(ReflectContext* context)
         {
             GradientGIComponentConfig::Reflect(context);
@@ -36,7 +32,6 @@ namespace AZ
 
             if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                // Expose the enum values for Script Canvas
                 behaviorContext
                     ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Static)>("GradientGIUpdateMode_Static")
                     ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Dynamic)>("GradientGIUpdateMode_Dynamic")
@@ -53,27 +48,20 @@ namespace AZ
                 behaviorContext->EBus<GradientGIComponentRequestBus>("GradientGIComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    // Single-layer color setters/getters
                     ->Event("SetLowColor", &GradientGIComponentRequestBus::Events::SetLowColor)
                     ->Event("GetLowColor", &GradientGIComponentRequestBus::Events::GetLowColor)
                     ->Event("SetMidColor", &GradientGIComponentRequestBus::Events::SetMidColor)
                     ->Event("GetMidColor", &GradientGIComponentRequestBus::Events::GetMidColor)
                     ->Event("SetHighColor", &GradientGIComponentRequestBus::Events::SetHighColor)
                     ->Event("GetHighColor", &GradientGIComponentRequestBus::Events::GetHighColor)
-                    // Set all three gradient layers at once
                     ->Event("SetGradientColors", &GradientGIComponentRequestBus::Events::SetGradientColors)
-                    // Exposure
                     ->Event("SetExposure", &GradientGIComponentRequestBus::Events::SetExposure)
                     ->Event("GetExposure", &GradientGIComponentRequestBus::Events::GetExposure)
-                    // Resolution
                     ->Event("SetFaceResolution", &GradientGIComponentRequestBus::Events::SetFaceResolution)
                     ->Event("GetFaceResolution", &GradientGIComponentRequestBus::Events::GetFaceResolution)
-                    // Update mode (Static / Dynamic)
                     ->Event("SetUpdateMode", &GradientGIComponentRequestBus::Events::SetUpdateMode)
                     ->Event("GetUpdateMode", &GradientGIComponentRequestBus::Events::GetUpdateMode)
-                    // Detail texture layer (scripting uses AssetId; the AssetPath route is not
-                    // reflected -- a raw path can't resolve to a processed product asset, so only
-                    // the AssetId node is exposed to Script Canvas).
+                    // Script Canvas exposes AssetId accessors. Asset and path accessors remain C++ only.
                     ->Event("SetDetailTextureAssetId", &GradientGIComponentRequestBus::Events::SetDetailTextureAssetId)
                     ->Event("GetDetailTextureAssetId", &GradientGIComponentRequestBus::Events::GetDetailTextureAssetId)
                     ->Event("SetDetailMapping", &GradientGIComponentRequestBus::Events::SetDetailMapping)
@@ -82,7 +70,6 @@ namespace AZ
                     ->Event("GetDetailBlend", &GradientGIComponentRequestBus::Events::GetDetailBlend)
                     ->Event("SetDetailStrength", &GradientGIComponentRequestBus::Events::SetDetailStrength)
                     ->Event("GetDetailStrength", &GradientGIComponentRequestBus::Events::GetDetailStrength)
-                    // Specular texture layer (scripting uses AssetId; AssetPath not reflected, see above)
                     ->Event("SetSpecularTextureAssetId", &GradientGIComponentRequestBus::Events::SetSpecularTextureAssetId)
                     ->Event("GetSpecularTextureAssetId", &GradientGIComponentRequestBus::Events::GetSpecularTextureAssetId)
                     ->Event("SetSpecularMapping", &GradientGIComponentRequestBus::Events::SetSpecularMapping)
@@ -91,7 +78,6 @@ namespace AZ
                     ->Event("GetSpecularBlend", &GradientGIComponentRequestBus::Events::GetSpecularBlend)
                     ->Event("SetSpecularStrength", &GradientGIComponentRequestBus::Events::SetSpecularStrength)
                     ->Event("GetSpecularStrength", &GradientGIComponentRequestBus::Events::GetSpecularStrength)
-                    // Virtual properties for Script Canvas property nodes
                     ->VirtualProperty("LowColor", "GetLowColor", "SetLowColor")
                     ->VirtualProperty("MidColor", "GetMidColor", "SetMidColor")
                     ->VirtualProperty("HighColor", "GetHighColor", "SetHighColor")
@@ -109,10 +95,6 @@ namespace AZ
             }
         }
 
-        // =====================================================================
-        // Service Descriptors
-        // =====================================================================
-
         void GradientGIComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("GradientGIService"));
@@ -121,15 +103,9 @@ namespace AZ
         void GradientGIComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("GradientGIService"));
-            // Gradient GI and a Global Skylight (IBL) both drive the scene's IBL slots.
-            // Reject both on the same entity so they cannot fight over ownership; cross-entity
-            // coexistence is handled cooperatively in the feature processor (yield / reclaim).
+            // These components share the scene IBL slots and cannot coexist on one entity.
             incompatible.push_back(AZ_CRC_CE("ImageBasedLightService"));
         }
-
-        // =====================================================================
-        // Lifecycle
-        // =====================================================================
 
         GradientGIComponentController::GradientGIComponentController(const GradientGIComponentConfig& config)
             : m_configuration(config)
@@ -166,9 +142,6 @@ namespace AZ
 
             if (m_featureProcessor)
             {
-                // Scoped to this entity: if another GradientGI component has already taken
-                // ownership (the editor-only copy re-activating as a spawned copy tears down),
-                // this call is ignored and the live one keeps lighting the scene.
                 m_featureProcessor->Disable(m_entityId);
                 m_featureProcessor = nullptr;
             }
@@ -201,10 +174,6 @@ namespace AZ
         {
             return m_configuration;
         }
-
-        // =====================================================================
-        // Bus Handlers
-        // =====================================================================
 
         void GradientGIComponentController::SetLowColor(const Color& color)
         {
@@ -264,8 +233,6 @@ namespace AZ
 
         void GradientGIComponentController::SetFaceResolution(float resolution)
         {
-            // Script Canvas hands us a Number (float). Round to the nearest whole pixel and clamp
-            // into the supported range before storing into the unsigned config field.
             m_configuration.m_faceResolution = GradientGI::RoundAndClampFaceResolution(resolution);
             SnapResolutionForCurrentMode();
 
@@ -277,10 +244,7 @@ namespace AZ
 
         void GradientGIComponentController::SnapResolutionForCurrentMode()
         {
-            // CPU/Static renders only power-of-two cubemap faces (engine streaming-image upload
-            // limit -- a per-face >64KB non-power-of-two subresource samples black). Snap the stored
-            // value so the slider and the scripting getter agree with what is actually rendered, with
-            // no hidden clip. GPU/Dynamic composites any size on the GPU and is left untouched.
+            // Store the snapped size so the inspector and scripting getter agree with CPU output.
             if (m_configuration.m_updateMode == GradientGIUpdateMode::Static ||
                 (IsActiveOwner() && m_featureProcessor->GetUpdateMode() == GradientGIFeatureProcessorInterface::UpdateMode::Static))
             {
@@ -314,10 +278,6 @@ namespace AZ
         {
             return m_configuration.m_updateMode;
         }
-
-        // =====================================================================
-        // Bus Handlers -- Detail Texture Layer
-        // =====================================================================
 
         void GradientGIComponentController::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
@@ -396,10 +356,6 @@ namespace AZ
             return m_configuration.m_detailStrength;
         }
 
-        // =====================================================================
-        // Bus Handlers -- Specular Texture Layer
-        // =====================================================================
-
         void GradientGIComponentController::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
             m_specularTextureNeedsUpdate = false;
@@ -477,10 +433,6 @@ namespace AZ
             return m_configuration.m_specularStrength;
         }
 
-        // =====================================================================
-        // Helpers
-        // =====================================================================
-
         void GradientGIComponentController::UpdateColors()
         {
             if (IsActiveOwner())
@@ -523,15 +475,11 @@ namespace AZ
             LoadDetailTexture();
             LoadSpecularTexture();
 
-            // Replace the previous owner's bindings on tick, even when our textures are still loading.
+            // Clear the preceding owner's bindings on tick, including when the new textures are not ready.
             m_detailTextureNeedsUpdate = true;
             m_specularTextureNeedsUpdate = true;
             AZ::TickBus::Handler::BusConnect();
         }
-
-        // =====================================================================
-        // Detail Texture Loading
-        // =====================================================================
 
         void GradientGIComponentController::LoadDetailTexture()
         {
@@ -540,7 +488,7 @@ namespace AZ
             auto& asset = m_configuration.m_detailTexture;
             if (asset.GetId().IsValid())
             {
-                // If already loaded, BusConnect triggers OnAssetReady immediately.
+                // Connecting a ready asset can notify synchronously. An existing shared subscription may not notify again.
                 Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
                 asset.QueueLoad();
 
@@ -661,7 +609,7 @@ namespace AZ
                 m_specularTextureNeedsUpdate = true;
             }
 
-            // Defer GPU work outside AssetBus, with a handler that deactivation can cancel.
+            // Create images after AssetBus dispatch to avoid its mutex blocking the copy queue. Deactivate cancels this work.
             AZ::TickBus::Handler::BusConnect();
         }
 

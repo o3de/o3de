@@ -40,8 +40,6 @@ namespace AZ
 
         AZ::Crc32 GradientGIComponentConfig::GetGpuLayerVisibility() const
         {
-            // Texture layers are produced by the GPU compute pass, which only runs in
-            // Dynamic mode; hide them in Static (CPU) mode.
             return m_updateMode == GradientGIUpdateMode::Dynamic
                 ? AZ::Edit::PropertyVisibility::Show
                 : AZ::Edit::PropertyVisibility::Hide;

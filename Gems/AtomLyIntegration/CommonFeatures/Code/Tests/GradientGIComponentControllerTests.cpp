@@ -204,7 +204,7 @@ namespace UnitTest
 
         void ReadyThenReplaceBeforeTick(bool specular)
         {
-            // Controlled notifications avoid disk I/O and exercise the controller-to-GPU boundary.
+            // Bypass setter cancellation to exercise the readiness guard without disk I/O.
             const auto first = CreateReadyImage();
             ASSERT_TRUE(first.IsReady());
 

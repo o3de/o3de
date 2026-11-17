@@ -6,46 +6,22 @@
  *
  */
 
-// ============================================================================
-// GradientGICubemap.azsl
-//
-// Compute shader that generates a procedural tri-band gradient cubemap for
-// ambient GI. Each texel's world-space
-// direction determines how far between Low (nadir), Mid (horizon), and
-// High (zenith) colors it sits. Texels hold the unexposed gradient: exposure
-// is applied once, by the IBL samplers, through the scene SRG's m_iblExposure.
-//
-// Dispatch: (ceil(faceSize/8), ceil(faceSize/8), 6)
-//   Group size [numthreads(8, 8, 1)]
-//   Z dimension = face index (0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z)
-// ============================================================================
+// Generate single-mip diffuse and specular IBL cubemaps. Exposure is applied later by the IBL samplers.
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-// ============================================================================
-// PassSrg
-// ============================================================================
-
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    // Output cubemaps bound as 2DArray UAVs (cubemap-typed UAVs not legal in DX12/Vulkan).
-    // Diffuse and specular are written to separate images so they can feed the scene SRG's
-    // independent IBL slots. In I.1 both receive the same gradient; later phases composite
-    // detail/specular layers so the two diverge.
+    // Writable cubemap faces use 2D-array views. Sampling uses cubemap SRVs.
     RWTexture2DArray<float4> m_outputDiffuse;
     RWTexture2DArray<float4> m_outputSpecular;
 
-    // Gradient band colors (linear HDR, pre-exposure)
     float3 m_lowColor;      // nadir  (-Y)
     float3 m_midColor;      // horizon (equator)
     float3 m_highColor;     // zenith (+Y)
 
-    // Cubemap face resolution in pixels
     uint m_faceSize;
 
-    // --- Detail texture layer (2D) ---
-    // m_detailEnabled gates sampling. m_detailMapping/m_detailBlend codes match
-    // GradientGITextureMapping / GradientGIBlendMode on the C++ side.
     Texture2D<float4>   m_detailTex2D;
     TextureCube<float4> m_detailTexCube;   // used when m_detailMapping == Cube (2)
     Sampler m_detailSampler
@@ -56,12 +32,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         MagFilter = Linear;
         MipFilter = Linear;
     };
+    // Mapping and blend values match GradientGIComponentConstants.h.
     uint  m_detailMapping;
     uint  m_detailBlend;
     float m_detailStrength;
     uint  m_detailEnabled;
 
-    // --- Specular texture layer (composites into the specular output only) ---
     Texture2D<float4>   m_specularTex2D;
     TextureCube<float4> m_specularTexCube;
     uint  m_specularMapping;
@@ -70,13 +46,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint  m_specularEnabled;
 }
 
-// ============================================================================
-// Helpers
-// ============================================================================
-
-// Returns the world-space direction for a texel at (uc, vc) on the given face.
-// Convention matches GradientGIFeatureProcessor::CubeFaceDirection on the CPU side.
-// uc, vc are in [-1, 1]; vc increases downward in texture space.
+// Match GradientGIFeatureProcessor::CubeFaceDirection. Texture V increases downward.
 float3 GetCubemapDirection(uint face, float uc, float vc)
 {
     float3 dir;
@@ -95,7 +65,7 @@ float3 GetCubemapDirection(uint face, float uc, float vc)
 
 static const float GGI_PI = 3.14159265f;
 
-// Equirectangular UV for a direction (Stretched mapping).
+// Stretched mapping uses equirectangular UVs.
 float2 EquirectUV(float3 dir)
 {
     float u = atan2(dir.z, dir.x) / (2.0f * GGI_PI) + 0.5f;
@@ -103,13 +73,13 @@ float2 EquirectUV(float3 dir)
     return float2(u, v);
 }
 
-// Per-face UV in [0,1] for Tiled mapping. uc,vc are the face's [-1,1] coords.
+// Tiled mapping repeats the 2D texture on each face.
 float2 TiledUV(float uc, float vc)
 {
     return float2(0.5f * (uc + 1.0f), 0.5f * (vc + 1.0f));
 }
 
-// Blend a layer over a base color. mode matches GradientGIBlendMode.
+// Blend mode codes match GradientGIBlendMode.
 float3 BlendLayer(float3 base, float3 layer, uint mode)
 {
     switch (mode)
@@ -126,10 +96,6 @@ float3 BlendLayer(float3 base, float3 layer, uint mode)
     }
 }
 
-// ============================================================================
-// Compute Entry Point
-// ============================================================================
-
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
 {
@@ -137,22 +103,19 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
     uint y    = dispatch_thread_id.y;
     uint face = dispatch_thread_id.z;
 
-    // Bounds check: dispatch may be rounded up to the next multiple of 8
+    // Dispatch dimensions are rounded up to whole thread groups.
     if (x >= PassSrg::m_faceSize || y >= PassSrg::m_faceSize)
     {
         return;
     }
 
-    // Map pixel center to [-1, 1] UV space
     float uc = (2.0f * (float(x) + 0.5f) / float(PassSrg::m_faceSize)) - 1.0f;
     float vc = (2.0f * (float(y) + 0.5f) / float(PassSrg::m_faceSize)) - 1.0f;
 
     float3 dir = GetCubemapDirection(face, uc, vc);
 
-    // t: 0 at nadir (-Y), 1 at zenith (+Y)
     float t = (dir.y + 1.0f) * 0.5f;
 
-    // Tri-band gradient: Low -> Mid -> High
     float3 color;
     if (t < 0.5f)
     {
@@ -163,7 +126,6 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
         color = lerp(PassSrg::m_midColor, PassSrg::m_highColor, (t - 0.5f) * 2.0f);
     }
 
-    // Detail texture layer: sample (per mapping mode) and blend over the gradient.
     if (PassSrg::m_detailEnabled != 0)
     {
         float3 detail;
@@ -180,9 +142,7 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
         color = lerp(color, blended, saturate(PassSrg::m_detailStrength));
     }
 
-    // 'color' now holds the diffuse/base (gradient with the detail layer overlaid).
-
-    // Specular layer: starts from the base; an optional specular texture composites over it.
+    // With no specular layer, specular output uses the diffuse base.
     float3 specularColor = color;
     if (PassSrg::m_specularEnabled != 0)
     {

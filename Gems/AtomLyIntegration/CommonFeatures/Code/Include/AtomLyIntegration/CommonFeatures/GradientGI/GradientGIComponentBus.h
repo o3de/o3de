@@ -19,15 +19,12 @@ namespace AZ
 {
     namespace Render
     {
-        // =====================================================================
-        // Request Bus
-        // =====================================================================
-
+        //! Per-entity configuration. Only the most recently activated component drives scene output.
+        //! Texture binding changes are deferred to tick.
         class GradientGIComponentRequests
             : public ComponentBus
         {
         public:
-            // Single-layer color setters/getters
             virtual void SetLowColor(const Color& color) = 0;
             virtual Color GetLowColor() const = 0;
 
@@ -37,26 +34,23 @@ namespace AZ
             virtual void SetHighColor(const Color& color) = 0;
             virtual Color GetHighColor() const = 0;
 
-            // Set all three gradient layers at once
             virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
             virtual void SetExposure(float exposure) = 0;
             virtual float GetExposure() const = 0;
 
-            // Script Canvas / Lua represent every number as a Number (floating point), so the
-            // scripted face-resolution API uses float -- this matches a Number slot directly and
-            // avoids the "expects an integer" implicit-conversion warning node. The value is
-            // rounded and clamped to the valid [4..256] range by the controller. (Getter and
-            // setter must share a type: BehaviorContext VirtualProperty requires it.)
+            //! Set a floating-point Script Canvas Number, rounded and clamped to [4, 256]. CPU output snaps to a power of two.
             virtual void SetFaceResolution(float resolution) = 0;
+
+            //! Return the configured size. CPU image regeneration can lag while edits settle.
             virtual float GetFaceResolution() const = 0;
 
             virtual void SetUpdateMode(GradientGIUpdateMode mode) = 0;
+
+            //! Return the configured mode. The active backend may have fallen back to CPU.
             virtual GradientGIUpdateMode GetUpdateMode() const = 0;
 
-            // Detail texture layer (GPU/Dynamic mode)
-            // The Data::Asset accessors are the C++ core (not script-reflected); scripting uses
-            // the AssetId / AssetPath variants below to avoid a hard Asset<> dependency.
+            //! Texture layers affect GPU output only. Script Canvas exposes the AssetId variants.
             virtual void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
             virtual Data::Asset<RPI::StreamingImageAsset> GetDetailTexture() const = 0;
             virtual void SetDetailTextureAssetId(const Data::AssetId& id) = 0;
@@ -70,7 +64,6 @@ namespace AZ
             virtual void SetDetailStrength(float strength) = 0;
             virtual float GetDetailStrength() const = 0;
 
-            // Specular texture layer (GPU/Dynamic mode)
             virtual void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
             virtual Data::Asset<RPI::StreamingImageAsset> GetSpecularTexture() const = 0;
             virtual void SetSpecularTextureAssetId(const Data::AssetId& id) = 0;

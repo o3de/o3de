@@ -17,44 +17,32 @@ namespace AZ
         inline constexpr AZ::TypeId GradientGIComponentTypeId{ "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}" };
         inline constexpr AZ::TypeId EditorGradientGIComponentTypeId{ "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}" };
 
-        // =====================================================================
-        // Update Mode
-        // =====================================================================
-
-        //! Controls whether the gradient cubemap is generated on CPU or GPU.
+        //! Generation backend. Both backends update when inputs change.
         enum class GradientGIUpdateMode : uint8_t
         {
-            //! CPU-generated StreamingImage -- mobile-safe, one rebuild per change.
+            //! CPU-generated StreamingImage.
             Static  = 0,
 
-            //! GPU compute pass writing an AttachmentImage every frame.
-            //! Requires compute shader UAV support (DX12 / Vulkan desktop).
-            //! Falls back to Static automatically on unsupported platforms.
+            //! GPU-generated AttachmentImage. Falls back to Static if writable cubemap allocation is unavailable.
             Dynamic = 1,
         };
 
-        // =====================================================================
-        // Texture Layer Mapping / Blend (GPU/Dynamic-mode texturing)
-        // =====================================================================
-
-        //! How a detail/specular texture is mapped onto the gradient cubemap.
-        //! Codes are forwarded to the compute shader as plain uints, so the values
-        //! must stay in sync with GradientGICubemap.azsl.
+        //! Texture mapping codes shared with GradientGICubemap.azsl. Preserve their numeric values.
         enum class GradientGITextureMapping : uint8_t
         {
             Tiled     = 0,  //! 2D texture repeated per cube face using the face's UV basis.
             Stretched = 1,  //! 2D texture wrapped over the sphere (equirectangular).
-            Cube      = 2,  //! Authored cubemap sampled by direction (added in a later phase).
+            Cube      = 2,  //! Cubemap sampled by direction.
         };
 
-        //! How a texture layer combines with the color beneath it.
+        //! Blend codes shared with GradientGICubemap.azsl. Preserve their numeric values.
         enum class GradientGIBlendMode : uint8_t
         {
             Multiply = 0,
             Add      = 1,
             Screen   = 2,
             Overlay  = 3,
-            Replace  = 4,  //! Use the texture alone, ignoring the base (specular layer).
+            Replace  = 4,  //! Use the texture without the base color.
         };
 
     } // namespace Render

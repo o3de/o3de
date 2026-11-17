@@ -30,10 +30,6 @@
 
 namespace AZ::Render
 {
-    // =========================================================================
-    // Platform Support
-    // =========================================================================
-
     /*static*/ bool GradientGICubemapPass::IsGpuComputeSupported()
     {
         auto* imageSystem = RPI::ImageSystemInterface::Get();
@@ -59,18 +55,10 @@ namespace AZ::Render
         return testImage != nullptr;
     }
 
-    // =========================================================================
-    // Lifecycle
-    // =========================================================================
-
     GradientGICubemapPass::GradientGICubemapPass(const RPI::PassDescriptor& descriptor)
         : RPI::RenderPass(descriptor)
     {
     }
-
-    // =========================================================================
-    // Public API
-    // =========================================================================
 
     void GradientGICubemapPass::SetGradientColors(
         const Color& low, const Color& mid, const Color& high,
@@ -84,13 +72,7 @@ namespace AZ::Render
         m_faceSize = faceSize;
         m_dirty = true;
 
-        // The output cubemap is allocated at m_faceSize in BuildInternal(). A resolution
-        // change therefore requires reallocating it -- otherwise the compute dispatch grid
-        // and the image dimensions disagree: down-scaling under-writes each face (stale
-        // texels -> discolouration), up-scaling overruns the image bounds (cube-pattern
-        // aliasing). Queue a rebuild so BuildInternal() recreates the AttachmentImage at the
-        // new size. Guarded on m_cubemapImage so the initial pre-build call is a no-op (the
-        // pass system builds it once on add).
+        // Rebuild images when the dispatch dimensions change. Initial allocation is handled when the pass is added.
         if (faceSizeChanged && m_diffuseImage)
         {
             QueueForBuildAndInitialization();
@@ -110,8 +92,6 @@ namespace AZ::Render
     void GradientGICubemapPass::SetDetailLayer(
         const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
     {
-        // No reallocation here -- only SRG state changes. The resident texture and constants are
-        // (re)bound in CompileResources on the next dirty pass, so this stays cheap.
         m_detailTexture = texture;
         m_detailMapping = mapping;
         m_detailBlend = blend;
@@ -128,13 +108,8 @@ namespace AZ::Render
         m_dirty = true;
     }
 
-    // =========================================================================
-    // BuildInternal -- load shader, create pipeline state, SRG, and output image
-    // =========================================================================
-
     void GradientGICubemapPass::BuildInternal()
     {
-        // ---- Load shader asset ----
         const char* shaderPath = "Shaders/GradientGI/GradientGICubemap.azshader";
         auto shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderPath);
         if (!shaderAsset.IsReady())
@@ -152,7 +127,6 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Build compute pipeline state ----
         auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
         RHI::PipelineStateDescriptorForDispatch pipelineDesc;
         shaderVariant.ConfigurePipelineState(pipelineDesc);
@@ -164,7 +138,6 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Create pass SRG (SRG_PerPass = "PassSrg") ----
         auto srgLayout = m_shader->FindShaderResourceGroupLayout(AZ::Name("PassSrg"));
         if (srgLayout)
         {
@@ -182,10 +155,7 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Persistent output cubemap AttachmentImages (diffuse + specular) ----
-        // Images adopted from a previous instance of this pass are kept when they already match the
-        // current face size, so a pass-tree rebuild neither reallocates them nor exposes an
-        // unwritten cubemap to the scene. Otherwise allocate a fresh pair.
+        // Reuse adopted images only if both still match the requested face size.
         if (!OutputImagesMatchFaceSize())
         {
             m_diffuseImage = CreateOutputCubemap("GradientGI_Diffuse");
@@ -204,7 +174,6 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Empty scope that transitions the outputs for sampling after a write ----
         m_sampleAccessScope = AZStd::make_shared<RHI::ScopeProducerFunctionNoData>(
             RHI::ScopeId(AZStd::string::format("%s.SampleAccess", GetPathName().GetCStr())),
             [this](RHI::FrameGraphInterface frameGraph)
@@ -229,8 +198,7 @@ namespace AZ::Render
         m_diffuseImage = diffuse;
         m_specularImage = specular;
 
-        // The feature processor only caches outputs that have been written. BuildInternal clears
-        // this again if the face size no longer matches and it has to allocate a new pair.
+        // The caller supplies initialized output. BuildInternal invalidates it if resizing is needed.
         m_outputsWritten = m_diffuseImage && m_specularImage;
     }
 
@@ -252,8 +220,6 @@ namespace AZ::Render
 
     Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::CreateOutputCubemap(const char* debugName) const
     {
-        // Bind flags: ShaderRead (SRV for IBL sampling) + ShaderWrite (UAV for compute output).
-        // Default view is a cubemap SRV, used when binding to the scene SRG's IBL slots.
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         auto* attachmentPool = imageSystem ? imageSystem->GetSystemAttachmentPool().get() : nullptr;
         if (!attachmentPool)
@@ -265,7 +231,6 @@ namespace AZ::Render
         RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
             RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite, m_faceSize, RHI::Format::R16G16B16A16_FLOAT);
 
-        // Cubemap SRV as default view -- used when the FP binds this image to scene SRG slots.
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
 
         return RPI::AttachmentImage::Create(
@@ -282,8 +247,7 @@ namespace AZ::Render
             return m_whiteFallbackCube;
         }
 
-        // Build a 1x1, 6-face opaque-white cubemap. Bound to the cube detail slot whenever it
-        // is unused (there is no engine-default cubemap, and SRG slots must stay bound).
+        // No system cubemap fallback exists, and the unused cube SRG slot still needs a valid view.
         const RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
         const RHI::Size faceDimensions(1, 1, 1);
         const RHI::DeviceImageSubresourceLayout faceLayout = RHI::GetImageSubresourceLayout(faceDimensions, format);
@@ -353,7 +317,6 @@ namespace AZ::Render
         const auto strIdx = m_passSrg->FindShaderInputConstantIndex(strengthName);
         const auto enIdx = m_passSrg->FindShaderInputConstantIndex(enabledName);
 
-        // Detect whether the assigned texture is actually a cubemap.
         bool isCube = false;
         if (texture && texture->GetRHIImage())
         {
@@ -363,14 +326,13 @@ namespace AZ::Render
 
         const bool cubeRequested = (mapping == 2); // GradientGITextureMapping::Cube
         const bool useCube = cubeRequested && isCube;
-        // Disable mismatched texture types so neither SRG slot receives an incompatible view.
+        // Do not bind a cubemap to a 2D slot or a 2D texture to the cube slot.
         const bool enabled = GradientGI::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
 
         const Data::Instance<RPI::Image>& systemWhite2D =
             RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
 
-        // Both slots must stay bound with valid SRVs; the shader samples only the one matching
-        // the active mapping mode.
+        // Keep the unused slot valid even though the shader selects only the active mapping.
         Data::Instance<RPI::Image> tex2D = (enabled && !useCube) ? texture : systemWhite2D;
         Data::Instance<RPI::Image> texCube = useCube ? texture : GetOrCreateWhiteFallbackCube();
 
@@ -385,15 +347,9 @@ namespace AZ::Render
         m_passSrg->SetConstant(enIdx, enabled ? 1u : 0u);
     }
 
-    // =========================================================================
-    // FrameBeginInternal -- decide whether this frame writes the outputs
-    // =========================================================================
-
     void GradientGICubemapPass::FrameBeginInternal(FramePrepareParams params)
     {
-        // Latched here, on the main thread, so the scopes, SRG and dispatch of this frame all agree.
-        // The resources are checked too, because the feature processor can re-enable a pass whose
-        // BuildInternal failed.
+        // Freeze the write decision before declaring resources or recording commands.
         const bool canWrite = m_pipelineState && m_passSrg && m_diffuseImage && m_specularImage && m_sampleAccessScope;
         m_writeThisFrame = m_dirty && canWrite;
 
@@ -408,24 +364,17 @@ namespace AZ::Render
         }
     }
 
-    // =========================================================================
-    // SetupFrameGraphDependencies -- import images and declare UAV scope on write frames
-    // =========================================================================
-
     void GradientGICubemapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
         RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
 
-        // Nothing to write this frame: stay out of the frame graph, so the outputs rest in the
-        // shader-read layout left by the sample access scope.
+        // Retain the shader-read state from the preceding update when no write is needed.
         if (!m_writeThisFrame)
         {
             return;
         }
 
-        // Import each persistent attachment image and declare UAV (read/write) access using a
-        // 2DArray view descriptor so the compute shader can address all 6 faces as array
-        // slices (cubemap-typed UAVs are not supported in DX12/Vulkan).
+        // Compute addresses the six cube faces through a writable 2D-array view.
         auto declareUav = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
         {
             frameGraph.GetAttachmentDatabase().ImportImage(
@@ -452,9 +401,7 @@ namespace AZ::Render
 
     void GradientGICubemapPass::DeclareSampleAccess(RHI::FrameGraphInterface frameGraph)
     {
-        // The frame graph only transitions an image for scopes that declare it, and a scene SRG
-        // binding declares nothing. Reading the outputs here, after the UAV scope, leaves them in the
-        // layout the IBL samplers expect and puts the write-to-read barrier in place for them.
+        // Scene SRG bindings declare no frame-graph reads. This scope orders sampling after the UAV writes.
         auto declareRead = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
         {
             RHI::ImageScopeAttachmentDescriptor readDesc;
@@ -474,10 +421,6 @@ namespace AZ::Render
         declareRead(m_specularImage);
     }
 
-    // =========================================================================
-    // CompileResources -- bind SRG constants and UAV image view
-    // =========================================================================
-
     void GradientGICubemapPass::CompileResources(const RHI::FrameGraphCompileContext& context)
     {
         if (!m_passSrg)
@@ -487,7 +430,6 @@ namespace AZ::Render
 
         if (m_writeThisFrame)
         {
-            // ---- Bind gradient color constants ----
             const auto lowIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
             const auto midIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
             const auto highIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
@@ -500,7 +442,6 @@ namespace AZ::Render
             m_passSrg->SetConstant(highIdx, AZ::Vector3(m_highColor.GetR(), m_highColor.GetG(), m_highColor.GetB()));
             m_passSrg->SetConstant(sizeIdx, m_faceSize);
 
-            // ---- Bind the UAV image views from the frame graph (2DArray, not cubemap) ----
             if (m_diffuseImage)
             {
                 if (const RHI::ImageView* uavView = context.GetImageView(m_diffuseImage->GetAttachmentId()))
@@ -516,7 +457,6 @@ namespace AZ::Render
                 }
             }
 
-            // ---- Texture layers (resident SRVs + parameters) ----
             BindTextureLayer(
                 AZ::Name("m_detailTex2D"),
                 AZ::Name("m_detailTexCube"),
@@ -545,10 +485,6 @@ namespace AZ::Render
         m_passSrg->Compile();
     }
 
-    // =========================================================================
-    // BuildCommandListInternal -- dispatch compute on write frames
-    // =========================================================================
-
     void GradientGICubemapPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
     {
         if (!m_writeThisFrame || !m_pipelineState || !m_passSrg)
@@ -556,8 +492,6 @@ namespace AZ::Render
             return;
         }
 
-        // Compute group counts: shader uses [numthreads(8, 8, 1)] and dispatches
-        // over (faceSize x faceSize x 6) total threads.
         const uint32_t groupsX = (m_faceSize + 7) / 8;
         const uint32_t groupsY = (m_faceSize + 7) / 8;
         const uint32_t groupsZ = 6;
@@ -580,7 +514,7 @@ namespace AZ::Render
         context.GetCommandList()->Submit(
             dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
 
-        // One dispatch per frame, even if the scope is ever split across command lists.
+        // Avoid a second dispatch if the scope is split across command lists.
         m_writeThisFrame = false;
     }
 

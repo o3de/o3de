@@ -27,42 +27,26 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            // =====================================================================
-            // Gradient Colors
-            // =====================================================================
-
             Color m_lowColor  = Color(0.05f, 0.06f, 0.08f, 1.0f);
             Color m_midColor  = Color(0.20f, 0.30f, 0.55f, 1.0f);
             Color m_highColor = Color(0.85f, 0.95f, 1.0f,  1.0f);
-
-            // =====================================================================
-            // Settings
-            // =====================================================================
 
             float             m_exposure       = 0.0f;
             uint32_t          m_faceResolution = 64;
             GradientGIUpdateMode m_updateMode  = GradientGIUpdateMode::Static;
 
-            // =====================================================================
-            // Detail Texture Layer (GPU/Dynamic mode only)
-            // =====================================================================
+            // GPU texture layers.
 
             Data::Asset<RPI::StreamingImageAsset> m_detailTexture;
             GradientGITextureMapping m_detailMapping = GradientGITextureMapping::Stretched;
             GradientGIBlendMode      m_detailBlend    = GradientGIBlendMode::Overlay;
             float                    m_detailStrength = 1.0f;
 
-            // =====================================================================
-            // Specular Texture Layer (GPU/Dynamic mode only)
-            // =====================================================================
-
             Data::Asset<RPI::StreamingImageAsset> m_specularTexture;
             GradientGITextureMapping m_specularMapping = GradientGITextureMapping::Stretched;
             GradientGIBlendMode      m_specularBlend    = GradientGIBlendMode::Overlay;
             float                    m_specularStrength = 1.0f;
 
-            //! Editor visibility: the texture layers only function in GPU/Dynamic mode,
-            //! so they are hidden in CPU/Static mode. Returns a PropertyVisibility Crc.
             AZ::Crc32 GetGpuLayerVisibility() const;
         };
 

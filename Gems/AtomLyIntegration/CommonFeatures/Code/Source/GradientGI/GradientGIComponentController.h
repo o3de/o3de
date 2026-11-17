@@ -51,10 +51,6 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(GradientGIComponentController);
 
-            // =====================================================================
-            // GradientGIComponentRequestBus
-            // =====================================================================
-
             void SetLowColor(const Color& color) override;
             Color GetLowColor() const override;
             void SetMidColor(const Color& color) override;
@@ -95,38 +91,27 @@ namespace AZ
             void SetSpecularStrength(float strength) override;
             float GetSpecularStrength() const override;
 
-            // =====================================================================
-            // Data::AssetBus (detail/specular texture loading)
-            // =====================================================================
-
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
             void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            // =====================================================================
-            // Helpers
-            // =====================================================================
-
             void UpdateColors();
             bool IsActiveOwner() const;
             void ApplyConfiguration();
             void OnOwnerChanged(EntityId owner);
 
-            //! CPU/Static renders only power-of-two cubemap faces; snap the stored resolution so the
-            //! slider and scripting getter match what is rendered. No-op in GPU/Dynamic mode.
+            //! Store the power-of-two CPU size, including when the requested GPU mode falls back.
             void SnapResolutionForCurrentMode();
 
-            //! Queue an async load of the detail/specular texture assets (connects AssetBus).
+            //! Subscribe and request asynchronous texture loading.
             void LoadDetailTexture();
             void LoadSpecularTexture();
 
-            //! Push the resolved textures to the feature processor.
             void PushDetailToFeatureProcessor();
             void PushSpecularToFeatureProcessor();
 
-            //! Push the (mapping, blend, strength) params for each layer to the feature processor.
             void PushDetailParams();
             void PushSpecularParams();
 

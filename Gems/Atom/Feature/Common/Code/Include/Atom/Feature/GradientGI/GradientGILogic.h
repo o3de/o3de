@@ -18,32 +18,17 @@
 #include <AzCore/std/string/string_view.h>
 #include <cstdint>
 
-// =============================================================================================
-// GradientGI pure logic helpers
-//
-// These are the decision/state pieces that drove the GradientGI instabilities (rapid resolution
-// scrubbing, mode fallbacks, path/value normalisation). They are deliberately free of any RHI /
-// RPI / scene dependency so they can be unit-tested in isolation, and so the feature processor,
-// compute pass, and editor controller all share one source of truth.
-// =============================================================================================
-
 namespace AZ::Render::GradientGI
 {
-    // =========================================================================================
-    // Face resolution (cubemap face size in pixels)
-    // =========================================================================================
-
     inline constexpr uint32_t MinFaceResolution = 4;
     inline constexpr uint32_t MaxFaceResolution = 256;
 
-    //! Clamp an integer face resolution into the supported [4..256] range.
     inline uint32_t ClampFaceResolution(uint32_t value)
     {
         return AZStd::clamp(value, MinFaceResolution, MaxFaceResolution);
     }
 
-    //! Script Canvas / Lua hand resolution in as a Number (floating point). Round to the nearest
-    //! whole pixel within the supported range. NaN resolves to the minimum resolution.
+    //! Round within the supported range, clamping before integer conversion. NaN maps to the minimum.
     inline uint32_t RoundAndClampFaceResolution(float value)
     {
         if (!(value >= static_cast<float>(MinFaceResolution)))
@@ -59,18 +44,12 @@ namespace AZ::Render::GradientGI
         return static_cast<uint32_t>(AZStd::lround(value));
     }
 
-    //! Snap a CPU/Static face size to the nearest power of two in [4..256].
-    //!
-    //! O3DE's runtime StreamingImage GPU upload renders certain non-power-of-two cubemap face sizes
-    //! black -- an observed dead band around 91..127 at R16G16B16A16, where the per-face subresource
-    //! crosses 64KB yet isn't power-of-two/alignment-clean. The gradient is smooth low-frequency
-    //! ambient light, so snapping the CPU face size to a power of two is visually lossless and avoids
-    //! the quirk. GPU/Dynamic mode is unaffected -- it writes an AttachmentImage from a compute pass,
-    //! never a StreamingImage -- so only the CPU build path uses this.
+    //! Snap to the nearest supported power of two, choosing the lower value on ties.
+    //! Avoids observed black output from some non-power-of-two StreamingImage uploads.
     inline uint32_t SnapCpuFaceResolutionToPow2(uint32_t value)
     {
         const uint32_t clamped = ClampFaceResolution(value);
-        uint32_t lower = MinFaceResolution; // 4 is already a power of two
+        uint32_t lower = MinFaceResolution;
         while ((lower << 1) <= clamped)
         {
             lower <<= 1;
@@ -86,12 +65,7 @@ namespace AZ::Render::GradientGI
         return ClampFaceResolution(nearest);
     }
 
-    // =========================================================================================
-    // Update mode fallback (GPU/Dynamic -> CPU/Static)
-    // =========================================================================================
-
-    //! GPU/Dynamic mode requires compute UAV cubemap support. When that is unavailable the feature
-    //! falls back to CPU/Static; every other request is honoured as-is.
+    //! Fall back to CPU generation when writable cubemap allocation is unavailable.
     inline GradientGIFeatureProcessorInterface::UpdateMode ResolveUpdateMode(
         GradientGIFeatureProcessorInterface::UpdateMode requested,
         bool gpuComputeSupported)
@@ -106,36 +80,19 @@ namespace AZ::Render::GradientGI
         return requested;
     }
 
-    // =========================================================================================
-    // Ownership arbitration
-    // =========================================================================================
-
-    //! Tracks every component that currently wants the (scene-wide, singleton) GradientGI feature
-    //! processor running. The most recently enabled entity drives it; when that entity leaves, an
-    //! earlier one is promoted rather than the feature switching off.
-    //!
-    //! A single "current owner" is not enough, for two reasons seen in practice:
-    //!  * Game mode transitions interleave. The same prefab can exist twice -- an editor-only copy
-    //!    and a spawned runtime copy -- and the copy that is shutting down must not switch off the
-    //!    copy that has just taken over.
-    //!  * Duplicating a GradientGI entity makes the duplicate the owner while the original is still
-    //!    alive. Deleting the duplicate then issues a perfectly legitimate disable, and with a
-    //!    single owner that shut the feature down and left the scene black until something happened
-    //!    to re-activate the original.
-    //!
-    //! Controllers reapply their configuration when the current owner changes.
+    //! Tracks owners in activation order so editor/play overlap does not disable a surviving component.
+    //! The newest owner wins. Controllers restore their configuration when promoted.
     class OwnerRegistry
     {
     public:
-        //! Register an owner, or move an existing one to the front of the queue.
+        //! Make this owner current, moving an existing registration rather than duplicating it.
         void Add(const AZ::EntityId& owner)
         {
             Remove(owner);
             m_owners.push_back(owner);
         }
 
-        //! Deregister an owner. Unknown entities are ignored, which is what makes a stale disable
-        //! from an already-superseded component harmless.
+        //! Remove an owner. Unknown IDs are ignored.
         void Remove(const AZ::EntityId& owner)
         {
             const auto it = AZStd::find(m_owners.begin(), m_owners.end(), owner);
@@ -145,13 +102,12 @@ namespace AZ::Render::GradientGI
             }
         }
 
-        //! True when nobody wants the feature running any more.
         bool Empty() const
         {
             return m_owners.empty();
         }
 
-        //! The entity currently driving the feature; invalid when empty.
+        //! Current owner, or an invalid ID when empty.
         AZ::EntityId Current() const
         {
             if (m_owners.empty())
@@ -167,7 +123,7 @@ namespace AZ::Render::GradientGI
             return m_owners.size();
         }
 
-        //! Every registered owner, oldest first. Used to name them when reporting duplicates.
+        //! Registered owners, oldest first.
         const AZStd::vector<AZ::EntityId>& Entities() const
         {
             return m_owners;
@@ -179,29 +135,16 @@ namespace AZ::Render::GradientGI
         }
 
     private:
-        AZStd::vector<AZ::EntityId> m_owners; // most recently enabled last
+        AZStd::vector<AZ::EntityId> m_owners;
     };
 
-    // =========================================================================================
-    // Texture layer fallback (detail / specular)
-    // =========================================================================================
-
-    //! A detail/specular texture layer only contributes when its texture type matches the mapping.
-    //! Otherwise the layer is disabled and the gradient (or diffuse, for specular) shows through.
+    //! Disable the layer when the texture does not match the requested 2D/cubemap mapping.
     inline bool IsTextureLayerEnabled(bool hasTexture, bool cubeMappingRequested, bool textureIsCube)
     {
         return hasTexture && (cubeMappingRequested == textureIsCube);
     }
 
-    // =========================================================================================
-    // Asset path normalisation
-    // =========================================================================================
-
-    //! Normalise an asset path to the catalog's product-path convention: unify separators to
-    //! forward slashes and strip leading slashes so the result is catalog-relative. This lets a
-    //! manually typed string path and a script-variable path resolve through the same lookup.
-    //! An all-slash or empty input yields "" -- erase(pos,count) is bounded (pos is always 0,
-    //! count clamps to the remaining length), so there is no out-of-range and no UB.
+    //! Replace backslashes and strip leading separators. Empty or all-separator input returns an empty path.
     inline AZStd::string NormalizeAssetPath(AZStd::string_view rawPath)
     {
         AZStd::string path(rawPath);
@@ -218,19 +161,11 @@ namespace AZ::Render::GradientGI
         return path;
     }
 
-    // =========================================================================================
-    // Resolution scrub debounce
-    // =========================================================================================
-
-    //! Coalesces rapid resolution requests into a single committed value once the request has held
-    //! steady for a number of frames. A CPU/Static resolution change rebuilds a different-sized
-    //! tiled StreamingImage; doing that on every frame of a slider scrub churns the DX12 streaming
-    //! pool and crashes the RHI. Buffering until the value settles means only the final size is
-    //! ever built. Pure state machine -- no engine dependency -- so the behaviour is unit-testable.
+    //! Coalesce CPU resolution edits to limit tiled-image allocation churn, a workaround for reported DX12 crashes.
     class ResolutionDebounce
     {
     public:
-        static constexpr uint8_t DefaultSettleFrames = 3; // ~50ms @60fps after the slider is released
+        static constexpr uint8_t DefaultSettleFrames = 3;
 
         ResolutionDebounce() = default;
         explicit ResolutionDebounce(uint8_t settleFrameThreshold)
@@ -238,8 +173,7 @@ namespace AZ::Render::GradientGI
         {
         }
 
-        //! Register a requested (already-clamped) value. A genuine move of the target restarts the
-        //! settle window; an unrelated repeat of the same target leaves the window running.
+        //! Request an already-clamped resolution. Only a different value restarts the settle window.
         void Request(uint32_t value)
         {
             if (value != m_pending)
@@ -251,8 +185,7 @@ namespace AZ::Render::GradientGI
             m_changePending = (m_pending != m_committed);
         }
 
-        //! Advance one frame. Returns the settled value (and marks it committed) once a pending
-        //! change has held steady for the threshold; otherwise returns nullopt.
+        //! Commit on the call after the settle-frame count is reached. Otherwise return nullopt.
         AZStd::optional<uint32_t> AdvanceFrame()
         {
             if (!m_changePending)
@@ -273,8 +206,7 @@ namespace AZ::Render::GradientGI
             return m_committed;
         }
 
-        //! Force the baseline to a known value with no pending change. Used for the immediate-apply
-        //! paths: the first push at activation, and Dynamic mode (which never debounces).
+        //! Apply a value immediately and cancel any pending request.
         void Commit(uint32_t value)
         {
             m_committed = value;
@@ -285,7 +217,6 @@ namespace AZ::Render::GradientGI
 
         uint32_t Committed() const
         {
-
             return m_committed;
         }
 

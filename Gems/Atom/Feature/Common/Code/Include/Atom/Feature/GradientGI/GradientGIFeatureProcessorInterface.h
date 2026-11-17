@@ -16,89 +16,63 @@
 
 namespace AZ::Render
 {
-    //! Feature processor that generates a procedural gradient cubemap and writes it
-    //! to the scene SRG's IBL slots (m_diffuseEnvMap, m_specularEnvMap, m_iblExposure).
-    //!
-    //! This creates a GI: where three colors (low/mid/high) produce a
-    //! vertical gradient cubemap for generic ambient fill lighting.
-    //!
-    //! Two update modes are supported:
-    //!   Static  -- CPU-generated StreamingImage (mobile-safe, one rebuild per change)
-    //!   Dynamic -- GPU compute AttachmentImage  (desktop-only, updates on change)
+    //! Generates single-mip gradient cubemaps for ambient IBL. Specular output is not roughness-prefiltered.
+    //! CPU image and exposure updates are published after simulation and consumed by IBL in the next simulation.
+    //! Call configuration and ownership methods on the main thread.
     class GradientGIFeatureProcessorInterface : public RPI::FeatureProcessor
     {
     public:
         AZ_RTTI(AZ::Render::GradientGIFeatureProcessorInterface, "{8A3D1F9E-C4B2-4E6D-A7F0-3B5C8D2E1A09}", AZ::RPI::FeatureProcessor);
 
-        // =====================================================================
-        // Update Mode
-        // =====================================================================
-
         enum class UpdateMode : uint8_t
         {
-            //! CPU-side StreamingImage rebuild -- one GPU upload per change.
-            //! Works on all platforms including mobile.
+            //! CPU-generated StreamingImage, rebuilt when gradient inputs change.
             Static = 0,
 
-            //! GPU compute pass updating an AttachmentImage when inputs change.
-            //! Requires compute shader UAV cubemap support (DX12 / Vulkan desktop).
-            //! Falls back to Static automatically if the platform does not support it.
+            //! GPU-generated AttachmentImage, updated when inputs change.
+            //! Falls back to Static when writable cubemap allocation is unavailable.
             Dynamic = 1,
         };
 
-        // =====================================================================
-        // Interface
-        // =====================================================================
-
-        //! Set the three gradient colors. Low = nadir (-Y), mid = horizon, high = zenith (+Y).
+        //! Set linear HDR colors at the nadir (-Y), horizon, and zenith (+Y).
         virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
-        //! Set IBL exposure in EV stops. Final intensity = base * 2^exposure.
-        //! CPU changes reach the scene SRG on the simulation after publication.
+        //! Set exposure in EV stops. IBL sampling applies the multiplier 2^exposure.
         virtual void SetExposure(float exposureStops) = 0;
 
-        //! Set cubemap face resolution in pixels (default 64). Clamped to [4..256].
-        //! CPU changes are debounced. GPU changes apply to the live pass.
+        //! Set face size in pixels, clamped to [4, 256]. CPU output snaps to a power of two and debounces changes.
         virtual void SetFaceResolution(uint32_t resolution) = 0;
 
-        //! Set the update mode (Static CPU or Dynamic GPU).
-        //! If the platform does not support GPU compute UAV cubemaps, Dynamic silently
-        //! falls back to Static.
+        //! Select a generation backend. Dynamic falls back to Static if the writable-cubemap probe fails.
         virtual void SetUpdateMode(UpdateMode mode) = 0;
 
-        //! Set the detail texture layer (GPU/Dynamic mode only). Pass an invalid asset to clear.
+        //! Set a ready detail asset, or an invalid asset to disable the layer. GPU mode only.
         virtual void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
 
-        //! Set detail layer parameters. mapping/blend are codes matching the component enums
-        //! (GradientGITextureMapping / GradientGIBlendMode); strength is the 0..1 layer weight.
+        //! Set mapping/blend codes matching the component enums and a blend strength in [0, 1].
         virtual void SetDetailParams(uint8_t mapping, uint8_t blend, float strength) = 0;
 
-        //! Set the specular texture layer (GPU/Dynamic mode only). Composites into the specular
-        //! IBL slot only. Pass an invalid asset to clear.
+        //! Set a ready specular asset, or an invalid asset to use the diffuse base. GPU mode only.
         virtual void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
 
-        //! Set specular layer parameters (codes match the component enums; strength is 0..1).
+        //! Set mapping/blend codes matching the component enums and a blend strength in [0, 1].
         virtual void SetSpecularParams(uint8_t mapping, uint8_t blend, float strength) = 0;
 
-        //! Returns the currently active update mode (may differ from requested if
-        //! the platform forced a fallback).
+        //! Return the active backend, including any CPU fallback.
         virtual UpdateMode GetUpdateMode() const = 0;
 
-        //! Start driving the scene's ambient light on behalf of an owning entity.
-        //!
-        //! The feature processor is a scene-wide singleton shared by every GradientGI component,
-        //! so it tracks which entity currently owns it: the most recently enabled owner wins.
-        //! Until an owner enables it the feature processor produces no output at all, even across
-        //! render pipeline rebuilds.
+        //! Register an owner. The newest enabled owner drives the scene until removed.
         virtual void Enable(EntityId owner) = 0;
 
-        //! Remove an owner. Promote the newest survivor, or release output when none remain.
+        //! Remove an owner and promote the newest survivor. Stop output when no owners remain.
         virtual void Disable(EntityId owner) = 0;
 
         using OwnerChangedEvent = AZ::Event<EntityId>;
 
-        //! Ownership notifications and component setters run on the main thread.
+        //! Notifications run synchronously on the main thread so a promoted owner can stage its configuration.
         virtual void ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler) = 0;
+
+        //! Current owner, or an invalid ID when no owners are registered.
         virtual EntityId GetCurrentOwner() const = 0;
     };
 
