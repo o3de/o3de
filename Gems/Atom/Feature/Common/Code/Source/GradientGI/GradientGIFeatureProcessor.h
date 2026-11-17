@@ -74,6 +74,8 @@ namespace AZ::Render
         UpdateMode GetUpdateMode() const override;
         void Enable(EntityId owner) override;
         void Disable(EntityId owner) override;
+        void ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler) override;
+        EntityId GetCurrentOwner() const override;
 
     private:
         GradientGIFeatureProcessor(const GradientGIFeatureProcessor&) = delete;
@@ -206,6 +208,7 @@ namespace AZ::Render
         // OnRenderPipelineChanged -- checks it, so a pipeline rebuild can never resurrect the
         // gradient while no component is alive to own it.
         GradientGI::OwnerRegistry m_owners;
+        OwnerChangedEvent         m_ownerChangedEvent;
         bool                      m_enabled = false;
 
         // Duplicate reporting. Several components driving the scene at once is legal but almost

@@ -102,10 +102,13 @@ namespace AZ::Render
         // Register this owner and let it drive. Earlier owners stay registered so that when this
         // one leaves the feature is handed back to them instead of switching off.
         m_owners.Add(owner);
-        m_enabled = true;
 
         // We are wanted again -- cancel any pending teardown and keep what we already generated.
         m_teardownCountdown = 0;
+
+        // Stage the new owner's configuration before enabling output.
+        m_ownerChangedEvent.Signal(owner);
+        m_enabled = true;
 
         // Give the scene a sane ambient floor before we start driving it, so any frame we are not
         // writing (a pipeline swap, a mode switch) reads as the engine default rather than black.
@@ -137,6 +140,7 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Disable(EntityId owner)
     {
+        const EntityId previousOwner = m_owners.Current();
         m_owners.Remove(owner);
 
         // Re-arm the duplicate report. Clearing this only from the per-frame check would miss a
@@ -152,11 +156,25 @@ namespace AZ::Render
         // GradientGI::OwnerRegistry.
         if (!m_owners.Empty())
         {
+            if (m_owners.Current() != previousOwner)
+            {
+                m_ownerChangedEvent.Signal(m_owners.Current());
+            }
             return;
         }
 
         m_enabled = false;
         ReleaseOutput();
+    }
+
+    void GradientGIFeatureProcessor::ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler)
+    {
+        handler.Connect(m_ownerChangedEvent);
+    }
+
+    EntityId GradientGIFeatureProcessor::GetCurrentOwner() const
+    {
+        return m_owners.Current();
     }
 
     void GradientGIFeatureProcessor::ReleaseOutput()

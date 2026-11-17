@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/Event.h>
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -92,11 +93,14 @@ namespace AZ::Render
         //! render pipeline rebuilds.
         virtual void Enable(EntityId owner) = 0;
 
-        //! Stop driving the scene's ambient light and release the IBL slots.
-        //!
-        //! Ignored unless `owner` is the current owner, so a component that is shutting down can
-        //! never switch off one that has already taken over. See GradientGI::ShouldAcceptDisable.
+        //! Remove an owner. Promote the newest survivor, or release output when none remain.
         virtual void Disable(EntityId owner) = 0;
+
+        using OwnerChangedEvent = AZ::Event<EntityId>;
+
+        //! Ownership notifications and component setters run on the main thread.
+        virtual void ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler) = 0;
+        virtual EntityId GetCurrentOwner() const = 0;
     };
 
 } // namespace AZ::Render

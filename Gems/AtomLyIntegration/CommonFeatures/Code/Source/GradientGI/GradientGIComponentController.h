@@ -8,11 +8,17 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConfig.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
+
+namespace UnitTest
+{
+    class GradientGIComponentControllerFixture;
+}
 
 namespace AZ
 {
@@ -21,9 +27,11 @@ namespace AZ
         class GradientGIComponentController final
             : GradientGIComponentRequestBus::Handler
             , Data::AssetBus::MultiHandler
+            , AZ::TickBus::Handler
         {
         public:
             friend class EditorGradientGIComponent;
+            friend class UnitTest::GradientGIComponentControllerFixture;
 
             AZ_CLASS_ALLOCATOR(GradientGIComponentController, SystemAllocator);
             AZ_RTTI(AZ::Render::GradientGIComponentController, "{D4E5F6A7-B8C9-0123-DEF0-123456789ABC}");
@@ -95,11 +103,16 @@ namespace AZ
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
             void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
             // =====================================================================
             // Helpers
             // =====================================================================
 
             void UpdateColors();
+            bool IsActiveOwner() const;
+            void ApplyConfiguration();
+            void OnOwnerChanged(EntityId owner);
 
             //! CPU/Static renders only power-of-two cubemap faces; snap the stored resolution so the
             //! slider and scripting getter match what is rendered. No-op in GPU/Dynamic mode.
@@ -118,6 +131,13 @@ namespace AZ
             EntityId                         m_entityId;
             GradientGIComponentConfig        m_configuration;
             GradientGIFeatureProcessorInterface* m_featureProcessor = nullptr;
+            GradientGIFeatureProcessorInterface::OwnerChangedEvent::Handler m_ownerChangedHandler{
+                [this](EntityId owner)
+                {
+                    OnOwnerChanged(owner);
+                }};
+            bool m_detailTextureNeedsUpdate = false;
+            bool m_specularTextureNeedsUpdate = false;
         };
 
     } // namespace Render

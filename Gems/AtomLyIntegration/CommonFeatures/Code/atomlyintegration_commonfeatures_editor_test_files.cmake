@@ -8,5 +8,6 @@
 
 set(FILES
     Tests/Main.cpp
+    Tests/GradientGIComponentControllerTests.cpp
     Tests/MeshComponentControllerTests.cpp
     Tests/EditorAreaLightComponentTests.cpp)

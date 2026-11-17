@@ -108,10 +108,7 @@ namespace AZ::Render::GradientGI
     //!    single owner that shut the feature down and left the scene black until something happened
     //!    to re-activate the original.
     //!
-    //! Note: the feature processor holds one set of gradient parameters, not one per owner. After a
-    //! promotion those parameters are whatever the departing owner last pushed, until the survivor
-    //! pushes again. For duplicates (identical configuration) that is invisible; for two genuinely
-    //! different components the survivor's colours are stale until its next edit or activation.
+    //! Controllers reapply their configuration when the current owner changes.
     class OwnerRegistry
     {
     public:

@@ -6,16 +6,15 @@
  *
  */
 
-#include <GradientGI/GradientGIComponentController.h>
-#include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Script/ScriptContextAttributes.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Asset/AssetManager.h>
 #include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
+#include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContextAttributes.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <GradientGI/GradientGIComponentController.h>
 
 namespace AZ
 {
@@ -151,39 +150,20 @@ namespace AZ
 
             if (m_featureProcessor)
             {
-                // Push all initial configuration into the FP.
-                m_featureProcessor->SetUpdateMode(
-                    static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
-                UpdateColors();
-                m_featureProcessor->SetExposure(m_configuration.m_exposure);
-                SnapResolutionForCurrentMode();
-                m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
-
-                // Texture layers: push params now; the textures load asynchronously.
-                m_featureProcessor->SetDetailParams(
-                    static_cast<uint8_t>(m_configuration.m_detailMapping),
-                    static_cast<uint8_t>(m_configuration.m_detailBlend),
-                    m_configuration.m_detailStrength);
-                m_featureProcessor->SetSpecularParams(
-                    static_cast<uint8_t>(m_configuration.m_specularMapping),
-                    static_cast<uint8_t>(m_configuration.m_specularBlend),
-                    m_configuration.m_specularStrength);
-                LoadDetailTexture();
-                LoadSpecularTexture();
-
-                // Take ownership last, once the whole configuration is staged. The feature
-                // processor is a scene-wide singleton shared with any other GradientGI component,
-                // and the most recently enabled owner drives it.
-                m_featureProcessor->Enable(m_entityId);
-
                 GradientGIComponentRequestBus::Handler::BusConnect(m_entityId);
+                m_featureProcessor->ConnectToOwnerChangedEvent(m_ownerChangedHandler);
+                m_featureProcessor->Enable(m_entityId);
             }
         }
 
         void GradientGIComponentController::Deactivate()
         {
+            m_ownerChangedHandler.Disconnect();
+            AZ::TickBus::Handler::BusDisconnect();
             GradientGIComponentRequestBus::Handler::BusDisconnect();
             Data::AssetBus::MultiHandler::BusDisconnect();
+            m_detailTextureNeedsUpdate = false;
+            m_specularTextureNeedsUpdate = false;
 
             if (m_featureProcessor)
             {
@@ -199,7 +179,21 @@ namespace AZ
 
         void GradientGIComponentController::SetConfiguration(const GradientGIComponentConfig& config)
         {
+            AZ::TickBus::Handler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusDisconnect();
+            m_detailTextureNeedsUpdate = false;
+            m_specularTextureNeedsUpdate = false;
             m_configuration = config;
+
+            if (IsActiveOwner())
+            {
+                ApplyConfiguration();
+            }
+            else if (m_featureProcessor)
+            {
+                LoadDetailTexture();
+                LoadSpecularTexture();
+            }
         }
 
         const GradientGIComponentConfig& GradientGIComponentController::GetConfiguration() const
@@ -256,7 +250,7 @@ namespace AZ
         void GradientGIComponentController::SetExposure(float exposure)
         {
             m_configuration.m_exposure = exposure;
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetExposure(exposure);
             }
@@ -273,7 +267,7 @@ namespace AZ
             // into the supported range before storing into the unsigned config field.
             m_configuration.m_faceResolution = GradientGI::RoundAndClampFaceResolution(resolution);
             SnapResolutionForCurrentMode();
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
             }
@@ -285,7 +279,9 @@ namespace AZ
             // limit -- a per-face >64KB non-power-of-two subresource samples black). Snap the stored
             // value so the slider and the scripting getter agree with what is actually rendered, with
             // no hidden clip. GPU/Dynamic composites any size on the GPU and is left untouched.
-            if (m_configuration.m_updateMode == GradientGIUpdateMode::Static)
+            if (m_configuration.m_updateMode == GradientGIUpdateMode::Static ||
+                (IsActiveOwner() &&
+                    m_featureProcessor->GetUpdateMode() == GradientGIFeatureProcessorInterface::UpdateMode::Static))
             {
                 m_configuration.m_faceResolution =
                     GradientGI::SnapCpuFaceResolutionToPow2(m_configuration.m_faceResolution);
@@ -300,13 +296,15 @@ namespace AZ
         void GradientGIComponentController::SetUpdateMode(GradientGIUpdateMode mode)
         {
             m_configuration.m_updateMode = mode;
-            // Switching to CPU/Static may make the current size a power of two (and back to GPU lifts
-            // that restriction), so re-evaluate the snapped value for the getter's sake.
-            SnapResolutionForCurrentMode();
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetUpdateMode(
                     static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(mode));
+            }
+            SnapResolutionForCurrentMode();
+            if (IsActiveOwner())
+            {
+                m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
             }
         }
 
@@ -321,7 +319,11 @@ namespace AZ
 
         void GradientGIComponentController::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
-            Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_detailTexture.GetId());
+            m_detailTextureNeedsUpdate = false;
+            if (m_configuration.m_detailTexture.GetId() != m_configuration.m_specularTexture.GetId())
+            {
+                Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_detailTexture.GetId());
+            }
             m_configuration.m_detailTexture = texture;
             LoadDetailTexture();
         }
@@ -395,7 +397,11 @@ namespace AZ
 
         void GradientGIComponentController::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
         {
-            Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_specularTexture.GetId());
+            m_specularTextureNeedsUpdate = false;
+            if (m_configuration.m_specularTexture.GetId() != m_configuration.m_detailTexture.GetId())
+            {
+                Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_specularTexture.GetId());
+            }
             m_configuration.m_specularTexture = texture;
             LoadSpecularTexture();
         }
@@ -469,7 +475,7 @@ namespace AZ
 
         void GradientGIComponentController::UpdateColors()
         {
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetGradientColors(
                     m_configuration.m_lowColor,
@@ -478,60 +484,118 @@ namespace AZ
             }
         }
 
+        bool GradientGIComponentController::IsActiveOwner() const
+        {
+            return m_featureProcessor &&
+                m_entityId.IsValid() &&
+                m_featureProcessor->GetCurrentOwner() == m_entityId;
+        }
+
+        void GradientGIComponentController::OnOwnerChanged(EntityId owner)
+        {
+            if (owner == m_entityId)
+            {
+                ApplyConfiguration();
+            }
+        }
+
+        void GradientGIComponentController::ApplyConfiguration()
+        {
+            m_featureProcessor->SetUpdateMode(
+                static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
+            UpdateColors();
+            m_featureProcessor->SetExposure(m_configuration.m_exposure);
+            SnapResolutionForCurrentMode();
+            m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
+            PushDetailParams();
+            PushSpecularParams();
+            LoadDetailTexture();
+            LoadSpecularTexture();
+
+            // Replace the previous owner's bindings on tick, even when our textures are still loading.
+            m_detailTextureNeedsUpdate = true;
+            m_specularTextureNeedsUpdate = true;
+            AZ::TickBus::Handler::BusConnect();
+        }
+
         // =====================================================================
         // Detail Texture Loading
         // =====================================================================
 
         void GradientGIComponentController::LoadDetailTexture()
         {
-            // AssetBus is disconnected wholesale in Deactivate (which always precedes a fresh
-            // Activate via the editor adapter), so we only connect here.
+            m_detailTextureNeedsUpdate = false;
             auto& asset = m_configuration.m_detailTexture;
             if (asset.GetId().IsValid())
             {
                 // If already loaded, BusConnect triggers OnAssetReady immediately.
                 Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
                 asset.QueueLoad();
+                if (asset.IsReady())
+                {
+                    OnAssetReady(asset);
+                }
             }
-            else if (m_featureProcessor)
+            else if (IsActiveOwner())
             {
-                m_featureProcessor->SetDetailTexture(asset); // clear the layer
+                m_detailTextureNeedsUpdate = true;
+                AZ::TickBus::Handler::BusConnect();
             }
         }
 
         void GradientGIComponentController::LoadSpecularTexture()
         {
+            m_specularTextureNeedsUpdate = false;
             auto& asset = m_configuration.m_specularTexture;
             if (asset.GetId().IsValid())
             {
                 Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
                 asset.QueueLoad();
+                if (asset.IsReady())
+                {
+                    OnAssetReady(asset);
+                }
             }
-            else if (m_featureProcessor)
+            else if (IsActiveOwner())
             {
-                m_featureProcessor->SetSpecularTexture(asset); // clear the layer
+                m_specularTextureNeedsUpdate = true;
+                AZ::TickBus::Handler::BusConnect();
             }
         }
 
         void GradientGIComponentController::PushDetailToFeatureProcessor()
         {
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
-                m_featureProcessor->SetDetailTexture(m_configuration.m_detailTexture);
+                if (m_configuration.m_detailTexture.IsReady())
+                {
+                    m_featureProcessor->SetDetailTexture(m_configuration.m_detailTexture);
+                }
+                else
+                {
+                    m_featureProcessor->SetDetailTexture({});
+                }
             }
         }
 
         void GradientGIComponentController::PushSpecularToFeatureProcessor()
         {
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
-                m_featureProcessor->SetSpecularTexture(m_configuration.m_specularTexture);
+                if (m_configuration.m_specularTexture.IsReady())
+                {
+                    m_featureProcessor->SetSpecularTexture(m_configuration.m_specularTexture);
+                }
+                else
+                {
+                    m_featureProcessor->SetSpecularTexture({});
+                }
             }
         }
 
         void GradientGIComponentController::PushDetailParams()
         {
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetDetailParams(
                     static_cast<uint8_t>(m_configuration.m_detailMapping),
@@ -542,7 +606,7 @@ namespace AZ
 
         void GradientGIComponentController::PushSpecularParams()
         {
-            if (m_featureProcessor)
+            if (IsActiveOwner())
             {
                 m_featureProcessor->SetSpecularParams(
                     static_cast<uint8_t>(m_configuration.m_specularMapping),
@@ -570,22 +634,34 @@ namespace AZ
                 return;
             }
 
-            // Defer to the next tick: instantiating a StreamingImage from within an AssetBus
-            // callback can deadlock the copy queue (see ImageBasedLightComponentController).
-            auto postTick = [this, asset, isDetail, isSpecular]()
+            if (isDetail)
             {
-                if (isDetail && asset.GetId() == m_configuration.m_detailTexture.GetId())
-                {
-                    m_configuration.m_detailTexture = asset;
-                    PushDetailToFeatureProcessor();
-                }
-                if (isSpecular && asset.GetId() == m_configuration.m_specularTexture.GetId())
-                {
-                    m_configuration.m_specularTexture = asset;
-                    PushSpecularToFeatureProcessor();
-                }
-            };
-            AZ::TickBus::QueueFunction(AZStd::move(postTick));
+                m_configuration.m_detailTexture = asset;
+                m_detailTextureNeedsUpdate = true;
+            }
+            if (isSpecular)
+            {
+                m_configuration.m_specularTexture = asset;
+                m_specularTextureNeedsUpdate = true;
+            }
+
+            // Defer GPU work outside AssetBus, with a handler that deactivation can cancel.
+            AZ::TickBus::Handler::BusConnect();
+        }
+
+        void GradientGIComponentController::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            if (m_detailTextureNeedsUpdate)
+            {
+                m_detailTextureNeedsUpdate = false;
+                PushDetailToFeatureProcessor();
+            }
+            if (m_specularTextureNeedsUpdate)
+            {
+                m_specularTextureNeedsUpdate = false;
+                PushSpecularToFeatureProcessor();
+            }
         }
 
     } // namespace Render
