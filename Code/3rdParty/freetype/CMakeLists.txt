@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(freetype
-    VERSION "2.14.3"
+    VERSION "2.15.0"
     LICENSE "FTL"
-    URL "https://github.com/freetype/freetype/archive/refs/tags/VER-2-14-3.tar.gz"
-    URL_HASH "dc49de6b01a266eef4876a4dd34d9842c475d3e28ff2eff63bd2fb760ab56261"
+    URL "https://github.com/freetype/freetype/archive/refs/tags/VER-2-15-0.tar.gz"
+    URL_HASH "87c7f1f8699b91e89f773f7dcfa505b044e1dae67f62a55d4e29c3afdcac4fb8"
     GIT "https://github.com/freetype/freetype.git"
-    GIT_HASH "c740f0fda4274d6ffd2e5b64a25b06ef69803a07"
+    GIT_HASH "37515cf56ba3349656049edbed89ffc6f6466f2d"
 )
 
 set(BUILD_FRAMEWORK OFF)
