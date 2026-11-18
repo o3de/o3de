@@ -16,7 +16,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <AzNetworking/UdpTransport/UdpPacketHeader.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
@@ -598,5 +600,55 @@ namespace Multiplayer
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
         EXPECT_FALSE(m_mpComponent->IsHandshakeComplete(&connection));
+    }
+
+    //! A viewport that renders an isometric orthographic view, the way a 2:1 sprite game draws its world.
+    class OrthographicViewport : public AzFramework::ViewportRequestBus::Handler
+    {
+    public:
+        OrthographicViewport()
+        {
+            // A right-handed view looks down its -Z.
+            const AZ::Transform cameraTransform = AZ::Transform::CreateLookAt(
+                AZ::Vector3(-30.0f, -30.0f, 25.0f), AZ::Vector3::CreateZero(), AZ::Transform::Axis::ZNegative);
+            m_worldToView = AZ::Matrix4x4::CreateFromTransform(cameraTransform.GetInverse());
+            AZ::MakeOrthographicMatrixRH(m_viewToClip, -10.0f, 10.0f, -5.0f, 5.0f, -100.0f, 100.0f, true);
+            BusConnect(1);
+        }
+        ~OrthographicViewport() override { BusDisconnect(); }
+        const AZ::Matrix4x4& GetCameraViewMatrix() const override { return m_worldToView; }
+        AZ::Matrix3x4 GetCameraViewMatrixAsMatrix3x4() const override { return AZ::Matrix3x4::CreateIdentity(); }
+        void SetCameraViewMatrix(const AZ::Matrix4x4&) override {}
+        const AZ::Matrix4x4& GetCameraProjectionMatrix() const override { return m_viewToClip; }
+        void SetCameraProjectionMatrix(const AZ::Matrix4x4&) override {}
+        AZ::Transform GetCameraTransform() const override { return AZ::Transform::CreateIdentity(); }
+        void SetCameraTransform(const AZ::Transform&) override {}
+    private:
+        AZ::Matrix4x4 m_worldToView;
+        AZ::Matrix4x4 m_viewToClip;
+    };
+
+    TEST_F(MultiplayerSystemTests, TestRenderedViewFrustumIsTheViewportsOrthographicView)
+    {
+        EXPECT_FALSE(GetRenderedViewFrustum(0.0f).has_value()); // nothing rendered: every net entity is blended
+
+        OrthographicViewport viewport;
+        const AZStd::optional<AZ::Frustum> frustum = GetRenderedViewFrustum(0.0f);
+        ASSERT_TRUE(frustum.has_value());
+        const auto inside = [&frustum](const AZ::Vector3& point)
+        {
+            return frustum->IntersectSphere(point, 0.01f) != AZ::IntersectResult::Exterior;
+        };
+        // The look-at target, and as far again behind it along the view: orthographic views have no apex.
+        EXPECT_TRUE(inside(AZ::Vector3::CreateZero()));
+        EXPECT_TRUE(inside(AZ::Vector3(30.0f, 30.0f, -25.0f)));
+        // Past the right edge of the 20 unit wide view, and past its depth range.
+        EXPECT_FALSE(inside(AZ::Vector3(9.0f, -9.0f, 0.0f)));
+        EXPECT_FALSE(inside(AZ::Vector3(-150.0f, -150.0f, 125.0f)));
+
+        // A margin admits art that reaches into view from an origin past the edge; 12.7 units right is 2.7 past it.
+        const AZ::Frustum widened = *GetRenderedViewFrustum(3.0f);
+        EXPECT_NE(widened.IntersectSphere(AZ::Vector3(9.0f, -9.0f, 0.0f), 0.01f), AZ::IntersectResult::Exterior);
+        EXPECT_EQ(widened.IntersectSphere(AZ::Vector3(11.0f, -11.0f, 0.0f), 0.01f), AZ::IntersectResult::Exterior);
     }
 } // namespace Multiplayer

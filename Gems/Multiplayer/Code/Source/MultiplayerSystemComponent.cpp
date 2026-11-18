@@ -34,7 +34,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
 #include <AzNetworking/Framework/INetworking.h>
@@ -102,6 +102,9 @@ namespace Multiplayer
     AZ_CVAR(float, cl_renderTickBlendBase, 0.15f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
+    AZ_CVAR(float, cl_renderViewCullMargin, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "How far past the rendered view, in world units, net entities are still blended: the largest extent "
+        "a game draws around an entity's origin, so art that reaches into view never freezes between updates");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, sv_dedicated_host_onstartup, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether dedicated servers will begin hosting on app startup.");
     AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "[DEPRECATED: use connect instead] Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
@@ -1577,6 +1580,29 @@ namespace Multiplayer
         AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalBytes));
     }
 
+    AZStd::optional<AZ::Frustum> GetRenderedViewFrustum(float margin)
+    {
+        // The viewport answers with the view it renders, so the blend culls against exactly what is drawn.
+        if (!AzFramework::ViewportRequestBus::HasHandlers())
+        {
+            return AZStd::nullopt;
+        }
+        AZ::Matrix4x4 worldToView = AZ::Matrix4x4::CreateIdentity();
+        AZ::Matrix4x4 viewToClip = AZ::Matrix4x4::CreateIdentity();
+        AzFramework::ViewportRequestBus::BroadcastResult(worldToView, &AzFramework::ViewportRequestBus::Events::GetCameraViewMatrix);
+        AzFramework::ViewportRequestBus::BroadcastResult(viewToClip, &AzFramework::ViewportRequestBus::Events::GetCameraProjectionMatrix);
+        AZ::Frustum frustum = AZ::Frustum::CreateFromMatrixColumnMajor(viewToClip * worldToView);
+        for (int planeId = AZ::Frustum::PlaneId::Near; planeId < AZ::Frustum::PlaneId::MAX; ++planeId)
+        {
+            // Inside is normal.point + distance >= 0, so a unit normal's distance grows by the margin.
+            const AZ::Plane plane = frustum.GetPlane(static_cast<AZ::Frustum::PlaneId>(planeId));
+            const float length = plane.GetNormal().GetLength();
+            frustum.SetPlane(static_cast<AZ::Frustum::PlaneId>(planeId),
+                AZ::Plane::CreateFromNormalAndDistance(plane.GetNormal() / length, plane.GetDistance() / length + margin));
+        }
+        return frustum;
+    }
+
     void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
     {
         AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: TickVisibleNetworkEntities");
@@ -1595,27 +1621,13 @@ namespace Multiplayer
         );
 
 #if AZ_TRAIT_CLIENT
-        if (Camera::ActiveCameraRequestBus::HasHandlers())
+        if (const AZStd::optional<AZ::Frustum> viewFrustum = GetRenderedViewFrustum(cl_renderViewCullMargin))
         {
-            // If there's a camera, update only what's visible
-            AZ::Transform activeCameraTransform;
-            Camera::Configuration activeCameraConfiguration;
-            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
-            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraConfiguration, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraConfiguration);
-
-            const AZ::ViewFrustumAttributes frustumAttributes
-            (
-                activeCameraTransform,
-                activeCameraConfiguration.m_frustumHeight / activeCameraConfiguration.m_frustumWidth,
-                activeCameraConfiguration.m_fovRadians,
-                activeCameraConfiguration.m_nearClipDistance,
-                activeCameraConfiguration.m_farClipDistance
-            );
-            const AZ::Frustum viewFrustum = AZ::Frustum(frustumAttributes);
+            // If something is rendered, update only what the renderer's view sees
 
             // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
             AZStd::vector<NetBindComponent*> gatheredEntities;
-            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(*viewFrustum,
                 [this, &gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
                 gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
@@ -1633,6 +1645,9 @@ namespace Multiplayer
                     }
                 }
             });
+
+            AZLOG(NET_Blending, "Pre-rendering %zu of %zu net entities, those in the rendered view",
+                gatheredEntities.size(), m_networkEntityManager.GetNetworkEntityTracker()->size());
 
             if (bg_parallelNotifyPreRender)
             {
