@@ -23,6 +23,11 @@ namespace LuaBuilder
     {
         static int LuaStreamWriter(lua_State*, const void* data, size_t size, void* userData)
         {
+            if (size == 0)
+            {
+                return 0;
+            }
+
             using namespace AZ::IO;
             GenericStream* stream = static_cast<GenericStream*>(userData);
 
