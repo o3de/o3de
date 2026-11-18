@@ -74,8 +74,6 @@ namespace AZ::ShaderCompiler
 
         struct Argument : variant< monostate, bool, ConstNumericVal, string >
         {
-            using variant::variant;
-
             Argument() = default;
             Argument(bool value)
                 : variant(value)
