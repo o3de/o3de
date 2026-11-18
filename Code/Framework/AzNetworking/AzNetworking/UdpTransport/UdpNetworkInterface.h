@@ -16,6 +16,7 @@
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
+#include <AzCore/EBus/Event.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -122,6 +123,11 @@ namespace AzNetworking
 
         AZStd::atomic<AZ::TimeMs> GetLastSystemTickUpdate() const;
 
+        //! Signalled for every removed connection, with why it ended and which end ended it, just before the
+        //! connection listener's OnDisconnect: application code beside the listener can tell the player why.
+        using DisconnectEvent = AZ::Event<ConnectionId, DisconnectReason, TerminationEndpoint>;
+        void AddDisconnectHandler(DisconnectEvent::Handler& handler) { handler.Connect(m_disconnectEvent); }
+
     private:
 
         //! Registers a packet with a timeout queue on the provided connection.
@@ -195,6 +201,7 @@ namespace AzNetworking
             TerminationEndpoint m_endpoint;
         };
         AZStd::vector<RemovedConnection> m_removedConnections;
+        DisconnectEvent m_disconnectEvent;
 
         UdpPacketEncodingBuffer m_decryptBuffer;
         UdpPacketEncodingBuffer m_decompressBuffer;

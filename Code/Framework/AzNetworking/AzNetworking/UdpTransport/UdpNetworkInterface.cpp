@@ -343,6 +343,7 @@ namespace AzNetworking
         // Delete any connections we've disconnected
         for (RemovedConnection& removedConnection : m_removedConnections)
         {
+            m_disconnectEvent.Signal(removedConnection.m_connection->GetConnectionId(), removedConnection.m_reason, removedConnection.m_endpoint);
             m_connectionListener.OnDisconnect(removedConnection.m_connection, removedConnection.m_reason, removedConnection.m_endpoint);
             m_connectionSet.DeleteConnection(removedConnection.m_connection->GetConnectionId()); // Will delete the connection
         }

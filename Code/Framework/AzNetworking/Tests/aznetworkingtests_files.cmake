@@ -22,6 +22,7 @@ set(FILES
     Serialization/TrackChangedSerializerTests.cpp
     Serialization/TypeValidatingSerializerTests.cpp
     TcpTransport/TcpTransportTests.cpp
+    UdpTransport/UdpDisconnectEventTests.cpp
     UdpTransport/UdpTransportTests.cpp
     Utilities/CidrAddressTests.cpp
     Utilities/IpAddressTests.cpp
