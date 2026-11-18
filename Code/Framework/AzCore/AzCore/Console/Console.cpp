@@ -20,6 +20,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/wildcard.h>
 #include <cctype>
 
 namespace AZ
@@ -37,45 +38,6 @@ namespace AZ
         }
 
         return count;
-    }
-
-    bool ConsoleNameMatches(AZStd::string_view name, AZStd::string_view text)
-    {
-        // Wildcard match anywhere in the name, ignoring case: `*` matches any run of characters, `?` matches one.
-        // The pattern is wrapped in `*` so the text can match anywhere in the name.
-        const AZStd::string pattern = AZStd::string("*") + AZStd::string(text) + "*";
-        size_t nameIndex = 0;
-        size_t patternIndex = 0;
-        size_t lastStarPatternIndex = 0;
-        size_t lastStarNameIndex = 0;
-        while (nameIndex < name.size())
-        {
-            const bool havePatternChar = patternIndex < pattern.size();
-            if (havePatternChar && pattern[patternIndex] == '*')
-            {
-                // Remember the star, and first try matching it against nothing.
-                lastStarPatternIndex = patternIndex++;
-                lastStarNameIndex = nameIndex;
-            }
-            else if (havePatternChar && (pattern[patternIndex] == '?' ||
-                tolower(static_cast<unsigned char>(pattern[patternIndex])) == tolower(static_cast<unsigned char>(name[nameIndex]))))
-            {
-                ++patternIndex;
-                ++nameIndex;
-            }
-            else
-            {
-                // Mismatch: let the last star swallow one more name character and retry after it.
-                // The pattern starts with `*`, so there is always a star to fall back to.
-                patternIndex = lastStarPatternIndex + 1;
-                nameIndex = ++lastStarNameIndex;
-            }
-        }
-        while (patternIndex < pattern.size() && pattern[patternIndex] == '*')
-        {
-            ++patternIndex;
-        }
-        return patternIndex == pattern.size();
     }
 
     //! One `?` reply line, `  name = value - help`, printed whatever the logger's level.
@@ -167,16 +129,18 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        // `?text` (or `? text`) lists the visible commands and cvars whose name matches text (ConsoleNameMatches); `?`
-        // lists all. `cvar ?` prints that cvar. A command still receives `?` as an ordinary argument.
+        // `?text` (or `? text`) lists the visible commands and cvars whose name contains text, ignoring case, where `*`
+        // matches any run and `?` any one character; `?` lists all. `cvar ?` prints that cvar. A command still receives
+        // `?` as an ordinary argument.
         if (!command.empty() && command.front() == '?')
         {
             const AZStd::string_view text = command.size() > 1 ? command.substr(1) : commandArgs.empty() ? AZStd::string_view() : commandArgs.front();
+            const AZStd::string pattern = AZStd::string::format("*%.*s*", AZ_STRING_ARG(text));
             AZStd::vector<ConsoleFunctorBase*> matches;
-            VisitRegisteredFunctors([text, &matches](ConsoleFunctorBase* functor)
+            VisitRegisteredFunctors([&pattern, &matches](ConsoleFunctorBase* functor)
             {
                 if ((functor->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::Null &&
-                    ConsoleNameMatches(functor->GetName(), text))
+                    AZStd::wildcard_match(pattern, functor->GetName()))
                 {
                     matches.push_back(functor);
                 }

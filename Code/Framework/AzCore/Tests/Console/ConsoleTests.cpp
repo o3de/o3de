@@ -426,10 +426,6 @@ namespace AZ
         EXPECT_EQ(reply("? zqflysp"), (Lines{ "?zqflysp: 1 matches", "  zqFlySpeed = 7 - Camera speed." }));
         EXPECT_EQ(reply("?zqnothing"), (Lines{ "?zqnothing: 0 matches" }));
         EXPECT_EQ(reply("?zq?ly*ED"), (Lines{ "?zq?ly*ED: 1 matches", "  zqFlySpeed = 7 - Camera speed." }));
-        EXPECT_TRUE(AZ::ConsoleNameMatches("r_Transparent_Fullscreen", "transparent?full*"));
-        EXPECT_TRUE(AZ::ConsoleNameMatches("r_transparent_full", "TRANSPARENT?FULL"));
-        EXPECT_FALSE(AZ::ConsoleNameMatches("r_transparentfull", "transparent?full"));
-        EXPECT_FALSE(AZ::ConsoleNameMatches("r_transparent", "transparent?"));
         const Lines all = reply("?");
         EXPECT_NE(AZStd::find(all.begin(), all.end(), "  zqToggleZqFly - Toggles flying."), all.end());
         EXPECT_EQ(AZStd::find(all.begin(), all.end(), "  zqHiddenFly - Hidden."), all.end());
