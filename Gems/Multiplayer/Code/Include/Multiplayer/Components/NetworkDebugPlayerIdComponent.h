@@ -87,7 +87,7 @@ namespace Multiplayer
             });
 
         EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler = EndpointDisconnectedEvent::Handler(
-            [this](MultiplayerAgentType)
+            [this](MultiplayerAgentType, AzNetworking::DisconnectReason, AzNetworking::TerminationEndpoint)
             {
                 this->OnEndpointDisconnected();
             });
