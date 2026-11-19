@@ -908,6 +908,9 @@ namespace Multiplayer
         case UpdateValidationResult::DropMessage:
             return true;
         case UpdateValidationResult::DropMessageAndDisconnect:
+            AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=entity_validation entity=%llu packet=%u delete=%d role=%d",
+                static_cast<AZ::u64>(updateMessage.GetEntityId()), static_cast<uint32_t>(packetHeader.GetPacketId()),
+                updateMessage.GetIsDelete(), static_cast<int>(updateMessage.GetNetworkRole()));
             return false;
         default:
             AZ_Assert(false, "Unhandled case");
@@ -953,6 +956,12 @@ namespace Multiplayer
                           prefabEntityId,
                           updateMessage.GetIsDelete()) &&
                 handled;
+            if (!handled)
+            {
+                AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=entity_properties entity=%llu packet=%u prefab=%s delete=%d consumed=%u capacity=%u",
+                    static_cast<AZ::u64>(updateMessage.GetEntityId()), static_cast<uint32_t>(packetHeader.GetPacketId()),
+                    prefabEntityId.m_prefabName.GetCStr(), updateMessage.GetIsDelete(), outputSerializer.GetSize(), outputSerializer.GetCapacity());
+            }
             AZ_Assert(handled, "Failed to handle NetworkEntityUpdateMessage message");
         }
         else

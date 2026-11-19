@@ -9,6 +9,9 @@
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 #include <AzNetworking/UdpTransport/UdpPacketTracker.h>
 #include <AzNetworking/UdpTransport/UdpPacketIdWindow.h>
+#include <AzNetworking/UdpTransport/UdpFragmentQueue.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
@@ -122,7 +125,54 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
         AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
+
+        PacketDispatchResult ReceiveIncompleteFragment(UdpFragmentQueue& queue, SequenceId sequence, uint8_t chunkCount)
+        {
+            CorePackets::FragmentedPacket packet;
+            packet.SetFragmentSequence(sequence);
+            packet.SetUnfragmentedSequence(SequenceId{ 42 });
+            packet.SetChunkCount(chunkCount);
+            packet.SetChunkIndex(0);
+            uint8_t buffer[64] = {};
+            NetworkInputSerializer writer(buffer, sizeof(buffer));
+            EXPECT_TRUE(packet.Serialize(writer));
+            NetworkOutputSerializer reader(buffer, writer.GetSize());
+            UdpPacketHeader header;
+            TestUdpConnectionListener listener;
+            // Each test supplies only the first of multiple chunks, so no connection is dispatched.
+            return queue.ProcessReceivedChunk(nullptr, listener, header, reader);
+        }
     };
+
+    TEST_F(UdpTransportTests, FragmentTimeoutReleasesHighSequenceBeforeReuse)
+    {
+        UdpFragmentQueue queue;
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 0 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 2), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 6000 });
+        queue.Update();
+
+        // Advance through the 16-bit sequence rollover, then reuse the expired key with new metadata.
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x5234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x9234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0xd234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1233 }, 2), PacketDispatchResult::Success);
+        EXPECT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 3), PacketDispatchResult::Success);
+    }
+
+    TEST_F(UdpTransportTests, FragmentTimeoutPreservesDifferentPendingSequence)
+    {
+        UdpFragmentQueue queue;
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 0 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 2), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 4000 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x0034 }, 3), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 6000 });
+        queue.Update();
+
+        // The later packet is still pending: inconsistent metadata must continue to be rejected.
+        EXPECT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x0034 }, 4), PacketDispatchResult::Failure);
+    }
 
     TEST_F(UdpTransportTests, PacketIdWrap)
     {
