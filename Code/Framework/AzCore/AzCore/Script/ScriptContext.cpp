@@ -4369,7 +4369,7 @@ LUA_API const Node* lua_getDummyNode()
                     {
                         allocator = &m_luaAllocator;
                     }
-                    m_lua = lua_newstate(&LuaMemoryHook, allocator);
+                    m_lua = lua_newstate(&LuaMemoryHook, allocator, luaL_makeseed(nullptr));
                     AZ_Assert(m_lua, "Failed to create new LUA state!");
                 }
 
@@ -5920,9 +5920,11 @@ LUA_API const Node* lua_getDummyNode()
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void ScriptContext::GarbageCollectStep(int numberOfSteps)
+    void ScriptContext::GarbageCollectStep(int stepSize)
     {
-        lua_gc(m_impl->m_lua, LUA_GCSTEP, numberOfSteps);
+        // Lua 5.5 takes a byte count. Keep the public step size in KiB.
+        const size_t stepBytes = static_cast<size_t>(AZStd::max(stepSize, 0)) * 1024;
+        lua_gc(m_impl->m_lua, LUA_GCSTEP, stepBytes);
     }
 
     //////////////////////////////////////////////////////////////////////////

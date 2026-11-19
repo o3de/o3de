@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(lua
-    VERSION "5.4.4"
+    VERSION "5.5.1"
     LICENSE "MIT"
-    URL "https://github.com/lua/lua/archive/refs/tags/v5.4.4.tar.gz"
-    URL_HASH "2ff89bbea22a7c8b910d6b006f5ba4559edcf468a25537cedf9988ed90f6b450"
+    URL "https://github.com/lua/lua/archive/refs/tags/v5.5.1.tar.gz"
+    URL_HASH "ffed0b0e2987e66b0142491b26c63170ffd2d86e425ff3703799f4933fd91810"
     GIT "https://github.com/lua/lua.git"
-    GIT_HASH "5d708c3f9cae12820e415d4f89c9eacbe2ab964b"
+    GIT_HASH "7579fc9d7ed90240487251dfb69168f8e64e9294"
     PATCH_FILES "${CMAKE_CURRENT_LIST_DIR}/lua.patch"
     NO_ADD_SUBDIR
 )
