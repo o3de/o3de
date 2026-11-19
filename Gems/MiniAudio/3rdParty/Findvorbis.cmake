@@ -15,7 +15,7 @@ if (TARGET 3rdParty::vorbis)
 endif()
 
 # vorbis depends on Ogg.
-find_package(Ogg)
+ly_parse_third_party_dependencies(3rdParty::ogg)
 
 block()
     # we intentionally open a new function scope here so that all variable SET is temporary and is discarded after the function ends.
