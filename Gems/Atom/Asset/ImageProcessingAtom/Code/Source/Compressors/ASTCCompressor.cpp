@@ -181,7 +181,7 @@ namespace ImageProcessingAtom
         astcenc_context* context;
         AZ::u32 blockCount = AZ::DivideAndRoundUp(srcImage->GetWidth(0), dstFormatInfo->blockWidth) * AZ::DivideAndRoundUp(srcImage->GetHeight(0), dstFormatInfo->blockHeight);
         AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency()/2, blockCount);
-        status = astcenc_context_alloc(&config, threadCount, &context);
+        status = astcenc_context_alloc(&config, threadCount, &context, nullptr);
         AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec context alloc failed: %s\n", astcenc_get_error_string(status));
 
         AZ::Job* currentJob = AZ::JobContext::GetGlobalContext()->GetJobManager().GetCurrentJob();
@@ -315,7 +315,7 @@ namespace ImageProcessingAtom
         // Create a context based on the configuration
         const AZ::u32 threadCount = 1; // Decompress function doesn't support multiple threads
         astcenc_context* context;
-        status = astcenc_context_alloc(&config, threadCount, &context);
+        status = astcenc_context_alloc(&config, threadCount, &context, nullptr);
         AZ_Assert( status == ASTCENC_SUCCESS, "astcenc_context_alloc failed: %s\n", astcenc_get_error_string(status));
 
         astcenc_type dataType =GetAstcDataType(fmtDst);

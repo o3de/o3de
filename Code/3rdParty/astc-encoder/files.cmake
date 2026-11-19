@@ -24,7 +24,6 @@ set(FILES
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_partition_tables.cpp"
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_percentile_tables.cpp"
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_pick_best_endpoint_format.cpp"
-    "${astc-encoder_SOURCE_DIR}/Source/astcenc_platform_isa_detection.cpp"
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_quantization.cpp"
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_symbolic_physical.cpp"
     "${astc-encoder_SOURCE_DIR}/Source/astcenc_weight_align.cpp"
