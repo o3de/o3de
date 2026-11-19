@@ -27,7 +27,7 @@ endif()
 
 get_target_property(FREETYPE_INCLUDE_DIRS 3rdParty::Freetype INTERFACE_INCLUDE_DIRECTORIES)
 set(FREETYPE_LIBRARIES Freetype::Freetype)
-set(Freetype_VERSION "2.14.3")
+set(Freetype_VERSION "2.15.0")
 set(FREETYPE_VERSION_STRING "${Freetype_VERSION}")
 
 include(FindPackageHandleStandardArgs)
