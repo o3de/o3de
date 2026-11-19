@@ -161,6 +161,19 @@ namespace ImageProcessingAtom
         return AstcContextPtr(context, astcenc_context_free);
     }
 
+    static bool IsSingleSliceImage(const IImageObjectPtr& image)
+    {
+        if (!image || image->GetMipCount() == 0)
+        {
+            return false;
+        }
+
+        // Atom's ASTC formats use 2D blocks, and the compressor supplies one slice per mip.
+        const bool isSingleSlice = image->GetDepth(0) == 1;
+        AZ_Error("Image Processing", isSingleSlice, "ASTC image conversion requires a single slice per mip");
+        return isSingleSlice;
+    }
+
     static AZ::u32 GetAstcWorkChunkCount(const PixelFormatInfo& format, AZ::u32 width, AZ::u32 height)
     {
         // astcenc 5.7.1 assigns compression work in groups of 16 blocks.
@@ -173,7 +186,7 @@ namespace ImageProcessingAtom
     IImageObjectPtr ASTCCompressor::CompressImage(
         IImageObjectPtr srcImage, EPixelFormat fmtDst, const CompressOption* compressOption) const
     {
-        if (!srcImage || srcImage->GetMipCount() == 0 || !IsCompressedPixelFormatSupported(fmtDst))
+        if (!IsSingleSliceImage(srcImage) || !IsCompressedPixelFormatSupported(fmtDst))
         {
             return nullptr;
         }
@@ -352,7 +365,7 @@ namespace ImageProcessingAtom
 
     IImageObjectPtr ASTCCompressor::DecompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst) const
     {
-        if (!srcImage || srcImage->GetMipCount() == 0)
+        if (!IsSingleSliceImage(srcImage))
         {
             return nullptr;
         }

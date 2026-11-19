@@ -16,6 +16,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManager.h>
@@ -42,6 +43,7 @@
 #include <Processing/ImageToProcess.h>
 #include <Processing/ImageAssetProducer.h>
 #include <Processing/ImageFlags.h>
+#include <Processing/Utils.h>
 #include <ImageLoader/ImageLoaders.h>
 
 #include <Compressors/Compressor.h>
@@ -1062,6 +1064,45 @@ namespace UnitTest
                 }
             }
         }
+    }
+
+    TEST_F(ImageProcessingTest, Test_AstcRejectsVolumeImages)
+    {
+        constexpr EPixelFormat rgba = ePixelFormat_R8G8B8A8;
+        constexpr EPixelFormat astc = ePixelFormat_ASTC_4x4;
+        auto compressor = ICompressor::FindCompressor(astc, ColorSpace::linear, true);
+        ASSERT_TRUE(compressor);
+
+        const IImageObjectPtr source(IImageObject::CreateImage(16, 16, 2, 1, rgba));
+        const IImageObjectPtr compressed(IImageObject::CreateImage(16, 16, 2, 1, astc));
+        ASSERT_EQ(source->GetDepth(0), 2);
+        ASSERT_EQ(compressed->GetDepth(0), 2);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_FALSE(compressor->CompressImage(source, astc, nullptr));
+        EXPECT_FALSE(compressor->DecompressImage(compressed, rgba));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+    }
+
+    TEST_F(ImageProcessingTest, Test_AstcVolumeConversionFailure)
+    {
+        const IImageObjectPtr volume(IImageObject::CreateImage(16, 16, 2, 1, ePixelFormat_ASTC_4x4));
+        volume->AddImageFlags(EIF_SRGBRead);
+
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        const auto ddsPath = tempDirectory.Resolve("volume.dds");
+        ImageToProcess imageToProcess(volume);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        // Each failed conversion logs once in the codec and once in ConvertFormat.
+        EXPECT_FALSE(ConvertImageForPreview(volume));
+        EXPECT_FALSE(ImageProcessingAtom::Utils::SaveImageToDdsFile(volume, ddsPath.Native()));
+        EXPECT_FALSE(GetUncompressedLinearImage(volume));
+        imageToProcess.ConvertFormat(ePixelFormat_R8);
+        EXPECT_FALSE(imageToProcess.Get());
+        AZ_TEST_STOP_TRACE_SUPPRESSION(8);
+
+        EXPECT_FALSE(AZ::IO::SystemFile::Exists(ddsPath.c_str()));
     }
 
     TEST_F(ImageProcessingTest, Test_AstcHdrAndNormalPixels)
