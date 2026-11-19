@@ -17,7 +17,7 @@ endif()
 # If you want to use opus or other similar, consider following this same pattern, that is,
 # call find_package here, for it, and provide a `Find<PackageName>.cmake` file for it in this same folder that pretty much
 # copies this structure.  O3DE doesn't currently ship with opus support as there are patent questions about it.
-find_package(vorbis)
+ly_parse_third_party_dependencies(3rdParty::vorbis)
 
 block()
     # Variables inside a block are scoped to the block body.

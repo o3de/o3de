@@ -16,7 +16,7 @@ endif()
 # custom version of it, you can turn this off to trim dependencies and make it smaller.
 set(MINIAUDIO_USE_VORBIS ON CACHE BOOL "Turn off to disable vobis support in MiniAudio gem (You must recompile the engine from source)")
 if (MINIAUDIO_USE_VORBIS)
-    find_package(vorbis)
+    ly_parse_third_party_dependencies(3rdParty::vorbis)
 endif()
 # It is still worth notifying people that they are accepting a 3rd Party Library here, and what license it uses, and
 # where to get it.
