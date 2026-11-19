@@ -17,7 +17,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <QApplication>
 #include <QtTest>
-#include "qtestsystem.h"
 
 namespace EMotionFX
 {

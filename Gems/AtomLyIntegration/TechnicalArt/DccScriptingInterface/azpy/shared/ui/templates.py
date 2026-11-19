@@ -40,7 +40,7 @@ import azpy.shared.ui.help_menu as help_menu
 import azpy.shared.ui.puic_utils as ui_utils
 
 import PySide6.QtCore as QtCore
-import PySide6.QtWidgets as QtWidgets
+from PySide6 import QtWidgets
 import PySide6.QtGui as QtGui
 import PySide6.QtUiTools as QtUiTools
 
@@ -320,7 +320,7 @@ class TemplateMainWindow(QtWidgets.QMainWindow):
 
     def _make_standalone_app(self, name):
         useGUI = not '-no-gui' in sys.argv
-        self.qapp = QtWidgets.QApplication(sys.argv) if useGUI else QtWidgets.QCoreApplication(sys.argv)
+        self.qapp = QtWidgets.QApplication(sys.argv) if useGUI else QtCore.QCoreApplication(sys.argv)
         self.qapp.setOrganizationName(TemplateMainWindow._ORG_TAG)
         self.qapp.setApplicationName('{app}:{tool}'.format(app=TemplateMainWindow._APP_TAG,
                                                            tool=name))
@@ -393,7 +393,7 @@ class TemplateMainWindow(QtWidgets.QMainWindow):
 
         # Exit QAction on hotkey
         exit_tag = "Exit"
-        exit_action = QtWidgets.QAction(exit_tag, self)
+        exit_action = QtGui.QAction(exit_tag, self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.close)
 

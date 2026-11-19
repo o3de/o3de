@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qlogging.h>
+#include <QtLogging>
 #include <QString>
 
 // Environments subclass from AZ::Test::ITestEnvironment

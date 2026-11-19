@@ -48,7 +48,7 @@ def Graph_HappyPath_ZoomInZoomOut():
 
     imports.init()
 
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
     import azlmbr.legacy.general as general
 
     import pyside_utils
@@ -67,7 +67,7 @@ def Graph_HappyPath_ZoomInZoomOut():
 
     # 3) Create new graph
     create_new_graph = pyside_utils.find_child_by_pattern(
-        sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+        sc_main, {"objectName": "action_New_Script", "type": QtGui.QAction}
     )
     create_new_graph.trigger()
 
@@ -78,7 +78,7 @@ def Graph_HappyPath_ZoomInZoomOut():
     curr_m11, curr_m22 = graphics_view.transform().m11(), graphics_view.transform().m22()
 
     # 5) Trigger Zoom In and verify if the graph transform scale is increased
-    zin = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomIn", "type": QtWidgets.QAction})
+    zin = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomIn", "type": QtGui.QAction})
     zin.trigger()
     result = helper.wait_for_condition(
         lambda: curr_m11 < graphics_view.transform().m11() and curr_m22 < graphics_view.transform().m22(), GENERAL_WAIT
@@ -87,7 +87,7 @@ def Graph_HappyPath_ZoomInZoomOut():
 
     # 6) Trigger Zoom Out and verify if the graph transform scale is decreased
     curr_m11, curr_m22 = graphics_view.transform().m11(), graphics_view.transform().m22()
-    zout = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomOut", "type": QtWidgets.QAction})
+    zout = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomOut", "type": QtGui.QAction})
     zout.trigger()
     result = helper.wait_for_condition(
         lambda: curr_m11 > graphics_view.transform().m11() and curr_m22 > graphics_view.transform().m22(), GENERAL_WAIT

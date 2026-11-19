@@ -72,7 +72,7 @@
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionSet.h>
-#include <qnamespace.h>
+#include <Qt>
 AZ_PUSH_DISABLE_WARNING(4267, "-Wconversion")
 #include <ISystem.h>
 AZ_POP_DISABLE_WARNING

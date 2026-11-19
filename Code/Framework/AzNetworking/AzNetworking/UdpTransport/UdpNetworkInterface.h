@@ -195,6 +195,7 @@ namespace AzNetworking
             TerminationEndpoint m_endpoint;
         };
         AZStd::vector<RemovedConnection> m_removedConnections;
+        AZ::TimeMs m_terminateWaitEndMs = AZ::Time::ZeroTimeMs; //!< Until this time StopListening keeps connections whose goodbye is unacked
 
         UdpPacketEncodingBuffer m_decryptBuffer;
         UdpPacketEncodingBuffer m_decompressBuffer;

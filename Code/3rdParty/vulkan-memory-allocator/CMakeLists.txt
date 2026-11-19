@@ -21,6 +21,11 @@ file(
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
 )
 
+file(
+    COPY "${vulkan-memory-allocator_SOURCE_DIR}/include/"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include/vma"
+)
+
 ly_add_target(
     NAME vulkan-memory-allocator HEADERONLY
     NAMESPACE 3rdParty

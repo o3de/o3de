@@ -1,0 +1,12 @@
+{
+    "PackageName": "vulkan-headers",
+    "Version": "1.4.368",
+    "URL": "https://github.com/KhronosGroup/Vulkan-Headers",
+    "License": "Apache-2.0 OR MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v1.4.368.tar.gz",
+        "Revision": "88487f687f3100ebe1d3559a8a34d971ee85b977",
+        "SHA256": "5c5c6f64fcce28a24cc934143a048707af036a858e4ed11d7f71fe016006ecda"
+    }
+}

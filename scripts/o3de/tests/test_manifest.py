@@ -345,7 +345,7 @@ class TestGetAllGems:
 
         def is_file(path : pathlib.Path) -> bool:
 
-            if path.match("*/NonGem/gem.json"):
+            if path.parent.name == 'NonGem' and path.name == 'gem.json':
                 return False
 
             return True

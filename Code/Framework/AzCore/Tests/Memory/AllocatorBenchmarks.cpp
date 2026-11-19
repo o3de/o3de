@@ -429,20 +429,20 @@ namespace Benchmark
     };
 
     // For non-threaded ranges, run 100, 400, 1600 amounts
-    static void RunRanges(benchmark::internal::Benchmark* b)
+    static void RunRanges(benchmark::Benchmark* b)
     {
         for (int i = 0; i < 6; i += 2)
         {
             b->Arg((1 << i) * 100);
         }
     }
-    static void RecordedRunRanges(benchmark::internal::Benchmark* b)
+    static void RecordedRunRanges(benchmark::Benchmark* b)
     {
         b->Iterations(1);
     }
 
     // For threaded ranges, run just 200, multi-threaded will already multiply by thread
-    static void ThreadedRunRanges(benchmark::internal::Benchmark* b)
+    static void ThreadedRunRanges(benchmark::Benchmark* b)
     {
         b->Arg(100);
     }
