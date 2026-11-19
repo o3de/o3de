@@ -74,9 +74,11 @@ namespace Multiplayer
                 });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
             m_endpointDisconnectedHandler = Multiplayer::EndpointDisconnectedEvent::Handler(
-                [this](Multiplayer::MultiplayerAgentType value)
+                [this](Multiplayer::MultiplayerAgentType value, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint)
                 {
                     TestEndpointDisconnectedEvent(value);
+                    m_lastDisconnectReason = reason;
+                    m_lastTerminationEndpoint = endpoint;
                 });
             m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             m_mpComponent->Activate();
@@ -170,6 +172,8 @@ namespace Multiplayer
 
         uint32_t m_connectionAcquiredCount = 0;
         uint32_t m_endpointDisconnectedCount = 0;
+        AzNetworking::DisconnectReason m_lastDisconnectReason = AzNetworking::DisconnectReason::None;
+        AzNetworking::TerminationEndpoint m_lastTerminationEndpoint = AzNetworking::TerminationEndpoint::Local;
 
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
         Multiplayer::EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler;
@@ -199,6 +203,18 @@ namespace Multiplayer
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
         EXPECT_EQ(m_endpointDisconnectedCount, 2);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestEndpointDisconnectedEventCarriesTheReasonAndEndpoint)
+    {
+        using NiceConnMock = ::testing::NiceMock<IMultiplayerConnectionMock>;
+        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
+        NiceConnMock connMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
+        m_mpComponent->OnDisconnect(&connMock, AzNetworking::DisconnectReason::HeartbeatTimeout, AzNetworking::TerminationEndpoint::Remote);
+
+        EXPECT_EQ(m_endpointDisconnectedCount, 1);
+        EXPECT_EQ(m_lastDisconnectReason, AzNetworking::DisconnectReason::HeartbeatTimeout);
+        EXPECT_EQ(m_lastTerminationEndpoint, AzNetworking::TerminationEndpoint::Remote);
     }
 
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)

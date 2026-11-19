@@ -53,6 +53,8 @@ AZ_DEFINE_BUDGET(MULTIPLAYER);
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::MultiplayerAgentType, "{53EA1938-5FFB-4305-B50A-D20730E8639B}");
+    AZ_TYPE_INFO_SPECIALIZE(AzNetworking::DisconnectReason, "{4D9E2A6B-7C31-4F58-9B0E-2A6C1D8F3E57}");
+    AZ_TYPE_INFO_SPECIALIZE(AzNetworking::TerminationEndpoint, "{8B1F5C3A-2E64-4D97-A0C8-6F3B9E1D7A24}");
 }
 
 
@@ -184,7 +186,8 @@ namespace Multiplayer
                 })
                     ->Attribute(
                         AZ::Script::Attributes::AzEventDescription,
-                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected Event", { "Type of Multiplayer Agent that disconnected" } })
+                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected Event",
+                            { "Type of Multiplayer Agent that disconnected", "Disconnect Reason", "Termination Endpoint" } })
                 ->Method("ClearAllEntities", []()
                 {
                     const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
@@ -1305,7 +1308,7 @@ namespace Multiplayer
             }
         }
 
-        m_endpointDisconnectedEvent.Signal(m_agentType);
+        m_endpointDisconnectedEvent.Signal(m_agentType, reason, endpoint);
 
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
