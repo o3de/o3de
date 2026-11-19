@@ -10,14 +10,18 @@
 
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
-#include <AzCore/PlatformIncl.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/parallel/thread.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Compressors/ASTCCompressor.h>
 #include <Processing/ImageFlags.h>
 #include <Processing/ImageToProcess.h>
 #include <Processing/PixelFormatInfo.h>
-
 
 namespace ImageProcessingAtom
 {
@@ -28,15 +32,12 @@ namespace ImageProcessingAtom
 
     bool ASTCCompressor::IsUncompressedPixelFormatSupported(EPixelFormat fmt)
     {
-        // astc encoder requires the compress input image or decompress output image to have four channels
+        // ASTC requires four components per uncompressed pixel.
         switch (fmt)
         {
-        // uint 8
         case ePixelFormat_R8G8B8A8:
         case ePixelFormat_R8G8B8X8:
-        // fp16
         case ePixelFormat_R16G16B16A16F:
-        // fp32
         case ePixelFormat_R32G32B32A32F:
             return true;
         default:
@@ -44,23 +45,25 @@ namespace ImageProcessingAtom
         }
     }
 
-    EPixelFormat ASTCCompressor::GetSuggestedUncompressedFormat([[maybe_unused]] EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const
+    EPixelFormat ASTCCompressor::GetSuggestedUncompressedFormat(
+        [[maybe_unused]] EPixelFormat compressedfmt,
+        EPixelFormat uncompressedfmt) const
     {
         if (IsUncompressedPixelFormatSupported(uncompressedfmt))
         {
             return uncompressedfmt;
         }
-        
-        auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(uncompressedfmt);
+
+        const auto* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(uncompressedfmt);
         switch (formatInfo->eSampleType)
         {
         case ESampleType::eSampleType_Half:
             return ePixelFormat_R16G16B16A16F;
         case ESampleType::eSampleType_Float:
             return ePixelFormat_R32G32B32A32F;
+        default:
+            return ePixelFormat_R8G8B8A8;
         }
-
-        return ePixelFormat_R8G8B8A8;
     }
 
     ColorSpace ASTCCompressor::GetSupportedColorSpace([[maybe_unused]] EPixelFormat compressFormat) const
@@ -78,55 +81,44 @@ namespace ImageProcessingAtom
         return true;
     }
 
-    astcenc_profile GetAstcProfile(bool isSrgb, bool isHDR)
+    static astcenc_profile GetAstcProfile(bool isSrgb, bool isHdr)
     {
-        // select profile depends on LDR or HDR, SRGB or Linear
-        //      ASTCENC_PRF_LDR
-        //      ASTCENC_PRF_LDR_SRGB
-        //      ASTCENC_PRF_HDR_RGB_LDR_A
-        //      ASTCENC_PRF_HDR
-        
-        astcenc_profile profile;
-        if (isHDR)
+        if (isHdr)
         {
-            // HDR is not support in core vulkan 1.1 for android.
-            // https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html
-            profile = isSrgb?ASTCENC_PRF_HDR_RGB_LDR_A:ASTCENC_PRF_HDR;
+            if (isSrgb)
+            {
+                return ASTCENC_PRF_HDR_RGB_LDR_A;
+            }
+
+            return ASTCENC_PRF_HDR;
         }
-        else
+
+        if (isSrgb)
         {
-            
-            profile = isSrgb?ASTCENC_PRF_LDR_SRGB:ASTCENC_PRF_LDR;
+            return ASTCENC_PRF_LDR_SRGB;
         }
-        return profile;
+
+        return ASTCENC_PRF_LDR;
     }
 
-    astcenc_type GetAstcDataType(EPixelFormat pixelFormat)
-    {        
-        auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
-        astcenc_type dataType = ASTCENC_TYPE_U8;
-
+    static astcenc_type GetAstcDataType(EPixelFormat pixelFormat)
+    {
+        const auto* formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
         switch (formatInfo->eSampleType)
         {
         case ESampleType::eSampleType_Uint8:
-            dataType = ASTCENC_TYPE_U8;
-            break;
+            return ASTCENC_TYPE_U8;
         case ESampleType::eSampleType_Half:
-            dataType = ASTCENC_TYPE_F16;
-            break;
+            return ASTCENC_TYPE_F16;
         case ESampleType::eSampleType_Float:
-            dataType = ASTCENC_TYPE_F32;
-            break;
+            return ASTCENC_TYPE_F32;
         default:
-            dataType = ASTCENC_TYPE_U8;
-            AZ_Assert(false, "Unsupport uncompressed format %s", formatInfo->szName);
-            break;
+            AZ_Assert(false, "Unsupported uncompressed format %s", formatInfo->szName);
+            return ASTCENC_TYPE_U8;
         }
-
-        return dataType;
     }
 
-    float GetAstcCompressQuality(ICompressor::EQuality quality)
+    static float GetAstcCompressQuality(ICompressor::EQuality quality)
     {
         switch (quality)
         {
@@ -141,218 +133,295 @@ namespace ImageProcessingAtom
         }
     }
 
-    IImageObjectPtr ASTCCompressor::CompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst, const CompressOption* compressOption) const
-    {
-        //validate input
-        EPixelFormat fmtSrc = srcImage->GetPixelFormat();
+    using AstcContextPtr = AZStd::unique_ptr<astcenc_context, decltype(&astcenc_context_free)>;
 
-        //src format need to be uncompressed and dst format need to compressed.
-        if (!IsUncompressedPixelFormatSupported(fmtSrc) || !IsCompressedPixelFormatSupported(fmtDst))
+    static AstcContextPtr CreateAstcContext(
+        astcenc_profile profile,
+        const PixelFormatInfo& format,
+        float quality,
+        AZ::u32 flags,
+        AZ::u32 threadCount)
+    {
+        astcenc_config config;
+        astcenc_error status = astcenc_config_init(profile, format.blockWidth, format.blockHeight, 1, quality, flags, &config);
+        if (status != ASTCENC_SUCCESS)
+        {
+            AZ_Error("Image Processing", false, "astcenc_config_init failed: %s", astcenc_get_error_string(status));
+            return AstcContextPtr(nullptr, astcenc_context_free);
+        }
+
+        astcenc_context* context = nullptr;
+        status = astcenc_context_alloc(&config, threadCount, &context, nullptr);
+        if (status != ASTCENC_SUCCESS)
+        {
+            AZ_Error("Image Processing", false, "astcenc_context_alloc failed: %s", astcenc_get_error_string(status));
+            return AstcContextPtr(nullptr, astcenc_context_free);
+        }
+
+        return AstcContextPtr(context, astcenc_context_free);
+    }
+
+    static AZ::u32 GetAstcWorkChunkCount(const PixelFormatInfo& format, AZ::u32 width, AZ::u32 height)
+    {
+        // astcenc 5.7.1 assigns compression work in groups of 16 blocks.
+        constexpr AZ::u32 blocksPerChunk = 16;
+        const AZ::u32 blockCount = AZ::DivideAndRoundUp(width, format.blockWidth)
+            * AZ::DivideAndRoundUp(height, format.blockHeight);
+        return AZ::DivideAndRoundUp(blockCount, blocksPerChunk);
+    }
+
+    IImageObjectPtr ASTCCompressor::CompressImage(
+        IImageObjectPtr srcImage, EPixelFormat fmtDst, const CompressOption* compressOption) const
+    {
+        if (!srcImage || srcImage->GetMipCount() == 0 || !IsCompressedPixelFormatSupported(fmtDst))
         {
             return nullptr;
         }
 
-        astcenc_swizzle swizzle {ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, compressOption->discardAlpha? ASTCENC_SWZ_1:ASTCENC_SWZ_A};
+        EPixelFormat fmtSrc = srcImage->GetPixelFormat();
+        if (!IsUncompressedPixelFormatSupported(fmtSrc))
+        {
+            return nullptr;
+        }
+
+        EQuality quality = eQuality_Normal;
+        astcenc_swizzle swizzle{ ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A };
+        if (compressOption)
+        {
+            quality = compressOption->compressQuality;
+            if (compressOption->discardAlpha)
+            {
+                swizzle.a = ASTCENC_SWZ_1;
+            }
+        }
+
         AZ::u32 flags = 0;
         if (srcImage->HasImageFlags(EIF_RenormalizedTexture))
         {
-            ImageToProcess imageToProcess(srcImage);
-            imageToProcess.ConvertFormatUncompressed(ePixelFormat_R8G8B8X8);
-            srcImage = imageToProcess.Get();
-            fmtSrc = srcImage->GetPixelFormat();
+            // The normal map swizzle only reads R and G. Byte formats already have the right values.
+            if (fmtSrc != ePixelFormat_R8G8B8A8 && fmtSrc != ePixelFormat_R8G8B8X8)
+            {
+                ImageToProcess imageToProcess(srcImage);
+                imageToProcess.ConvertFormatUncompressed(ePixelFormat_R8G8B8X8);
+                srcImage = imageToProcess.Get();
+                fmtSrc = srcImage->GetPixelFormat();
+            }
 
             flags = ASTCENC_FLG_MAP_NORMAL;
             swizzle = astcenc_swizzle{ ASTCENC_SWZ_R, ASTCENC_SWZ_R, ASTCENC_SWZ_R, ASTCENC_SWZ_G };
         }
 
-        auto dstFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtDst);
-
-        const float quality = GetAstcCompressQuality(compressOption->compressQuality);
-        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), srcImage->HasImageFlags(EIF_HDR));
-
-        astcenc_config config;
-        astcenc_error status;
-        status = astcenc_config_init(profile, dstFormatInfo->blockWidth, dstFormatInfo->blockHeight, 1, quality, flags, &config);
-
-        //ASTCENC_FLG_MAP_NORMAL
-        AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec config init failed: %s\n", astcenc_get_error_string(status));
-
-        // Create a context based on the configuration
-        astcenc_context* context;
-        AZ::u32 blockCount = AZ::DivideAndRoundUp(srcImage->GetWidth(0), dstFormatInfo->blockWidth) * AZ::DivideAndRoundUp(srcImage->GetHeight(0), dstFormatInfo->blockHeight);
-        AZ::u32 threadCount = AZStd::min(AZStd::thread::hardware_concurrency()/2, blockCount);
-        status = astcenc_context_alloc(&config, threadCount, &context, nullptr);
-        AZ_Assert( status == ASTCENC_SUCCESS, "ERROR: Codec context alloc failed: %s\n", astcenc_get_error_string(status));
-
-        AZ::Job* currentJob = AZ::JobContext::GetGlobalContext()->GetJobManager().GetCurrentJob();
-
-        const astcenc_type dataType =GetAstcDataType(fmtSrc);
-
-        // Compress the image for each mips
         IImageObjectPtr dstImage(srcImage->AllocateImage(fmtDst));
+        if (!dstImage)
+        {
+            return nullptr;
+        }
+
+        const auto* dstFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtDst);
+        const AZ::u32 topMipChunks = GetAstcWorkChunkCount(*dstFormatInfo, srcImage->GetWidth(0), srcImage->GetHeight(0));
+        const AZ::u32 threadCount = AZStd::max(1u, AZStd::min(AZStd::thread::hardware_concurrency() / 2, topMipChunks));
+
+        const astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), srcImage->HasImageFlags(EIF_HDR));
+        const auto context = CreateAstcContext(profile, *dstFormatInfo, GetAstcCompressQuality(quality), flags, threadCount);
+        if (!context)
+        {
+            return nullptr;
+        }
+
+        const astcenc_type dataType = GetAstcDataType(fmtSrc);
         const AZ::u32 dstMips = dstImage->GetMipCount();
+        AZStd::vector<astcenc_error> workerStatus;
+
         for (AZ::u32 mip = 0; mip < dstMips; ++mip)
         {
-            astcenc_image image;
-            image.dim_x = srcImage->GetWidth(mip);
-            image.dim_y = srcImage->GetHeight(mip);
-            image.dim_z = 1;
-            image.data_type = dataType;
-                        
             AZ::u8* srcMem;
             AZ::u32 srcPitch;
             srcImage->GetImagePointer(mip, srcMem, srcPitch);
-            image.data = reinterpret_cast<void**>(&srcMem);
-                        
+            void* slice = srcMem;
+            astcenc_image image{ srcImage->GetWidth(mip), srcImage->GetHeight(mip), 1, dataType, &slice };
+
             AZ::u8* dstMem;
             AZ::u32 dstPitch;
             dstImage->GetImagePointer(mip, dstMem, dstPitch);
-            AZ::u32 dataSize = dstImage->GetMipBufSize(mip);
+            const AZ::u32 dataSize = dstImage->GetMipBufSize(mip);
 
-            if (threadCount == 1)
+            const AZ::u32 mipChunks = GetAstcWorkChunkCount(*dstFormatInfo, image.dim_x, image.dim_y);
+            const AZ::u32 mipThreadCount = AZStd::max(1u, AZStd::min(threadCount, mipChunks));
+
+            astcenc_error status;
+            if (mipThreadCount == 1)
             {
-                astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, 0);
-                if (error != ASTCENC_SUCCESS)
-                {
-                    status = error;
-                }
+                status = astcenc_compress_image(context.get(), &image, &swizzle, dstMem, dataSize, 0);
             }
             else
             {
-                AZ::JobCompletion* completionJob = nullptr;
+                AZ::Job* currentJob = AZ::JobContext::GetGlobalContext()->GetJobManager().GetCurrentJob();
+                AZStd::optional<AZ::JobCompletion> completionJob;
                 if (!currentJob)
                 {
-                    completionJob = aznew AZ::JobCompletion();
+                    completionJob.emplace();
                 }
-                // Create jobs for each compression thread
-                for (AZ::u32 threadIdx = 0; threadIdx < threadCount; threadIdx++)
+
+                workerStatus.assign(mipThreadCount, ASTCENC_SUCCESS);
+                astcenc_context* const codecContext = context.get();
+                for (AZ::u32 threadIdx = 1; threadIdx < mipThreadCount; ++threadIdx)
                 {
-                    const auto jobLambda = [&status, context, &image, &swizzle, dstMem, dataSize, threadIdx]()
+                    const auto jobLambda = [&workerStatus, codecContext, &image, &swizzle, dstMem, dataSize, threadIdx]()
                     {
-                        astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, threadIdx);
-                        if (error != ASTCENC_SUCCESS)
-                        {
-                            status = error;
-                        }
+                        workerStatus[threadIdx] = astcenc_compress_image(codecContext, &image, &swizzle, dstMem, dataSize, threadIdx);
                     };
 
-                    AZ::Job* simulationJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
-
-                    // adds this job as child to current job if there is a current job
-                    // otherwise adds it as a dependent for the complete job
+                    AZ::Job* workerJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true);
                     if (currentJob)
                     {
-                        currentJob->StartAsChild(simulationJob);
+                        currentJob->StartAsChild(workerJob);
                     }
                     else
                     {
-                        simulationJob->SetDependent(completionJob);
-                        simulationJob->Start();
-                    }
-
-                    astcenc_error error = astcenc_compress_image(context, &image, &swizzle, dstMem, dataSize, threadIdx);
-                    if (error != ASTCENC_SUCCESS)
-                    {
-                        status = error;
+                        workerJob->SetDependent(&*completionJob);
+                        workerJob->Start();
                     }
                 }
-                
+
+                workerStatus[0] = astcenc_compress_image(context.get(), &image, &swizzle, dstMem, dataSize, 0);
                 if (currentJob)
                 {
                     currentJob->WaitForChildren();
                 }
-
-                if (completionJob)
+                else
                 {
                     completionJob->StartAndWaitForCompletion();
-                    delete completionJob;
-                    completionJob = nullptr;
+                }
+
+                status = ASTCENC_SUCCESS;
+                for (astcenc_error workerError : workerStatus)
+                {
+                    if (workerError != ASTCENC_SUCCESS)
+                    {
+                        status = workerError;
+                        break;
+                    }
                 }
             }
 
             if (status != ASTCENC_SUCCESS)
             {
                 AZ_Error("Image Processing", false, "ASTCCompressor::CompressImage failed: %s\n", astcenc_get_error_string(status));
-                astcenc_context_free(context);
                 return nullptr;
             }
 
-            // Need to reset to compress next mip
-            astcenc_compress_reset(context);
+            // The codec tracks completed work until the context is reset.
+            status = astcenc_compress_reset(context.get());
+            if (status != ASTCENC_SUCCESS)
+            {
+                AZ_Error("Image Processing", false, "astcenc_compress_reset failed: %s", astcenc_get_error_string(status));
+                return nullptr;
+            }
         }
-        astcenc_context_free(context);
 
         return dstImage;
     }
 
+    static bool HasHdrAstcBlocks(const IImageObject& image, astcenc_context* hdrContext)
+    {
+        constexpr AZ::u32 blockSize = 16;
+
+        // astcenc_get_block_info leaves is_hdr_block clear for constant blocks. Their dynamic range is stored in bit 9.
+        constexpr AZ::u8 constantBlockHdrFlag = 1 << 1;
+        astcenc_block_info blockInfo;
+
+        for (AZ::u32 mip = 0; mip < image.GetMipCount(); ++mip)
+        {
+            AZ::u8* data = nullptr;
+            AZ::u32 pitch = 0;
+            image.GetImagePointer(mip, data, pitch);
+            const AZ::u32 blockCount = image.GetMipBufSize(mip) / blockSize;
+            for (AZ::u32 blockIndex = 0; blockIndex < blockCount; ++blockIndex)
+            {
+                const AZ::u8* block = data + blockIndex * blockSize;
+                if (astcenc_get_block_info(hdrContext, block, &blockInfo) == ASTCENC_SUCCESS
+                    && (blockInfo.is_hdr_block || (blockInfo.is_constant_block && (block[1] & constantBlockHdrFlag))))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     IImageObjectPtr ASTCCompressor::DecompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst) const
     {
-        //validate input
-        EPixelFormat fmtSrc = srcImage->GetPixelFormat(); //compressed
-        auto srcFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtSrc);
+        if (!srcImage || srcImage->GetMipCount() == 0)
+        {
+            return nullptr;
+        }
 
+        const EPixelFormat fmtSrc = srcImage->GetPixelFormat();
         if (!IsCompressedPixelFormatSupported(fmtSrc) || !IsUncompressedPixelFormatSupported(fmtDst))
         {
             return nullptr;
         }
 
-        const float quality = ASTCENC_PRE_MEDIUM;
-        astcenc_swizzle swizzle {ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A};
+        astcenc_swizzle swizzle{ ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A };
         if (srcImage->HasImageFlags(EIF_RenormalizedTexture))
         {
-            swizzle = astcenc_swizzle{ASTCENC_SWZ_R, ASTCENC_SWZ_A, ASTCENC_SWZ_Z, ASTCENC_SWZ_1};
+            swizzle = astcenc_swizzle{ ASTCENC_SWZ_R, ASTCENC_SWZ_A, ASTCENC_SWZ_Z, ASTCENC_SWZ_1 };
         }
 
-        astcenc_config config;
-        astcenc_error status;
-        astcenc_profile profile = GetAstcProfile(srcImage->HasImageFlags(EIF_SRGBRead), fmtDst);
-        AZ::u32 flags = ASTCENC_FLG_DECOMPRESS_ONLY;
-        status = astcenc_config_init(profile, srcFormatInfo->blockWidth, srcFormatInfo->blockHeight, 1, quality, flags, &config);
+        const auto* srcFormatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(fmtSrc);
+        const bool isSrgb = srcImage->HasImageFlags(EIF_SRGBRead);
+        const bool hasHdrFlag = srcImage->HasImageFlags(EIF_HDR);
 
-        //ASTCENC_FLG_MAP_NORMAL
-        AZ_Assert( status == ASTCENC_SUCCESS, "astcenc_config_init failed: %s\n", astcenc_get_error_string(status));
-
-        // Create a context based on the configuration
-        const AZ::u32 threadCount = 1; // Decompress function doesn't support multiple threads
-        astcenc_context* context;
-        status = astcenc_context_alloc(&config, threadCount, &context, nullptr);
-        AZ_Assert( status == ASTCENC_SUCCESS, "astcenc_context_alloc failed: %s\n", astcenc_get_error_string(status));
-
-        astcenc_type dataType =GetAstcDataType(fmtDst);
-
-        // Decompress the image for each mips
-        IImageObjectPtr dstImage(srcImage->AllocateImage(fmtDst));
-        const AZ::u32 dstMips = dstImage->GetMipCount();
-        for (AZ::u32 mip = 0; mip < dstMips; ++mip)
+        // Legacy decoding accepted HDR for RGBX8 and float output. RGBA8 remains the fast preview path.
+        const bool checkLegacyHdr = isSrgb && !hasHdrFlag && fmtDst != ePixelFormat_R8G8B8A8;
+        // Linear HDR can decode linear LDR blocks. Reloaded sRGB assets can lack the HDR flag.
+        const astcenc_profile profile = GetAstcProfile(isSrgb, !isSrgb || hasHdrFlag || checkLegacyHdr);
+        auto context = CreateAstcContext(profile, *srcFormatInfo, ASTCENC_PRE_MEDIUM, ASTCENC_FLG_DECOMPRESS_ONLY, 1);
+        if (!context)
         {
-            astcenc_image image;
-            image.dim_x = srcImage->GetWidth(mip);
-            image.dim_y = srcImage->GetHeight(mip);
-            image.dim_z = 1;
-            image.data_type = dataType;
-                        
-            AZ::u8* srcMem;
-            AZ::u32 srcPitch;
-            srcImage->GetImagePointer(mip, srcMem, srcPitch);
-            AZ::u32 srcDataSize = srcImage->GetMipBufSize(mip);
-                        
-            AZ::u8* dstMem;
-            AZ::u32 dstPitch;
-            dstImage->GetImagePointer(mip, dstMem, dstPitch);
-            image.data = reinterpret_cast<void**>(&dstMem);
+            return nullptr;
+        }
 
-            status = astcenc_decompress_image(context, srcMem, srcDataSize, &image, &swizzle, 0);
-
-            if (status != ASTCENC_SUCCESS)
+        if (checkLegacyHdr && !HasHdrAstcBlocks(*srcImage, context.get()))
+        {
+            context.reset();
+            context = CreateAstcContext(ASTCENC_PRF_LDR_SRGB, *srcFormatInfo, ASTCENC_PRE_MEDIUM, ASTCENC_FLG_DECOMPRESS_ONLY, 1);
+            if (!context)
             {
-                AZ_Error("Image Processing", false, "ASTCCompressor::DecompressImage failed: %s\n", astcenc_get_error_string(status));
-                astcenc_context_free(context);
                 return nullptr;
             }
         }
 
-        astcenc_context_free(context);
+        IImageObjectPtr dstImage(srcImage->AllocateImage(fmtDst));
+        if (!dstImage)
+        {
+            return nullptr;
+        }
+
+        const astcenc_type dataType = GetAstcDataType(fmtDst);
+        const AZ::u32 dstMips = dstImage->GetMipCount();
+        for (AZ::u32 mip = 0; mip < dstMips; ++mip)
+        {
+            AZ::u8* srcMem;
+            AZ::u32 srcPitch;
+            srcImage->GetImagePointer(mip, srcMem, srcPitch);
+            const AZ::u32 srcDataSize = srcImage->GetMipBufSize(mip);
+
+            AZ::u8* dstMem;
+            AZ::u32 dstPitch;
+            dstImage->GetImagePointer(mip, dstMem, dstPitch);
+            void* slice = dstMem;
+            astcenc_image image{ srcImage->GetWidth(mip), srcImage->GetHeight(mip), 1, dataType, &slice };
+
+            const astcenc_error status = astcenc_decompress_image(context.get(), srcMem, srcDataSize, &image, &swizzle, 0);
+            if (status != ASTCENC_SUCCESS)
+            {
+                AZ_Error("Image Processing", false, "ASTCCompressor::DecompressImage failed: %s\n", astcenc_get_error_string(status));
+                return nullptr;
+            }
+        }
 
         return dstImage;
     }
-} //namespace ImageProcessingAtom
+} // namespace ImageProcessingAtom

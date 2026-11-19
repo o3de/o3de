@@ -17,6 +17,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -46,6 +47,7 @@
 #include <Compressors/Compressor.h>
 
 #include <Converters/Cubemap.h>
+#include <Converters/PixelOperation.h>
 
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/CubemapSettings.h>
@@ -931,6 +933,10 @@ namespace UnitTest
                 ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
                 ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
                 ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
+                const auto* format = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
+                EXPECT_EQ(
+                    imageToProcess.Get()->GetMipBufSize(0),
+                    16 * AZ::DivideAndRoundUp(srcImage->GetWidth(0), format->blockWidth) * AZ::DivideAndRoundUp(srcImage->GetHeight(0), format->blockHeight));
 
                 // convert back to an uncompressed format and expect it will be successful
                 imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
@@ -966,38 +972,257 @@ namespace UnitTest
         SaveImageToFile(imageToProcess.Get(), "ASTC_HDR", 1);
     }
     
+    TEST_F(ImageProcessingTest, Test_AstcMipColorsAndAlpha)
+    {
+        constexpr EPixelFormat rgba = ePixelFormat_R8G8B8A8;
+        constexpr EPixelFormat astc = ePixelFormat_ASTC_4x4;
+        for (uint32_t width : { 16u, 67u })
+        {
+            for (bool discardAlpha : { false, true })
+            {
+                SCOPED_TRACE(width);
+                SCOPED_TRACE(discardAlpha);
+                uint32_t height = 16;
+                if (width > 16)
+                {
+                    height = 65;
+                }
+                IImageObjectPtr source(IImageObject::CreateImage(width, height, 6, rgba));
+                ColorSpace colorSpace = ColorSpace::linear;
+                if (discardAlpha)
+                {
+                    source->AddImageFlags(EIF_SRGBRead);
+                    colorSpace = ColorSpace::sRGB;
+                }
+                for (uint32_t mip = 0; mip < source->GetMipCount(); ++mip)
+                {
+                    uint8_t* pixels{};
+                    uint32_t pitch{};
+                    source->GetImagePointer(mip, pixels, pitch);
+                    for (uint32_t offset = 0; offset < source->GetMipBufSize(mip); offset += 4)
+                    {
+                        pixels[offset] = static_cast<uint8_t>(17 + 31 * mip);
+                        pixels[offset + 1] = 92;
+                        pixels[offset + 2] = 201;
+                        pixels[offset + 3] = 63;
+                    }
+                }
+
+                auto compressor = ICompressor::FindCompressor(astc, colorSpace, true);
+                ASSERT_TRUE(compressor);
+                ICompressor::CompressOption option;
+                option.discardAlpha = discardAlpha;
+                const ICompressor::CompressOption* compressOption = nullptr;
+                if (discardAlpha)
+                {
+                    compressOption = &option;
+                }
+
+                const auto compressed = compressor->CompressImage(source, astc, compressOption);
+                ASSERT_TRUE(compressed);
+                const uint32_t maxMipCount = CPixelFormats::GetInstance().ComputeMaxMipCount(astc, width, height);
+                ASSERT_EQ(compressed->GetMipCount(), maxMipCount);
+                EXPECT_EQ(compressed->HasImageFlags(EIF_SRGBRead), discardAlpha);
+
+                IImageObjectPtr compressedFromJob;
+                AZStd::unique_ptr<AZ::Job> job(AZ::CreateJobFunction(
+                    [&]
+                    {
+                        compressedFromJob = compressor->CompressImage(source, astc, &option);
+                    },
+                    false,
+                    m_jobContext.get()));
+                job->StartAndWaitForCompletion();
+                ASSERT_TRUE(compressedFromJob);
+                EXPECT_TRUE(compressed->CompareImage(compressedFromJob));
+
+                auto decoded = compressor->DecompressImage(compressed, rgba);
+                ASSERT_TRUE(decoded);
+                ASSERT_EQ(decoded->GetMipCount(), maxMipCount);
+                uint8_t expectedAlpha = 63;
+                if (discardAlpha)
+                {
+                    expectedAlpha = 255;
+                }
+                for (uint32_t mip = 0; mip < decoded->GetMipCount(); ++mip)
+                {
+                    SCOPED_TRACE(mip);
+                    ASSERT_EQ(decoded->GetWidth(mip), source->GetWidth(mip));
+                    ASSERT_EQ(decoded->GetHeight(mip), source->GetHeight(mip));
+                    uint8_t* pixels{};
+                    uint32_t pitch{};
+                    decoded->GetImagePointer(mip, pixels, pitch);
+                    for (uint32_t offset = 0; offset < decoded->GetMipBufSize(mip); offset += 4)
+                    {
+                        EXPECT_NEAR(pixels[offset], 17 + 31 * mip, 1);
+                        EXPECT_NEAR(pixels[offset + 1], 92, 1);
+                        EXPECT_NEAR(pixels[offset + 2], 201, 1);
+                        EXPECT_NEAR(pixels[offset + 3], expectedAlpha, 1);
+                    }
+                }
+            }
+        }
+    }
+
+    TEST_F(ImageProcessingTest, Test_AstcHdrAndNormalPixels)
+    {
+        constexpr EPixelFormat astc = ePixelFormat_ASTC_4x4;
+        auto compressor = ICompressor::FindCompressor(astc, ColorSpace::linear, true);
+        ASSERT_TRUE(compressor);
+        ICompressor::CompressOption option;
+        for (const EPixelFormat format : { ePixelFormat_R16G16B16A16F, ePixelFormat_R32G32B32A32F, ePixelFormat_R8G8B8A8 })
+        {
+            SCOPED_TRACE(format);
+            const bool isHdr = format != ePixelFormat_R8G8B8A8;
+            constexpr uint32_t size = 16;
+            IImageObjectPtr source(IImageObject::CreateImage(size, size, 1, format));
+            AZ::Color expected(0.68f, 0.30f, 0.921f, 1.0f);
+            if (isHdr)
+            {
+                source->AddImageFlags(EIF_HDR);
+                expected = AZ::Color(4.0f, 2.0f, 0.5f, 0.25f);
+            }
+            else
+            {
+                source->AddImageFlags(EIF_RenormalizedTexture);
+            }
+            const auto pixelOperation = CreatePixelOperation(format);
+            ASSERT_TRUE(pixelOperation);
+            const uint32_t stride = source->GetMipBufSize(0) / (size * size);
+            uint8_t* pixels{};
+            uint32_t pitch{};
+            source->GetImagePointer(0, pixels, pitch);
+            for (uint32_t offset = 0; offset < source->GetMipBufSize(0); offset += stride)
+            {
+                pixelOperation->SetRGBA(pixels + offset, expected.GetR(), expected.GetG(), expected.GetB(), expected.GetA());
+            }
+            auto compressed = compressor->CompressImage(source, astc, &option);
+            ASSERT_TRUE(compressed);
+            if (isHdr)
+            {
+                compressed->RemoveImageFlags(EIF_HDR);
+            }
+            auto decoded = compressor->DecompressImage(compressed, format);
+            ASSERT_TRUE(decoded);
+            decoded->GetImagePointer(0, pixels, pitch);
+            for (uint32_t offset = 0; offset < decoded->GetMipBufSize(0); offset += stride)
+            {
+                float r{}, g{}, b{}, a{};
+                pixelOperation->GetRGBA(pixels + offset, r, g, b, a);
+                EXPECT_NEAR(r, expected.GetR(), 0.015f);
+                EXPECT_NEAR(g, expected.GetG(), 0.015f);
+                EXPECT_NEAR(b, expected.GetB(), 0.015f);
+                EXPECT_NEAR(a, expected.GetA(), 0.015f);
+            }
+        }
+    }
+
+    TEST_F(ImageProcessingTest, Test_AstcSrgbDecodePreservesLegacyHdrBlocks)
+    {
+        constexpr EPixelFormat astc = ePixelFormat_ASTC_4x4;
+        constexpr uint32_t imageSize = 16;
+        struct DecodeCase
+        {
+            const char* m_name;
+            std::array<uint8_t, 16> m_block;
+            float m_expectedRed;
+            float m_expectedBlue;
+            float m_tolerance;
+        };
+        const DecodeCase cases[] = {
+            { "v3.2 constant FP16",
+                { 0xFC, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x44, 0x00, 0x40, 0x00, 0x38, 0x00, 0x3C },
+                4.0f, 0.5f, 0.001f },
+            { "v3.2 nonconstant HDR RGB with LDR alpha",
+                { 0x33, 0x62, 0x5D, 0x1C, 0x5D, 0xDD, 0xE6, 0x66, 0xF0, 0x57, 0x8B, 0xA3, 0x78, 0x19, 0x0D, 0x03 },
+                4.0f, 0.5f, 0.05f },
+            // LDR sRGB uses the high byte of each UNORM16 component before converting to float.
+            { "LDR sRGB",
+                { 0xFC, 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0x34, 0x22, 0x22, 0x33, 0x33, 0xFF, 0xFF },
+                52.0f / 255.0f, 51.0f / 255.0f, 0.0005f },
+        };
+
+        const auto compressor = ICompressor::FindCompressor(astc, ColorSpace::sRGB, false);
+        ASSERT_TRUE(compressor);
+        for (const DecodeCase& testCase : cases)
+        {
+            SCOPED_TRACE(testCase.m_name);
+            IImageObjectPtr source(IImageObject::CreateImage(imageSize, imageSize, 1, astc));
+            source->AddImageFlags(EIF_SRGBRead);
+            uint8_t* pixels{};
+            uint32_t pitch{};
+            source->GetImagePointer(0, pixels, pitch);
+            for (size_t offset = 0; offset < source->GetMipBufSize(0); offset += testCase.m_block.size())
+            {
+                AZStd::copy(testCase.m_block.begin(), testCase.m_block.end(), pixels + offset);
+            }
+
+            for (EPixelFormat format : { ePixelFormat_R16G16B16A16F, ePixelFormat_R32G32B32A32F, ePixelFormat_R8G8B8X8 })
+            {
+                SCOPED_TRACE(format);
+                const auto pixelOperation = CreatePixelOperation(format);
+                ASSERT_TRUE(pixelOperation);
+                const auto decoded = compressor->DecompressImage(source, format);
+                ASSERT_TRUE(decoded);
+                decoded->GetImagePointer(0, pixels, pitch);
+                float r{}, g{}, b{}, a{};
+                pixelOperation->GetRGBA(pixels, r, g, b, a);
+
+                float expectedRed = testCase.m_expectedRed;
+                float tolerance = testCase.m_tolerance;
+                if (format == ePixelFormat_R8G8B8X8)
+                {
+                    expectedRed = AZStd::min(expectedRed, 1.0f);
+                    tolerance = AZStd::max(tolerance, 1.0f / 255.0f);
+                }
+                EXPECT_NEAR(r, expectedRed, tolerance);
+                EXPECT_NEAR(b, testCase.m_expectedBlue, tolerance);
+            }
+        }
+    }
+
     TEST_F(ImageProcessingTest, Test_AstcNormalPreset_Success)
     {
-        // Normal.preset which uses ASTC as output format
-        // This test compress a normal texture and its mipmaps
-
-        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
-        ASSERT_TRUE(outcome.IsSuccess());
-
-        AZStd::string inputFile;
-        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
-
-        inputFile = m_imagFileNameMap[Image_512x512_normal_tiff];
-        IImageObjectPtr srcImage = IImageObjectPtr(LoadImageFromFile(inputFile));
-
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "ios", outProducts, m_context.get());
-
-        const PresetSettings* preset = &process->GetInputDesc()->m_presetSetting;
-
-        if (process != nullptr)
+        ASSERT_TRUE(BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native()).IsSuccess());
+        const auto& inputFile = m_imagFileNameMap[Image_512x512_normal_tiff];
+        const IImageObjectPtr source(LoadImageFromFile(inputFile));
+        ASSERT_TRUE(source);
+        for (const char* platform : { "android", "ios" })
         {
+            SCOPED_TRACE(platform);
+            AZStd::vector<AssetBuilderSDK::JobProduct> products;
+            AZStd::unique_ptr<ImageConvertProcess> process(
+                CreateImageConvertProcess(inputFile, m_outputFolder.Native(), platform, products, m_context.get()));
+            ASSERT_TRUE(process);
             process->ProcessAll();
-
-            //get process result
             ASSERT_TRUE(process->IsSucceed());
-            auto outputImage = process->GetOutputImage();
-            ASSERT_TRUE(outputImage->GetPixelFormat() == preset->m_pixelFormat);
-            ASSERT_TRUE(outputImage->GetWidth(0) == srcImage->GetWidth(0));
-            ASSERT_TRUE(outputImage->GetHeight(0) == srcImage->GetHeight(0));
-            
-            SaveImageToFile(outputImage, "ASTC_Normal", 10);
+            const auto output = process->GetOutputImage();
+            ASSERT_TRUE(output);
+            ASSERT_EQ(output->GetPixelFormat(), ePixelFormat_ASTC_4x4);
+            ASSERT_EQ(output->GetWidth(0), source->GetWidth(0));
+            ASSERT_EQ(output->GetHeight(0), source->GetHeight(0));
 
-            delete process;
+            process->GetAppendOutputProducts(products);
+            using AZ::RPI::StreamingImageAsset;
+            const auto product = AZStd::find_if(
+                products.begin(),
+                products.end(),
+                [](const AssetBuilderSDK::JobProduct& item)
+                {
+                    return item.m_productAssetType == azrtti_typeid<StreamingImageAsset>();
+                });
+            ASSERT_NE(product, products.end());
+            EXPECT_EQ(product->m_productSubID, StreamingImageAsset::GetImageAssetSubId());
+            const AZ::ObjectStream::FilterDescriptor filter(AZ::Data::AssetFilterNoAssetLoading);
+            const AZStd::unique_ptr<StreamingImageAsset> image(
+                AZ::Utils::LoadObjectFromFile<StreamingImageAsset>(product->m_productFileName, m_context.get(), filter));
+            ASSERT_TRUE(image);
+            const auto& descriptor = image->GetImageDescriptor();
+            EXPECT_EQ(descriptor.m_format, AZ::RHI::Format::ASTC_4x4_UNORM);
+            EXPECT_EQ(descriptor.m_size.m_width, output->GetWidth(0));
+            EXPECT_EQ(descriptor.m_size.m_height, output->GetHeight(0));
+            EXPECT_EQ(descriptor.m_mipLevels, output->GetMipCount());
+            EXPECT_EQ(image->GetTotalImageDataSize(), output->GetTextureMemory());
         }
     }
 
