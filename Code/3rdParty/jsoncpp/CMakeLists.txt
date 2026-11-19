@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(jsoncpp
-    VERSION "1.6.2"
+    VERSION "1.9.8"
     LICENSE "Public Domain OR MIT"
-    URL "https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.6.2.tar.gz"
-    URL_HASH "c40e5a2583df633b904525305bda40b622d9971fee1ece7ce48ca723a4907d36"
+    URL "https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.8.tar.gz"
+    URL_HASH "51828cf3574281d2b79ec2a1c56a9e4c20cc1103711321ea96384cffb8d2d904"
     GIT "https://github.com/open-source-parsers/jsoncpp.git"
-    GIT_HASH "24682e37bf1425455b45e7db69dbdbcd30aec7dd"
+    GIT_HASH "8519b8381f3c741ad1421f88237b1deda0b11412"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(jsoncpp)
