@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="GrowSelection.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="12.13"
+     inkscape:cx="49.95878"
+     inkscape:cy="56.595218"
+     inkscape:window-width="2560"
+     inkscape:window-height="1494"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <title
+     id="title1">Grow Selection</title>
+  <rect
+     x="3.1070642"
+     y="3.1580124"
+     width="18.38587"
+     height="18.385872"
+     fill="none"
+     stroke="#67c7e8"
+     stroke-width="1.23473"
+     stroke-dasharray="2.2, 1.6"
+     stroke-opacity="0.8"
+     id="rect1" />
+  <rect
+     x="9.130022"
+     y="9.1809702"
+     width="6.3399553"
+     height="6.3399558"
+     fill="#67c7e8"
+     fill-opacity="0.55"
+     stroke="#67c7e8"
+     stroke-width="1.44052"
+     stroke-linejoin="round"
+     id="rect2" />
+  <path
+     d="M 7.967697,8.0186451 5.2203829,5.271331 M 16.632303,8.0186451 19.379617,5.271331 m -11.41192,11.41192 -2.7473141,2.747314 m 11.4119201,-2.747314 2.747314,2.747314"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.54342"
+     stroke-linecap="round"
+     id="path2" />
+  <path
+     d="M 5.0090511,7.3846495 V 5.0599992 h 2.3246504 m 9.9325975,0 h 2.324649 V 7.3846495 M 5.0090511,17.317247 v 2.32465 h 2.3246504 m 9.9325975,0 h 2.324649 v -2.32465"
+     fill="none"
+     stroke="#dadada"
+     stroke-width="1.33763"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path3" />
+</svg>

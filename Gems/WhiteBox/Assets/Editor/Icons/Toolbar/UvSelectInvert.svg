@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <title>Invert Selection</title>
+  <path d="M 5.3,5.3 H 19.3 V 19.3 H 5.3 Z M 12.3,5.3 V 19.3 M 5.3,12.3 H 19.3" fill="none" stroke="#dadada" stroke-width="0.6" stroke-opacity="0.5" />
+  <circle cx="5.3" cy="5.3" r="2.2" fill="#67c7e8" />
+  <circle cx="12.3" cy="5.3" r="1.8" fill="none" stroke="#dadada" stroke-width="1.1" />
+  <circle cx="19.3" cy="5.3" r="2.2" fill="#67c7e8" />
+  <circle cx="5.3" cy="12.3" r="1.8" fill="none" stroke="#dadada" stroke-width="1.1" />
+  <circle cx="12.3" cy="12.3" r="2.2" fill="#67c7e8" />
+  <circle cx="19.3" cy="12.3" r="1.8" fill="none" stroke="#dadada" stroke-width="1.1" />
+  <circle cx="5.3" cy="19.3" r="2.2" fill="#67c7e8" />
+  <circle cx="12.3" cy="19.3" r="1.8" fill="none" stroke="#dadada" stroke-width="1.1" />
+  <circle cx="19.3" cy="19.3" r="2.2" fill="#67c7e8" />
+</svg>

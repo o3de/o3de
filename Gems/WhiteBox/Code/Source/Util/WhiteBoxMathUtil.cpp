@@ -11,9 +11,28 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/algorithm.h>
 
 namespace WhiteBox
 {
+    bool TryCalculateTriangleNormal(const AZ::Vector3& edge0, const AZ::Vector3& edge1, AZ::Vector3& normal)
+    {
+        normal = AZ::Vector3::CreateZero();
+        if (!edge0.IsFinite() || !edge1.IsFinite()) { return false; }
+        const float scale = AZStd::max(edge0.GetAbs().GetMaxElement(), edge1.GetAbs().GetMaxElement());
+        if (!(scale > 0.0f)) { return false; }
+        // Normalize the scale before taking the cross product: a fixed world
+        // area cutoff removes valid fine bevels, and can overflow on large meshes.
+        const auto a = edge0 / scale;
+        const auto b = edge1 / scale;
+        const auto cross = a.Cross(b);
+        const float lengthProduct = a.GetLengthSq() * b.GetLengthSq();
+        constexpr float collinearSinSquared = 1e-12f;
+        if (!(cross.GetLengthSq() > collinearSinSquared * lengthProduct)) { return false; }
+        normal = cross.GetNormalized();
+        return normal.IsFinite();
+    }
+
     //! Reference: Real-Time Collision Detection - 5.3.7 Intersecting Ray or Segment Against Cylinder
     //! @note the parameters and style here are copied verbatim from the book
     //!  to make comparison and bug finding trivial.

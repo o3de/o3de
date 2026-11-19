@@ -1,0 +1,8 @@
+{
+    "materialType": "WhiteBoxWireframe.materialtype",
+    "materialTypeVersion": 3,
+    "propertyValues": {
+        "settings.glowStrength": 1.0,
+        "settings.gridThickness": 1.5
+    }
+}

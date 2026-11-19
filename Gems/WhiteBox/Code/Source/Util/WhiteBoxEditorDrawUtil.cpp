@@ -63,7 +63,8 @@ namespace WhiteBox
         const AZ::Transform& worldFromLocal,
         const AzFramework::ViewportInfo& viewportInfo,
         const AZStd::span<Api::VertexHandle>& verts,
-        const AZ::Color& color)
+        const AZ::Color& color,
+        const bool hovered)
     {
         debugDisplay.SetColor(color);
         for (auto& vert : verts)
@@ -71,7 +72,8 @@ namespace WhiteBox
             const auto vertPos = Api::VertexPosition(*mesh, vert);
             const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
             const float radius =
-                cl_whiteBoxVertexManipulatorSize * AzToolsFramework::CalculateScreenToWorldMultiplier(worldFromLocal.TransformPoint(vertPos), cameraState);
+                (hovered ? cl_whiteBoxVertexHoverSize : cl_whiteBoxVertexDrawSize) *
+                AzToolsFramework::CalculateScreenToWorldMultiplier(worldFromLocal.TransformPoint(vertPos), cameraState);
 
             debugDisplay.DrawBall(vertPos, radius);
         }

@@ -1,0 +1,55 @@
+{
+    "description": "White Box wireframe: edges drawn by a geometry shader over or instead of the shaded mesh",
+    "version": 3,
+    "shaders": [
+        {
+            "file": "./WhiteBoxWireframe.shader"
+        }
+    ],
+    "propertyLayout": {
+        "groups": [
+            {
+                "id": "settings",
+                "displayName": "Settings"
+            }
+        ],
+        "properties": {
+            "settings": [
+                {
+                    "id": "gridColor",
+                    "displayName": "Grid Color",
+                    "type": "Color",
+                    "defaultValue": [0.0, 0.0, 0.0],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_gridColor"
+                    }
+                },
+                {
+                    "id": "gridThickness",
+                    "displayName": "Line Width (pixels)",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.25,
+                    "max": 8.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_gridThickness"
+                    }
+                },
+                {
+                    "id": "glowStrength",
+                    "displayName": "Glow Strength",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "min": 0.0,
+                    "max": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_glowStrength"
+                    }
+                }
+            ]
+        }
+    }
+} 

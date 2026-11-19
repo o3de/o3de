@@ -9,6 +9,7 @@
 #include "Util/WhiteBoxTextureUtil.h"
 #include "WhiteBoxTestFixtures.h"
 #include "Rendering/Atom/WhiteBoxMeshAtomData.h"
+#include "Rendering/Atom/TangentSpaceHelper.h"
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -279,6 +280,24 @@ namespace UnitTest
         ::testing::Combine(
             ::testing::ValuesIn(Noise), ::testing::ValuesIn(Source),
             ::testing::Values(Rotation::Identity, Rotation::XZAxis)));
+
+    TEST(WhiteBoxRenderTest, SmallTrianglesKeepTheirActualTangentSpaceNormal)
+    {
+        for (const float scale : {1.0f, 0.001f, 0.00001f})
+        {
+            WhiteBox::AZTangentSpaceCalculation calculation;
+            calculation.Calculate(
+                {AZ::Vector3::CreateZero(), AZ::Vector3(0, scale, 0), AZ::Vector3(0, 0, scale)},
+                {0, 1, 2}, {AZ::Vector2(0, 0), AZ::Vector2(1, 0), AZ::Vector2(0, 1)});
+            ASSERT_EQ(calculation.GetBaseCount(), 3);
+            for (AZ::u32 vertex = 0; vertex < 3; ++vertex)
+            {
+                EXPECT_TRUE(calculation.GetNormal(vertex).IsClose(AZ::Vector3::CreateAxisX(), 1e-5f));
+                EXPECT_TRUE(calculation.GetTangent(vertex).IsClose(AZ::Vector3::CreateAxisY(), 1e-5f));
+                EXPECT_TRUE(calculation.GetBitangent(vertex).IsClose(AZ::Vector3::CreateAxisZ(), 1e-5f));
+            }
+        }
+    }
 
     TEST(WhiteBoxRenderTest, WhiteBoxMeshAtomDataAabbIsInitializedToNull)
     {

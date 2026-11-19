@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup WireframeDrawSrg : SRG_PerDraw
+{
+}
+
+ShaderResourceGroup WireframeSrg : SRG_PerMaterial
+{
+    float3 m_gridColor;
+    float m_gridThickness;
+    float m_glowStrength;
+}
+
+struct VertexShaderInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+};
+
+struct VertexShaderOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_worldPos : TEXCOORD0;
+    float3 m_normal : TEXCOORD1;
+};
+
+struct GeometryOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_worldPos : TEXCOORD0;
+    float3 m_normal : TEXCOORD1;
+    float3 m_barycentric : TEXCOORD2;
+};
+
+VertexShaderOutput MainVS(VertexShaderInput IN, uint instanceId : SV_InstanceID)
+{
+    VertexShaderOutput OUT;
+    
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    float4 worldPosition4 = mul(objectToWorld, float4(IN.m_position, 1.0));
+    float3 worldPosition = worldPosition4.xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition4);
+    // Pull edges slightly toward the camera (reverse depth) so they win the depth test against the shaded mesh.
+    OUT.m_position.z *= 1.0 + 5e-4;
+    OUT.m_worldPos = worldPosition;
+    OUT.m_normal = mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.m_normal);
+    
+    return OUT;
+}
+
+[maxvertexcount(3)]
+void MainGS(triangle VertexShaderOutput IN[3], inout TriangleStream<GeometryOutput> triStream)
+{
+    const float3 barycentrics[3] = {
+        float3(1.0, 0.0, 0.0),
+        float3(0.0, 1.0, 0.0),
+        float3(0.0, 0.0, 1.0)
+    };
+
+    [unroll]
+    for (uint i = 0; i < 3; ++i)
+    {
+        GeometryOutput OUT;
+        OUT.m_position = IN[i].m_position;
+        OUT.m_worldPos = IN[i].m_worldPos;
+        OUT.m_normal = IN[i].m_normal;
+        OUT.m_barycentric = barycentrics[i];
+        triStream.Append(OUT);
+    }
+}
+
+ForwardPassOutput MainPS(GeometryOutput IN)
+{
+    ForwardPassOutput OUT;
+    
+    // Line width in pixels: the barycentric coordinate grows by fwidth() per pixel, so scaling the threshold by it
+    // keeps the width constant on screen instead of growing with the triangle.
+    const float3 barycentric = IN.m_barycentric;
+    const float3 pixelStep = fwidth(barycentric);
+    const float3 edgeDistance = smoothstep(float3(0.0, 0.0, 0.0), pixelStep * WireframeSrg::m_gridThickness, barycentric);
+    const float alpha = 1.0 - min(min(edgeDistance.x, edgeDistance.y), edgeDistance.z);
+    clip(alpha - 1e-3);
+
+    float3 edgeColor = WireframeSrg::m_gridColor;
+    float emissiveFactor = WireframeSrg::m_glowStrength * alpha;
+    float3 emission = edgeColor * emissiveFactor;
+    
+    OUT.m_diffuseColor = float4(edgeColor, alpha);
+    OUT.m_specularColor = float4(emission, alpha);
+    
+    return OUT;
+} 

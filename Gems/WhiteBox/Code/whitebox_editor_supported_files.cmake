@@ -10,13 +10,74 @@ set(FILES
     Include/WhiteBox/EditorWhiteBoxComponentBus.h
     Include/WhiteBox/WhiteBoxToolApi.h
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
+    Source/EditorWhiteBoxAuthoring.cpp
+    Source/EditorWhiteBoxAuthoring.h
+    Source/EditorWhiteBoxAuthoringBus.h
+    Source/EditorWhiteBoxAuthoringReflection.cpp
     Source/EditorWhiteBoxComponent.cpp
     Source/EditorWhiteBoxComponent.h
+    Source/EditorWhiteBoxComponentLayers.cpp
+    Source/EditorWhiteBoxComponentVoxel.cpp
+    Source/EditorWhiteBoxComponentBoolean.cpp
+    Source/EditorWhiteBoxComponentRender.cpp
+    Source/EditorWhiteBoxComponentAsset.cpp
+    Source/EditorWhiteBoxComponentSnap.cpp
+    Source/Util/WhiteBoxMeshUtil.cpp
+    Source/Util/WhiteBoxMeshUtil.h
+    Source/Util/WhiteBoxModelingOps.cpp
+    Source/Util/WhiteBoxGltfExport.cpp
+    Source/Util/WhiteBoxGltfExport.h
+    Source/Util/WhiteBoxModelConvert.cpp
+    Source/Util/WhiteBoxModelConvert.h
+    Source/Util/WhiteBoxUvOps.cpp
+    Source/Util/WhiteBoxUvOps.h
+    Source/Util/WhiteBoxModelingOps.h
+    Source/Util/WhiteBoxSnapUtil.cpp
+    Source/Util/WhiteBoxSnapUtil.h
+    Source/Util/WhiteBoxVoxelUtil.cpp
+    Source/Util/WhiteBoxVoxelUtil.h
+    Source/Tools/WhiteBoxLayerUtil.cpp
+    Source/Tools/WhiteBoxLayerUtil.h
+    Source/Tools/WhiteBoxPaneWidget.cpp
+    Source/Tools/WhiteBoxPaneWidget.h
+    Source/Tools/WhiteBoxBevelWindow.cpp
+    Source/Tools/WhiteBoxBevelWindow.h
+    Source/Tools/WhiteBoxPaintWindow.cpp
+    Source/Tools/WhiteBoxPaintWindow.h
+    Source/Tools/WhiteBoxShapeOptionsWindow.cpp
+    Source/Tools/WhiteBoxShapeOptionsWindow.h
+    Source/Tools/WhiteBoxModelingWindow.cpp
+    Source/Tools/WhiteBoxModelingWindow.h
+    Source/Tools/WhiteBoxToolStatus.cpp
+    Source/Tools/WhiteBoxToolStatus.h
+    Source/Tools/WhiteBoxWeldWindow.cpp
+    Source/Tools/WhiteBoxWeldWindow.h
+    Source/Tools/WhiteBoxUvProjectionWindow.cpp
+    Source/Tools/WhiteBoxUvProjectionWindow.h
+    Source/Tools/WhiteBoxSmoothingWindow.cpp
+    Source/Tools/WhiteBoxSmoothingWindow.h
+    Source/Tools/WhiteBoxUvCanvas.cpp
+    Source/Tools/WhiteBoxUvCanvas.h
+    Source/Tools/WhiteBoxUvEditorPane.cpp
+    Source/Tools/WhiteBoxUvEditorPane.h
+    Source/Tools/WhiteBoxUvTexture.cpp
+    Source/Tools/WhiteBoxUvTexture.h
+    Source/Tools/WhiteBoxMaterialUiUnlock.cpp
+    Source/Tools/WhiteBoxMaterialUiUnlock.h
+    Source/Tools/WhiteBoxExtrudeInsetWindow.cpp
+    Source/Tools/WhiteBoxExtrudeInsetWindow.h
+    Source/Tools/WhiteBoxLayerGizmo.cpp
+    Source/Tools/WhiteBoxLayerGizmo.h
+    Source/Tools/WhiteBoxEntityGizmo.cpp
+    Source/Tools/WhiteBoxEntityGizmo.h
     Source/EditorWhiteBoxComponentMode.cpp
     Source/EditorWhiteBoxComponentMode.h
     Source/EditorWhiteBoxComponentModeBus.h
     Source/EditorWhiteBoxComponentModeTypes.cpp
     Source/EditorWhiteBoxComponentModeTypes.h
+    Source/SubComponentModes/EditorWhiteBoxPaintMode.h
+    Source/SubComponentModes/EditorWhiteBoxPaintMode.cpp
+    Source/SubComponentModes/WhiteBoxPaintSettings.h
     Source/EditorWhiteBoxEdgeModifierBus.h
     Source/EditorWhiteBoxPolygonModifierBus.h
     Source/EditorWhiteBoxDefaultShapeTypes.h
@@ -27,8 +88,13 @@ set(FILES
     Source/Core/WhiteBoxCsg.h
     Source/Core/WhiteBoxCsgCore.cpp
     Source/Core/WhiteBoxCsgCore.h
+    Source/Core/WhiteBoxCsgBsp.cpp
     Source/Components/EditorWhiteBoxColliderComponent.cpp
     Source/Components/EditorWhiteBoxColliderComponent.h
+    Source/Components/WhiteBoxConvexDecomposition.cpp
+    Source/Components/WhiteBoxConvexDecomposition.h
+    Source/Components/WhiteBoxMeshSimplify.cpp
+    Source/Components/WhiteBoxMeshSimplify.h
     Source/Util/WhiteBoxTextureUtil.cpp
     Source/Util/WhiteBoxTextureUtil.h
     Source/Util/WhiteBoxEditorUtil.cpp
@@ -56,6 +122,7 @@ set(FILES
     Source/Viewport/WhiteBoxDrawShapeMode.cpp
     Source/Viewport/WhiteBoxDrawShapeMode.h
     Source/Viewport/WhiteBoxShapeBuilders.h
+    Source/Viewport/WhiteBoxAdditionalShapeBuilders.cpp
     Source/Viewport/WhiteBoxDrawShapeModeBus.h
     Source/Asset/EditorWhiteBoxMeshAsset.cpp
     Source/Asset/EditorWhiteBoxMeshAsset.h

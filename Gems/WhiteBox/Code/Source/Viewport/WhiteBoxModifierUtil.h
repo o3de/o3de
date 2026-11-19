@@ -29,6 +29,23 @@ namespace WhiteBox
         None
     };
 
+    //! Which element types a click is allowed to hit. None means all of them.
+    enum class SelectionFilter
+    {
+        None,
+        Vertices,
+        Edges,
+        Polygons
+    };
+
+    //! How a drag selects. None is the plain click-to-select this has always had.
+    enum class SelectionTool
+    {
+        None,
+        Sticky,
+        Box
+    };
+
     struct EdgeIntersection;
     struct PolygonIntersection;
     struct VertexIntersection;

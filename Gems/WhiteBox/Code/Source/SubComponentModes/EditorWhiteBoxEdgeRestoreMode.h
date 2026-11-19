@@ -51,8 +51,19 @@ namespace WhiteBox
         static void BindActionsToModes(const AZStd::string& modeIdentifier);
         static void BindActionsToMenus();
 
+        //! Flip the hovered edge, the same operation right-clicking it performs. Returns false when
+        //! nothing is hovered or the flip would fold the two triangles.
+        bool FlipHoveredEdge(const AZ::EntityComponentIdPair& entityComponentIdPair);
+
         // Submode interface
         void Refresh();
+        //! Handle Escape. Edge restore has no drag or numeric state of its own, so it never
+        //! consumes the key - Escape leaves component mode as usual.
+        bool HandleEscape() { return false; }
+
+        //! Edge restore has no drag state of its own.
+        bool CancelActiveDrag() { return false; }
+
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(
             const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Display(
@@ -65,5 +76,9 @@ namespace WhiteBox
         AZStd::optional<EdgeIntersection> m_edgeIntersection; //!< The hovered edge if one exists.
         AZStd::optional<VertexIntersection> m_vertexIntersection; //!< The hovered vertex if one exists.
         Api::EdgeHandles m_edgeHandlesBeingRestored; //!< The edge handles currently attempting to be restored.
+
+        //! Scratch storage for the batched debug lines drawn each frame, kept so the steady state
+        //! does not reallocate. Contents are meaningless between Display calls.
+        AZStd::vector<AZ::Vector3> m_lineBuffer;
     };
 } // namespace WhiteBox

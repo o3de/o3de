@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/array.h>
@@ -577,6 +578,8 @@ namespace WhiteBox
         //! @note Collect all face handles to remove and call once per operation --
         //! do not call in a loop, as handles may be invalidated during garbage_collect.
         void RemoveFaces(WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles);
+        //! Delete vertices that belong to no face and compact the mesh (RemoveFaces keeps them).
+        void RemoveIsolatedVertices(WhiteBoxMesh& whiteBox);
         //! Set the position of the provided vertex handle to the new vertex position.
         void SetVertexPosition(WhiteBoxMesh& whiteBox, VertexHandle vertexHandle, const AZ::Vector3& position);
 
@@ -668,6 +671,15 @@ namespace WhiteBox
             Intersection //!< Only the volume shared by both meshes (A & B).
         };
 
+        //! Which CSG solver backend performs the boolean.
+        enum class CsgSolver
+        {
+            //! Volumetric (Manifold library): robust, needs closed manifold inputs; inverted normals mean the complement.
+            Manifold,
+            //! Face-based BSP, like Blender's "Fast": tolerates open meshes and inward-facing rooms; less robust on slivers.
+            Fast
+        };
+
         //! Perform a CSG boolean operation between two white box meshes.
         //! The result replaces the contents of whiteBox; the operand mesh is unmodified.
         //! @param whiteBox The mesh to apply the boolean operation to (modified in place).
@@ -675,13 +687,25 @@ namespace WhiteBox
         //! @param operandTransform Transform positioning operand in the local space of whiteBox
         //! (for two entities, worldFromLocalA.GetInverse() * worldFromLocalB).
         //! @param operation Which boolean operation to apply.
+        //! @param solver Which CSG backend to use (Manifold by default; Fast/BSP for the face-based,
+        //! brush-style path that handles shells and inverted normals). See CsgSolver.
         //! @return True if the operation succeeded, false otherwise (e.g. the meshes do not
         //! intersect, or one of them is not a closed manifold). whiteBox is unmodified on failure.
-        //! @note Both meshes must be closed (watertight). Coplanar faces in the result are merged
-        //! into white box polygons, but UVs are recalculated so custom UVs are not preserved.
+        //! @note With the Manifold solver both meshes must be closed (watertight). Coplanar faces in
+        //! the result are merged into white box polygons, but UVs are recalculated so custom UVs are
+        //! not preserved.
         bool ApplyMeshBoolean(
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
-            BooleanOperation operation);
+            BooleanOperation operation, CsgSolver solver = CsgSolver::Manifold);
+
+        //! Weld coincident vertices and regroup coplanar triangles (what CSG does to its inputs), so a
+        //! non-manifold mesh stops blocking booleans. False if the mesh was empty.
+        bool RepairMesh(WhiteBoxMesh& whiteBox);
+
+        //! Collider triangles with coplanar faces merged and re-triangulated (far fewer triangles); regions
+        //! that cannot be simplified keep their original triangles. False if the mesh was empty.
+        bool BuildColliderTriangles(
+            const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
 
         //! Recalculate all normals of each face in the mesh.
         void CalculateNormals(WhiteBoxMesh& whiteBox);
@@ -785,11 +809,253 @@ namespace WhiteBox
 
         //! Take a white box mesh and write it out to a stream of bytes.
         //! @return Will return false if any error was encountered during serialization, true otherwise.
+        //! Per-face material override. Invalid means inherit the entity's default.
+        AZ::Data::AssetId FaceMaterial(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        //! Packed RGBA (R in the low byte); zero means no face-color override.
+        AZ::u32 FacePaintColor(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFacePaintColor(WhiteBoxMesh& whiteBox, FaceHandle face, AZ::u32 color);
+        void SetFaceMaterial(WhiteBoxMesh& whiteBox, FaceHandle face, const AZ::Data::AssetId& material);
+        void SetPolygonMaterial(WhiteBoxMesh& whiteBox, const PolygonHandle& polygon, const AZ::Data::AssetId& material);
+
+        //! Smoothing group bitmask (bit n = group n + 1); faces sharing a bit smooth across shared vertices, zero is flat.
+        AZ::u32 FaceSmoothingGroups(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFaceSmoothingGroups(WhiteBoxMesh& whiteBox, FaceHandle face, AZ::u32 groups);
+        //! Set, add (combine) or remove the bits on every face of the polygons.
+        enum class SmoothingEdit
+        {
+            Set,
+            Add,
+            Remove
+        };
+        void SetPolygonSmoothingGroups(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZ::u32 groups, SmoothingEdit edit = SmoothingEdit::Set);
+        //! Assign groups so neighbours within angleDegrees smooth together and sharper creases stay hard.
+        void AutoSmoothPolygons(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, float angleDegrees);
+        //! Per-corner normals in FaceHalfedgeHandles order: angle-weighted over faces sharing a smoothing group, else the face normal.
+        AZStd::array<AZ::Vector3, 3> FaceCornerNormals(const WhiteBoxMesh& whiteBox, FaceHandle face);
+
+        //! Vertex-blend layer weights (x: layer 2, y: layer 3). Unpainted vertices average their painted neighbours.
+        AZ::Vector3 VertexBlend(const WhiteBoxMesh& whiteBox, VertexHandle vertex);
+        bool VertexBlendPainted(const WhiteBoxMesh& whiteBox, VertexHandle vertex);
+        void SetVertexBlend(WhiteBoxMesh& whiteBox, VertexHandle vertex, const AZ::Vector3& weights);
+        //! Store every unpainted vertex's current (borrowed) weights as its own, so painting one vertex no longer spreads
+        //! to unpainted neighbours through the averaging; a fresh mesh bakes to the base layer everywhere.
+        void BakeVertexBlend(WhiteBoxMesh& whiteBox);
+        //! Carry a vertex's painted weights to its copy in another mesh (an unpainted vertex stays unpainted).
+        void CopyVertexBlend(WhiteBoxMesh& target, VertexHandle to, const WhiteBoxMesh& source, VertexHandle from);
+        //! Whether any vertex has been painted, so callers can skip blend work on meshes that never used it.
+        bool MeshHasVertexBlend(const WhiteBoxMesh& whiteBox);
+
+        //! Which property Select Similar compares against the seed polygons.
+        enum class SimilarBy
+        {
+            Material,
+            Normal,
+            Area,
+            Sides,
+            SmoothingGroups
+        };
+        //! Every polygon matching any seed on the chosen property (normal within toleranceDegrees, area within 5 percent). Seeds stay first.
+        PolygonHandles FindSimilarPolygons(
+            const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds, SimilarBy similarBy, float toleranceDegrees = 1.0f);
+        //! Edges matching any seed's length within 5 percent; vertices matching any seed's visible edge count.
+        EdgeHandles FindSimilarEdges(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles FindSimilarVertices(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+
+        //! Split each polygon into quads (one per corner, meeting at its centre); shared borders split once. Transactional.
+        bool SubdividePolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error, PolygonHandles* created = nullptr);
+
+        //! How a face's texture coordinates are generated each time UVs are recalculated.
+        enum class UvProjectionMode : AZ::u32
+        {
+            World = 0,  //!< The original mapping: project along the face normal's dominant local axis.
+            Planar = 1, //!< Project onto the face's own plane, so sloped faces do not stretch.
+            Manual = 2  //!< Corner UVs are authored and kept through every edit; corners an edit creates follow the face's UV map.
+        };
+
+        //! The affine map a Manual face's UVs follow: uv = originUv + ((p - origin).uGradient, (p - origin).vGradient).
+        //! It travels with the face's projection, so faces an edit creates from it get UVs that line up.
+        struct ManualUvMap
+        {
+            AZ::Vector3 m_origin = AZ::Vector3::CreateZero();
+            AZ::Vector2 m_originUv = AZ::Vector2::CreateZero();
+            AZ::Vector3 m_uGradient = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_vGradient = AZ::Vector3::CreateZero();
+            AZ::Vector3 m_normal = AZ::Vector3::CreateZero(); //!< Plane the map was taken on; zero when there is no map.
+
+            bool IsValid() const { return !m_normal.IsZero(); }
+            AZ::Vector2 Evaluate(const AZ::Vector3& position) const;
+        };
+
+        //! Per-face texture placement applied after projection (rotate, scale, offset); the default is the original mapping.
+        struct UvProjection
+        {
+            UvProjectionMode m_mode = UvProjectionMode::World;
+            AZ::Vector2 m_scale = AZ::Vector2(1.0f, 1.0f); //!< Texture repeats per metre along U and V.
+            AZ::Vector2 m_offset = AZ::Vector2(0.0f, 0.0f);
+            float m_rotationDegrees = 0.0f;
+            ManualUvMap m_manual; //!< Manual mode only; not part of equality.
+
+            bool IsDefault() const;
+            bool operator==(const UvProjection& other) const;
+            bool operator!=(const UvProjection& other) const { return !operator==(other); }
+        };
+
+        //! Freeze the polygons' current UVs as authored and switch them to Manual.
+        void MakePolygonUvsManual(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+        //! Author one corner's UV; its face becomes Manual first (keeping its other corners) if it was not.
+        void SetHalfedgeManualUv(WhiteBoxMesh& whiteBox, HalfedgeHandle halfedge, const AZ::Vector2& uv);
+        //! Whether a Manual face's corner holds an authored UV rather than waiting for one from the face's map.
+        bool HalfedgeUvAuthored(const WhiteBoxMesh& whiteBox, HalfedgeHandle halfedge);
+
+        //! Persistent per-face projection, honoured by every CalculatePlanarUVs call.
+        UvProjection FaceUvProjection(const WhiteBoxMesh& whiteBox, FaceHandle face);
+        void SetFaceUvProjection(WhiteBoxMesh& whiteBox, FaceHandle face, const UvProjection& projection);
+        //! Set the projection on every face of the polygons and recalculate their UVs. Manual with a valid map transfers
+        //! that map's UVs onto the polygons (paste); Manual without one freezes their current UVs.
+        void SetPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const UvProjection& projection);
+        //! Keep each polygon's mode and rotation but pick scale and offset so the texture spans it exactly once. Skips Manual faces.
+        void FitPolygonUvProjection(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+        //! Give every polygon the same tiling (repeats per metre on both axes), keeping its mode, rotation and texture anchor.
+        //! Skips Manual faces.
+        void NormalizePolygonTexelDensity(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, float repeatsPerMetre);
+        //! Mean tiling over the polygons' faces (both axes), or one when there are none.
+        float PolygonTexelDensity(const WhiteBoxMesh& whiteBox, const PolygonHandles& polygons);
+
+        //! Rebuild the mesh from a triangle soup: coincident vertices weld, coplanar neighbours with one material become polygons.
+        //! triangleMaterials is optional (one per triangle). Returns false and leaves the mesh untouched when nothing usable is left.
+        bool BuildFromTriangles(
+            WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::Vector3>& positions, const AZStd::vector<AZ::u32>& indices,
+            const AZStd::vector<AZ::Data::AssetId>& triangleMaterials = {});
+        //! Copy material, paint and UV projection from one face to another, possibly in another mesh.
+        void CopyFaceAttributes(WhiteBoxMesh& target, FaceHandle targetFace, const WhiteBoxMesh& source, FaceHandle sourceFace);
+        //! Pairwise copy for many faces at once, looking each property up only once.
+        void CopyFaceAttributes(
+            WhiteBoxMesh& target, const FaceHandles& targetFaces, const WhiteBoxMesh& source, const FaceHandles& sourceFaces);
+
         bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output);
 
         //! Clones the white box mesh object into a new mesh.
         //! @return Will return null if any error was encountered during serialization, otherwise the cloned mesh.
         WhiteBoxMeshPtr CloneMesh(const WhiteBoxMesh& whiteBox);
+        //! Copy a prepared mesh while preserving its topology handles and properties.
+        void AssignMesh(WhiteBoxMesh& target, const WhiteBoxMesh& source);
+        //! Transactional extrusion of connected boundary edges (or one solid edge using Sketch semantics).
+        bool ExtrudeEdgeSelection(
+            WhiteBoxMesh& mesh, const EdgeHandles& edges, const AZ::Vector3& offset,
+            EdgeHandles& result, PolygonHandles& preview, AZStd::string& error);
+
+        //! Extrude regions along their normals, or inset by a fraction (0, 1): convex planar regions scale, others get an even border.
+        //! Preserves polygon divisions, face materials/paint and existing UVs. Transactional on failure.
+        bool ExtrudeInsetRegions(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& selection, float amount, bool inset,
+            PolygonHandles& result, AZStd::string& error, PolygonHandles* preview = nullptr);
+
+        //! Bridge two boundary edges, open polygons or two facing caps with a connecting strip.
+        //! Transactional: a failure returns a message and leaves the mesh unchanged.
+        bool BridgeSelection(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, const EdgeHandles& edges, AZStd::string& error);
+
+        //! Fill the planar hole bordered by the selected open edges with one polygon (concave allowed).
+        //! Transactional: a failure returns a message and leaves the mesh unchanged.
+        bool FillHole(
+            WhiteBoxMesh& whiteBox, const EdgeHandles& edges, AZStd::string& error, PolygonHandle* filled = nullptr);
+
+        //! Delete the selected polygons, keeping their vertices. Transactional.
+        bool DeletePolygons(WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error);
+
+        //! As DeletePolygons, but at triangle granularity, so one triangle of a quad can go while
+        //! its partner stays. Duplicate handles in the selection are ignored.
+        bool DeleteFaces(WhiteBoxMesh& whiteBox, const FaceHandles& selection, AZStd::string& error);
+
+        //! Merge a connected run of polygons into one by hiding every border they share. Transactional.
+        bool MergePolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, AZStd::string& error,
+            PolygonHandle* merged = nullptr);
+
+        //! Grow a polygon selection over neighbours facing the same way. Does not modify the mesh.
+        PolygonHandles FindCoplanarRegion(
+            const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds, float toleranceDegrees = 1.0f);
+
+        //! Grow a selection to the whole connected shell, crossing shared edges but not lone vertices.
+        PolygonHandles FindLinkedPolygons(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles FindLinkedEdges(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles FindLinkedVertices(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+
+        //! Merge selected vertices at their average or the last selected one. Failure leaves the mesh unchanged.
+        bool WeldVertices(WhiteBoxMesh& whiteBox, const VertexHandles& vertices, bool toLastSelected, AZStd::string& error);
+
+        //! Cut an edge loop across a strip of convex quads at @p fraction along @p edge. Failure leaves the mesh unchanged.
+        bool InsertEdgeLoop(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error);
+        //! Expand edge seeds along regular quad loops, or along unambiguous open borders.
+        //! Invalid handles and internal triangulation edges are ignored. Does not modify the mesh.
+        EdgeHandles FindEdgeLoop(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        //! Expand across opposite quad edges, stopping at non-quads and ambiguous topology.
+        EdgeHandles FindEdgeRing(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+
+        //! Expand quads into the face strip through them; loop and ring are the two directions.
+        PolygonHandles FindPolygonLoop(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        PolygonHandles FindPolygonRing(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+
+        //! Grow one step (polygons sharing a corner, edges sharing an end, vertices one edge away); seeds stay first.
+        PolygonHandles GrowPolygonSelection(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles GrowEdgeSelection(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles GrowVertexSelection(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+        //! The inverse of grow: drop every seed that touches an unselected neighbour. May return empty.
+        PolygonHandles ShrinkPolygonSelection(const WhiteBoxMesh& whiteBox, const PolygonHandles& seeds);
+        EdgeHandles ShrinkEdgeSelection(const WhiteBoxMesh& whiteBox, const EdgeHandles& seeds);
+        VertexHandles ShrinkVertexSelection(const WhiteBoxMesh& whiteBox, const VertexHandles& seeds);
+
+        //! One element type's worth of selection; conversion reads whichever member is filled.
+        struct ElementSelection
+        {
+            PolygonHandles m_polygons;
+            EdgeHandles m_edges;
+            VertexHandles m_vertices;
+        };
+        //! Which element type a selection converts to.
+        enum class SelectionElement
+        {
+            Vertex,
+            Edge,
+            Polygon
+        };
+        //! Convert to another element type: down takes every part, up takes what is enclosed (or touched when touching).
+        ElementSelection ConvertSelection(
+            const WhiteBoxMesh& whiteBox, const ElementSelection& source, SelectionElement target, bool touching);
+
+        //! Move polygons into detached with all face attributes and UVs; refuses every face. Transactional.
+        bool DetachPolygons(
+            WhiteBoxMesh& whiteBox, const PolygonHandles& polygons, WhiteBoxMesh& detached, AZStd::string& error);
+
+        //! Split polygons along straight cuts: a path in selection order, else polygons with two selected corners. Transactional.
+        bool ConnectVertices(
+            WhiteBoxMesh& whiteBox, const VertexHandles& vertices, AZStd::string& error, EdgeHandles* created = nullptr);
+
+        //! Add a visible corner on a polygon border edge at fraction (0, 1) from its first endpoint; invalid on failure.
+        VertexHandle InsertVertexOnEdge(WhiteBoxMesh& whiteBox, EdgeHandle edge, float fraction, AZStd::string& error);
+
+        //! Bevel sharp edges by @p width with @p segments (1-32). Failure leaves the mesh unchanged.
+        bool BevelEdges(WhiteBoxMesh& whiteBox, const EdgeHandles& edges, float width, int segments, AZStd::string& error, float profile = 0.5f);
+
+        //! Insert 1-64 evenly spaced cuts as one transactional mesh edit. Slide [-1, 1] translates the group within its end margins.
+        bool InsertEdgeLoops(WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::string& error, float slide = 0.0f);
+        //! Read-only preview: pairs of local-space endpoints, using the same strip validation as insertion.
+        bool PreviewEdgeLoops(
+            WhiteBoxMesh& whiteBox, EdgeHandle edge, int count, AZStd::vector<AZ::Vector3>& lines, AZStd::string& error, float slide = 0.0f);
+
+        //! A surface anchor in mesh-local coordinates. The face disambiguates overlapping surfaces.
+        struct KnifePoint
+        {
+            FaceHandle m_face;
+            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        };
+
+        //! Cut the surface along the plane through two anchors and the view direction. Transactional;
+        //! on success @p end references a resulting face, ready for the next segment.
+        bool KnifeCut(
+            WhiteBoxMesh& mesh, const KnifePoint& start, KnifePoint& end, const AZ::Vector3& viewDirection,
+            AZStd::vector<AZ::Vector3>& lines, AZStd::string& error);
 
         //! Writes the white box mesh to an obj file at the specified path.
         //! @return Will return false if any error was encountered during serialization, true otherwise.

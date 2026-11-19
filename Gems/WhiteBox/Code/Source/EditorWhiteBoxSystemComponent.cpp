@@ -10,9 +10,14 @@
 #include "Asset/WhiteBoxMeshAssetHandler.h"
 #include "EditorWhiteBoxSystemComponent.h"
 #include "EditorWhiteBoxComponentMode.h"
+#include "Components/WhiteBoxConvexDecomposition.h"
+#include "Tools/WhiteBoxPaneWidget.h"
+#include "Tools/WhiteBoxUvEditorPane.h"
+#include "Viewport/WhiteBoxViewportConstants.h"
 #include "WhiteBoxToolApiReflection.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 
 namespace WhiteBox
 {
@@ -63,16 +68,36 @@ namespace WhiteBox
         EditorWhiteBoxComponentMode::BindActionsToMenus();
     }
 
+    void EditorWhiteBoxSystemComponent::NotifyRegisterViews()
+    {
+        // Register the dockable White Box pane (Tools > White Box). All White Box editing UI
+        // lives in this pane; the component only bridges the data to the entity.
+        AzToolsFramework::ViewPaneOptions options;
+        options.preferedDockingArea = Qt::RightDockWidgetArea;
+        options.showInMenu = true;
+        AzToolsFramework::RegisterViewPane<WhiteBoxPaneWidget>(WhiteBoxPaneWidget::PaneName, "Tools", options);
+        AzToolsFramework::ViewPaneOptions uvOptions;
+        uvOptions.preferedDockingArea = Qt::BottomDockWidgetArea;
+        uvOptions.showInMenu = true;
+        AzToolsFramework::RegisterViewPane<WhiteBoxUvEditorPane>(WhiteBoxUvEditorPane::PaneName, "Tools", uvOptions);
+    }
+
     void EditorWhiteBoxSystemComponent::Activate()
     {
         WhiteBoxSystemComponent::Activate();
+        LoadViewportHandleSettings(); // sizes the user set in the pane, applied before any White Box is drawn
         RegisterAsset<Pipeline::WhiteBoxMeshAssetHandler, Pipeline::WhiteBoxMeshAsset>(m_assetHandlers);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void EditorWhiteBoxSystemComponent::Deactivate()
     {
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::UnregisterViewPane(WhiteBoxPaneWidget::PaneName);
+        AzToolsFramework::UnregisterViewPane(WhiteBoxUvEditorPane::PaneName);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        ConvexDecomposer::Shutdown(); // no V-HACD thread may outlive the module
         WhiteBoxSystemComponent::Deactivate();
     }
 

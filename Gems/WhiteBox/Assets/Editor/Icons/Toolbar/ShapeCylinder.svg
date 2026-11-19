@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="2 2 20.6 20.6">
+  <title>Cylinder</title>
+  <ellipse cx="12.3" cy="6.6" rx="7.4" ry="2.9" fill="#67C7E8" fill-opacity="0.55"/>
+  <ellipse cx="12.3" cy="6.6" rx="7.4" ry="2.9" fill="none" stroke="#DADADA" stroke-width="1.6"/>
+  <path d="M4.9 6.6 4.9 17.4M19.7 6.6 19.7 17.4" fill="none" stroke="#DADADA" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M4.9 17.4a7.4 2.9 0 0 0 14.8 0" fill="none" stroke="#DADADA" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

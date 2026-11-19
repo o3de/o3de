@@ -73,6 +73,13 @@ namespace WhiteBox
         return m_renderMeshInterfaceBuilder(entityId);
     }
 
+    AZStd::unique_ptr<RenderMeshInterface> WhiteBoxSystemComponent::CreateAuxiliaryRenderMeshInterface(AZ::EntityId entityId)
+    {
+        // Auxiliary (non-primary) Atom mesh: an extra mesh on the same entity that does not own the
+        // single per-entity mesh-handle state. Used for per-layer tinted render meshes.
+        return AZStd::make_unique<AtomRenderMesh>(entityId, false);
+    }
+
     void WhiteBoxSystemComponent::SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder)
     {
         m_renderMeshInterfaceBuilder = AZStd::move(builder);

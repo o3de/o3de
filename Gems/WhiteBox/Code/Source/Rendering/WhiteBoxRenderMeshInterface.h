@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 
 namespace AZ
@@ -38,6 +39,10 @@ namespace WhiteBox
 
         //! Update the material of the render mesh.
         virtual void UpdateMaterial(const WhiteBoxMaterial& material) = 0;
+
+        //! Override the material asset used for this mesh (empty = the built-in White Box material).
+        //! Takes effect on the next BuildMesh that recreates the model. Default no-op.
+        virtual void SetMaterialAssetOverride([[maybe_unused]] const AZ::Data::AssetId& materialAssetId) {}
 
         // Return if the White Box mesh is visible or not.
         virtual bool IsVisible() const = 0;

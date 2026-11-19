@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="1 1 22 22">
+  <title>Edge Ring</title>
+  <path d="M3 3h18v18H3ZM3 9h18M3 15h18M12 3v18" fill="none" stroke="#DADADA" stroke-width="1.2" stroke-linejoin="round"/>
+  <g fill="#67C7E8" stroke="#67C7E8" stroke-width="2.3" stroke-linecap="round"><path d="M3 9v6m9-6v6m9-6v6"/><path d="M3 12h18" stroke-width="1" stroke-dasharray="1 3"/></g>
+</svg>

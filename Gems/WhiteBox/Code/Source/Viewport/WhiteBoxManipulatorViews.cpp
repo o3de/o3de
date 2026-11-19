@@ -18,6 +18,48 @@ namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewPolygon, AZ::SystemAllocator)
     AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewEdge, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewVertexDot, AZ::SystemAllocator)
+
+    void ManipulatorViewVertexDot::Draw(
+        const AzToolsFramework::ManipulatorManagerId managerId,
+        [[maybe_unused]] const AzToolsFramework::ManipulatorManagerState& managerState,
+        const AzToolsFramework::ManipulatorId manipulatorId, const AzToolsFramework::ManipulatorState& manipulatorState,
+        AzFramework::DebugDisplayRequests& debugDisplay, const AzFramework::CameraState& cameraState,
+        const AzToolsFramework::ViewportInteraction::MouseInteraction& mouseInteraction)
+    {
+        const AZ::Vector3 center = manipulatorState.TransformPoint(manipulatorState.m_localPosition);
+        const float screenScale = ManipulatorViewScaleMultiplier(center, cameraState);
+
+        if (m_depthTest)
+        {
+            debugDisplay.DepthTestOn();
+        }
+
+        debugDisplay.SetColor(m_decideColorFn(mouseInteraction, manipulatorState.m_mouseOver, m_color).GetAsVector4());
+        const float dotRadius = manipulatorState.m_mouseOver ? cl_whiteBoxVertexHoverSize : cl_whiteBoxVertexDrawSize;
+        debugDisplay.DrawBall(center, dotRadius * screenScale, false);
+
+        if (m_depthTest)
+        {
+            debugDisplay.DepthTestOff();
+        }
+
+        AzToolsFramework::Picking::BoundShapeSphere pickBound;
+        pickBound.m_center = center;
+        pickBound.m_radius = cl_whiteBoxVertexManipulatorSize * screenScale;
+        RefreshBoundInternal(managerId, manipulatorId, pickBound);
+    }
+
+    AZStd::unique_ptr<ManipulatorViewVertexDot> CreateManipulatorViewVertexDot(
+        const AZ::Color& color, const AzToolsFramework::DecideColorFn& decideColor, const bool enableDepthTest)
+    {
+        auto view = AZStd::make_unique<ManipulatorViewVertexDot>();
+        view->m_radius = cl_whiteBoxVertexManipulatorSize;
+        view->m_color = color;
+        view->m_decideColorFn = decideColor;
+        view->m_depthTest = enableDepthTest;
+        return view;
+    }
 
     static AZStd::vector<AZ::Vector3> TransformToWorldSpace(
         const AZ::Transform& worldFromLocal, const AZStd::vector<AZ::Vector3>& points)
@@ -117,10 +159,10 @@ namespace WhiteBox
 
         // world space radii of vertex handles at edge start and end points
         // note: the start/end will not be pushed in if the connected vertex handles are hidden
-        const float worldStartVertexHandleRadius = cl_whiteBoxVertexManipulatorSize *
+        const float worldStartVertexHandleRadius = cl_whiteBoxVertexDrawSize *
             AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, cameraState) *
             floatFromBool(!m_vertexStartEndHidden[0]);
-        const float worldEndVertexHandleRadius = cl_whiteBoxVertexManipulatorSize *
+        const float worldEndVertexHandleRadius = cl_whiteBoxVertexDrawSize *
             AzToolsFramework::CalculateScreenToWorldMultiplier(worldEnd, cameraState) *
             floatFromBool(!m_vertexStartEndHidden[1]);
 

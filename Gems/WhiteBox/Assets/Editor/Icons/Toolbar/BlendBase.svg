@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="100"
+   height="100"
+   viewBox="2 2 20.6 20.6"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <title>Blend Base Layer</title>
+  <circle cx="9.8" cy="14.8" r="6.6" fill="none" stroke="#dadada" stroke-dasharray="2.4,1.6" stroke-width="1.8" />
+  <path d="M 20.8,3.8 13.2,11.4" stroke="#dadada" stroke-width="2.2" stroke-linecap="round" />
+  <path d="M 14.6,10.9 11.2,14.3 9.4,12.5 12.8,9.1 Z" fill="#67c7e8" stroke="#67c7e8" stroke-width="0.8" stroke-linejoin="round" />
+</svg>

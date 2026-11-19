@@ -49,5 +49,6 @@ namespace WhiteBox
         const AZ::Transform& worldFromLocal,
         const AzFramework::ViewportInfo& viewportInfo,
         const AZStd::span<Api::VertexHandle>& verts,
-        const AZ::Color& color);
+        const AZ::Color& color,
+        bool hovered = false); //!< Hovered vertices use the larger Vertex Hover Size.
 } // namespace WhiteBox

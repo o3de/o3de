@@ -49,6 +49,11 @@ namespace WhiteBox
         void CreateView();
         bool PerformingAction() const;
 
+        //! Abandon the drag (right click): restore the mesh and ignore movement until release.
+        //! @param notify false from the destructor, where the component mode may be tearing down.
+        //! @return True if there was a drag to cancel.
+        bool CancelDrag(bool notify = true);
+
     private:
         void CreateManipulator();
         void DestroyManipulator();
@@ -57,6 +62,14 @@ namespace WhiteBox
             m_entityComponentIdPair; //!< The entity and component id this modifier is associated with.
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator>
             m_translationManipulator; //!< The manipulator used to modify the position of the polygon (triangles).
+        //! Copy of the mesh taken at mouse down, used to revert the drag when Escape is pressed.
+        //! Restores topology too, so it also undoes an extrude performed during the drag.
+        Api::WhiteBoxMeshPtr m_dragSnapshot;
+        //! The handle at mouse down, restored with the mesh (an extrude repoints it at new geometry).
+        Api::PolygonHandle m_dragPolygonHandleSnapshot;
+        AZStd::vector<Api::VertexHandle> m_dragVertexHandlesSnapshot;
+        //! Set by CancelDrag - suppresses further movement until the mouse button is released.
+        bool m_dragCancelled = false;
         AZStd::vector<Api::VertexHandle> m_vertexHandles; //!< The vertex handles associated with this polygon.
         Api::PolygonHandle m_polygonHandle; //!< The polygon handle this modifier is associated with.
         AZStd::shared_ptr<ManipulatorViewPolygon>

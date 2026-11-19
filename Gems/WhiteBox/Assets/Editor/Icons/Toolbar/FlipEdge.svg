@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="2 2 20.6 20.6">
+  <title>Flip Edge</title>
+  <path d="M4.2 6.2 20.4 6.2 20.4 18.4 4.2 18.4Z" fill="none" stroke="#DADADA" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M4.2 18.4 20.4 6.2" fill="none" stroke="#DADADA" stroke-width="1.1" stroke-dasharray="2.2 2"/>
+  <path d="M4.2 6.2 20.4 18.4" fill="none" stroke="#67C7E8" stroke-width="2"/>
+</svg>
