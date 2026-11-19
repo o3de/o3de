@@ -1,0 +1,17 @@
+--- a/src/csg_tree.h
++++ b/src/csg_tree.h
+@@ -27,4 +27,5 @@
+ class CsgNode : public std::enable_shared_from_this<CsgNode> {
+  public:
++  virtual ~CsgNode() = default;
+   virtual std::shared_ptr<CsgLeafNode> ToLeafNode(
+       ExecutionContext::Impl* ctx = nullptr) const = 0;
+--- a/src/edge_op.cpp
++++ b/src/edge_op.cpp
+@@ -813,5 +813,5 @@
+       } else {
+         vertProcessed[vert] = true;
+-        ForVert(i, [this, &halfedgeProcessed, vert](int current) {
++        ForVert(i, [&halfedgeProcessed](int current) {
+           halfedgeProcessed[current] = true;
+         });
