@@ -53,6 +53,8 @@ namespace UnitTest
             Handler&));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle, AzPhysics::SceneEvents::
             OnSceneSimulationFinishHandler&));
+        MOCK_METHOD2(RegisterSceneSimulationSynchronizedWithTickHandler, void(AzPhysics::SceneHandle, AzPhysics::SceneEvents::
+            OnSceneSimulationSynchronizedWithTickHandler&));
         MOCK_METHOD2(RegisterSceneSimulationStartHandler, void(AzPhysics::SceneHandle, AzPhysics::SceneEvents::
             OnSceneSimulationStartHandler&));
         MOCK_METHOD2(RegisterSceneTriggersEventHandler, void(AzPhysics::SceneHandle, AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const AZStd::vector<
