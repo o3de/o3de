@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <SandboxAPI.h>
+
 #include <ISplines.h>
 #include "Controls/WndGridHelper.h"
 #include "IKeyTimeSet.h"
@@ -65,7 +67,7 @@ public:
     virtual bool IsSelectionChanged() const = 0;
 };
 
-class AbstractSplineWidget
+class SANDBOX_API AbstractSplineWidget
     : public IKeyTimeSet
 {
     friend class CUndoSplineCtrlEx;
@@ -351,7 +353,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 
-class SplineWidget
+class SANDBOX_API SplineWidget
     : public QWidget
     , public AbstractSplineWidget
 {

@@ -352,7 +352,6 @@ private:
     void OnSwitchcameraNext();
     void OnOpenProceduralMaterialEditor();
     void OnOpenAssetBrowserView();
-    void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
     void OnNewComponent();

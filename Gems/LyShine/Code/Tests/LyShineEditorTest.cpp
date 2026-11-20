@@ -56,7 +56,32 @@
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
 
+#include <QImage>
+#include <QResource>
+
 AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+
+TEST(UiAnimViewResourceTest, KeyAndMarkerImagesCanBeDecoded)
+{
+    Q_INIT_RESOURCE(UiAnimViewDialog);
+
+    const char* resourcePaths[] = {
+        ":/UiAnimView/trackview_keys_00.png",
+        ":/UiAnimView/trackview_keys_01.png",
+        ":/UiAnimView/trackview_keys_02.png",
+        ":/UiAnimView/trackview_keys_03.png",
+        ":/UiAnimView/marker/bmp00016_00.png",
+        ":/UiAnimView/marker/bmp00016_01.png"
+    };
+
+    for (const char* resourcePath : resourcePaths)
+    {
+        EXPECT_TRUE(QResource(QString::fromUtf8(resourcePath)).isValid()) << resourcePath;
+        EXPECT_FALSE(QImage(QString::fromUtf8(resourcePath)).isNull()) << resourcePath;
+    }
+
+    Q_CLEANUP_RESOURCE(UiAnimViewDialog);
+}
 
 using namespace AZ;
 using ::testing::NiceMock;

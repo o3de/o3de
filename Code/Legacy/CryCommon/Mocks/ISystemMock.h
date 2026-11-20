@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 #include <ISystem.h>
 
@@ -65,8 +66,6 @@ public:
         AZ::IO::IArchive * ());
     MOCK_METHOD0(GetICryFont,
         ICryFont * ());
-    MOCK_METHOD0(GetIMovieSystem,
-        IMovieSystem * ());
     MOCK_METHOD0(GetIConsole,
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,

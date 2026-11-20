@@ -6,11 +6,9 @@
  *
  */
 
+#pragma once
 
 // Description : Precompiled Header.
-
-
-#pragma once
 
 #include <AzCore/PlatformIncl.h>
 
@@ -111,7 +109,6 @@ namespace AZ::IO
     struct IArchive;
 }
 struct ICryFont;
-struct IMovieSystem;
 struct IPhysicalWorld;
 
 #endif //__cplusplus

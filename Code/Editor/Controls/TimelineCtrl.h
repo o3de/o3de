@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <SandboxAPI.h>
+
 #include "Range.h"
 #include "SplineCtrlEx.h"
 #include "Controls/WndGridHelper.h"
@@ -37,7 +39,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Timeline control.
 //////////////////////////////////////////////////////////////////////////
-class TimelineWidget
+class SANDBOX_API TimelineWidget
     : public QWidget
     , public AbstractTimelineWidget
 {

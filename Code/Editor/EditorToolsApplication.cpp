@@ -25,7 +25,6 @@
 #include "DisplaySettingsPythonFuncs.h"
 #include "GameEngine.h"
 #include "PythonEditorFuncs.h"
-#include "TrackView/TrackViewPythonFuncs.h"
 
 namespace EditorInternal
 {
@@ -72,8 +71,6 @@ namespace EditorInternal
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::TrackViewComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::TrackViewFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::ViewPanePythonFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::ViewportTitleDlgPythonFuncsHandler::CreateDescriptor());
     }
@@ -88,8 +85,6 @@ namespace EditorInternal
         // Add new Bus-based Python Bindings
         components.emplace_back(azrtti_typeid<AzToolsFramework::DisplaySettingsComponent>());
         components.emplace_back(azrtti_typeid<AzToolsFramework::PythonEditorComponent>());
-        components.emplace_back(azrtti_typeid<AzToolsFramework::TrackViewComponent>());
-
         return components;
     }
 

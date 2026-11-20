@@ -7,11 +7,12 @@
  */
 
 #if !defined(_RELEASE)
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/UnitTest.h>
 #include <AnimKey.h>
+#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/AzTest.h>
+
+#include <Maestro/Cinematics/AnimTrack.h>
 #include <Maestro/Types/AssetBlendKey.h>
-#include <Cinematics/AnimTrack.h>
 
 namespace Maestro
 {

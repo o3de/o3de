@@ -58,7 +58,6 @@
 #include <AzFramework/Render/IntersectorInterface.h>
 
 // Editor
-#include "AnimationContext.h"
 #include "Core/QtEditorApplication.h"
 #include "CryCommon/MathConversion.h"
 #include "CryEditDoc.h"
@@ -68,7 +67,7 @@
 #include "EditorViewportCamera.h"
 #include "EditorViewportSettings.h"
 #include "GameEngine.h"
-#include "Include/IDisplayViewport.h"
+#include <IDisplayViewport.h>
 #include "LayoutWnd.h"
 #include "MainWindow.h"
 #include "ProcessInfo.h"
@@ -2232,4 +2231,3 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
-

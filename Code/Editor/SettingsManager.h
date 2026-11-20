@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <SandboxAPI.h>
+
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <IXml.h>
@@ -69,7 +71,7 @@ struct SEventLog
     QString m_eventState;
 };
 
-class CSettingsManager
+class SANDBOX_API CSettingsManager
 {
 public:
     // eMemoryStorage=0

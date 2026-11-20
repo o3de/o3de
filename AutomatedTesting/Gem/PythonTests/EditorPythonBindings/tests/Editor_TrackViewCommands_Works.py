@@ -16,6 +16,7 @@ class Editor_TrackViewCommands_Works(BaseClass):
     def test():
         import azlmbr.bus as bus
         import azlmbr.track_view as track_view
+        import azlmbr.legacy.general as general
         check_result = BaseClass.check_result
 
         num_sequences = track_view.EditorLayerTrackViewRequestBus(bus.Broadcast, 'GetNumSequences')
@@ -37,6 +38,14 @@ class Editor_TrackViewCommands_Works(BaseClass):
 
         result = (int(new_time_range.start) != int(time_range.start)) and (int(new_time_range.end) != int(time_range.end))
         check_result(result, 'SetSequenceTimeRange modified time range')
+
+        # Track View services must remain alive independently of whether the pane is open.
+        track_view_pane = 'Track View'
+        check_result(track_view_pane in general.get_pane_class_names(), 'Track View pane is registered')
+        general.open_pane(track_view_pane)
+        check_result(general.is_pane_visible(track_view_pane), 'Track View pane opens')
+        general.close_pane(track_view_pane)
+        check_result(not general.is_pane_visible(track_view_pane), 'Track View pane closes')
 
         test_sequence_name_2 = 'Test Sequence 02'
         track_view.EditorLayerTrackViewRequestBus(bus.Broadcast, 'NewSequence', test_sequence_name_2, 1)
