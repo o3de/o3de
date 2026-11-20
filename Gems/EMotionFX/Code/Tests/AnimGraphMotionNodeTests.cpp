@@ -102,7 +102,7 @@ namespace EMotionFX
 
         bool PositionsAreMirrored(const AZ::Vector3& leftPos, const AZ::Vector3& rightPos, float tolerance)
         {
-            if (!AZ::IsClose(leftPos.GetX(), AZ::GetAbs(rightPos.GetX()), tolerance))
+            if (!AZ::IsClose(leftPos.GetX(), -rightPos.GetX(), tolerance))
             {
                 return false;
             }
@@ -168,14 +168,7 @@ namespace EMotionFX
         void SetupMirrorNodes()
         {
             m_actor->AllocateNodeMirrorInfos();
-            m_actor->GetNodeMirrorInfo(m_lHandIndex).m_sourceNode = static_cast<uint16>(m_rHandIndex);
-            m_actor->GetNodeMirrorInfo(m_rHandIndex).m_sourceNode = static_cast<uint16>(m_lHandIndex);
-            m_actor->GetNodeMirrorInfo(m_lLoArmIndex).m_sourceNode = static_cast<uint16>(m_rLoArmIndex);
-            m_actor->GetNodeMirrorInfo(m_rLoArmIndex).m_sourceNode = static_cast<uint16>(m_lLoArmIndex);
-            m_actor->GetNodeMirrorInfo(m_lLoLegIndex).m_sourceNode = static_cast<uint16>(m_rLoLegIndex);
-            m_actor->GetNodeMirrorInfo(m_rLoLegIndex).m_sourceNode = static_cast<uint16>(m_lLoLegIndex);
-            m_actor->GetNodeMirrorInfo(m_lAnkleIndex).m_sourceNode = static_cast<uint16>(m_rAnkleIndex);
-            m_actor->GetNodeMirrorInfo(m_rAnkleIndex).m_sourceNode = static_cast<uint16>(m_lAnkleIndex);
+            m_actor->MatchNodeMotionSources("l_", "r_");
             m_actor->AutoDetectMirrorAxes();
         }
     };
@@ -262,7 +255,7 @@ namespace EMotionFX
         }
     };
 
-    TEST_F(AnimGraphMotionNodeFixture, DISABLED_NoInputAndMirrorMotionOutputsCorrectMotionAndPose)
+    TEST_F(AnimGraphMotionNodeFixture, NoInputAndMirrorMotionOutputsCorrectMotionAndPose)
     {
         AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
         uniqueData->m_reload = true;
