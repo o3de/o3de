@@ -424,16 +424,21 @@ namespace AZ::SceneAPI::Behaviors
     {
         using namespace AzToolsFramework;
 
+        auto defaultScript = FindMatchingDefaultScript(context.GetScene());
+        [[maybe_unused]] Events::ProcessingResult fallbackResult;
+        auto manifestScript = FindManifestScript(context.GetScene(), fallbackResult);
+        if (!defaultScript && !manifestScript)
+        {
+            return true;
+        }
+
         if (LoadPython())
         {
-            auto defaultScript = FindMatchingDefaultScript(context.GetScene());
             if (defaultScript)
             {
                 SignalScriptForExportEvent(context, defaultScript.value());
             }
 
-            [[maybe_unused]] Events::ProcessingResult fallbackResult;
-            auto manifestScript = FindManifestScript(context.GetScene(), fallbackResult);
             if (manifestScript)
             {
                 SignalScriptForExportEvent(context, manifestScript.value());

@@ -18,6 +18,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QByteArray>
+#include <QElapsedTimer>
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
 
@@ -95,6 +96,7 @@ namespace AtomToolsFramework
 
         //! If an asset is opened with this path it will automatically be selected
         AZStd::string m_pathToSelect;
+        QElapsedTimer m_selectTimer;
 
         QByteArray m_browserState;
 
