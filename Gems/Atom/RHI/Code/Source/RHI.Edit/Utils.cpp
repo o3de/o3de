@@ -263,7 +263,8 @@ namespace AZ::RHI
 
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
-        processLaunchInfo.m_showWindow = true;
+        // Shader compiler is non-interactive and output is captured below.
+        processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         {
@@ -370,10 +371,13 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
+        // Profiling logs cannot be written to the asset cache, so redirect them to the temporary folder.
         AZStd::string shaderSourceArg = shaderSourcePathForDebug;
-        AZStd::string shaderSourceFolder;
-        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
-        if (StringFunc::Contains(shaderSourceFolder, "Cache"))
+        const IO::FileIOBase* fileIo = IO::FileIOBase::GetInstance();
+        const char* assetCachePath = fileIo->GetAlias("@products@");
+        IO::FixedMaxPath resolvedShaderSourcePath;
+        const bool pathResolved = fileIo->ResolvePath(resolvedShaderSourcePath, IO::PathView(shaderSourceArg));
+        if (assetCachePath && pathResolved && resolvedShaderSourcePath.IsRelativeTo(assetCachePath))
         {
             AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");
             shaderSourceArg = shaderFileNameWithMutatedFolder;
