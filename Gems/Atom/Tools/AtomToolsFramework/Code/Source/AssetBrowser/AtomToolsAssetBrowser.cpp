@@ -63,6 +63,10 @@ namespace AtomToolsFramework
         m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 
         connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AtomToolsAssetBrowser::UpdateFilter);
+        connect(assetBrowserModel, &QAbstractItemModel::rowsInserted, this, &AtomToolsAssetBrowser::QueuePendingSelection);
+        connect(m_filterModel, &QAbstractItemModel::modelReset, this, &AtomToolsAssetBrowser::QueuePendingSelection);
+        m_selectionTimer.setSingleShot(true);
+        connect(&m_selectionTimer, &QTimer::timeout, this, &AtomToolsAssetBrowser::TrySelectPendingEntry);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
         connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
@@ -82,7 +86,6 @@ namespace AtomToolsFramework
 
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
-        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     AzToolsFramework::AssetBrowser::SearchWidget* AtomToolsAssetBrowser::GetSearchWidget()
@@ -124,17 +127,8 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::SelectEntries(const AZStd::string& absolutePath)
     {
-        AZ::SystemTickBus::Handler::BusDisconnect();
-
         m_pathToSelect = absolutePath;
-        if (ValidateDocumentPath(m_pathToSelect))
-        {
-            // Selecting a new asset in the browser is not guaranteed to happen immediately.
-            // The asset browser model notifications are sent before the model is updated.
-            // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
-            m_selectTimer.start();
-            AZ::SystemTickBus::Handler::BusConnect();
-        }
+        QueuePendingSelection();
     }
 
     void AtomToolsAssetBrowser::OpenSelectedEntries()
@@ -416,20 +410,19 @@ namespace AtomToolsFramework
         SetSettingsValue("/O3DE/AtomToolsFramework/AssetBrowser/ShowEmptyFolders", m_showEmptyFolders);
     }
 
-    void AtomToolsAssetBrowser::OnSystemTick()
+    void AtomToolsAssetBrowser::QueuePendingSelection()
+    {
+        // Model signals can arrive before the asset browser updates its path cache.
+        if (!m_pathToSelect.empty() && !m_selectionTimer.isActive())
+        {
+            m_selectionTimer.start();
+        }
+    }
+
+    void AtomToolsAssetBrowser::TrySelectPendingEntry()
     {
         if (!ValidateDocumentPath(m_pathToSelect))
         {
-            AZ::SystemTickBus::Handler::BusDisconnect();
-            m_pathToSelect.clear();
-            return;
-        }
-
-        // Stop retrying a path that the asset browser never lists
-        constexpr qint64 SelectEntriesTimeoutMs = 10000;
-        if (m_selectTimer.hasExpired(SelectEntriesTimeoutMs))
-        {
-            AZ::SystemTickBus::Handler::BusDisconnect();
             m_pathToSelect.clear();
             return;
         }
@@ -445,9 +438,8 @@ namespace AtomToolsFramework
                 AZStd::string sourcePath = entry->GetFullPath();
                 if (ValidateDocumentPath(sourcePath) && AZ::StringFunc::Equal(m_pathToSelect, sourcePath))
                 {
-                    // Once the selection is confirmed, cancel the operation and disconnect
-                    AZ::SystemTickBus::Handler::BusDisconnect();
                     m_pathToSelect.clear();
+                    return;
                 }
             }
         }
