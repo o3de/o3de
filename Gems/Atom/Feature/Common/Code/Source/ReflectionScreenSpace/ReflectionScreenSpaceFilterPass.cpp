@@ -38,7 +38,7 @@ namespace AZ
 
             RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(RHI::Format::R16G16B16A16_FLOAT, 0, 0);
             RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0, 0, 0, 0);
-            m_historyAttachmentImage[m_currentHistoryAttachmentImage] = RPI::AttachmentImage::Create(*pool.get(), historyAttachment->m_descriptor.m_image, Name(historyAttachment->m_path.GetCStr()), &clearValue, &viewDesc);
+            m_historyAttachmentImage[m_currentHistoryAttachmentImage] = RPI::AttachmentImage::Create(*pool.get(), historyAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image, Name(historyAttachment->m_path.GetCStr()), &clearValue, &viewDesc);
 
             historyAttachment->m_importedResource = m_historyAttachmentImage[m_currentHistoryAttachmentImage];
         }
@@ -46,7 +46,7 @@ namespace AZ
         void ReflectionScreenSpaceFilterPass::BuildInternal()
         {
             // retrieve the input reflection image descriptor to get the size
-            RHI::ImageDescriptor reflectionImageDesc = m_ownedAttachments[0]->m_descriptor.m_image;
+            RHI::ImageDescriptor reflectionImageDesc = m_ownedAttachments[0]->m_descriptor.get<RHI::ImageAttachment>().m_image;
 
             // create the history attachment
             RHI::ImageBindFlags imageBindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
@@ -86,14 +86,14 @@ namespace AZ
             // retrieve reflection input attachment
             const RPI::Ptr<RPI::PassAttachment>& reflectionInputAttachment = m_reflectionInputAttachmentBinding->GetAttachment();
             AZ_Assert(reflectionInputAttachment, "ReflectionScreenSpaceFilterPass: Reflection input binding has no attachment!");
-            RHI::ImageDescriptor& reflectionImageDescriptor = reflectionInputAttachment->m_descriptor.m_image;
+            RHI::ImageDescriptor& reflectionImageDescriptor = reflectionInputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
 
             // retrieve output attachment
             RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);
             const RPI::Ptr<RPI::PassAttachment>& outputAttachment = outputBinding.GetAttachment();
             AZ_Assert(outputAttachment, "ReflectionScreenSpaceFilterPass: Output binding has no attachment!");
 
-            RHI::ImageDescriptor& outputImageDescriptor = outputAttachment->m_descriptor.m_image;
+            RHI::ImageDescriptor& outputImageDescriptor = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
 
             const SSROptions& ssrOptions = specularReflectionsFeatureProcessor->GetSSROptions();
 
@@ -118,8 +118,8 @@ namespace AZ
             RPI::Ptr<RPI::PassAttachment> historyAttachment = m_historyAttachmentBinding->GetAttachment();
             historyAttachment->Update();
 
-            RHI::Size& historyImageSize = historyAttachment->m_descriptor.m_image.m_size;
-            RHI::Size& reflectionImageSize = m_ownedAttachments[0]->m_descriptor.m_image.m_size;
+            RHI::Size& historyImageSize = historyAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size& reflectionImageSize = m_ownedAttachments[0]->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             if (historyImageSize != reflectionImageSize)
             {

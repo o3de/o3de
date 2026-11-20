@@ -87,7 +87,7 @@ namespace AZ
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "VignettePass: Output binding has no attachment!");
-            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size size = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
             constants.m_outputSize[0] = size.m_width;
             constants.m_outputSize[1] = size.m_height;
