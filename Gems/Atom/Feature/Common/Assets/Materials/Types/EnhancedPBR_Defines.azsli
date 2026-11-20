@@ -8,6 +8,7 @@
 
 #pragma once
 
+#define ENABLE_VERTEX_COLOR 1
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 
 #ifndef PIPELINE_HAS_OBJECT_SRG
