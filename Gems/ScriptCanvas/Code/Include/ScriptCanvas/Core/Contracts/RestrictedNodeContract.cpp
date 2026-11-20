@@ -7,12 +7,8 @@
  */
 
 #include "RestrictedNodeContract.h"
-#include <ScriptCanvas/Core/GraphBus.h>
-#include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/Endpoint.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/Graph.h>
 
 namespace ScriptCanvas
 {
@@ -38,11 +34,26 @@ namespace ScriptCanvas
 
     AZ::Outcome<void, AZStd::string> RestrictedNodeContract::OnEvaluate(const Slot& sourceSlot, const Slot& targetSlot) const
     {
-        // Validate that the Node which contains the target slot matches the stored nodeId in order validate
-        // the restricted node contract
-        AZ::Outcome<void, AZStd::string> outcome(AZStd::unexpect, AZStd::string::format("Connection cannot be created between source slot"
-            R"( "%s" and target slot "%s". Connections to source slot can be only be made from a node with node ID)"
-            R"([%s])", sourceSlot.GetName().c_str(), targetSlot.GetName().c_str(), m_nodeId.ToString().c_str()));
-        return targetSlot.GetNodeId() == m_nodeId ? AZ::Success() : outcome;
+        if (targetSlot.GetNodeId() == m_nodeId)
+        {
+            return AZ::Success();
+        }
+
+        if (const Node* node = targetSlot.GetNode(); node && node->IsConnectionTransparentForTranslation())
+        {
+            const EndpointsResolved endpoints = node->GetNonTransparentEndpoints(targetSlot);
+            if (!endpoints.empty()
+                && AZStd::all_of(endpoints.begin(), endpoints.end(), [this](const auto& endpoint)
+                    {
+                        return endpoint.first->GetEntityId() == m_nodeId;
+                    }))
+            {
+                return AZ::Success();
+            }
+        }
+
+        return AZ::Failure(AZStd::string::format(
+            "Slot \"%s\" only accepts connections from node [%s], so it cannot connect to slot \"%s\".",
+            sourceSlot.GetName().c_str(), m_nodeId.ToString().c_str(), targetSlot.GetName().c_str()));
     }
 }

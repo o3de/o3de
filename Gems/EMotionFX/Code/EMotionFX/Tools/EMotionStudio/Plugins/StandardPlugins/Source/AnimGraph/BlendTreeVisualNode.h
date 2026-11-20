@@ -37,11 +37,18 @@ namespace EMStudio
         uint32 GetType() const override { return BlendTreeVisualNode::TYPE_ID; }
 
         void Render(QPainter& painter, QPen* pen, bool renderShadow) override;
+        void Update(const QRect& visibleRect, const QPoint& mousePos) override;
 
         int32 CalcRequiredHeight() const override;
+        int32 CalcRequiredWidth() override;
+        QRect CalcInputPortRect(AZ::u16 portNr) override;
+        QRect CalcOutputPortRect(AZ::u16 portNr) override;
 
     private:
         QColor GetPortColor(const EMotionFX::AnimGraphNode::Port& port) const;
+        void RenderReroute(QPainter& painter, QPen* pen, bool renderShadow);
+
+        bool m_isReroute = false;
     };
 
 }   // namespace EMStudio

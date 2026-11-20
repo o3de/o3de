@@ -7,17 +7,23 @@
  */
 
 // AZ
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/StackTracer.h>
+#include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 // Graph Canvas
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
-#include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
+#include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
+#include <GraphCanvas/Editor/GraphModelBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphModel/Integration/Helpers.h>
 
 // GraphModel
 #include <GraphModel/GraphModelBus.h>
@@ -334,5 +340,197 @@ namespace GraphModelIntegrationTest
         testNode->DeleteSlot(inputSlot);
         auto afterSlots = testNode->GetSlots();
         EXPECT_EQ(beforeSlots.size(), afterSlots.size());
+    }
+
+    class PassthroughTestNode : public GraphModel::Node
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PassthroughTestNode, AZ::SystemAllocator);
+        AZ_RTTI(PassthroughTestNode, "{D97E57B1-2C8A-40BE-A8FC-3CF9E8DDF1AC}", GraphModel::Node);
+
+        PassthroughTestNode() = default;
+
+        explicit PassthroughTestNode(GraphModel::GraphPtr graph)
+            : Node(graph)
+        {
+            RegisterSlots();
+            CreateSlotData();
+        }
+
+        const char* GetTitle() const override
+        {
+            return "Passthrough";
+        }
+
+        static void Reflect(AZ::SerializeContext* context)
+        {
+            context->Class<PassthroughTestNode, GraphModel::Node>()->Version(0);
+            context->GetEditContext()->Class<PassthroughTestNode>("Passthrough", "")
+                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                ->Attribute(GraphModelIntegration::Attributes::DataTypePassthrough, "In|Out");
+        }
+
+    protected:
+        void RegisterSlots() override
+        {
+            const auto& types = GetGraphContext()->GetAllDataTypes();
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(GraphModel::SlotDirection::Input, GraphModel::SlotType::Data, "In", "In", "", types, types.front()->GetDefaultValue()));
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(GraphModel::SlotDirection::Output, GraphModel::SlotType::Data, "Out", "Out", "", types));
+        }
+    };
+
+    class EntitySourceTestNode : public GraphModel::Node
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(EntitySourceTestNode, AZ::SystemAllocator);
+        AZ_RTTI(EntitySourceTestNode, "{F4A5296D-0138-4967-9058-FC1B2F64DF40}", GraphModel::Node);
+
+        explicit EntitySourceTestNode(GraphModel::GraphPtr graph)
+            : Node(graph)
+        {
+            RegisterSlots();
+            CreateSlotData();
+        }
+
+        const char* GetTitle() const override
+        {
+            return "Entity source";
+        }
+
+    protected:
+        void RegisterSlots() override
+        {
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(GraphModel::SlotDirection::Output, GraphModel::SlotType::Data, "Out", "Out", "", GraphModel::DataTypeList{GetGraphContext()->GetDataType(TestDataTypeEnum_EntityId)}));
+        }
+    };
+
+    class PassthroughGraphTests : public GraphModelIntegrationTests
+    {
+    protected:
+        void SetUp() override
+        {
+            GraphModelIntegrationTests::SetUp();
+            AZ::ComponentApplicationBus::BroadcastResult(m_context, &AZ::ComponentApplicationRequests::GetSerializeContext);
+            if (!m_context->FindClassData(azrtti_typeid<PassthroughTestNode>()))
+            {
+                PassthroughTestNode::Reflect(m_context);
+            }
+        }
+
+        GraphCanvas::Endpoint UiEndpoint(GraphModel::SlotPtr slot)
+        {
+            GraphCanvas::NodeId nodeId;
+            GraphCanvas::SlotId slotId;
+
+            GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                nodeId, m_sceneId, &GraphModelIntegration::GraphControllerRequests::GetNodeIdByNode, slot->GetParentNode());
+            GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                slotId, m_sceneId, &GraphModelIntegration::GraphControllerRequests::GetSlotIdBySlot, slot);
+
+            return {nodeId, slotId};
+        }
+
+        void Open(GraphModel::GraphPtr graph)
+        {
+            GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+                &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_sceneId);
+            GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+                &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_sceneId, graph);
+        }
+
+        AZ::SerializeContext* m_context = nullptr;
+    };
+
+    TEST_F(PassthroughGraphTests, CyclicSerializedGraphOpensWithUnresolvedTypes)
+    {
+        auto first = AZStd::make_shared<PassthroughTestNode>(m_graph);
+        auto second = AZStd::make_shared<PassthroughTestNode>(m_graph);
+        m_graph->AddNode(first);
+        m_graph->AddNode(second);
+        ASSERT_TRUE(m_graph->AddConnection(first->GetSlot("Out"), second->GetSlot("In")));
+        ASSERT_TRUE(m_graph->AddConnection(second->GetSlot("Out"), first->GetSlot("In")));
+
+        AZStd::vector<AZ::u8> bytes;
+        AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> stream(&bytes);
+        ASSERT_TRUE(AZ::Utils::SaveObjectToStream(stream, AZ::ObjectStream::ST_XML, m_graph.get(), m_context));
+
+        GraphModel::GraphPtr loaded(AZ::Utils::LoadObjectFromBuffer<GraphModel::Graph>(bytes.data(), bytes.size(), m_context));
+        ASSERT_TRUE(loaded);
+        loaded->PostLoadSetup(m_graphContext);
+        Open(loaded);
+
+        for (const auto& [id, node] : loaded->GetNodes())
+        {
+            for (const char* name : {"In", "Out"})
+            {
+                const auto endpoint = UiEndpoint(node->GetSlot(name));
+                ASSERT_TRUE(endpoint.IsValid());
+                AZ::Uuid typeId;
+                GraphCanvas::DataSlotRequestBus::EventResult(typeId, endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::GetDataTypeId);
+                EXPECT_TRUE(typeId.IsNull());
+            }
+        }
+
+        auto ordinary = AZStd::make_shared<TestNode>(loaded, m_graphContext);
+        auto target = AZStd::make_shared<TestNode>(loaded, m_graphContext);
+        AZ::Vector2 position = AZ::Vector2::CreateZero();
+        for (const auto& node : {ordinary, target})
+        {
+            GraphCanvas::NodeId nodeId;
+            GraphModelIntegration::GraphControllerRequestBus::EventResult(nodeId, m_sceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, node, position);
+            ASSERT_TRUE(nodeId.IsValid());
+        }
+        ASSERT_TRUE(loaded->AddConnection(loaded->GetNode(second->GetId())->GetSlot("Out"), ordinary->GetSlot(TEST_STRING_INPUT_ID)));
+
+        bool valid = false;
+        GraphCanvas::GraphModelRequestBus::EventResult(
+            valid, m_sceneId, &GraphCanvas::GraphModelRequests::IsValidConnection,
+            UiEndpoint(ordinary->GetSlot(TEST_STRING_OUTPUT_ID)), UiEndpoint(target->GetSlot(TEST_STRING_INPUT_ID)));
+        EXPECT_TRUE(valid);
+
+        GraphCanvas::GraphModelRequestBus::EventResult(
+            valid, m_sceneId, &GraphCanvas::GraphModelRequests::IsValidConnection,
+            UiEndpoint(ordinary->GetSlot(TEST_STRING_OUTPUT_ID)), UiEndpoint(ordinary->GetSlot(TEST_STRING_INPUT_ID)));
+        EXPECT_FALSE(valid);
+
+        valid = true;
+        GraphCanvas::GraphModelRequestBus::EventResult(
+            valid, m_sceneId, &GraphCanvas::GraphModelRequests::IsValidConnection,
+            UiEndpoint(loaded->GetNode(first->GetId())->GetSlot("Out")), UiEndpoint(target->GetSlot(TEST_EVENT_INPUT_ID)));
+        EXPECT_FALSE(valid);
+    }
+
+    TEST_F(PassthroughGraphTests, ChainDisplaysSourceTypeAndRejectsIncompatibleDownstream)
+    {
+        auto source = AZStd::make_shared<EntitySourceTestNode>(m_graph);
+        auto first = AZStd::make_shared<PassthroughTestNode>(m_graph);
+        auto second = AZStd::make_shared<PassthroughTestNode>(m_graph);
+        auto target = AZStd::make_shared<TestNode>(m_graph, m_graphContext);
+        for (GraphModel::NodePtr node : {GraphModel::NodePtr(source), GraphModel::NodePtr(first), GraphModel::NodePtr(second), GraphModel::NodePtr(target)})
+        {
+            m_graph->AddNode(node);
+        }
+        ASSERT_TRUE(m_graph->AddConnection(first->GetSlot("Out"), second->GetSlot("In")));
+        Open(m_graph);
+
+        GraphModel::ConnectionPtr upstream;
+        GraphModelIntegration::GraphControllerRequestBus::EventResult(upstream, m_sceneId, &GraphModelIntegration::GraphControllerRequests::AddConnection, source->GetSlot("Out"), first->GetSlot("In"));
+        ASSERT_TRUE(upstream);
+
+        const auto secondOut = UiEndpoint(second->GetSlot("Out"));
+        AZ::Uuid typeId;
+        GraphCanvas::DataSlotRequestBus::EventResult(typeId, secondOut.GetSlotId(), &GraphCanvas::DataSlotRequests::GetDataTypeId);
+        EXPECT_EQ(typeId, azrtti_typeid<AZ::EntityId>());
+
+        bool valid = true;
+        GraphCanvas::GraphModelRequestBus::EventResult(valid, m_sceneId, &GraphCanvas::GraphModelRequests::IsValidConnection, secondOut, UiEndpoint(target->GetSlot(TEST_STRING_INPUT_ID)));
+        EXPECT_FALSE(valid);
+
+        ASSERT_TRUE(m_graph->RemoveConnection(upstream));
+        ASSERT_TRUE(m_graph->AddConnection(second->GetSlot("Out"), target->GetSlot(TEST_STRING_INPUT_ID)));
+
+        valid = true;
+        GraphCanvas::GraphModelRequestBus::EventResult(valid, m_sceneId, &GraphCanvas::GraphModelRequests::IsValidConnection, UiEndpoint(source->GetSlot("Out")), UiEndpoint(first->GetSlot("In")));
+        EXPECT_FALSE(valid);
     }
 }

@@ -11,6 +11,8 @@
 #include "Slot.h"
 #include "Node.h"
 #include "NodeBus.h"
+#include "Contracts/DisallowReentrantExecutionContract.h"
+#include "Contracts/RestrictedNodeContract.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -18,26 +20,40 @@ namespace ScriptCanvas
 {
     AZ::Outcome<void, AZStd::string> MatchContracts(const Slot& firstSlot, const Slot& secondSlot)
     {
-        AZ::Outcome<void, AZStd::string> outcome = AZ::Success();
-
-        AZStd::string failedContract;
-        AZStd::all_of(firstSlot.GetContracts().begin(), firstSlot.GetContracts().end(), [&firstSlot, &secondSlot, &outcome](const AZStd::unique_ptr<Contract>& contract)
+        for (const auto& contract : firstSlot.GetContracts())
         {
             if (!contract)
             {
-                return false;
+                break;
             }
 
-            outcome = contract->Evaluate(firstSlot, secondSlot);
-            if (outcome.IsSuccess())
+            if (auto outcome = contract->Evaluate(firstSlot, secondSlot); !outcome)
             {
-                return true;
+                return outcome;
+            }
+        }
+
+        return AZ::Success();
+    }
+
+    namespace
+    {
+        AZ::Outcome<void, AZStd::string> MatchEndpointContracts(const Slot& firstSlot, const Slot& secondSlot)
+        {
+            for (const auto& contract : firstSlot.GetContracts())
+            {
+                if (azrtti_istypeof<RestrictedNodeContract>(contract.get())
+                    || azrtti_istypeof<DisallowReentrantExecutionContract>(contract.get()))
+                {
+                    if (auto outcome = contract->Evaluate(firstSlot, secondSlot); !outcome)
+                    {
+                        return outcome;
+                    }
+                }
             }
 
-            return false;
-        }); 
-
-        return outcome;
+            return AZ::Success();
+        }
     }
 
     Connection::Connection(const ID& fromNode, const SlotId& fromSlot, const ID& toNode, const SlotId& toSlot)
@@ -129,6 +145,39 @@ namespace ScriptCanvas
         if (!connectionTargetToSource.IsSuccess())
         {
             return connectionTargetToSource;
+        }
+
+        const Node* sourceNode = sourceSlot.GetNode();
+        const Node* targetNode = targetSlot.GetNode();
+        if ((sourceNode && sourceNode->IsConnectionTransparentForTranslation())
+            || (targetNode && targetNode->IsConnectionTransparentForTranslation()))
+        {
+            if (!sourceNode || !targetNode)
+            {
+                return AZ::Failure(AZStd::string("Reroute connections require both slots to have an owning node."));
+            }
+
+            const auto sources = sourceNode->GetNonTransparentEndpoints(sourceSlot);
+            const auto targets = targetNode->GetNonTransparentEndpoints(targetSlot);
+
+            // Connection limits count physical wires. Node identity checks also apply across reroutes.
+            for (const auto& sourceEndpoint : sources)
+            {
+                for (const auto& targetEndpoint : targets)
+                {
+                    const Slot* source = sourceEndpoint.second;
+                    const Slot* target = targetEndpoint.second;
+
+                    if (auto outcome = MatchEndpointContracts(*source, *target); !outcome)
+                    {
+                        return outcome;
+                    }
+                    if (auto outcome = MatchEndpointContracts(*target, *source); !outcome)
+                    {
+                        return outcome;
+                    }
+                }
+            }
         }
 
         return AZ::Success();

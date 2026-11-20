@@ -91,6 +91,8 @@ namespace GraphCanvas
         virtual const Styling::StyleHelper* GetContainedTypeColorPalette(size_t index) const = 0;
 
         virtual void SetDataAndContainedTypeIds(AZ::Uuid typeId, const AZStd::vector<AZ::Uuid>& typeIds, DataValueType valueType) = 0;
+
+        virtual void UpdatePropertyDisplayState() {}
     };
 
     using DataSlotRequestBus = AZ::EBus<DataSlotRequests>;

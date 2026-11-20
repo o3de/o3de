@@ -38,6 +38,7 @@ set(FILES
     Tests/UI/CanUseFileMenu.cpp
     Tests/UI/ClothColliderTests.cpp
     Tests/UI/CanUseEditMenu.cpp
+    Tests/UI/TransitionWaypointTests.cpp
     Tests/UI/CanOpenWorkspace.cpp
     Tests/UI/CanUseHelpMenu.cpp
     Tests/UI/CommandRunnerFixture.cpp

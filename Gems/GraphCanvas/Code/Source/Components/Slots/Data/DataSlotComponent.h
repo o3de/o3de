@@ -68,6 +68,7 @@ namespace GraphCanvas
         const Styling::StyleHelper* GetContainedTypeColorPalette(size_t index) const override;
 
         void SetDataAndContainedTypeIds(AZ::Uuid typeId, const AZStd::vector<AZ::Uuid>& typeIds, DataValueType valueType) override;
+        void UpdatePropertyDisplayState() override;
         ////
 
     protected:
@@ -77,8 +78,6 @@ namespace GraphCanvas
         // SlotComponent
         void OnFinalizeDisplay() override;
         ////
-
-        void UpdatePropertyDisplayState();
 
     private:
         DataSlotComponent(const DataSlotComponent&) = delete;

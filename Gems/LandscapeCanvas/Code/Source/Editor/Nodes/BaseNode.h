@@ -59,6 +59,9 @@ namespace LandscapeCanvas
 
         virtual const BaseNodeType GetBaseNodeType() const { return Invalid; }
 
+        //! Visual-only nodes organize the graph and do not represent an Entity or Component.
+        virtual bool IsVisualOnly() const { return false; }
+
         const AZ::EntityId& GetVegetationEntityId() const { return m_vegetationEntityId; }
         void SetVegetationEntityId(const AZ::EntityId& entityId);
 

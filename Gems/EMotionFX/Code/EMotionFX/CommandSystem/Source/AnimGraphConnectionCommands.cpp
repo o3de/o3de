@@ -736,6 +736,29 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
+    void AdjustTransitionWaypoints(const EMotionFX::AnimGraphStateTransition* transition,
+        const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        // An empty list serializes to a valid document as well, so clearing the last waypoint goes through the same path.
+        const AZ::Outcome<AZStd::string> serializedWaypoints = MCore::ReflectionSerializer::Serialize(&waypoints);
+        if (!serializedWaypoints.IsSuccess())
+        {
+            AZ_Error("EMotionFX", false, "Failed to serialize the transition waypoints.");
+            return;
+        }
+
+        AZStd::string command = AZStd::string::format("%s -%s %i -%s %s -waypoints {%s}",
+            CommandAnimGraphAdjustTransition::s_commandName,
+            EMotionFX::ParameterMixinAnimGraphId::s_parameterName,
+            transition->GetAnimGraph()->GetID(),
+            EMotionFX::ParameterMixinTransitionId::s_parameterName,
+            transition->GetId().ToString().c_str(),
+            serializedWaypoints.GetValue().c_str());
+
+        CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
+    }
+
     AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAdjustTransition, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphAdjustTransition::s_commandName = "AnimGraphAdjustTransition";
 
@@ -819,6 +842,20 @@ namespace CommandSystem
             transition->SetVisualOffsets(newStartOffsetX, newStartOffsetY, newEndOffsetX, newEndOffsetY);
         }
 
+        // Set the new waypoints
+        if (parameters.CheckIfHasParameter("waypoints"))
+        {
+            AZStd::vector<AZ::Vector2> newWaypoints;
+            const AZStd::string serializedWaypoints = parameters.GetValue("waypoints", this);
+            if (!serializedWaypoints.empty() && !MCore::ReflectionSerializer::Deserialize(&newWaypoints, serializedWaypoints))
+            {
+                outResult = AZStd::string::format("Cannot deserialize the waypoints of transition '%s'.", m_transitionId.ToString().c_str());
+                return false;
+            }
+
+            transition->SetWaypoints(newWaypoints);
+        }
+
         // set the disabled flag
         if (parameters.CheckIfHasParameter("isDisabled"))
         {
@@ -878,7 +915,7 @@ namespace CommandSystem
 
     void CommandAnimGraphAdjustTransition::InitSyntax()
     {
-        GetSyntax().ReserveParameters(13);
+        GetSyntax().ReserveParameters(14);
 
         MCore::CommandSyntax& syntax = GetSyntax();
         ParameterMixinTransitionId::InitSyntax(syntax);
@@ -891,6 +928,7 @@ namespace CommandSystem
         GetSyntax().AddParameter("startOffsetY", ".", MCore::CommandSyntax::PARAMTYPE_INT, "0");
         GetSyntax().AddParameter("endOffsetX", ".", MCore::CommandSyntax::PARAMTYPE_INT, "0");
         GetSyntax().AddParameter("endOffsetY", ".", MCore::CommandSyntax::PARAMTYPE_INT, "0");
+        GetSyntax().AddParameter("waypoints", "The serialized visual bend points of the transition.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
         GetSyntax().AddParameter("isDisabled", "False in case the transition shall be active and working, true in case it should be disabled and act like it does not exist.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "true");
         GetSyntax().AddParameter("attributesString", "The connection attributes as string.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
         GetSyntax().AddParameter("updateUniqueData", "Setting this to true will trigger update on anim graph unique data.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "true");

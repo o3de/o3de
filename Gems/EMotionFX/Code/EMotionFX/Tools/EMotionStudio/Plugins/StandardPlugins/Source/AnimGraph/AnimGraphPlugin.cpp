@@ -768,6 +768,10 @@ namespace EMStudio
 
     void AnimGraphEventHandler::OnDeleteAnimGraph(EMotionFX::AnimGraph* animGraph)
     {
+        // The RemoveAnimGraph command already took the graph out of the model, but a graph deleted any other way
+        // would leave model items (and the views built on them) pointing at freed nodes. The graph is still intact here.
+        m_plugin->GetAnimGraphModel().Remove(animGraph);
+
         if (m_plugin->GetActiveAnimGraph() == animGraph)
         {
             m_plugin->SetActiveAnimGraph(nullptr);
