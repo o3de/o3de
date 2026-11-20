@@ -30,7 +30,7 @@ public:
     virtual ~CEditorPreferencesPage_AWS();
 
     // IPreferencesPage interface methods.
-    virtual const char* GetCategory() override { return "AWS"; }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "AWS"); }
     virtual const char* GetTitle() override;
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;

@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
@@ -48,9 +49,10 @@ namespace AzToolsFramework
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SliceMetadataEntityContextComponent>(
-                    "Slice Metadata Entity Context", "System component responsible for owning the slice metadata entity context")
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Slice Metadata Entity Context"),
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "System component responsible for owning the slice metadata entity context"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                     ;
             }
         }

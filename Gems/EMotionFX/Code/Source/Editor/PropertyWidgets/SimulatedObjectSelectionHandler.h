@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
 #include <QLabel>
-#endif
 
 namespace EMotionFX
 {

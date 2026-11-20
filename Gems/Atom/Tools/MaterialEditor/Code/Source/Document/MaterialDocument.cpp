@@ -165,7 +165,7 @@ namespace MaterialEditor
 
         for (const auto& group : m_groups)
         {
-            objects.push_back(AZStd::move(GetObjectInfoFromDynamicPropertyGroup(group.get())));
+            objects.push_back(GetObjectInfoFromDynamicPropertyGroup(group.get()));
         }
 
         return objects;
@@ -388,7 +388,7 @@ namespace MaterialEditor
                         addPropertiesResult = false;
                         return false;
                     }
-                    
+
                     sourceData.SetPropertyValue(propertyId, propertyValue);
                 }
             }
@@ -447,7 +447,7 @@ namespace MaterialEditor
             AZ_Error("MaterialDocument", false, "Document extension not supported: '%s'.", m_absolutePath.c_str());
             return OpenFailed();
         }
-        
+
         const bool elevateWarnings = false;
 
         // In order to support automation, general usability, and 'save as' functionality, the user must not have to wait
@@ -601,7 +601,7 @@ namespace MaterialEditor
                 using namespace AZ::RPI;
 
                 const MaterialTypeSourceData::PropertyGroup* propertyGroup = propertyGroupStack.back();
-                
+
                 MaterialNameContext groupNameContext = MaterialTypeSourceData::MakeMaterialNameContext(propertyGroupStack);
 
                 if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors(), groupNameContext))
@@ -1031,7 +1031,7 @@ namespace MaterialEditor
 
     AtomToolsFramework::DynamicProperty* MaterialDocument::FindProperty(const AZ::Name& propertyId)
     {
-        AtomToolsFramework::DynamicProperty* result = nullptr; 
+        AtomToolsFramework::DynamicProperty* result = nullptr;
         TraverseGroups(m_groups, [&](auto& group) {
             for (auto& property : group->m_properties)
             {
@@ -1048,7 +1048,7 @@ namespace MaterialEditor
 
     const AtomToolsFramework::DynamicProperty* MaterialDocument::FindProperty(const AZ::Name& propertyId) const
     {
-        AtomToolsFramework::DynamicProperty* result = nullptr; 
+        AtomToolsFramework::DynamicProperty* result = nullptr;
         TraverseGroups(m_groups, [&](auto& group) {
             for (auto& property : group->m_properties)
             {

@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
 #include <Viewport/OpenParticleViewportNotificationBus.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

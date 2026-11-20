@@ -17,17 +17,17 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
-
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPushButton>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
@@ -46,13 +46,61 @@ namespace AzToolsFramework
     namespace ComponentEditorConstants
     {
         static const int kPropertyLabelWidth = 160; // Width of property label column in property grid.
-        static const char* kUnknownComponentTitle = "-";
+        static const char* kUnknownComponentTitle = "";
 
         // names for widgets so they can be found in stylesheet
         static const char* kPropertyEditorId = "PropertyEditor";
 
         static const int kAddComponentMenuHeight = 150;
     }
+
+    namespace ComponentEditorInternal
+    {
+        bool ResolveComponentAndEntity(const AZ::EntityComponentIdPair& componentPair, AZ::Entity*& outEntity, AZ::Component*& outComponent)
+        {
+            outEntity = nullptr;
+            outComponent = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(outEntity, &AZ::ComponentApplicationBus::Events::FindEntity, componentPair.GetEntityId());
+            if (!outEntity)
+            {
+                return false;
+            }
+            outComponent = outEntity->FindComponent(componentPair.GetComponentId());
+
+            auto isSameComponentFn = [&](AZ::Component* component)
+            {
+                return component->GetId() == componentPair.GetComponentId();
+            };
+
+            if (!outComponent)
+            {
+                // It could be a disabled - Check for those, too:
+                AZ::Entity::ComponentArrayType disabledComponents;
+
+                EditorDisabledCompositionRequestBus::Event(componentPair.GetEntityId(), &EditorDisabledCompositionRequestBus::Events::GetDisabledComponents,
+                    disabledComponents);
+
+                if (auto it = AZStd::find_if(disabledComponents.begin(), disabledComponents.end(), isSameComponentFn); it != disabledComponents.end())
+                {
+                    outComponent = *it;
+                }
+            }
+
+            if (!outComponent)
+            {
+                // it could be pending, ie, added, but unable to activate, since it is missing required services.
+                // ask the EditorPendingCompositionRequestBus if it is pending, and if so, return it.
+                AZ::Entity::ComponentArrayType pendingComponents;
+                EditorPendingCompositionRequestBus::Event(componentPair.GetEntityId(), &EditorPendingCompositionRequestBus::Events::GetPendingComponents, pendingComponents);
+
+                if (auto it = AZStd::find_if(pendingComponents.begin(), pendingComponents.end(), isSameComponentFn); it != pendingComponents.end())
+                {
+                    outComponent = *it;
+                }
+            }
+            return outComponent != nullptr;
+        }
+    } // namespace ComponentEditorInternal
 
     template<typename T, typename Alloc>
     void AddUniqueItemToContainer(AZStd::vector<T, Alloc>& container, const T& element)
@@ -208,7 +256,7 @@ namespace AzToolsFramework
         // the GenericComponentWrapper rather than the underlying type.
         AZ::Uuid instanceTypeId = azrtti_typeid(componentInstance);
 
-        m_components.push_back(componentInstance);
+        m_components.push_back(AZ::EntityComponentIdPair(componentInstance->GetEntityId(), componentInstance->GetId()));
 
         if (m_adapter)
         {
@@ -253,7 +301,7 @@ namespace AzToolsFramework
             // Use our seed to make a unique save state key for each entity, so the property editor is stored per-entity for the component
             // editor
             auto entityUniqueSavedStateKey = m_savedKeySeed;
-            auto entityId = m_components[0]->GetEntityId();
+            auto entityId = m_components[0].GetEntityId();
             entityUniqueSavedStateKey.Add(reinterpret_cast<void*>(&entityId), sizeof(entityId));
             GetPropertyEditor()->SetSavedStateKey(entityUniqueSavedStateKey);
 
@@ -400,7 +448,7 @@ namespace AzToolsFramework
         auto featureButton = notification->addButtonFeature(tr("Delete component"));
         connect(featureButton, &QPushButton::clicked, this, [this]()
         {
-            emit OnRequestRemoveComponents(GetComponents());
+            emit OnRequestRemoveComponents(ResolveComponentPointers());
         });
 
 #if 0 //disabling features until UX/UI is reworked or actions added to menu as stated above
@@ -440,7 +488,7 @@ namespace AzToolsFramework
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));
         connect(featureButton, &QPushButton::clicked, this, [this, featureButton, services, incompatibleServices]()
         {
-            QRect screenRect(qApp->desktop()->availableGeometry(featureButton));
+            QRect screenRect(qApp->primaryScreen()->availableGeometry());
             QRect menuRect(
                 featureButton->mapToGlobal(featureButton->rect().topLeft()),
                 featureButton->mapToGlobal(featureButton->rect().bottomRight()));
@@ -477,12 +525,15 @@ namespace AzToolsFramework
 
         for (auto component : m_components)
         {
-            auto entity = component->GetEntity();
-            if (entity)
+            auto entityId = component.GetEntityId();
+            if (entityId.IsValid())
             {
                 AZ::Entity::ComponentArrayType disabledComponents;
-                EditorDisabledCompositionRequestBus::Event(entity->GetId(), &EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
-                if (AZStd::find(disabledComponents.begin(), disabledComponents.end(), component) != disabledComponents.end())
+                EditorDisabledCompositionRequestBus::Event(entityId, &EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
+                if (AZStd::find_if(disabledComponents.begin(), disabledComponents.end(), [component](AZ::Component* disabledComponent)
+                {
+                    return disabledComponent->GetId() == component.GetComponentId();
+                }) != disabledComponents.end())
                 {
                     return true;
                 }
@@ -497,8 +548,14 @@ namespace AzToolsFramework
         AzToolsFramework::EntityCompositionRequests::PendingComponentInfo combinedPendingComponentInfo;
         for (auto component : m_components)
         {
+            AZ::Entity* entity = nullptr;
+            AZ::Component* componentInstance = nullptr;
+            if (!ComponentEditorInternal::ResolveComponentAndEntity(component, entity, componentInstance))
+            {
+                continue;
+            }
             AzToolsFramework::EntityCompositionRequests::PendingComponentInfo pendingComponentInfo;
-            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(pendingComponentInfo, &AzToolsFramework::EntityCompositionRequests::GetPendingComponentInfo, component);
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(pendingComponentInfo, &AzToolsFramework::EntityCompositionRequests::GetPendingComponentInfo, componentInstance);
 
             for (auto conflict : pendingComponentInfo.m_validComponentsThatAreIncompatible)
             {
@@ -551,6 +608,7 @@ namespace AzToolsFramework
             componentsOnEntity.clear();
             AzToolsFramework::GetAllComponentsForEntity(entity, componentsOnEntity);
 
+            AZStd::vector<AZ::Component*> resolved = ResolveComponentPointers();
             for (auto component : componentsOnEntity)
             {
                 //for each component, get any pending info/warnings
@@ -558,12 +616,12 @@ namespace AzToolsFramework
                 AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(pendingComponentInfo, &AzToolsFramework::EntityCompositionRequests::GetPendingComponentInfo, component);
 
                 //if pending info/warnings references displayed components then save the current component for reverse lookup
-                if (DoContainersIntersect(pendingComponentInfo.m_validComponentsThatAreIncompatible, m_components))
+                if (DoContainersIntersect(pendingComponentInfo.m_validComponentsThatAreIncompatible, resolved))
                 {
                     AddUniqueItemToContainer(combinedPendingComponentInfo.m_validComponentsThatAreIncompatible, component);
                 }
 
-                if (DoContainersIntersect(pendingComponentInfo.m_pendingComponentsWithRequiredServices, m_components))
+                if (DoContainersIntersect(pendingComponentInfo.m_pendingComponentsWithRequiredServices, resolved))
                 {
                     AddUniqueItemToContainer(combinedPendingComponentInfo.m_pendingComponentsWithRequiredServices, component);
                 }
@@ -615,10 +673,10 @@ namespace AzToolsFramework
             return;
         }
 
-        for (const auto component : m_components)
+        for (const auto& component : m_components)
         {
-            if ((component->GetId() == entityComponentIdPair.GetComponentId()) 
-             && (component->GetEntityId() == entityComponentIdPair.GetEntityId()))
+            if ((component.GetComponentId() == entityComponentIdPair.GetComponentId()) 
+             && (component.GetEntityId() == entityComponentIdPair.GetEntityId()))
             {
                 GetPropertyEditor()->QueueInvalidation(refreshLevel);
                 break;
@@ -641,7 +699,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const auto entityId = m_components[0]->GetEntityId();
+        const auto entityId = m_components[0].GetEntityId();
         AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
         AzFramework::SliceEntityRequestBus::EventResult(sliceInstanceAddress, entityId,
             &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
@@ -728,9 +786,10 @@ namespace AzToolsFramework
         // Prepare a tooltip showing useful metadata about this particular component,
         // such as dependencies on other services (and components) on the entity.
 
-        AZ::Component* thisComponent = m_components.front();
-
-        if (!thisComponent)
+        AZ::EntityComponentIdPair examineComponent = m_components.front();
+        AZ::Entity* entity = nullptr;
+        AZ::Component* thisComponent = nullptr;
+        if (!ComponentEditorInternal::ResolveComponentAndEntity(examineComponent, entity, thisComponent))
         {
             return QString();
         }
@@ -740,13 +799,6 @@ namespace AzToolsFramework
             componentDescriptor, thisComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         if (!componentDescriptor)
-        {
-            return QString();
-        }
-
-        AZ::Entity* entity = thisComponent->GetEntity();
-
-        if (!entity)
         {
             return QString();
         }
@@ -808,7 +860,7 @@ namespace AzToolsFramework
     {
         for (auto component : m_components)
         {
-            EditorEntityInfoRequestBus::Event(component->GetEntityId(), &EditorEntityInfoRequestBus::Events::SetComponentExpanded, component->GetId(), expanded);
+            EditorEntityInfoRequestBus::Event(component.GetEntityId(), &EditorEntityInfoRequestBus::Events::SetComponentExpanded, component.GetComponentId(), expanded);
         }
 
         emit OnExpansionContractionDone();
@@ -862,11 +914,18 @@ namespace AzToolsFramework
 
         for (auto component : m_components)
         {
-            auto typeId = GetComponentTypeId(component);
+            AZ::Entity* entity = nullptr;
+            AZ::Component* thisComponent = nullptr;
+            if (!ComponentEditorInternal::ResolveComponentAndEntity(component, entity, thisComponent))
+            {
+                return false;
+            }
+
+            auto typeId = GetComponentTypeId(thisComponent);
 
             //build a vector of all class info associated with typeId
             //EnumerateBase doesn't include class data for requested type so it must be added manually
-            AZStd::vector<const AZ::SerializeContext::ClassData*> classDataVec = { GetComponentClassData(component) };
+            AZStd::vector<const AZ::SerializeContext::ClassData*> classDataVec = { GetComponentClassData(thisComponent) };
 
             //get all class info for any base classes (light components share a common base class where all properties are set)
             m_serializeContext->EnumerateBase(
@@ -885,7 +944,7 @@ namespace AzToolsFramework
                     bool visible = true;
                     if (auto visibilityAttribute = element.FindAttribute(AZ::Edit::Attributes::Visibility))
                     {
-                        AzToolsFramework::PropertyAttributeReader reader(component, visibilityAttribute);
+                        AzToolsFramework::PropertyAttributeReader reader(thisComponent, visibilityAttribute);
                         AZ::u32 visibilityValue;
                         if (reader.Read<AZ::u32>(visibilityValue))
                         {
@@ -973,15 +1032,30 @@ namespace AzToolsFramework
         }
     }
 
-    AZStd::vector<AZ::Component*>& ComponentEditor::GetComponents()
+    AZStd::vector<AZ::EntityComponentIdPair>& ComponentEditor::GetEntityComponentIdPairs()
+    {
+        return m_components;
+    }
+    const AZStd::vector<AZ::EntityComponentIdPair>& ComponentEditor::GetEntityComponentIdPairs() const
     {
         return m_components;
     }
 
-    const AZStd::vector<AZ::Component*>& ComponentEditor::GetComponents() const
+    AZStd::vector<AZ::Component*> ComponentEditor::ResolveComponentPointers() const
     {
-        return m_components;
-    }
+            AZStd::vector<AZ::Component*> componentPointers;
+            componentPointers.reserve(m_components.size());
+            for (const auto& entityComponentIdPair : m_components)
+            {
+                AZ::Entity* entity = nullptr;
+                AZ::Component* component = nullptr;
+                if (ComponentEditorInternal::ResolveComponentAndEntity(entityComponentIdPair, entity, component))
+                {
+                    componentPointers.push_back(component);
+                }
+            }
+            return componentPointers;
+        }
 
     void ComponentEditor::VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const
     {
@@ -995,9 +1069,9 @@ namespace AzToolsFramework
             return false;
         }
 
-        for (AZ::Component* component : m_components)
+        for (const AZ::EntityComponentIdPair& component : m_components)
         {
-            if (component->GetId() == componentId)
+            if (component.GetComponentId() == componentId)
             {
                 return true;
             }
@@ -1046,4 +1120,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_ComponentEditor.cpp"

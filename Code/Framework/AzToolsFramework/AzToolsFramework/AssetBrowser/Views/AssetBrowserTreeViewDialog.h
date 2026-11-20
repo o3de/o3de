@@ -7,9 +7,8 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
-#endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace Ui

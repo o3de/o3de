@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+
 #include <QLabel>
 #include <QUrl>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QEvent)
 QT_FORWARD_DECLARE_CLASS(QMouseEvent)
@@ -36,7 +35,7 @@ namespace O3DE::ProjectManager
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void SetDefaultStyle();
 

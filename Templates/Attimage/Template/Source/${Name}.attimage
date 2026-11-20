@@ -1,0 +1,20 @@
+{
+  "Type": "JsonSerialization",
+  "Version": 1,
+  "ClassName": "AttachmentImageAsset",
+  "ClassData": {
+    "m_imageDescriptor": {
+      "BindFlags": [
+        "ShaderRead",
+        "ShaderWrite"
+      ],
+      "Size": {
+        "Width": ${Width},
+        "Height": ${Height}
+      },
+      "Format": ${Format}
+    },
+    "Name": "${Name}",
+    "IsUniqueName": ${IsUnique}
+  }
+}

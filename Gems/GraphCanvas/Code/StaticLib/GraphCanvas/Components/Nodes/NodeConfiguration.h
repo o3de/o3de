@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/any.h>
 
@@ -33,10 +34,10 @@ namespace GraphCanvas
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<NodeConfiguration>("Configuration", "The Node's configuration data")
+                    editContext->Class<NodeConfiguration>(QT_TRANSLATE_NOOP("GraphCanvas", "Configuration"), QT_TRANSLATE_NOOP("GraphCanvas", "The Node's configuration data"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "Node's configuration class attributes")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &NodeConfiguration::m_tooltip, "Tooltip", "Tooltip explaining node functionality")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &NodeConfiguration::m_tooltip, QT_TRANSLATE_NOOP("GraphCanvas", "Tooltip"), QT_TRANSLATE_NOOP("GraphCanvas", "Tooltip explaining node functionality"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ;
                 }

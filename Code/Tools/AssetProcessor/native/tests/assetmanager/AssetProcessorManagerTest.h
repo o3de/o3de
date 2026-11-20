@@ -10,7 +10,6 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/std/parallel/atomic.h>
-#include <qcoreapplication.h>
 #include <native/tests/AssetProcessorTest.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -22,12 +21,12 @@
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <QCoreApplication>
 #include <QMetaObject>
+
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#endif
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <tests/UnitTestUtilities.h>
 

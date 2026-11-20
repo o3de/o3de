@@ -7,9 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QIdentityProxyModel>
-#endif
+
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework

@@ -262,5 +262,4 @@ namespace GraphCanvas
         UpdateFilter();
     }
 
-#include <StaticLib/GraphCanvas/Widgets/Bookmarks/moc_BookmarkDockWidget.cpp>
 }

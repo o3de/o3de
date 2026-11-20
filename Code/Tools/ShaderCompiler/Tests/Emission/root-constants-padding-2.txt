@@ -1,0 +1,6 @@
+/*
+   Cmdargs: ['--pad-root-const']
+*/
+"struct Root_Constants"
+"float3x3 s_objectMatrix ;"
+"uint1 __pad__ ;"

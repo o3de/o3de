@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """${SanitizedCppName}\\editor\\scripts\\${SanitizedNameLower}_dialog.py
 Generated from O3DE PythonToolGem Template"""
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QDialog, QLabel, QVBoxLayout
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout
 
 class ${SanitizedCppName}Dialog(QDialog):
     def __init__(self, parent=None):

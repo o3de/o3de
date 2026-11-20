@@ -274,4 +274,3 @@ void CSettingsManagerDialog::OnSelectionChanged()
     ui->m_importBtn->setEnabled(ui->m_layoutListBox->selectedItems().count());
 }
 
-#include <moc_SettingsManagerDialog.cpp>

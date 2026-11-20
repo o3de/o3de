@@ -9,12 +9,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Range.h"
 #include "UiSplineCtrlEx.h"
 #include "Controls/WndGridHelper.h"
 #include "Util/fastlib.h"
-#endif
 
 // Custom styles for this control.
 #define TL_STYLE_AUTO_DELETE    0x0001

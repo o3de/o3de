@@ -1,0 +1,4 @@
+void f(float, int = 2);
+void f(float f, int i = 2)  // #EC 37
+{}
+// Semantic Error 37: line 2::22 'default argument value declared twice. first seen at 1:23'

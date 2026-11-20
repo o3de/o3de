@@ -262,7 +262,20 @@ namespace AZ::SceneAPI::Containers::Views
         AZStd::vector<int> secondContainer = { 205, 206, 201, 204, 203, 208 };
 
         auto view = MakePairView(firstContainer.begin(), firstContainer.end(), secondContainer.begin(), secondContainer.end());
-        AZStd::sort(view.begin(), view.end());
+
+        // Manual bubble sort because std::pair<T&, U&> proxy references lack the
+        // C++23 const-qualified swap needed by std::sort.
+        for (auto i = view.begin(); i != view.end(); ++i)
+        {
+            for (auto j = i + 1; j != view.end(); ++j)
+            {
+                if (*j < *i)
+                {
+                    AZStd::swap(AZStd::get<0>(*i), AZStd::get<0>(*j));
+                    AZStd::swap(AZStd::get<1>(*i), AZStd::get<1>(*j));
+                }
+            }
+        }
 
         EXPECT_EQ(AZStd::get<0>(*view.begin()) + 100, AZStd::get<1>(*view.begin()));
         for (auto it = view.begin() + 1; it != view.end(); ++it)
@@ -280,7 +293,16 @@ namespace AZ::SceneAPI::Containers::Views
 
         auto view = MakePairView(firstContainer.begin(), firstContainer.end(), secondContainer.begin(), secondContainer.end());
 
-        AZStd::ranges::reverse(view.begin(), view.end());
+        // Manual reverse because std::pair<T&, U&> proxy references lack the
+        // C++23 const-qualified swap needed by ranges::reverse.
+        auto lo = view.begin();
+        auto hi = view.end();
+        while (lo < --hi)
+        {
+            AZStd::swap(AZStd::get<0>(*lo), AZStd::get<0>(*hi));
+            AZStd::swap(AZStd::get<1>(*lo), AZStd::get<1>(*hi));
+            ++lo;
+        }
 
         for (auto it = view.begin() + 1; it != view.end(); ++it)
         {

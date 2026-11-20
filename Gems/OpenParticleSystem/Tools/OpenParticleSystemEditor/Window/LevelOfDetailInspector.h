@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Serializer/ParticleSourceData.h>
 #include <Document/ParticleDocumentBus.h>
 #include <Window/LevelOfDetailInspectorNotifyBus.h>
-#endif
 
 #include <QWidget>
 #include <QMenu>

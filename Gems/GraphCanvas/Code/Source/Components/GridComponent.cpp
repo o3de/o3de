@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/EditContext.h>
 
 #include <Components/GridComponent.h>
@@ -40,10 +41,10 @@ namespace GraphCanvas
             return;
         }
 
-        editContext->Class<GridComponent>("Grid", "The grid's properties")
+        editContext->Class<GridComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "Grid"), QT_TRANSLATE_NOOP("GraphCanvas", "The grid's properties"))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "Class attributes for the grid")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponent::m_majorPitch, "Tooltip", "The \"major pitch\" of the grid")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponent::m_minorPitch, "Tooltip", "The \"minor pitch\" of the grid")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponent::m_majorPitch, QT_TRANSLATE_NOOP("GraphCanvas", "Tooltip"), QT_TRANSLATE_NOOP("GraphCanvas", "The \"major pitch\" of the grid"))
+            ->DataElement(AZ::Edit::UIHandlers::Default, &GridComponent::m_minorPitch, QT_TRANSLATE_NOOP("GraphCanvas", "Tooltip"), QT_TRANSLATE_NOOP("GraphCanvas", "The \"minor pitch\" of the grid"))
             ;
     }
 

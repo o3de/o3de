@@ -123,9 +123,9 @@ namespace GraphCanvas
             return;
         }
 
-        editContext->Class<ConnectionComponent>("Position", "The connection's position in the scene")
+        editContext->Class<ConnectionComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "Position"), QT_TRANSLATE_NOOP("GraphCanvas", "The connection's position in the scene"))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "Connection's class attributes")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &ConnectionComponent::m_tooltip, "Tooltip", "The connection's tooltip")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &ConnectionComponent::m_tooltip, QT_TRANSLATE_NOOP("GraphCanvas", "Tooltip"), QT_TRANSLATE_NOOP("GraphCanvas", "The connection's tooltip"))
             ;
     }
 

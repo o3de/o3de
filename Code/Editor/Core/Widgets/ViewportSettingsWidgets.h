@@ -12,11 +12,15 @@
 
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+#include <QCoreApplication>
+
 // Field of View Widget
 class ViewportFieldOfViewPropertyWidget
     : public AzQtComponents::PropertyInputDoubleWidget
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
+    Q_DECLARE_TR_FUNCTIONS(ViewportFieldOfViewPropertyWidget)
+
 public:
     ViewportFieldOfViewPropertyWidget();
     ~ViewportFieldOfViewPropertyWidget();
@@ -33,6 +37,8 @@ class ViewportCameraSpeedScalePropertyWidget
     : public AzQtComponents::PropertyInputDoubleWidget
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
+    Q_DECLARE_TR_FUNCTIONS(ViewportCameraSpeedScalePropertyWidget)
+
 public:
     ViewportCameraSpeedScalePropertyWidget();
     ~ViewportCameraSpeedScalePropertyWidget();
@@ -48,6 +54,8 @@ private:
 class ViewportGridSnappingSizePropertyWidget
     : public AzQtComponents::PropertyInputDoubleWidget
 {
+    Q_DECLARE_TR_FUNCTIONS(ViewportGridSnappingSizePropertyWidget)
+
 public:
     ViewportGridSnappingSizePropertyWidget();
 
@@ -59,6 +67,8 @@ private:
 class ViewportAngleSnappingSizePropertyWidget
     : public AzQtComponents::PropertyInputDoubleWidget
 {
+    Q_DECLARE_TR_FUNCTIONS(ViewportAngleSnappingSizePropertyWidget)
+
 public:
     ViewportAngleSnappingSizePropertyWidget();
 

@@ -8,18 +8,17 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include "../StandardPluginsConfig.h"
+#include "TimeTrackElement.h"
+
 #include <QPen>
 #include <QFont>
 #include <QKeyEvent>
 #include <QBrush>
-#include "TimeTrackElement.h"
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QBrush)
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)

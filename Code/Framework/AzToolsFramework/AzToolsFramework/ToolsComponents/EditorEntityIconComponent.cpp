@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
@@ -35,7 +36,9 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorEntityIconComponent>("Entity Icon", "Edit-time entity icon in entity-inspector and viewport")
+                    editContext->Class<EditorEntityIconComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Entity Icon"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Edit-time entity icon in entity-inspector and viewport"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::HideIcon, true)

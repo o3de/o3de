@@ -8,14 +8,12 @@
 
 #pragma once
 
+#include "PropertyEditorAPI.h"
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <QWidget>
-#include "PropertyEditorAPI.h"
-#endif
 
 class QPushButton;
 class InstanceDataNode;

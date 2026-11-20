@@ -1021,7 +1021,7 @@ namespace AZ
             {
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(m_remoteFileCacheGuard);
-                    m_remoteFileCache.insert(fileHandle);
+                    m_remoteFileCache.try_emplace(fileHandle);
                     RemoteFileCache& cache = GetCache(fileHandle);
                     cache.m_fileHandle = fileHandle;
                     cache.m_openMode = openMode;

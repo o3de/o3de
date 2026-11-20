@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
@@ -36,27 +37,27 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<SurfaceSlopeGradientConfig>(
-                    "Slope Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Slope Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceSlopeGradientConfig::m_surfaceTagsToSample, "Surface Tags to track", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeGradientConfig::m_slopeMin, "Slope Min", "Minimum surface slope angle in degrees.")
+                    ->DataElement(0, &SurfaceSlopeGradientConfig::m_surfaceTagsToSample, QT_TRANSLATE_NOOP("GradientSignal", "Surface Tags to track"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeGradientConfig::m_slopeMin, QT_TRANSLATE_NOOP("GradientSignal", "Slope Min"), QT_TRANSLATE_NOOP("GradientSignal", "Minimum surface slope angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 90.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeGradientConfig::m_slopeMax, "Slope Max", "Maximum surface slope angle in degrees.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeGradientConfig::m_slopeMax, QT_TRANSLATE_NOOP("GradientSignal", "Slope Max"), QT_TRANSLATE_NOOP("GradientSignal", "Maximum surface slope angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 90.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceSlopeGradientConfig::m_rampType, "Ramp Type", "Type of ramp to apply to the slope.")
-                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN, "Linear Ramp Down")
-                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP, "Linear Ramp Up")
-                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP, "Smooth Step")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceSlopeGradientConfig::m_rampType, QT_TRANSLATE_NOOP("GradientSignal", "Ramp Type"), QT_TRANSLATE_NOOP("GradientSignal", "Type of ramp to apply to the slope."))
+                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN, QT_TRANSLATE_NOOP("GradientSignal", "Linear Ramp Down"))
+                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP, QT_TRANSLATE_NOOP("GradientSignal", "Linear Ramp Up"))
+                    ->EnumAttribute(SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP, QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step"))
                     // Note: ReadOnly doesn't currently propagate to children, so instead we hide/show smooth step parameters when 
                     // we change the ramp type.  If ReadOnly is ever changed to propagate downwards, we should change the next line
                     // to PropertyRefreshLevels::AttributesAndLevels and change the Visibility line below on m_smoothStep
                     // to AZ::Edit::PropertyVisibility::Show.
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SurfaceSlopeGradientConfig::m_smoothStep, "Smooth Step Settings", "Parameters for controlling the smooth-step curve.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SurfaceSlopeGradientConfig::m_smoothStep, QT_TRANSLATE_NOOP("GradientSignal", "Smooth Step Settings"), QT_TRANSLATE_NOOP("GradientSignal", "Parameters for controlling the smooth-step curve."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &SurfaceSlopeGradientConfig::GetSmoothStepParameterVisibility)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceSlopeGradientConfig::IsSmoothStepReadOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)

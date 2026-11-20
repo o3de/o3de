@@ -22,12 +22,6 @@ ly_install_files(FILES README.txt
     DESTINATION scripts/o3de
 )
 
-ly_install_directory(
-    DIRECTORIES
-        o3de.egg-info
-    VERBATIM
-)
-
 ly_install_directory(DIRECTORIES .
     EXCLUDE_PATTERNS
         tests

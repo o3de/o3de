@@ -12,6 +12,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Crc.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     //-----------------------------------------------------------------------------
@@ -105,12 +107,15 @@ namespace AZ
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<UserSettingsComponent>(
-                    "User Settings", "Provides userdata storage for all system components")
+                    QT_TRANSLATE_NOOP("AzCore", "User Settings"),
+                    QT_TRANSLATE_NOOP("AzCore", "Provides userdata storage for all system components"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &UserSettingsComponent::m_providerId, "ProviderId", "The settings group this provider with handle.")
-                        ->EnumAttribute(UserSettings::CT_LOCAL, "Local")
-                        ->EnumAttribute(UserSettings::CT_GLOBAL, "Global")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &UserSettingsComponent::m_providerId,
+                        QT_TRANSLATE_NOOP("AzCore", "ProviderId"),
+                        QT_TRANSLATE_NOOP("AzCore", "The settings group this provider will handle."))
+                        ->EnumAttribute(UserSettings::CT_LOCAL, QT_TRANSLATE_NOOP("AzCore", "Local"))
+                        ->EnumAttribute(UserSettings::CT_GLOBAL, QT_TRANSLATE_NOOP("AzCore", "Global"))
                     ;
             }
         }

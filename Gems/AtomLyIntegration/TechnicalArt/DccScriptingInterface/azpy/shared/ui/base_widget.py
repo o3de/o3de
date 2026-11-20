@@ -27,9 +27,9 @@ import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 settings = _config.get_config_settings(setup_ly_pyside=True)
 
-import PySide2.QtWidgets as QtWidgets
-import PySide2.QtCore as QtCore
-from shiboken2 import wrapInstance
+import PySide6.QtWidgets as QtWidgets
+import PySide6.QtCore as QtCore
+from shiboken6 import wrapInstance
 
 
 # -------------------------------------------------------------------------
@@ -40,9 +40,9 @@ _DCCSI_GDEBUG = settings.DCCSI_GDEBUG
 _DCCSI_DEV_MODE = settings.DCCSI_DEV_MODE
 
 # global maya state (if we are running in maya with gui)
-#  or another dcc tool with pyside2
+#  or another dcc tool with pyside
 #  TODO implement that check
-_G_PYSIDE2_DCC = None
+_G_PYSIDE_DCC = None
 
 _MODULE_PATH = Path(__file__)
 
@@ -54,13 +54,13 @@ _LOGGER.debug('Something invoked :: {0}.'.format(_MODULENAME))
 
 class DccWidget(object):
     """This is an experimental Class to make a widget compatible with
-    a number of PySide2/Python compatible DCC Tools like Maya and Houdini"""
+    a number of PySide/Python compatible DCC Tools like Maya and Houdini"""
 
     _LABEL_NAME = 'no name window'  # Window display name
     _instances = list()
 
     # --constructor--------------------------------------------------------
-    def __init__(self, parent=None, dcc_gui=_G_PYSIDE2_DCC, *args, **kwargs):
+    def __init__(self, parent=None, dcc_gui=_G_PYSIDE_DCC, *args, **kwargs):
 
         # False or None, 'Maya', 'Houdini' ... or another pysdie2 dcc
         self._dcc_gui = dcc_gui
@@ -81,7 +81,7 @@ class DccWidget(object):
         if isinstance(self, QtWidgets.QWidget):
             self.setParent(self._parent)
 
-            # camel case because this is a Qt|Pyside2 widget method
+            # camel case because this is a Qt|Pyside widget method
             if self.objectName() == '':
                 # Set a unique object name string so Maya can easily look it up
                 self.setObjectName('{0}_{1}'.format(self._name))
@@ -213,7 +213,7 @@ class BaseQwidgetAzpy(object):
         if isinstance(self, QtWidgets.QWidget):
             self.setParent(self._parent)
 
-            # camel case because this is a Qt|Pyside2 widget method
+            # camel case because this is a Qt|Pyside widget method
             if self.objectName() == '':
                 # Set a unique object name string so Maya can easily look it up
                 self.setObjectName(self._name)

@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Editor/TagSelector.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+
 #include <QWidget>
-#endif
 
 
 namespace EMotionFX

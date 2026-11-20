@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
@@ -17,7 +16,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QVBoxLayout>
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
-#endif
 
 namespace AzToolsFramework
 {

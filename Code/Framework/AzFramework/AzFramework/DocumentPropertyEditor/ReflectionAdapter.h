@@ -51,6 +51,9 @@ namespace AZ::DocumentPropertyEditor
         //! this adapter will produce a property grid based on its contents.
         void SetValue(void* instance, AZ::TypeId typeId);
 
+        //! Clear the value, so no refreshes occur.  Can happen when the object behind the value is deleted.
+        void ClearValue();
+
         //! Invokes the ChangeNotify attribute for an Adapter, if present, and follows up
         //! with a tree refresh if needed.
         static void InvokeChangeNotify(const AZ::Dom::Value& domNode);

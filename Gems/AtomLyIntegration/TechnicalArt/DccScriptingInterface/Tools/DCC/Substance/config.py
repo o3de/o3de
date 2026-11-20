@@ -110,11 +110,11 @@ _DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
 
 # now standalone we can validate the config, env, settings.
 _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=False,
+                                                  enable_o3de_pyside=False,
                                                   set_env=True)
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
-# we are also not enabling the O3DE PySide2 (aka QtForPython) access
+# we are also not enabling the O3DE pyside (aka QtForPython) access
 # this can cause GUI and boot failure with Qt based applications (Maya, Substance3D, etc.)
 # -------------------------------------------------------------------------
 
@@ -309,12 +309,12 @@ if __name__ == '__main__':
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
-                        help='(NOT IMPLEMENTED) Enables O3DE Qt & PySide2 access.')
+                        help='(NOT IMPLEMENTED) Enables O3DE Qt & PySide access.')
 
-    parser.add_argument('-tp', '--test-pyside2',
+    parser.add_argument('-tp', '--test-pyside',
                         type=bool,
                         required=False,
-                        help='(NOT IMPLEMENTED) Runs Qt/PySide2 tests and reports.')
+                        help='(NOT IMPLEMENTED) Runs Qt/PySide tests and reports.')
 
     parser.add_argument('-pc', '--project-config',
                         type=bool,

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QSet>
 
 #include "EditorModularViewportCameraComposer.h"
@@ -34,7 +33,6 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
-#endif
 
 // forward declarations.
 class QMenu;

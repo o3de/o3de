@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         m_header = horizontalHeader();
         m_header->setDefaultAlignment(Qt::AlignLeft);
 
-        setColumnCount(headerLabels.count());
+        setColumnCount(static_cast<int>(headerLabels.count()));
         setHorizontalHeaderLabels(headerLabels);
 
         AZ_Assert(defaultHeaderWidths.count() == columnCount(), "Default header widths does not match number of columns");

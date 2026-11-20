@@ -23,7 +23,7 @@ namespace AZ
         {
             RHI::Ptr<CommandList> commandList = CommandList::Create();
             commandList->Init(m_descriptor.m_hardwareQueueClass, m_descriptor.m_device);
-            return AZStd::move(commandList);
+            return commandList;
         }
 
         void CommandListFactory::ShutdownObject(CommandList& commandList, bool isPoolShutdown)
@@ -41,19 +41,19 @@ namespace AZ
         {
             Reset();
         }
-        
+
         void CommandListSubAllocator::Init(CommandListPool& commandListPool)
         {
             m_commandListPool = &commandListPool;
         }
-        
+
         CommandList* CommandListSubAllocator::Allocate()
         {
             CommandList* commandList = m_commandListPool->Allocate();
             m_activeLists.push_back(commandList);
             return commandList;
         }
-        
+
         void CommandListSubAllocator::Reset()
         {
             m_commandListPool->DeAllocate(m_activeLists.data(), static_cast<uint32_t>(m_activeLists.size()));
@@ -65,7 +65,7 @@ namespace AZ
             for (uint32_t queueIdx = 0; queueIdx < RHI::HardwareQueueClassCount; ++queueIdx)
             {
                 CommandListPool& commandListPool = m_commandListPools[queueIdx];
-                
+
                 CommandListPool::Descriptor commandListPoolDescriptor;
                 commandListPoolDescriptor.m_hardwareQueueClass = static_cast<RHI::HardwareQueueClass>(queueIdx);
                 commandListPoolDescriptor.m_device = device;
@@ -78,7 +78,7 @@ namespace AZ
                                                                          subAllocator.Init(commandListPool);
                                                                      });
             }
-            
+
             m_isInitialized = true;
         }
 
@@ -94,13 +94,13 @@ namespace AZ
                 m_isInitialized = false;
             }
         }
-        
+
         CommandList* CommandListAllocator::Allocate(RHI::HardwareQueueClass hardwareQueueClass)
         {
             AZ_Assert(m_isInitialized, "CommandListAllocator is not initialized!");
             return m_commandListSubAllocators[static_cast<uint32_t>(hardwareQueueClass)].GetStorage().Allocate();
         }
-        
+
         void CommandListAllocator::Collect()
         {
             for (uint32_t queueIdx = 0; queueIdx < RHI::HardwareQueueClassCount; ++queueIdx)

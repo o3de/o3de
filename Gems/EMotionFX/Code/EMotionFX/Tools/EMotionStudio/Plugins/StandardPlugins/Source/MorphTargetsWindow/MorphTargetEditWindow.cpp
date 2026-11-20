@@ -172,4 +172,3 @@ namespace EMStudio
     }
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/moc_MorphTargetEditWindow.cpp>

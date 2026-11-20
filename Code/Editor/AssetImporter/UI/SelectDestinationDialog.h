@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/StyledLineEdit.h>
 #include <QLabel>
 #include <QDialog>
 #include <QDialogButtonBox>
-#endif
 
 class StyledLineEdit;
 class QValidator;

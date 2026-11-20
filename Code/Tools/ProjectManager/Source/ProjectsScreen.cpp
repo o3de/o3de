@@ -150,9 +150,9 @@ namespace O3DE::ProjectManager
                 headerLayout->addWidget(titleLabel);
 
                 QMenu* newProjectMenu = new QMenu(this);
-                m_createNewProjectAction = newProjectMenu->addAction("Create New Project");
-                m_addExistingProjectAction = newProjectMenu->addAction("Open Existing Project");
-                m_addRemoteProjectAction = newProjectMenu->addAction("Add a Remote Project");
+                m_createNewProjectAction = newProjectMenu->addAction(tr("Create New Project"));
+                m_addExistingProjectAction = newProjectMenu->addAction(tr("Open Existing Project"));
+                m_addRemoteProjectAction = newProjectMenu->addAction(tr("Add a Remote Project"));
 
                 connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
                 connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
@@ -488,7 +488,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::HandleAddProjectButton()
     {
-        QString title{ QObject::tr("Select Project File") };
+        QString title{ tr("Select Project File") };
         QString defaultPath;
 
         // get the default path to look for new projects in

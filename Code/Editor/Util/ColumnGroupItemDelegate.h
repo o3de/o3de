@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPITEMDELEGATE_H
-#define COLUMNGROUPITEMDELEGATE_H
+
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -20,5 +20,3 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
-
-#endif // COLUMNGROUPITEMDELEGATE_H

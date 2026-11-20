@@ -10,6 +10,7 @@
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "InputEventGroup.h"
 
 namespace StartingPointInput
@@ -42,9 +43,13 @@ namespace StartingPointInput
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<InputEventBindings>("Input Event Bindings", "Holds InputEventBindings")
+                    editContext->Class<InputEventBindings>(
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Bindings"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Holds InputEventBindings"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(0, &InputEventBindings::m_inputEventGroups, "Input Event Groups", "Input Event Groups");
+                        ->DataElement(0, &InputEventBindings::m_inputEventGroups,
+                            QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Groups"),
+                            QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Groups"));
                 }
             }
         }
@@ -110,8 +115,10 @@ namespace StartingPointInput
                 AZ::EditContext* edit = serialize->GetEditContext();
                 if (edit)
                 {
-                    edit->Class<InputEventBindingsAsset>("Input to Event Bindings Asset", "")
-                        ->DataElement(0, &InputEventBindingsAsset::m_bindings, "Bindings", "")
+                    edit->Class<InputEventBindingsAsset>(
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Input to Event Bindings Asset"), "")
+                        ->DataElement(0, &InputEventBindingsAsset::m_bindings,
+                            QT_TRANSLATE_NOOP("StartingPointInput", "Bindings"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ;
                 }

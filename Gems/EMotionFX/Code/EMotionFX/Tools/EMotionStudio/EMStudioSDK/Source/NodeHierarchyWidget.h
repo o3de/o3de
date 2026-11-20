@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include "EMStudioConfig.h"
+
 #include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
-#endif
 
 // forward declarations
 QT_FORWARD_DECLARE_CLASS(QLabel)

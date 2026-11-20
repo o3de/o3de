@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/ColorGrid.h>
@@ -19,7 +18,6 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QVector>
-#endif
 
 class QAction;
 class QActionGroup;

@@ -6,16 +6,11 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H
-#define CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
 #include "Util/Variable.h"
-#endif
 
 // CGenericSelectItem dialog
 
@@ -154,5 +149,3 @@ protected:
 private:
     bool m_initialized;
 };
-
-#endif // CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H

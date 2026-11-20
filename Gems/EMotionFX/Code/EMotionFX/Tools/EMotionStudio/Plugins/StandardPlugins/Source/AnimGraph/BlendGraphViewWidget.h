@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/unordered_map.h>
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
+
 #include <QStackedWidget>
 #include <QAction>
 #include <QWidget>
 #include <QAction>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 QT_FORWARD_DECLARE_CLASS(QMenuBar)

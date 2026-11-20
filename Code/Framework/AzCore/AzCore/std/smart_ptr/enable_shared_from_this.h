@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_ENABLE_SHARED_FROM_THIS_H
-#define AZSTD_SMART_PTR_ENABLE_SHARED_FROM_THIS_H
+
+#pragma once
 
 //
 //  enable_shared_from_this.hpp
@@ -80,6 +80,3 @@ namespace AZStd
         mutable weak_ptr<T> weak_this_;
     };
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_ENABLE_SHARED_FROM_THIS_H
-#pragma once

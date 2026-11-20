@@ -288,12 +288,16 @@ set(FILES
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
+    Math/ColorGradient.cpp
+    Math/ColorGradient.h
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Math/Crc.cpp
     Math/Crc.inl
     Math/Crc.h
     Math/CrcInternal.h
+    Math/CrcSerializer.h
+    Math/CrcSerializer.cpp
     Math/DocsMath.h
     Math/Frustum.cpp
     Math/Frustum.h
@@ -419,6 +423,8 @@ set(FILES
     Math/PackedVector4.h
     Math/Color.h
     Math/Color.cpp
+    Math/ColorGradient.h
+    Math/ColorGradient.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Memory/AllocationRecords.cpp
@@ -433,14 +439,12 @@ set(FILES
     Memory/AllocatorWrapper.h
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
-    Memory/dlmalloc.inl
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
@@ -488,6 +492,7 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
     NativeUI/NativeUIRequests.h
+    i18n/TranslationMacros.h
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp

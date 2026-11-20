@@ -100,5 +100,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_InputDialog.cpp"

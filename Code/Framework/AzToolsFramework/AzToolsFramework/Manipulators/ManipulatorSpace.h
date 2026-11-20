@@ -61,7 +61,7 @@ namespace AzToolsFramework
         AZ_TYPE_INFO(ManipulatorSpaceWithLocalTransform, "{6D100797-1DD8-45B0-A21C-8893B770C0BC}")
         AZ_CLASS_ALLOCATOR(ManipulatorSpaceWithLocalTransform, AZ::SystemAllocator)
 
-        const AZ::Vector3& GetLocalPosition() const;
+        AZ::Vector3 GetLocalPosition() const;
         void SetLocalPosition(const AZ::Vector3& localPosition);
 
         const AZ::Transform& GetLocalTransform() const;

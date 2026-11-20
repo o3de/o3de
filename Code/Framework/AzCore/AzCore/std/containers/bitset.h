@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_BITSET_H
-#define AZSTD_BITSET_H
+
+#pragma once
 
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
@@ -474,6 +474,3 @@ AZ_POP_DISABLE_WARNING
         return (leftCopy ^= right);
     }
 }
-
-#endif // AZSTD_BITSET_H
-#pragma once

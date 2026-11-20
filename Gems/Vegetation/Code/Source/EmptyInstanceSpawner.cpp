@@ -8,6 +8,7 @@
 
 #include <Vegetation/EmptyInstanceSpawner.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Vegetation/Ebuses/DescriptorNotificationBus.h>
@@ -30,7 +31,7 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<EmptyInstanceSpawner>(
-                    "Empty Space", "Empty Space Instance")
+                    QT_TRANSLATE_NOOP("Vegetation", "Empty Space"), QT_TRANSLATE_NOOP("Vegetation", "Empty Space Instance"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

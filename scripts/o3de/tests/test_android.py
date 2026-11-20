@@ -720,7 +720,7 @@ def test_generate_android_project_success(tmpdir):
     test_platform_api_level = '31'
     test_asset_mode = 'LOOSE'
     test_bundle_subpath = f'AssetBundling{os.sep}Bundles'
-    test_ndk_version = '25.*'
+    test_ndk_version = '27.*'
 
     tmpdir.ensure(test_sc_store_file, dir=False)
     test_key_store_path = tmpdir.join(test_sc_store_file).realpath()

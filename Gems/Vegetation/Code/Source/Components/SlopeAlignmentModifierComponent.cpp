@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
@@ -38,18 +39,18 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SlopeAlignmentModifierConfig>(
-                    "Vegetation Slope Alignment Modifier", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Slope Alignment Modifier"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SlopeAlignmentModifierConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SlopeAlignmentModifierConfig::m_rangeMin, "Alignment Coefficient Min", "Minimum slope alignment coefficient.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SlopeAlignmentModifierConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SlopeAlignmentModifierConfig::m_rangeMin, QT_TRANSLATE_NOOP("Vegetation", "Alignment Coefficient Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum slope alignment coefficient."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SlopeAlignmentModifierConfig::m_rangeMax, "Alignment Coefficient Max", "Maximum slope alignment coefficient.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SlopeAlignmentModifierConfig::m_rangeMax, QT_TRANSLATE_NOOP("Vegetation", "Alignment Coefficient Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum slope alignment coefficient."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &SlopeAlignmentModifierConfig::m_gradientSampler, "Gradient", "Gradient used as blend factor to lerp between ranges.")
+                    ->DataElement(0, &SlopeAlignmentModifierConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges."))
                     ;
             }
         }

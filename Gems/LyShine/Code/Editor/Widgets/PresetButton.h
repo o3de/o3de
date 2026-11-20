@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/functional.h>
 
 #include <QIcon>
 #include <QPushButton>
-#endif
 
 class QString;
 
@@ -33,7 +31,7 @@ public:
         QWidget* parent = nullptr);
 
 protected:
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(QEnterEvent* ev) override;
     void leaveEvent(QEvent* ev) override;
 
 private:

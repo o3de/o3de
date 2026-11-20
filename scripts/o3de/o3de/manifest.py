@@ -29,6 +29,11 @@ def get_this_engine_path() -> pathlib.Path:
     # we manually build the correct path from env variables here when running from snap
     if "SNAP" in os.environ and "SNAP_BUILD" in os.environ:
         return pathlib.Path(os.environ.get('SNAP')) / os.environ.get('SNAP_BUILD')
+    # RPM package fix: when the o3de Python package is installed inside a venv,
+    # __file__.parents[3] resolves to the venv's lib dir, not the engine root.
+    # Honor O3DE_ENGINE_PATH (set by the launcher wrapper) when present.
+    elif "O3DE_ENGINE_PATH" in os.environ:
+        return pathlib.Path(os.environ.get('O3DE_ENGINE_PATH')).resolve()
     else:
         return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
@@ -796,7 +801,7 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     #         {'gem_name':'gem2', 'version':'2.0.0'},
     #     ],
     # }
-    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_keys=['gem_name', 'gem_alt_name'], replaced_key_name='path', place_values_in_list=True)
 
     return all_gems_json_data
 

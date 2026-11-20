@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <MCore/Source/LogManager.h>
+
 #include <QTableWidget>
-#endif
 
 
 namespace EMStudio

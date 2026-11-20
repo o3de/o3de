@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <StarsAsset.h>
 #include <StarsFeatureProcessor.h>
+#include <Stars/StarsTypeIds.h>
 
 namespace AZ::Render
 {
@@ -39,10 +40,12 @@ namespace AZ::Render
     {
         m_starsAssetHandler = aznew AZ::Render::StarsAssetHandler();
         m_starsAssetHandler->Register();
+        StarsRequestBus::Handler::BusConnect();
     }
 
     void StarsSystemComponent::Deactivate()
     {
+        StarsRequestBus::Handler::BusDisconnect();
         m_starsAssetHandler->Unregister();
         delete m_starsAssetHandler;
     }

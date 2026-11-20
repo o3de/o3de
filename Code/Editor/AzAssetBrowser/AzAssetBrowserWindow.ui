@@ -564,7 +564,7 @@
           </property>
              <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
                  <property name="styleSheet">
-                     <string notr="true">background-color: #333333</string>
+                     <string notr="true">AzToolsFramework--AssetBrowser--AssetBrowserThumbnailView, AzQtComponents--AssetFolderThumbnailView { background-color: #333333; }</string>
                  </property>
              </widget>
           <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">

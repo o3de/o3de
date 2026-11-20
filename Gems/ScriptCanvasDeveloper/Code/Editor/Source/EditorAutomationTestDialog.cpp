@@ -529,5 +529,4 @@ namespace ScriptCanvas::Developer
         m_errorTestLabel->setText(displayString);
     }
 
-#include <Editor/Source/moc_EditorAutomationTestDialog.cpp>
 }

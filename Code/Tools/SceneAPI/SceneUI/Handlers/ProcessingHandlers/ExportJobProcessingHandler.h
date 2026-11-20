@@ -8,7 +8,6 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/list.h>
@@ -16,7 +15,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
 #include <SceneAPI/SceneUI/CommonWidgets/JobWatcher.h>
-#endif
 
 namespace AZ
 {

@@ -659,4 +659,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/moc_AssetBrowserModel.cpp"

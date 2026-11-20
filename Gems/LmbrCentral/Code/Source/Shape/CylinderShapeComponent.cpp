@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeComponentConverters.h>
 #include <Shape/ShapeDisplay.h>
 
@@ -115,15 +116,21 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CylinderShapeConfig>("Configuration", "Cylinder shape configuration parameters")
+                editContext->Class<CylinderShapeConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Cylinder shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShapeConfig::m_height, "Height", "Height of cylinder")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShapeConfig::m_height,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Height"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Height of cylinder"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000000.f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShapeConfig::m_radius, "Radius", "Radius of cylinder")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CylinderShapeConfig::m_radius,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Radius of cylinder"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000000.f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")

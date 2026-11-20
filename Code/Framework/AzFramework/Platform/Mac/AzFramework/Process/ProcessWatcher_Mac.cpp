@@ -286,7 +286,7 @@ namespace AzFramework
         }
         commandAndArgs[commandTokens.size()] = nullptr;
         
-        constexpr int MaxEnvVariables = 128;
+        constexpr int MaxEnvVariables = 256;
         using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
         EnvironmentVariableContainer environmentVariables;
         for (char **env = ::environ; *env; env++)

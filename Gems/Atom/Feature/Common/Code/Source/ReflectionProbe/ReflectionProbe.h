@@ -75,7 +75,7 @@ namespace AZ
             void Simulate(uint32_t probeIndex);
             void OnRenderEnd();
 
-            const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
+            Vector3 GetPosition() const { return m_transform.GetTranslation(); }
             const AZ::Transform& GetTransform() const { return m_transform; }
             void SetTransform(const AZ::Transform& transform);
 

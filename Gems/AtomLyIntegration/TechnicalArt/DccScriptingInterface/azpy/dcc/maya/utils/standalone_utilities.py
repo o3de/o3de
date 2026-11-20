@@ -11,7 +11,7 @@
 
 import os
 import sys
-from PySide2 import QtCore
+from PySide6 import QtCore
 import logging as _logging
 import maya_materials
 import maya.standalone

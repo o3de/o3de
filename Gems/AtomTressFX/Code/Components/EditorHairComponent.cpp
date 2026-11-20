@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Components/EditorHairComponent.h>
 #include <Rendering/HairRenderObject.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -30,7 +31,7 @@ namespace AZ
                     if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                     {
                         editContext->Class<EditorHairComponent>(
-                            "Atom Hair", "Controls Hair Properties")
+                            QT_TRANSLATE_NOOP("AtomTressFX", "Atom Hair"), QT_TRANSLATE_NOOP("AtomTressFX", "Controls Hair Properties"))
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                                 ->Attribute(Edit::Attributes::Category, "Graphics/Mesh")
                                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -43,7 +44,7 @@ namespace AZ
                             "HairComponentController", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairComponentController::m_configuration, "Configuration", "")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &HairComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomTressFX", "Configuration"), "")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ;
 
@@ -51,14 +52,14 @@ namespace AZ
                             "HairComponentConfig", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->DataElement(
-                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_hairAsset, "Hair Asset",
-                                "TressFX asset to be assigned to this entity.")
+                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_hairAsset, QT_TRANSLATE_NOOP("AtomTressFX", "Hair Asset"),
+                                QT_TRANSLATE_NOOP("AtomTressFX", "TressFX asset to be assigned to this entity."))
                             ->DataElement(
-                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_simulationSettings, "TressFX Sim Settings",
-                                "TressFX simulation settings to be applied on this entity.")
+                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_simulationSettings, QT_TRANSLATE_NOOP("AtomTressFX", "TressFX Sim Settings"),
+                                QT_TRANSLATE_NOOP("AtomTressFX", "TressFX simulation settings to be applied on this entity."))
                             ->DataElement(
-                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_renderingSettings, "TressFX Render Settings",
-                                "TressFX rendering settings to be applied on this entity.")
+                                AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_renderingSettings, QT_TRANSLATE_NOOP("AtomTressFX", "TressFX Render Settings"),
+                                QT_TRANSLATE_NOOP("AtomTressFX", "TressFX rendering settings to be applied on this entity."))
                             ->DataElement(AZ::Edit::UIHandlers::Default, &HairComponentConfig::m_hairGlobalSettings)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &HairComponentConfig::OnHairGlobalSettingsChanged)
                             ;

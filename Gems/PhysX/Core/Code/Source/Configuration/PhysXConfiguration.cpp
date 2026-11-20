@@ -10,6 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace PhysX
 {
@@ -54,17 +55,17 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<PhysX::WindConfiguration>("Wind Configuration", "Wind force entity tags.")
+                editContext->Class<PhysX::WindConfiguration>(QT_TRANSLATE_NOOP("PhysX", "Wind Configuration"), QT_TRANSLATE_NOOP("PhysX", "Wind force entity tags."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &WindConfiguration::m_globalWindTag,
-                        "Global wind tag",
-                        "Global wind provider tags.\n"
-                        "Global winds apply to entire world.")
+                        QT_TRANSLATE_NOOP("PhysX", "Global wind tag"),
+                        QT_TRANSLATE_NOOP("PhysX", "Global wind provider tags.\n"
+                        "Global winds apply to entire world."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &WindConfiguration::m_localWindTag,
-                        "Local wind tag",
-                        "Local wind provider tags.\n"
-                        "Local winds are constrained to a PhysX collider's boundaries.")
+                        QT_TRANSLATE_NOOP("PhysX", "Local wind tag"),
+                        QT_TRANSLATE_NOOP("PhysX", "Local wind provider tags.\n"
+                        "Local winds are constrained to a PhysX collider's boundaries."))
                     ;
             }
         }
@@ -97,7 +98,7 @@ namespace PhysX
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 // this is needed so the edit context of AzPhysics::SystemConfiguration can be used.
-                editContext->Class<PhysX::PhysXSystemConfiguration>("System Configuration", "PhysX system configuration")
+                editContext->Class<PhysX::PhysXSystemConfiguration>(QT_TRANSLATE_NOOP("PhysX", "System Configuration"), QT_TRANSLATE_NOOP("PhysX", "PhysX system configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

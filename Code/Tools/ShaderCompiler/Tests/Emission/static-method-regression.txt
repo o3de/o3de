@@ -1,0 +1,4 @@
+"class DirectionalLightShadow"
+"static void GetShadowCoords"
+"} ;"
+"void ( :: DirectionalLightShadow :: GetShadowCoords )"

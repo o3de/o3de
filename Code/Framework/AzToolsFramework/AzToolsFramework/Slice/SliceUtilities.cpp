@@ -364,7 +364,7 @@ namespace AzToolsFramework
                     saveAs = QFileDialog::getSaveFileName(nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Slices (*.slice)"));
                 }
 
-                sliceSaveFileInfo = saveAs;
+                sliceSaveFileInfo = QFileInfo(saveAs);
                 sliceName = sliceSaveFileInfo.baseName();
                 if (saveAs.isEmpty())
                 {
@@ -1408,7 +1408,7 @@ namespace AzToolsFramework
             }
         }
 
-        void DetachMenuActionWidget::enterEvent(QEvent* event)
+        void DetachMenuActionWidget::enterEvent(QEnterEvent* event)
         {
             if (m_toLabel)
             {

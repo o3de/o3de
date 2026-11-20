@@ -161,6 +161,8 @@ set(FILES
     Editor/Widgets/AnchorWidget/AnchorPresetsWidget.h
     Editor/Widgets/ComponentButton.cpp
     Editor/Widgets/ComponentButton.h
+    Editor/Widgets/UiComponentPaletteWidget.cpp
+    Editor/Widgets/UiComponentPaletteWidget.h
     Editor/Widgets/FindEntityWidget/FindEntityItemModel.cpp
     Editor/Widgets/FindEntityWidget/FindEntityItemModel.h
     Editor/Widgets/FindEntityWidget/FindEntitySortFilterProxyModel.cpp

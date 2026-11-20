@@ -6,14 +6,11 @@
  *
  */
 
+#pragma once
 
 // Description : a small memory overhead, fixed size, efficient, iterable
 //               queue class  used for CContextView  SObjectClone
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MINIQUEUE_H
-#define CRYINCLUDE_CRYCOMMON_MINIQUEUE_H
-#pragma once
 
 
 // this class implements a very small queue of plain-old-data
@@ -292,5 +289,3 @@ private:
     uint8 m_nOffset;
     T m_vValues[N];
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_MINIQUEUE_H

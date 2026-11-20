@@ -15,9 +15,9 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QPropertyAnimation>
-#if !defined(Q_MOC_RUN)
+
 #include <AzCore/std/function/function_template.h>
-#endif
+
 
 namespace OpenParticleSystemEditor
 {

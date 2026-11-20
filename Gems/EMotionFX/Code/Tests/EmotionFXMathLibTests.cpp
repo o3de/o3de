@@ -298,7 +298,7 @@ TEST(EmotionFXMathLibTests, AZQuaternionConversion_ToMatrix_Success)
     bool same = true;
 
     AZ::Vector3 azTransformBasis[4];
-    azTransform.GetBasisAndTranslation(&azTransformBasis[0], &azTransformBasis[1], &azTransformBasis[2], &azTransformBasis[3]);
+    azTransform.GetBasisAndTranslation(azTransformBasis[0], azTransformBasis[1], azTransformBasis[2], azTransformBasis[3]);
 
     for (int i = 0; i < 3; ++i)
     {

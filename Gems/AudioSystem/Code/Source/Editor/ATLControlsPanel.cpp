@@ -82,7 +82,7 @@ namespace AudioControls
         emit clicked(m_checked);
     }
 
-    void QFilterButton::enterEvent(QEvent* /*event*/)
+    void QFilterButton::enterEvent(QEnterEvent* /*event*/)
     {
         setStyleSheet("background-color: #444444;");
     }
@@ -332,7 +332,7 @@ namespace AudioControls
     {
         ControlList controls;
         QModelIndexList indexes = m_pATLControlsTree->selectionModel()->selectedIndexes();
-        const int size = indexes.size();
+        const int size = static_cast<int>(indexes.size());
         for (int i = 0; i < size; ++i)
         {
             if (indexes[i].isValid())
@@ -623,7 +623,7 @@ namespace AudioControls
     {
         QMessageBox messageBox(this);
         QModelIndexList indexList = m_pATLControlsTree->selectionModel()->selectedIndexes();
-        const int size = indexList.length();
+        const int size = static_cast<int>(indexList.length());
         if (size > 0)
         {
             if (size == 1)
@@ -752,7 +752,7 @@ namespace AudioControls
                             const EACEControlType eControlType = pAudioSystemEditorImpl->ImplTypeToATLType(pAudioSystemControl->GetType());
 
                             // If dropped outside any folder, create a folder at the root to contain the new control
-                            const QModelIndex index = m_pProxyModel->mapToSource(m_pATLControlsTree->indexAt(pDropEvent->pos()));
+                            const QModelIndex index = m_pProxyModel->mapToSource(m_pATLControlsTree->indexAt(pDropEvent->position().toPoint()));
                             QStandardItem* pTargetItem = m_pTreeModel->itemFromIndex(index);
                             if (!pTargetItem)
                             {
@@ -892,4 +892,3 @@ namespace AudioControls
     }
 } // namespace AudioControls
 
-#include <Source/Editor/moc_ATLControlsPanel.cpp>

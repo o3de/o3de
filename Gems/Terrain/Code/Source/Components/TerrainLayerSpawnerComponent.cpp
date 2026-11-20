@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
@@ -39,19 +40,26 @@ namespace Terrain
             if (edit)
             {
                 edit->Class<TerrainLayerSpawnerConfig>(
-                    "Terrain Layer Spawner Component", "Provide terrain data for a region of the world")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Layer Spawner Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Provide terrain data for a region of the world"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainLayerSpawnerConfig::m_layer, "Layer Priority", "Defines a high level order that terrain spawners are applied")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainLayerSpawnerConfig::m_layer,
+                        QT_TRANSLATE_NOOP("Terrain", "Layer Priority"),
+                        QT_TRANSLATE_NOOP("Terrain", "Defines a high level order that terrain spawners are applied"))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &TerrainLayerSpawnerConfig::GetSelectableLayers)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainLayerSpawnerConfig::m_priority, "Sub Priority", "Defines order terrain spawners are applied within a layer.  Larger numbers = higher priority")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainLayerSpawnerConfig::m_priority,
+                        QT_TRANSLATE_NOOP("Terrain", "Sub Priority"),
+                        QT_TRANSLATE_NOOP("Terrain", "Defines order terrain spawners are applied within a layer.  Larger numbers = higher priority"))
                     ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                     ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_prioritySoftMin)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane, "Use Ground Plane", "Determines whether or not to provide a default ground plane")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane,
+                        QT_TRANSLATE_NOOP("Terrain", "Use Ground Plane"),
+                        QT_TRANSLATE_NOOP("Terrain", "Determines whether or not to provide a default ground plane"))
                     ;
             }
 

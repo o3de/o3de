@@ -58,15 +58,15 @@ try:
     azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
     params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
     params is not None and params.mainWindowId != 0
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 except Exception as e:
     _LOGGER.error(f'Pyside not available, exception: {e}')
     raise e
 
-# keep going, import the other PySide2 bits we will use
-from PySide2 import QtGui
-from PySide2.QtCore import Slot
-from shiboken2 import wrapInstance, getCppPointer
+# keep going, import the other PySide bits we will use
+from PySide6 import QtGui
+from PySide6.QtCore import Slot
+from shiboken6 import wrapInstance, getCppPointer
 # -------------------------------------------------------------------------
 
 
@@ -131,7 +131,7 @@ def clicked_launch_sub_builder():
     _app_bootstrap = importlib.util.module_from_spec(_spec_bootstrap)
     _spec_bootstrap.loader.exec_module(_app_bootstrap)
     
-    while 1:  # simple PySide2 test, set to 0 to disable
+    while 1:  # simple PySide test, set to 0 to disable
         ui = SampleUI(parent=widget_main_window, title='Atom: Substance Builder')
         ui.show()
         break
@@ -152,7 +152,7 @@ def clicked_launch_dcc_mat_converter():
         print(debug_msg)
         _LOGGER.debug(debug_msg)
     
-    while 1:  # simple PySide2 test, set to 0 to disable
+    while 1:  # simple PySide test, set to 0 to disable
         ui = SampleUI(parent=widget_main_window, title='Atom: DCC Material Converter')
         ui.show()
         break

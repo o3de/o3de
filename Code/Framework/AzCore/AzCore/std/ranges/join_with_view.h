@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/containers/variant.h>
@@ -17,29 +18,25 @@ namespace AZStd::ranges
 {
     namespace Internal
     {
-        template<class Range, class Pattern, class = void>
-        /*concept*/ constexpr bool compatible_joinable_ranges = false;
         template<class Range, class Pattern>
-        /*concept*/ constexpr bool compatible_joinable_ranges<Range, Pattern, enable_if_t<conjunction_v<
-            bool_constant<common_with<range_value_t<Range>, range_value_t<Pattern>>>,
-            bool_constant<common_reference_with<range_reference_t<Range>, range_reference_t<Pattern>>>,
-            bool_constant<common_reference_with<range_rvalue_reference_t<Range>, range_rvalue_reference_t<Pattern>>>
-            >
-        >> = true;
+        concept compatible_joinable_ranges =
+            common_with<range_value_t<Range>, range_value_t<Pattern>>
+            && common_reference_with<range_reference_t<Range>, range_reference_t<Pattern>>
+            && common_reference_with<range_rvalue_reference_t<Range>, range_rvalue_reference_t<Pattern>>;
 
         template<class R>
-        /*concept*/ constexpr bool bidirectional_common = bidirectional_range<R> && common_range<R>;
+        concept bidirectional_common =
+            bidirectional_range<R>
+            && common_range<R>;
     }
 
-    template<class View, class Pattern, class = enable_if_t<conjunction_v<
-        bool_constant<input_range<View>>,
-        bool_constant<view<View>>,
-        bool_constant<input_range<range_reference_t<View>>>,
-        bool_constant<forward_range<Pattern>>,
-        bool_constant<view<Pattern>>,
-        bool_constant<Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>>
-        >>>
-        class join_with_view;
+    template<input_range View, class Pattern>
+        requires view<View>
+            && input_range<range_reference_t<View>>
+            && forward_range<Pattern>
+            && view<Pattern>
+            && Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>
+    class join_with_view;
 
     // views::join_with customization point
     namespace views
@@ -49,16 +46,15 @@ namespace AZStd::ranges
             struct join_with_view_fn
                 : Internal::range_adaptor_closure<join_with_view_fn>
             {
-                template <class View, class Pattern, class = enable_if_t<conjunction_v<
-                    bool_constant<viewable_range<View>>
-                    >>>
+                template <viewable_range View, class Pattern>
                 constexpr auto operator()(View&& view, Pattern&& pattern) const
                 {
                     return join_with_view(AZStd::forward<View>(view), AZStd::forward<Pattern>(pattern));
                 }
 
                 // Create a range_adaptor argument forwarder which binds the pattern for later
-                template <class Pattern, class = enable_if_t<constructible_from<decay_t<Pattern>, Pattern>>>
+                template <class Pattern>
+                    requires constructible_from<decay_t<Pattern>, Pattern>
                 constexpr auto operator()(Pattern&& pattern) const
                 {
                     return range_adaptor_argument_forwarder(
@@ -72,7 +68,12 @@ namespace AZStd::ranges
         }
     }
 
-    template<class View, class Pattern, class>
+    template<input_range View, class Pattern>
+        requires view<View>
+            && input_range<range_reference_t<View>>
+            && forward_range<Pattern>
+            && view<Pattern>
+            && Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>
     class join_with_view
         : public view_interface<join_with_view<View, Pattern>>
     {
@@ -84,28 +85,27 @@ namespace AZStd::ranges
         using InnerRange = range_reference_t<View>;
 
     public:
-        template <bool Enable = default_initializable<View> && default_initializable<Pattern>,
-            class = enable_if_t<Enable>>
-        join_with_view() {}
+        join_with_view()
+            requires default_initializable<View>
+                && default_initializable<Pattern>
+        {}
 
         constexpr join_with_view(View base, Pattern pattern)
             : m_base(AZStd::move(base))
             , m_pattern(AZStd::move(pattern))
         {}
 
-        template<class R, class = enable_if_t<conjunction_v<
-            bool_constant<forward_range<R>>,
-            bool_constant<constructible_from<View, views::all_t<R>>>,
-            bool_constant<constructible_from<Pattern, single_view<range_value_t<InnerRange>>>
-            >>>>
+        template<forward_range R>
+            requires constructible_from<View, views::all_t<R>>
+                && constructible_from<Pattern, single_view<range_value_t<InnerRange>>>
         constexpr join_with_view(R&& range, range_value_t<InnerRange> elem)
             : m_base{ views::all(AZStd::forward<R>(range)) }
             , m_pattern{ views::single(AZStd::move(elem)) }
         {
         }
 
-        template <bool Enable = copy_constructible<View>, class = enable_if_t<Enable>>
         constexpr View base() const&
+            requires copy_constructible<View>
         {
             return m_base;
         }
@@ -121,9 +121,9 @@ namespace AZStd::ranges
             return iterator<UseConst>{ *this, ranges::begin(m_base) };
         }
 
-        template<class ConstView = const View,
-            class = enable_if_t<input_range<ConstView> && is_reference_v<range_reference_t<ConstView>>
-            && forward_range<const Pattern>>>
+        template<input_range ConstView = const View>
+            requires is_reference_v<range_reference_t<ConstView>>
+                && forward_range<const Pattern>
         constexpr auto begin() const
         {
             return iterator<true>{ *this, ranges::begin(m_base) };
@@ -141,9 +141,9 @@ namespace AZStd::ranges
                 return sentinel<Internal::simple_view<View> && Internal::simple_view<Pattern>>{ *this };
             }
         }
-        template<class ConstView = const View,
-            class = enable_if_t<input_range<ConstView> && is_reference_v<range_reference_t<ConstView>>
-            && forward_range<const Pattern>>>
+        template<input_range ConstView = const View>
+            requires is_reference_v<range_reference_t<ConstView>>
+                && forward_range<const Pattern>
         constexpr auto end() const
         {
             using InnerRangeConst = range_reference_t<const View>;
@@ -173,18 +173,17 @@ namespace AZStd::ranges
     template<class R, class P>
     join_with_view(R&&, P&&) -> join_with_view<views::all_t<R>, views::all_t<P>>;
 
-    template<class R, class = enable_if_t<input_range<R>>>
+    template<input_range R>
     join_with_view(R&&, range_value_t<range_reference_t<R>>)
         -> join_with_view<views::all_t<R>, single_view<range_value_t<range_reference_t<R>>>>;
 
-    template<class View, class Pattern, bool Const, class = void>
+    template<class View, class Pattern, bool Const>
     struct join_with_view_iterator_category {};
     template<class View, class Pattern, bool Const>
-    struct join_with_view_iterator_category<View, Pattern, Const, enable_if_t<conjunction_v<
-        /*ref-is-glvalue*/ is_reference<range_reference_t<Internal::maybe_const<Const, View>>>,
-        bool_constant<forward_range<Internal::maybe_const<Const, View>>>,
-        bool_constant<forward_range<range_reference_t<Internal::maybe_const<Const, View>>>>
-        >>>
+        requires is_reference_v<range_reference_t<Internal::maybe_const<Const, View>>>
+            && forward_range<Internal::maybe_const<Const, View>>
+            && forward_range<range_reference_t<Internal::maybe_const<Const, View>>>
+    struct join_with_view_iterator_category<View, Pattern, Const>
     {
     private:
         // Use a "function" to check the type traits of the join view iterators
@@ -235,18 +234,15 @@ namespace AZStd::ranges
         using iterator_category = decltype(get_iterator_category());
     };
 
-    template<class View, class Pattern, class ViewEnable>
+    template<input_range View, class Pattern>
+        requires view<View>
+            && input_range<range_reference_t<View>>
+            && forward_range<Pattern>
+            && view<Pattern>
+            && Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>
     template<bool Const>
-    struct join_with_view<View, Pattern, ViewEnable>::iterator
-        : enable_if_t<conjunction_v<
-        bool_constant<input_range<View>>,
-        bool_constant<view<View>>,
-        bool_constant<input_range<range_reference_t<View>>>,
-        bool_constant<forward_range<Pattern>>,
-        bool_constant<view<Pattern>>,
-        bool_constant<Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>>
-        >, join_with_view_iterator_category<View, Pattern, Const>
-       >
+    struct join_with_view<View, Pattern>::iterator
+        : join_with_view_iterator_category<View, Pattern, Const>
     {
     private:
         friend class join_with_view;
@@ -288,14 +284,16 @@ namespace AZStd::ranges
         using reference = common_reference_t<iter_reference_t<InnerIter>, iter_reference_t<PatternIter>>;
     #endif
 
-        template<bool Enable = default_initializable<OuterIter> && default_initializable<InnerIter>,
-            class = enable_if_t<Enable>>
-        iterator() {}
+        iterator()
+            requires default_initializable<OuterIter>
+                && default_initializable<InnerIter>
+        {}
 
-        template<bool Enable = Const && convertible_to<iterator_t<View>, OuterIter> &&
-            convertible_to<iterator_t<InnerRange>, InnerIter> && convertible_to<iterator_t<Pattern>, PatternIter>,
-            class = enable_if_t<Enable>>
         iterator(iterator<!Const> i)
+            requires Const
+                && convertible_to<iterator_t<View>, OuterIter>
+                && convertible_to<iterator_t<InnerRange>, InnerIter>
+                && convertible_to<iterator_t<Pattern>, PatternIter>
             : m_parent(i.m_parent)
             , m_outerIter(i.m_outerIter)
         {
@@ -338,10 +336,11 @@ namespace AZStd::ranges
             }
         }
 
-        template<bool Enable = ref_is_glvalue && bidirectional_range<Base> && Internal::bidirectional_common<InnerBase>
-            && Internal::bidirectional_common<PatternBase>,
-            class = enable_if_t<Enable>>
         constexpr iterator& operator--()
+            requires ref_is_glvalue
+                && bidirectional_range<Base>
+                && Internal::bidirectional_common<InnerBase>
+                && Internal::bidirectional_common<PatternBase>
         {
             if (m_outerIter == ranges::end(m_parent->m_base))
             {
@@ -390,26 +389,29 @@ namespace AZStd::ranges
             return *this;
         }
 
-        template<bool Enable = ref_is_glvalue && bidirectional_range<Base> && Internal::bidirectional_common<InnerBase>
-            && Internal::bidirectional_common<PatternBase>,
-            class = enable_if_t<Enable>>
         constexpr iterator operator--(int)
+            requires ref_is_glvalue
+                && bidirectional_range<Base>
+                && Internal::bidirectional_common<InnerBase>
+                && Internal::bidirectional_common<PatternBase>
         {
             auto tmp = *this;
             --(*this);
             return tmp;
         }
 
-        template<class OtherBase = Base,
-            class = enable_if_t<ref_is_glvalue && equality_comparable<iterator_t<OtherBase>> &&
-            equality_comparable<iterator_t<range_reference_t<OtherBase>>>>>
+        template<class OtherBase = Base>
+            requires ref_is_glvalue
+                && equality_comparable<iterator_t<OtherBase>>
+                && equality_comparable<iterator_t<range_reference_t<OtherBase>>>
         friend constexpr bool operator==(const iterator& x, const iterator& y)
         {
             return x.m_outerIter == y.m_outerIter && x.m_innerIter == y.m_innerIter;
         }
-        template<class OtherBase = Base,
-            class = enable_if_t<ref_is_glvalue && equality_comparable<iterator_t<OtherBase>>&&
-            equality_comparable<iterator_t<range_reference_t<OtherBase>>>>>
+        template<class OtherBase = Base>
+            requires ref_is_glvalue
+                && equality_comparable<iterator_t<OtherBase>>
+                && equality_comparable<iterator_t<range_reference_t<OtherBase>>>
         friend constexpr bool operator!=(const iterator& x, const iterator& y)
         {
             return !operator==(x, y);
@@ -697,17 +699,14 @@ namespace AZStd::ranges
         struct requirements_fulfilled {};
     }
 
-    template<class View, class Pattern, class ViewEnable>
+    template<input_range View, class Pattern>
+        requires view<View>
+            && input_range<range_reference_t<View>>
+            && forward_range<Pattern>
+            && view<Pattern>
+            && Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>
     template<bool Const>
-    struct join_with_view<View, Pattern, ViewEnable>::sentinel
-        : enable_if_t<conjunction_v<
-        bool_constant<input_range<View>>,
-        bool_constant<view<View>>,
-        bool_constant<input_range<range_reference_t<View>>>,
-        bool_constant<forward_range<Pattern>>,
-        bool_constant<view<Pattern>>,
-        bool_constant<Internal::compatible_joinable_ranges<range_reference_t<View>, Pattern>>
-        >, JoinWithViewInternal::requirements_fulfilled>
+    struct join_with_view<View, Pattern>::sentinel
     {
     private:
         using Parent = Internal::maybe_const<Const, join_with_view>;
@@ -718,38 +717,34 @@ namespace AZStd::ranges
         explicit constexpr sentinel(Parent& parent)
             : m_end(ranges::end(parent.m_base))
         {}
-        template<bool Enable = Const,
-            class = enable_if_t<Enable && convertible_to<sentinel_t<View>, sentinel_t<Base>>>>
         constexpr sentinel(sentinel<!Const> s)
+            requires Const
+                && convertible_to<sentinel_t<View>, sentinel_t<Base>>
             : m_end(AZStd::move(s.m_end))
         {
         }
 
         // comparison operators
-        template<bool OtherConst, class = enable_if_t<
-            sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
-        >>
+        template<bool OtherConst>
+            requires sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
         friend constexpr bool operator==(const iterator<OtherConst>& x, const sentinel& y)
         {
             return iterator_accessor(x) == y.m_end;
         }
-        template<bool OtherConst, class = enable_if_t<
-            sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
-        >>
+        template<bool OtherConst>
+            requires sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
         friend constexpr bool operator==(const sentinel& y, const iterator<OtherConst>& x)
         {
             return operator==(x, y);
         }
-        template<bool OtherConst, class = enable_if_t<
-            sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
-        >>
+        template<bool OtherConst>
+            requires sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
         friend constexpr bool operator!=(const iterator<OtherConst>& x, const sentinel& y)
         {
             return !operator==(x, y);
         }
-        template<bool OtherConst, class = enable_if_t<
-            sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
-        >>
+        template<bool OtherConst>
+            requires sentinel_for<sentinel_t<Base>, iterator_t<Internal::maybe_const<OtherConst, Base>>>
         friend constexpr bool operator!=(const sentinel& y, const iterator<OtherConst>& x)
         {
             return !operator==(x, y);

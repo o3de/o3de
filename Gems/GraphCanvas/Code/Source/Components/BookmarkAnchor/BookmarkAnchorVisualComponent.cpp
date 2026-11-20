@@ -261,7 +261,7 @@ namespace GraphCanvas
 
             if (editContext)
             {
-                editContext->Class<BookmarkAnchorVisualComponent>("BookmarkAnchorVisualComponent", "Component that handles the visualization of BookmarkAnchorVisuals")
+                editContext->Class<BookmarkAnchorVisualComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "BookmarkAnchorVisualComponent"), QT_TRANSLATE_NOOP("GraphCanvas", "Component that handles the visualization of BookmarkAnchorVisuals"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;

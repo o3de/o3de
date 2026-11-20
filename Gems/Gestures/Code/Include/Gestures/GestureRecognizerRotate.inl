@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,12 +25,18 @@ inline void Gestures::RecognizerRotate::Config::Reflect(AZ::ReflectContext* cont
 
         if (AZ::EditContext* ec = serialize->GetEditContext())
         {
-            ec->Class<Config>("Rotate Config", "Configuration values used to setup a gesture recognizer for rotations.")
+            ec->Class<Config>(
+                QT_TRANSLATE_NOOP("Gestures", "Rotate Config"),
+                QT_TRANSLATE_NOOP("Gestures", "Configuration values used to setup a gesture recognizer for rotations."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsMoved, "Max Pixels Moved", "The max distance in pixels that the touches can move towards or away from each other before a rotate will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsMoved,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Pixels Moved"),
+                    QT_TRANSLATE_NOOP("Gestures", "The max distance in pixels that the touches can move towards or away from each other before a rotate will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minAngleDegrees, "Min Angle Degrees", "The min angle in degrees that must be rotated before the gesture will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minAngleDegrees,
+                    QT_TRANSLATE_NOOP("Gestures", "Min Angle Degrees"),
+                    QT_TRANSLATE_NOOP("Gestures", "The min angle in degrees that must be rotated before the gesture will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ;
         }

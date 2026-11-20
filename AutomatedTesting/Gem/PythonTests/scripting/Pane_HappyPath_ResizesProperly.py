@@ -37,7 +37,7 @@ def Pane_HappyPath_ResizesProperly():
     :return: None
     """
 
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper

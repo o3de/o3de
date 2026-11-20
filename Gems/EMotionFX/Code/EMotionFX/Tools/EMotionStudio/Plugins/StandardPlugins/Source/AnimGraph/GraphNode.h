@@ -80,7 +80,7 @@ namespace EMStudio
         GraphNode(const QModelIndex& modelIndex, const char* name, AZ::u16 numInputs = 0, AZ::u16 numOutputs = 0);
         virtual ~GraphNode();
 
-        const QModelIndex& GetModelIndex() const                            { return m_modelIndex; }
+        const QPersistentModelIndex& GetModelIndex() const                            { return m_modelIndex; }
 
         MCORE_INLINE void UpdateNameAndPorts()                              { m_nameAndPortsUpdated = false; }
         MCORE_INLINE AZStd::vector<NodeConnection*>& GetConnections()        { return m_connections; }

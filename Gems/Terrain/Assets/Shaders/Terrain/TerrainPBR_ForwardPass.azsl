@@ -172,6 +172,9 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     LightCullingTileIterator tileIterator;
     tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
+    // Apply Decals
+    ApplyDecals(tileIterator, surface);
+
     // ------- LightingData -------
     LightingData lightingData;
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, views);
@@ -186,9 +189,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     const float alpha = 1.0f;
 
     // ------- Lighting Calculation -------
-
-    // Apply Decals
-    ApplyDecals(tileIterator, surface);
 
     // Apply Direct Lighting
     ApplyDirectLighting(surface, lightingData, input.m_position, tileIterator);

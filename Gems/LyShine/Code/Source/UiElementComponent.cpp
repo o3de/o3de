@@ -33,6 +33,8 @@
 
 #include "IConsole.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1357,7 +1359,7 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiElementComponent>("Element", "Adds UI Element behavior to an entity");
+            auto editInfo = ec->Class<UiElementComponent>(QT_TRANSLATE_NOOP("LyShine", "Element"), QT_TRANSLATE_NOOP("LyShine", "Adds UI Element behavior to an entity"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiElement.png")
@@ -1365,14 +1367,14 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // Cannot be added or removed by user
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("String", &UiElementComponent::m_elementId, "Id",
-                "This read-only ID is used to reference the element from FlowGraph")
+            editInfo->DataElement("String", &UiElementComponent::m_elementId, QT_TRANSLATE_NOOP("LyShine", "Id"),
+                QT_TRANSLATE_NOOP("LyShine", "This read-only ID is used to reference the element from FlowGraph"))
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                 ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable);
 
-            editInfo->DataElement(0, &UiElementComponent::m_isEnabled, "Start enabled",
-                "Determines whether the element is enabled upon creation.\n"
-                "If an element is not enabled, neither it nor any of its children are drawn or interactive.");
+            editInfo->DataElement(0, &UiElementComponent::m_isEnabled, QT_TRANSLATE_NOOP("LyShine", "Start enabled"),
+                QT_TRANSLATE_NOOP("LyShine", "Determines whether the element is enabled upon creation.\n"
+                "If an element is not enabled, neither it nor any of its children are drawn or interactive."));
 
             // These are not visible in the PropertyGrid since they are managed through the Hierarchy Pane
             // We do want to be able to push them to a slice though.

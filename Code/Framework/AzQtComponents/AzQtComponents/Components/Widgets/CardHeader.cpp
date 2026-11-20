@@ -49,7 +49,7 @@ namespace AzQtComponents
         {
             if (m_clickable)
             {
-                emit clicked(event->globalPos());
+                emit clicked(event->globalPosition().toPoint());
             }
             else
             {
@@ -457,4 +457,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_CardHeader.cpp"

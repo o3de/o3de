@@ -9,6 +9,7 @@
 #include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Terrain
 {
@@ -27,7 +28,7 @@ namespace Terrain
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorTerrainWorldDebuggerComponent>(
-                    "Terrain World Debugger", "")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain World Debugger"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Terrain")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/TerrainWorldDebugger.svg")

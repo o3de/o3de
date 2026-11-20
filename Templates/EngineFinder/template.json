@@ -1,0 +1,30 @@
+{
+    "template_name": "EngineFinder",
+    "template_restricted_platform_relative_path": "Templates/EngineFinder",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/EngineFinder",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Engine Finder",
+    "summary": "This can be inherited from to create other templates that use the same engine finder code.",
+    "canonical_tags": [
+        "Snippet",
+        "Inherited"
+    ],
+    "user_tags": [
+        "EngineFinder"
+    ],
+    "copyFiles": [
+        {
+            "file": "cmake/EngineFinder.cmake",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "cmake"
+        }
+    ]
+}

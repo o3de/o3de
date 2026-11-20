@@ -332,6 +332,18 @@ namespace AZ
         return Vector3(Simd::Vec3::Madd(GetSimdValue(), Simd::Vec3::SplatIndex1(sinCos), relVecSinTheta));
     }
 
+    AZ_MATH_INLINE Vector3 Vector3::SmoothCriticallyDamped(Vector3& valueRate, float timeDelta, const Vector3& target, float smoothTime) const
+    {
+        Vector3 result = *this;
+        AZ::SmoothCriticallyDamped(result, valueRate, timeDelta, target, smoothTime);
+        return result;
+    }
+
+    AZ_MATH_INLINE Vector3 Vector3::SmoothStep(const Vector3& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
     AZ_MATH_INLINE Vector3 Vector3::Nlerp(const Vector3& dest, float t) const
     {
         return Lerp(dest, t).GetNormalizedSafe(Constants::Tolerance);
@@ -674,7 +686,9 @@ namespace AZ
 
     AZ_MATH_INLINE bool Vector3::IsFinite() const
     {
-        return IsFiniteFloat(m_x) && IsFiniteFloat(m_y) && IsFiniteFloat(m_z);
+        // Packed 3-lane finite check (Vec3 ops mask W): abs(v) <= FloatMax
+        // catches both NaN (unordered compare returns false) and +/-Inf (Inf > FloatMax)
+        return Simd::Vec3::CmpAllLtEq(Simd::Vec3::Abs(m_value), Simd::Vec3::Splat(Constants::FloatMax));
     }
 
     AZ_MATH_INLINE Simd::Vec3::FloatType Vector3::GetSimdValue() const

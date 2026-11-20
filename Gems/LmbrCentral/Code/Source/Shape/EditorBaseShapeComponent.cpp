@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral
@@ -42,22 +43,28 @@ namespace LmbrCentral
 
         if (auto editContext = context.GetEditContext())
         {
-            editContext->Class<EditorBaseShapeComponent>("EditorBaseShapeComponent", "Editor base shape component")
+            editContext->Class<EditorBaseShapeComponent>(
+                QT_TRANSLATE_NOOP("LmbrCentral", "EditorBaseShapeComponent"),
+                QT_TRANSLATE_NOOP("LmbrCentral", "Editor base shape component"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ->DataElement(
-                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInEditor, "Visible",
-                    "Always display this shape in the editor viewport")
+                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInEditor,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Visible"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Always display this shape in the editor viewport"))
                 ->DataElement(
-                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInGameView, "Game View",
-                    "Display the shape while in Game View")
+                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_visibleInGameView,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Game View"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Display the shape while in Game View"))
                 ->DataElement(
-                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_displayFilled, "Filled",
-                    "Display the shape as either filled or wireframe") // hidden before selection is resolved
+                    AZ::Edit::UIHandlers::CheckBox, &EditorBaseShapeComponent::m_displayFilled,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Filled"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Display the shape as either filled or wireframe")) // hidden before selection is resolved
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBaseShapeComponent::OnDisplayFilledChanged)
                 ->DataElement(
-                    AZ::Edit::UIHandlers::Default, &EditorBaseShapeComponent::m_shapeColor, "Shape Color",
-                    "The color to use when rendering the faces of the shape object")
+                    AZ::Edit::UIHandlers::Default, &EditorBaseShapeComponent::m_shapeColor,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Shape Color"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The color to use when rendering the faces of the shape object"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBaseShapeComponent::OnShapeColorChanged)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorBaseShapeComponent::GetShapeColorIsEditable);
         }

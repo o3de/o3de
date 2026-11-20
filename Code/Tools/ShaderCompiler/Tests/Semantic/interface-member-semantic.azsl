@@ -1,0 +1,9 @@
+interface my_name
+{
+    anytype Somefunction();
+};
+
+class s : my_name
+{
+    anytype Somefunction();
+};

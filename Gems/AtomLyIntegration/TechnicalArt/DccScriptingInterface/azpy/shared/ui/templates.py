@@ -27,23 +27,22 @@ from unipath import Path
 import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 # ^ this is effectively an import and retreive of <dccsi>\config.py
-# and init's access to Qt/Pyside2
-# init lumberyard Qy/PySide2 access
+# and init's access to Qt/Pyside
+# init lumberyard Qy/PySide access
 
-# now default settings are extended with PySide2
+# now default settings are extended with PySide
 # this is an alternative to "from dynaconf import settings" with Qt
 settings = _config.get_config_settings(setup_ly_pyside=True)
 
-# now we can import lumberyards PySide2
+# now we can import lumberyards PySide
 import azpy.shared.ui.qt_settings as qt_settings
 import azpy.shared.ui.help_menu as help_menu
-import azpy.shared.ui.pyside2_ui_utils as ui_utils
+import azpy.shared.ui.puic_utils as ui_utils
 
-import pyside2uic
-import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
-import PySide2.QtUiTools as QtUiTools
+import PySide6.QtCore as QtCore
+import PySide6.QtWidgets as QtWidgets
+import PySide6.QtGui as QtGui
+import PySide6.QtUiTools as QtUiTools
 
 # -------------------------------------------------------------------------
 #  global space debug flag
@@ -82,10 +81,12 @@ _DARK_STYLE = Path(_MODULE_PATH.parent, 'resources', 'qdarkstyle', 'style.qss')
 
 
 # -------------------------------------------------------------------------
-# https://doc.qt.io/qt-5/designer-using-a-ui-file-python.html
-# pattern #1
+# https://doc.qt.io/qtforpython-6/tutorials/basictutorial/uifiles.html
 
-# pyside2-uic.exe form.ui > form.py
+# pattern #1
+# https://doc.qt.io/qtforpython-6/tools/pyside-uic.html
+
+# pyside6-uic.exe form.ui -o form.py
 # results might be something like this:
 
 #from ui_form import Ui_Form
@@ -105,9 +106,9 @@ _DARK_STYLE = Path(_MODULE_PATH.parent, 'resources', 'qdarkstyle', 'style.qss')
 
 # pattern 3, use QUiLoader
 # you need to know the main widget class (QtWidgets.QWidget), load .ui form within class
-#from PySide2.QtUiTools import QUiLoader
-#from PySide2 import QtWidgets
-#from PySide2.QtCore import QFile
+#from PySide6.QtUiTools import QUiLoader
+#from PySide6 import QtWidgets
+#from PySide6.QtCore import QFile
 
 #class MyForm(QtWidgets.QWidget):
     #def __init__(self, parent=None):
@@ -141,7 +142,7 @@ _DARK_STYLE = Path(_MODULE_PATH.parent, 'resources', 'qdarkstyle', 'style.qss')
 # here is basically what that returns ...
 #parsed_xml = xml.parse(ui_file)
 # form_class = parsed_xml.find('class').text              # --> <class 'Ui_Form'>
-# widget_class = parsed_xml.find('widget').get('class')   # --> <class 'PySide2.QtWidgets.QWidget'>
+# widget_class = parsed_xml.find('widget').get('class')   # --> <class 'PySide6.QtWidgets.QWidget'>
 
 #class MyToolWidget(TemplateToolWidget):
     #def __init__(self, parent, *args, **kwargs):
@@ -279,7 +280,7 @@ class TemplateMainWindow(QtWidgets.QMainWindow):
 
         super(TemplateMainWindow, self).__init__(parent=parent, *args, **kwargs)
 
-        # camel case because this is a Qt|Pyside2 widget method
+        # camel case because this is a Qt|Pyside widget method
         if self.objectName() == '':
             # Set a unique object name string so Maya can easily look it up
             self.setObjectName(self._name_uuid)

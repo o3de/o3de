@@ -240,8 +240,6 @@ namespace LUAEditor
             return;
         }
 
-        RefreshAllDocumentPerforceStat();
-
         // Open any files we specified in the command line.
         if (!m_filesToOpen.empty())
         {
@@ -387,16 +385,14 @@ namespace LUAEditor
                 }
                 else
                 {
-                    uint64_t lastKnownModTime = (AZ::u64)info.m_lastKnownModTime.dwHighDateTime << 32 | info.m_lastKnownModTime.dwLowDateTime;
+                    uint64_t lastKnownModTime = info.m_lastKnownModTime;
                     uint64_t modTime = m_fileIO->ModificationTime(info.m_assetId.c_str());
 
                     if (lastKnownModTime != modTime)
                     {
                         // ruh oh!  The file time of the asset changed - someone reverted, modified, etc.  What do we do?
                         // do we have unsaved changes?
-                        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
-
+                        info.m_lastKnownModTime = modTime;
                         {
                             AZ_TracePrintf(LUAEditorDebugName, "Document modtime has changed, queueing reload of '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
                         }
@@ -477,12 +473,11 @@ namespace LUAEditor
                 QMessageBox msgBox(this->m_pLUAEditorMainWindow);
                 msgBox.setText("A file has been modified by an outside program. Would you like to reload it from disk? If you do, you will lose any unsaved changes.");
                 msgBox.setInformativeText(info.m_assetName.c_str());
-                msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                msgBox.setButtonText(QMessageBox::Yes, "Reload From Disk");
-                msgBox.setButtonText(QMessageBox::No, "Don't reload");
-                msgBox.setDefaultButton(QMessageBox::No);
+                msgBox.addButton("Reload From Disk", QMessageBox::ButtonRole::AcceptRole);
+                QPushButton* button = msgBox.addButton("Don't reload", QMessageBox::ButtonRole::RejectRole);
+                msgBox.setDefaultButton(button);
                 msgBox.setIcon(QMessageBox::Question);
-                shouldReload = (msgBox.exec() == QMessageBox::Yes);
+                shouldReload = (msgBox.exec() == QMessageBox::ButtonRole::AcceptRole);
             }
 
             if (shouldAutoReload || shouldReload)
@@ -502,9 +497,7 @@ namespace LUAEditor
                     if (m_fileIO)
                     {
                         uint64_t modTime = m_fileIO->ModificationTime(info.m_assetId.c_str());
-
-                        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
+                        info.m_lastKnownModTime = modTime;
                     }
                 }
             }
@@ -619,7 +612,7 @@ namespace LUAEditor
             {
                 // the document was probably closed.
                 if (foundAbsolutePath)
-                { 
+                {
                     AssetOpenRequested(absolutePath, true);
                 }
                 else
@@ -903,7 +896,7 @@ namespace LUAEditor
     void Context::OnCloseDocument(const AZStd::string& id)
     {
         AZStd::string assetId = id; // as we might delete the reference
-        
+
         if (m_pLUAEditorMainWindow)
         {
             m_pLUAEditorMainWindow->OnCloseView(assetId);
@@ -1101,7 +1094,7 @@ namespace LUAEditor
             );
     }
 
-    AZStd::optional<const Context::DocumentInfoMap::iterator> Context::FindDocumentInfo(const AZStd::string_view assetId) 
+    AZStd::optional<const Context::DocumentInfoMap::iterator> Context::FindDocumentInfo(const AZStd::string_view assetId)
     {
         AZStd::string assetIdLower(assetId);
         AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
@@ -1168,9 +1161,7 @@ namespace LUAEditor
             {
                 uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
-                documentInfo.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                documentInfo.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
-
+                documentInfo.m_lastKnownModTime = modTime;
                 documentInfo.m_bDataIsLoaded = true;
                 documentInfo.m_bIsModified = false;
             }
@@ -1347,7 +1338,7 @@ namespace LUAEditor
     {
         auto documentInfoIter = FindDocumentInfo(assetId);
         AZ_TracePrintf(LUAEditorDebugName, "OnReloadDocument() ENTRY user queing reload for assetId '%s'\n", assetId.c_str());
-        
+
         AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
         DocumentInfo& documentInfo = documentInfoIter.value()->second;
         documentInfo.m_bDataIsLoaded = false;
@@ -1514,8 +1505,7 @@ namespace LUAEditor
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
         info.m_bSourceControl_CanWrite = true;
-        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
+        info.m_lastKnownModTime = modTime;
         info.m_bIsModified = false;
 
         // load the script source
@@ -1587,7 +1577,6 @@ namespace LUAEditor
             for (size_t i = 0; i < numSwitchValues; ++i)
             {
                 AZStd::string inputValue = commandLine->GetSwitchValue(k_luaScriptFileString, i);
-                AZStd::to_lower(const_cast<AZStd::string&>(inputValue).begin(), const_cast<AZStd::string&>(inputValue).end());
 
                 // Cache the files we want to open, we will open them when we activate the main window.
                 parameters.append(inputValue);
@@ -1681,7 +1670,7 @@ namespace LUAEditor
 
         AZ_TracePrintf(LUAEditorDebugName, "Context::CreateBreakpoint( %s )\n", debugName.c_str());
 
-        BreakpointMap::pair_iter_bool newInsertion = m_pBreakpointSavedState->m_Breakpoints.insert(breakpointUID);
+        BreakpointMap::pair_iter_bool newInsertion = m_pBreakpointSavedState->m_Breakpoints.try_emplace(breakpointUID);
         AZ_Assert(newInsertion.second, "Breakpoint already exists!");
         Breakpoint& newBreakpoint = newInsertion.first->second;
         newBreakpoint.m_assetName = debugName;
@@ -1836,7 +1825,7 @@ namespace LUAEditor
             AzToolsFramework::AssetSystemRequestBus::Broadcast(
                 &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
                 formattedRelativePath,
-                absolutePath); 
+                absolutePath);
         }
 
         //AZ_TracePrintf(LUAEditorDebugName, "Breakpoint '%s' was hit on line %i\n", assetIdString.c_str(), lineNumber);

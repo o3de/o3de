@@ -7,15 +7,13 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <qlineedit.h>
+#include <QLineEdit>
 
 #include <AzCore/Component/TickBus.h>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/StringDataInterface.h>
-#endif
 
 class QGraphicsProxyWidget;
 

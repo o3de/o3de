@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
 
@@ -25,7 +26,9 @@ namespace ScriptCanvasPhysics
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ScriptCanvasPhysicsSystemComponent>("ScriptCanvasPhysics", "Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas.")
+                ec->Class<ScriptCanvasPhysicsSystemComponent>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasPhysics", "ScriptCanvasPhysics"),
+                    QT_TRANSLATE_NOOP("ScriptCanvasPhysics", "Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

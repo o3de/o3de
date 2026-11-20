@@ -16,9 +16,9 @@ namespace AZ::Render
     RPI::Ptr<EditorStateBufferCopyPass> EditorStateBufferCopyPass::Create(const RPI::PassDescriptor& descriptor)
     {
         RPI::Ptr<EditorStateBufferCopyPass> pass = aznew EditorStateBufferCopyPass(descriptor);
-        return AZStd::move(pass);
+        return pass;
     }
-    
+
     EditorStateBufferCopyPass::EditorStateBufferCopyPass(const RPI::PassDescriptor& descriptor)
         : AZ::RPI::FullscreenTrianglePass(descriptor)
         , m_passDescriptor(descriptor)
@@ -29,7 +29,7 @@ namespace AZ::Render
     {
         const RPI::EditorStateBufferCopyPassData* passData =
             RPI::PassUtils::GetPassData<RPI::EditorStateBufferCopyPassData>(m_passDescriptor);
-            
+
         if (passData == nullptr)
         {
             AZ_Error(

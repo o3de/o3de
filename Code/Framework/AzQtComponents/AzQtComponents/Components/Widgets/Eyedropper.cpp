@@ -11,7 +11,6 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QSettings>
 
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>
@@ -244,4 +243,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_Eyedropper.cpp"

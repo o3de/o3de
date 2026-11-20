@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/MemoryCategoriesCore.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QTreeView)
 

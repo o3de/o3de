@@ -22,13 +22,13 @@ from azpy.shared.ui.base_widget import BaseQwidgetAzpy
 
 # 3rd Party
 from unipath import Path
-import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
+import PySide6.QtCore as QtCore
+import PySide6.QtWidgets as QtWidgets
 
-from PySide2.QtCore import QProcess, Signal, Slot, QTextCodec
-from PySide2.QtGui import QTextCursor
-from PySide2.QtWidgets import QPlainTextEdit
-from PySide2.QtCore import QTimer
+from PySide6.QtCore import QProcess, Signal, Slot, QTextCodec
+from PySide6.QtGui import QTextCursor
+from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtCore import QTimer
 
 # -------------------------------------------------------------------------
 #  global space debug flag
@@ -41,7 +41,7 @@ _MODULE_PATH = Path(__file__)
 
 _ORG_TAG = 'Amazon_Lumberyard'
 _APP_TAG = 'DCCsi'
-_TOOL_TAG = 'azpy.shared.ui.pyside2_qtextedit_stdout'
+_TOOL_TAG = 'azpy.shared.ui.pyside_qtextedit_stdout'
 _TYPE_TAG = 'test'
 
 _MODULENAME = __name__
@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     _ORG_TAG = 'Amazon_Lumberyard'
     _APP_TAG = 'DCCsi'
-    _TOOL_TAG = 'azpy.shared.ui.pyside2_qtextedit_stdout'
+    _TOOL_TAG = 'azpy.shared.ui.pyside_qtextedit_stdout'
     _TYPE_TAG = 'test'
 
     if _DCCSI_GDEBUG:
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     # start something and log (including to console)
     #  this starts a test app
-    _TEST_PY_FILE = Path(_MODULE_PATH.parent, 'pyside2_ui_utils.py')
+    _TEST_PY_FILE = Path(_MODULE_PATH.parent, 'puic_utils.py')
     _READER.start('python', ['-u', _TEST_PY_FILE])  # start the process
 
     # after that starts, this will show the console

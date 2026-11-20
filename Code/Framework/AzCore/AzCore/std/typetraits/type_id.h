@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_TYPE_TRAITS_TYPEID_H
-#define AZSTD_TYPE_TRAITS_TYPEID_H 1
+
+#pragma once
 
 #include <AzCore/std/base.h>
 
@@ -58,6 +58,3 @@ namespace AZStd
 #   define aztypeid_cmp(A, B) (A) == (B)
 
 #endif // AZSTD_TYPE_ID_SUPPORT
-
-#endif // AZSTD_TYPE_TRAITS_TYPEID_H
-#pragma once

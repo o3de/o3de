@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_FASTLIB_H
-#define CRYINCLUDE_EDITOR_UTIL_FASTLIB_H
 #pragma once
 
 __forceinline int RoundFloatToInt(float fValue)
@@ -30,5 +27,3 @@ __forceinline unsigned int __stdcall ifloor(float fValue)
 {
     return ftoi(floor(fValue));
 }
-
-#endif // CRYINCLUDE_EDITOR_UTIL_FASTLIB_H

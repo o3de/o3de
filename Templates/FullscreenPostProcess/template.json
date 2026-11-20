@@ -1,0 +1,256 @@
+{
+    "template_name": "FullscreenPostProcess",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Fullscreen Post Process Pass",
+    "summary": "Custom AZ::RPI::FullscreenTrianglePass + shader + .pass template + a gem-level RenderingSystemComponent. Three integration modes -- PostVolume, ScreenSpaceConstant, ManualPassAsset -- decide HOW the pass attaches to the renderer.",
+    "canonical_tags": [ "Template" ],
+    "user_tags": [ "Atom", "RPI", "PostProcess", "FullscreenTriangle" ],
+    "icon_path": "preview.png",
+
+    "_README_": [
+        "STAGING MODEL --------------------------------------------------",
+        "  This template stages the FULL union of files for every variant",
+        "  (under Variants/<Mode>/...) plus the common assets (under",
+        "  TemplateAssets/...) and the gem registry setreg (under Template/).",
+        "  The class_wizard.process_commands chain decides which staged",
+        "  files actually leave staging: scope/branches selects the active",
+        "  variant's command list; copy_file_to performs the final move.",
+        "  Files no command claims stay in the temp staging dir and vanish",
+        "  when the wizard cleans up. This keeps the legacy copyFiles",
+        "  shape intact (just stage everything) without writing junk into",
+        "  the user's gem.",
+        "",
+        "INTEGRATION MODES ----------------------------------------------",
+        "  PostVolume          - Pass + Settings struct + per-area",
+        "                        SettingsComponent + ProviderInterface.",
+        "                        Artist drops a component in the level,",
+        "                        edits sliders. Pipeline insertion still",
+        "                        manual (paste from the .setreg README).",
+        "  ScreenSpaceConstant - Pass + FeatureProcessor that auto-",
+        "                        injects the pass into every default",
+        "                        pipeline at the PostProcessPass anchor.",
+        "                        CVar-toggled, no level setup.",
+        "  ManualPassAsset     - Pass + .pass asset only. User pastes a",
+        "                        PassRequest into their pipeline by hand.",
+        "                        Maximum control, minimum automation.",
+        "",
+        "AZSL BASELINE --------------------------------------------------",
+        "  Assets/Shaders/PostProcessing/${Name}.azsl ships as a",
+        "  pass-through. ColorGrade tint+exposure code lives commented",
+        "  inline as the canonical first-effect example. PROBE block",
+        "  forces red output -- uncomment to verify the chain end-to-end.",
+        "",
+        "FILES (full staging set) ---------------------------------------",
+        "  Variants/PostVolume/Source/${Name}Pass.{h,cpp}",
+        "  Variants/PostVolume/Source/${Name}Settings.{h,cpp}",
+        "  Variants/PostVolume/Source/${Name}SettingsComponent.{h,cpp}",
+        "  Variants/PostVolume/Source/${Name}SettingsProviderInterface.h",
+        "  Variants/PostVolume/Source/${GemName}RenderingSystemComponent.{h,cpp}",
+        "  Variants/ScreenSpaceConstant/Source/${Name}Pass.{h,cpp}",
+        "  Variants/ScreenSpaceConstant/Source/${Name}FeatureProcessor.{h,cpp}",
+        "  Variants/ScreenSpaceConstant/Source/${GemName}RenderingSystemComponent.{h,cpp}",
+        "  Variants/ManualPassAsset/Source/${Name}Pass.{h,cpp}",
+        "  Variants/ManualPassAsset/Source/${GemName}RenderingSystemComponent.{h,cpp}",
+        "  TemplateAssets/Passes/${Name}.pass",
+        "  TemplateAssets/Shaders/PostProcessing/${Name}.{azsl,shader}",
+        "  Template/${GemName}PostProcessRegistry.setreg"
+    ],
+
+    "copyFiles": [
+        { "file": "Variants/PostVolume/Source/${Name}Pass.h",                                 "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}Pass.cpp",                               "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}Settings.h",                             "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}Settings.cpp",                           "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}SettingsComponent.h",                    "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}SettingsComponent.cpp",                  "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${Name}SettingsProviderInterface.h",            "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${GemName}RenderingSystemComponent.h",          "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/PostVolume/Source/${GemName}RenderingSystemComponent.cpp",        "isTemplated": true, "excludeFromMerge": true },
+
+        { "file": "Variants/ScreenSpaceConstant/Source/${Name}Pass.h",                        "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ScreenSpaceConstant/Source/${Name}Pass.cpp",                      "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ScreenSpaceConstant/Source/${Name}FeatureProcessor.h",            "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ScreenSpaceConstant/Source/${Name}FeatureProcessor.cpp",          "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ScreenSpaceConstant/Source/${GemName}RenderingSystemComponent.h", "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ScreenSpaceConstant/Source/${GemName}RenderingSystemComponent.cpp","isTemplated": true, "excludeFromMerge": true },
+
+        { "file": "Variants/ManualPassAsset/Source/${Name}Pass.h",                            "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ManualPassAsset/Source/${Name}Pass.cpp",                          "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ManualPassAsset/Source/${GemName}RenderingSystemComponent.h",     "isTemplated": true, "excludeFromMerge": true },
+        { "file": "Variants/ManualPassAsset/Source/${GemName}RenderingSystemComponent.cpp",   "isTemplated": true, "excludeFromMerge": true },
+
+        { "file": "TemplateAssets/Passes/${Name}.pass",                                       "isTemplated": true, "excludeFromMerge": true },
+        { "file": "TemplateAssets/Shaders/PostProcessing/${Name}.azsl",                       "isTemplated": true, "excludeFromMerge": true },
+        { "file": "TemplateAssets/Shaders/PostProcessing/${Name}.shader",                     "isTemplated": true, "excludeFromMerge": true },
+
+        { "file": "Template/${GemName}PostProcessRegistry.setreg",                            "isTemplated": true }
+    ],
+
+    "createDirectories": [
+        { "dir": "Source" },
+        { "dir": "Assets" },
+        { "dir": "Assets/Passes" },
+        { "dir": "Assets/Shaders/PostProcessing" },
+        { "dir": "Registry" }
+    ],
+
+    "class_wizard": {
+        "display_name": "Fullscreen Post Process Pass",
+        "class_name": "fullscreen_post_process",
+        "component_suffix": "Pass",
+        "description": "Atom RPI fullscreen post-process pass with a choice of three integration patterns: PostVolume (artist component), ScreenSpaceConstant (auto-injected via FeatureProcessor), or ManualPassAsset (drop-in pass + asset only).",
+
+        "input_vars": [
+            {
+                "input_type": "dropdown",
+                "var_name": "integration_mode",
+                "title": "Integration Mode",
+                "default_value": "PostVolume",
+                "required": true,
+                "description": "Decides HOW the pass attaches to Atom: per-area artist component (PostVolume), auto-injected global pass (ScreenSpaceConstant), or hand-wired (ManualPassAsset).",
+                "options": [ "PostVolume", "ScreenSpaceConstant", "ManualPassAsset" ]
+            },
+            {
+                "input_type": "text",
+                "var_name": "PassTemplateName",
+                "title": "Pass Template Name",
+                "default_value": "${Name}Template",
+                "description": "PassSystem lookup name for the template. Must match the 'Name' field inside Assets/Passes/${Name}.pass."
+            }
+        ],
+
+        "process_commands": [
+            { "command": "copy_file_to",
+              "args": {
+                  "source":      "TemplateAssets/Shaders/PostProcessing/${Name}.azsl",
+                  "destination": "Shaders/PostProcessing/${Name}.azsl",
+                  "anchor":      "gem_assets"
+              }
+            },
+            { "command": "copy_file_to",
+              "args": {
+                  "source":      "TemplateAssets/Shaders/PostProcessing/${Name}.shader",
+                  "destination": "Shaders/PostProcessing/${Name}.shader",
+                  "anchor":      "gem_assets"
+              }
+            },
+            { "command": "copy_file_to",
+              "args": {
+                  "source":      "TemplateAssets/Passes/${Name}.pass",
+                  "destination": "Passes/${Name}.pass",
+                  "anchor":      "gem_assets"
+              }
+            },
+            { "command": "copy_file_to",
+              "args": {
+                  "source":      "Template/${GemName}PostProcessRegistry.setreg",
+                  "destination": "${GemName}PostProcessRegistry.setreg",
+                  "anchor":      "gem_registry"
+              }
+            },
+
+            { "command": "add_gem_dependency", "args": { "dependency": "Gem::Atom_RPI.Public" } },
+            { "command": "add_gem_dependency", "args": { "dependency": "Gem::Atom_Feature_Common.Public" } },
+
+            { "scope": "${integration_mode}",
+              "branches": {
+
+                "PostVolume": [
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}Pass.h",                          "destination": "Source/${Name}Pass.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}Pass.cpp",                        "destination": "Source/${Name}Pass.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}Settings.h",                      "destination": "Source/${Name}Settings.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}Settings.cpp",                    "destination": "Source/${Name}Settings.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}SettingsComponent.h",             "destination": "Source/${Name}SettingsComponent.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}SettingsComponent.cpp",           "destination": "Source/${Name}SettingsComponent.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${Name}SettingsProviderInterface.h",     "destination": "Source/${Name}SettingsProviderInterface.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${GemName}RenderingSystemComponent.h",   "destination": "Source/${GemName}RenderingSystemComponent.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/PostVolume/Source/${GemName}RenderingSystemComponent.cpp", "destination": "Source/${GemName}RenderingSystemComponent.cpp" } },
+
+                    { "command": "register_file_list", "args": { "component_name": "${Name}Pass" } },
+                    { "command": "register_file_list", "args": { "component_name": "${Name}Settings" } },
+                    { "command": "register_file_list", "args": { "component_name": "${Name}SettingsComponent" } },
+                    { "command": "register_file_list", "args": { "component_name": "${GemName}RenderingSystemComponent" } },
+
+                    { "command": "register_module_descriptor",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+                    { "command": "register_module_descriptor",
+                      "args": { "component_name": "${Name}SettingsComponent",            "module_kind": "runtime" } },
+
+                    { "command": "register_system_component",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+
+                    { "command": "add_pass_creator_call",
+                      "args": { "pass_name": "${Name}Pass",
+                                "system_component_name": "${GemName}RenderingSystemComponent" } }
+                ],
+
+                "ScreenSpaceConstant": [
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${Name}Pass.h",                           "destination": "Source/${Name}Pass.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${Name}Pass.cpp",                         "destination": "Source/${Name}Pass.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${Name}FeatureProcessor.h",               "destination": "Source/${Name}FeatureProcessor.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${Name}FeatureProcessor.cpp",             "destination": "Source/${Name}FeatureProcessor.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${GemName}RenderingSystemComponent.h",    "destination": "Source/${GemName}RenderingSystemComponent.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ScreenSpaceConstant/Source/${GemName}RenderingSystemComponent.cpp",  "destination": "Source/${GemName}RenderingSystemComponent.cpp" } },
+
+                    { "command": "register_file_list", "args": { "component_name": "${Name}Pass" } },
+                    { "command": "register_file_list", "args": { "component_name": "${Name}FeatureProcessor" } },
+                    { "command": "register_file_list", "args": { "component_name": "${GemName}RenderingSystemComponent" } },
+
+                    { "command": "register_module_descriptor",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+                    { "command": "register_system_component",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+
+                    { "command": "add_pass_creator_call",
+                      "args": { "pass_name": "${Name}Pass",
+                                "system_component_name": "${GemName}RenderingSystemComponent" } },
+                    { "command": "add_feature_processor_registration",
+                      "args": { "feature_processor_name": "${Name}FeatureProcessor",
+                                "system_component_name": "${GemName}RenderingSystemComponent" } }
+                ],
+
+                "ManualPassAsset": [
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ManualPassAsset/Source/${Name}Pass.h",                          "destination": "Source/${Name}Pass.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ManualPassAsset/Source/${Name}Pass.cpp",                        "destination": "Source/${Name}Pass.cpp" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ManualPassAsset/Source/${GemName}RenderingSystemComponent.h",   "destination": "Source/${GemName}RenderingSystemComponent.h" } },
+                    { "command": "copy_file_to",
+                      "args": { "source": "Variants/ManualPassAsset/Source/${GemName}RenderingSystemComponent.cpp", "destination": "Source/${GemName}RenderingSystemComponent.cpp" } },
+
+                    { "command": "register_file_list", "args": { "component_name": "${Name}Pass" } },
+                    { "command": "register_file_list", "args": { "component_name": "${GemName}RenderingSystemComponent" } },
+
+                    { "command": "register_module_descriptor",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+                    { "command": "register_system_component",
+                      "args": { "component_name": "${GemName}RenderingSystemComponent", "module_kind": "runtime" } },
+
+                    { "command": "add_pass_creator_call",
+                      "args": { "pass_name": "${Name}Pass",
+                                "system_component_name": "${GemName}RenderingSystemComponent" } }
+                ]
+              }
+            }
+        ]
+    }
+}

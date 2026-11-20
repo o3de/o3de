@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -35,7 +36,8 @@ namespace WhiteBox
             {
                 editContext
                     ->Class<EditorWhiteBoxColliderComponent>(
-                        "White Box Collider", "Physics collider for White Box Component")
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Collider"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Physics collider for White Box Component"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/WhiteBox_collider.svg")
@@ -48,12 +50,14 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxColliderComponent::m_physicsColliderConfiguration,
-                        "Configuration", "Collider configuration")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Configuration"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Collider configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorWhiteBoxColliderComponent::m_whiteBoxColliderConfiguration,
-                        "White Box Collider Configuration", "White Box collider configuration properties")
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Collider Configuration"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box collider configuration properties"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }

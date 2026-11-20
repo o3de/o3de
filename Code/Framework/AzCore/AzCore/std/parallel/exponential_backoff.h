@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_PARALLEL_EXPONENTIAL_BACKOFF_H
-#define AZSTD_PARALLEL_EXPONENTIAL_BACKOFF_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/thread.h>
 
@@ -41,6 +41,3 @@ namespace AZStd
         int m_count;
     };
 }
-
-#endif
-#pragma once

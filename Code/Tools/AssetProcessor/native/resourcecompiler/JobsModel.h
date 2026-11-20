@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <native/resourcecompiler/RCCommon.h>
+
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QHash>
@@ -18,7 +18,6 @@
 
 // Don't reorder above RCCommon
 #include <native/assetprocessor.h>
-#endif
 
 // Do this here, rather than EditorAssetSystemAPI.h so that we don't have to link against Qt5Core to
 // use EditorAssetSystemAPI.h

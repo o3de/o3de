@@ -10,9 +10,7 @@
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QFileDialog>
-#endif
 
 namespace AzQtComponents
 {

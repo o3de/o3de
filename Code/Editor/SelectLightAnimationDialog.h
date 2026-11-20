@@ -6,17 +6,12 @@
  *
  */
 
+#pragma once
 
 // Description : Used in a property item to select a light animation
 
 
-#ifndef CRYINCLUDE_EDITOR_SELECTLIGHTANIMATIONDIALOG_H
-#define CRYINCLUDE_EDITOR_SELECTLIGHTANIMATIONDIALOG_H
-#pragma once
-
-#if !defined(Q_MOC_RUN)
 #include "GenericSelectItemDialog.h"
-#endif
 
 class CSelectLightAnimationDialog
     : public CGenericSelectItemDialog
@@ -31,5 +26,3 @@ protected:
 
     virtual void GetItems(std::vector<SItem>& outItems) override;
 };
-
-#endif // CRYINCLUDE_EDITOR_SELECTLIGHTANIMATIONDIALOG_H

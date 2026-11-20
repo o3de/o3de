@@ -250,7 +250,5 @@ namespace ScriptCanvasEditor
     {
         m_selectedType = varType.GetAZType();
     }
-
-#include <Editor/View/Widgets/VariablePanel/moc_VariableConfigurationWidget.cpp>
 }
 

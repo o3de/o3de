@@ -260,7 +260,7 @@ namespace UnitTest
     {
         // Largest Element is string_view
         using TestVariant1 = AZStd::variant<int, float, bool, AZStd::string_view>;
-        
+
         static_assert(sizeof(AZStd::string_view) < sizeof(TestVariant1), "using the sizeof operator on a std::variant should return a size larger than all the alternatives");
         // Largest Element is MoveOnly
         using TestVariant2 = AZStd::variant<double, AZStd::string_view, VariantTestInternal::MoveConstructorOnly, bool, float>;
@@ -363,7 +363,7 @@ namespace UnitTest
 
         TEST_F(VariantTest, InPlaceTypeConstructorWithInitializerListSucceeds)
         {
-            AZStd::variant<int32_t, double, AZStd::vector<int32_t>, bool> inplaceIndexVariant(AZStd::in_place_type_t<AZStd::vector<int32_t>>{}, { 1, 2, 3 }, AZStd::allocator("Variant in_place_type allocator "));
+            AZStd::variant<int32_t, double, AZStd::vector<int32_t>, bool> inplaceIndexVariant(AZStd::in_place_type_t<AZStd::vector<int32_t>>{}, { 1, 2, 3 }, AZStd::allocator{});
             EXPECT_EQ(2, inplaceIndexVariant.index());
             auto& vectorAlt = AZStd::get<2>(inplaceIndexVariant);
             ASSERT_EQ(3, vectorAlt.size());
@@ -383,7 +383,7 @@ namespace UnitTest
 
         TEST_F(VariantTest, InPlaceIndexConstructorWithInitializerListSucceeds)
         {
-            AZStd::variant<float, AZStd::vector<int32_t>> inplaceIndexVariant(AZStd::in_place_index_t<1>{}, { 1, 2, 3 }, AZStd::allocator("Variant in_place_index allocator "));
+            AZStd::variant<float, AZStd::vector<int32_t>> inplaceIndexVariant(AZStd::in_place_index_t<1>{}, { 1, 2, 3 }, AZStd::allocator{});
             EXPECT_EQ(1, inplaceIndexVariant.index());
             auto& vectorAlt = AZStd::get<1>(inplaceIndexVariant);
             ASSERT_EQ(3, vectorAlt.size());
@@ -426,7 +426,7 @@ namespace UnitTest
             EXPECT_EQ(2, emplaceIndexVariant.index());
             EXPECT_TRUE(AZStd::get<2>(emplaceIndexVariant).empty());
             // Update current alternative
-            auto& updatedVector= emplaceIndexVariant.emplace<AZStd::vector<int32_t>>({ 2, 4, 6 }, AZStd::allocator("Variant emplace allocator"));
+            auto& updatedVector= emplaceIndexVariant.emplace<AZStd::vector<int32_t>>({ 2, 4, 6 }, AZStd::allocator{});
             EXPECT_EQ(2, emplaceIndexVariant.index());
 
             EXPECT_EQ(3, updatedVector.size());
@@ -441,7 +441,7 @@ namespace UnitTest
             EXPECT_EQ(0, emplaceIndexVariant.index());
             EXPECT_EQ(110, AZStd::get<0>(emplaceIndexVariant));
             // Update different alternative
-            auto& updatedVector = emplaceIndexVariant.emplace<AZStd::vector<int32_t>>({ 1, 2, 3 }, AZStd::allocator("Variant emplace allocator"));
+            auto& updatedVector = emplaceIndexVariant.emplace<AZStd::vector<int32_t>>({ 1, 2, 3 }, AZStd::allocator{});
             EXPECT_EQ(2, emplaceIndexVariant.index());
 
             ASSERT_EQ(3, updatedVector.size());
@@ -484,7 +484,7 @@ namespace UnitTest
             // Update current alternative
             auto& updatedVector = emplaceIndexVariant.emplace<2>({ 17, -54 });
             EXPECT_EQ(2, emplaceIndexVariant.index());
-            
+
             EXPECT_EQ(2, updatedVector.size());
             EXPECT_EQ(17, updatedVector[0]);
             EXPECT_EQ(-54, updatedVector[1]);
@@ -496,7 +496,7 @@ namespace UnitTest
             EXPECT_EQ(0, emplaceIndexVariant.index());
             EXPECT_EQ(110, AZStd::get<0>(emplaceIndexVariant));
             // Update different alternative
-            auto& updatedVector = emplaceIndexVariant.emplace<2>({ 1, 2, 3 }, AZStd::allocator("Variant emplace allocator"));
+            auto& updatedVector = emplaceIndexVariant.emplace<2>({ 1, 2, 3 }, AZStd::allocator{});
             EXPECT_EQ(2, emplaceIndexVariant.index());
 
             ASSERT_EQ(3, updatedVector.size());
@@ -668,7 +668,7 @@ namespace UnitTest
             // Set const alternative on construct
             AZStd::variant<int32_t, const int64_t> testVariant(static_cast<int64_t>(23LL));
             ASSERT_EQ(1, testVariant.index());
-            
+
             static_assert(AZStd::is_same<decltype(AZStd::get<1>(AZStd::move(testVariant))), const int64_t&&>::value,
                 "AZStd::get should return const rvalue reference to const alternative for non-const variant");
             EXPECT_EQ(23LL, AZStd::get<1>(AZStd::move(testVariant)));
@@ -678,7 +678,7 @@ namespace UnitTest
         {
             const AZStd::variant<int32_t, const int64_t> testVariant(6);
             ASSERT_EQ(0, testVariant.index());
-            
+
             static_assert(AZStd::is_same<decltype(AZStd::get<0>(AZStd::move(testVariant))), const int32_t&&>::value,
                 "AZStd::get should return const rvalue reference to non-const alternative for const variant");
             EXPECT_EQ(6, AZStd::get<0>(AZStd::move(testVariant)));
@@ -689,7 +689,7 @@ namespace UnitTest
             // Set const alternative on construct
             const AZStd::variant<int32_t, const int64_t> testVariant(static_cast<int64_t>(23LL));
             ASSERT_EQ(1, testVariant.index());
-            
+
             static_assert(AZStd::is_same<decltype(AZStd::get<1>(AZStd::move(testVariant))), const int64_t&&>::value,
                 "AZStd::get should return const rvalue reference to const alternative for const variant");
             EXPECT_EQ(23LL, AZStd::get<1>(AZStd::move(testVariant)));
@@ -878,7 +878,6 @@ namespace UnitTest
         {
             auto returnConstCharPtrVisitor = [](auto&& variantAlt) -> const char*
             {
-                (void)variantAlt;
                 return AZStd::is_same<AZStd::remove_cvref_t<decltype(variantAlt)>, const char*>::value ? "Boat" : "Willy";
             };
 

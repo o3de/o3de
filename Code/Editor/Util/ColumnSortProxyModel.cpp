@@ -109,7 +109,7 @@ QModelIndex ColumnSortProxyModel::mapFromSource(const QModelIndex& sourceIndex) 
     {
         return QModelIndex();
     }
-    int row = m_mappingToSource.indexOf(sourceIndex.row());
+    int row = static_cast<int>(m_mappingToSource.indexOf(sourceIndex.row()));
     return createIndex(row, sourceIndex.column());
 }
 
@@ -281,4 +281,3 @@ int ColumnSortProxyModel::ColumnContains(int col) const
     return -1;
 }
 
-#include <Util/moc_ColumnSortProxyModel.cpp>

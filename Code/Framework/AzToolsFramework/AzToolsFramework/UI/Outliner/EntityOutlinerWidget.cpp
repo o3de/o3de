@@ -332,6 +332,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnPrefabEditScopeChanged()
     {
+        // Clear the outliner selection when entering/exiting prefab edit mode
+        // so the inspector doesn't show stale entity data from a different scope.
+        if (m_gui->m_objectTree->selectionModel())
+        {
+            m_gui->m_objectTree->selectionModel()->clearSelection();
+        }
         update();
     }
 
@@ -1132,10 +1138,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnPrefabInstancePropagationEnd()
     {
-        QTimer::singleShot(1, this, [this]() {
-            m_gui->m_objectTree->setUpdatesEnabled(true);
+        // Prevent GUI flicker - allow repaint immediately
+        m_gui->m_objectTree->setUpdatesEnabled(true);
+        QTimer::singleShot(1, this, [this]()
+            {
             m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
-        });
+            });
     }
 
     void EntityOutlinerWidget::OnPrefabTemplateDirtyFlagUpdated(
@@ -1259,4 +1267,3 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerWidget.cpp>

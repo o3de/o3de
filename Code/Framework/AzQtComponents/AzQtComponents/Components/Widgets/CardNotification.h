@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <QFrame>
 #include <QString>
-#endif
 
 class QVBoxLayout;
 class QPushButton;

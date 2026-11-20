@@ -9,6 +9,7 @@
 #include "EditorSurfaceTagListAsset.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace SurfaceData
 {
@@ -27,8 +28,10 @@ namespace SurfaceData
             if (edit)
             {
                 edit->Class<EditorSurfaceTagListAsset>(
-                    "Surface Tag Name List Asset", "Contains a list of tag names")
-                    ->DataElement(0, &EditorSurfaceTagListAsset::m_surfaceTagNames, "Surface Tag Name List", "")
+                    QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag Name List Asset"),
+                    QT_TRANSLATE_NOOP("SurfaceData", "Contains a list of tag names"))
+                    ->DataElement(0, &EditorSurfaceTagListAsset::m_surfaceTagNames,
+                        QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag Name List"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                         ->ElementAttribute(AZ::Edit::Attributes::MaxLength, 64)

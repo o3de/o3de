@@ -8,12 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
-#endif
 
 namespace GradientSignal
 {

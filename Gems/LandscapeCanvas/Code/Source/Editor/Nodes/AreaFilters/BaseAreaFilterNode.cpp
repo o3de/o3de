@@ -9,6 +9,7 @@
 // AZ
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
@@ -29,7 +30,8 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<BaseAreaFilterNode>("BaseAreaFilterNode", "")->
+                editContext->Class<BaseAreaFilterNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "BaseAreaFilterNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "VegetationAreaNodeTitlePalette")
                     ;

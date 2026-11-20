@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-from PySide2 import QtCore
+from PySide6 import QtCore
 import maya.standalone
 maya.standalone.initialize(name='python')
 import pymel.core as pm

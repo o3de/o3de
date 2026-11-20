@@ -197,4 +197,3 @@ namespace EMStudio
     }
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/moc_NotificationWindow.cpp>

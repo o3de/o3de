@@ -1,5 +1,6 @@
 {
     "gem_name": "PhysX5Debug",
+    "gem_alt_name": "PhysXDebug",
     "version": "2.0.0",
     "display_name": "PhysX5 Debug",
     "license": "Apache-2.0 Or MIT",

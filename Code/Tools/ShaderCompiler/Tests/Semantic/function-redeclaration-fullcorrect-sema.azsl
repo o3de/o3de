@@ -1,0 +1,28 @@
+// this is a fully semantically correct version
+
+void func0();
+
+void func0()
+{
+}
+
+int func1();
+
+int func1()
+{
+    return 0;
+}
+
+// I and J are used as constraints,
+// therefore they must be known as interface definition identifiers,
+// for the program to be semantically valid.
+// The syntax-only version of that test, doesn't have these declarations.
+
+interface I{};
+interface J{};
+
+void func2<T : I, U : J, F>(F, T, U);
+
+void func2<T : I, U : J, F>(F f, T t, U u)
+{
+}

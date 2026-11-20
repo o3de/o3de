@@ -1028,7 +1028,7 @@ namespace AZ
             {
                 if (*deprecatedName == '\0')
                 {
-                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be a empty string!", deprecatedName);
+                    AZ_Warning("BehaviorContext", false, "Deprecated name can't be an empty string!", deprecatedName);
                 }
                 else if (m_ebuses.find(deprecatedName) != m_ebuses.end())
                 {

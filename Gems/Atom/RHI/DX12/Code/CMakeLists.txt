@@ -83,18 +83,6 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME Amd_DX12MA STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        amd_dx12ma_files.cmake
-    PLATFORM_INCLUDE_FILES
-        ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/amd_dx12ma_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
-    INCLUDE_DIRECTORIES
-        INTERFACE
-            ../External/AMD_D3D12MemoryAllocator/v2.0.1
-)
-
-ly_add_target(
     NAME OpenSSL_md5 STATIC
     NAMESPACE Gem
     FILES_CMAKE
@@ -142,7 +130,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::${gem_name}.Reflect
-            Gem::Amd_DX12MA
+            3rdParty::D3D12MemoryAllocator
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}
         PRIVATE

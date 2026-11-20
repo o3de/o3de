@@ -1,0 +1,28 @@
+void f(float, int);
+void f(float, int)
+{}
+
+void g(float = 3.f, int);
+void g(float, int)
+{}
+
+void h(float, int = 2);
+void h(float, int)
+{}
+
+void i(float = (h(0,0),0.2f), int = 2);
+void i(float, int)
+{}
+
+void j(float ff, int ii);
+void j(float, int = 4)
+{}
+
+void k(float, int i = 5)
+{}
+
+void l(float, int = 6);
+
+void m(float F = 0.3f, int I);
+void m(float f, int i = 6)
+{}

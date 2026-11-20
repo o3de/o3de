@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace

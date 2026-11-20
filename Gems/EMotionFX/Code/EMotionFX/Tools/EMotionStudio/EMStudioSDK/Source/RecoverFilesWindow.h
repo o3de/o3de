@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/MemoryCategoriesCore.h>
@@ -17,7 +16,6 @@
 #include "EMStudioConfig.h"
 #include <QDialog>
 #include <QTableWidget>
-#endif
 
 
 namespace EMStudio

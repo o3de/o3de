@@ -88,7 +88,7 @@ namespace AZ
 
                 // Create a table widget that will be filled with all of the data and options for each exported material
                 QTableWidget* tableWidget = new QTableWidget(&dialog);
-                tableWidget->setColumnCount(headerLabels.size());
+                tableWidget->setColumnCount((int)headerLabels.size());
                 tableWidget->setRowCount((int)exportItems.size());
                 tableWidget->setHorizontalHeaderLabels(headerLabels);
                 tableWidget->setSortingEnabled(false);
@@ -149,25 +149,35 @@ namespace AZ
                     tableWidget->setCellWidget(row, OverwriteFileColumn, overwriteCheckBoxContainer);
 
                     // Whenever the selection is updated, automatically apply the change to the export item
-                    QObject::connect(materialSlotCheckBox, &QCheckBox::stateChanged, materialSlotCheckBox, [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] int state) {
+                    QObject::connect(
+                        materialSlotCheckBox,
+                        &QCheckBox::checkStateChanged,
+                        materialSlotCheckBox,
+                        [&exportItem, materialFileWidget, materialSlotCheckBox, overwriteCheckBox]([[maybe_unused]] Qt::CheckState state)
+                        {
                         exportItem.SetEnabled(materialSlotCheckBox->isChecked());
                         materialFileWidget->setEnabled(exportItem.GetEnabled());
                         overwriteCheckBox->setEnabled(exportItem.GetEnabled() && exportItem.GetExists());
                     });
 
                     // Whenever the overwrite check box is updated, automatically apply the change to the export item
-                    QObject::connect(overwriteCheckBox, &QCheckBox::stateChanged, overwriteCheckBox, [&exportItem, overwriteCheckBox]([[maybe_unused]] int state) {
+                    QObject::connect(
+                        overwriteCheckBox,
+                        &QCheckBox::checkStateChanged,
+                        overwriteCheckBox,
+                        [&exportItem, overwriteCheckBox]([[maybe_unused]] Qt::CheckState state)
+                        {
                         exportItem.SetOverwrite(overwriteCheckBox->isChecked());
                     });
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
                     QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&dialog, &exportItem, materialFileWidget, overwriteCheckBox]() {
-                        QFileInfo fileInfo = AzQtComponents::FileDialog::GetSaveFileName(&dialog,
+                        QFileInfo fileInfo = QFileInfo(AzQtComponents::FileDialog::GetSaveFileName(&dialog,
                             QString("Select Material Filename"),
                             exportItem.GetExportPath().c_str(),
                             QString("Material (*.material)"),
                             nullptr,
-                            QFileDialog::DontConfirmOverwrite);
+                            QFileDialog::DontConfirmOverwrite));
 
                         // Only update the export data if a valid path and filename was selected
                         if (!fileInfo.absoluteFilePath().isEmpty())

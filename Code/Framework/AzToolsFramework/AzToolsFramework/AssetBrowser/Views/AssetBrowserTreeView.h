@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
@@ -23,7 +22,6 @@
 #include <QPointer>
 #include <QDialog>
 #include <QMessageBox>
-#endif
 
 class QTimer;
 

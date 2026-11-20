@@ -63,4 +63,3 @@ void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
     }
 }
 
-#include <moc_SelectLightAnimationDialog.cpp>

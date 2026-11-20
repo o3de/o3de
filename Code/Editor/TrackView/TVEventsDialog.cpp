@@ -76,7 +76,7 @@ public:
                 remove = QMessageBox::warning(
                              nullptr,
                              tr("Remove Event"),
-                             tr("Remove \"") + eventName + tr("\" event might cause some link breakages in Flow Graph.\nStill continue?"),
+                             tr("Remove \"%1\" event might cause some link breakages in Flow Graph.\nStill continue?").arg(eventName),
                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
             }
 
@@ -312,7 +312,7 @@ void CTVEventsDialog::UpdateButtons()
 {
     bool bRemove = false, bRename = false, bUp = false, bDown = false;
 
-    int nSelected = m_ui->m_List->selectionModel()->selectedRows().count();
+    int nSelected = static_cast<int>(m_ui->m_List->selectionModel()->selectedRows().count());
     if (nSelected > 1)
     {
         bRemove = true;
@@ -390,5 +390,3 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
     }
     return usageCount;
 }
-
-#include <TrackView/moc_TVEventsDialog.cpp>

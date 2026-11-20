@@ -65,7 +65,7 @@ def InputBindings_Add_Remove_Input_Events():
         :return: None
         """
 
-        from PySide2 import QtWidgets
+        from PySide6 import QtWidgets
 
         import azlmbr.legacy.general as general
 

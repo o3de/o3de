@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ::RHI
 {
@@ -338,17 +339,17 @@ namespace AZ::RHI
                 editContext->Class<RasterState>("RasterState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBias, "Depth Bias", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasClamp, "Depth Bias Clamp", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasSlopeScale, "Depth Bias Slope Scale", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_fillMode, "Fill Mode", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBias, QT_TRANSLATE_NOOP("Atom::RHI", "Depth Bias"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasClamp, QT_TRANSLATE_NOOP("Atom::RHI", "Depth Bias Clamp"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasSlopeScale, QT_TRANSLATE_NOOP("Atom::RHI", "Depth Bias Slope Scale"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_fillMode, QT_TRANSLATE_NOOP("Atom::RHI", "Fill Mode"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FillMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_cullMode, "Cull Mode", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_cullMode, QT_TRANSLATE_NOOP("Atom::RHI", "Cull Mode"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<CullMode>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_multisampleEnable, "Multisample Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthClipEnable, "Depth Clip Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_conservativeRasterEnable, "Conservative Raster Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_forcedSampleCount, "Forced Sample Count", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_multisampleEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Multisample Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthClipEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Depth Clip Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_conservativeRasterEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Conservative Raster Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_forcedSampleCount, QT_TRANSLATE_NOOP("Atom::RHI", "Forced Sample Count"), "")
                     ;
             }
         }
@@ -391,13 +392,13 @@ namespace AZ::RHI
                 editContext->Class<StencilOpState>("StencilOpState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_failOp, "Fail Op", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_failOp, QT_TRANSLATE_NOOP("Atom::RHI", "Fail Op"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_depthFailOp, "Depth Fail Op", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_depthFailOp, QT_TRANSLATE_NOOP("Atom::RHI", "Depth Fail Op"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_passOp, "Pass Op", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_passOp, QT_TRANSLATE_NOOP("Atom::RHI", "Pass Op"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_func, "Func", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_func, QT_TRANSLATE_NOOP("Atom::RHI", "Func"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
                     ;
             }
@@ -435,10 +436,10 @@ namespace AZ::RHI
                 editContext->Class<DepthState>("DepthState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_enable, "Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_writeMask, "Write Mask", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_enable, QT_TRANSLATE_NOOP("Atom::RHI", "Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_writeMask, QT_TRANSLATE_NOOP("Atom::RHI", "Write Mask"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<DepthWriteMask>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_func, "Func", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_func, QT_TRANSLATE_NOOP("Atom::RHI", "Func"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
                     ;
             }
@@ -477,11 +478,11 @@ namespace AZ::RHI
                 editContext->Class<StencilState>("StencilState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_enable, "Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_readMask, "Read Mask", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_writeMask, "Write Mask", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_frontFace, "Front Face", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_backFace, "Back Face", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_enable, QT_TRANSLATE_NOOP("Atom::RHI", "Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_readMask, QT_TRANSLATE_NOOP("Atom::RHI", "Read Mask"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_writeMask, QT_TRANSLATE_NOOP("Atom::RHI", "Write Mask"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_frontFace, QT_TRANSLATE_NOOP("Atom::RHI", "Front Face"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StencilState::m_backFace, QT_TRANSLATE_NOOP("Atom::RHI", "Back Face"), "")
                     ;
             }
         }
@@ -518,8 +519,8 @@ namespace AZ::RHI
                 editContext->Class<DepthStencilState>("DepthStencilState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_depth, "Depth", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_stencil, "Stencil", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_depth, QT_TRANSLATE_NOOP("Atom::RHI", "Depth"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DepthStencilState::m_stencil, QT_TRANSLATE_NOOP("Atom::RHI", "Stencil"), "")
                     ;
             }
         }
@@ -559,20 +560,20 @@ namespace AZ::RHI
                 editContext->Class<TargetBlendState>("TargetBlendState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_enable, "Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendSource, "Blend Source", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_enable, QT_TRANSLATE_NOOP("Atom::RHI", "Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendSource, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Source"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendDest, "Blend Dest", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendDest, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Dest"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendOp, "Blend Op", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendOp, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Op"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendOp>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaSource, "Blend Alpha Source", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaSource, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Alpha Source"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaDest, "Blend Alpha Dest", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaDest, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Alpha Dest"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendFactor>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaOp, "Blend Alpha Op", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_blendAlphaOp, QT_TRANSLATE_NOOP("Atom::RHI", "Blend Alpha Op"), "")
                         ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<BlendOp>())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_writeMask, "Write Mask", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TargetBlendState::m_writeMask, QT_TRANSLATE_NOOP("Atom::RHI", "Write Mask"), "")
                     ;
             }
         }
@@ -613,9 +614,9 @@ namespace AZ::RHI
                 editContext->Class<BlendState>("BlendState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_alphaToCoverageEnable, "Alpha To Coverage Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_independentBlendEnable, "Independent Blend Enable", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_targets, "Targets", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_alphaToCoverageEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Alpha To Coverage Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_independentBlendEnable, QT_TRANSLATE_NOOP("Atom::RHI", "Independent Blend Enable"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BlendState::m_targets, QT_TRANSLATE_NOOP("Atom::RHI", "Targets"), "")
                     ;
             }
         }
@@ -650,8 +651,8 @@ namespace AZ::RHI
                 editContext->Class<SamplePosition>("SamplePosition", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_x, "X", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_y, "Y", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_x, QT_TRANSLATE_NOOP("Atom::RHI", "X"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SamplePosition::m_y, QT_TRANSLATE_NOOP("Atom::RHI", "Y"), "")
                     ;
             }
         }
@@ -688,10 +689,10 @@ namespace AZ::RHI
                 editContext->Class<MultisampleState>("MultisampleState", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_samples, "Samples", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_quality, "Quality", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositions, "Custom Positions", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositionsCount, "Custom Positions Count", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_samples, QT_TRANSLATE_NOOP("Atom::RHI", "Samples"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_quality, QT_TRANSLATE_NOOP("Atom::RHI", "Quality"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositions, QT_TRANSLATE_NOOP("Atom::RHI", "Custom Positions"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MultisampleState::m_customPositionsCount, QT_TRANSLATE_NOOP("Atom::RHI", "Custom Positions Count"), "")
                     ;
             }
         }
@@ -729,10 +730,10 @@ namespace AZ::RHI
                 editContext->Class<RenderStates>("RenderStates", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_rasterState, "Raster State", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_multisampleState, "Multisample State", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_depthStencilState, "DepthStencil State", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_blendState, "Blend State", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_rasterState, QT_TRANSLATE_NOOP("Atom::RHI", "Raster State"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_multisampleState, QT_TRANSLATE_NOOP("Atom::RHI", "Multisample State"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_depthStencilState, QT_TRANSLATE_NOOP("Atom::RHI", "DepthStencil State"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderStates::m_blendState, QT_TRANSLATE_NOOP("Atom::RHI", "Blend State"), "")
                     ;
             }
         }

@@ -52,7 +52,7 @@ namespace AZ
         {
             return IsSuccess(result) == false;
         }
-        
+
         const char* GetResultString(const VkResult result)
         {
             switch (result)
@@ -110,7 +110,7 @@ namespace AZ
             default:
                 return "Unknown error";
             }
-        }    
+        }
 
         void ToRawStringList(const StringList& source, RawStringList& dest)
         {
@@ -223,7 +223,7 @@ namespace AZ
                 if (!RHI::CheckBitsAll(lhsImageView.GetAspectFlags(), flag))
                 {
                     return false;
-                }                
+                }
             }
             return true;
         }
@@ -305,7 +305,7 @@ namespace AZ
 
         namespace Debug
         {
-            const char* s_debugMessageLabel = "vkDebugMessage";            
+            const char* s_debugMessageLabel = "vkDebugMessage";
 
             VkDebugUtilsMessengerEXT s_messageCallback = VK_NULL_HANDLE;
             VKAPI_ATTR VkBool32 VKAPI_CALL MessageCallbak(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, [[maybe_unused]] void* pUserData)
@@ -314,7 +314,7 @@ namespace AZ
                 if (RHI::CheckBitsAny(messageSeverity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT))
                 {
                     severtityString = "[VERBOSE]";
-                } 
+                }
                 else if (RHI::CheckBitsAny(messageSeverity, VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT))
                 {
                     severtityString = "[INFO]";
@@ -454,7 +454,8 @@ namespace AZ
                     info.objectType = objectType;
                     info.objectHandle = objectHandle;
                     info.pObjectName = name;
-                    AssertSuccess(device.GetContext().SetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info));
+                    [[maybe_unused]] VkResult vkResult = device.GetContext().SetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info);
+                    VK_RESULT_ASSERT(vkResult);
                 }
 #endif
             }

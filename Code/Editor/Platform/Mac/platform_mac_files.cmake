@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Editor/Core/QtEditorApplication_mac.h
     Editor/Core/QtEditorApplication_mac.mm
     ../../WindowObserver_mac.h
     ../../WindowObserver_mac.mm

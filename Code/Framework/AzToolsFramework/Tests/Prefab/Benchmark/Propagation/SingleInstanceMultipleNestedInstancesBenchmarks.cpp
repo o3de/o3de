@@ -52,7 +52,7 @@ namespace Benchmark
 
         for (unsigned int nestedInstanceCounter = 0; nestedInstanceCounter < nestedPrefabsCount; nestedInstanceCounter++)
         {
-            nestedInstances.emplace_back(AZStd::move(m_prefabSystemComponent->InstantiatePrefab(m_nestedPrefabTemplateId)));
+            nestedInstances.emplace_back(m_prefabSystemComponent->InstantiatePrefab(m_nestedPrefabTemplateId));
         }
 
         m_entityToModify = CreateEntity("Entity", AZ::EntityId());
@@ -80,7 +80,7 @@ namespace Benchmark
     }
     REGISTER_MULTIPLE_NESTED_INSTANCES_BENCHMARK(
         SingleInstanceMultipleNestedInstancesBenchmarks, PropagateUpdateComponentChange);
-        
+
 
     BENCHMARK_DEFINE_F(SingleInstanceMultipleNestedInstancesBenchmarks, PropagateAddComponentChange)(benchmark::State& state)
     {

@@ -42,6 +42,8 @@
 #include <QPainter>
 #include <QSvgRenderer>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ::Render
 {
     void AtomViewportDisplayIconsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -54,7 +56,7 @@ namespace AZ::Render
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AtomViewportDisplayIconsSystemComponent>("Viewport Display Icons", "Provides an interface for drawing simple icons to the Editor viewport")
+                ec->Class<AtomViewportDisplayIconsSystemComponent>(QT_TRANSLATE_NOOP("AtomViewportDisplayIcons", "Viewport Display Icons"), QT_TRANSLATE_NOOP("AtomViewportDisplayIcons", "Provides an interface for drawing simple icons to the Editor viewport"))
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;

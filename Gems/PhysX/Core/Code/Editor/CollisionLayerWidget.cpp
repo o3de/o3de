@@ -120,4 +120,3 @@ namespace PhysX
     } // namespace Editor
 } // namespace PhysX
 
-#include <Editor/moc_CollisionLayerWidget.cpp>

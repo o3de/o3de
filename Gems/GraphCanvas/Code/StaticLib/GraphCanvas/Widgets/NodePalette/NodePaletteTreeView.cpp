@@ -268,5 +268,4 @@ namespace GraphCanvas
         }
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/NodePalette/moc_NodePaletteTreeView.cpp>
 }

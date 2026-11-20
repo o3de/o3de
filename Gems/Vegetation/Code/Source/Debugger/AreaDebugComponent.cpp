@@ -10,6 +10,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <AzCore/Debug/Profiler.h>
@@ -45,13 +46,13 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<AreaDebugConfig>(
-                    "Vegetation Layer Debugger Config", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Layer Debugger Config"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugColor, "Debug Visualization Color", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaDebugConfig::m_debugCubeSize, "Debug Visualization Cube Size", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugColor, QT_TRANSLATE_NOOP("Vegetation", "Debug Visualization Color"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaDebugConfig::m_debugCubeSize, QT_TRANSLATE_NOOP("Vegetation", "Debug Visualization Cube Size"), "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AreaDebugConfig::m_hideDebug, "Hide created instance in the Debug Visualization", "")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AreaDebugConfig::m_hideDebug, QT_TRANSLATE_NOOP("Vegetation", "Hide created instance in the Debug Visualization"), "")
                     ;
             }
         }

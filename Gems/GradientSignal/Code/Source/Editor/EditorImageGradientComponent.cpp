@@ -8,6 +8,7 @@
 
 #include <Editor/EditorImageGradientComponent.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
@@ -30,13 +31,13 @@ namespace GradientSignal
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ImageGradientConfig>("Image Gradient", "")
+                editContext->Class<ImageGradientConfig>(QT_TRANSLATE_NOOP("GradientSignal", "Image Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_imageAsset,
-                        "Image Asset", "Image asset whose values will be mapped as gradient output.")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Image Asset"), QT_TRANSLATE_NOOP("GradientSignal", "Image asset whose values will be mapped as gradient output."))
                         ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ImageGradientConfig::GetImageAssetPropertyName)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsImageAssetReadOnly)
@@ -45,14 +46,14 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_samplingType,
-                        "Sampling Type", "Sampling type to use for the image data.")
-                        ->EnumAttribute(SamplingType::Point, "Point")
-                        ->EnumAttribute(SamplingType::Bilinear, "Bilinear")
-                        ->EnumAttribute(SamplingType::Bicubic, "Bicubic")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Sampling Type"), QT_TRANSLATE_NOOP("GradientSignal", "Sampling type to use for the image data."))
+                        ->EnumAttribute(SamplingType::Point, QT_TRANSLATE_NOOP("GradientSignal", "Point"))
+                        ->EnumAttribute(SamplingType::Bilinear, QT_TRANSLATE_NOOP("GradientSignal", "Bilinear"))
+                        ->EnumAttribute(SamplingType::Bicubic, QT_TRANSLATE_NOOP("GradientSignal", "Bicubic"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling,
-                        "Tiling", "Number of times to tile horizontally/vertically.")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Tiling"), QT_TRANSLATE_NOOP("GradientSignal", "Number of times to tile horizontally/vertically."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
@@ -61,36 +62,36 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse,
-                        "Channel To Use", "The channel to use from the image.")
-                        ->EnumAttribute(ChannelToUse::Red, "Red")
-                        ->EnumAttribute(ChannelToUse::Green, "Green")
-                        ->EnumAttribute(ChannelToUse::Blue, "Blue")
-                        ->EnumAttribute(ChannelToUse::Alpha, "Alpha")
-                        ->EnumAttribute(ChannelToUse::Terrarium, "Terrarium")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Channel To Use"), QT_TRANSLATE_NOOP("GradientSignal", "The channel to use from the image."))
+                        ->EnumAttribute(ChannelToUse::Red, QT_TRANSLATE_NOOP("GradientSignal", "Red"))
+                        ->EnumAttribute(ChannelToUse::Green, QT_TRANSLATE_NOOP("GradientSignal", "Green"))
+                        ->EnumAttribute(ChannelToUse::Blue, QT_TRANSLATE_NOOP("GradientSignal", "Blue"))
+                        ->EnumAttribute(ChannelToUse::Alpha, QT_TRANSLATE_NOOP("GradientSignal", "Alpha"))
+                        ->EnumAttribute(ChannelToUse::Terrarium, QT_TRANSLATE_NOOP("GradientSignal", "Terrarium"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, "Mip Index", "Mip index to sample from.")
+                        AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, QT_TRANSLATE_NOOP("GradientSignal", "Mip Index"), QT_TRANSLATE_NOOP("GradientSignal", "Mip index to sample from."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType,
-                        "Custom Scale", "Choose a type of scaling to be applied to the image data.")
-                        ->EnumAttribute(CustomScaleType::None, "None")
-                        ->EnumAttribute(CustomScaleType::Auto, "Auto")
-                        ->EnumAttribute(CustomScaleType::Manual, "Manual")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Custom Scale"), QT_TRANSLATE_NOOP("GradientSignal", "Choose a type of scaling to be applied to the image data."))
+                        ->EnumAttribute(CustomScaleType::None, QT_TRANSLATE_NOOP("GradientSignal", "None"))
+                        ->EnumAttribute(CustomScaleType::Auto, QT_TRANSLATE_NOOP("GradientSignal", "Auto"))
+                        ->EnumAttribute(CustomScaleType::Manual, QT_TRANSLATE_NOOP("GradientSignal", "Manual"))
                         // Refresh the entire tree on scaling changes, because it will show/hide the scale ranges for Manual scaling.
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin,
-                        "Range Minimum", "The minimum range each value from the image data is scaled against.")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Range Minimum"), QT_TRANSLATE_NOOP("GradientSignal", "The minimum range each value from the image data is scaled against."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMax,
-                        "Range Maximum", "The maximum range each value from the image data is scaled against.")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Range Maximum"), QT_TRANSLATE_NOOP("GradientSignal", "The maximum range each value from the image data is scaled against."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetManualScaleVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
                     ;
@@ -108,17 +109,17 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_previewer, "Previewer", "Gradient Previewer")
+                        AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_previewer, QT_TRANSLATE_NOOP("GradientSignal", "Previewer"), QT_TRANSLATE_NOOP("GradientSignal", "Gradient Previewer"))
 
                     // Configuration for the Image Gradient control itself
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_configuration, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_configuration, QT_TRANSLATE_NOOP("GradientSignal", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::GetImageOptionsReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::ConfigurationChanged)
 
                     // Paint controls for editing the image
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintableImageAssetHelper,
-                        "Paint Image", "Paint into an image asset")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
+                        QT_TRANSLATE_NOOP("GradientSignal", "Paint Image"), QT_TRANSLATE_NOOP("GradientSignal", "Paint into an image asset"))
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("GradientSignal", "Paint"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

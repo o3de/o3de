@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/lock.h>
@@ -35,7 +36,9 @@ namespace SaveData
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SaveDataSystemComponent>("SaveData", "Provides functionality for saving and loading persistent user data.")
+                ec->Class<SaveDataSystemComponent>(
+                    QT_TRANSLATE_NOOP("SaveData", "SaveData"),
+                    QT_TRANSLATE_NOOP("SaveData", "Provides functionality for saving and loading persistent user data."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -5,19 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CONNECTION_H
-#define CONNECTION_H
 
-#if !defined(Q_MOC_RUN)
-#include <QThread>
-#include <QElapsedTimer>
+#pragma once
+
 #include "native/utilities/AssetUtilEBusHelper.h"
-#include <QHostAddress>
 
 #include <QTimer>
 #include <QString>
 #include <QPointer>
-#endif
+#include <QThread>
+#include <QElapsedTimer>
+#include <QHostAddress>
 
 class QSettings;
 
@@ -298,6 +296,3 @@ private:
     qint64 m_numOpenFiles;
     Q_DISABLE_COPY(Connection)
 };
-
-
-#endif // CONNECTION_H

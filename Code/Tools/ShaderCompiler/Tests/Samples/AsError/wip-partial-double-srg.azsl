@@ -1,0 +1,37 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 0;
+};
+
+ShaderResourceGroupSemantic sem2
+{
+    FrequencyId = 1;
+};
+
+partial ShaderResourceGroup FirstSrg : sem  // First declaration site. This is the real FirstSrg symbol position.
+{
+};
+
+ShaderResourceGroup SecondSrg : sem2
+{
+    struct Sky { bool earth; };
+}
+
+// If you extend FirstSrg later, respect some limits type definition dependency:
+partial ShaderResourceGroup FirstSrg
+{
+    // From DXC we get:
+    // 4:8 error: no type named 'SecondSrg_Sky' in the global namespace
+    //      ::SecondSrg_Sky m_sky;
+    //      ~~^
+
+    struct CloudLayer
+    {
+        SecondSrg::Sky m_sky; // *
+        float4 m_p1, m_p2;
+    };
+    ConstantBuffer<CloudLayer> clouds;
+};
+// *:
+// because we can't depend on a type defined in a later SRG. SecondSrg is actually SUCCEEDING FirstSrg.
+// the fix is to extract struct Sky, off the SecondSrg definition, and put it ABOVE the first declaration of FirstSrg

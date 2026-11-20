@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QThread>
+
 #include <AzCore/std/containers/deque.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
 

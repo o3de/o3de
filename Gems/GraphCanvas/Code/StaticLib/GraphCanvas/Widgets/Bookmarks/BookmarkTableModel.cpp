@@ -282,7 +282,7 @@ namespace GraphCanvas
                         ViewRequestBus::EventResult(graphicsView, viewId, &ViewRequests::AsGraphicsView);
 
                         QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
-                        response = QMessageBox::question(graphicsView, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with remapping and remove shortcut?").arg(bookmarkName.c_str()).arg(shortcut), QMessageBox::StandardButton::Yes | QMessageBox::No);
+                        response = QMessageBox::question(graphicsView, tr("Bookmarking Conflict"), tr("Bookmark (%1) already registered with shortcut (%2).\nProceed with remapping and remove shortcut?").arg(bookmarkName.c_str()).arg(shortcut), QMessageBox::StandardButton::Yes | QMessageBox::No);
 
                         if (response == QMessageBox::StandardButton::No)
                         {
@@ -529,10 +529,10 @@ namespace GraphCanvas
 
     void BookmarkTableSortProxyModel::SetFilter(const QString& filter)
     {
+        beginFilterChange();
         m_filter = filter;
         m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
-
-        invalidateFilter();
+        endFilterChange();
     }
 
     void BookmarkTableSortProxyModel::ClearFilter()
@@ -540,5 +540,4 @@ namespace GraphCanvas
         SetFilter("");
     }
 
-#include <StaticLib/GraphCanvas/Widgets/Bookmarks/moc_BookmarkTableModel.cpp>
 }

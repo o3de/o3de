@@ -132,8 +132,6 @@ namespace Terrain
 
     EditorTerrainMacroMaterialComponentMode::~EditorTerrainMacroMaterialComponentMode()
     {
-        EndUndoBatch();
-
         m_brushManipulator->Unregister();
         m_brushManipulator.reset();
 
@@ -165,42 +163,20 @@ namespace Terrain
     {
     }
 
-    void EditorTerrainMacroMaterialComponentMode::BeginUndoBatch()
-    {
-        AZ_Assert(m_undoBatch == nullptr, "Starting an undo batch while one is already active!");
-
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-            m_undoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "PaintStroke");
-
-        m_paintBrushUndoBuffer = aznew PaintBrushUndoBuffer(GetEntityId());
-        m_paintBrushUndoBuffer->SetParent(m_undoBatch);
-    }
-
-    void EditorTerrainMacroMaterialComponentMode::EndUndoBatch()
-    {
-        if (m_undoBatch != nullptr)
-        {
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::EndUndoBatch);
-            m_undoBatch = nullptr;
-            m_paintBrushUndoBuffer = nullptr;
-        }
-    }
-
     void EditorTerrainMacroMaterialComponentMode::OnTerrainMacroColorBrushStrokeBegin()
     {
-        BeginUndoBatch();
+        // nothing to do here, since no data changes when the stroke begins.
     }
 
     void EditorTerrainMacroMaterialComponentMode::OnTerrainMacroColorBrushStrokeEnd(
         AZStd::shared_ptr<ImageTileBuffer> changedDataBuffer, const AZ::Aabb& dirtyRegion)
     {
-        AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
+        AzToolsFramework::ScopedUndoBatch undoBatch("PaintStroke");
 
+        PaintBrushUndoBuffer* dataBuffer = aznew PaintBrushUndoBuffer(GetEntityId());
+        dataBuffer->SetParent(undoBatch.GetUndoBatch());
         // Hand over ownership of the paint stroke buffer to the undo/redo buffer.
-        m_paintBrushUndoBuffer->SetUndoBufferAndDirtyArea(changedDataBuffer, dirtyRegion);
-
-        EndUndoBatch();
+        dataBuffer->SetUndoBufferAndDirtyArea(changedDataBuffer, dirtyRegion);
     }
 
 } // namespace Terrain

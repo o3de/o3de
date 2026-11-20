@@ -726,7 +726,7 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
                         {
                             ITcbKey key;
                             keyHandle.GetKey(&key);
-                            tipText = QStringLiteral("t=%1  v=%2 / T=%3  C=%4  B=%5")
+                            tipText = tr("t=%1  v=%2 / T=%3  C=%4  B=%5")
                                 .arg(time * m_fTooltipScaleX, 3, 'f').arg(afValue[nCurrentDimension] * m_fTooltipScaleY, 3, 'f', 2)
                                 .arg(key.tens, 3, 'f').arg(key.cont, 3, 'f').arg(key.bias, 3, 'f');
                         }
@@ -736,7 +736,7 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
                             ISplineInterpolator::ValueType tin, tout;
                             pSpline->GetKeyTangents(i, tin, tout);
-                            tipText = QStringLiteral("t=%1  v=%2 / tin=(%3,%4)  tout=(%5,%6)")
+                            tipText = tr("t=%1  v=%2 / tin=(%3,%4)  tout=(%5,%6)")
                                 .arg(time * m_fTooltipScaleX, 3, 'f').arg(afValue[0] * m_fTooltipScaleY, 3, 'f', 2)
                                 .arg(tin[0], 3, 'f').arg(tin[1], 3, 'f', 2).arg(tout[0], 3, 'f').arg(tout[1], 3, 'f', 2);
                         }

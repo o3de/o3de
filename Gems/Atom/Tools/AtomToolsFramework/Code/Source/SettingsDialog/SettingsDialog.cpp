@@ -16,7 +16,7 @@ namespace AtomToolsFramework
     SettingsDialog::SettingsDialog(QWidget* parent)
         : QDialog(parent)
     {
-        setWindowTitle("Settings");
+        setWindowTitle(tr("Settings"));
         setLayout(new QVBoxLayout(this));
         setModal(true);
 

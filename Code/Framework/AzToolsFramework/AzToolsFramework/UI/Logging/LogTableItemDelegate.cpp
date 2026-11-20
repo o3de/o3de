@@ -111,4 +111,3 @@ namespace AzToolsFramework
     } // namespace Logging
 } // namespace AzToolsFramework
 
-#include "UI/Logging/moc_LogTableItemDelegate.cpp"

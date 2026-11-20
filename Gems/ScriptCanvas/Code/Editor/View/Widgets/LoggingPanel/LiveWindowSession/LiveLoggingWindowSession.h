@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractListModel>
 
 #include <AzCore/UserSettings/UserSettings.h>
@@ -18,7 +17,6 @@
 
 #include <Editor/View/Widgets/LoggingPanel/LoggingWindowSession.h>
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
-#endif
 
 namespace ScriptCanvasEditor
 {

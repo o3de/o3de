@@ -18,10 +18,11 @@ import azlmbr.atom
 import azlmbr.atomtools
 import GenerateShaderVariantListUtil
 
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2 import QtGui
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox, QCheckBox, QButtonGroup, QRadioButton, QAction, QMenu
+from PySide6 import QtWidgets
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox, QCheckBox, QButtonGroup, QRadioButton, QMenu
 
 # globals
 numVariantsInDocument = 0
@@ -164,9 +165,9 @@ class ValueSelector(QDialog):
             added.setCheckState(QtCore.Qt.Unchecked if isValueRestricted(self.optionName, optVN) else QtCore.Qt.Checked)
         mainvl.addWidget(self.valueList)
         twoBtnsHL = QHBoxLayout(self)
-        self.cancel = QPushButton("Cancel")
+        self.cancel = QPushButton(QObject::tr("Cancel"))
         twoBtnsHL.addWidget(self.cancel)
-        self.ok = QPushButton("Ok")
+        self.ok = QPushButton(QObject::tr("Ok"))
         twoBtnsHL.addWidget(self.ok)
         mainvl.addLayout(twoBtnsHL)
         self.cancel.clicked.connect(self.close)
@@ -182,8 +183,8 @@ class ValueSelector(QDialog):
         restrictedList = [intFromOptionValueName(self.optionName, x.text()) for x in listItems(self.valueList) if x.checkState() == QtCore.Qt.Checked]
         if len(restrictedList) == 0:
             msgBox = QMessageBox()
-            msgBox.setText("Keep at least one value")
-            msgBox.setInformativeText("Nothing to enumerate: just remove the option from the pariticipants altogether.")
+            msgBox.setText(QObject::tr("Keep at least one value"))
+            msgBox.setInformativeText(QObject::tr("Nothing to enumerate: just remove the option from the pariticipants altogether."))
             msgBox.setStandardButtons(QMessageBox.Ok)
             msgBox.exec()
             return
@@ -271,8 +272,8 @@ class DoubleList(QtCore.QObject):
     def eventFilter(self, source, event):
         if event.type() == QtCore.QEvent.ContextMenu and source is self.right.viewport():
             menu = QMenu()
-            menu.addAction("Customize generated values")
-            if menu.exec_(event.globalPos()):
+            menu.addAction(QObject::tr("Customize generated values"))
+            if menu.exec_(event.globalPosition()):
                 self.restrictValueSpace()
                 return True
         return False
@@ -298,7 +299,7 @@ class Dialog(QDialog):
         self.listOfDigitArrays = []
 
     def initUI(self):
-        self.setWindowTitle("Full variant combinatorics enumeration for select options")
+        self.setWindowTitle(QObject::tr("Full variant combinatorics enumeration for select options"))
 
         # Create the layout for the dialog box
         mainvl = QVBoxLayout(self)
@@ -307,7 +308,7 @@ class Dialog(QDialog):
 
         # Create the list box on the left
         self.optionsSelector = DoubleList([x.GetName().ToString() for x in self.optionDescriptors])
-        listGroup = QGroupBox("Add desired participating options from the left bucket, to the selection bucket on the right. Right click on options in the right bucket to further configure used values.")
+        listGroup = QGroupBox(QObject::tr("Add desired participating options from the left bucket, to the selection bucket on the right. Right click on options in the right bucket to further configure used values."))
         listGroup.setLayout(self.optionsSelector.layout)
         vsplitter = QSplitter(QtCore.Qt.Horizontal)
         vsplitter.addWidget(listGroup)
@@ -380,12 +381,12 @@ class Dialog(QDialog):
 
         actionPaneLayout.addWidget(genBox)
 
-        genListBtn = QPushButton("Generate variant list", self)
+        genListBtn = QPushButton(QObject::tr("Generate variant list"), self)
         genListBtn.clicked.connect(self.generateVariants)
         genListBtn.setToolTip("Enumerate the variants*options matrix, and send to document")
         actionPaneLayout.addWidget(genListBtn)
 
-        exitBtn = QPushButton("Exit", self)
+        exitBtn = QPushButton(QObject::tr("Exit", self)
         actionPaneLayout.addWidget(exitBtn)
         exitBtn.clicked.connect(self.close)
 

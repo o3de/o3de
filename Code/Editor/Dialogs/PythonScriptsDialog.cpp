@@ -136,4 +136,3 @@ void CPythonScriptsDialog::OnExecute()
     }
 }
 
-#include <Dialogs/moc_PythonScriptsDialog.cpp>

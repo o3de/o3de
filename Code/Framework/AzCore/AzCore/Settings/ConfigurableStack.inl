@@ -65,7 +65,7 @@ namespace AZ
     template<typename StackBaseType>
     void* ConfigurableStack<StackBaseType>::AddNode(AZStd::string name)
     {
-        Node& result = m_nodes.emplace_back(AZStd::move(name));
+        Node& result = m_nodes.emplace_back(AZStd::move(name), NodeValue{});
         return &result.second;
     }
 
@@ -145,7 +145,7 @@ namespace AZ
             }
         }
     }
-            
+
     template<typename StackBaseType>
     auto SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GetGenericInfo() -> ClassInfoType*
     {

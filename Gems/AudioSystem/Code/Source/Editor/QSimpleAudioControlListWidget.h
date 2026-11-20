@@ -9,14 +9,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ACETypes.h>
 #include <ATLControlsModel.h>
 #include <AudioControl.h>
 #include <IAudioSystemControl.h>
 
 #include <QTreeWidget>
-#endif
 
 namespace AudioControls
 {

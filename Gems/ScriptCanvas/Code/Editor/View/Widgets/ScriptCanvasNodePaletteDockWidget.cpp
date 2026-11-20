@@ -964,4 +964,3 @@ namespace ScriptCanvasEditor
     }
 }
 
-#include <Editor/View/Widgets/moc_ScriptCanvasNodePaletteDockWidget.cpp>

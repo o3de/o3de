@@ -6,7 +6,7 @@
 #
 #
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
 

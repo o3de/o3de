@@ -32,7 +32,8 @@ namespace LandscapeCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ReferenceShapeNode>("ReferenceShapeNode", "")->
+                editContext->Class<ReferenceShapeNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "ReferenceShapeNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "ShapeNodeTitlePalette")
                     ;

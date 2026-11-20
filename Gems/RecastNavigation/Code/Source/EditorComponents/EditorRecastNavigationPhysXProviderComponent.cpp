@@ -9,6 +9,7 @@
 #include "EditorRecastNavigationPhysXProviderComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace RecastNavigation
 {
@@ -23,8 +24,9 @@ namespace RecastNavigation
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorRecastNavigationPhysXProviderComponent>("Recast Navigation PhysX Provider",
-                    "[Collects triangle geometry from PhysX scene for navigation mesh within the area defined by a shape component.]")
+                editContext->Class<EditorRecastNavigationPhysXProviderComponent>(
+                    QT_TRANSLATE_NOOP("RecastNavigation", "Recast Navigation PhysX Provider"),
+                    QT_TRANSLATE_NOOP("RecastNavigation", "[Collects triangle geometry from PhysX scene for navigation mesh within the area defined by a shape component.]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -32,21 +34,24 @@ namespace RecastNavigation
                 ;
 
                 editContext->Class<RecastNavigationPhysXProviderComponentController>(
-                    "RecastNavigationPhysXProviderComponentController", "")
+                    QT_TRANSLATE_NOOP("RecastNavigation", "RecastNavigationPhysXProviderComponentController"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationPhysXProviderComponentController::m_config, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationPhysXProviderComponentController::m_config,
+                        QT_TRANSLATE_NOOP("RecastNavigation", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
 
-                editContext->Class<RecastNavigationPhysXProviderConfig>("Recast Navigation PhysX Provider Config",
-                    "[Navigation PhysX Provider configuration]")
+                editContext->Class<RecastNavigationPhysXProviderConfig>(
+                    QT_TRANSLATE_NOOP("RecastNavigation", "Recast Navigation PhysX Provider Config"),
+                    QT_TRANSLATE_NOOP("RecastNavigation", "[Navigation PhysX Provider configuration]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationPhysXProviderConfig::m_collisionGroupId, "Collision Group",
-                        "If set, only colliders from the specified collision group will be considered.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationPhysXProviderConfig::m_collisionGroupId,
+                        QT_TRANSLATE_NOOP("RecastNavigation", "Collision Group"),
+                        QT_TRANSLATE_NOOP("RecastNavigation", "If set, only colliders from the specified collision group will be considered."))
                     ;
             }
         }

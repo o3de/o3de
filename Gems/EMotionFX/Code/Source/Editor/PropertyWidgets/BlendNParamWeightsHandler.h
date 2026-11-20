@@ -8,21 +8,19 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
-#include <QWidget>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <EMotionFX/Source/AnimGraphBus.h>
 #include <EMotionFX/Source/BlendTreeBlendNNode.h>
+
+#include <QEvent>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <QEvent>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#endif
-
+#include <QWidget>
 
 namespace EMotionFX
 {

@@ -25,7 +25,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridBorderUpdatePass> DiffuseProbeGridBorderUpdatePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridBorderUpdatePass> pass = aznew DiffuseProbeGridBorderUpdatePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridBorderUpdatePass::DiffuseProbeGridBorderUpdatePass(const RPI::PassDescriptor& descriptor)
@@ -228,7 +228,7 @@ namespace AZ
                     submitItem.m_dispatchItem.SetPipelineState(m_columnPipelineState);
                     submitItem.m_dispatchItem.SetArguments(arguments);
                 }
-            }     
+            }
         }
 
         void DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

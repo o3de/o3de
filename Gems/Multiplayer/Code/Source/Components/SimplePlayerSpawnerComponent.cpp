@@ -13,6 +13,7 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Multiplayer
 {
@@ -41,9 +42,9 @@ namespace Multiplayer
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SimplePlayerSpawnerComponent>(
-                               "Simple Network Player Spawner",
-                               "A simple player spawner that comes included with the Multiplayer gem. Attach this component to any level's root entity which needs to spawn a network player."
-                                        "If no spawn points are provided the network players will be spawned at the world-space origin.")
+                               QT_TRANSLATE_NOOP("Multiplayer", "Simple Network Player Spawner"),
+                               QT_TRANSLATE_NOOP("Multiplayer", "A simple player spawner that comes included with the Multiplayer gem. Attach this component to any level's root entity which needs to spawn a network player."
+                                        "If no spawn points are provided the network players will be spawned at the world-space origin."))
                            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                            ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                            ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/SimpleNetworkPlayerSpawner.svg")
@@ -52,13 +53,13 @@ namespace Multiplayer
                            ->DataElement(
                                AZ::Edit::UIHandlers::Default,
                                &SimplePlayerSpawnerComponent::m_playerSpawnable,
-                               "Player Spawnable Asset",
-                               "The network player spawnable asset which will be spawned for each player that joins.")
+                               QT_TRANSLATE_NOOP("Multiplayer", "Player Spawnable Asset"),
+                               QT_TRANSLATE_NOOP("Multiplayer", "The network player spawnable asset which will be spawned for each player that joins."))
                            ->DataElement(
                                AZ::Edit::UIHandlers::Default,
                                &SimplePlayerSpawnerComponent::m_spawnPoints,
-                               "Spawn Points",
-                               "Networked players will spawn at the spawn point locations in order. If there are more players than spawn points, the new players will round-robin back starting with the first spawn point.")
+                               QT_TRANSLATE_NOOP("Multiplayer", "Spawn Points"),
+                               QT_TRANSLATE_NOOP("Multiplayer", "Networked players will spawn at the spawn point locations in order. If there are more players than spawn points, the new players will round-robin back starting with the first spawn point."))
                 ;
             }
         }

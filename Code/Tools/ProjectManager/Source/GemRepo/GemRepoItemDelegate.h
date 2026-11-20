@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStyledItemDelegate>
 #include <GemRepo/GemRepoInfo.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QAbstractItemModel)
 QT_FORWARD_DECLARE_CLASS(QEvent)

@@ -61,7 +61,6 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("get_game_folder") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_level_name") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_level_path") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("load_all_plugins") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_view_position") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_view_rotation") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_current_view_position") != behaviorContext->m_methods.end());
@@ -104,7 +103,7 @@ namespace CryEditPythonBindingsUnitTests
         const unsigned int framesToWait = 5;
         AZStd::array<AZ::BehaviorArgument, 1> args;
         args[0].Set(&framesToWait);
-        behaviorContext->m_methods.find("idle_wait_frames")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
+        behaviorContext->m_methods.find("idle_wait_frames")->second->Call(args.data(), static_cast<unsigned int>(args.size()));
         loop.disconnect(&timer);
         timer.stop();
         EXPECT_EQ(numTicks, framesToWait);

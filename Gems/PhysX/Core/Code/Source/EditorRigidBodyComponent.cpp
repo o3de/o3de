@@ -11,6 +11,7 @@
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/NameConstants.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Source/EditorRigidBodyComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorMeshColliderComponent.h>
@@ -163,168 +164,168 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<AzPhysics::RigidBodyConfiguration>(
-                    "PhysX Rigid Body Configuration", "")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Rigid Body Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialLinearVelocity,
-                        "Initial linear velocity", "Linear velocity applied when the rigid body is activated.")
+                        QT_TRANSLATE_NOOP("PhysX", "Initial linear velocity"), QT_TRANSLATE_NOOP("PhysX", "Linear velocity applied when the rigid body is activated."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialAngularVelocity,
-                        "Initial angular velocity", "Angular velocity applied when the rigid body is activated (limited by maximum angular velocity).")
+                        QT_TRANSLATE_NOOP("PhysX", "Initial angular velocity"), QT_TRANSLATE_NOOP("PhysX", "Angular velocity applied when the rigid body is activated (limited by maximum angular velocity)."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_linearDamping,
-                        "Linear damping", "The rate of decay over time for linear velocity even if no forces are acting on the rigid body.")
+                        QT_TRANSLATE_NOOP("PhysX", "Linear damping"), QT_TRANSLATE_NOOP("PhysX", "The rate of decay over time for linear velocity even if no forces are acting on the rigid body."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_angularDamping,
-                        "Angular damping", "The rate of decay over time for angular velocity even if no forces are acting on the rigid body.")
+                        QT_TRANSLATE_NOOP("PhysX", "Angular damping"), QT_TRANSLATE_NOOP("PhysX", "The rate of decay over time for angular velocity even if no forces are acting on the rigid body."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_sleepMinEnergy,
-                        "Sleep threshold", "The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value.")
+                        QT_TRANSLATE_NOOP("PhysX", "Sleep threshold"), QT_TRANSLATE_NOOP("PhysX", "The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_startAsleep,
-                        "Start asleep", "When active, the rigid body will be asleep when spawned, and wake when the body is disturbed.")
+                        QT_TRANSLATE_NOOP("PhysX", "Start asleep"), QT_TRANSLATE_NOOP("PhysX", "When active, the rigid body will be asleep when spawned, and wake when the body is disturbed."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_interpolateMotion,
-                        "Interpolate motion", "When active, simulation results are interpolated resulting in smoother motion.")
+                        QT_TRANSLATE_NOOP("PhysX", "Interpolate motion"), QT_TRANSLATE_NOOP("PhysX", "When active, simulation results are interpolated resulting in smoother motion."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInterpolationVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
-                        "Gravity enabled", "When active, global gravity affects this rigid body.")
+                        QT_TRANSLATE_NOOP("PhysX", "Gravity enabled"), QT_TRANSLATE_NOOP("PhysX", "When active, global gravity affects this rigid body."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &AzPhysics::RigidBodyConfiguration::m_kinematic,
-                        "Type", "Determines how the movement/position of the rigid body is controlled.")
+                        QT_TRANSLATE_NOOP("PhysX", "Type"), QT_TRANSLATE_NOOP("PhysX", "Determines how the movement/position of the rigid body is controlled."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                         ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
-                        ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
+                        ->Attribute(AZ_CRC_CE("SetTrueLabel"), QT_TRANSLATE_NOOP("PhysX", "Kinematic"))
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), QT_TRANSLATE_NOOP("PhysX", "Simulated"))
                     ->Attribute(
                         AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
-                        ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
+                        ->Attribute(AZ_CRC_CE("EditButtonToolTip"), QT_TRANSLATE_NOOP("PhysX", "Open Type dialog for a detailed description on the motion types"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     // Linear axis locking properties
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Linear Axis Locking"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearX, "Lock X",
-                        "When active, forces won't create translation on the X axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearX, QT_TRANSLATE_NOOP("PhysX", "Lock X"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create translation on the X axis of the rigid body."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearY, "Lock Y",
-                        "When active, forces won't create translation on the Y axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearY, QT_TRANSLATE_NOOP("PhysX", "Lock Y"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create translation on the Y axis of the rigid body."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearZ, "Lock Z",
-                        "When active, forces won't create translation on the Z axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearZ, QT_TRANSLATE_NOOP("PhysX", "Lock Z"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create translation on the Z axis of the rigid body."))
 
                     // Angular axis locking properties
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Angular Axis Locking")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Angular Axis Locking"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularX, "Lock X",
-                        "When active, forces won't create rotation on the X axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularX, QT_TRANSLATE_NOOP("PhysX", "Lock X"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create rotation on the X axis of the rigid body."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularY, "Lock Y",
-                        "When active, forces won't create rotation on the Y axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularY, QT_TRANSLATE_NOOP("PhysX", "Lock Y"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create rotation on the Y axis of the rigid body."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularZ, "Lock Z",
-                        "When active, forces won't create rotation on the Z axis of the rigid body.")
+                        AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularZ, QT_TRANSLATE_NOOP("PhysX", "Lock Z"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, forces won't create rotation on the Z axis of the rigid body."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Continuous Collision Detection"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
-                        "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
-                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration.")
+                        QT_TRANSLATE_NOOP("PhysX", "CCD enabled"), QT_TRANSLATE_NOOP("PhysX", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetCcdTooltip)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::CcdReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
-                        "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
+                        QT_TRANSLATE_NOOP("PhysX", "Min advance coefficient"), QT_TRANSLATE_NOOP("PhysX", "Lower values reduce clipping but can affect simulation smoothness."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
-                        "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
+                        QT_TRANSLATE_NOOP("PhysX", "CCD friction"), QT_TRANSLATE_NOOP("PhysX", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
-                        "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Open PhysX Configuration to Enable CCD")
+                        QT_TRANSLATE_NOOP("PhysX", "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing."))
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("PhysX", "Open PhysX Configuration to Enable CCD"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXConfigurationPane)
                     ->EndGroup()
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
-                        "Maximum angular velocity", "Clamp angular velocities to this maximum value. "
-                        "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")
+                        QT_TRANSLATE_NOOP("PhysX", "Maximum angular velocity"), QT_TRANSLATE_NOOP("PhysX", "Clamp angular velocities to this maximum value. "
+                        "This prevents rigid bodies from rotating at unrealistic velocities after collisions."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMaxVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     // Mass properties
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeCenterOfMass,
-                        "Compute COM", "Compute the center of mass (COM) for this rigid body.")
+                        QT_TRANSLATE_NOOP("PhysX", "Compute COM"), QT_TRANSLATE_NOOP("PhysX", "Compute the center of mass (COM) for this rigid body."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_centerOfMassOffset,
-                        "COM offset", "Local space offset for the center of mass (COM).")
+                        QT_TRANSLATE_NOOP("PhysX", "COM offset"), QT_TRANSLATE_NOOP("PhysX", "Local space offset for the center of mass (COM)."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCoMVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeMass,
-                        "Compute Mass", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders.")
+                        QT_TRANSLATE_NOOP("PhysX", "Compute Mass"), QT_TRANSLATE_NOOP("PhysX", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
-                        "Mass", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
-                        "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
+                        QT_TRANSLATE_NOOP("PhysX", "Mass"), QT_TRANSLATE_NOOP("PhysX", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
+                        "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMassVisibility)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeInertiaTensor,
-                        "Compute inertia", "When active, inertia is computed based on the mass and shape of the rigid body.")
+                        QT_TRANSLATE_NOOP("PhysX", "Compute inertia"), QT_TRANSLATE_NOOP("PhysX", "When active, inertia is computed based on the mass and shape of the rigid body."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
-                        "Inertia diagonal", "Inertia diagonal elements that specify an inertia tensor; determines the "
-                        "torque required to rotate the rigid body on each axis.")
+                        QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal"), QT_TRANSLATE_NOOP("PhysX", "Inertia diagonal elements that specify an inertia tensor; determines the "
+                        "torque required to rotate the rigid body on each axis."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_includeAllShapesInMassCalculation,
-                        "Include non-simulated shapes in Mass",
-                        "When active, non-simulated shapes are included in the center of mass, inertia, and mass calculations.")
+                        QT_TRANSLATE_NOOP("PhysX", "Include non-simulated shapes in Mass"),
+                        QT_TRANSLATE_NOOP("PhysX", "When active, non-simulated shapes are included in the center of mass, inertia, and mass calculations."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ;
 
                 editContext->Class<EditorRigidBodyConfiguration>(
-                    "PhysX Rigid Body Configuration", "")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Rigid Body Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw,
-                        "Debug draw COM", "Display the rigid body's center of mass (COM) in the viewport.")
+                        QT_TRANSLATE_NOOP("PhysX", "Debug draw COM"), QT_TRANSLATE_NOOP("PhysX", "Display the rigid body's center of mass (COM) in the viewport."))
                 ;
             }
         }
@@ -437,7 +438,7 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "PhysX Dynamic Rigid Body", "The entity behaves as a movable rigid body in PhysX.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Dynamic Rigid Body"), QT_TRANSLATE_NOOP("PhysX", "The entity behaves as a movable rigid body in PhysX."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
@@ -449,15 +450,15 @@ namespace PhysX
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorRigidBodyComponent::m_config,
-                        "Configuration",
-                        "Configuration for rigid body physics.")
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "Configuration for rigid body physics."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorRigidBodyComponent::m_physxSpecificConfig,
-                        "PhysX-Specific Configuration",
-                        "Settings which are specific to PhysX, rather than generic.")
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX-Specific Configuration"),
+                        QT_TRANSLATE_NOOP("PhysX", "Settings which are specific to PhysX, rather than generic."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                     ;

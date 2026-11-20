@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Utils/ProcessRawInputEventQueues.h>
 
@@ -50,6 +51,28 @@ namespace AzFramework
                 ->Constant(Movement::X.GetName(), BehaviorConstant(Movement::X.GetName()))
                 ->Constant(Movement::Y.GetName(), BehaviorConstant(Movement::Y.GetName()))
                 ->Constant(Movement::Z.GetName(), BehaviorConstant(Movement::Z.GetName()))
+            ;
+
+            // The system cursor state enum, named so scripts can pass the values to
+            // SetSystemCursorState below.
+            behaviorContext->Enum<static_cast<int>(SystemCursorState::Unknown)>("SystemCursorState_Unknown")
+                ->Enum<static_cast<int>(SystemCursorState::ConstrainedAndHidden)>("SystemCursorState_ConstrainedAndHidden")
+                ->Enum<static_cast<int>(SystemCursorState::ConstrainedAndVisible)>("SystemCursorState_ConstrainedAndVisible")
+                ->Enum<static_cast<int>(SystemCursorState::UnconstrainedAndHidden)>("SystemCursorState_UnconstrainedAndHidden")
+                ->Enum<static_cast<int>(SystemCursorState::UnconstrainedAndVisible)>("SystemCursorState_UnconstrainedAndVisible")
+            ;
+
+            // Make the absolute system cursor position (and state) readable from gameplay
+            // scripts. Input channels only expose mouse deltas, so without this a script
+            // cannot get the cursor's window position, which is what an "aim at the cursor"
+            // scheme needs (feed the normalized position to CameraRequestBus::ScreenNdcToWorld).
+            // Addressed by InputDeviceId, e.g. Event(InputDeviceId("mouse"), ...), or Broadcast.
+            behaviorContext->EBus<InputSystemCursorRequestBus>("InputSystemCursorRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Input")
+                ->Event("GetSystemCursorPositionNormalized", &InputSystemCursorRequests::GetSystemCursorPositionNormalized)
+                ->Event("SetSystemCursorPositionNormalized", &InputSystemCursorRequests::SetSystemCursorPositionNormalized)
+                ->Event("GetSystemCursorState", &InputSystemCursorRequests::GetSystemCursorState)
+                ->Event("SetSystemCursorState", &InputSystemCursorRequests::SetSystemCursorState)
             ;
         }
     }

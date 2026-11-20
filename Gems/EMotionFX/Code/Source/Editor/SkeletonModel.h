@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <Editor/ActorEditorBus.h>
+#include <Editor/QtMetaTypes.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Node.h>
+
 #include <QAbstractItemModel>
-#include <QItemSelectionModel>
-#include <Editor/ActorEditorBus.h>
-#include <Editor/QtMetaTypes.h>
 #include <QIcon>
-#endif
+#include <QItemSelectionModel>
 
 
 namespace EMotionFX

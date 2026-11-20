@@ -865,6 +865,29 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                             tableView->MoveEntries();
                         }
                     });
+                // Open in another Asset Browser - navigate to the folder
+                menu->addAction(
+                    QObject::tr("Open in another Asset Browser"),
+                    [fullFilePath, thumbnailView, tableView]()
+                    {
+                        AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
+
+                        if (thumbnailView)
+                        {
+                            newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                        }
+                        else if (tableView)
+                        {
+                            newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
+                        }
+                        else
+                        {
+                            newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
+                        }
+
+                        newAssetBrowser->SelectAsset(fullFilePath.c_str(), true);
+                    });
+
                 AddCreateMenu(menu, fullFilePath);
             }
         }

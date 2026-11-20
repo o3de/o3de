@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
 
@@ -30,7 +31,9 @@ namespace Profiler
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ProfilerImGuiSystemComponent>("ProfilerImGui", "Provides in-game visualization of the performance data gathered by the ProfilerSystemComponent")
+                ec->Class<ProfilerImGuiSystemComponent>(
+                    QT_TRANSLATE_NOOP("Profiler", "ProfilerImGui"),
+                    QT_TRANSLATE_NOOP("Profiler", "Provides in-game visualization of the performance data gathered by the ProfilerSystemComponent"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

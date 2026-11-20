@@ -6,17 +6,17 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
-#define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "SandboxAPI.h"
+
 #include <AzCore/Component/Component.h>
 
 #include <functional>
+
 #include <QSharedPointer>
-#endif
+#include <QString>
+#include <QWidget>
 
 // CViewportTitleDlg dialog
 class CLayoutViewPane;
@@ -24,6 +24,7 @@ class CPopupMenuItem;
 
 class QAbstractButton;
 class QMenu;
+class QEvent;
 
 struct ICVar;
 
@@ -118,6 +119,3 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
-
-
-#endif // CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H

@@ -15,6 +15,7 @@
 #include "TextureAtlasImpl.h"
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -50,7 +51,8 @@ namespace TextureAtlasNamespace
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<TextureAtlasSystemComponent>(
-                    "TextureAtlas", "This component loads and manages TextureAtlases")
+                    QT_TRANSLATE_NOOP("TextureAtlasNamespace", "TextureAtlas"),
+                    QT_TRANSLATE_NOOP("TextureAtlasNamespace", "This component loads and manages TextureAtlases"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }

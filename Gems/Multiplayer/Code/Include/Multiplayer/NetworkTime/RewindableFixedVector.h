@@ -21,6 +21,10 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     class RewindableFixedVector
     {
+        using container = AZStd::array<RewindableObject<TYPE, Multiplayer::RewindHistorySize>, SIZE>;
+        using const_iterator = typename container::const_iterator;
+        using iterator = typename container::iterator;
+
     public:
         //! Default constructor
         constexpr RewindableFixedVector() = default;
@@ -106,15 +110,14 @@ namespace Multiplayer
         //! Gets the size of the vector
         constexpr uint32_t size() const;
 
-        typedef const RewindableObject<TYPE, Multiplayer::RewindHistorySize>* const_iterator;
         const_iterator begin() const { return m_container.cbegin(); }
         const_iterator end() const { return m_container.cbegin() + aznumeric_cast<size_t>(size()); }
-        typedef RewindableObject<TYPE, Multiplayer::RewindHistorySize>* iterator;
+
         constexpr iterator begin() { return m_container.begin(); }
         constexpr iterator end() { return m_container.begin() + aznumeric_cast<size_t>(size()); }
 
     private:
-        AZStd::array<RewindableObject<TYPE, Multiplayer::RewindHistorySize>, SIZE> m_container;
+        container m_container;
         // Synchronized value for vector size, prefer using size() locally which checks m_container.size()
         RewindableObject<uint32_t, Multiplayer::RewindHistorySize> m_rewindableSize;
     };

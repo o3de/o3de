@@ -29,10 +29,10 @@ namespace OpenParticleSystemEditor
     inline QColor AZVector4ToQColor(const AZ::Vector4& color)
     {
         return QColor::fromRgbF(
-            static_cast<qreal>(color.GetX()),
-            static_cast<qreal>(color.GetY()),
-            static_cast<qreal>(color.GetZ()),
-            static_cast<qreal>(color.GetW())
+            static_cast<float>(color.GetX()),
+            static_cast<float>(color.GetY()),
+            static_cast<float>(color.GetZ()),
+            static_cast<float>(color.GetW())
         );
     }
 

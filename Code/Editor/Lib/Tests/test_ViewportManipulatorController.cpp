@@ -95,7 +95,7 @@ namespace UnitTest
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
-            QApplication::setActiveWindow(m_rootWidget.get());
+            m_rootWidget->activateWindow();
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -116,8 +116,6 @@ namespace UnitTest
             m_controllerList->UnregisterViewportContext(TestViewportId);
             m_controllerList.reset();
             m_rootWidget.reset();
-
-            QApplication::setActiveWindow(nullptr);
 
             LeakDetectionFixture::TearDown();
         }

@@ -17,6 +17,7 @@
 
 #include "UiDynamicContentDatabase.h"
 #include "LyShineExamplesInternalBus.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LyShineExamples
 {
@@ -101,8 +102,8 @@ namespace LyShineExamples
             AZ::EditContext* ec = serializeContext->GetEditContext();
             if (ec)
             {
-                auto editInfo = ec->Class<UiTestScrollBoxDataProviderComponent>("TestScrollBoxDataProvider",
-                    "Associates dynamic data with a dynamic scroll box");
+                auto editInfo = ec->Class<UiTestScrollBoxDataProviderComponent>(QT_TRANSLATE_NOOP("LyShineExamples", "TestScrollBoxDataProvider"),
+                    QT_TRANSLATE_NOOP("LyShineExamples", "Associates dynamic data with a dynamic scroll box"));
 
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTestScrollBoxDataProvider.png")

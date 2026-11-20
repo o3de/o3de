@@ -230,7 +230,7 @@ namespace ScriptCanvas
                 }
             }
 
-            SetSlotExecutionMap(AZStd::move(SlotExecution::Map(AZStd::move(ins), AZStd::move(latentOuts))));
+            SetSlotExecutionMap(SlotExecution::Map(AZStd::move(ins), AZStd::move(latentOuts)));
         }
 
         AZStd::vector<AZStd::unique_ptr<Nodeable>> NodeableNodeOverloadedLerp::GetInitializationNodeables() const

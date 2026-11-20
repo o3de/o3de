@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "BoxShapeComponent.h"
 #include "EditorBoxShapeComponent.h"
@@ -40,7 +41,8 @@ namespace LmbrCentral
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorBoxShapeComponent>(
-                    "Box Shape", "The Box Shape component creates a box around the associated entity")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Box Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Box Shape component creates a box around the associated entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box_Shape.svg")
@@ -48,10 +50,14 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/box-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_boxShape, "Box Shape", "Box Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_boxShape,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Box Shape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Box Shape Configuration"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBoxShapeComponent::ConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_componentModeDelegate, "Component Mode", "Box Shape Component Mode")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBoxShapeComponent::m_componentModeDelegate,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Component Mode"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Box Shape Component Mode"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
             }

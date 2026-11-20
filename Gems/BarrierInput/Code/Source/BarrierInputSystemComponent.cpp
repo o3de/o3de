@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/Console/IConsole.h>
 
@@ -60,7 +61,9 @@ namespace BarrierInput
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<BarrierInputSystemComponent>("BarrierInput", "Provides functionality related to Barrier input.")
+                ec->Class<BarrierInputSystemComponent>(
+                    QT_TRANSLATE_NOOP("BarrierInput", "BarrierInput"),
+                    QT_TRANSLATE_NOOP("BarrierInput", "Provides functionality related to Barrier input."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

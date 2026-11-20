@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -18,7 +17,6 @@
 #include <ParticleCommonData.h>
 #include <QVBoxLayout>
 #include <QCoreApplication>
-#endif
 
 namespace OpenParticleSystemEditor
 {

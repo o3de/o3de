@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_CONFIG_H
-#define AZSTD_CONFIG_H 1
+
+#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -152,8 +152,3 @@
 #define AZSTD_ADL_FIX_FUNCTION_SPEC_2_4_RET(_Function, _Return, _Param1, _Param2) \
     AZ_FORCE_INLINE _Return _Function(_Param1 a, _Param1 b, _Param1 c, _Param2 d)  { return AZStd::_Function(a, b, c, d); }
 /// @}
-
-#endif // AZSTD_CONFIG_H
-
-
-

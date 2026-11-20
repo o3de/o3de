@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_DELEGATE_BIND_H
-#define AZSTD_DELEGATE_BIND_H
+
+#pragma once
 
 // Based on FastDelegate v. 1.5 from Don Clugston. (http://www.codeproject.com/cpp/FastDelegate.asp)
 //
@@ -222,6 +222,3 @@ namespace AZStd
         }
     }
 }
-
-#endif //AZSTD_DELEGATE_BIND_H
-#pragma once

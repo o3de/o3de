@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "ScriptCanvasMultiplayerSystemComponent.h"
 
@@ -23,7 +24,9 @@ namespace ScriptCanvasMultiplayer
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ScriptCanvasMultiplayerSystemComponent>("ScriptCanvasMultiplayer", "Provides various Script Canvas nodes for multiplayer.")
+                ec->Class<ScriptCanvasMultiplayerSystemComponent>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasMultiplayer", "ScriptCanvasMultiplayer"),
+                    QT_TRANSLATE_NOOP("ScriptCanvasMultiplayer", "Provides various Script Canvas nodes for multiplayer."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

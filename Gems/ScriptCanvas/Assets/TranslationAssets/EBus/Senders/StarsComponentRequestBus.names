@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "base": "StarsComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Stars Component Request Bus"
+            },
+            "methods": [
+                {
+                    "base": "Set Stars Radius Factor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Stars Radius Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Stars Radius Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Set Stars Radius Factor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Get Stars Twinkle Rate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Stars Twinkle Rate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Stars Twinkle Rate is invoked"
+                    },
+                    "details": {
+                        "name": "Get Stars Twinkle Rate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Set Stars Exposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Stars Exposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Stars Exposure is invoked"
+                    },
+                    "details": {
+                        "name": "Set Stars Exposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Get Stars Radius Factor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Stars Radius Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Stars Radius Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Stars Radius Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Set Stars Twinkle Rate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Stars Twinkle Rate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Stars Twinkle Rate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Stars Twinkle Rate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Get Stars Exposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Stars Exposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Stars Exposure is invoked"
+                    },
+                    "details": {
+                        "name": "Get Stars Exposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

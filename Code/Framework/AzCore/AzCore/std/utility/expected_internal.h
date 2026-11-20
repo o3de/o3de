@@ -5,13 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/std/utils.h>
+#include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/is_assignable.h>
 #include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/is_destructible.h>
 #include <AzCore/std/typetraits/is_void.h>
+#include <AzCore/std/utils.h>
 
 namespace AZStd
 {
@@ -24,6 +26,8 @@ namespace AZStd
     //! Tag Type for in-place construction of the error type
     struct unexpect_t { explicit unexpect_t() = default; };
     inline constexpr unexpect_t unexpect{};
+
+    using std::addressof;
 }
 
 namespace AZStd::Internal
@@ -190,10 +194,22 @@ namespace AZStd::Internal
 
         // in-place construction for the value type
         template<class... Args>
-        constexpr expected_storage(in_place_t, Args&&... args);
+        constexpr expected_storage(in_place_t, Args&&... args)
+            : m_hasValue{ true }
+        {
+            if constexpr (!is_void_v<T>)
+            {
+                AZStd::construct_at(addressof(m_storage.m_value), AZStd::forward<Args>(args)...);
+            }
+        }
+
         // in-place construction for the error type
         template<class... Args>
-        constexpr expected_storage(unexpect_t, Args&&... args);
+        constexpr expected_storage(unexpect_t, Args&&... args)
+            : m_hasValue{}
+        {
+            AZStd::construct_at(addressof(m_storage.m_unexpected), AZStd::forward<Args>(args)...);
+        }
 
         //! stores the value type and error type for the expected type in a union
         union expected_union<T, E> m_storage;
@@ -254,6 +270,9 @@ namespace AZStd::Internal
         : special_member_availability::Unavailable>
     struct expected_storage_move_assignment;
 
+    template<class T, class U, class... Args>
+    constexpr void reinit_expected(T& newval, U& oldval, Args&&... args);
+
     //! expected destructor constraints
     // Trivial destructor case
     template <class T, class E>
@@ -281,8 +300,20 @@ namespace AZStd::Internal
         // Bring in the base class constructors
         using expected_storage<T, E>::expected_storage;
 
-        // destructor is non-trivial, it is defined in the inline file
-        ~expected_storage_destructor();
+        ~expected_storage_destructor()
+        {
+            if (this->m_hasValue)
+            {
+                if constexpr (!is_void_v<T>)
+                {
+                    AZStd::destroy_at(addressof(this->m_storage.m_value));
+                }
+            }
+            else
+            {
+                AZStd::destroy_at(addressof(this->m_storage.m_unexpected));
+            }
+        }
 
         // Make the other special member defaulted to use the expected_storage versions
         constexpr expected_storage_destructor() = default;
@@ -320,8 +351,22 @@ namespace AZStd::Internal
         // Bring in the base class constructors
         using expected_storage_destructor<T, E>::expected_storage_destructor;
 
-        // copy constructor is non-trivial, it is defined in the inline file
-        constexpr expected_storage_copy_constructor(const expected_storage_copy_constructor&);
+        constexpr expected_storage_copy_constructor(const expected_storage_copy_constructor& rhs)
+        {
+            if (rhs.m_hasValue)
+            {
+                if constexpr (!is_void_v<T>)
+                {
+                    AZStd::construct_at(addressof(this->m_storage.m_value), rhs.m_storage.m_value);
+                }
+            }
+            else
+            {
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
+            }
+
+            this->m_hasValue = rhs.m_hasValue;
+        }
 
         // Make the other special member defaulted to use the expected_storage versions
         constexpr expected_storage_copy_constructor() = default;
@@ -377,8 +422,22 @@ namespace AZStd::Internal
         // Bring in the base class constructors
         using expected_storage_copy_constructor<T, E>::expected_storage_copy_constructor;
 
-        // move constructor is non-trivial, it is defined in the inline file
-        constexpr expected_storage_move_constructor(expected_storage_move_constructor&&);
+        constexpr expected_storage_move_constructor(expected_storage_move_constructor&& rhs)
+        {
+            if (rhs.m_hasValue)
+            {
+                if constexpr (!is_void_v<T>)
+                {
+                    AZStd::construct_at(addressof(this->m_storage.m_value), AZStd::move(rhs.m_storage.m_value));
+                }
+            }
+            else
+            {
+                AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
+            }
+
+            this->m_hasValue = rhs.m_hasValue;
+        }
 
         // Make the other special member defaulted to use the expected_storage versions
         constexpr expected_storage_move_constructor() = default;
@@ -434,8 +493,49 @@ namespace AZStd::Internal
         // Bring in the base class constructors
         using expected_storage_move_constructor<T, E>::expected_storage_move_constructor;
 
-        // copy assignment is non-trivial, it is defined in the inline file
-        constexpr expected_storage_copy_assignment& operator=(const expected_storage_copy_assignment&);
+        constexpr expected_storage_copy_assignment& operator=(const expected_storage_copy_assignment& rhs)
+        {
+            if (this->m_hasValue && rhs.m_hasValue)
+            {
+                // Both this instance and the rhs has value
+                if constexpr (!is_void_v<T>)
+                {
+                    this->m_storage.m_value = rhs.m_storage.m_value;
+                }
+            }
+            else if (this->m_hasValue)
+            {
+                // this instance has value and rhs has error
+                if constexpr (!is_void_v<T>)
+                {
+                    Internal::reinit_expected(this->m_storage.m_unexpected, this->m_storage.m_value, rhs.m_storage.m_unexpected);
+                }
+                else
+                {
+                    AZStd::construct_at(addressof(this->m_storage.m_unexpected), rhs.m_storage.m_unexpected);
+                }
+            }
+            else if (rhs.m_hasValue)
+            {
+                // this instance has error and rhs has error
+                if constexpr (!is_void_v<T>)
+                {
+                    Internal::reinit_expected(this->m_storage.m_value, this->m_storage.m_unexpected, rhs.m_storage.m_value);
+                }
+                else
+                {
+                    AZStd::destroy_at(addressof(this->m_storage.m_unexpected));
+                }
+            }
+            else
+            {
+                // Both this instance and the rhs has error
+                this->m_storage.m_unexpected = rhs.m_storage.m_unexpected;
+            }
+
+            this->m_hasValue = rhs.m_hasValue;
+            return *this;
+        }
 
         // Make the other special member defaulted to use the expected_storage versions
         constexpr expected_storage_copy_assignment() = default;
@@ -491,8 +591,49 @@ namespace AZStd::Internal
         // Bring in the base class constructors
         using expected_storage_copy_assignment<T, E>::expected_storage_copy_assignment;
 
-        // move assignment is non-trivial, it is defined in the inline file
-        constexpr expected_storage_move_assignment& operator=(expected_storage_move_assignment&&);
+        constexpr expected_storage_move_assignment& operator=(expected_storage_move_assignment&& rhs)
+        {
+            if (this->m_hasValue && rhs.m_hasValue)
+            {
+                // Both this instance and the rhs has value
+                if constexpr (!is_void_v<T>)
+                {
+                    this->m_storage.m_value = AZStd::move(rhs.m_storage.m_value);
+                }
+            }
+            else if (this->m_hasValue)
+            {
+                // this instance has value and rhs has error
+                if constexpr (!is_void_v<T>)
+                {
+                    Internal::reinit_expected(this->m_storage.m_unexpected, this->m_storage.m_value, AZStd::move(rhs.m_storage.m_unexpected));
+                }
+                else
+                {
+                    AZStd::construct_at(addressof(this->m_storage.m_unexpected), AZStd::move(rhs.m_storage.m_unexpected));
+                }
+            }
+            else if (rhs.m_hasValue)
+            {
+                // this instance has error and rhs has error
+                if constexpr (!is_void_v<T>)
+                {
+                    Internal::reinit_expected(this->m_storage.m_value, this->m_storage.m_unexpected, AZStd::move(rhs.m_storage.m_value));
+                }
+                else
+                {
+                    AZStd::destroy_at(addressof(this->m_storage.m_unexpected));
+                }
+            }
+            else
+            {
+                // Both this instance and the rhs has error
+                this->m_storage.m_unexpected = AZStd::move(rhs.m_storage.m_unexpected);
+            }
+
+            this->m_hasValue = rhs.m_hasValue;
+            return *this;
+        }
 
         // Make the other special member defaulted to use the expected_storage versions
         constexpr expected_storage_move_assignment() = default;
@@ -519,6 +660,27 @@ namespace AZStd::Internal
         constexpr expected_storage_move_assignment(expected_storage_move_assignment&&) = default;
         constexpr expected_storage_move_assignment& operator=(const expected_storage_move_assignment&) = default;
     };
-}
 
-#include <AzCore/std/utility/expected_internal.inl>
+    //! Helper function to destruct the value at the old and construct a value using the args
+    template<class T, class U, class... Args>
+    constexpr void reinit_expected(T& newval, U& oldval, Args&&... args)
+    {
+        if constexpr (is_nothrow_constructible_v<T, Args...>)
+        {
+            AZStd::destroy_at(addressof(oldval));
+            AZStd::construct_at(addressof(newval), AZStd::forward<Args>(args)...);
+        }
+        else if constexpr (is_nothrow_move_constructible_v<T>)
+        {
+            T tmp(AZStd::forward<Args>(args)...);
+            AZStd::destroy_at(addressof(oldval));
+            AZStd::construct_at(addressof(newval), AZStd::move(tmp));
+        }
+        else
+        {
+            // exceptions aren't used in AZStd, no this is hte same as the first block
+            AZStd::destroy_at(addressof(oldval));
+            AZStd::construct_at(addressof(newval), AZStd::forward<Args>(args)...);
+        }
+    }
+}

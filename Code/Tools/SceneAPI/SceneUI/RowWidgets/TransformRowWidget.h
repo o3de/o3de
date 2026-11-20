@@ -8,18 +8,16 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QPointer>
 #include <QString>
 #include <QLineEdit>
+
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-
-#endif
 
 namespace AzQtComponents
 {

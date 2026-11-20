@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Cocoa/Cocoa.h>
+#include <Foundation/Foundation.h>
 #include <native/utilities/MacDockIconHandler.h>
 
 #include <QTimer>
@@ -63,5 +63,3 @@ MacDockIconHandler::~MacDockIconHandler()
 {
     [m_dockIconClickEventHandler release];
 }
-
-#include <native/utilities/moc_MacDockIconHandler.cpp>

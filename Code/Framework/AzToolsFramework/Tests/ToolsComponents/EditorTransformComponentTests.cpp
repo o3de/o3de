@@ -81,14 +81,8 @@ namespace AzToolsFramework
         EntityIdList descendants;
         AZ::TransformBus::EventResult(descendants, hierarchy.m_parentId, &AZ::TransformBus::Events::GetAllDescendants);
 
-        // Order of descendants here and in other test cases depends on TransformHierarchyInformationBus
-        // Sorting it to get predictable order and be able to verify by index
-        std::sort(descendants.begin(), descendants.end());
-
-        EXPECT_EQ(descendants.size(), 3);
-        EXPECT_EQ(descendants[0], hierarchy.m_childId);
-        EXPECT_EQ(descendants[1], hierarchy.m_grandchild1Id);
-        EXPECT_EQ(descendants[2], hierarchy.m_grandchild2Id);
+        using ::testing::UnorderedElementsAre;
+        EXPECT_THAT(descendants, UnorderedElementsAre(hierarchy.m_childId, hierarchy.m_grandchild1Id, hierarchy.m_grandchild2Id));
     }
 
     TEST_F(EditorTransformComponentTest, TransformTests_GetEntityAndAllDescendants_AllDescendantsMatchHierarchyAndResultIncludesParentEntity)
@@ -100,10 +94,8 @@ namespace AzToolsFramework
 
         std::sort(entityAndDescendants.begin(), entityAndDescendants.end());
 
-        EXPECT_EQ(entityAndDescendants.size(), 4);
-        EXPECT_EQ(entityAndDescendants[0], hierarchy.m_parentId);
-        EXPECT_EQ(entityAndDescendants[1], hierarchy.m_childId);
-        EXPECT_EQ(entityAndDescendants[2], hierarchy.m_grandchild1Id);
-        EXPECT_EQ(entityAndDescendants[3], hierarchy.m_grandchild2Id);
+        // entity1 is selected after undo
+        using ::testing::UnorderedElementsAre;
+        EXPECT_THAT(entityAndDescendants, UnorderedElementsAre(hierarchy.m_parentId, hierarchy.m_childId, hierarchy.m_grandchild1Id, hierarchy.m_grandchild2Id));
     }
 } // namespace AzToolsFramework

@@ -10,10 +10,8 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzCore/std/containers/unordered_map.h>
-#endif
 
 namespace AzToolsFramework
 {

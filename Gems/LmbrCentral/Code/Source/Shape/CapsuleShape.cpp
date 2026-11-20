@@ -13,6 +13,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MathConversion.h>
 
 namespace LmbrCentral
@@ -33,9 +34,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CapsuleShape>("Capsule Shape", "Capsule shape configuration parameters")
+                editContext->Class<CapsuleShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Capsule Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Capsule shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShape::m_capsuleShapeConfig, "Capsule Configuration", "Capsule shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CapsuleShape::m_capsuleShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Capsule Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Capsule shape configuration"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

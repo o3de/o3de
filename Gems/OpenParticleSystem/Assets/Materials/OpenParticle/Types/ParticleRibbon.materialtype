@@ -1,6 +1,39 @@
 {
     "description": "Material Type with properties used to define particle ribbon.",
-    "version": 1,
+    "version": 3,
+    "versionUpdates": [
+        {
+            "toVersion": 2,
+            "actions": [
+                {
+                    "op": "setValue",
+                    "name": "blend.opacityFactor",
+                    "value": 1.0
+                }
+            ]
+        },
+        {
+            "toVersion": 3,
+            "actions": [
+                {
+                    "op": "setValue",
+                    "name": "general.uvOffset",
+                    "value": [
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "op": "setValue",
+                    "name": "general.uvTiling",
+                    "value": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ]
+        }
+    ],
     "propertyLayout": {
         "groups": [
             {
@@ -23,11 +56,63 @@
             "general": [
                 {
                     "name": "DiffuseMap",
+                    "displayName": "Diffuse Map",
+                    "description": "Texture containing the base color for the ribbon.",
                     "type": "image",
                     "defaultValue": "Textures/OpenParticle/DefaultSpriteBaseColor.png",
                     "connection": {
                         "type": "shaderInput",
                         "name": "m_baseColorMap"
+                    }
+                },
+                {
+                    "name": "baseColorTint",
+                    "displayName": "Base Color Tint",
+                    "description": "Tints the base color texture and vertex color.",
+                    "type": "Color",
+                    "defaultValue": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_baseColorTint"
+                    }
+                },
+                {
+                    "name": "doubleSided",
+                    "displayName": "Double-sided",
+                    "description": "Whether to render back-faces or just front-faces.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "name": "uvOffset",
+                    "displayName": "UV Offset",
+                    "description": "Offset applied to texture UV coordinates.",
+                    "type": "Vector2",
+                    "defaultValue": [
+                        0.0,
+                        0.0
+                    ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_uvOffset"
+                    }
+                },
+                {
+                    "name": "uvTiling",
+                    "displayName": "UV Tiling",
+                    "description": "Tiling (scale) applied to texture UV coordinates.",
+                    "type": "Vector2",
+                    "defaultValue": [
+                        1.0,
+                        1.0
+                    ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_uvTiling"
                     }
                 }
             ],
@@ -37,7 +122,14 @@
                     "displayName": "Blend Mode",
                     "description": "Indicates the general approach how transparency is to be applied",
                     "type": "Enum",
-                    "enumValues": [ "Opaque", "Cutout", "Blended", "Additive", "Subtractive", "Modulate" ],
+                    "enumValues": [
+                        "Opaque",
+                        "Cutout",
+                        "Blended",
+                        "Additive",
+                        "Subtractive",
+                        "Modulate"
+                    ],
                     "defaultValue": "Blended",
                     "connection": {
                         "type": "shaderOption",
@@ -56,6 +148,19 @@
                         "type": "ShaderInput",
                         "name": "m_alphaCutoff"
                     }
+                },
+                {
+                    "name": "opacityFactor",
+                    "displayName": "Opacity",
+                    "description": "Controls overall opacity for transparent blend modes.",
+                    "type": "Float",
+                    "min": 0.0,
+                    "max": 1.0,
+                    "defaultValue": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_opacityFactor"
+                    }
                 }
             ],
             "emissive": [
@@ -71,7 +176,9 @@
                     "displayName": "Units",
                     "description": "The photometric units of the Intensity property.",
                     "type": "Enum",
-                    "enumValues": ["Ev100"],
+                    "enumValues": [
+                        "Ev100"
+                    ],
                     "defaultValue": "Ev100"
                 },
                 {
@@ -79,7 +186,11 @@
                     "displayName": "Color",
                     "description": "Color is displayed as sRGB but the values are stored as linear color.",
                     "type": "Color",
-                    "defaultValue": [ 1.0, 1.0, 1.0 ],
+                    "defaultValue": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
                     "connection": {
                         "type": "ShaderInput",
                         "name": "m_emissiveColor"
@@ -136,16 +247,21 @@
     ],
     "functors": [
         {
-            // Convert emissive unit.
             "type": "ConvertEmissiveUnit",
             "args": {
                 "intensityProperty": "emissive.intensity",
                 "lightUnitProperty": "emissive.unit",
                 "shaderInput": "m_emissiveIntensity",
                 "ev100Index": 0,
-                "nitIndex" : 1,
-                "ev100MinMax": [-10, 20],
-                "nitMinMax": [0.001, 100000.0],
+                "nitIndex": 1,
+                "ev100MinMax": [
+                    -10,
+                    20
+                ],
+                "nitMinMax": [
+                    0.001,
+                    100000.0
+                ],
                 "shaderParameters": [
                     {
                         "name": "m_emissiveIntensity",
@@ -165,6 +281,12 @@
             "args": {
                 "file": "Shaders/OpenParticle/Particle_EmissiveState.lua"
             }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/OpenParticle/Types/StandardPBR_HandleOpacityDoubleSided.lua"
+            }
         }
     ],
     "uvNameMap": {
@@ -172,4 +294,3 @@
         "UV1": "Unwrapped"
     }
 }
-

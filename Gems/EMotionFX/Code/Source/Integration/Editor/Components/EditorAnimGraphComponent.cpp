@@ -48,7 +48,7 @@ namespace EMotionFX
                 if (editContext)
                 {
                     editContext->Class<AnimGraphComponent::ParameterDefaults>(
-                        "Parameter Defaults", "Default values for anim graph parameters.")
+                        QT_TRANSLATE_NOOP("EMotionFX", "Parameter Defaults"), QT_TRANSLATE_NOOP("EMotionFX", "Default values for anim graph parameters."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &AnimGraphComponent::ParameterDefaults::m_parameters, "", "")
@@ -57,9 +57,9 @@ namespace EMotionFX
                         ;
 
                     editContext->Class<EditorAnimGraphComponent>(
-                        "Anim Graph", "The Anim Graph component manages a set of assets that are built in the Animation Editor, including the animation graph, default parameter settings, and assigned motion set for the associated Actor")
+                        QT_TRANSLATE_NOOP("EMotionFX", "Anim Graph"), QT_TRANSLATE_NOOP("EMotionFX", "The Anim Graph component manages a set of assets that are built in the Animation Editor, including the animation graph, default parameter settings, and assigned motion set for the associated Actor"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Animation")
+                            ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("EMotionFX", "Animation"))
                             ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<AnimGraphAsset>())
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/AnimGraphComponent.svg")
@@ -67,22 +67,22 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/animgraph/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_motionSetAsset,
-                            "Motion set asset", "EMotion FX motion set asset to be loaded for this actor.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Motion set asset"), QT_TRANSLATE_NOOP("EMotionFX", "EMotion FX motion set asset to be loaded for this actor."))
                             ->Attribute("EditButton", "")
-                            ->Attribute("EditDescription", "Open in Animation Editor")
+                            ->Attribute("EditDescription", QT_TRANSLATE_NOOP("EMotionFX", "Open in Animation Editor"))
                             ->Attribute("EditCallback", &EditorAnimGraphComponent::LaunchAnimationEditor)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAnimGraphComponent::OnMotionSetAssetSelected)
-                        ->DataElement(AZ_CRC_CE("MotionSetName"), &EditorAnimGraphComponent::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
+                        ->DataElement(AZ_CRC_CE("MotionSetName"), &EditorAnimGraphComponent::m_activeMotionSetName, QT_TRANSLATE_NOOP("EMotionFX", "Active motion set"), QT_TRANSLATE_NOOP("EMotionFX", "Motion set to use for this anim graph instance"))
                             ->Attribute(AZ_CRC_CE("MotionSetAsset"), &EditorAnimGraphComponent::GetMotionAsset)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_visualize, "Debug visualization", "Enable this to allow the anim graph to render debug visualization. Enable debug rendering on anim graph nodes first.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_visualize, QT_TRANSLATE_NOOP("EMotionFX", "Debug visualization"), QT_TRANSLATE_NOOP("EMotionFX", "Enable this to allow the anim graph to render debug visualization. Enable debug rendering on anim graph nodes first."))
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_animGraphAsset,
-                            "Anim graph", "EMotion FX anim graph to be assigned to this actor.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Anim graph"), QT_TRANSLATE_NOOP("EMotionFX", "EMotion FX anim graph to be assigned to this actor."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAnimGraphComponent::OnAnimGraphAssetSelected)
                             ->Attribute("EditButton", "")
-                            ->Attribute("EditDescription", "Open in Animation Editor")
+                            ->Attribute("EditDescription", QT_TRANSLATE_NOOP("EMotionFX", "Open in Animation Editor"))
                             ->Attribute("EditCallback", &EditorAnimGraphComponent::LaunchAnimationEditor)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_parameterDefaults,
-                            "Parameters", "Anim graph default parameter values.")
+                            QT_TRANSLATE_NOOP("EMotionFX", "Parameters"), QT_TRANSLATE_NOOP("EMotionFX", "Anim graph default parameter values."))
                         ;
                 }
             }

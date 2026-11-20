@@ -300,4 +300,3 @@ namespace AzQtComponents
 
 }
 
-#include "Components/moc_VectorEdit.cpp"

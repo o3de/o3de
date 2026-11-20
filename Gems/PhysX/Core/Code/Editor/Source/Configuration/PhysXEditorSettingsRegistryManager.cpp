@@ -127,7 +127,8 @@ namespace PhysX
 
         // Save PhysX System Configuration Settings Registry file
         rapidjson::Document physXConfigurationDocument;
-        rapidjson::Value& physXConfigurationValue = rapidjson::CreateValueByPointer(physXConfigurationDocument, rapidjson::Pointer(m_settingsRegistryPath.c_str()));
+        AZ_Assert(m_settingsRegistryPath.size() > 0, "m_settingsRegistryPath not initialized.");
+        rapidjson::Value& physXConfigurationValue = rapidjson::CreateValueByPointer(physXConfigurationDocument, rapidjson::Pointer(m_settingsRegistryPath.begin()->c_str()));
         AZ::JsonSerialization::Store(physXConfigurationValue, physXConfigurationDocument.GetAllocator(), config);
 
         auto postSaveCallback = [config, saveCallback](bool result)
@@ -174,7 +175,9 @@ namespace PhysX
 
         // Save PhysX System Configuration Settings Registry file
         rapidjson::Document configDoc;
-        rapidjson::Value& configValue = rapidjson::CreateValueByPointer(configDoc, rapidjson::Pointer(m_defaultSceneConfigSettingsRegistryPath.c_str()));
+        AZ_Assert(m_defaultSceneConfigSettingsRegistryPath.size() > 0, "m_defaultSceneConfigSettingsRegistryPath not initialized.");
+        rapidjson::Value& configValue =
+            rapidjson::CreateValueByPointer(configDoc, rapidjson::Pointer(m_defaultSceneConfigSettingsRegistryPath.begin()->c_str()));
         AZ::JsonSerialization::Store(configValue, configDoc.GetAllocator(), config);
 
         auto postSaveCallback = [config, saveCallback](bool result)
@@ -227,7 +230,8 @@ namespace PhysX
 
         // Save PhysX debug Configuration Settings Registry file
         rapidjson::Document debugConfigurationDocument;
-        rapidjson::Value& debugConfigurationValue = rapidjson::CreateValueByPointer(debugConfigurationDocument, rapidjson::Pointer(m_debugSettingsRegistryPath.c_str()));
+        AZ_Assert(m_debugSettingsRegistryPath.size() > 0, "m_debugSettingsRegistryPath not initialized.");
+        rapidjson::Value& debugConfigurationValue = rapidjson::CreateValueByPointer(debugConfigurationDocument, rapidjson::Pointer(m_debugSettingsRegistryPath.begin()->c_str()));
         AZ::JsonSerialization::Store(debugConfigurationValue, debugConfigurationDocument.GetAllocator(), config);
 
         auto postSaveCallback = [config, saveCallback](bool result)

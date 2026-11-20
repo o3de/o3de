@@ -53,7 +53,7 @@ namespace AzQtComponents
     void StyledLineEdit::validateEntry()
     {
         QString textToValidate = text();
-        int length = textToValidate.length();
+        int length = static_cast<int>(textToValidate.length());
 
         if (!validator())
         {
@@ -76,5 +76,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_StyledLineEdit.cpp"

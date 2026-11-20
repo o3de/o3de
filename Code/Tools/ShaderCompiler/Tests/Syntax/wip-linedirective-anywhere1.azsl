@@ -1,0 +1,9 @@
+
+float Pow10(float f
+#line 40
+)
+{
+    return pow(10.0f, f);
+    #line 40
+}
+

@@ -6,14 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : interface for the CViewManager class.
 
-
-#ifndef CRYINCLUDE_EDITOR_VIEWMANAGER_H
-#define CRYINCLUDE_EDITOR_VIEWMANAGER_H
-
-#pragma once
 
 #include <AzCore/Math/Aabb.h>
 #include "Viewport.h"
@@ -137,5 +133,3 @@ private:
 
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 };
-
-#endif // CRYINCLUDE_EDITOR_VIEWMANAGER_H

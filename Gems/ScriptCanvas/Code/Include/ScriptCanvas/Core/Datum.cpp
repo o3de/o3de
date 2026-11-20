@@ -1824,7 +1824,7 @@ namespace ScriptCanvas
             }
             else
             {
-                (*this) = AZStd::move(Datum());
+                (*this) = Datum();
                 m_isDefaultConstructed = true;
             }
         }

@@ -9,6 +9,7 @@
 #include <Vegetation/AreaComponentBase.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <AzCore/Debug/Profiler.h>
@@ -76,13 +77,13 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<AreaConfig>(
-                    "Vegetation Area", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Area"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AreaConfig::m_layer, "Layer Priority", "Defines a high level order vegetation areas are applied")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AreaConfig::m_layer, QT_TRANSLATE_NOOP("Vegetation", "Layer Priority"), QT_TRANSLATE_NOOP("Vegetation", "Defines a high level order vegetation areas are applied"))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaConfig::GetSelectableLayers)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &AreaConfig::m_priority, "Sub Priority", "Defines order vegetation areas are applied within a layer.  Larger numbers = higher priority")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &AreaConfig::m_priority, QT_TRANSLATE_NOOP("Vegetation", "Sub Priority"), QT_TRANSLATE_NOOP("Vegetation", "Defines order vegetation areas are applied within a layer.  Larger numbers = higher priority"))
                     ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                     ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
                     ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)

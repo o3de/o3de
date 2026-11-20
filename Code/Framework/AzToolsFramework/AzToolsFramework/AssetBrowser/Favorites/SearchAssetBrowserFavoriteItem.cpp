@@ -8,6 +8,7 @@
 
 #include "AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h"
 #include "AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h"
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesSettings.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 
 namespace AzToolsFramework
@@ -103,52 +104,47 @@ namespace AzToolsFramework
             searchWidget->SetFilterString(m_searchTerm);
         }
 
-        void SearchAssetBrowserFavoriteItem::LoadSettings(QSettings& settings)
+        void SearchAssetBrowserFavoriteItem::LoadFromRecord(const FavoriteRecord& record)
         {
-            m_name = settings.value("name").toString();
-            m_searchTerm = settings.value("searchTerm").toString();
-            m_unusableProductsFilterActive = settings.value("unusableProductsFilterActive").toBool();
-            m_engineFilterActive = settings.value("projectSourceFilterActive").toBool();
-            m_folderFilterActive = settings.value("folderFilterActive").toBool();
-
-            int filterCount = settings.beginReadArray("typeFilters");
+            m_name = QString::fromUtf8(record.m_name.c_str());
+            m_searchTerm = QString::fromUtf8(record.m_searchTerm.c_str());
+            m_unusableProductsFilterActive = record.m_unusableProductsFilterActive;
+            m_engineFilterActive = record.m_engineFilterActive;
+            m_folderFilterActive = record.m_folderFilterActive;
 
             qDeleteAll(m_typeFilters.begin(), m_typeFilters.end());
             m_typeFilters.clear();
-            m_typeFilters.reserve(filterCount);
+            m_typeFilters.reserve(static_cast<int>(record.m_typeFilters.size()));
 
-            for (int index = 0; index < filterCount; index++)
+            for (const FavoriteSearchTypeFilterRecord& filterRecord : record.m_typeFilters)
             {
                 SavedTypeFilter* typeFilter = aznew SavedTypeFilter();
-                
-                typeFilter->categoryKey = settings.value("categoryKey").toString();
-                typeFilter->displayName = settings.value("displayName").toString();
-                typeFilter->enabled = settings.value("enabled").toBool();
-
+                typeFilter->categoryKey = QString::fromUtf8(filterRecord.m_categoryKey.c_str());
+                typeFilter->displayName = QString::fromUtf8(filterRecord.m_displayName.c_str());
+                typeFilter->enabled = filterRecord.m_enabled;
                 m_typeFilters.append(typeFilter);
             }
-
-            settings.endArray();
         }
 
-        void SearchAssetBrowserFavoriteItem::SaveSettings(QSettings& settings)
+        void SearchAssetBrowserFavoriteItem::SaveToRecord(FavoriteRecord& record) const
         {
-            settings.setValue("name", m_name);
-            settings.setValue("searchTerm", m_searchTerm);
-            settings.setValue("unusableProductsFilterActive", m_unusableProductsFilterActive);
-            settings.setValue("projectSourceFilterActive", m_engineFilterActive);
-            settings.setValue("folderFilterActive", m_folderFilterActive);
+            record.m_isSearch = true;
+            record.m_name = m_name.toUtf8().constData();
+            record.m_searchTerm = m_searchTerm.toUtf8().constData();
+            record.m_unusableProductsFilterActive = m_unusableProductsFilterActive;
+            record.m_engineFilterActive = m_engineFilterActive;
+            record.m_folderFilterActive = m_folderFilterActive;
 
-            settings.beginWriteArray("typeFilters", m_typeFilters.size());
+            record.m_typeFilters.clear();
+            record.m_typeFilters.reserve(m_typeFilters.size());
 
-            for (auto typeFilter : m_typeFilters)
+            for (const SavedTypeFilter* typeFilter : m_typeFilters)
             {
-                settings.setValue("categoryKey", typeFilter->categoryKey);
-                settings.setValue("displayName", typeFilter->displayName);
-                settings.setValue("enabled", typeFilter->enabled);
+                FavoriteSearchTypeFilterRecord& filterRecord = record.m_typeFilters.emplace_back();
+                filterRecord.m_categoryKey = typeFilter->categoryKey.toUtf8().constData();
+                filterRecord.m_displayName = typeFilter->displayName.toUtf8().constData();
+                filterRecord.m_enabled = typeFilter->enabled;
             }
-
-            settings.endArray();
         }
 
         QString SearchAssetBrowserFavoriteItem::GetDefaultName()

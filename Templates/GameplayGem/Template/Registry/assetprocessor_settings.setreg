@@ -1,0 +1,13 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder ${Name}": {
+                    "watch": "@GEMROOT:${Name}@/Assets",
+                    "recursive": true,
+                    "order": 100
+                }
+            }
+        }
+    }
+}

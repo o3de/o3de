@@ -16,6 +16,7 @@
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 #if defined(IMGUI_ENABLED)
 #include <imgui/imgui.h>
@@ -72,7 +73,9 @@ namespace Streamer
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<StreamerProfilerSystemComponent>("Streamer Profiler", "Provides profiling visualization for AZ::IO::Streamer.")
+                ec->Class<StreamerProfilerSystemComponent>(
+                    QT_TRANSLATE_NOOP("Streamer", "Streamer Profiler"),
+                    QT_TRANSLATE_NOOP("Streamer", "Provides profiling visualization for AZ::IO::Streamer."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

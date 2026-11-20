@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/containers/array.h>
@@ -20,7 +21,6 @@
 #include <AzCore/std/typetraits/internal/type_sequence_traits.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/typetraits/type_identity.h>
-
 
 namespace AZStd
 {
@@ -104,7 +104,7 @@ namespace AZStd
         template <typename T, typename... Types>
         struct find_exactly_one_variadic
         {
-            static constexpr bool matches[sizeof...(Types)] = { is_same<T, Types>::value... };
+            static constexpr bool matches[sizeof...(Types)] = { is_same_v<T, Types>... };
             static constexpr size_t value = find_index(0, matches);
             static_assert(value != not_found, "type not found in type list");
             static_assert(value != ambiguous, "type occurs more than once in type list");
@@ -137,24 +137,24 @@ namespace AZStd
         };
 
         template <typename... Types>
-        constexpr SpecialFunctionTraits destructor_traits = conjunction_v<is_trivially_destructible<Types>...>
-            ? SpecialFunctionTraits::TriviallyAvailable : (conjunction_v<is_destructible<Types>...> ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
+        constexpr SpecialFunctionTraits destructor_traits = (is_trivially_destructible_v<Types> && ...)
+            ? SpecialFunctionTraits::TriviallyAvailable : ((is_destructible_v<Types> && ...) ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
 
         template <typename... Types>
-        constexpr SpecialFunctionTraits move_constructor_traits = conjunction_v<is_trivially_move_constructible<Types>...>
-            ? SpecialFunctionTraits::TriviallyAvailable : (conjunction_v<is_move_constructible<Types>...> ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
+        constexpr SpecialFunctionTraits move_constructor_traits = (is_trivially_move_constructible_v<Types> && ...)
+            ? SpecialFunctionTraits::TriviallyAvailable : ((is_move_constructible_v<Types> && ...) ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
 
         template <typename... Types>
-        constexpr SpecialFunctionTraits copy_constructor_traits = conjunction_v<is_trivially_copy_constructible<Types>...>
-            ? SpecialFunctionTraits::TriviallyAvailable : (conjunction_v<is_copy_constructible<Types>...> ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
+        constexpr SpecialFunctionTraits copy_constructor_traits = (is_trivially_copy_constructible_v<Types> && ...)
+            ? SpecialFunctionTraits::TriviallyAvailable : ((is_copy_constructible_v<Types> && ...) ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
 
         template <typename... Types>
-        constexpr SpecialFunctionTraits move_assignable_traits = conjunction_v<is_trivially_move_assignable<Types>...>
-            ? SpecialFunctionTraits::TriviallyAvailable : (conjunction_v<is_move_assignable<Types>...> ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
+        constexpr SpecialFunctionTraits move_assignable_traits = (is_trivially_move_assignable_v<Types> && ...)
+            ? SpecialFunctionTraits::TriviallyAvailable : ((is_move_assignable_v<Types> && ...) ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
 
         template <typename... Types>
-        constexpr SpecialFunctionTraits copy_assignable_traits = conjunction_v<is_trivially_copy_assignable<Types>...>
-            ? SpecialFunctionTraits::TriviallyAvailable : (conjunction_v<is_copy_assignable<Types>...> ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
+        constexpr SpecialFunctionTraits copy_assignable_traits = (is_trivially_copy_assignable_v<Types> && ...)
+            ? SpecialFunctionTraits::TriviallyAvailable : ((is_copy_assignable_v<Types> && ...) ? SpecialFunctionTraits::Available : SpecialFunctionTraits::Unavailable);
 
         namespace get_alternative
         {
@@ -224,7 +224,7 @@ namespace AZStd
                 template <class DispatchFunc1, class... DispatchFuncs>
                 static constexpr void visitor_return_type_check()
                 {
-                    static_assert(conjunction<is_same<DispatchFunc1, DispatchFuncs>...>::value, "AZStd::visit requires the visitor to have a single return type.");
+                    static_assert((is_same_v<DispatchFunc1, DispatchFuncs> && ...), "AZStd::visit requires the visitor to have a single return type.");
                 }
 
                 template <class... DispatchFuncs>
@@ -285,7 +285,7 @@ namespace AZStd
                 template <class Visitor, class Variant1, class... Variants>
                 static constexpr auto make_dispatch_for_index()
                 {
-                    static_assert(conjunction<is_variant_size_equal<remove_cvref_t<Variant1>::size(), remove_cvref_t<Variants>>...>::value, "All Variants must contain the same number of union alternatives");
+                    static_assert((is_variant_size_equal<remove_cvref_t<Variant1>::size(), remove_cvref_t<Variants>>::value && ...), "All Variants must contain the same number of union alternatives");
                     return make_dispatch_for_index_impl<Visitor, Variant1, Variants...>(make_index_sequence<remove_cvref_t<Variant1>::size()>{});
                 }
 

@@ -8,15 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/Source/MorphSetup.h>
+
 #include <QListWidget>
 #include <QDialog>
-#endif
-
 
 
 namespace EMStudio

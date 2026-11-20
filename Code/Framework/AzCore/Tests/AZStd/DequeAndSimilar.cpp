@@ -36,7 +36,7 @@ namespace UnitTest
         : public LeakDetectionFixture
     {
     };
-    
+
     /**
      * Deque container test.
      */
@@ -662,7 +662,7 @@ namespace UnitTest
         using int_ringbuffer_type = AZStd::ring_buffer<int>;
         const int max = 42;
         int_ringbuffer_type rev_buffer(max);
-        
+
         for (int i = 0; i < max; ++i)
         {
             rev_buffer.push_back(i);
@@ -682,7 +682,7 @@ namespace UnitTest
         using TestPairType = AZStd::pair<int, int>;
         AZStd::stack<TestPairType> testStack;
         testStack.emplace();
-        testStack.emplace(1);
+        testStack.emplace(1, 0);
         testStack.emplace(2, 3);
 
         using ContainerType = typename AZStd::stack<TestPairType>::container_type;

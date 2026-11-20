@@ -38,7 +38,8 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorImageBasedLightComponent>(
-                        "Global Skylight (IBL)", "Adds image based illumination to the scene")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Global Skylight (IBL)"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Adds image based illumination to the scene"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -46,11 +47,17 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/atom/global-skylight-ibl/")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_diffuseImageAsset, "Diffuse Image", "Cubemap image asset for determining diffuse lighting")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_diffuseImageAsset,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Diffuse Image"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Cubemap image asset for determining diffuse lighting"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnDiffuseImageAssetChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_specularImageAsset, "Specular Image", "Cubemap image asset for determining specular lighting")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageBasedLightComponent::m_specularImageAsset,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular Image"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Cubemap image asset for determining specular lighting"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnSpecularImageAssetChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorImageBasedLightComponent::m_exposure, "Exposure", "Exposure in stops")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorImageBasedLightComponent::m_exposure,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure in stops"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageBasedLightComponent::OnExposureChanged)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
@@ -62,7 +69,8 @@ namespace AZ
                         "ImageBasedLightComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ImageBasedLightComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
                 }

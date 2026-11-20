@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 #include <QListView>
@@ -42,7 +41,6 @@
 
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
-#endif
 
 class QAction;
 class QLineEdit;

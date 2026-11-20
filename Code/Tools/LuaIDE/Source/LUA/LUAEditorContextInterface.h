@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef LUAEDITORCONTEXTINTERFACE_H
-#define LUAEDITORCONTEXTINTERFACE_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/string/string.h>
@@ -30,7 +29,7 @@ namespace LUAEditor
         AZStd::string m_assetName; // relative asset name
         AZStd::string m_displayName; // for friendly display only
 
-        FILETIME m_lastKnownModTime;
+        AZ::u64 m_lastKnownModTime;
         AzToolsFramework::SourceControlFileInfo m_sourceControlInfo;
 
         bool m_bSourceControl_Ready; // a result (or failure) came back from SCC.  Until this is true, you cannot write to it.
@@ -122,5 +121,3 @@ namespace LUAEditor
         virtual void ShowLUAEditorView() = 0;
     };
 }
-
-#endif

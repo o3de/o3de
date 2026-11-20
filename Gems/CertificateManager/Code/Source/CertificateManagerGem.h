@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef INCLUDE_CERTIFICATEMANAGERGEM_HEADER
-#define INCLUDE_CERTIFICATEMANAGERGEM_HEADER
+
+#pragma once
 
 #include <CertificateManager/ICertificateManagerGem.h>
 #include <CertificateManager/DataSource/FileDataSourceBus.h>
@@ -35,4 +35,3 @@ namespace CertificateManager
         FileDataSource* m_fileDataSource;
     };
 } // namespace CertificateManager
-#endif

@@ -12,6 +12,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "StartingPointCamera/StartingPointCameraConstants.h"
 #include "StartingPointCamera/StartingPointCameraUtilities.h"
 
@@ -36,26 +37,40 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<FollowTargetFromDistance>("FollowTargetFromDistance", "Follows behind the target by Follow Distance meters")
+                editContext->Class<FollowTargetFromDistance>(
+                    QT_TRANSLATE_NOOP("Camera", "FollowTargetFromDistance"),
+                    QT_TRANSLATE_NOOP("Camera", "Follows behind the target by Follow Distance meters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &FollowTargetFromDistance::m_followDistance, "Follow Distance", "The distance to follow behind the target in meters")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
+                    ->DataElement(0, &FollowTargetFromDistance::m_followDistance,
+                        QT_TRANSLATE_NOOP("Camera", "Follow Distance"),
+                        QT_TRANSLATE_NOOP("Camera", "The distance to follow behind the target in meters"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
                         ->Attribute(AZ::Edit::Attributes::Min, &FollowTargetFromDistance::GetMinimumFollowDistance)
                         ->Attribute(AZ::Edit::Attributes::Max, &FollowTargetFromDistance::GetMaximumFollowDistance)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
-                    ->DataElement(0, &FollowTargetFromDistance::m_minFollowDistance, "Minimum Follow Distance", "The MINIMUM distance to follow the behind the target in meters")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
+                    ->DataElement(0, &FollowTargetFromDistance::m_minFollowDistance,
+                        QT_TRANSLATE_NOOP("Camera", "Minimum Follow Distance"),
+                        QT_TRANSLATE_NOOP("Camera", "The MINIMUM distance to follow the behind the target in meters"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, &FollowTargetFromDistance::GetMaximumFollowDistance)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
-                    ->DataElement(0, &FollowTargetFromDistance::m_maxFollowDistance, "Maximum Follow Distance", "The MAXIMUM distance to follow the behind the target in meters")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
+                    ->DataElement(0, &FollowTargetFromDistance::m_maxFollowDistance,
+                        QT_TRANSLATE_NOOP("Camera", "Maximum Follow Distance"),
+                        QT_TRANSLATE_NOOP("Camera", "The MAXIMUM distance to follow the behind the target in meters"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
                         ->Attribute(AZ::Edit::Attributes::Min, &FollowTargetFromDistance::GetMinimumFollowDistance)
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
-                    ->DataElement(0, &FollowTargetFromDistance::m_zoomInEventName, "Zoom In Event Name", "The name of the event to trigger a zoom in")
-                    ->DataElement(0, &FollowTargetFromDistance::m_zoomOutEventName, "Zoom Out Event Name", "The name of the event to trigger a zoom out")
-                    ->DataElement(0, &FollowTargetFromDistance::m_zoomSpeedScale, "Zoom Speed Scale", "The amount to scale the incoming zoom event by");
+                    ->DataElement(0, &FollowTargetFromDistance::m_zoomInEventName,
+                        QT_TRANSLATE_NOOP("Camera", "Zoom In Event Name"),
+                        QT_TRANSLATE_NOOP("Camera", "The name of the event to trigger a zoom in"))
+                    ->DataElement(0, &FollowTargetFromDistance::m_zoomOutEventName,
+                        QT_TRANSLATE_NOOP("Camera", "Zoom Out Event Name"),
+                        QT_TRANSLATE_NOOP("Camera", "The name of the event to trigger a zoom out"))
+                    ->DataElement(0, &FollowTargetFromDistance::m_zoomSpeedScale,
+                        QT_TRANSLATE_NOOP("Camera", "Zoom Speed Scale"),
+                        QT_TRANSLATE_NOOP("Camera", "The amount to scale the incoming zoom event by"));
             }
         }
     }

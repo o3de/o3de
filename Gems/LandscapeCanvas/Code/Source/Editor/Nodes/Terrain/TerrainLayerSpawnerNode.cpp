@@ -38,7 +38,8 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<TerrainLayerSpawnerNode>("TerrainLayerSpawnerNode", "")->
+                editContext->Class<TerrainLayerSpawnerNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "TerrainLayerSpawnerNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "TerrainNodeTitlePalette")
                     ;

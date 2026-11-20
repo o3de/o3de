@@ -92,7 +92,7 @@ namespace AssetProcessor
         return false;
     }
 
-    uint qHash(const AssetProcessor::QueueElementID& key, uint seed)
+    size_t qHash(const AssetProcessor::QueueElementID& key, uint seed)
     {
         return qHash(QString(key.GetSourceAssetReference().AbsolutePath().c_str()).toLower() + key.GetPlatform().toLower() + key.GetJobDescriptor().toLower(), seed);
     }

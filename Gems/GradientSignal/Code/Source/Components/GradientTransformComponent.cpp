@@ -14,6 +14,7 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Util.h>
 
 namespace GradientSignal
@@ -44,26 +45,26 @@ namespace GradientSignal
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GradientTransformConfig>("Gradient Transform", "")
+                editContext->Class<GradientTransformConfig>(QT_TRANSLATE_NOOP("GradientSignal", "Gradient Transform"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientTransformConfig::m_transformType, "Transform Type", "Determines how shape transforms are interpreted")
-                    ->EnumAttribute(TransformType::World_Origin, "Origin")
-                    ->EnumAttribute(TransformType::World_ThisEntity, "World Transform")
-                    ->EnumAttribute(TransformType::Local_ThisEntity, "Relative to Parent")
-                    ->EnumAttribute(TransformType::World_ReferenceEntity, "World Transform (of Reference)")
-                    ->EnumAttribute(TransformType::Relative, "Relative to Reference")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientTransformConfig::m_transformType, QT_TRANSLATE_NOOP("GradientSignal", "Transform Type"), QT_TRANSLATE_NOOP("GradientSignal", "Determines how shape transforms are interpreted"))
+                    ->EnumAttribute(TransformType::World_Origin, QT_TRANSLATE_NOOP("GradientSignal", "Origin"))
+                    ->EnumAttribute(TransformType::World_ThisEntity, QT_TRANSLATE_NOOP("GradientSignal", "World Transform"))
+                    ->EnumAttribute(TransformType::Local_ThisEntity, QT_TRANSLATE_NOOP("GradientSignal", "Relative to Parent"))
+                    ->EnumAttribute(TransformType::World_ReferenceEntity, QT_TRANSLATE_NOOP("GradientSignal", "World Transform (of Reference)"))
+                    ->EnumAttribute(TransformType::Relative, QT_TRANSLATE_NOOP("GradientSignal", "Relative to Reference"))
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientTransformConfig::m_wrappingType, "Wrapping Type", "")
-                    ->EnumAttribute(WrappingType::None, "None (unbounded)")
-                    ->EnumAttribute(WrappingType::ClampToEdge, "Clamp To Edge")
-                    ->EnumAttribute(WrappingType::ClampToZero, "Clamp To Zero")
-                    ->EnumAttribute(WrappingType::Mirror, "Mirror")
-                    ->EnumAttribute(WrappingType::Repeat, "Repeat")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientTransformConfig::m_wrappingType, QT_TRANSLATE_NOOP("GradientSignal", "Wrapping Type"), "")
+                    ->EnumAttribute(WrappingType::None, QT_TRANSLATE_NOOP("GradientSignal", "None (unbounded)"))
+                    ->EnumAttribute(WrappingType::ClampToEdge, QT_TRANSLATE_NOOP("GradientSignal", "Clamp To Edge"))
+                    ->EnumAttribute(WrappingType::ClampToZero, QT_TRANSLATE_NOOP("GradientSignal", "Clamp To Zero"))
+                    ->EnumAttribute(WrappingType::Mirror, QT_TRANSLATE_NOOP("GradientSignal", "Mirror"))
+                    ->EnumAttribute(WrappingType::Repeat, QT_TRANSLATE_NOOP("GradientSignal", "Repeat"))
 
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientTransformConfig::m_frequencyZoom, "Frequency Zoom", "Rescales coordinates based on a multiplied factor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientTransformConfig::m_frequencyZoom, QT_TRANSLATE_NOOP("GradientSignal", "Frequency Zoom"), QT_TRANSLATE_NOOP("GradientSignal", "Rescales coordinates based on a multiplied factor"))
                     ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
@@ -71,41 +72,41 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
                     ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.25) // Give the frequency zoom a non-linear scale slider with higher precision at the low end
 
-                    ->GroupElementToggle("Advanced", &GradientTransformConfig::m_advancedMode)
+                    ->GroupElementToggle(QT_TRANSLATE_NOOP("GradientSignal", "Advanced"), &GradientTransformConfig::m_advancedMode)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
-                    ->DataElement(0, &GradientTransformConfig::m_allowReference, "Allow Reference", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity.")
+                    ->DataElement(0, &GradientTransformConfig::m_allowReference, QT_TRANSLATE_NOOP("GradientSignal", "Allow Reference"), QT_TRANSLATE_NOOP("GradientSignal", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientTransformConfig::m_shapeReference, "Shape Reference", "An optional shape reference that can be used to drive bounds and transform")
+                    ->DataElement(0, &GradientTransformConfig::m_shapeReference, QT_TRANSLATE_NOOP("GradientSignal", "Shape Reference"), QT_TRANSLATE_NOOP("GradientSignal", "An optional shape reference that can be used to drive bounds and transform"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsReferenceReadOnly)
                     
-                    ->DataElement(0, &GradientTransformConfig::m_overrideBounds, "Override Bounds", "Allow manual override of the associated parameter")
+                    ->DataElement(0, &GradientTransformConfig::m_overrideBounds, QT_TRANSLATE_NOOP("GradientSignal", "Override Bounds"), QT_TRANSLATE_NOOP("GradientSignal", "Allow manual override of the associated parameter"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientTransformConfig::m_bounds, "Bounds", "Local (untransformed) bounds of a box used to remap, clamp, wrap, scale incoming coordinates")
+                    ->DataElement(0, &GradientTransformConfig::m_bounds, QT_TRANSLATE_NOOP("GradientSignal", "Bounds"), QT_TRANSLATE_NOOP("GradientSignal", "Local (untransformed) bounds of a box used to remap, clamp, wrap, scale incoming coordinates"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
-                    ->DataElement(0, &GradientTransformConfig::m_center, "Center", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates")
+                    ->DataElement(0, &GradientTransformConfig::m_center, QT_TRANSLATE_NOOP("GradientSignal", "Center"), QT_TRANSLATE_NOOP("GradientSignal", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
 
-                    ->DataElement(0, &GradientTransformConfig::m_overrideTranslate, "Override Translate", "Allow manual override of the associated parameter")
+                    ->DataElement(0, &GradientTransformConfig::m_overrideTranslate, QT_TRANSLATE_NOOP("GradientSignal", "Override Translate"), QT_TRANSLATE_NOOP("GradientSignal", "Allow manual override of the associated parameter"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientTransformConfig::m_translate, "Translate", "")
+                    ->DataElement(0, &GradientTransformConfig::m_translate, QT_TRANSLATE_NOOP("GradientSignal", "Translate"), "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsTranslateReadOnly)
-                    ->DataElement(0, &GradientTransformConfig::m_overrideRotate, "Override Rotate", "Allow manual override of the associated parameter")
+                    ->DataElement(0, &GradientTransformConfig::m_overrideRotate, QT_TRANSLATE_NOOP("GradientSignal", "Override Rotate"), QT_TRANSLATE_NOOP("GradientSignal", "Allow manual override of the associated parameter"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientTransformConfig::m_rotate, "Rotate", "")
+                    ->DataElement(0, &GradientTransformConfig::m_rotate, QT_TRANSLATE_NOOP("GradientSignal", "Rotate"), "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsRotateReadOnly)
-                    ->DataElement(0, &GradientTransformConfig::m_overrideScale, "Override Scale", "Allow manual override of the associated parameter")
+                    ->DataElement(0, &GradientTransformConfig::m_overrideScale, QT_TRANSLATE_NOOP("GradientSignal", "Override Scale"), QT_TRANSLATE_NOOP("GradientSignal", "Allow manual override of the associated parameter"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(0, &GradientTransformConfig::m_scale, "Scale", "")
+                    ->DataElement(0, &GradientTransformConfig::m_scale, QT_TRANSLATE_NOOP("GradientSignal", "Scale"), "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsScaleReadOnly)
                     
-                    ->DataElement(0, &GradientTransformConfig::m_is3d, "Sample in 3D", "Check if the UVW should be mapped based on three dimensional world space")
+                    ->DataElement(0, &GradientTransformConfig::m_is3d, QT_TRANSLATE_NOOP("GradientSignal", "Sample in 3D"), QT_TRANSLATE_NOOP("GradientSignal", "Check if the UVW should be mapped based on three dimensional world space"))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ;
             }

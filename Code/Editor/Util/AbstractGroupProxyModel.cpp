@@ -52,13 +52,13 @@ int AbstractGroupProxyModel::rowCount(const QModelIndex& parent) const
     // invalid parent - root item is used
     if (!parent.isValid())
     {
-        return m_rootItem.subGroups.count() + m_rootItem.sourceIndexes.count();
+        return static_cast<int>(m_rootItem.subGroups.count() + m_rootItem.sourceIndexes.count());
     }
     // this is the group the parent is in.
     const GroupItem* group = reinterpret_cast<GroupItem*>(parent.internalPointer());
     if (parent.row() < group->subGroups.count())
     {
-        return group->subGroups[parent.row()]->subGroups.count() + group->subGroups[parent.row()]->sourceIndexes.count();
+        return static_cast<int>(group->subGroups[parent.row()]->subGroups.count()) + static_cast<int>(group->subGroups[parent.row()]->sourceIndexes.count());
     }
     return 0;
 }
@@ -105,7 +105,7 @@ QModelIndex AbstractGroupProxyModel::parent(const QModelIndex& index) const
     {
         return QModelIndex();
     }
-    const int row = parentGroup->subGroups.indexOf(group);
+    const int row = static_cast<int>(parentGroup->subGroups.indexOf(group));
     return createIndex(row, 0, const_cast<GroupItem*>(parentGroup));
 }
 
@@ -136,7 +136,7 @@ QModelIndex AbstractGroupProxyModel::mapToSource(const QModelIndex& proxyIndex) 
     {
         return QModelIndex();
     }
-    const int i = proxyIndex.row() - group->subGroups.count();
+    const int i = proxyIndex.row() - static_cast<int>(group->subGroups.count());
     if (i < 0)
     {
         return QModelIndex();
@@ -160,10 +160,10 @@ QModelIndex AbstractGroupProxyModel::mapFromSource(const QModelIndex& sourceInde
     if (group->groupSourceIndex == sourceIndex)
     {
         GroupItem* parentGroup = FindGroup(group);
-        return createIndex(parentGroup->subGroups.indexOf(group), sourceIndex.column(), parentGroup);
+        return createIndex(static_cast<int>(parentGroup->subGroups.indexOf(group)), sourceIndex.column(), parentGroup);
     }
-    return createIndex(group->subGroups.count() + group->sourceIndexes.indexOf(sourceIndex.sibling(sourceIndex.row(), 0)),
-        sourceIndex.column(), const_cast<GroupItem*>(group));
+    return createIndex(static_cast<int>(group->subGroups.count()) + static_cast<int>(group->sourceIndexes.indexOf(sourceIndex.sibling(sourceIndex.row(), 0))),
+                       static_cast<int>(sourceIndex.column()), const_cast<GroupItem*>(group));
 }
 
 AbstractGroupProxyModel::GroupItem* AbstractGroupProxyModel::FindIndex(const QModelIndex& index, GroupItem* group) const
@@ -264,7 +264,7 @@ void AbstractGroupProxyModel::RebuildTree()
 
 int AbstractGroupProxyModel::subGroupCount() const
 {
-    return m_rootItem.subGroups.count();
+    return static_cast<int>(m_rootItem.subGroups.count());
 }
 
 void AbstractGroupProxyModel::SourceRowsInserted(const QModelIndex& p, int from, int to)
@@ -284,7 +284,7 @@ void AbstractGroupProxyModel::SourceRowsInserted(const QModelIndex& p, int from,
         }
         else
         {
-            const int modelRow = group->subGroups.count() + group->sourceIndexes.count();
+            const int modelRow = static_cast<int>(group->subGroups.count()) + static_cast<int>(group->sourceIndexes.count());
             beginInsertRows(parent(createIndex(0, 0, group)), modelRow, modelRow);
             group->sourceIndexes.push_back(sourceIndex);
             endInsertRows();
@@ -310,7 +310,7 @@ void AbstractGroupProxyModel::SourceRowsAboutToBeRemoved(const QModelIndex& p, i
         }
         if (group->groupSourceIndex != sourceIndex)
         {
-            const int modelRow = group->subGroups.count() + group->sourceIndexes.indexOf(sourceIndex);
+            const int modelRow = static_cast<int>(group->subGroups.count()) + static_cast<int>(group->sourceIndexes.indexOf(sourceIndex));
             beginRemoveRows(parent(createIndex(0, 0, group)), modelRow, modelRow);
             group->sourceIndexes.remove(group->sourceIndexes.indexOf(sourceIndex));
             endRemoveRows();
@@ -366,7 +366,7 @@ AbstractGroupProxyModel::GroupItem* AbstractGroupProxyModel::CreateGroupIfNotExi
             GroupItem* newGroup = new GroupItem;
             newGroup->groupTitle = group.first();
             beginInsertRows(parent(createIndex(0, 0, currentGroup)),
-                currentGroup->subGroups.size(), currentGroup->subGroups.size());
+                            static_cast<int>(currentGroup->subGroups.size()), static_cast<int>(currentGroup->subGroups.size()));
             currentGroup->subGroups.push_back(newGroup);
             endInsertRows();
             currentGroup = currentGroup->subGroups[currentGroup->subGroups.size() - 1];
@@ -387,11 +387,9 @@ void AbstractGroupProxyModel::RemoveEmptyGroup(GroupItem* group)
         return;
     }
     GroupItem* parentGroup = const_cast<GroupItem*>(FindGroup(group));
-    const int row = parentGroup->subGroups.indexOf(group);
+    const int row = static_cast<int>(parentGroup->subGroups.indexOf(group));
     beginRemoveRows(parent(createIndex(0, 0, parentGroup)), row, row);
     delete parentGroup->subGroups.takeAt(row);
     endRemoveRows();
     RemoveEmptyGroup(parentGroup);
 }
-
-#include <Util/moc_AbstractGroupProxyModel.cpp>

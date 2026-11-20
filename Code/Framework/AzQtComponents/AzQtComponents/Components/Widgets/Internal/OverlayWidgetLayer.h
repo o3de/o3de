@@ -8,14 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/OverlayWidget.h> // needed for OverlayWidget::OverlayWidgetButton
 #include <QWidget>
 #include <QFrame>
 #include <QVector>
 #include <QScopedPointer>
-#endif
 
 class QPushButton;
 

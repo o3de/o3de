@@ -123,4 +123,3 @@ namespace PhysX
     } // namespace Editor
 } // namespace PhysX
 
-#include <Editor/moc_CollisionGroupWidget.cpp>

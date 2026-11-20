@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QScopedPointer>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <Editor/View/Widgets/ValidationPanel/GraphValidationDockWidgetBus.h>
-#endif
 
 namespace Ui
 {

@@ -88,4 +88,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_AssetFolderTableView.cpp"

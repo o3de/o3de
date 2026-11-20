@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_AFFINEPARTS_H
-#define CRYINCLUDE_EDITOR_UTIL_AFFINEPARTS_H
 #pragma once
-
 
 struct AffineParts
 {
@@ -29,5 +25,3 @@ struct AffineParts
     */
     void SpectralDecompose(const AZ::Matrix3x4& mat);
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_AFFINEPARTS_H

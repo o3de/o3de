@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/RTTI.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/Endian.h>
 #include <MCore/Source/CommandGroup.h>
 #include "EMStudioConfig.h"
-#endif
 
 
 namespace EMStudio

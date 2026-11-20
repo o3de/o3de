@@ -9,6 +9,7 @@
 #include "EditorDetourNavigationComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Components/DetourNavigationComponent.h>
 
 namespace RecastNavigation
@@ -25,16 +26,19 @@ namespace RecastNavigation
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
-                    "[Calculates paths within an associated navigation mesh.]")
+                editContext->Class<EditorDetourNavigationComponent>(
+                    QT_TRANSLATE_NOOP("RecastNavigation", "Detour Navigation Component"),
+                    QT_TRANSLATE_NOOP("RecastNavigation", "[Calculates paths within an associated navigation mesh.]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_navQueryEntityId,
-                        "Navigation Mesh", "Entity with Recast Navigation Mesh component")
+                        QT_TRANSLATE_NOOP("RecastNavigation", "Navigation Mesh"),
+                        QT_TRANSLATE_NOOP("RecastNavigation", "Entity with Recast Navigation Mesh component"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_nearestDistance,
-                        "Nearest Distance", "If FindPath APIs are given points that are outside the navigation mesh, then "
-                        "look for the nearest point on the navigation mesh within this distance from the specified positions.")
+                        QT_TRANSLATE_NOOP("RecastNavigation", "Nearest Distance"),
+                        QT_TRANSLATE_NOOP("RecastNavigation", "If FindPath APIs are given points that are outside the navigation mesh, then "
+                        "look for the nearest point on the navigation mesh within this distance from the specified positions."))
                     ;
             }
         }

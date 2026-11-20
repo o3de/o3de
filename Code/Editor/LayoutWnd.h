@@ -6,21 +6,16 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LAYOUTWND_H
-#define CRYINCLUDE_EDITOR_LAYOUTWND_H
-
 #pragma once
+
 // LayoutWnd.h : header file
 //
 
-#if !defined(Q_MOC_RUN)
 #include "Viewport.h"
 
 #include <QSplitter>
 #include <QPointer>
 #include <AzQtComponents/Components/ToolBarArea.h>
-#endif
 
 class CLayoutViewPane;
 class CViewport;
@@ -159,5 +154,3 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
-#endif // CRYINCLUDE_EDITOR_LAYOUTWND_H

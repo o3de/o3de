@@ -42,7 +42,7 @@ namespace AZ
         RPI::Ptr<FastDepthAwareBlurHorPass> FastDepthAwareBlurHorPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<FastDepthAwareBlurHorPass> pass = aznew FastDepthAwareBlurHorPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         FastDepthAwareBlurHorPass::FastDepthAwareBlurHorPass(const RPI::PassDescriptor& descriptor)
@@ -84,7 +84,7 @@ namespace AZ
         RPI::Ptr<FastDepthAwareBlurVerPass> FastDepthAwareBlurVerPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<FastDepthAwareBlurVerPass> pass = aznew FastDepthAwareBlurVerPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         FastDepthAwareBlurVerPass::FastDepthAwareBlurVerPass(const RPI::PassDescriptor& descriptor)

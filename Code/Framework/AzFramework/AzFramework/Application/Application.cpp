@@ -74,6 +74,7 @@
 #include <AzFramework/Visibility/VisibleGeometryBus.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/Math/EasingCurve.h>
 
 #include "Application.h"
 #include <AzNetworking/AzNetworkingModule.h>
@@ -347,6 +348,7 @@ namespace AzFramework
         AzFramework::PaintBrushSettings::Reflect(context);
         AzFramework::VisibleGeometry::Reflect(context);
         AzFramework::VisibleGeometryRequests::Reflect(context);
+        AzFramework::EasingCurve::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);

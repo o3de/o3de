@@ -35,7 +35,8 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<BaseGradientNode>("BaseGradientNode", "")->
+                editContext->Class<BaseGradientNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "BaseGradientNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "GradientNodeTitlePalette")
                     ;

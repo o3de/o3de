@@ -12,6 +12,10 @@ endif()
 
 set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
 
+# when compiling from source, use the 3rdParty/FindAssimp.cmake file
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+
 ly_add_target(
     NAME SDKWrapper STATIC
     NAMESPACE AZ

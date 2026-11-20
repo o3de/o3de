@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
@@ -20,14 +20,14 @@
         RPI::Ptr<HDRColorGradingPass> HDRColorGradingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<HDRColorGradingPass> pass = aznew HDRColorGradingPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         HDRColorGradingPass::HDRColorGradingPass(const RPI::PassDescriptor& descriptor)
             : AZ::RPI::FullscreenTrianglePass(descriptor)
         {
         }
-        
+
         void HDRColorGradingPass::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
@@ -67,7 +67,7 @@
             m_colorGradingPostSaturationIndex.Reset();
             m_colorGradingHueShiftIndex.Reset();
         }
-        
+
         void HDRColorGradingPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();

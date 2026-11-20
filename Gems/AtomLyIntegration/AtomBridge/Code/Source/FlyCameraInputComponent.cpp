@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "FlyCameraInputComponent.h"
 
 #include <ISystem.h>
@@ -23,11 +24,11 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
-#include <MathConversion.h>
-
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzFramework/Components/CameraBus.h>
+
+#include <AzFramework/Translation/TranslationDef.h>
 
 using namespace AzFramework;
 using namespace AZ::AtomBridge;
@@ -49,14 +50,21 @@ namespace
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void DrawThumbstick([[maybe_unused]] Vec2 initialPosition,
-        [[maybe_unused]] Vec2 currentPosition,
+    void DrawThumbstick([[maybe_unused]] AZ::Vector2 initialPosition,
+        [[maybe_unused]] AZ::Vector2 currentPosition,
         [[maybe_unused]] int textureId)
     {
         // [GFX TODO] Get Atom test fly cam virtual thumbsticks working on mobile
         // we do not have any 2D drawing capability like IDraw2d in Atom yet
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////
+constexpr static float Invert(const bool invert) //! return -1.0f if inverted, 1.0f otherwise
+{
+    constexpr float Dir[] = { 1.0f, -1.0f };
+    return Dir[aznumeric_cast<int>(invert)];
+};
 
 //////////////////////////////////////////////////////////////////////////////
 const AZ::Crc32 FlyCameraInputComponent::UnknownInputChannelId("unknown_input_channel_id");
@@ -97,7 +105,7 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            editContext->Class<FlyCameraInputComponent>("Fly Camera Input", "The Fly Camera Input allows you to control the camera")
+            editContext->Class<FlyCameraInputComponent>(QT_TRANSLATE_NOOP("AtomBridge", "Fly Camera Input"), QT_TRANSLATE_NOOP("AtomBridge", "The Fly Camera Input allows you to control the camera"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute("Category", "Gameplay")
                 ->Attribute("Icon", "Editor/Icons/Components/FlyCameraInput.svg")
@@ -105,24 +113,24 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/fly-camera-input/")
                 ->Attribute("AutoExpand", true)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC_CE("Game"))
-                ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, "Move Speed", "Speed at which the camera moves")
+                ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Move Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera moves"))
                 ->Attribute("Min", 1.0f)
                 ->Attribute("Max", 100.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_rotationSpeed, "Rotation Speed", "Speed at which the camera rotates")
+                ->DataElement(0, &FlyCameraInputComponent::m_rotationSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Rotation Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera rotates"))
                 ->Attribute("Min", 1.0f)
                 ->Attribute("Max", 100.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_mouseSensitivity, "Mouse Sensitivity", "Mouse sensitivity factor")
+                ->DataElement(0, &FlyCameraInputComponent::m_mouseSensitivity, QT_TRANSLATE_NOOP("AtomBridge", "Mouse Sensitivity"), QT_TRANSLATE_NOOP("AtomBridge", "Mouse sensitivity factor"))
                 ->Attribute("Min", 0.0f)
                 ->Attribute("Max", 1.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisX, "Invert Rotation Input X", "Invert rotation input x-axis")
+                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisX, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input X"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input x-axis"))
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisY, "Invert Rotation Input Y", "Invert rotation input y-axis")
+                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisY, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input Y"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input y-axis"))
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &FlyCameraInputComponent::m_isEnabled,
-                    "Is Initially Enabled", "When checked, the fly cam input is enabled on activate, else it has to be specifically enabled.");
+                    QT_TRANSLATE_NOOP("AtomBridge", "Is Initially Enabled"), QT_TRANSLATE_NOOP("AtomBridge", "When checked, the fly cam input is enabled on activate, else it has to be specifically enabled."));
         }
     }
 
@@ -180,17 +188,18 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     const AZ::Vector3 forward = worldTransform.GetBasisY();
     const AZ::Vector3 up = worldTransform.GetBasisZ();
 
-    const AZ::Vector3 movement = (forward * m_movement.y) + (right * m_movement.x) + (up * m_movement.z);
+    const AZ::Vector3 movement = (forward * m_movement.GetY()) + (right * m_movement.GetX()) + (up * m_movement.GetZ());
     const AZ::Vector3 newPosition = worldTransform.GetTranslation() + (movement * moveSpeed);
     worldTransform.SetTranslation(newPosition);
-
-    const Vec2 invertedRotation(m_InvertRotationInputAxisX ? m_rotation.x : -m_rotation.x,
-        m_InvertRotationInputAxisY ? m_rotation.y : -m_rotation.y);
-
-    // Update rotation (not sure how to do this properly using just AZ::Quaternion)
-    const Vector3 rotation = worldTransform.GetRotation().GetEulerDegreesZYX();
-    const Vector3 newRotation = rotation + Vector3(invertedRotation.y, 0.f, invertedRotation.x) * m_rotationSpeed;
-    worldTransform.SetRotation(Quaternion::CreateFromEulerDegreesZYX(newRotation));
+            
+    const float deltaPitch = m_rotation.GetY() * -Invert(m_InvertRotationInputAxisY);
+    const float deltaYaw = m_rotation.GetX() * -Invert(m_InvertRotationInputAxisX);
+    
+    m_rotation = AZ::Vector2::CreateZero();
+    
+    const AZ::Vector3 currentRotation = worldTransform.GetRotation().GetEulerDegreesZYX();
+    const AZ::Vector3 newRotaion = currentRotation + AZ::Vector3(deltaPitch, 0.0f, deltaYaw) * m_rotationSpeed;
+    worldTransform.SetRotation(Quaternion::CreateFromEulerDegreesZYX(newRotaion));
 
     AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, worldTransform);
 }
@@ -219,8 +228,9 @@ bool FlyCameraInputComponent::OnInputChannelEventFiltered(const InputChannel& in
         {
             float defaultViewWidth = GetViewWidth();
             float defaultViewHeight = GetViewHeight();
-            const Vec2 screenPosition(positionData2D->m_normalizedPosition.GetX() * defaultViewWidth,
-                                      positionData2D->m_normalizedPosition.GetY() * defaultViewHeight);
+            
+            const AZ::Vector2 screenPosition(positionData2D->m_normalizedPosition.GetX() * defaultViewWidth,
+                                             positionData2D->m_normalizedPosition.GetY() * defaultViewHeight);
             OnTouchEvent(inputChannel, screenPosition);
         }
     }
@@ -245,15 +255,15 @@ bool FlyCameraInputComponent::GetIsEnabled()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-float Snap_s360(float val)
+float Clamp360Deg(float val)
 {
     if (val < 0.0f)
     {
-        val = f32(360.0f + fmodf(val, 360.0f));
+        val =  aznumeric_cast<float>(360.0f + AZStd::fmod(val, 360.0f));
     }
     else if (val >= 360.0f)
     {
-        val = f32(fmodf(val, 360.0f));
+        val =  aznumeric_cast<float>(AZStd::fmod(val, 360.0f));
     }
     return val;
 }
@@ -264,11 +274,15 @@ void FlyCameraInputComponent::OnMouseEvent(const InputChannel& inputChannel)
     const InputChannelId& channelId = inputChannel.GetInputChannelId();
     if (channelId == InputDeviceMouse::Movement::X)
     {
-        m_rotation.x = Snap_s360(inputChannel.GetValue() * m_mouseSensitivity);
+        m_rotation.SetX(
+            Clamp360Deg(m_rotation.GetX() + inputChannel.GetValue() * m_mouseSensitivity)
+        );
     }
     else if (channelId == InputDeviceMouse::Movement::Y)
     {
-        m_rotation.y = Snap_s360(inputChannel.GetValue() * m_mouseSensitivity);
+        m_rotation.SetY(
+            Clamp360Deg(m_rotation.GetY() + inputChannel.GetValue() * m_mouseSensitivity)
+        );
     }
 }
 
@@ -283,32 +297,32 @@ void FlyCameraInputComponent::OnKeyboardEvent(const InputChannel& inputChannel)
     const InputChannelId& channelId = inputChannel.GetInputChannelId();
     if (channelId == InputDeviceKeyboard::Key::AlphanumericW)
     {
-        m_movement.y = inputChannel.GetValue();
+        m_movement.SetY(inputChannel.GetValue());
     }
     
     if (channelId == InputDeviceKeyboard::Key::AlphanumericA)
     {
-        m_movement.x = -inputChannel.GetValue();
+        m_movement.SetX(-inputChannel.GetValue());
     }
     
     if (channelId == InputDeviceKeyboard::Key::AlphanumericS)
     {
-        m_movement.y = -inputChannel.GetValue();
+        m_movement.SetY(-inputChannel.GetValue());
     }
     
     if (channelId == InputDeviceKeyboard::Key::AlphanumericD)
     {
-        m_movement.x = inputChannel.GetValue();
+        m_movement.SetX(inputChannel.GetValue());
     }
 
     if(channelId == InputDeviceKeyboard::Key::AlphanumericE)
     {
-        m_movement.z = inputChannel.GetValue();
+        m_movement.SetZ(inputChannel.GetValue());
     }
 
     if(channelId == InputDeviceKeyboard::Key::AlphanumericQ)
     {
-        m_movement.z = -inputChannel.GetValue();
+        m_movement.SetZ(-inputChannel.GetValue());
     }
 }
 
@@ -318,42 +332,42 @@ void FlyCameraInputComponent::OnGamepadEvent(const InputChannel& inputChannel)
     const InputChannelId& channelId = inputChannel.GetInputChannelId();
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::LX)
     {
-        m_movement.x = inputChannel.GetValue();
+        m_movement.SetX(inputChannel.GetValue());
     }
     
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::LY)
     {
-        m_movement.y = inputChannel.GetValue();
+        m_movement.SetY(inputChannel.GetValue());
     }
 
     if (channelId == InputDeviceGamepad::Trigger::L2)
     {
-        m_movement.z = -inputChannel.GetValue();
+        m_movement.SetZ(-inputChannel.GetValue());
     }
 
     if (channelId == InputDeviceGamepad::Trigger::R2)
     {
-        m_movement.z = inputChannel.GetValue();
+        m_movement.SetZ(inputChannel.GetValue());
     }
 
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::RX)
     {
-        m_rotation.x = inputChannel.GetValue();
+        m_rotation.SetX(inputChannel.GetValue());
     }
     
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::RY)
     {
-        m_rotation.y = inputChannel.GetValue();
+        m_rotation.SetY(inputChannel.GetValue());
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void FlyCameraInputComponent::OnTouchEvent(const InputChannel& inputChannel, const Vec2& screenPosition)
+void FlyCameraInputComponent::OnTouchEvent(const InputChannel& inputChannel, const AZ::Vector2& screenPosition)
 {
     if (inputChannel.IsStateBegan())
     {
         const float screenCentreX = GetViewWidth() * 0.5f;
-        if (screenPosition.x <= screenCentreX)
+        if (screenPosition.GetX() <= screenCentreX)
         {
             if (m_leftFingerId == UnknownInputChannelId)
             {
@@ -387,7 +401,7 @@ void FlyCameraInputComponent::OnTouchEvent(const InputChannel& inputChannel, con
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void FlyCameraInputComponent::OnVirtualLeftThumbstickEvent(const InputChannel& inputChannel, const Vec2& screenPosition)
+void FlyCameraInputComponent::OnVirtualLeftThumbstickEvent(const InputChannel& inputChannel, const AZ::Vector2& screenPosition)
 {
     if (inputChannel.GetInputChannelId().GetNameCrc32() != m_leftFingerId)
     {
@@ -400,7 +414,7 @@ void FlyCameraInputComponent::OnVirtualLeftThumbstickEvent(const InputChannel& i
         {
             // Stop movement
             m_leftFingerId = UnknownInputChannelId;
-            m_movement = ZERO;
+            m_movement = AZ::Vector3::CreateZero();
         }
         break;
 
@@ -410,11 +424,11 @@ void FlyCameraInputComponent::OnVirtualLeftThumbstickEvent(const InputChannel& i
             const float discRadius = GetViewWidth() * m_virtualThumbstickRadiusAsPercentageOfScreenWidth;
             const float distScalar = 1.0f / discRadius;
 
-            Vec2 dist = screenPosition - m_leftDownPosition;
+            AZ::Vector2 dist = screenPosition - m_leftDownPosition;
             dist *= distScalar;
 
-            m_movement.x = AZ::GetClamp(dist.x, -1.0f, 1.0f);
-            m_movement.y = AZ::GetClamp(-dist.y, -1.0f, 1.0f);
+            m_movement.SetX(AZ::GetClamp(dist.GetX(), -1.0f, 1.0f));
+            m_movement.SetY(AZ::GetClamp(-dist.GetY(), -1.0f, 1.0f));
 
             DrawThumbstick(m_leftDownPosition, screenPosition, m_thumbstickTextureId);
         }
@@ -423,7 +437,7 @@ void FlyCameraInputComponent::OnVirtualLeftThumbstickEvent(const InputChannel& i
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void FlyCameraInputComponent::OnVirtualRightThumbstickEvent(const InputChannel& inputChannel, const Vec2& screenPosition)
+void FlyCameraInputComponent::OnVirtualRightThumbstickEvent(const InputChannel& inputChannel, const AZ::Vector2& screenPosition)
 {
     if (inputChannel.GetInputChannelId().GetNameCrc32() != m_rightFingerId)
     {
@@ -436,7 +450,7 @@ void FlyCameraInputComponent::OnVirtualRightThumbstickEvent(const InputChannel& 
         {
             // Stop rotation
             m_rightFingerId = UnknownInputChannelId;
-            m_rotation = ZERO;
+            m_rotation = AZ::Vector2::CreateZero();
         }
         break;
 
@@ -446,11 +460,11 @@ void FlyCameraInputComponent::OnVirtualRightThumbstickEvent(const InputChannel& 
             const float discRadius = GetViewWidth() * m_virtualThumbstickRadiusAsPercentageOfScreenWidth;
             const float distScalar = 1.0f / discRadius;
 
-            Vec2 dist = screenPosition - m_rightDownPosition;
+            AZ::Vector2 dist = screenPosition - m_rightDownPosition;
             dist *= distScalar;
 
-            m_rotation.x = AZ::GetClamp(dist.x, -1.0f, 1.0f);
-            m_rotation.y = AZ::GetClamp(dist.y, -1.0f, 1.0f);
+            m_rotation.SetX(AZ::GetClamp(dist.GetX(), -1.0f, 1.0f));
+            m_rotation.SetY(AZ::GetClamp(dist.GetY(), -1.0f, 1.0f));
 
             DrawThumbstick(m_rightDownPosition, screenPosition, m_thumbstickTextureId);
         }
@@ -473,4 +487,3 @@ float FlyCameraInputComponent::GetViewHeight() const
     Camera::CameraRequestBus::EventResult(viewHeight, GetEntityId(), &Camera::CameraRequestBus::Events::GetFrustumHeight);
     return viewHeight;
 }
-

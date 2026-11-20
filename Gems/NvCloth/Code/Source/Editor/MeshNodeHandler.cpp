@@ -124,4 +124,3 @@ namespace NvCloth
     } // namespace Editor
 } // namespace NvCloth
 
-#include <Source/Editor/moc_MeshNodeHandler.cpp>

@@ -20,13 +20,13 @@ namespace AZ
         RPI::Ptr<DepthUpsamplePass> DepthUpsamplePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DepthUpsamplePass> pass = aznew DepthUpsamplePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         DepthUpsamplePass::DepthUpsamplePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         { }
-        
+
         void DepthUpsamplePass::FrameBeginInternal(FramePrepareParams params)
         {
             // Must match the struct in DepthUpsample.azsl
@@ -75,7 +75,7 @@ namespace AZ
             SetTargetThreadCounts(targetThreadCountX, targetThreadCountY, 1);
 
             m_shaderResourceGroup->SetConstant(m_constantsIndex, upsampleConstants);
-        
+
             RPI::ComputePass::FrameBeginInternal(params);
         }
 

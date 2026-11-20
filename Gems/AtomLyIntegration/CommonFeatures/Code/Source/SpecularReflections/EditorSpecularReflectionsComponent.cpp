@@ -8,6 +8,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <SpecularReflections/EditorSpecularReflectionsComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorSpecularReflectionsComponent>(
-                        "Specular Reflections", "Specular Reflections configuration")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular Reflections"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular Reflections configuration"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -39,23 +40,23 @@ namespace AZ
                         "SpecularReflectionsComponentControl", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
 
-                    editContext->Class<SpecularReflectionsComponentSSRConfig>("Screen Space Reflections (SSR)", "Screen Space Reflections (SSR) Configuration")
+                    editContext->Class<SpecularReflectionsComponentSSRConfig>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Screen Space Reflections (SSR)"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Screen Space Reflections (SSR) Configuration"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentSSRConfig::m_options, "SSR Options", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentSSRConfig::m_options, QT_TRANSLATE_NOOP("AtomLyIntegration", "SSR Options"), "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
 
-                    editContext->Class<SpecularReflectionsComponentConfig>("Specular Reflections Component", "Configures specular reflection options for the level")
+                    editContext->Class<SpecularReflectionsComponentConfig>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular Reflections Component"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Configures specular reflection options for the level"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentConfig::m_ssr, "SSR configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SpecularReflectionsComponentConfig::m_ssr, QT_TRANSLATE_NOOP("AtomLyIntegration", "SSR configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
 

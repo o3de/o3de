@@ -11,6 +11,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -25,7 +27,9 @@ namespace AzToolsFramework
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorLockComponent>("Lock", "Edit-time entity lock state")
+                    editContext->Class<EditorLockComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Lock"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Edit-time entity lock state"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)

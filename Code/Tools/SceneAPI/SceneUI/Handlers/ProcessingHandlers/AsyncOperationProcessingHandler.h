@@ -8,13 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+
 #include <QThread>
-#endif
 
 namespace AZStd
 {

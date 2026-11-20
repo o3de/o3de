@@ -29,6 +29,8 @@
 #include <CryCommon/ISystem.h>
 #include <CryCommon/IConsole.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ::Render
 {
     AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
@@ -61,7 +63,7 @@ namespace AZ::Render
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AtomViewportDisplayInfoSystemComponent>("Viewport Display Info", "Manages debug viewport information through r_displayInfo")
+                ec->Class<AtomViewportDisplayInfoSystemComponent>(QT_TRANSLATE_NOOP("AtomViewportDisplayInfo", "Viewport Display Info"), QT_TRANSLATE_NOOP("AtomViewportDisplayInfo", "Manages debug viewport information through r_displayInfo"))
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;

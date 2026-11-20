@@ -21,8 +21,8 @@ from DccScriptingInterface.azpy import general_utils
 # maya imports
 import maya.cmds as mc
 from maya import OpenMayaUI as omui
-from shiboken2 import wrapInstance
-from PySide2 import QtWidgets, QtCore, QtGui
+from shiboken6 import wrapInstance
+from PySide6 import QtWidgets, QtCore, QtGui
 # -------------------------------------------------------------------------
 
 

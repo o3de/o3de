@@ -80,14 +80,14 @@ namespace EMotionFX
         // Modify the actor to have numLODs LOD levels.
         Actor* actor = actorAsset->GetActor();
         Mesh* lodMesh = actor->GetMesh(0, 0);
-        
+
         for (int i = 1; i < numLODs; ++i)
         {
             actor->InsertLODLevel(i);
             actor->SetMesh(i, 0, lodMesh->Clone());
         }
 
-        return AZStd::move(actorAsset);
+        return actorAsset;
     }
 
     class LODPropertyRowWidget

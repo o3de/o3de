@@ -1,0 +1,120 @@
+{
+    "template_name": "DataAsset",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Data Asset Template",
+    "summary": "A template to create and register a Custom Data Asset.",
+    "canonical_tags": [
+        "Template"
+    ],
+    "user_tags": [
+        "DataAsset"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Source/${GemName}DataAssetSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${GemName}DataAssetSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${Name}Asset.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Source/${Name}Asset.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Include/${GemName}/${Name}Interface.h",
+            "isTemplated": true,
+            "isInterface": true,
+            "cleanup_hint": "interface",
+            "condition": "add_bus_interface"
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Include/${GemName}"
+        },
+        {
+            "dir": "Source"
+        }
+    ],
+    "class_wizard": {
+        "display_name": "Data Asset",
+        "class_name": "data_asset",
+        "description": "Creates a custom data asset with setreg configuration",
+        "component_suffix": "Asset",
+
+        "input_vars": [
+            {
+                "input_type": "toggle",
+                "var_name": "add_bus_interface",
+                "title": "Add Bus Interface",
+                "default_value": true,
+                "description": "Create the Interface Bus header file"
+            },
+            {
+                "input_type": "text",
+                "var_name": "file_extension",
+                "title": "File Extension",
+                "default_value": "dataasset",
+                "required": true,
+                "description": "The file extension for this asset type (without dot)"
+            },
+            {
+                "input_type": "text",
+                "var_name": "asset_group",
+                "title": "Asset Group",
+                "default_value": "DataAssets",
+                "description": "The asset browser group for this asset type"
+            }
+        ],
+
+        "process_commands": [
+            {
+                "command": "add_gem_dependency",
+                "args": { "dependency": "AZ::AzFramework" }
+            },
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent" }
+            },
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_system_component",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_system_component",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "editor" }
+            },
+            {
+                "command": "register_generic_asset",
+                "args": {
+                    "asset_name": "${Name}${ComponentSuffix}",
+                    "asset_ext": "${file_extension}",
+                    "asset_group": "${asset_group}"
+                }
+            },
+            {
+                "command": "register_interface_header",
+                "condition": "add_bus_interface",
+                "args": { "component_name": "${Name}" }
+            }
+        ]
+    }
+}

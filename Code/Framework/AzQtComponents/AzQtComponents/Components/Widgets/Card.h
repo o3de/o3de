@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QFrame>
@@ -16,7 +15,6 @@
 #include <QPoint>
 #include <QString>
 #include <QVector>
-#endif
 
 class QPoint;
 class QSettings;

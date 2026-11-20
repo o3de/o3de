@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
-#endif
 
 namespace O3DE::ProjectManager
 {

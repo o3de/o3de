@@ -772,4 +772,3 @@ namespace AzQtComponents
     } // namespace Internal
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorController.cpp"

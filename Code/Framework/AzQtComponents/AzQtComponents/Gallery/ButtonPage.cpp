@@ -106,4 +106,3 @@ ButtonPage::~ButtonPage()
 {
 }
 
-#include "Gallery/moc_ButtonPage.cpp"

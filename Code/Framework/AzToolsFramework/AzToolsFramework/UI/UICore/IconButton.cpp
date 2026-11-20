@@ -11,13 +11,14 @@
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <QEvent>
+#include <QEnterEvent>
 #include <QPainter>
 #include <QPoint>
 #include <QRect>
 
 namespace AzToolsFramework
 {
-    void IconButton::enterEvent(QEvent *event)
+    void IconButton::enterEvent(QEnterEvent *event)
     {
         // do not update the button if it is disabled
         if (!isEnabled())
@@ -33,7 +34,13 @@ namespace AzToolsFramework
     void IconButton::leaveEvent(QEvent *event)
     {
         m_mouseOver = false;
-        QPushButton::enterEvent(event);
+
+        if (event->type() == QEvent::MouseMove)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            QEnterEvent enterEvent(mouseEvent->position(), mouseEvent->scenePosition(), mouseEvent->globalPosition());
+            QPushButton::enterEvent(&enterEvent);
+        }
     }
 
     void IconButton::paintEvent(QPaintEvent* /*event*/)

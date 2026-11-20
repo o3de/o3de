@@ -8,17 +8,16 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <native/ui/AssetDetailsPanel.h>
 #include <native/ui/ProductDependencyTreeModel.h>
 #include <native/ui/ProductDependencyTreeDelegate.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <QDateTime>
 #include <QHash>
 #include <QPointer>
 #include <QScopedPointer>
-#endif
 
 class QItemSelection;
 class QLabel;

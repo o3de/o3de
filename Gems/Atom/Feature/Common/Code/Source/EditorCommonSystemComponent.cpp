@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -43,7 +44,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorCommonSystemComponent>("Common", "Configures editor- and tool-specific functionality for common render features.")
+                    ec->Class<EditorCommonSystemComponent>(QT_TRANSLATE_NOOP("Atom::Feature", "Common"), QT_TRANSLATE_NOOP("Atom::Feature", "Configures editor- and tool-specific functionality for common render features."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

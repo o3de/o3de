@@ -72,7 +72,7 @@ namespace AZ
             {
                 RPI::Ptr<HairPPLLResolvePass> pass = aznew HairPPLLResolvePass(descriptor);
 
-                return AZStd::move(pass);
+                return pass;
             }
 
             void HairPPLLResolvePass::InitializeInternal()

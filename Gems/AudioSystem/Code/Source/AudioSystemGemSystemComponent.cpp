@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AudioAllocators.h>
 #include <AudioSystem.h>
@@ -55,7 +56,9 @@ namespace AudioSystemGem
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AudioSystemGemSystemComponent>("Audio System Gem", "Audio System handles requests and managages data related to the audio sub-system")
+                ec->Class<AudioSystemGemSystemComponent>(
+                    QT_TRANSLATE_NOOP("AudioSystem", "Audio System Gem"),
+                    QT_TRANSLATE_NOOP("AudioSystem", "Audio System handles requests and managages data related to the audio sub-system"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
@@ -225,12 +228,9 @@ namespace AudioSystemGem
     {
         if (g_editor)
         {
-            if (m_editorPlugin)
-            {
-                m_editorPlugin->Release();
-            }
-
-            m_editorPlugin.reset(new CAudioControlsEditorPlugin(g_editor));
+            // Destroy any previous instance before creating a new one. Its destructor releases ATL connections.
+            m_editorPlugin.reset();
+            m_editorPlugin = AZStd::make_unique<CAudioControlsEditorPlugin>(g_editor);
         }
     }
 

@@ -21,6 +21,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -432,52 +433,61 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeatureTrajectory>("FeatureTrajectory", "Matches the joint past and future trajectory.")
+        editContext->Class<FeatureTrajectory>(
+            QT_TRANSLATE_NOOP("MotionMatching", "FeatureTrajectory"),
+            QT_TRANSLATE_NOOP("MotionMatching", "Matches the joint past and future trajectory."))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numPastSamples, "Past Samples",
-                "The number of samples stored per frame for the past trajectory. [Default = 4 samples to represent the trajectory history]")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numPastSamples,
+                QT_TRANSLATE_NOOP("MotionMatching", "Past Samples"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The number of samples stored per frame for the past trajectory. [Default = 4 samples to represent the trajectory history]"))
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->Attribute(AZ::Edit::Attributes::Step, 1)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastTimeRange, "Past Time Range",
-                "The time window the samples are distributed along for the trajectory history. [Default = 0.7 seconds]")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastTimeRange,
+                QT_TRANSLATE_NOOP("MotionMatching", "Past Time Range"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The time window the samples are distributed along for the trajectory history. [Default = 0.7 seconds]"))
             ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastCostFactor, "Past Cost Factor",
-                "The cost factor is multiplied with the cost from the trajectory history and can be used to change the influence of the "
-                "trajectory history match in the motion matching search.")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastCostFactor,
+                QT_TRANSLATE_NOOP("MotionMatching", "Past Cost Factor"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The cost factor is multiplied with the cost from the trajectory history and can be used to change the influence of the "
+                "trajectory history match in the motion matching search."))
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numFutureSamples, "Future Samples",
-                "The number of samples stored per frame for the future trajectory. [Default = 6 samples to represent the future "
-                "trajectory]")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numFutureSamples,
+                QT_TRANSLATE_NOOP("MotionMatching", "Future Samples"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The number of samples stored per frame for the future trajectory. [Default = 6 samples to represent the future "
+                "trajectory]"))
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->Attribute(AZ::Edit::Attributes::Step, 1)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureTimeRange, "Future Time Range",
-                "The time window the samples are distributed along for the future trajectory. [Default = 1.2 seconds]")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureTimeRange,
+                QT_TRANSLATE_NOOP("MotionMatching", "Future Time Range"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The time window the samples are distributed along for the future trajectory. [Default = 1.2 seconds]"))
             ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureCostFactor, "Future Cost Factor",
-                "The cost factor is multiplied with the cost from the future trajectory and can be used to change the influence of the "
-                "future trajectory match in the motion matching search.")
+                AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureCostFactor,
+                QT_TRANSLATE_NOOP("MotionMatching", "Future Cost Factor"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The cost factor is multiplied with the cost from the future trajectory and can be used to change the influence of the "
+                "future trajectory match in the motion matching search."))
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &FeatureTrajectory::m_facingAxis, "Facing Axis",
-                "The facing direction of the character. Which axis of the joint transform is facing forward? [Default = Looking into "
-                "Y-axis direction]")
+                AZ::Edit::UIHandlers::ComboBox, &FeatureTrajectory::m_facingAxis,
+                QT_TRANSLATE_NOOP("MotionMatching", "Facing Axis"),
+                QT_TRANSLATE_NOOP("MotionMatching", "The facing direction of the character. Which axis of the joint transform is facing forward? [Default = Looking into "
+                "Y-axis direction]"))
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FeatureTrajectory::UpdateFacingAxis)
             ->EnumAttribute(Axis::X, "X")
             ->EnumAttribute(Axis::X_NEGATIVE, "-X")

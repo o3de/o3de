@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QKeySequence>
 #include <QAction>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include "MysticQtConfig.h"
-#endif
 
 class QKeyEvent;
 class QSettings;

@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MotionSet.h>
-#include <QObject>
 #include <MCore/Source/StandardHeaders.h>
-#endif
+
+#include <QObject>
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 QT_FORWARD_DECLARE_CLASS(QPersistentModelIndex)

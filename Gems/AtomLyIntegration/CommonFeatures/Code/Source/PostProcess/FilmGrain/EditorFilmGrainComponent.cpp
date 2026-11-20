@@ -8,6 +8,7 @@
 
 #include <PostProcess/FilmGrain/EditorFilmGrainComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -23,7 +24,7 @@ namespace AZ
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorFilmGrainComponent>("Film Grain", "Controls the Film Grain")
+                    editContext->Class<EditorFilmGrainComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Film Grain"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Film Grain"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
@@ -46,32 +47,32 @@ namespace AZ
 
                     editContext->Class<FilmGrainComponentConfig>("FilmGrainComponentConfig", "")
                         ->DataElement(
-                            Edit::UIHandlers::CheckBox, &FilmGrainComponentConfig::m_enabled, "Enable Film Grain", "Enable Film Grain.")
+                            Edit::UIHandlers::CheckBox, &FilmGrainComponentConfig::m_enabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Film Grain"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Film Grain."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_intensity, "Intensity", "Intensity of effect")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_intensity, QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity of effect"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &FilmGrainComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_luminanceDampening, "Luminance Dampening", "Factor for dampening effect in areas of both high and low luminance")
+                            AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_luminanceDampening, QT_TRANSLATE_NOOP("AtomLyIntegration", "Luminance Dampening"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor for dampening effect in areas of both high and low luminance"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &FilmGrainComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_tilingScale, "Tiling Scale",
-                            "Factor for tiling the pregenerated noise")
+                            AZ::Edit::UIHandlers::Slider, &FilmGrainComponentConfig::m_tilingScale, QT_TRANSLATE_NOOP("AtomLyIntegration", "Tiling Scale"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor for tiling the pregenerated noise"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &FilmGrainComponentConfig::ArePropertiesReadOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                     // Auto-gen editor context settings for overrides

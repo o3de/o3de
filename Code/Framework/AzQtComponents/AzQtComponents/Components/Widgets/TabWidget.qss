@@ -28,6 +28,11 @@ AzQtComponents--TabWidget > QWidget
     background-color: #444444;
 }
 
+AzQtComponents--TabWidget QMenu
+{
+    background-color: #222222;
+}
+
 AzQtComponents--TabWidget:pane
 {
     border: 0 none;
@@ -44,15 +49,28 @@ AzQtComponents--TabBar
     background-color: #111111;
     margin-bottom: 0;
     min-height: 28px;
+
+    /* Disable the tab slide animation as the text is not animated */
+    widget-animation-duration: 0;
 }
 
 AzQtComponents--TabBar:tab
 {
     border: 1px solid #111111;
     background-color: #333333;
+    padding: 6px 21px 6px 9px; /* top, right, bottom, left */
+}
 
-    text-align: left;
-    padding: 6px -2px 6px 9px; /* top, right, bottom, left */
+AzQtComponents--TabBar::close-button
+{
+    image: url(":/stylesheet/img/close_small.svg");
+    margin-right: 4px;
+}
+
+AzQtComponents--TabBar::close-button:hover
+{
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
 }
 
 AzQtComponents--TabBar::tab:text
@@ -120,14 +138,8 @@ AzQtComponents--TabBar.Secondary::tab
     background-color: #444444;
     border: 0 none;
     border-bottom: 3px solid #333333;
-    text-align: center;
-    padding: 7px 0 5px 14px;
+    padding: 7px 14px 5px 14px;
     color: #959595;
-}
-
-AzQtComponents--TabBar.Secondary::close-button
-{
-    image: url(":/stylesheet/img/close_small.svg");
 }
 
 AzQtComponents--TabBar.Secondary::tab:hover
@@ -140,7 +152,7 @@ AzQtComponents--TabBar.Secondary::tab:hover
 AzQtComponents--TabBar.Secondary.Bordered::tab
 {
     border-top: 1px solid #111111;
-    padding: 6px 0 6px 14px;
+    padding: 6px 14px 6px 14px;
 }
 
 AzQtComponents--TabBar.Secondary::tab:selected

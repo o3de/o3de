@@ -39,7 +39,7 @@ AzAssetBrowserWindow* AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow()
             AzToolsFramework::ViewPaneOptions options;
             options.preferedDockingArea = Qt::BottomDockWidgetArea;
             options.showInMenu = false;
-            AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(candidateName), LyViewPane::CategoryTools, options);
+            AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qUtf8Printable(candidateName), LyViewPane::CategoryTools, options);
             return qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(candidateName)->Widget());
         }
 

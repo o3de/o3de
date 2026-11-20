@@ -8,13 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
-#endif
 
 namespace AZStd
 {

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/utils/applicationManager.h>
 
 #include <AzCore/Outcome/Outcome.h>
@@ -24,7 +23,6 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QFileSystemWatcher>
-#endif
 
 namespace AssetBundler
 {

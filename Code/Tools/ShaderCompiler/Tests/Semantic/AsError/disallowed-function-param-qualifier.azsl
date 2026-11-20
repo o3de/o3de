@@ -1,0 +1,2 @@
+void Func1(option int a, rootconstant float b); // #EC11
+// Semantic error 11: rootconstant or option qualifier is only accepted at top-level scope

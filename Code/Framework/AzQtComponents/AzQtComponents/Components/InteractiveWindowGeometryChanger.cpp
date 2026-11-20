@@ -255,19 +255,19 @@ namespace AzQtComponents
         QRect geometry = m_targetWindow->geometry();
         if (m_sideToResize & LeftSide)
         {
-            geometry.setLeft(ev->globalX() - 1);
+            geometry.setLeft(ev->globalPosition().x() - 1);
         }
         if (m_sideToResize & RightSide)
         {
-            geometry.setRight(ev->globalX());
+            geometry.setRight(ev->globalPosition().x());
         }
         if (m_sideToResize & TopSide)
         {
-            geometry.setTop(ev->globalY() - 1);
+            geometry.setTop(ev->globalPosition().y() - 1);
         }
         if (m_sideToResize & BottomSide)
         {
-            geometry.setBottom(ev->globalY());
+            geometry.setBottom(ev->globalPosition().y());
         }
 
         if (geometry.height() >= m_targetWindow->minimumHeight() &&

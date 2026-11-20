@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_SHARED_COUNT_H
-#define AZSTD_SMART_PTR_SHARED_COUNT_H
+
+#pragma once
 
 //
 //  detail/shared_count.hpp
@@ -136,7 +136,7 @@ namespace AZStd
             void destroy() override // nothrow
             {
                 this->~this_type();
-                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of<this_type>::value);
+                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
             }
             void* get_deleter(Internal::sp_typeinfo const&) override
             {
@@ -184,7 +184,7 @@ namespace AZStd
             void destroy() override // nothrow
             {
                 this->~this_type();
-                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of<this_type>::value);
+                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
             }
 
             void* get_deleter(Internal::sp_typeinfo const& ti) override
@@ -527,6 +527,3 @@ namespace AZStd
         }
     } // namespace Internal
 } // namespace AZStd
-
-#endif  // #ifndef AZSTD_SMART_PTR_SHARED_COUNT_H
-#pragma once

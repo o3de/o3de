@@ -8,6 +8,7 @@
 
 
 #include "ScriptCanvasTestNodes.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Graph.h>
@@ -19,7 +20,7 @@ namespace TestNodes
 {
     //////////////////////////////////////////////////////////////////////////////
     void TestResult::OnInit()
-    {        
+    {
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralInSlot());
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralOutSlot());
 
@@ -45,10 +46,13 @@ namespace TestNodes
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<TestResult>("TestResult", "Development node, will be replaced by a Log node")
+                editContext->Class<TestResult>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "TestResult"),
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "Development node, will be replaced by a Log node"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/TestResult.png")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestResult::m_string, "String", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestResult::m_string,
+                        QT_TRANSLATE_NOOP("ScriptCanvasTesting", "String"), "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -210,7 +214,7 @@ namespace TestNodes
 
             slotConfiguration.m_name = "View";
             slotConfiguration.m_toolTip = "Input string_view object";
-            slotConfiguration.ConfigureDatum(AZStd::move(ScriptCanvas::Datum(ScriptCanvas::Data::Type::String(), ScriptCanvas::Datum::eOriginality::Copy)));
+            slotConfiguration.ConfigureDatum(ScriptCanvas::Datum(ScriptCanvas::Data::Type::String(), ScriptCanvas::Datum::eOriginality::Copy));
             slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Input);
 
             AddSlot(slotConfiguration);
@@ -277,7 +281,7 @@ namespace TestNodes
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralOutSlot());
         Node::AddSlot(ScriptCanvas::DataSlotConfiguration(ScriptCanvas::Data::Type::String(), "Result", ScriptCanvas::ConnectionType::Output));
     }
-    
+
     /////////////////////////////
     // ConfigurableUnitTestNode
     /////////////////////////////

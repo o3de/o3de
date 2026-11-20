@@ -34,67 +34,67 @@ namespace ScriptCanvas
     {
         auto it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Boolean, Data::MakeTypeErasedTraits<Data::eType::Boolean>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::EntityID, Data::MakeTypeErasedTraits<Data::eType::EntityID>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Number, Data::MakeTypeErasedTraits<Data::eType::Number>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::String, Data::MakeTypeErasedTraits<Data::eType::String>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Quaternion, Data::MakeTypeErasedTraits<Data::eType::Quaternion>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Transform, Data::MakeTypeErasedTraits<Data::eType::Transform>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Vector2, Data::MakeTypeErasedTraits<Data::eType::Vector2>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Vector3, Data::MakeTypeErasedTraits<Data::eType::Vector3>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Vector4, Data::MakeTypeErasedTraits<Data::eType::Vector4>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::AABB, Data::MakeTypeErasedTraits<Data::eType::AABB>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Color, Data::MakeTypeErasedTraits<Data::eType::Color>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::CRC, Data::MakeTypeErasedTraits<Data::eType::CRC>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Matrix3x3, Data::MakeTypeErasedTraits<Data::eType::Matrix3x3>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Matrix4x4, Data::MakeTypeErasedTraits<Data::eType::Matrix4x4>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::Plane, Data::MakeTypeErasedTraits<Data::eType::Plane>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::OBB, Data::MakeTypeErasedTraits<Data::eType::OBB>());
         AZ_Error("Script Canvas", it.second, "Cannot register a second Trait struct with the same ScriptCanvas type(%u)", it.first->first);
-        dataRegistry.m_creatableTypes.insert(it.first->second.m_dataTraits.GetSCType());
+        dataRegistry.m_creatableTypes.try_emplace(it.first->second.m_dataTraits.GetSCType());
 
         // BehaviorContext traits is slightly different than built traits
         it = dataRegistry.m_typeIdTraitMap.emplace(Data::eType::BehaviorContextObject, Data::MakeTypeErasedTraits<Data::eType::BehaviorContextObject>());

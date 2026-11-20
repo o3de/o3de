@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QUrl>
 #include <QString>
 #include <QStringList>
-#endif
 
 namespace O3DE::ProjectManager
 {

@@ -43,8 +43,25 @@ namespace AzQtComponents
 
     QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool round)
     {
-        const QChar decimalPoint = locale.decimalPoint();
-        const QChar zeroDigit = locale.zeroDigit();
+        // Qt6 changed QLocale::toString(double, 'f', precision) to honour
+        // numberOptions() OmitGroupSeparator. In Qt5 the group separator was
+        // always emitted and stripped after the fact below. Set the option
+        // explicitly on a working copy so the behaviour matches the caller's
+        // intent regardless of the locale's incoming numberOptions.
+        QLocale workingLocale = locale;
+        QLocale::NumberOptions opts = workingLocale.numberOptions();
+        if (showGroupSeparator)
+        {
+            opts &= ~QLocale::OmitGroupSeparator;
+        }
+        else
+        {
+            opts |= QLocale::OmitGroupSeparator;
+        }
+        workingLocale.setNumberOptions(opts);
+
+        const QString decimalPoint = workingLocale.decimalPoint();
+        const QString zeroDigit = workingLocale.zeroDigit();
         const int numToStringDecimals = AZStd::max(numDecimals, 20);
         QString retValue;
 
@@ -52,18 +69,18 @@ namespace AzQtComponents
         // so we can remove the last values otherwise we allow rounding
         if (round)
         {
-            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
+            retValue = workingLocale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
         }
         else
         {
-            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
+            retValue = workingLocale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
         }
 
         // Handle special cases when we have decimals in our value
         if (numDecimals > 0)
         {
             // Truncate the extra digits now, if they're still there
-            int decimalPointIndex = retValue.lastIndexOf(decimalPoint);
+            int decimalPointIndex = static_cast<int>(retValue.lastIndexOf(decimalPoint));
             if ((decimalPointIndex > 0) && (retValue.size() - (decimalPointIndex + 1)) == numToStringDecimals)
             {
                 retValue.resize(retValue.size() - (numToStringDecimals - numDecimals));

@@ -11,8 +11,8 @@
 # Python package info
 ly_set(LY_PYTHON_VERSION 3.10.13)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-darwin-arm64)
-ly_set(LY_PYTHON_PACKAGE_HASH 14a88370fa8673344cf51354ce1a1021a0a1fb1742d774b5a0033a94e3384ec1)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-mac-arm64)
+ly_set(LY_PYTHON_PACKAGE_HASH 2d572bc5f6aac243051eea0e13544564d02d0af0dc1e78024d0136a5abf7a8ec)
 
 # Python package relative paths
 ly_set(LY_PYTHON_BIN_PATH "Python.framework/Versions/Current/bin/")

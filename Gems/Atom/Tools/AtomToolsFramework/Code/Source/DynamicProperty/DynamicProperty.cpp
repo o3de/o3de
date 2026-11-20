@@ -10,6 +10,7 @@
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -72,12 +73,12 @@ namespace AtomToolsFramework
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<DynamicProperty>(
-                    "DynamicProperty", "")
+                    QT_TRANSLATE_NOOP("AtomToolsFramework", "DynamicProperty"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DynamicProperty::GetVisibility)
                     ->SetDynamicEditDataProvider(&DynamicProperty::GetPropertyEditData)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicProperty::m_value, "Value", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicProperty::m_value, QT_TRANSLATE_NOOP("AtomToolsFramework", "Value"), "")
                     // AZStd::any is treated like a container type so we hide it and pass attributes to the child element
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)

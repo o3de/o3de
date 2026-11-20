@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
 #include <QDialog>
 #include <QSortFilterProxyModel>
@@ -27,7 +26,6 @@
 #include <Editor/View/Widgets/NodePalette/NodePaletteModel.h>
 #include <Editor/View/Widgets/StatisticsDialog/NodeUsageTreeItem.h>
 #include <ScriptCanvas/Core/Core.h>
-#endif
 
 namespace Ui
 {

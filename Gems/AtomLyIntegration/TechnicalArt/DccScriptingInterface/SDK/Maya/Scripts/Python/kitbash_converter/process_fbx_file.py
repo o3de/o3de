@@ -16,7 +16,7 @@
 
 
 #  maya imports
-from PySide2 import QtCore
+from PySide6 import QtCore
 import maya.cmds as mc
 import maya.standalone
 maya.standalone.initialize(name='python')

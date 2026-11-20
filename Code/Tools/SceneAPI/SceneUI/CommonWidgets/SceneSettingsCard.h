@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
@@ -17,11 +16,11 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+
 #include <QMap>
 #include <QPair>
 #include <QString>
 #include <QVector>
-#endif
 
 class QSvgWidget;
 

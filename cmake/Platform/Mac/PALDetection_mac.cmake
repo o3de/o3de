@@ -8,3 +8,7 @@
 
 ly_set(LY_PLATFORM_DETECTION_Darwin Mac)
 ly_set(LY_HOST_PLATFORM_DETECTION_Darwin Mac)
+
+# Mac supports multiple system architectures
+ly_set(LY_ARCHITECTURE_DETECTION_Mac ${CMAKE_SYSTEM_PROCESSOR})
+ly_set(LY_HOST_ARCHITECTURE_DETECTION_Mac ${CMAKE_HOST_SYSTEM_PROCESSOR})

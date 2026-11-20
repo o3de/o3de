@@ -11,13 +11,11 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QListView>
 #include <QStyledItemDelegate>
-#endif
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework

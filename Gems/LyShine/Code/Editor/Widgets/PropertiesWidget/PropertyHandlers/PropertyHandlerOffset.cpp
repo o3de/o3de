@@ -8,6 +8,7 @@
 
 #include "PropertyHandlerOffset.h"
 
+#include <QObject>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <LyShine/Bus/UiTransform2dBus.h>
@@ -37,7 +38,7 @@ void PropertyHandlerOffset::ConsumeAttribute(AzQtComponents::VectorInput* GUI, A
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
         }
     }
 }
@@ -135,23 +136,23 @@ bool PropertyHandlerOffset::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzQ
 
 void PropertyHandlerOffset::GetLabels(UiTransform2dInterface::Anchors& anchors, AZStd::string* labelsOut)
 {
-    labelsOut[0] = "Left";
-    labelsOut[1] = "Top";
-    labelsOut[2] = "Right";
-    labelsOut[3] = "Bottom";
+    labelsOut[0] = QObject::tr("Left").toUtf8().constData();
+    labelsOut[1] = QObject::tr("Top").toUtf8().constData();
+    labelsOut[2] = QObject::tr("Right").toUtf8().constData();
+    labelsOut[3] = QObject::tr("Bottom").toUtf8().constData();
 
     // If the left and right anchors are the same, allow editing x position and width
     if (anchors.m_left == anchors.m_right)
     {
-        labelsOut[0] = "X Pos";
-        labelsOut[2] = "Width";
+        labelsOut[0] = QObject::tr("X Pos").toUtf8().constData();
+        labelsOut[2] = QObject::tr("Width").toUtf8().constData();
     }
 
     // If the top and bottom anchors are the same, allow editing y position and height
     if (anchors.m_top == anchors.m_bottom)
     {
-        labelsOut[1] = "Y Pos";
-        labelsOut[3] = "Height";
+        labelsOut[1] = QObject::tr("Y Pos").toUtf8().constData();
+        labelsOut[3] = QObject::tr("Height").toUtf8().constData();
     }
 }
 

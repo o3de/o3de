@@ -8,6 +8,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDepthOfFieldComponent>(
-                        "Depth Of Field", "Controls the Depth of Field.")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Depth Of Field"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls the Depth of Field."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
@@ -39,7 +40,7 @@ namespace AZ
                         "DepthOfFieldComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthOfFieldComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DepthOfFieldComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -48,21 +49,22 @@ namespace AZ
 
                         ->DataElement(Edit::UIHandlers::EntityId,
                             &DepthOfFieldComponentConfig::m_cameraEntityId,
-                            "Camera Entity",
-                            "Camera entity. Required by Depth of Field.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Camera Entity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Camera entity. Required by Depth of Field."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &DepthOfFieldComponentConfig::m_enabled,
-                            "Enable Depth of Field",
-                            "Enable Depth of Field.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Depth of Field"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Depth of Field."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsCameraEntityInvalid)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DepthOfFieldComponentConfig::m_qualityLevel,
-                            "Quality Level",
-                            "0 : Standard Bokeh blur.\n"
-                            "1 : High quality Bokeh blur (large number of sample)")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Quality Level"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration",
+                                "0 : Standard Bokeh blur.\n"
+                                "1 : High quality Bokeh blur (large number of sample)"))
                         ->Attribute(Edit::Attributes::Min, 0)
                         ->Attribute(Edit::Attributes::Max, DepthOfField::QualityLevelMax - 1)
                         ->Attribute(Edit::Attributes::Step, 1)
@@ -70,101 +72,105 @@ namespace AZ
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DepthOfFieldComponentConfig::m_apertureF,
-                            "Aperture F",
-                            "The higher the value, the larger the opening.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Aperture F"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The higher the value, the larger the opening."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Default, &DepthOfFieldComponentConfig::m_fNumber,
-                            "F Number",
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "F Number"),
                             "")
                         ->Attribute(Edit::Attributes::ReadOnly, true)
 
 
                         ->DataElement(Edit::UIHandlers::Default, &DepthOfFieldComponentConfig::m_focusDistance,
-                            "Focus Distance",
-                            "The distance from the camera to the focused subject.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Focus Distance"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The distance from the camera to the focused subject."))
                         ->Attribute(Edit::Attributes::Suffix, " m")
                         ->Attribute(Edit::Attributes::Step, 1.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsFocusDistanceReadOnly)
 
                         // Auto Focus
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Auto Focus")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Auto Focus"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &DepthOfFieldComponentConfig::m_enableAutoFocus,
-                            "Enable Auto Focus",
-                            "Enables auto focus.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Auto Focus"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enables auto focus."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::ArePropertiesReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Default,
                             &DepthOfFieldComponentConfig::m_focusedEntityId,
-                            "Focused Entity",
-                            "Entity to focus on.\n"
-                            "If unset, the screen position is used.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Focused Entity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration",
+                                "Entity to focus on.\n"
+                                "If unset, the screen position is used."))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsFocusedEntityReadonly)
 
                         ->DataElement(Edit::UIHandlers::Default, &DepthOfFieldComponentConfig::m_autoFocusScreenPosition,
-                            "Focus Screen Position",
-                            "Values of the focus position on screen.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Focus Screen Position"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Values of the focus position on screen."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsAutoFocusReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DepthOfFieldComponentConfig::m_autoFocusSensitivity,
-                            "Auto Focus Sensitivity",
-                            "Higher value is more responsive.\n"
-                            "Lower value require a greater difference in depth before refocusing.\n"
-                            "Always responds when the value is 1.0.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Auto Focus Sensitivity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration",
+                                "Higher value is more responsive.\n"
+                                "Lower value require a greater difference in depth before refocusing.\n"
+                                "Always responds when the value is 1.0."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsAutoFocusReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DepthOfFieldComponentConfig::m_autoFocusSpeed,
-                            "Auto Focus Speed",
-                            "Specify the distance that focus moves per second,\n"
-                            "normalizing the distance from view near to view far as 1.0.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Auto Focus Speed"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration",
+                                "Specify the distance that focus moves per second,\n"
+                                "normalizing the distance from view near to view far as 1.0."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, DepthOfField::AutoFocusSpeedMax)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsAutoFocusReadOnly)
 
                         ->DataElement(Edit::UIHandlers::Slider, &DepthOfFieldComponentConfig::m_autoFocusDelay,
-                            "Auto Focus Delay",
-                            "Specifies a delay time for focus to shift from one to another target.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Auto Focus Delay"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Specifies a delay time for focus to shift from one to another target."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, DepthOfField::AutoFocusDelayMax)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "[s]")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AtomLyIntegration", "[s]"))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DepthOfFieldComponentConfig::IsAutoFocusReadOnly)
 
                         // Debugging
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Debugging")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Debugging"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &DepthOfFieldComponentConfig::m_enableDebugColoring,
-                            "Enable Debug Color",
-                            "Enable coloring to see Depth of Field level\n"
-                            "Red - Back large blur\n"
-                            "Orange - Back middle blur\n"
-                            "Yellow - Back small blur\n"
-                            "Green - Focus area\n"
-                            "Blue green - Front small blur\n"
-                            "Blue - Front middle blur\n"
-                            "Purple - Front large blur")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Debug Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration",
+                                "Enable coloring to see Depth of Field level\n"
+                                "Red - Back large blur\n"
+                                "Orange - Back middle blur\n"
+                                "Yellow - Back small blur\n"
+                                "Green - Focus area\n"
+                                "Blue green - Front small blur\n"
+                                "Blue - Front middle blur\n"
+                                "Purple - Front large blur"))
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         // Auto-gen editor context settings for overrides

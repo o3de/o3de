@@ -231,5 +231,4 @@ namespace AzQtComponents
             accept();
         }
     }    
-#include "Components/moc_ToastNotification.cpp"
 }

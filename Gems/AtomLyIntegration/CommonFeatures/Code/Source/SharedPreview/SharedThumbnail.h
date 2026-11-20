@@ -8,12 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#endif
 
 namespace AZ
 {

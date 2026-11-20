@@ -20,6 +20,8 @@
 #include <AtomLyIntegration/AtomFont/AtomNullFont.h>
 #include <AtomLyIntegration/AtomFont/AtomFont.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace Render
@@ -34,7 +36,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<AtomFontSystemComponent>("Font", "Manages lifetime of the font subsystem")
+                    ec->Class<AtomFontSystemComponent>(QT_TRANSLATE_NOOP("AtomFont", "Font"), QT_TRANSLATE_NOOP("AtomFont", "Manages lifetime of the font subsystem"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;

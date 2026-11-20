@@ -12,12 +12,12 @@
 #include <utilities/ApplicationServer.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
-#endif
 #include <AzCore/Utils/Utils.h>
 #include <connection/connectionManager.h>
+
 #include <QCoreApplication>
+
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 
@@ -104,7 +104,7 @@ namespace AssetProcessorMessagesTests
             };
             NetworkRequestID key(connId, serial);
             int fenceFileId = 0;
-            m_pendingFenceRequestMap[fenceFileId] = AZStd::move(AssetRequestHandler::RequestInfo(key, AZStd::move(message), platform));
+            m_pendingFenceRequestMap[fenceFileId] = AssetRequestHandler::RequestInfo(key, AZStd::move(message), platform);
 
             OnFenceFileDetected(fenceFileId);
         }

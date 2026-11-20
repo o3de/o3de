@@ -7,16 +7,14 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Memory/SystemAllocator.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QApplication>
 #include <QPainter>
 #include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
-
-#include <AzCore/Memory/SystemAllocator.h>
-#endif
 
 namespace GraphCanvas
 {

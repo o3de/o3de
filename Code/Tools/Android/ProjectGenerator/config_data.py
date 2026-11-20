@@ -18,7 +18,7 @@ class ConfigData:
     data that is required to create an android project for O3DE.
     """
     ASSET_MODE_LOOSE = "LOOSE"
-    DEFAULT_NDK_VERSION = "25*"
+    DEFAULT_NDK_VERSION = "27*"
     DEFAULT_API_LEVEL = "31" # The API level for Android 12.
     def __init__(self):
         self.engine_path = "" # Not serialized.

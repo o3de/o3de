@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EditorStarsSystemComponent.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ::Render 
 {
@@ -21,7 +22,9 @@ namespace AZ::Render
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
-                ec->Class<StarsSystemComponent>("Stars", "Stars system component")
+                ec->Class<StarsSystemComponent>(
+                    QT_TRANSLATE_NOOP("AZ::Render", "Stars"),
+                    QT_TRANSLATE_NOOP("AZ::Render", "Stars system component"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

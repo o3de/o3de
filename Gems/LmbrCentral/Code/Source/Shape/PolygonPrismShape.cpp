@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MathConversion.h>
 #include <Shape/ShapeGeometryUtil.h>
 #include <Shape/ShapeDisplay.h>
@@ -188,12 +189,15 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PolygonPrismShape>("Configuration", "Polygon Prism configuration parameters")
+                editContext->Class<PolygonPrismShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Polygon Prism configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PolygonPrismShape::m_polygonPrism,
-                        "Polygon Prism", "Data representing the shape in the entity's local coordinate space.")
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Polygon Prism"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Data representing the shape in the entity's local coordinate space."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -8,11 +8,9 @@
 
 #include <native/AssetManager/ControlRequestHandler.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QTcpServer>
-#endif
 
 #include <native/assetprocessor.h>
 #include <native/utilities/ApplicationManagerBase.h>

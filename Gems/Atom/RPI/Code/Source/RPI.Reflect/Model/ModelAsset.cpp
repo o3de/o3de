@@ -17,6 +17,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -41,7 +42,7 @@ namespace AZ
                 //       can open the asset with the preferred asset editor (Scene Settings).
                 if (auto* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<ModelAsset>("Model Asset", "")
+                    editContext->Class<ModelAsset>(QT_TRANSLATE_NOOP("Atom::RPI", "Model Asset"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ;
                 }

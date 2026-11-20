@@ -254,6 +254,8 @@ namespace AZ
             const static AZ::Crc32 Button = AZ_CRC_CE("Button");
             const static AZ::Crc32 CheckBox = AZ_CRC_CE("CheckBox");
             const static AZ::Crc32 Color = AZ_CRC_CE("Color");
+            const static AZ::Crc32 ColorGradient = AZ_CRC_CE("ColorGradient");
+            const static AZ::Crc32 ColorGradientRGB = AZ_CRC_CE("ColorGradientRGB");
             const static AZ::Crc32 ComboBox = AZ_CRC_CE("ComboBox");
             const static AZ::Crc32 RadioButton = AZ_CRC_CE("RadioButton");
             const static AZ::Crc32 EntityId = AZ_CRC_CE("EntityId");
@@ -269,6 +271,7 @@ namespace AZ
             const static AZ::Crc32 Vector4 = AZ_CRC_CE("Vector4");
             const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC_CE("ExeSelectBrowseEdit");
             const static AZ::Crc32 Label = AZ_CRC_CE("Label");
+            const static AZ::Crc32 Curve = AZ_CRC_CE("Curve");
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;

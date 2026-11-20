@@ -6,10 +6,8 @@
  *
  */
 
-#ifndef LUAEDITOR_LUAEDITORMAINWINDOW_H
-#define LUAEDITOR_LUAEDITORMAINWINDOW_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/map.h>
@@ -27,7 +25,7 @@
 #include "LUAEditorView.hxx"
 #include "LUAEditorFindDialog.hxx"
 
-#pragma once
+#include <QMainWindow>
 
 class QMenu;
 class QAction;
@@ -57,8 +55,6 @@ namespace LUA
 }
 class ClassReferenceFilterModel;
 
-#include <QMainWindow>
-#endif
 
 namespace LUAEditor
 {
@@ -451,5 +447,3 @@ namespace LUAEditor
     };
 
 }
-
-#endif //LUAEDITOR_LUAEDITORMAINWINDOW_H

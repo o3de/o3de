@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/EventHandler.h>
 #include "../StandardPluginsConfig.h"
 #include "NodePaletteModelUpdater.h"
+
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QTreeView)
 QT_FORWARD_DECLARE_CLASS(QLabel)

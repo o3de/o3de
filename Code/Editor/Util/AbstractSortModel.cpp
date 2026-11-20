@@ -18,5 +18,3 @@ bool AbstractSortModel::LessThan(const QModelIndex& lhs, const QModelIndex& rhs)
 {
     return lhs.data().toString() < rhs.data().toString();
 }
-
-#include <Util/moc_AbstractSortModel.cpp>

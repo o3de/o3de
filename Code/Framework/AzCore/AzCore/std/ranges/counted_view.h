@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/containers/span.h>
@@ -15,17 +16,15 @@ namespace AZStd::ranges::views
 {
     namespace Internal
     {
-        template<class T, class CountType, class = void>
-        constexpr bool count_convertible_to_iter_difference_v = false;
         template<class T, class CountType>
-        constexpr bool count_convertible_to_iter_difference_v<T, CountType,
-            enable_if_t<convertible_to<CountType, iter_difference_t<decay_t<T>>> >> = true;
+        concept count_convertible_to_iter_difference =
+            convertible_to<CountType, iter_difference_t<decay_t<T>>>;
 
         struct counted_fn
             : Internal::range_adaptor_closure<counted_fn>
         {
-            template<class Iterator, class DifferenceType, class = enable_if_t<
-                count_convertible_to_iter_difference_v<Iterator, DifferenceType> >>
+            template<class Iterator, class DifferenceType>
+                requires count_convertible_to_iter_difference<Iterator, DifferenceType>
             constexpr decltype(auto) operator()(Iterator&& i, DifferenceType&& count) const
             {
                 using DecayIterator = decay_t<Iterator>;

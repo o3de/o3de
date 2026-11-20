@@ -66,10 +66,12 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_materialSlots, "", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetMaterialSlotsVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_tag, "Tag", "Tag used to identify colliders from one another")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetTagVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_restOffset, "Rest offset",
                         "Bodies will come to rest separated by the sum of their rest offset values (must be less than contact offset)")
                         ->Attribute(AZ::Edit::Attributes::Step, 1e-2f)
                         ->Attribute(AZ::Edit::Attributes::Max, 50.0f)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetContactOffsetVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnRestOffsetChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_contactOffset, "Contact offset",
@@ -77,6 +79,7 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 1e-2f)
                         ->Attribute(AZ::Edit::Attributes::Max, 50.0f)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetContactOffsetVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ColliderConfiguration::OnContactOffsetChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                     ;
@@ -137,6 +140,16 @@ namespace Physics
     AZ::Crc32 ColliderConfiguration::GetOffsetVisibility() const
     {
         return GetPropertyVisibility(PropertyVisibility::Offset);
+    }
+
+    AZ::Crc32 ColliderConfiguration::GetTagVisibility() const
+    {
+        return GetPropertyVisibility(PropertyVisibility::Tag);
+    }
+
+    AZ::Crc32 ColliderConfiguration::GetContactOffsetVisibility() const
+    {
+        return GetPropertyVisibility(PropertyVisibility::ContactOffset);
     }
 
     AZ::Crc32 ColliderConfiguration::GetSimulatedPropertyVisibility() const

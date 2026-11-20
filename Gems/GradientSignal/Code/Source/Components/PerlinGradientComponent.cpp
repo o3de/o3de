@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 
@@ -37,25 +38,25 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<PerlinGradientConfig>(
-                    "Perlin Noise Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Perlin Noise Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_randomSeed, "Random Seed", "Using different seeds will cause the noise output to change")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_randomSeed, QT_TRANSLATE_NOOP("GradientSignal", "Random Seed"), QT_TRANSLATE_NOOP("GradientSignal", "Using different seeds will cause the noise output to change"))
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<int>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 1)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 100)
                     ->Attribute(AZ::Edit::Attributes::Step, 10)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_octave, "Octaves", "Number of recursions in the pattern generation, higher octaves refine the pattern")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_octave, QT_TRANSLATE_NOOP("GradientSignal", "Octaves"), QT_TRANSLATE_NOOP("GradientSignal", "Number of recursions in the pattern generation, higher octaves refine the pattern"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 16)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 8)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_amplitude, "Amplitude", "Higher amplitudes widen the aperture of the highs (light) and lows (dark)")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_amplitude, QT_TRANSLATE_NOOP("GradientSignal", "Amplitude"), QT_TRANSLATE_NOOP("GradientSignal", "Higher amplitudes widen the aperture of the highs (light) and lows (dark)"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 8.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_frequency, "Frequency", "Rescales coordinates based on a multiplied factor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PerlinGradientConfig::m_frequency, QT_TRANSLATE_NOOP("GradientSignal", "Frequency"), QT_TRANSLATE_NOOP("GradientSignal", "Rescales coordinates based on a multiplied factor"))
                     ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 4)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())

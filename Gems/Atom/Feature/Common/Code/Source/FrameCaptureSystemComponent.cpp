@@ -39,6 +39,13 @@
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Console/Console.h>
 
+// libtiff 4.5+ still emits its legacy non-prefixed typedefs (uint8 ...
+// uint64) by default; the int64/uint64 pair collides with the
+// CryCommon/BaseTypes.h definitions in any TU that includes both, which
+// blocks building against a modern system libtiff. Every O3DE tiffio.h
+// consumer uses the C99 names, so opt out of the legacy ones entirely.
+// No-op for older libtiff (the guard is simply not consulted).
+#define TIFF_DISABLE_DEPRECATED
 #include <tiffio.h>
 
 namespace AZ

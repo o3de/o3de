@@ -44,14 +44,17 @@ namespace LandscapeCanvas
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<EditorLandscapeCanvasComponent>("Landscape Canvas", "The Landscape Canvas component provides a node-based Editor for authoring Dynamic Vegetation")
+                editContext->Class<EditorLandscapeCanvasComponent>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "Landscape Canvas"),
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "The Landscape Canvas component provides a node-based Editor for authoring Dynamic Vegetation"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/LandscapeCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Opens the Landscape Canvas for the current entity")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("LandscapeCanvas", "Opens the Landscape Canvas for the current entity"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLandscapeCanvasComponent::OnOpenGraphButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorLandscapeCanvasComponent::GetOpenGraphButtonText);
             }

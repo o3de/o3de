@@ -9,13 +9,12 @@
 #pragma once
 
 // include MCore
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include "EMStudioConfig.h"
 #include "NodeHierarchyWidget.h"
+
 #include <QDialog>
-#endif
 
 
 

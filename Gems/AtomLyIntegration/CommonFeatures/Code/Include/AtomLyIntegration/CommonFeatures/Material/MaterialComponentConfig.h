@@ -28,6 +28,13 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             MaterialAssignmentMap m_materials;
+
+            //! Pending material overrides keyed by slot display label. Resolved to entries in m_materials
+            //! once the associated model is ready and labels are queryable. Survives mesh swaps so the
+            //! same authored override re-binds against a new model that exposes a slot with the same label.
+            //! Use case: prefab authoring pipelines that do not have access to SceneAPI MaterialUid
+            //! stable IDs at generation time can write by-label entries and let the runtime bind them.
+            AZStd::unordered_map<AZStd::string, MaterialAssignment> m_materialsByLabel;
         };
     } // namespace Render
 } // namespace AZ

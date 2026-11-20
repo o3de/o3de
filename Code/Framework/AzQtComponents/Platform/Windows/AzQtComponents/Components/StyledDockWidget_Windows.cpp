@@ -9,7 +9,6 @@
 #include <AzCore/PlatformIncl.h>
 
 #include <QTimer>
-#include <QtWinExtras/QtWin>
 #include <QWidget>
 
 namespace AzQtComponents

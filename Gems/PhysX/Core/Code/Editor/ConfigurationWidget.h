@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
-#endif
 
 #include <QWidget>
 

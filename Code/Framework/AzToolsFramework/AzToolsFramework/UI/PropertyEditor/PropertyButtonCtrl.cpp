@@ -212,4 +212,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyButtonCtrl.cpp"

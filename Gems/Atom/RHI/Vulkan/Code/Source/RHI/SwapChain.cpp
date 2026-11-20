@@ -434,12 +434,16 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+            [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, nullptr);
+            VK_RESULT_ASSERT(vkResult);
+
             AZ_Assert(surfaceFormatCount > 0, "Surface support no format.");
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+
+            vkResult = device.GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                    physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data());
+            VK_RESULT_ASSERT(vkResult);
 
             const VkFormat format = ConvertFormat(rhiFormat);
             VkSurfaceFormatKHR matchedFormat = {};
@@ -485,14 +489,16 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             uint32_t modeCount = 0;
-            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
-                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr));
+            [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, nullptr);
+            VK_RESULT_ASSERT(vkResult);
             // VK_PRESENT_MODE_FIFO_KHR has to be supported.
             // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPresentModeKHR.html
             AZ_Assert(modeCount > 0, "no available present mode.");
             AZStd::vector<VkPresentModeKHR> supportedModes(modeCount);
-            AssertSuccess(device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
-                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data()));
+            vkResult = device.GetContext().GetPhysicalDeviceSurfacePresentModesKHR(
+                physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &modeCount, supportedModes.data());
+            VK_RESULT_ASSERT(vkResult);
 
             for (VkPresentModeKHR preferredMode : preferredModes)
             {
@@ -515,9 +521,9 @@ namespace AZ
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
 
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceCapabilitiesKHR(
+            [[maybe_unused]] VkResult vkResult = device.GetContext().GetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice.GetNativePhysicalDevice(), m_surface->GetNativeSurface(), &surfaceCapabilities);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
 
             return surfaceCapabilities;
         }
@@ -607,7 +613,7 @@ namespace AZ
 
             const VkResult result =
                 device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             if(hdrEnabled)
             {
@@ -722,7 +728,7 @@ namespace AZ
             m_dimensions.m_imageCount = 0;
             VkResult vkResult =
                 device.GetContext().GetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, nullptr);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
             m_swapchainNativeImages.resize(m_dimensions.m_imageCount);
@@ -731,7 +737,7 @@ namespace AZ
             // available when we init the images in InitImageInternal
             vkResult = device.GetContext().GetSwapchainImagesKHR(
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
             AZLOG_DEBUG("Obtained presentable images.\n");
 

@@ -23,21 +23,6 @@ namespace UnitTest
         }
     };
 
-    TEST_F(MixedAllocatorTestFixture, MixedStackHeapAllocator_GetNameSetNameWorks)
-    {
-        const int StackElements = 4;
-
-        // Setting the name via construction should work.
-        const char name[] = "Mixed allocator";
-        SurfaceData::mixed_stack_heap_allocator<float, StackElements> allocator(name);
-        EXPECT_EQ(strcmp(allocator.get_name(), name), 0);
-
-        // Setting the name via set_name should work.
-        const char newName[] = "Renamed allocator";
-        allocator.set_name(newName);
-        EXPECT_EQ(strcmp(allocator.get_name(), newName), 0);
-    }
-
     TEST_F(MixedAllocatorTestFixture, MixedStackHeapAllocator_SingleStackAllocationWorks)
     {
         const int StackElements = 4;

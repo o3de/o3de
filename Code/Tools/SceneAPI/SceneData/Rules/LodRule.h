@@ -34,8 +34,6 @@ namespace AZ
                     static void Reflect(ReflectContext* context);
                     bool m_preserveTopology = false;
                     bool m_limitError = false;
-                    bool m_lockBorder = false;
-                    bool m_sparse = false;
                     bool m_prune = false;
                     float m_targetError = 0.1f; // Default target error for simplification
                     float m_indexThreshold = 0.5f; // Default index threshold for simplification

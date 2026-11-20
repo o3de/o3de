@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <GraphCanvas/Widgets/EditorContextMenu/EditorContextMenu.h>
-#endif
 
 namespace LandscapeCanvasEditor
 {

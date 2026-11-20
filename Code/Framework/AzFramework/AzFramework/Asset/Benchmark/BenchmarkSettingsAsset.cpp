@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Asset/Benchmark/BenchmarkSettingsAsset.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AzFramework
 {
@@ -29,15 +30,26 @@ namespace AzFramework
             if (edit)
             {
                 edit->Class<BenchmarkSettingsAsset>(
-                    "Benchmark Settings Asset", "Settings file for generating assets for benchmark purposes")
+                    QT_TRANSLATE_NOOP("AzFramework", "Benchmark Settings Asset"),
+                    QT_TRANSLATE_NOOP("AzFramework", "Settings file for generating assets for benchmark purposes"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_primaryAssetByteSize, "Asset Buffer Size", "Size of the test buffer in the primary asset in bytes")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_dependentAssetByteSize, "Dependent Asset Buffer Size", "Size of the test buffer in each dependent asset in bytes")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_dependencyDepth, "Dependency Depth", "Depth of the asset dependency tree")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_numAssetsPerDependency, "Assets Per Dependency", "Number of assets to generate for each dependency in the tree")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BenchmarkSettingsAsset::m_assetStorageType, "Asset Storage", "Serializaton format to use for each asset (binary, text)")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_primaryAssetByteSize,
+                        QT_TRANSLATE_NOOP("AzFramework", "Asset Buffer Size"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Size of the test buffer in the primary asset in bytes"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_dependentAssetByteSize,
+                        QT_TRANSLATE_NOOP("AzFramework", "Dependent Asset Buffer Size"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Size of the test buffer in each dependent asset in bytes"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_dependencyDepth,
+                        QT_TRANSLATE_NOOP("AzFramework", "Dependency Depth"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Depth of the asset dependency tree"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BenchmarkSettingsAsset::m_numAssetsPerDependency,
+                        QT_TRANSLATE_NOOP("AzFramework", "Assets Per Dependency"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Number of assets to generate for each dependency in the tree"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BenchmarkSettingsAsset::m_assetStorageType,
+                        QT_TRANSLATE_NOOP("AzFramework", "Asset Storage"),
+                        QT_TRANSLATE_NOOP("AzFramework", "Serializaton format to use for each asset (binary, text)"))
                         ->EnumAttribute(AZ::DataStream::StreamType::ST_BINARY, "Binary")
                         ->EnumAttribute(AZ::DataStream::StreamType::ST_XML, "XML")
                         ->EnumAttribute(AZ::DataStream::StreamType::ST_JSON, "JSON")

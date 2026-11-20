@@ -10,6 +10,7 @@
 #include <RPI.Private/PassTemplatesAutoLoader.h>
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -32,7 +33,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serializeContext->GetEditContext())
                 {
-                    ec->Class<PassTemplatesAutoLoader>("PassTemplatesAutoLoader", "A service that loads PassTemplates.")
+                    ec->Class<PassTemplatesAutoLoader>("PassTemplatesAutoLoader", QT_TRANSLATE_NOOP("Atom::RPI", "A service that loads PassTemplates."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

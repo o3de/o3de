@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -23,7 +22,6 @@
 
 #include <QFrame>
 #include <QIcon>
-#endif
 
 class QVBoxLayout;
 
@@ -109,9 +107,9 @@ namespace AzToolsFramework
 
         ComponentEditorHeader* GetHeader() const;
         IPropertyEditor* GetPropertyEditor();
-        AZStd::vector<AZ::Component*>& GetComponents();
-        const AZStd::vector<AZ::Component*>& GetComponents() const;
-
+        AZStd::vector<AZ::EntityComponentIdPair>& GetEntityComponentIdPairs();
+        const AZStd::vector<AZ::EntityComponentIdPair>& GetEntityComponentIdPairs() const;
+        AZStd::vector<AZ::Component*> ResolveComponentPointers() const;
         //! Visits the contents of the DPEComponentAdapter used by this ComponentEditor.
         //! @param callback The callback to use to visit the DPEComponentAdapter contents.
         void VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const;
@@ -182,7 +180,7 @@ namespace AzToolsFramework
         /// Type of component being shown
         AZ::Uuid m_componentType = AZ::Uuid::CreateNull();
 
-        AZ::Entity::ComponentArrayType m_components;
+        AZStd::vector<AZ::EntityComponentIdPair> m_components;
         AZ::Crc32 m_savedKeySeed;
 
         AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;

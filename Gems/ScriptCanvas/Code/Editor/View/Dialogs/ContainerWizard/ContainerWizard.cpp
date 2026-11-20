@@ -147,7 +147,7 @@ namespace ScriptCanvasEditor
 
         m_ui->variableName->setText(variableName.c_str());
         m_ui->variableName->setFocus(Qt::FocusReason::MouseFocusReason);
-        m_ui->variableName->setSelection(0, m_ui->variableName->text().size());
+        m_ui->variableName->setSelection(0, aznumeric_cast<int>(m_ui->variableName->text().size()));
     }
 
     void ContainerWizard::accept()
@@ -615,4 +615,3 @@ namespace ScriptCanvasEditor
     }
 }
 
-#include <Editor/View/Dialogs/ContainerWizard/moc_ContainerWizard.cpp>

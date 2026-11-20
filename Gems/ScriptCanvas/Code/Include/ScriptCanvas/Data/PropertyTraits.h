@@ -447,7 +447,7 @@ namespace ScriptCanvas
                                     thisObjectParam.GetError().data()));
                             }
                             getterParams[0].Set(thisObjectParam.TakeValue());
-                            auto behaviorMethodInvokeOutcome = Datum::CallBehaviorContextMethodResult(getterMethod, getterMethod->GetResult(), getterParams.begin(),
+                            auto behaviorMethodInvokeOutcome = Datum::CallBehaviorContextMethodResult(getterMethod, getterMethod->GetResult(), getterParams.data(),
                                 static_cast<AZ::u32>(getterMethod->GetNumArguments()), behaviorProperty->m_name);
                             if (!behaviorMethodInvokeOutcome)
                             {

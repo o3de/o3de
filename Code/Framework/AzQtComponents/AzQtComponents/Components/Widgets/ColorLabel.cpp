@@ -98,4 +98,3 @@ namespace AzQtComponents
     }
 }
 
-#include <Components/Widgets/moc_ColorLabel.cpp>

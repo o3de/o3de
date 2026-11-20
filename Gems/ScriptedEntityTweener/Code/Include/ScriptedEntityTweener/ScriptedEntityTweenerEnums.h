@@ -10,6 +10,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzFramework/Math/Easing.h>
 
 namespace ScriptedEntityTweener
 {
@@ -52,29 +53,6 @@ namespace AZStd
 
 namespace ScriptedEntityTweener
 {
-    enum class EasingMethod
-    {
-        None = 0,
-        Linear = None,
-        Quad, //1
-        Cubic, //2
-        Quart, //3
-        Quint, //4
-        Sine, //5
-        Expo, //6
-        Circ, //7
-        Elastic, //8
-        Back, //9
-        Bounce //10
-    };
-
-    enum class EasingType
-    {
-        In = 0,
-        Out, //1
-        InOut //2
-    };
-
     //Generally, animations created to animate n number of parameters a certain way, AnimationProperties defines what exactly is applied
     struct AnimationProperties
     {
@@ -82,8 +60,8 @@ namespace ScriptedEntityTweener
         static const int InvalidCallbackId;
         static const unsigned int InvalidTimelineId;
 
-        EasingMethod m_easeMethod;
-        EasingType m_easeType;
+        AzFramework::EasingMethod m_easeMethod;
+        AzFramework::EasingType m_easeType;
 
         float m_timeIntoAnimation;
         
@@ -113,8 +91,8 @@ namespace ScriptedEntityTweener
 
         void Reset()
         {
-            m_easeMethod = EasingMethod::None;
-            m_easeType = EasingType::In;
+            m_easeMethod = AzFramework::EasingMethod::None;
+            m_easeType = AzFramework::EasingType::In;
 
             m_timeToDelayAnim = 0.0f;
             m_timeDuration = 0.0f;

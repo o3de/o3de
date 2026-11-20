@@ -48,8 +48,8 @@ namespace AzQtComponents
 
     void TagWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        m_lastMouseX = event->x();
-        m_lastMouseY = event->y();
+        m_lastMouseX = event->position().x();
+        m_lastMouseY = event->position().y();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ namespace AzQtComponents
 
         QHBoxLayout* hLayout = nullptr;
         int usedSpaceInRow = 0;
-        const int numTags = m_tags.count();
+        const int numTags = static_cast<int>(m_tags.count());
         for (int i = 0; i < numTags; ++i)
         {
             // Create the new tag widget.
@@ -138,7 +138,7 @@ namespace AzQtComponents
 
     int TagWidgetContainer::GetNumTags() const
     {
-        return m_tags.count();
+        return static_cast<int>(m_tags.count());
     }
 
 
@@ -348,4 +348,3 @@ namespace AzQtComponents
     }
 } // namespace AzQtComponents
 
-#include "Components/moc_TagSelector.cpp"

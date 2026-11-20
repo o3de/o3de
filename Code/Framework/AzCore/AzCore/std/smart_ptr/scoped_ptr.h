@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SMART_PTR_SCOPED_PTR_H
-#define AZSTD_SMART_PTR_SCOPED_PTR_H
+
+#pragma once
 
 //  (C) Copyright Greg Colvin and Beman Dawes 1998, 1999.
 //  Copyright (c) 2001, 2002 Peter Dimov
@@ -129,6 +129,3 @@ namespace AZStd
         return p.get();
     }
 } // namespace AZStd
-
-#endif // #ifndef AZSTD_SMART_PTR_SCOPED_PTR_H
-#pragma once

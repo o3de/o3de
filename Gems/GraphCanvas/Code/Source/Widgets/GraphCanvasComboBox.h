@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QDialog>
 #include <QLineEdit>
@@ -25,7 +24,6 @@
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Utils/StateControllers/StackStateController.h>
 #include <GraphCanvas/Widgets/ComboBox/ComboBoxItemModelInterface.h>
-#endif
 
 namespace GraphCanvas
 {

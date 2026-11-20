@@ -274,6 +274,4 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Data::Type dataType = ScriptCanvas::Data::FromAZType(typeId);
         emit CreateNamedVariable(variableName, dataType);
     }
-
-#include <Editor/View/Widgets/VariablePanel/moc_VariablePaletteTableView.cpp>
 }

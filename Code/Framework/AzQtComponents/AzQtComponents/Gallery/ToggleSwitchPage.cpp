@@ -55,4 +55,3 @@ ToggleSwitchPage::~ToggleSwitchPage()
 {
 }
 
-#include "Gallery/moc_ToggleSwitchPage.cpp"

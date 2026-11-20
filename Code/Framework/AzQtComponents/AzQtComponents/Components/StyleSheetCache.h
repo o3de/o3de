@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 
@@ -20,7 +19,6 @@
 #include <QStack>
 #include <QMap>
 #include <QRegularExpression>
-#endif
 
 class QFileSystemWatcher;
 

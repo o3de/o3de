@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AudioControl.h>
 #include <QTreeWidgetFilter.h>
 #include <AudioControlFilters.h>
@@ -18,7 +17,6 @@
 #include <QMenu>
 
 #include <Source/Editor/ui_AudioSystemPanel.h>
-#endif
 
 namespace AudioControls
 {

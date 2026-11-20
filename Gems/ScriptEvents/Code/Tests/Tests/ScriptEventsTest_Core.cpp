@@ -368,7 +368,7 @@ namespace ScriptEventsTests
             }
 
             AZStd::array<AZ::BehaviorArgument, 2> params;
-            AZ::BehaviorArgument* paramFirst(params.begin());
+            AZ::BehaviorArgument* paramFirst(params.data());
             AZ::BehaviorArgument* paramIter = paramFirst;
 
             // Set the values

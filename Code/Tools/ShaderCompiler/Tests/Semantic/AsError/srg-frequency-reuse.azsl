@@ -1,0 +1,11 @@
+ShaderResourceGroupSemantic sem
+{ FrequencyId = 0; };
+
+ShaderResourceGroup SRG : sem
+{
+}
+
+ShaderResourceGroup SRG2 : sem
+{
+}
+// #EC 44

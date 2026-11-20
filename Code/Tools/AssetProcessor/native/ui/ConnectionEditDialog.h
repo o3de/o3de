@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QModelIndex>
 #include <QPersistentModelIndex>
+
 #include <AzQtComponents/Components/StyledDialog.h>
-#endif
 
 class ConnectionManager;
 class QLineEdit;

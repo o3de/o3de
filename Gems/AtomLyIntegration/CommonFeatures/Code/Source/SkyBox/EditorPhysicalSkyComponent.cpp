@@ -8,6 +8,7 @@
 
 #include <SkyBox/EditorPhysicalSkyComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorPhysicalSkyComponent>(
-                        "Physical Sky", "Physical Sky render the background of your scene with physical simulation")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Physical Sky"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Physical Sky render the background of your scene with physical simulation"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Environment")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -39,32 +40,32 @@ namespace AZ
                         "PhysicalSkyComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicalSkyComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicalSkyComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<PhysicalSkyComponentConfig>(
                         "PhysicalSkyComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->DataElement(Edit::UIHandlers::ComboBox, &PhysicalSkyComponentConfig::m_intensityMode, "Intensity Mode", "Specifying the light unit")
-                                ->EnumAttribute(PhotometricUnit::Ev100Luminance, "Ev100")
-                                ->EnumAttribute(PhotometricUnit::Nit, "Nit")
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_skyIntensity, "Sky Intensity", "Brightness of the sky")
+                            ->DataElement(Edit::UIHandlers::ComboBox, &PhysicalSkyComponentConfig::m_intensityMode, QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity Mode"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Specifying the light unit"))
+                                ->EnumAttribute(PhotometricUnit::Ev100Luminance, QT_TRANSLATE_NOOP("AtomLyIntegration", "Ev100"))
+                                ->EnumAttribute(PhotometricUnit::Nit, QT_TRANSLATE_NOOP("AtomLyIntegration", "Nit"))
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_skyIntensity, QT_TRANSLATE_NOOP("AtomLyIntegration", "Sky Intensity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Brightness of the sky"))
                                 ->Attribute(AZ::Edit::Attributes::Min, &PhysicalSkyComponentConfig::GetSkyIntensityMin)
                                 ->Attribute(AZ::Edit::Attributes::Max, &PhysicalSkyComponentConfig::GetSkyIntensityMax)
                                 ->Attribute(Edit::Attributes::Suffix, &PhysicalSkyComponentConfig::GetIntensitySuffix)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_sunIntensity, "Sun Intensity", "Brightness of the sun")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_sunIntensity, QT_TRANSLATE_NOOP("AtomLyIntegration", "Sun Intensity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Brightness of the sun"))
                                 ->Attribute(AZ::Edit::Attributes::Min, &PhysicalSkyComponentConfig::GetSunIntensityMin)
                                 ->Attribute(AZ::Edit::Attributes::Max, &PhysicalSkyComponentConfig::GetSunIntensityMax)
                                 ->Attribute(Edit::Attributes::Suffix, &PhysicalSkyComponentConfig::GetIntensitySuffix)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_sunRadiusFactor, "Sun Radius Factor", "A factor for Physical sun radius in millions of km. 1 unit is 695,508 km")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_sunRadiusFactor, QT_TRANSLATE_NOOP("AtomLyIntegration", "Sun Radius Factor"), QT_TRANSLATE_NOOP("AtomLyIntegration", "A factor for Physical sun radius in millions of km. 1 unit is 695,508 km"))
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 2.f)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_turbidity, "Turbidity", "A measure of the aerosol content in the air. Default is 1.")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_turbidity, QT_TRANSLATE_NOOP("AtomLyIntegration", "Turbidity"), QT_TRANSLATE_NOOP("AtomLyIntegration", "A measure of the aerosol content in the air. Default is 1."))
                                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                                 ->Attribute(AZ::Edit::Attributes::Max, 10)
                                 ->Attribute(AZ::Edit::Attributes::Step, 1)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicalSkyComponentConfig::m_skyBoxFogSettings, "Fog", "Fog settings for rendering on top of physical sky")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicalSkyComponentConfig::m_skyBoxFogSettings, QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Fog settings for rendering on top of physical sky"))
                                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }

@@ -253,4 +253,3 @@ void ColorRGBAEdit::alphaValueChanged(qreal value)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorRGBAEdit.cpp"

@@ -290,7 +290,7 @@ namespace EMStudio
 
         // get the selected items and the number of them
         QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // iterate through the selected items
         for (int32 i = 0; i < numSelectedItems; ++i)

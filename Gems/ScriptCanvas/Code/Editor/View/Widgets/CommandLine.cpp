@@ -648,6 +648,5 @@ namespace ScriptCanvasEditor
             ui->commandText->setFocus(Qt::PopupFocusReason);
         }
 
-        #include <Editor/View/Widgets/moc_CommandLine.cpp>
     }
 }

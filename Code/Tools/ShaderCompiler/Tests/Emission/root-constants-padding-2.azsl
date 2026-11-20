@@ -1,0 +1,1 @@
+rootconstant float3x3 s_objectMatrix;

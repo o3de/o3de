@@ -7,11 +7,15 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
-#include <QDialog>
 
 #include "Include/EditorCoreAPI.h"
-#endif
+
+#include <AzCore/std/containers/list.h>
+
+#include <QDialog>
+#include <QScopedPointer>
+#include <QSet>
+#include <QString>
 
 namespace Ui 
 {

@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <SurfaceData/SurfacePointList.h>
@@ -40,9 +41,9 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("GradientSignal", "Preview"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->UIElement("GradientPreviewer", "Previewer")
+                    ->UIElement("GradientPreviewer", QT_TRANSLATE_NOOP("GradientSignal", "Previewer"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ_CRC_CE("GradientEntity"), &EditorGradientSurfaceDataComponent::GetGradientEntityId)

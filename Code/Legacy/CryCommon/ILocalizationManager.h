@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H
-#define CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H
 #pragma once
 
 #include "LocalizationManagerBus.h"
@@ -287,8 +284,3 @@ struct ILocalizationManager
 
 // Summary:
 //      Simple bus that notifies listeners that the language (g_language) has changed.
-
-
-
-
-#endif // CRYINCLUDE_CRYCOMMON_ILOCALIZATIONMANAGER_H

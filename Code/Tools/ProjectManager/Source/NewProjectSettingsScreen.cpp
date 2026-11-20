@@ -112,7 +112,7 @@ namespace O3DE::ProjectManager
                                 // remove remote template button from layout so we can insert the new templates before it
                                 m_templateFlowLayout->removeWidget(m_remoteTemplateButton);
 
-                                int currentTemplateIndex = m_templates.size();
+                                int currentTemplateIndex = static_cast<int>(m_templates.size());
                                 const QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
                                 for (const ProjectTemplateInfo& remoteTemplate : remoteTemplates)
                                 {

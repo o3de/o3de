@@ -46,19 +46,19 @@ namespace GraphCanvas
 
             if (editContext)
             {
-                editContext->Class<BookmarkAnchorComponentSaveData>("BookmarkAnchorComponent", "The Save data utilized by the BookmarkAnchorComponent")
+                editContext->Class<BookmarkAnchorComponentSaveData>(QT_TRANSLATE_NOOP("GraphCanvas", "BookmarkAnchorComponent"), QT_TRANSLATE_NOOP("GraphCanvas", "The Save data utilized by the BookmarkAnchorComponent"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponentSaveData::m_bookmarkName, "Bookmark Name", "The name associated with the given Bookmark Anchor")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponentSaveData::m_bookmarkName, QT_TRANSLATE_NOOP("GraphCanvas", "Bookmark Name"), QT_TRANSLATE_NOOP("GraphCanvas", "The name associated with the given Bookmark Anchor"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BookmarkAnchorComponentSaveData::OnBookmarkNameChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponentSaveData::m_color, "Color", "The color associated with the given Bookmark Anchor")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponentSaveData::m_color, QT_TRANSLATE_NOOP("GraphCanvas", "Color"), QT_TRANSLATE_NOOP("GraphCanvas", "The color associated with the given Bookmark Anchor"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BookmarkAnchorComponentSaveData::OnBookmarkColorChanged)
                     ;
 
-                editContext->Class<BookmarkAnchorComponent>("BookmarkAnchorComponent", "The Save data utilized by the BookmarkAnchorComponent")
+                editContext->Class<BookmarkAnchorComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "BookmarkAnchorComponent"), QT_TRANSLATE_NOOP("GraphCanvas", "The Save data utilized by the BookmarkAnchorComponent"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponent::m_saveData, "Save Data", "Save Data")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BookmarkAnchorComponent::m_saveData, QT_TRANSLATE_NOOP("GraphCanvas", "Save Data"), QT_TRANSLATE_NOOP("GraphCanvas", "Save Data"))
                     ;
             }
         }

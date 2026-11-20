@@ -160,7 +160,7 @@ namespace UnitTest
         {
             RHI::ShaderResourceGroupBindingInfo bindingInfo;
             bindingInfo.m_constantDataBindingInfo.m_registerId = 0;
-            bindingInfo.m_resourcesRegisterMap.insert({ "StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1, 1} });
+            bindingInfo.m_resourcesRegisterMap.emplace("StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1, 1});
 
             return bindingInfo;
         }

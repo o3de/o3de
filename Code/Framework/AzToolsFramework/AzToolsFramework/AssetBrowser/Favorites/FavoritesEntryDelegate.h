@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStyledItemDelegate>
 
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
-#endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 

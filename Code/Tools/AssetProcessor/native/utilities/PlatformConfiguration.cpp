@@ -1176,7 +1176,7 @@ namespace AssetProcessor
                 auto scanFolderMatch = [watchFolderQt = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(),
                     aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size()))](const QString& scanFolderPattern)
                 {
-                    const bool match = AZStd::wildcard_match(qPrintable(scanFolderPattern), qPrintable(watchFolderQt));
+                    const bool match = AZStd::wildcard_match(qUtf8Printable(scanFolderPattern), qUtf8Printable(watchFolderQt));
                     return match;
                 };
                 if (!scanFolderPatterns.empty() && AZStd::none_of(scanFolderPatterns.begin(), scanFolderPatterns.end(), scanFolderMatch))
@@ -1702,7 +1702,7 @@ namespace AssetProcessor
                 continue;
             }
             QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
-            if (AZStd::wildcard_match(qPrintable(posixRelativeName), qPrintable(pathMatch)))
+            if (AZStd::wildcard_match(qUtf8Printable(posixRelativeName), qUtf8Printable(pathMatch)))
             {
                 returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
@@ -1761,7 +1761,7 @@ namespace AssetProcessor
                 }
 
                 QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
-                if (AZStd::wildcard_match(qPrintable(posixRelativeName), qPrintable(pathMatch)))
+                if (AZStd::wildcard_match(qUtf8Printable(posixRelativeName), qUtf8Printable(pathMatch)))
                 {
                     returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
                 }

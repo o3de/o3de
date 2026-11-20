@@ -6,16 +6,17 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Utils.h>
+
 #include <QWidget>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QLabel>
 #include <QCheckBox>
-#endif
 
 #pragma once
 
@@ -116,7 +117,7 @@ namespace PhysX
             void OnLayerChanged(AzPhysics::CollisionGroups::Id groupId, const AzPhysics::CollisionLayer& layer, bool enabled);
 
         private:
-            void OnCheckboxChanged(int state);
+            void OnCheckboxChanged(Qt::CheckState state);
 
             QCheckBox * m_checkBox;
             Data m_cell;

@@ -16,6 +16,8 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace Render
@@ -37,123 +39,157 @@ namespace AZ
                 if (EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDirectionalLightComponent>(
-                        "Directional Light", "A directional light to cast a shadow of meshes onto meshes.")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Directional Light"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "A directional light to cast a shadow of meshes onto meshes."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/directional-light/") // [GFX TODO][ATOM-1998] create page
+                        ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/directional-light/")
                         ;
 
                     editContext->Class<DirectionalLightComponentController>(
                         "DirectionalLightComponentController", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(Edit::Attributes::Visibility, Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<DirectionalLightComponentConfig>("DirectionalLightComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
+                        ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Color of the light"))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
-                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying light values in lux or Ev100")
-                            ->EnumAttribute(PhotometricUnit::Lux, "Lux")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity mode"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Allows specifying light values in lux or Ev100"))
+                            ->EnumAttribute(PhotometricUnit::Lux,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Lux"))
                             ->EnumAttribute(PhotometricUnit::Ev100Illuminance, "Ev100")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_intensity,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Intensity of the light in the set photometric unit."))
                             ->Attribute(Edit::Attributes::Min, &DirectionalLightComponentConfig::GetIntensityMin)
                             ->Attribute(Edit::Attributes::Max, &DirectionalLightComponentConfig::GetIntensityMax)
                             ->Attribute(Edit::Attributes::SoftMin, &DirectionalLightComponentConfig::GetIntensitySoftMin)
                             ->Attribute(Edit::Attributes::SoftMax, &DirectionalLightComponentConfig::GetIntensitySoftMax)
                             ->Attribute(Edit::Attributes::Suffix, &DirectionalLightComponentConfig::GetIntensitySuffix)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_angularDiameter, "Angular diameter", "Angular diameter of the directional light in degrees. The sun is about 0.5.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_angularDiameter,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Angular diameter"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Angular diameter of the directional light in degrees. The sun is about 0.5."))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 5.0f)
                             ->Attribute(Edit::Attributes::SoftMax, 1.0f)
-                            ->Attribute(Edit::Attributes::Suffix, " deg")
+                            ->Attribute(Edit::Attributes::Suffix,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", " deg"))
                             
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_lightingChannelConfig,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Lighting Channels"), "")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                             
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
+                        ->ClassElement(AZ::Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowEnabled, "Enable Shadow", "Enable Shadow for this directional light. Only one directional light can have shadow")
-                        ->DataElement(Edit::UIHandlers::EntityId, &DirectionalLightComponentConfig::m_cameraEntityId, "Camera", "Entity of the camera for cascaded shadowmap view frustum.")
+                            ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowEnabled,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Shadow"),
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Shadow for this directional light. Only one directional light can have shadow"))
+                        ->DataElement(Edit::UIHandlers::EntityId, &DirectionalLightComponentConfig::m_cameraEntityId,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Camera"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Entity of the camera for cascaded shadowmap view frustum."))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance, "Shadow far clip", "Shadow specific far clip distance.")
+                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow far clip"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow specific far clip distance."))
                             ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowmapSize, "Shadowmap size", "Width/Height of shadowmap")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowmapSize,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadowmap size"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Width/Height of shadowmap"))
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
                             ->EnumAttribute(ShadowmapSize::Size1024, "1024")
                             ->EnumAttribute(ShadowmapSize::Size2048, "2048")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_cascadeCount, "Cascade count", "Number of cascades")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_cascadeCount,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Cascade count"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Number of cascades"))
                             ->Attribute(Edit::Attributes::Min, 1)
                             ->Attribute(Edit::Attributes::Max, Shadow::MaxNumberOfCascades)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_isShadowmapFrustumSplitAutomatic, "Automatic splitting",
-                            "Switch splitting of shadowmap frustum to cascades automatically or not.")
+                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_isShadowmapFrustumSplitAutomatic,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Automatic splitting"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Switch splitting of shadowmap frustum to cascades automatically or not."))
                             ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowmapFrustumSplitSchemeRatio, "Split ratio",
-                            "Ratio to lerp between the two types of frustum splitting scheme.\n"
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowmapFrustumSplitSchemeRatio,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Split ratio"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Ratio to lerp between the two types of frustum splitting scheme.\n"
                             "0 = Uniform scheme which will split the frustum evenly across all cascades.\n"
                             "1 = Logarithmic scheme which is designed to split the frustum in a logarithmic fashion "
-                            "in order to enable us to produce a more optimal perspective aliasing across the frustum.")
+                            "in order to enable us to produce a more optimal perspective aliasing across the frustum."))
                             ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 1.f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitManual)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Vector4, &DirectionalLightComponentConfig::m_cascadeFarDepths, "Far depth cascade",
-                            "Far depth of each cascade.  The value of the index greater than or equal to cascade count is ignored.")
+                        ->DataElement(Edit::UIHandlers::Vector4, &DirectionalLightComponentConfig::m_cascadeFarDepths,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Far depth cascade"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Far depth of each cascade.  The value of the index greater than or equal to cascade count is ignored."))
                             ->Attribute(Edit::Attributes::Min, DirectionalLightConstants::MIN_CASCADE_FAR_DEPTH)
                             ->Attribute(Edit::Attributes::Max, &DirectionalLightComponentConfig::m_shadowFarClipDistance)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitAutomatic)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_groundHeight, "Ground height",
-                            "Height of the ground. Used to correct position of cascades.")
-                            ->Attribute(Edit::Attributes::Suffix, " m")
+                        ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_groundHeight,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Ground height"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Height of the ground. Used to correct position of cascades."))
+                            ->Attribute(Edit::Attributes::Suffix,
+                                " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsCascadeCorrectionDisabled)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(Edit::UIHandlers::CheckBox,
-                            &DirectionalLightComponentConfig::m_isCascadeCorrectionEnabled, "Cascade correction",
-                            "Enable position correction of cascades to optimize the appearance for certain camera positions.")
+                            &DirectionalLightComponentConfig::m_isCascadeCorrectionEnabled,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Cascade correction"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable position correction of cascades to optimize the appearance for certain camera positions."))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(Edit::UIHandlers::CheckBox,
-                            &DirectionalLightComponentConfig::m_isDebugColoringEnabled, "Debug coloring",
-                            "Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow.")
+                            &DirectionalLightComponentConfig::m_isDebugColoringEnabled,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Debug coloring"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow."))
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowFilterMethod, "Shadow filter method",
-                            "Filtering method of edge-softening of shadows.\n"
+                        ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowFilterMethod,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow filter method"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Filtering method of edge-softening of shadows.\n"
                             "  None: No filtering\n"
                             "  PCF: Percentage-closer filtering\n"
                             "  ESM: Exponential shadow maps\n"
                             "  ESM+PCF: ESM with a PCF fallback\n"
-                            "For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM+PCF=3")
-                            ->EnumAttribute(ShadowFilterMethod::None, "None")
+                            "For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM+PCF=3"))
+                            ->EnumAttribute(ShadowFilterMethod::None,
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "None"))
                             ->EnumAttribute(ShadowFilterMethod::Pcf, "PCF")
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
-                            "This is used only when the pixel is predicted to be on the boundary.\n"
-                            "Specific to PCF and ESM+PCF.")
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Filtering sample count"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "This is used only when the pixel is predicted to be on the boundary.\n"
+                            "Specific to PCF and ESM+PCF."))
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
@@ -161,56 +197,63 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
-                            "Shadow Receiver Plane Bias Enable",
-                            "This reduces shadow acne when using large pcf kernels.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow Receiver Plane Bias Enable"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "This reduces shadow acne when using large pcf kernels."))
                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                           ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled) 
                           ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                          ->DataElement(
                             Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias,
-                            "Shadow Bias",
-                            "Reduces acne by applying a fixed bias along z in shadow-space.\n"
-                            "If this is 0, no biasing is applied.") 
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Shadow Bias"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Reduces acne by applying a fixed bias along z in shadow-space.\n"
+                            "If this is 0, no biasing is applied.")) 
                            ->Attribute(Edit::Attributes::Min, 0.f)
                            ->Attribute(Edit::Attributes::Max, 0.2) 
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(
-                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
-                           "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
-                           "If this is 0, no biasing is applied.")
+                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias,
+                           QT_TRANSLATE_NOOP("AtomLyIntegration", "Normal Shadow Bias"),
+                           QT_TRANSLATE_NOOP("AtomLyIntegration", "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
+                           "If this is 0, no biasing is applied."))
                            ->Attribute(Edit::Attributes::Min, 0.f)
                            ->Attribute(Edit::Attributes::Max, 10.0f)
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
-                            "Blend between cascades", "Enables smooth blending between shadow map cascades.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Blend between cascades"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enables smooth blending between shadow map cascades."))
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
 
                         // Fullscreen Shadow Blur...
                         ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_fullscreenBlurEnabled,
-                            "Fullscreen Blur",
-                            "Enables fullscreen blur on fullscreen sunlight shadows.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Fullscreen Blur"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enables fullscreen blur on fullscreen sunlight shadows."))
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff,
-                                "Fullscreen Blur Strength",
-                                "Affects how strong the fullscreen shadow blur is. Recommended value is 0.67")
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Fullscreen Blur Strength"),
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects how strong the fullscreen shadow blur is. Recommended value is 0.67"))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 0.95f)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength,
-                                "Fullscreen Blur Sharpness",
-                                "Affects how sharp the fullscreen shadow blur appears around edges. Recommended value is 50")
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Fullscreen Blur Sharpness"),
+                                QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects how sharp the fullscreen shadow blur appears around edges. Recommended value is 50"))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 400.0f)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowDisabled)
 
-                        ->ClassElement(Edit::ClassElements::Group, "Global Illumination")
+                        ->ClassElement(Edit::ClassElements::Group,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Global Illumination"))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_affectsGI, "Affects GI", "Controls whether this light affects diffuse global illumination.")
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_affectsGIFactor, "Factor", "Multiplier on the amount of contribution to diffuse global illumination.")
+                        ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_affectsGI,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects GI"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls whether this light affects diffuse global illumination."))
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_affectsGIFactor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Factor"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Multiplier on the amount of contribution to diffuse global illumination."))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
                         ;

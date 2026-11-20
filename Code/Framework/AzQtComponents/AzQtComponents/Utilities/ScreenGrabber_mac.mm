@@ -11,7 +11,6 @@
 
 #include <QImage>
 #include <QPixmap>
-#include <QtMac>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>
@@ -76,4 +75,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Utilities/moc_ScreenGrabber.cpp"

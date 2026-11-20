@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <QObject>
-#endif
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 

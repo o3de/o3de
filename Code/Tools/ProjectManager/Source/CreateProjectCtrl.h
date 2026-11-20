@@ -9,10 +9,8 @@
 
 #include <AzCore/Outcome/Outcome.h>
 
-#if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

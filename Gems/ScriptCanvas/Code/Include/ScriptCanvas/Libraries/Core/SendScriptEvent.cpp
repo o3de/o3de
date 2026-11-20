@@ -146,7 +146,7 @@ namespace ScriptCanvas
                 }
                 else
                 {
-                    slotConfiguration.ConfigureDatum(AZStd::move(Datum(*argument, Datum::eOriginality::Copy, nullptr)));
+                    slotConfiguration.ConfigureDatum(Datum(*argument, Datum::eOriginality::Copy, nullptr));
                     slotId = InsertSlot(aznumeric_cast<AZ::s64>(slotIndex), slotConfiguration, isNewSlot);
 
                     if (auto defaultValue = method->GetDefaultValue(argIndex))
@@ -156,7 +156,7 @@ namespace ScriptCanvas
 
                         if (datumView.IsValid() && Data::IsValueType(datumView.GetDataType()))
                         {
-                            datumView.AssignToDatum(AZStd::move(Datum(defaultValue->m_value)));
+                            datumView.AssignToDatum(Datum(defaultValue->m_value));
                         }
                     }
                 }

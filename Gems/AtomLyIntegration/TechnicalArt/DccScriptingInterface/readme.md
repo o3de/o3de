@@ -34,7 +34,7 @@ The *DccScriptingInterface* is a Gem for O3DE to extend and interface with dcc t
 
 DCC-Agnostic Python Framework (as a modular Gem) related to multiple integrations for:
 
-- O3DE Editor extensibility (python scripting, utils and PySide2 tools)
+- O3DE Editor extensibility (python scripting, utils and PySide tools)
 
 - DCC applications, O3DE related extensibility using their Python APIs/SDKs
 
@@ -141,9 +141,9 @@ Note: most DCC tools come with their own managed Python, and many are Qt based a
   
   - within the module this is `config.init_o3de_python()`
 
-- config.py can optionally bootstrap access to O3DE Qt/PySide2
+- config.py can optionally bootstrap access to O3DE Qt/PySide
   
-  - within the module this is `config.init_o3de_pyside2()`
+  - within the module this is `config.init_o3de_pyside()`
 
 #### Command Line
 
@@ -169,15 +169,15 @@ This command will extend the environment with O3DE Python, this config state wil
 
 - `.\python config.py -py=True`
 
-This command will further extend the environment in a Qt specific way, it will give you access to the Python, Qt.dll's, and PySide2 (aka Qt For Python) that ship with O3DE, this is the configuration state you would use to launch a standalone GUI tool.
+This command will further extend the environment in a Qt specific way, it will give you access to the Python, Qt.dll's, and PySide (aka Qt For Python) that ship with O3DE, this is the configuration state you would use to launch a standalone GUI tool.
 
 - `.\python config.py -py=True -qt=True`
 
 Yes, you can author a Qt app that runs external from the o3de editor.exe, you can validate this by running with this additional flag:
 
-- `.\python config.py -py=True -qt=True --test-pyside2=True`
+- `.\python config.py -py=True -qt=True --test-pyside=True`
 
-That will execute the config to stand up access, then start a PySide2 test, you'll see a standalone panel with a button pop-up.
+That will execute the config to stand up access, then start a PySide test, you'll see a standalone panel with a button pop-up.
 
 < stub an image here >
 

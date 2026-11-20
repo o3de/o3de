@@ -10,11 +10,9 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserBus.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
-#endif
 
 class QTreeWidget;
 class QTreeWidgetItem;

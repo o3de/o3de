@@ -12,8 +12,18 @@ namespace OpenParticle
 {
     void ParticleModel::SetupModel(AZ::Data::Asset<AZ::RPI::ModelAsset>& model, size_t lodIndex)
     {
+        m_lastContractHash = AZ::HashValue64{ 0 };
+        m_modelLod = nullptr;
         m_modelInstance = AZ::RPI::Model::FindOrCreate(model);
-        AZ_Assert(m_modelInstance, "model instance is nullptr");
+        if (!m_modelInstance)
+        {
+            AZ_Error(
+                "ParticleModel", false,
+                "Failed to create model instance for mesh particle. "
+                "Ensure the model asset is processed and its gem is enabled. Asset hint: '%s'",
+                model.GetHint().c_str());
+            return;
+        }
         if (lodIndex < m_modelInstance->GetLodCount())
         {
             m_modelLod = m_modelInstance->GetLods()[lodIndex];
@@ -22,12 +32,13 @@ namespace OpenParticle
         else
         {
             m_modelLod = m_modelInstance->GetLods()[0];
+            m_lodIndex = 0;
         }
     }
 
     size_t ParticleModel::GetMeshCount() const
     {
-        return m_modelLod->GetMeshes().size();
+        return m_modelLod ? m_modelLod->GetMeshes().size() : 0;
     }
 
     AZ::Data::Instance<AZ::RPI::ModelLod> ParticleModel::GetModelLod() const
@@ -37,62 +48,92 @@ namespace OpenParticle
 
     bool ParticleModel::BuildInputStreamLayouts(const AZ::RPI::ShaderInputContract& contract)
     {
-        m_inputStreamLayouts.clear();
-        m_buffers.clear();
-
-        auto meshSize = GetMeshCount();
-        m_streamBufferViews.resize(meshSize);
-        if (!SetMeshStreamBuffers())
+        if (!m_modelLod)
         {
+            AZ_WarningOnce("ParticleModel", false,
+                "BuildInputStreamLayouts called with null ModelLod. The mesh particle's model asset failed to load or instantiate.");
             return false;
         }
 
-        for (auto it = 0; it < meshSize; ++it)
+        const AZ::HashValue64 contractHash = contract.GetHash();
+        if (contractHash == m_lastContractHash && !m_inputStreamLayouts.empty())
+        {
+            return true;
+        }
+
+        m_inputStreamLayouts.clear();
+        m_uvStreamTangentBitmasks.clear();
+
+        auto meshSize = GetMeshCount();
+        m_inputStreamLayouts.resize(meshSize);
+        m_uvStreamTangentBitmasks.resize(meshSize);
+        m_streamBufferViews.resize(meshSize);
+
+        for (size_t it = 0; it < meshSize; ++it)
         {
             AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
             AZ::RPI::UvStreamTangentBitmask uvStreamTangentBitmaskOut;
             layoutBuilder.Begin();
-            if (!GetStreamsForMesh(
-                    layoutBuilder, &uvStreamTangentBitmaskOut, contract, it, {},
-                    m_modelLod->GetMeshes()[it].m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
+
+            AZ::RPI::MaterialUvNameMap uvNameMap;
+            const auto& meshMaterial = m_modelLod->GetMeshes()[it].m_material;
+            if (meshMaterial)
             {
-                continue;
+                auto matAsset = meshMaterial->GetAsset();
+                if (matAsset && matAsset.IsReady() && matAsset->GetMaterialTypeAsset())
+                {
+                    uvNameMap = matAsset->GetMaterialTypeAsset()->GetUvNameMap();
+                }
             }
-            layoutBuilder.AddBuffer(AZ::RHI::StreamStepFunction::PerInstance)
-                ->Channel("OFFSET", AZ::RHI::Format::R32G32B32A32_FLOAT)
-                ->Channel("COLOR", AZ::RHI::Format::R32G32B32A32_FLOAT)
-                ->Channel("INITROTATION", AZ::RHI::Format::R32G32B32A32_FLOAT)
-                ->Channel("ROTATEVECTOR", AZ::RHI::Format::R32G32B32A32_FLOAT)
-                ->Channel("SCALE", AZ::RHI::Format::R32G32B32A32_FLOAT);
-            m_inputStreamLayouts.emplace_back(layoutBuilder.End());
+
+            if (!GetStreamsForMesh(layoutBuilder, &uvStreamTangentBitmaskOut, contract, it, {}, uvNameMap))
+            {
+                AZ_WarningOnce("ParticleModel", false,
+                    "GetStreamsForMesh failed for mesh index %zu. The shader's input contract is not satisfied by the mesh's vertex streams.",
+                    it);
+                return false;
+            }
+            m_inputStreamLayouts[it] = layoutBuilder.End();
+            m_uvStreamTangentBitmasks[it] = uvStreamTangentBitmaskOut;
         }
 
+        m_lastContractHash = contractHash;
         return true;
-    }
-
-    void ParticleModel::SetParticleStreamBufferView(const AZ::RHI::StreamBufferView& streamBufferView, size_t meshIndex)
-    {
-        if (meshIndex < GetMeshCount())
-        {
-            m_streamBufferViews[meshIndex].emplace_back(streamBufferView);
-        }
     }
 
     bool ParticleModel::IsInputStreamLayoutsValid(size_t meshIndex) const
     {
         return meshIndex < GetMeshCount() &&
+            meshIndex < m_inputStreamLayouts.size() &&
+            meshIndex < m_streamBufferViews.size() &&
             AZ::RHI::ValidateStreamBufferViews(m_inputStreamLayouts[meshIndex], m_streamBufferViews[meshIndex]);
     }
 
     const AZ::RHI::InputStreamLayout& ParticleModel::GetInputStreamLayout(size_t meshIndex) const
     {
-        AZ_Assert(meshIndex < m_inputStreamLayouts.size(), "meshIndex is invalid.");
+        if (meshIndex >= m_inputStreamLayouts.size())
+        {
+            static AZ::RHI::InputStreamLayout s_emptyLayout;
+            AZ_Error("ParticleModel", false, "meshIndex %zu is invalid for m_inputStreamLayouts (size: %zu).", meshIndex, m_inputStreamLayouts.size());
+            return s_emptyLayout;
+        }
         return m_inputStreamLayouts[meshIndex];
+    }
+
+    const AZ::RPI::UvStreamTangentBitmask& ParticleModel::GetUvStreamTangentBitmask(size_t meshIndex) const
+    {
+        AZ_Assert(meshIndex < m_uvStreamTangentBitmasks.size(), "meshIndex is invalid.");
+        return m_uvStreamTangentBitmasks[meshIndex];
     }
 
     const AZ::RPI::ModelLod::StreamBufferViewList& ParticleModel::GetStreamBufferViewList(size_t meshIndex) const
     {
-        AZ_Assert(meshIndex < m_streamBufferViews.size(), "meshIndex is invalid.");
+        if (meshIndex >= m_streamBufferViews.size())
+        {
+            static AZ::RPI::ModelLod::StreamBufferViewList s_emptyList;
+            AZ_Error("ParticleModel", false, "meshIndex %zu is invalid for m_streamBufferViews (size: %zu).", meshIndex, m_streamBufferViews.size());
+            return s_emptyList;
+        }
         return m_streamBufferViews[meshIndex];
     }
 
@@ -106,11 +147,6 @@ namespace OpenParticle
     {
         const auto& mesh = m_modelLod->GetMeshes()[meshIndex];
         m_streamBufferViews[meshIndex].clear();
-        if (!SetMeshStreamBuffers())
-        {
-            return false;
-        }
-        const AZ::RPI::ShaderInputContract meshContract = CheckMeshContract(contract);
         auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
         auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
         bool result = true;
@@ -120,7 +156,7 @@ namespace OpenParticle
             uvStreamTangentBitmaskOut->Reset();
         }
 
-        for (auto& contractStreamChannel : meshContract.m_streamChannels)
+        for (auto& contractStreamChannel : contract.m_streamChannels)
         {
             auto iter = FindMatchingStream(
                 meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, uvStreamTangentBitmaskOut);
@@ -137,85 +173,39 @@ namespace OpenParticle
             {
                 if (AZ::RHI::GetFormatComponentCount(iter->m_format) < contractStreamChannel.m_componentCount)
                 {
-                    AZ_Error(
-                        "Mesh", false, "Mesh format (%s) for stream '%s' provides %d components but the shader requires %d.",
-                        AZ::RHI::ToString(iter->m_format), contractStreamChannel.m_semantic.ToString().c_str(),
-                        AZ::RHI::GetFormatComponentCount(iter->m_format), contractStreamChannel.m_componentCount);
-                    result = false;
+                    if (contractStreamChannel.m_isOptional)
+                    {
+                        AZ::RHI::Format dummyStreamFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
+                        AZ::RHI::StreamBufferView dummyBuffer{ *mesh.GetIndexBufferView().GetBuffer(), 0, 0, 4 };
+                        m_streamBufferViews[meshIndex].push_back(dummyBuffer);
+                    }
+                    else
+                    {
+                        AZ_Error(
+                            "Mesh", false, "Mesh format (%s) for stream '%s' provides %d components but the shader requires %d.",
+                            AZ::RHI::ToString(iter->m_format), contractStreamChannel.m_semantic.ToString().c_str(),
+                            AZ::RHI::GetFormatComponentCount(iter->m_format), contractStreamChannel.m_componentCount);
+                        result = false;
+                    }
                 }
                 else
                 {
-                    if (iter->m_bufferIndex >= m_buffers.size())
+                    const size_t iterIndex = static_cast<size_t>(iter - mesh.m_streamInfo.begin());
+                    const auto& meshStreamViews = mesh.GetStreamBufferViews();
+                    if (iterIndex >= meshStreamViews.size())
                     {
                         result = false;
                         continue;
                     }
-                    auto descriptor = m_buffers[iter->m_bufferIndex]->GetBufferViewDescriptor();
-                    AZ::u32 byteOffset = descriptor.m_elementOffset * descriptor.m_elementSize;
-                    AZ::u32 byteCount = descriptor.m_elementCount * descriptor.m_elementSize;
-                    AZ::u32 byteStride = descriptor.m_elementSize;
                     layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
-                    AZ::RHI::StreamBufferView bufferView(
-                        *m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), byteOffset, byteCount, byteStride);
-
-                    m_streamBufferViews[meshIndex].push_back(bufferView);
+                    m_streamBufferViews[meshIndex].push_back(meshStreamViews[iterIndex]);
                 }
             }
         }
         return result;
     }
 
-    AZ::RPI::ShaderInputContract ParticleModel::CheckMeshContract(const AZ::RPI::ShaderInputContract& contract)
-    {
-        const AZStd::set<AZStd::string> ParticleSemantic = { "OFFSET", "COLOR", "INITROTATION", "ROTATEVECTOR", "SCALE" };
-
-        AZ::RPI::ShaderInputContract meshContract(contract);
-
-        for (const auto& semantic : ParticleSemantic)
-        {
-            auto it = AZStd::find_if(
-                meshContract.m_streamChannels.cbegin(), meshContract.m_streamChannels.cend(),
-                [&semantic](const AZ::RPI::ShaderInputContract::StreamChannelInfo& channel)
-                {
-                    return channel.m_semantic.m_name == AZ::Name(semantic);
-                });
-            if (it != meshContract.m_streamChannels.cend())
-            {
-                meshContract.m_streamChannels.erase(it);
-            }
-        }
-
-        return meshContract;
-    }
-
-    bool ParticleModel::SetMeshStreamBuffers()
-    {
-        for (const auto& mesh : m_modelInstance->GetModelAsset()->GetLodAssets()[m_lodIndex]->GetMeshes())
-        {
-            const AZ::RPI::BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
-            const AZ::Data::Asset<AZ::RPI::BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
-            if (indexBufferAsset)
-            {
-                AZ::Data::Instance<AZ::RPI::Buffer> indexBuffer = AZ::RPI::Buffer::FindOrCreate(indexBufferAsset);
-                if (!indexBuffer)
-                {
-                    return false;
-                }
-                m_buffers.emplace_back(indexBuffer);
-            }
-            for (const auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
-            {
-                const AZ::Data::Asset<AZ::RPI::BufferAsset>& streamBufferAsset = streamBufferInfo.m_bufferAssetView.GetBufferAsset();
-                const AZ::Data::Instance<AZ::RPI::Buffer>& streamBuffer = AZ::RPI::Buffer::FindOrCreate(streamBufferAsset);
-                if (streamBuffer == nullptr)
-                {
-                    return false;
-                }
-                m_buffers.emplace_back(streamBuffer);
-            }
-        }
-        return true;
-    }
 
     AZ::RPI::ModelLod::StreamInfoList::const_iterator ParticleModel::FindMatchingStream(
         size_t meshIndex,

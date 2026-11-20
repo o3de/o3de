@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #if AZ_DEBUG_BUILD
@@ -20,6 +21,13 @@
 
 namespace UnitTest::Constants
 {
+    // Re-export of the canonical AZ::Constants values so test code can write
+    // UnitTest::Constants::Pi etc. without qualifying the engine namespace.
+    static const float Tolerance = AZ::Constants::Tolerance;
+    static const float Pi        = AZ::Constants::Pi;
+    static const float HalfPi    = AZ::Constants::HalfPi;
+    static const float QuarterPi = AZ::Constants::QuarterPi;
+
 #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     // Larger tolerance is needed when using NEON.
     static const float SimdTolerance = 0.005f;

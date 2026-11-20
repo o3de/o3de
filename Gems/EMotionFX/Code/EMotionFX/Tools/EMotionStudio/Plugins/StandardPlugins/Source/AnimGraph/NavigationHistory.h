@@ -8,11 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <QObject>
-#endif
+#include <QModelIndex>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMStudio
 {

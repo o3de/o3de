@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QAction>
@@ -16,7 +15,6 @@
 #include <QStyledItemDelegate>
 #include <QTabBar>
 #include <QTabWidget>
-#endif
 
 class QFrame;
 class QSettings;
@@ -47,10 +45,7 @@ namespace AzQtComponents
             QPixmap tearIcon;               //!< The icon shown on the left side of a tab to show it can be dragged. Must be an svg image.
             int tearIconLeftPadding;        //!< Padding between the tear icon and the left side of the tab, in pixels.
             int tabHeight;                  //!< Height of a tab, in pixels.
-            int minimumTabWidth;            //!< Minimum size of tabs when shrunk, in pixels.
             int closeButtonSize;            //!< Size of the close button, both width and height, in pixels.
-            int textRightPadding;           //!< Padding between the tab text and the close button, in pixels.
-            int closeButtonRightPadding;    //!< Padding between the close button and the right side of the tab, in pixels.
             int closeButtonMinTabWidth;     //!< Width threshold below which the close button is not shown, in pixels.
             int toolTipTabWidthThreshold;   //!< Width threshold below which a tooltip is displayed, in pixels.
             bool showOverflowMenu;          //!< Whether an overflow dropdown menu listing the tabs should be displayed on resize.
@@ -172,13 +167,14 @@ namespace AzQtComponents
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
         void mousePressEvent(QMouseEvent* mouseEvent) override;
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;
         void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
         void paintEvent(QPaintEvent* paintEvent) override;
         QSize minimumSizeHint() const override;
+        QSize tabSizeHint(int index) const override;
         void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
 
 
@@ -198,6 +194,8 @@ namespace AzQtComponents
         int m_hoveredTab = -1;
         bool m_movingTab = false;
         QPoint m_lastMousePress;
+        QPixmap m_tearIcon;
+        int m_tearIconLeftPadding = 0;
 
         QCursor m_dragCursor;
         QCursor m_hoverCursor;
@@ -211,8 +209,6 @@ namespace AzQtComponents
         static bool polish(Style* style, QWidget* widget, const TabWidget::Config& config);
         static bool unpolish(Style* style, QWidget* widget, const TabWidget::Config& config);
         static int closeButtonSize(const Style* style, const QStyleOption* option, const QWidget* widget, const TabWidget::Config& config);
-        static bool drawTabBarTabLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const TabWidget::Config& config);
-        static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config);
     };
 
 } // namespace AzQtComponents

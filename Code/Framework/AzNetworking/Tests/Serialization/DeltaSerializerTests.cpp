@@ -135,10 +135,10 @@ namespace UnitTest
     {
         DeltaDataContainer testContainer;
         AZStd::vector<int> growVector, shrinkVector;
-        shrinkVector.resize(testContainer.m_container.array_size);
+        shrinkVector.resize(testContainer.m_container.size());
 
         testContainer.m_containerName = "TestContainer";
-        for (uint8_t i = 0; i < testContainer.m_container.array_size; ++i)
+        for (uint8_t i = 0; i < testContainer.m_container.size(); ++i)
         {
             testContainer.m_container[i].m_packetId = AzNetworking::PacketId(i);
             testContainer.m_container[i].m_id = i;
@@ -153,7 +153,7 @@ namespace UnitTest
             testContainer.m_container[i].m_blendFactor = BLEND_FACTOR_SCALE * i;
             growVector.push_back(i);
             testContainer.m_container[i].m_growVector = growVector;
-            shrinkVector.resize(testContainer.m_container.array_size - i);
+            shrinkVector.resize(testContainer.m_container.size() - i);
             testContainer.m_container[i].m_shrinkVector = shrinkVector;
         }
 

@@ -1850,6 +1850,13 @@ namespace AzToolsFramework
             !UndoRedoOperationInProgress(),
             "ChangeSelectedEntity called from undo/redo operation - this is unexpected and not currently supported");
 
+        if (IsEntitySelectedInternal(entityId, m_selectedEntityIds))
+        {
+            if (m_selectedEntityIds.size() == 1)
+            {
+                return;
+            }
+        }
         // ensure deselect/select is tracked as an atomic undo/redo operation
         ScopedUndoBatch undoBatch(ChangeEntitySelectionUndoRedoDesc);
 

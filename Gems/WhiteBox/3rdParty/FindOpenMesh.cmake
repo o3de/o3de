@@ -14,17 +14,13 @@ if (TARGET 3rdParty::OpenMesh)
     return()
 endif()
 
-# Variables inside a local function are scoped to the function body.
-# Putting all of this inside a function lets us basically ensure that any variables set by the 
+# Variables inside a block are scoped to the block body.
+# Putting all of this inside a block lets us basically ensure that any variables set by the
 # external 3rdParty CMake file do not have any effect on the outside world.
 # and allows us not to have to save and restore anything.
 
-function(GetOpenMesh)
+block()
     # Part 1:  Where do you get the library from?  Make sure to inform the user of the source of the library and any patches applied.
-    include(FetchContent)
-
-    set(OPENMESH_GIT_REPO "https://github.com/o3de/openmesh.git")
-    set(OPENMESH_GIT_TAG "8078b5bd01b568e61c6b8dd84af8673e7d9e6cae")
 
     # Note that the upstream branch is o3de_openmesh_changes and is only the change of the submodule URL from the original
     # and is the following diff in full:
@@ -52,17 +48,15 @@ function(GetOpenMesh)
     # As such, we add EXCLUDE_FROM_ALL to prevent it from trying to copy its outputs into the install layout.  If
     # we needed files from it, we would have still used EXCLUDE_FROM_ALL since its install locations would be incorrect
     # for O3De (we build multiple different flavors into different folders).
-    FetchContent_Declare(
-            OpenMesh
-            GIT_REPOSITORY ${OPENMESH_GIT_REPO}
-            GIT_TAG ${OPENMESH_GIT_TAG}
-            GIT_SHALLOW
-            EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
+    o3de_fetch_content(OpenMesh
+        VERSION "v11.0"
+        LICENSE "BSD-3-Clause"
+        URL "https://www.graphics.rwth-aachen.de/media/openmesh_static/Releases/11.0/OpenMesh-11.0.0.tar.bz2"
+        URL_HASH "9d22e65bdd6a125ac2043350a019ec4346ea83922cafdf47e125a03c16f6fa07"
+        GIT "https://github.com/o3de/openmesh.git"
+        GIT_HASH "8078b5bd01b568e61c6b8dd84af8673e7d9e6cae"
+        EXCLUDE_FROM_ALL
     )
-
-    # please always be really clear about what third parties your gem uses.
-    message(STATUS "WhiteBox Gem uses OpenMesh 11.0 (BSD-3-Clause) ${OPENMESH_GIT_REPO}")
-    message(STATUS "    - This is a mirror of: https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
 
@@ -143,15 +137,10 @@ function(GetOpenMesh)
     ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/FindOpenMesh.cmake DESTINATION cmake/3rdParty)
     
     # signal that find_package(OpenMesh) has succeeded.
-    # we have to set it on the PARENT_SCOPE since we're in a function 
+    # we have to set it on the PARENT_SCOPE since we're in a block scope
     set(OpenMesh_FOUND TRUE PARENT_SCOPE)
 
     # Restore the original suppression flags that were forced as part of OpenMesh
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ${ORIGINAL_CMAKE_SUPPRESS_DEVELOPER_WARNINGS} CACHE BOOL "" FORCE)
 
-endfunction()
-
-GetOpenMesh()
-
-# for extra safety, we'll remove the function from the global scope, so that it can't be called again.
-unset(GetOpenMesh)
+endblock()

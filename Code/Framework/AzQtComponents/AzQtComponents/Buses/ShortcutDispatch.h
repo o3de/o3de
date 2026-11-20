@@ -20,7 +20,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
-    static const QKeySequence RedoKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z);
+    static const QKeySequence RedoKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);
 
     static const char* SHORTCUT_DISPATCHER_CONTEXT_BREAK_PROPERTY = "ShortcutDispatcherContextBreak";
 

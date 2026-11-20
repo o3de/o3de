@@ -15,6 +15,7 @@ include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
+include(cmake/AssetProcessorBuildExclude.cmake)
 
 # The desired CMake version to ship with installers and recommend to users.
 set(CPACK_DESIRED_CMAKE_VERSION 4.2.3)
@@ -205,4 +206,9 @@ if(LY_INSTALL_ENABLED)
     ly_setup_o3de_install()
     # 9. CPack information (to be included after install)
     include(cmake/Packaging.cmake)
+endif()
+
+# 8. Add registry setting in User folder to prevent AssetProcessor from scanning build directory
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    o3de_exclude_build_dir_from_asset_processor(${CMAKE_SOURCE_DIR})
 endif()

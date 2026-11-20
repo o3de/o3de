@@ -106,13 +106,19 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<QuadShapeConfig>("Configuration", "Quad shape configuration parameters")
+                editContext->Class<QuadShapeConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Quad shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShapeConfig::m_width, "Width", "Width of quad")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShapeConfig::m_width,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Width"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Width of quad"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShapeConfig::m_height, "Height", "Height of quad")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShapeConfig::m_height,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Height"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Height of quad"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.05f)

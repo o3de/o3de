@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "TickBusOrderViewerSystemComponent.h"
 
@@ -23,8 +24,8 @@ namespace TickBusOrderViewer
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<TickBusOrderViewerSystemComponent>(
-                    "TickBusOrderViewer", 
-                    "Provides a console command for viewing tick bus order, print_tickbus_handlers.")
+                    QT_TRANSLATE_NOOP("TickBusOrderViewer", "TickBusOrderViewer"), 
+                    QT_TRANSLATE_NOOP("TickBusOrderViewer", "Provides a console command for viewing tick bus order, print_tickbus_handlers."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

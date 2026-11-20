@@ -165,7 +165,7 @@ namespace AZ
             if (auto foundIt = AZStd::find_if(m_inputStreamInfo.begin(), m_inputStreamInfo.end(), FindVertexStreamInfo);
                 foundIt != m_inputStreamInfo.end())
             {
-                return foundIt;
+                return &*foundIt;
             }
             else
             {
@@ -193,7 +193,7 @@ namespace AZ
             if (auto foundIt = AZStd::find_if(m_outputStreamInfo.begin(), m_outputStreamInfo.end(), FindVertexStreamInfo);
                 foundIt != m_outputStreamInfo.end())
             {
-                return foundIt;
+                return &*foundIt;
             }
             else
             {

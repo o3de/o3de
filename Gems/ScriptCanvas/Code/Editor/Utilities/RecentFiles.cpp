@@ -52,7 +52,7 @@ namespace ScriptCanvasEditor
 
         settings.beginGroup(SCRIPTCANVASEDITOR_NAME_SHORT);
         settings.beginWriteArray(SCRIPTCANVASEDITOR_SETTINGS_RECENT_FILES_KEY);
-        int count = AZStd::min(recentFiles.size(),
+        int count = AZStd::min(static_cast<int>(recentFiles.size()),
             static_cast<int>(c_scriptCanvasEditorSettingsRecentFilesCountMax));
 
         // QSettings -> QStringList.

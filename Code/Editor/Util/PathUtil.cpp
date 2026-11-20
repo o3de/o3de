@@ -379,7 +379,7 @@ namespace Path
             return path;
         }
 
-        int iLenMinus1 = path.length() - 1;
+        int iLenMinus1 = static_cast<int>(path.length()) - 1;
         QChar cLastChar = path[iLenMinus1];
 
         if (cLastChar == '\\' || cLastChar == '/')

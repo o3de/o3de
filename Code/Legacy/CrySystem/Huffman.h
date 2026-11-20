@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_HUFFMAN_H
-#define CRYINCLUDE_CRYSYSTEM_HUFFMAN_H
 #pragma once
-
 
 class HuffmanCoder
 {
@@ -127,5 +123,3 @@ private:
     int BuildTree();
     void ConvertTreeToCode(const HuffmanTreeNode* const pNodes, HuffmanSymbolCode* const pCodes, const unsigned int value, const unsigned int numBits, const int node);
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_HUFFMAN_H

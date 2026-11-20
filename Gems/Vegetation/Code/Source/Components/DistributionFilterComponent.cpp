@@ -11,6 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
@@ -37,31 +38,31 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DistributionFilterConfig>(
-                    "Vegetation Distribution Filter", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Distribution Filter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Preview"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->UIElement("GradientPreviewer", "Previewer")
+                    ->UIElement("GradientPreviewer", QT_TRANSLATE_NOOP("Vegetation", "Previewer"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ_CRC_CE("GradientSampler"), &DistributionFilterConfig::GetSampler)
                     ->Attribute(AZ_CRC_CE("GradientFilter"), &DistributionFilterConfig::GetFilterFunc)
                     ->EndGroup()
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistributionFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistributionFilterConfig::m_thresholdMin, "Threshold Min", "Minimum value accepted from input gradient that allows the distribution filter to pass.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistributionFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistributionFilterConfig::m_thresholdMin, QT_TRANSLATE_NOOP("Vegetation", "Threshold Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum value accepted from input gradient that allows the distribution filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistributionFilterConfig::m_thresholdMax, "Threshold Max", "Maximum value accepted from input gradient that allows the distribution filter to pass.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistributionFilterConfig::m_thresholdMax, QT_TRANSLATE_NOOP("Vegetation", "Threshold Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum value accepted from input gradient that allows the distribution filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(0, &DistributionFilterConfig::m_gradientSampler, "Gradient", "Gradient used as input signal tested against threshold range.")
+                    ->DataElement(0, &DistributionFilterConfig::m_gradientSampler, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as input signal tested against threshold range."))
                     ;
             }
         }

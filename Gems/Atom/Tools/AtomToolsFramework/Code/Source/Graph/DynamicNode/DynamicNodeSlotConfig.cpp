@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 { 
@@ -40,32 +41,32 @@ namespace AtomToolsFramework
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DynamicNodeSlotConfig>("DynamicNodeSlotConfig", "Configuration settings for individual slots on a dynamic node.")
+                editContext->Class<DynamicNodeSlotConfig>(QT_TRANSLATE_NOOP("AtomToolsFramework", "DynamicNodeSlotConfig"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Configuration settings for individual slots on a dynamic node."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &DynamicNodeSlotConfig::GetDisplayNameForEditor)
                     ->SetDynamicEditDataProvider(&DynamicNodeSlotConfig::GetDynamicEditData)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Add new settings groups from settings registered with this tool.")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", QT_TRANSLATE_NOOP("AtomToolsFramework", "Add new settings groups from settings registered with this tool."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::AddRegisteredSettingGroups)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Setting Groups")
-                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, "Name", "Unique name used to identify individual slots on a node.")
-                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, "Display Name", "User friendly title of the slot that will appear on the node UI.")
-                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_description, "Description", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI.")
-                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_supportedDataTypeRegex, "Supported Data Type Regex", "Regular expression to search for data types compatible with this slot.")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("AtomToolsFramework", "Add Setting Groups"))
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_name, QT_TRANSLATE_NOOP("AtomToolsFramework", "Name"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Unique name used to identify individual slots on a node."))
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_displayName, QT_TRANSLATE_NOOP("AtomToolsFramework", "Display Name"), QT_TRANSLATE_NOOP("AtomToolsFramework", "User friendly title of the slot that will appear on the node UI."))
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_description, QT_TRANSLATE_NOOP("AtomToolsFramework", "Description"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Detailed description of the node, its purpose, and behavior that will appear in tooltips and other UI."))
+                    ->DataElement(AZ_CRC_CE("MultilineStringDialog"), &DynamicNodeSlotConfig::m_supportedDataTypeRegex, QT_TRANSLATE_NOOP("AtomToolsFramework", "Supported Data Type Regex"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Regular expression to search for data types compatible with this slot."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DynamicNodeSlotConfig::m_defaultDataType, "Default Data Type", "Name of the default data type for this slot. If this is not specified the default data type will fall back to the first supported data type.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DynamicNodeSlotConfig::m_defaultDataType, QT_TRANSLATE_NOOP("AtomToolsFramework", "Default Data Type"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Name of the default data type for this slot. If this is not specified the default data type will fall back to the first supported data type."))
                         ->Attribute(AZ::Edit::Attributes::StringList, &DynamicNodeSlotConfig::GetSupportedDataTypeNames)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, &DynamicNodeSlotConfig::ValidateDataTypes)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, "Default Value", "The initial value of an input or property slot that has no incoming connection.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, QT_TRANSLATE_NOOP("AtomToolsFramework", "Default Value"), QT_TRANSLATE_NOOP("AtomToolsFramework", "The initial value of an input or property slot that has no incoming connection."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Default Value")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_enumValues, "Enum Values", "List of potential values if the data type is a string.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_visibleOnNode, "Visible On Node", "Enable this for the slot to appear on the node UI in the graph view.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_editableOnNode, "Editable On Node", "Enable this for the slot value to be editable on the node UI in the graph view.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_allowNameSubstitution, "Allow Name Substitution", "Hint on whether or not the slot name can be substituted or mangled in applicable systems.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each slot.")
+                        ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, QT_TRANSLATE_NOOP("AtomToolsFramework", "Default Value"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_enumValues, QT_TRANSLATE_NOOP("AtomToolsFramework", "Enum Values"), QT_TRANSLATE_NOOP("AtomToolsFramework", "List of potential values if the data type is a string."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_visibleOnNode, QT_TRANSLATE_NOOP("AtomToolsFramework", "Visible On Node"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Enable this for the slot to appear on the node UI in the graph view."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_editableOnNode, QT_TRANSLATE_NOOP("AtomToolsFramework", "Editable On Node"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Enable this for the slot value to be editable on the node UI in the graph view."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_allowNameSubstitution, QT_TRANSLATE_NOOP("AtomToolsFramework", "Allow Name Substitution"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Hint on whether or not the slot name can be substituted or mangled in applicable systems."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_settings, QT_TRANSLATE_NOOP("AtomToolsFramework", "Settings"), QT_TRANSLATE_NOOP("AtomToolsFramework", "Table of strings that can be used for any context specific or user defined data for each slot."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

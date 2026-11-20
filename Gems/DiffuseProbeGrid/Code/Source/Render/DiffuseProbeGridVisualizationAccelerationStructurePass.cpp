@@ -23,7 +23,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridVisualizationAccelerationStructurePass> DiffuseProbeGridVisualizationAccelerationStructurePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridVisualizationAccelerationStructurePass> diffuseProbeGridVisualizationAccelerationStructurePass = aznew DiffuseProbeGridVisualizationAccelerationStructurePass(descriptor);
-            return AZStd::move(diffuseProbeGridVisualizationAccelerationStructurePass);
+            return diffuseProbeGridVisualizationAccelerationStructurePass;
         }
 
         DiffuseProbeGridVisualizationAccelerationStructurePass::DiffuseProbeGridVisualizationAccelerationStructurePass(const RPI::PassDescriptor& descriptor)
@@ -77,7 +77,7 @@ namespace AZ
         void DiffuseProbeGridVisualizationAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
         {
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
-        }       
+        }
 
         void DiffuseProbeGridVisualizationAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
@@ -183,14 +183,14 @@ namespace AZ
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
             {
                 if (!ShouldUpdate(diffuseProbeGrid))
                 {
                     continue;
                 }
-            
+
                 // TLAS is now updated
                 diffuseProbeGrid->ResetVisualizationTlasUpdateRequired();
             }

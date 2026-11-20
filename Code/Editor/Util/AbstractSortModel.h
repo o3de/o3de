@@ -5,12 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ABSTRACTSORTMODEL_H
-#define ABSTRACTSORTMODEL_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QAbstractItemModel>
-#endif
 
 class AbstractSortModel
     : public QAbstractTableModel
@@ -22,5 +20,3 @@ public:
 
     virtual bool LessThan(const QModelIndex& lhs, const QModelIndex& rhs) const;
 };
-
-#endif // ABSTRACTSORTMODEL_H

@@ -13,6 +13,7 @@
 
 #if LMBR_CENTRAL_EDITOR
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #endif
 
 namespace LmbrCentral
@@ -55,13 +56,17 @@ namespace LmbrCentral
         if (auto editContext = context.GetEditContext())
         {
             editContext->Class<TubeShape>(
-                "Tube Shape", "")
+                QT_TRANSLATE_NOOP("LmbrCentral", "Tube Shape"), "")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &TubeShape::m_radius, "Radius", "Radius of the tube")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &TubeShape::m_radius,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Radius"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Radius of the tube"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &TubeShape::BaseRadiusChanged)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &TubeShape::m_variableRadius, "Variable Radius", "Variable radius along the tube")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &TubeShape::m_variableRadius,
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Variable Radius"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Variable radius along the tube"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &TubeShape::VariableRadiusChanged)
                     ;
         }
@@ -585,16 +590,20 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<TubeShapeMeshConfig>("Configuration", "Tube Shape Mesh Configuration")
+                editContext->Class<TubeShapeMeshConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Tube Shape Mesh Configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TubeShapeMeshConfig::m_endSegments, "End Segments",
-                        "Number Of segments at each end of the tube in the editor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TubeShapeMeshConfig::m_endSegments,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "End Segments"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Number Of segments at each end of the tube in the editor"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, 10)
                         ->Attribute(AZ::Edit::Attributes::Step, 1)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TubeShapeMeshConfig::m_sides, "Sides",
-                        "Number of Sides of the tube in the editor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TubeShapeMeshConfig::m_sides,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sides"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Number of Sides of the tube in the editor"))
                         ->Attribute(AZ::Edit::Attributes::Min, 3)
                         ->Attribute(AZ::Edit::Attributes::Max, 32)
                         ->Attribute(AZ::Edit::Attributes::Step, 1)

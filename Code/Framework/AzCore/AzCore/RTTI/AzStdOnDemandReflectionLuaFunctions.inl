@@ -140,7 +140,7 @@ namespace AZ
             }
 
             AZ_Assert(value.m_value, "Invalid call to FromLua! Either a stack allocator must be passed, or value.m_value must be a valid storage location.");
-            return value.StoreResult(AZStd::move(ScriptValue<AZStd::any>::StackRead(lua, stackIndex)));
+            return value.StoreResult(ScriptValue<AZStd::any>::StackRead(lua, stackIndex));
         }
 
         // Pushes an any onto the Lua stack

@@ -22,6 +22,7 @@
 
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Camera
 {
@@ -47,43 +48,63 @@ namespace Camera
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CameraComponentConfig>("CameraComponentConfig", "Configuration for a CameraComponent or EditorCameraComponent")
+                editContext->Class<CameraComponentConfig>(
+                    QT_TRANSLATE_NOOP("Camera", "CameraComponentConfig"),
+                    QT_TRANSLATE_NOOP("Camera", "Configuration for a CameraComponent or EditorCameraComponent"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_makeActiveViewOnActivation,
-                            "Make active camera on activation?", "If true, this camera will become the active render camera when it activates")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographic, "Orthographic",
-                        "If set, this camera will use an orthographic projection instead of a perspective one. Objects will appear as the same size, regardless of distance from the camera.")
+                            QT_TRANSLATE_NOOP("Camera", "Make active camera on activation?"),
+                            QT_TRANSLATE_NOOP("Camera", "If true, this camera will become the active render camera when it activates"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographic,
+                        QT_TRANSLATE_NOOP("Camera", "Orthographic"),
+                        QT_TRANSLATE_NOOP("Camera", "If set, this camera will use an orthographic projection instead of a perspective one. Objects will appear as the same size, regardless of distance from the camera."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographicHalfWidth, "Orthographic Half-width", "The half-width used to calculate the orthographic projection. The height will be determined by the aspect ratio.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_orthographicHalfWidth,
+                        QT_TRANSLATE_NOOP("Camera", "Orthographic Half-width"),
+                        QT_TRANSLATE_NOOP("Camera", "The half-width used to calculate the orthographic projection. The height will be determined by the aspect ratio."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetOrthographicParameterVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov, "Field of view", "Vertical field of view in degrees. Note: Max FoV is less than 180.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov,
+                        QT_TRANSLATE_NOOP("Camera", "Field of view"),
+                        QT_TRANSLATE_NOOP("Camera", "Vertical field of view in degrees. Note: Max FoV is less than 180."))
                         ->Attribute(AZ::Edit::Attributes::Min, MinFoV)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                        ->Attribute(AZ::Edit::Attributes::Suffix,
+                            QT_TRANSLATE_NOOP("Camera", " degrees"))
                         ->Attribute(AZ::Edit::Attributes::Step, 1.f)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::Pi) - 0.001f)       //We assert at fovs >= Pi so set the max for this field to be just under that
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetPerspectiveParameterVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_nearClipDistance, "Near clip distance",
-                        "Distance to the near clip plane of the view Frustum")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_nearClipDistance,
+                        QT_TRANSLATE_NOOP("Camera", "Near clip distance"),
+                        QT_TRANSLATE_NOOP("Camera", "Distance to the near clip plane of the view Frustum"))
                         ->Attribute(AZ::Edit::Attributes::Min, MinimumNearPlaneDistance)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                        ->Attribute(AZ::Edit::Attributes::Suffix,
+                            QT_TRANSLATE_NOOP("Camera", " m"))
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Max, &CameraComponentConfig::GetFarClipDistance)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_farClipDistance, "Far clip distance",
-                        "Distance to the far clip plane of the view Frustum")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_farClipDistance,
+                        QT_TRANSLATE_NOOP("Camera", "Far clip distance"),
+                        QT_TRANSLATE_NOOP("Camera", "Distance to the far clip plane of the view Frustum"))
                         ->Attribute(AZ::Edit::Attributes::Min, &CameraComponentConfig::GetNearClipDistance)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                        ->Attribute(AZ::Edit::Attributes::Suffix,
+                            QT_TRANSLATE_NOOP("Camera", " m"))
                         ->Attribute(AZ::Edit::Attributes::Step, 10.f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Render To Texture")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_renderTextureAsset, "Target texture", "The render target texture which the camera renders to.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_pipelineTemplate, "Pipeline template", "The root pass template for the camera's render pipeline")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_allowPipelineChanges, "Allow pipeline changes", "If true, the camera's render pipeline can be changed at runtime.")
+                    ->ClassElement(AZ::Edit::ClassElements::Group,
+                        QT_TRANSLATE_NOOP("Camera", "Render To Texture"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_renderTextureAsset,
+                        QT_TRANSLATE_NOOP("Camera", "Target texture"),
+                        QT_TRANSLATE_NOOP("Camera", "The render target texture which the camera renders to."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_pipelineTemplate,
+                        QT_TRANSLATE_NOOP("Camera", "Pipeline template"),
+                        QT_TRANSLATE_NOOP("Camera", "The root pass template for the camera's render pipeline"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_allowPipelineChanges,
+                        QT_TRANSLATE_NOOP("Camera", "Allow pipeline changes"),
+                        QT_TRANSLATE_NOOP("Camera", "If true, the camera's render pipeline can be changed at runtime."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetAllowPipelineChangesVisibility)
                 ;
             }
@@ -188,10 +209,14 @@ namespace Camera
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CameraComponentController>("CameraComponentController", "Controller for a CameraComponent or EditorCameraComponent")
+                editContext->Class<CameraComponentController>(
+                    QT_TRANSLATE_NOOP("Camera", "CameraComponentController"),
+                    QT_TRANSLATE_NOOP("Camera", "Controller for a CameraComponent or EditorCameraComponent"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentController::m_config, "Configuration", "Camera Controller Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentController::m_config,
+                        QT_TRANSLATE_NOOP("Camera", "Configuration"),
+                        QT_TRANSLATE_NOOP("Camera", "Camera Controller Configuration"))
                 ;
             }
         }

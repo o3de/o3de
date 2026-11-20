@@ -15,4 +15,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_GenericComboBoxCtrl.cpp"

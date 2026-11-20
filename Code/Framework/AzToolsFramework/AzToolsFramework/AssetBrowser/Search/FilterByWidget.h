@@ -12,10 +12,9 @@
  * FilterByWidget has been deprecated, use AzQtComponents::FilteredSearchWidget instead.
  *********************************************************************************************/
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QScopedPointer>
-#endif
+
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace Ui

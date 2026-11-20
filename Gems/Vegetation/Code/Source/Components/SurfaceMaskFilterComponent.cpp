@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Vegetation/InstanceData.h>
 
@@ -47,31 +48,31 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SurfaceMaskFilterConfig>(
-                    "Vegetation Surface Mask Filter", "Vegetation surface mask filtering")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Surface Mask Filter"), QT_TRANSLATE_NOOP("Vegetation", "Vegetation surface mask filtering"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceMaskFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(0, &SurfaceMaskFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Inclusion")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceMaskFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(0, &SurfaceMaskFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Inclusion"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceMaskFilterConfig::m_inclusiveSurfaceMasks, "Surface Tags", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_inclusiveWeightMin, "Weight Min", "Minimum value accepted from input gradient that allows the filter to pass.")
+                    ->DataElement(0, &SurfaceMaskFilterConfig::m_inclusiveSurfaceMasks, QT_TRANSLATE_NOOP("Vegetation", "Surface Tags"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_inclusiveWeightMin, QT_TRANSLATE_NOOP("Vegetation", "Weight Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum value accepted from input gradient that allows the filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_inclusiveWeightMax, "Weight Max", "Maximum value accepted from input gradient that allows the filter to pass.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_inclusiveWeightMax, QT_TRANSLATE_NOOP("Vegetation", "Weight Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum value accepted from input gradient that allows the filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Exclusion")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Exclusion"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &SurfaceMaskFilterConfig::m_exclusiveSurfaceMasks, "Surface Tags", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_exclusiveWeightMin, "Weight Min", "Minimum value accepted from input gradient that allows the filter to pass.")
+                    ->DataElement(0, &SurfaceMaskFilterConfig::m_exclusiveSurfaceMasks, QT_TRANSLATE_NOOP("Vegetation", "Surface Tags"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_exclusiveWeightMin, QT_TRANSLATE_NOOP("Vegetation", "Weight Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum value accepted from input gradient that allows the filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_exclusiveWeightMax, "Weight Max", "Maximum value accepted from input gradient that allows the filter to pass.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceMaskFilterConfig::m_exclusiveWeightMax, QT_TRANSLATE_NOOP("Vegetation", "Weight Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum value accepted from input gradient that allows the filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ;

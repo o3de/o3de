@@ -232,4 +232,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/UICore/moc_TargetSelectorButton.cpp"

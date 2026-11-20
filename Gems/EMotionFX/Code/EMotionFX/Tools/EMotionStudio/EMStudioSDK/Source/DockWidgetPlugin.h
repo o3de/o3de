@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include "EMStudioConfig.h"
 #include "EMStudioPlugin.h"
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#include <QPointer>
-#endif
 
+#include <QPointer>
 
 namespace EMStudio
 {

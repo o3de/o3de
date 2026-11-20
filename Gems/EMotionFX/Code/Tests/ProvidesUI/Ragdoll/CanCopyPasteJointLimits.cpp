@@ -135,6 +135,7 @@ namespace EMotionFX
             jointLimitWidget->contextMenuRequested({});
             auto pasteAction = jointLimitWidget->findChild<QAction*>("EMFX.RagdollJointLimitWidget.PasteJointLimitsAction");
             ASSERT_TRUE(pasteAction);
+            pasteAction->setEnabled(true);
             pasteAction->trigger();
             // Process events so that the menu is destroyed
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);

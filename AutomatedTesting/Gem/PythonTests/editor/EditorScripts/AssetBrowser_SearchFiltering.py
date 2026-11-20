@@ -54,8 +54,8 @@ def AssetBrowser_SearchFiltering():
         :return: None
         """
 
-        from PySide2 import QtWidgets, QtTest, QtCore
-        from PySide2.QtCore import Qt
+        from PySide6 import QtWidgets, QtTest, QtCore
+        from PySide6.QtCore import Qt
 
         import azlmbr.legacy.general as general
 

@@ -18,4 +18,3 @@ namespace AssetProcessor
     }
 }
 
-#include <native/ui/moc_JobTreeViewItemDelegate.cpp>

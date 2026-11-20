@@ -1,0 +1,4 @@
+void f(typealias T = int)
+{
+}
+// typealias can only appear in statements

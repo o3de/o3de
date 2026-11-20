@@ -630,4 +630,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyEntityIdCtrl.cpp"

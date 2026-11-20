@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef COLUMNGROUPPROXYMODEL_H
-#define COLUMNGROUPPROXYMODEL_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include "AbstractGroupProxyModel.h"
 
 #include <QVector>
-#endif
 
 class ColumnSortProxyModel;
 
@@ -49,5 +47,3 @@ private:
     QVector<int> m_groups;
     int m_freeSortColumn;
 };
-
-#endif // COLUMNGROUPPROXYMODEL_H

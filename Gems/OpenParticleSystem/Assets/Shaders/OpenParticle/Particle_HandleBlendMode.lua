@@ -10,129 +10,240 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return { "blend.mode" }
+    -- Support both old blend.* naming and new opacity.* naming
+    return { "blend.mode", "opacity.mode" }
 end
 
-BlendMode_Opaque = 0
-BlendMode_Cutout = 1
-BlendMode_Blended = 2
-BlendMode_Additive = 3
-BlendMode_Subtractive = 4
-BlendMode_Modulate = 5
+-- Blend mode enum values (must match the enumValues in the materialtype)
+local BlendMode_Opaque      = 0
+local BlendMode_Cutout      = 1
+local BlendMode_Blended     = 2
+local BlendMode_Additive    = 3
+local BlendMode_Subtractive = 4
+local BlendMode_Modulate    = 5
 
-function ConfigureOpaqueBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, false)
+-- Opacity mode enum values from OpacityPropertyGroup.json
+local OpacityMode_Opaque        = 0
+local OpacityMode_Cutout        = 1
+local OpacityMode_Blended       = 2
+local OpacityMode_TintedTransparent = 3
+
+-- Render state constants
+local DepthComparisonFunc_GreaterEqual = 6  -- RHI::ComparisonFunc::GreaterEqual
+
+--------------------------------------------------------------------------------
+-- Blend state configuration helpers
+--------------------------------------------------------------------------------
+
+local function IsShaderItemValid(shaderItem)
+    if not shaderItem then
+        return false
+    end
+    -- Try to call a safe method to validate the shader item
+    local success = pcall(function()
+        shaderItem:SetEnabled(true)
+    end)
+    return success
 end
 
-function ConfigureCutoutBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(6)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
+local function SafeConfigureRenderStates(shaderItem, configureFn)
+    if not IsShaderItemValid(shaderItem) then
+        return
+    end
+    local success, renderStates = pcall(function()
+        return shaderItem:GetRenderStatesOverride()
+    end)
+    if success and renderStates then
+        configureFn(renderStates)
+    end
 end
 
-function ConfigureBlendedBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(6)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_AlphaSource)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaOp(0, BlendOp_Add)
+local function ConfigureOpaqueBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthWriteMask(DepthWriteMask_All)
+        renderStates:SetBlendEnabled(0, false)
+    end)
 end
 
-function ConfigureAdditiveBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(6)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaOp(0, BlendOp_Add)
+local function ConfigureCutoutBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthComparisonFunc(DepthComparisonFunc_GreaterEqual)
+        renderStates:SetBlendEnabled(0, true)
+        renderStates:SetBlendSource(0, BlendFactor_One)
+        renderStates:SetBlendDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendOp(0, BlendOp_Add)
+    end)
 end
 
-function ConfigureSubtractiveBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(6)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Subtract)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaOp(0, BlendOp_Subtract)
+local function ConfigureBlendedBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthComparisonFunc(DepthComparisonFunc_GreaterEqual)
+        renderStates:SetBlendEnabled(0, true)
+        renderStates:SetBlendSource(0, BlendFactor_AlphaSource)
+        renderStates:SetBlendDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendOp(0, BlendOp_Add)
+        renderStates:SetBlendAlphaSource(0, BlendFactor_One)
+        renderStates:SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendAlphaOp(0, BlendOp_Add)
+    end)
 end
 
-function ConfigureModulateBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthComparisonFunc(6)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_ColorSource)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaOp(0, BlendOp_Add)
+local function ConfigureAdditiveBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthComparisonFunc(DepthComparisonFunc_GreaterEqual)
+        renderStates:SetBlendEnabled(0, true)
+        renderStates:SetBlendSource(0, BlendFactor_One)
+        renderStates:SetBlendDest(0, BlendFactor_One)
+        renderStates:SetBlendOp(0, BlendOp_Add)
+        renderStates:SetBlendAlphaSource(0, BlendFactor_One)
+        renderStates:SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendAlphaOp(0, BlendOp_Add)
+    end)
 end
 
-function ResetAlphaBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():ClearDepthEnabled()
-    shaderItem:GetRenderStatesOverride():ClearDepthWriteMask()
-    shaderItem:GetRenderStatesOverride():ClearBlendEnabled(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendSource(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendDest(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendOp(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendAlphaSource(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendAlphaDest(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendAlphaOp(0)
+local function ConfigureSubtractiveBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthComparisonFunc(DepthComparisonFunc_GreaterEqual)
+        renderStates:SetBlendEnabled(0, true)
+        renderStates:SetBlendSource(0, BlendFactor_One)
+        renderStates:SetBlendDest(0, BlendFactor_One)
+        renderStates:SetBlendOp(0, BlendOp_Subtract)
+        renderStates:SetBlendAlphaSource(0, BlendFactor_One)
+        renderStates:SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendAlphaOp(0, BlendOp_Subtract)
+    end)
 end
+
+local function ConfigureModulateBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:SetDepthEnabled(true)
+        renderStates:SetDepthComparisonFunc(DepthComparisonFunc_GreaterEqual)
+        renderStates:SetBlendEnabled(0, true)
+        renderStates:SetBlendSource(0, BlendFactor_Zero)
+        renderStates:SetBlendDest(0, BlendFactor_ColorSource)
+        renderStates:SetBlendOp(0, BlendOp_Add)
+        renderStates:SetBlendAlphaSource(0, BlendFactor_One)
+        renderStates:SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
+        renderStates:SetBlendAlphaOp(0, BlendOp_Add)
+    end)
+end
+
+local function ResetAlphaBlending(shaderItem)
+    SafeConfigureRenderStates(shaderItem, function(renderStates)
+        renderStates:ClearDepthEnabled()
+        renderStates:ClearDepthWriteMask()
+        renderStates:ClearBlendEnabled(0)
+        renderStates:ClearBlendSource(0)
+        renderStates:ClearBlendDest(0)
+        renderStates:ClearBlendOp(0)
+        renderStates:ClearBlendAlphaSource(0)
+        renderStates:ClearBlendAlphaDest(0)
+        renderStates:ClearBlendAlphaOp(0)
+    end)
+end
+
+-- Table-driven blend mode dispatch: maps BlendMode_* to { configureFn, drawListTag }
+local BlendConfig = {
+    [BlendMode_Opaque]      = { ConfigureOpaqueBlending,      "forward"     },
+    [BlendMode_Cutout]      = { ConfigureCutoutBlending,      "forward"     },
+    [BlendMode_Blended]     = { ConfigureBlendedBlending,     "transparent" },
+    [BlendMode_Additive]    = { ConfigureAdditiveBlending,    "transparent" },
+    [BlendMode_Subtractive] = { ConfigureSubtractiveBlending, "transparent" },
+    [BlendMode_Modulate]    = { ConfigureModulateBlending,    "transparent" },
+}
+
+-- Helper function to get blend mode from either property name
+local function GetBlendMode(context)
+    -- Try blend.mode first (old particle naming)
+    local success, value = pcall(function()
+        return context:GetMaterialPropertyValue_enum("blend.mode")
+    end)
+    if success then
+        return value
+    end
+
+    -- Fall back to opacity.mode (new standard naming)
+    success, value = pcall(function()
+        local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
+        -- Map opacity modes to blend modes
+        if opacityMode == OpacityMode_Opaque then
+            return BlendMode_Opaque
+        elseif opacityMode == OpacityMode_Cutout then
+            return BlendMode_Cutout
+        elseif opacityMode == OpacityMode_Blended then
+            return BlendMode_Blended
+        elseif opacityMode == OpacityMode_TintedTransparent then
+            return BlendMode_Blended  -- Treat TintedTransparent as Blended
+        end
+        return BlendMode_Opaque  -- Default to Opaque
+    end)
+    if success then
+        return value
+    end
+
+    -- Default to Opaque if neither property exists
+    return BlendMode_Opaque
+end
+
+--------------------------------------------------------------------------------
+-- Material functor entry points
+--------------------------------------------------------------------------------
 
 function Process(context)
-    local blend = context:GetMaterialPropertyValue_enum("blend.mode")
-
+    local blend = GetBlendMode(context)
     local forwardPass = context:GetShaderByTag("ForwardPass")
 
-    if blend == BlendMode_Opaque then
-        ConfigureOpaqueBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    elseif (blend == BlendMode_Cutout) then
-        ConfigureCutoutBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    elseif (blend == BlendMode_Blended) then
-        ConfigureBlendedBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    elseif (blend == BlendMode_Additive) then
-        ConfigureAdditiveBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    elseif (blend == BlendMode_Subtractive) then
-        ConfigureSubtractiveBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    elseif (blend == BlendMode_Modulate) then
-        ConfigureModulateBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("transparent")
-    else
-        ResetAlphaBlending(forwardPass)
-        forwardPass:SetDrawListTagOverride("") -- reset to default draw list
+    if IsShaderItemValid(forwardPass) then
+        local config = BlendConfig[blend]
+        if config then
+            config[1](forwardPass)
+            forwardPass:SetDrawListTagOverride(config[2])
+        else
+            ResetAlphaBlending(forwardPass)
+            forwardPass:SetDrawListTagOverride("")
+        end
     end
 end
 
 function ProcessEditor(context)
-    local blendMode = context:GetMaterialPropertyValue_enum("blend.mode")
+    local blendMode = GetBlendMode(context)
 
-    local mainVisibility
-    if blendMode == BlendMode_Cutout then
-        mainVisibility = MaterialPropertyVisibility_Enabled
-    else
-        mainVisibility = MaterialPropertyVisibility_Hidden
+    -- Show alpha cutoff factor only for Cutout mode
+    local factorVisibility = (blendMode == BlendMode_Cutout)
+        and MaterialPropertyVisibility_Enabled
+        or MaterialPropertyVisibility_Hidden
+
+    -- Try both property names for factor
+    local success = pcall(function()
+        context:SetMaterialPropertyVisibility("blend.factor", factorVisibility)
+    end)
+    if not success then
+        pcall(function()
+            context:SetMaterialPropertyVisibility("opacity.factor", factorVisibility)
+        end)
     end
-    context:SetMaterialPropertyVisibility("blend.factor", mainVisibility)
 
+    -- Show opacity factor for transparent blend modes
+    local isTransparent = (blendMode == BlendMode_Blended)
+        or (blendMode == BlendMode_Additive)
+        or (blendMode == BlendMode_Subtractive)
+        or (blendMode == BlendMode_Modulate)
+    local opacityVisibility = isTransparent
+        and MaterialPropertyVisibility_Enabled
+        or MaterialPropertyVisibility_Hidden
+
+    -- Try both property names for opacityFactor
+    success = pcall(function()
+        context:SetMaterialPropertyVisibility("blend.opacityFactor", opacityVisibility)
+    end)
+    if not success then
+        pcall(function()
+            context:SetMaterialPropertyVisibility("opacity.factor", opacityVisibility)
+        end)
+    end
 end

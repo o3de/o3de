@@ -153,9 +153,12 @@ namespace UnitTest
         EXPECT_EQ(1, subSpanOfSubSpan[1]);
     }
 
+    // Note: Precondition failure tests (first/last with out-of-bounds counts) were removed.
+    // With std::span, precondition violations use the STL's own assertion mechanism,
+    // not AZ traces, so AZ_TEST_TRACE_SUPPRESSION cannot intercept them.
+
     TEST_F(SpanTestFixture, FirstMethod_Returns_FirstCountElementsOfSpan)
     {
-        constexpr size_t vectorElementCount = 5;
         AZStd::vector<int> intVector{ 4, 5, 6, 1, 7 };
 
         AZStd::span intSpan(intVector);
@@ -171,12 +174,6 @@ namespace UnitTest
             auto prefixSpanRedux = prefixSpan.first(1);
             ASSERT_EQ(1, prefixSpanRedux.size());
             EXPECT_EQ(4, prefixSpanRedux[0]);
-
-            // Test failure of preconditions by requesting more
-            // elements thant stored in the span
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            intSpan.first(intSpan.size() + 1);
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
         {
@@ -191,18 +188,11 @@ namespace UnitTest
             auto prefixSpanRedux = prefixSpan.first<1>();
             ASSERT_EQ(1, prefixSpanRedux.size());
             EXPECT_EQ(4, prefixSpanRedux[0]);
-
-            // Test failure of preconditions by requesting more
-            // elements thant stored in the span
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            intSpan.first<vectorElementCount + 1>();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
     }
 
     TEST_F(SpanTestFixture, LastCountElementsOfSpan)
     {
-        constexpr size_t vectorElementCount = 5;
         AZStd::vector<int> intVector{ 4, 5, 6, 1, 7 };
 
         AZStd::span intSpan(intVector);
@@ -218,12 +208,6 @@ namespace UnitTest
             auto suffixSpanRedux = suffixSpan.last(1);
             ASSERT_EQ(1, suffixSpanRedux.size());
             EXPECT_EQ(7, suffixSpanRedux[0]);
-
-            // Test failure of preconditions by requesting more
-            // elements thant stored in the span
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            intSpan.last(intSpan.size() + 1);
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
         {
@@ -238,12 +222,6 @@ namespace UnitTest
             auto suffixSpanRedux = suffixSpan.last<1>();
             ASSERT_EQ(1, suffixSpanRedux.size());
             EXPECT_EQ(7, suffixSpanRedux[0]);
-
-            // Test failure of preconditions by requesting more
-            // elements thant stored in the span
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            intSpan.last<vectorElementCount + 1>();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
     }
 

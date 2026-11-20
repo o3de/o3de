@@ -8,6 +8,25 @@
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
+# Load the PAL trait file at top level so PAL_TRAIT_MICROPHONE_USES_LIBSAMPLERATE
+# is in scope for the conditional dependency below. ly_add_target also loads
+# this file via PLATFORM_INCLUDE_FILES; re-loading at top scope is safe -- the
+# PAL files are pure variable-set scripts.
+include(${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# Conditionally include libsamplerate only on platforms that actually call its
+# API. On Linux the Microphone Gem uses the None stub, which never exercises
+# libsamplerate; gating the dependency on the PAL trait drops a 3rdParty fetch
+# + link from Linux builds where it's unused. Other platforms (Mac/iOS/Android/
+# Windows) keep PAL_TRAIT_MICROPHONE_USES_LIBSAMPLERATE=TRUE, preserving
+# existing behavior.
+set(MICROPHONE_BUILD_DEPENDENCIES Gem::AudioSystem.API Legacy::CryCommon)
+set(MICROPHONE_COMPILE_DEFINITIONS "")
+if (PAL_TRAIT_MICROPHONE_USES_LIBSAMPLERATE)
+    list(APPEND MICROPHONE_BUILD_DEPENDENCIES 3rdParty::libsamplerate)
+    list(APPEND MICROPHONE_COMPILE_DEFINITIONS USE_LIBSAMPLERATE)
+endif()
+
 ly_add_target(
     NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
@@ -21,12 +40,10 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::AudioSystem.API
-            3rdParty::libsamplerate
-            Legacy::CryCommon
+            ${MICROPHONE_BUILD_DEPENDENCIES}
     COMPILE_DEFINITIONS
         PUBLIC
-            USE_LIBSAMPLERATE
+            ${MICROPHONE_COMPILE_DEFINITIONS}
 )
 
 ly_add_target(

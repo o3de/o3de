@@ -62,7 +62,7 @@ namespace UnitTest
                 }
                 return true;
             });
-        EXPECT_TRUE(isEntityFound); 
+        EXPECT_TRUE(isEntityFound);
     }
 
     static void ValidateTransformComponentValue(const AZStd::unique_ptr<AZ::Entity>& entity, const float worldXValue)
@@ -278,7 +278,7 @@ namespace UnitTest
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
-        createdPrefab->AddEntity(AZStd::move(AZStd::make_unique<AZ::Entity>("Entity2")));
+        createdPrefab->AddEntity(AZStd::make_unique<AZ::Entity>("Entity2"));
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
         bool isEntity1Found = false, isEntity2Found = false;
@@ -311,7 +311,7 @@ namespace UnitTest
         InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
         InstanceUniquePointer instantiatedPrefab = AZStd::move(prefabInstances.second);
 
-        createdPrefab->AddEntity(AZStd::move(AZStd::make_unique<AZ::Entity>("Entity1")));
+        createdPrefab->AddEntity(AZStd::make_unique<AZ::Entity>("Entity1"));
         GenerateDomAndReloadInstantiatedPrefab(createdPrefab, instantiatedPrefab);
 
         bool isEntity1Found = false;
@@ -424,7 +424,7 @@ namespace UnitTest
 
         AZStd::vector<InstanceUniquePointer> nestedInstances;
         nestedInstances.emplace_back(AZStd::move(nestedInstanceToUseForCreation));
-        
+
         AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances = SetupPrefabInstances(
             AzToolsFramework::EntityList{ entity1 }, AZStd::move(nestedInstances),
             m_prefabSystemComponent);
@@ -456,7 +456,7 @@ namespace UnitTest
                     // Entities under an existing nested instance should be in active state. This indicates that the instance is untouched.
                     ValidateEntityState(nestedInstance, "EntityUnderNestedPrefab", AZ::Entity::State::Active);
                 }
-                
+
         });
     }
 

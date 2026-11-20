@@ -17,7 +17,7 @@ namespace AzToolsFramework
         int highlightTextIndex = 0;
         do
         {
-            highlightTextIndex = highlightedString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive);
+            highlightTextIndex = static_cast<int>(highlightedString.lastIndexOf(matchingSubstring, highlightTextIndex - 1, Qt::CaseInsensitive));
             if (highlightTextIndex >= 0)
             {
                 const QString backgroundColor{ "#707070" };

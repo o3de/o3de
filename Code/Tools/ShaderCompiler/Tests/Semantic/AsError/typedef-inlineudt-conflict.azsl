@@ -1,0 +1,1 @@
+typedef struct X{} X;  // #EC 32 redeclaration of /X with a different kind: TypeAlias but was Structfirst

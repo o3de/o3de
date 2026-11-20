@@ -6,7 +6,6 @@
 -- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
 --
---
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
@@ -22,51 +21,84 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
+local function IsShaderItemValid(shaderItem)
+    if not shaderItem then
+        return false
+    end
+    local success, result = pcall(function()
+        return shaderItem:GetRenderStatesOverride()
+    end)
+    return success and result ~= nil
+end
+
+local function SafeConfigureRenderStates(shaderItem, configureFn)
+    if not IsShaderItemValid(shaderItem) then
+        return
+    end
+    local success, renderStates = pcall(function()
+        return shaderItem:GetRenderStatesOverride()
+    end)
+    if success and renderStates then
+        configureFn(renderStates)
+    end
+end
+
 function ConfigureAlphaBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
-    shaderItem:GetRenderStatesOverride():SetBlendAlphaOp(0, BlendOp_Add)
+    SafeConfigureRenderStates(shaderItem, function(rs)
+        rs:SetDepthEnabled(true)
+        rs:SetDepthWriteMask(DepthWriteMask_Zero)
+        rs:SetBlendEnabled(0, true)
+        rs:SetBlendSource(0, BlendFactor_One)
+        rs:SetBlendDest(0, BlendFactor_AlphaSourceInverse)
+        rs:SetBlendOp(0, BlendOp_Add)
+        rs:SetBlendAlphaSource(0, BlendFactor_One)
+        rs:SetBlendAlphaDest(0, BlendFactor_AlphaSourceInverse)
+        rs:SetBlendAlphaOp(0, BlendOp_Add)
+    end)
 end
 
 function ConfigureDualSourceBlending(shaderItem)
-    -- This blend multiplies the dest against color source 1, then adds color source 0.
-    shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
-    shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
-    shaderItem:GetRenderStatesOverride():SetBlendEnabled(0, true)
-    shaderItem:GetRenderStatesOverride():SetBlendSource(0, BlendFactor_One)
-    shaderItem:GetRenderStatesOverride():SetBlendDest(0, BlendFactor_ColorSource1)
-    shaderItem:GetRenderStatesOverride():SetBlendOp(0, BlendOp_Add)
+    SafeConfigureRenderStates(shaderItem, function(rs)
+        rs:SetDepthEnabled(true)
+        rs:SetDepthWriteMask(DepthWriteMask_Zero)
+        rs:SetBlendEnabled(0, true)
+        rs:SetBlendSource(0, BlendFactor_One)
+        rs:SetBlendDest(0, BlendFactor_ColorSource1)
+        rs:SetBlendOp(0, BlendOp_Add)
+    end)
 end
 
 function ResetAlphaBlending(shaderItem)
-    shaderItem:GetRenderStatesOverride():ClearDepthEnabled()
-    shaderItem:GetRenderStatesOverride():ClearDepthWriteMask()
-    shaderItem:GetRenderStatesOverride():ClearBlendEnabled(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendSource(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendDest(0)
-    shaderItem:GetRenderStatesOverride():ClearBlendOp(0)
+    SafeConfigureRenderStates(shaderItem, function(rs)
+        rs:ClearDepthEnabled()
+        rs:ClearDepthWriteMask()
+        rs:ClearBlendEnabled(0)
+        rs:ClearBlendSource(0)
+        rs:ClearBlendDest(0)
+        rs:ClearBlendOp(0)
+    end)
 end
 
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("mode")
 
+    if not context:HasShaderWithTag("ForwardPass_EDS") then
+        return
+    end
+
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
 
-    if opacityMode == OpacityMode_Blended then
-        ConfigureAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    elseif (opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    else
-        ResetAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
+    if IsShaderItemValid(forwardPassEDS) then
+        if opacityMode == OpacityMode_Blended then
+            ConfigureAlphaBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("transparent")
+        elseif (opacityMode == OpacityMode_TintedTransparent) then
+            ConfigureDualSourceBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("transparent")
+        else
+            ResetAlphaBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("")
+        end
     end
 end
 

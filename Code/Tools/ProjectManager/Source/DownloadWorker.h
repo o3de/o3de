@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
-#endif
 
 #include <DownloadController.h>
 

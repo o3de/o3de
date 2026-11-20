@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -21,51 +22,46 @@
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/typetraits/void_t.h>
 #include <AzCore/std/utility/declval.h>
-
+#include <iterator>
 
 namespace AZStd::ranges::Internal
 {
     template<class I1, class I2>
     void iter_swap(I1, I2) = delete;
 
-    template <class I1, class I2, class = void>
-    constexpr bool is_class_or_enum_with_iter_swap_adl = false;
-
     template <class I1, class I2>
-    constexpr bool is_class_or_enum_with_iter_swap_adl<I1, I2, enable_if_t<conjunction_v<
-        disjunction<
-        disjunction<is_class<remove_cvref_t<I1>>, is_enum<remove_cvref_t<I1>>>,
-        disjunction<is_class<remove_cvref_t<I2>>, is_enum<remove_cvref_t<I2>>>>,
-        is_void<void_t<decltype(iter_swap(declval<I1>(), declval<I2>()))>>
-        >>> = true;
+    concept is_class_or_enum_with_iter_swap_adl =
+        (is_class_v<remove_cvref_t<I1>> || is_enum_v<remove_cvref_t<I1>>
+            || is_class_v<remove_cvref_t<I2>> || is_enum_v<remove_cvref_t<I2>>)
+        && requires
+        {
+            iter_swap(declval<I1>(), declval<I2>());
+        };
 
     struct iter_swap_fn
     {
         template <class I1, class I2>
         constexpr auto operator()(I1&& i1, I2&& i2) const
-            ->enable_if_t<is_class_or_enum_with_iter_swap_adl<I1, I2>
-            >
+            requires is_class_or_enum_with_iter_swap_adl<I1, I2>
         {
             iter_swap(AZStd::forward<I1>(i1), AZStd::forward<I1>(i2));
         }
         template <class I1, class I2>
         constexpr auto operator()(I1&& i1, I2&& i2) const
-            ->enable_if_t<conjunction_v<bool_constant<!is_class_or_enum_with_iter_swap_adl<I1, I2>>,
-            bool_constant<indirectly_readable<I1>>,
-            bool_constant<indirectly_readable<I2>>,
-            bool_constant<swappable_with<iter_reference_t<I1>, iter_reference_t<I2>>>
-            >>
+            requires (!is_class_or_enum_with_iter_swap_adl<I1, I2>)
+                && indirectly_readable<I1>
+                && indirectly_readable<I2>
+                && swappable_with<iter_reference_t<I1>, iter_reference_t<I2>>
         {
             ranges::swap(*i1, *i2);
         }
 
         template <class I1, class I2>
         constexpr auto operator()(I1&& i1, I2&& i2) const
-            ->enable_if_t<conjunction_v<bool_constant<!is_class_or_enum_with_iter_swap_adl<I1, I2>>,
-            bool_constant<!swappable_with<iter_reference_t<I1>, iter_reference_t<I2>>>,
-            bool_constant<indirectly_movable_storable<I1, I2>>,
-            bool_constant<indirectly_movable_storable<I2, I1>>
-            >>
+            requires (!is_class_or_enum_with_iter_swap_adl<I1, I2>)
+                && (!swappable_with<iter_reference_t<I1>, iter_reference_t<I2>>)
+                && indirectly_movable_storable<I1, I2>
+                && indirectly_movable_storable<I2, I1>
         {
             *AZStd::forward<I1>(i1) = iter_exchange_move(AZStd::forward<I2>(i2), AZStd::forward<I1>(i1));
         }
@@ -96,25 +92,7 @@ namespace AZStd::ranges
     }
 }
 
-namespace AZStd::Internal
-{
-    template <class I1, class I2, class = void>
-    constexpr bool indirectly_swappable_impl = false;
-    template <class I1, class I2>
-    constexpr bool indirectly_swappable_impl<I1, I2, enable_if_t<conjunction_v<
-        bool_constant<indirectly_readable<I1>>,
-        bool_constant<indirectly_readable<I2>>,
-        is_void<void_t<
-        decltype(AZStd::ranges::iter_swap(declval<I1>(), declval<I1>())),
-        decltype(AZStd::ranges::iter_swap(declval<I2>(), declval<I2>())),
-        decltype(AZStd::ranges::iter_swap(declval<I1>(), declval<I2>())),
-        decltype(AZStd::ranges::iter_swap(declval<I2>(), declval<I1>()))>>
-        >>> = true;
-}
-
 namespace AZStd
 {
-    template<class I1, class I2 = I1>
-    /*concept*/ constexpr bool indirectly_swappable = Internal::indirectly_swappable_impl<I1, I2>;
+    using std::indirectly_swappable;
 }
-

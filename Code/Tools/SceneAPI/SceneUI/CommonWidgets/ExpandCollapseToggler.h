@@ -7,11 +7,10 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractButton>
 #include <QImage>
+
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 class QPaintEvent;
 namespace AZ

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETBUILDER_BYTEARRAYSTREAM
-#define ASSETBUILDER_BYTEARRAYSTREAM
+
+#pragma once
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
@@ -73,14 +73,10 @@ namespace AssetProcessor
     template <class Message>
     bool UnpackMessage(const QByteArray& buffer, Message& message)
     {
-        ByteArrayStream byteStream(buffer.constData(), buffer.size());
-        // we expect network messages to be pristine - so if there's any error, don't allow it! 
+        ByteArrayStream byteStream(buffer.constData(), static_cast<int>(buffer.size()));
+        // we expect network messages to be pristine - so if there's any error, don't allow it!
         // also do not allow it to load assets just becuase they're in fields
         AZ::ObjectStream::FilterDescriptor filterToUse(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_STRICT);
         return AZ::Utils::LoadObjectFromStreamInPlace(byteStream, message, nullptr, filterToUse);
     }
 }
-
-
-
-#endif // ASSETBUILDER_BYTEARRAYSTREAM

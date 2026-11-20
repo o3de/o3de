@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <QByteArray>
 #include <QWidget>
 #include <QMouseEvent>
@@ -21,7 +21,7 @@
 #include <EffectorInspector.h>
 #include <Window/ParticleLineWidget.h>
 #include <Serializer/ParticleSourceData.h>
-#endif
+
 
 namespace Ui
 {

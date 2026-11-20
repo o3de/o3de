@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 
@@ -15,7 +14,6 @@ AZ_PUSH_DISABLE_WARNING(4244, "-Wunknown-warning-option")
 #include <QAbstractItemView>
 #include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QSettings;
 class QTimer;

@@ -11,7 +11,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -21,7 +20,6 @@
 #include <QWidget>
 
 #include "PropertyAudioCtrlTypes.h"
-#endif
 
 class QLabel;
 class QLineEdit;

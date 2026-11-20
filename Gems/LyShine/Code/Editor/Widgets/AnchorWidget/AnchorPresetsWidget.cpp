@@ -87,4 +87,3 @@ void AnchorPresetsWidget::SetPresetButtonEnabledAt(int presetIndex, bool enabled
     }
 }
 
-#include <moc_AnchorPresetsWidget.cpp>

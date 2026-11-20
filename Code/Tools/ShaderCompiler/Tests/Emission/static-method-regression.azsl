@@ -1,0 +1,22 @@
+class DirectionalLightShadow
+{
+    static void GetShadowCoords(
+        uint lightIndex,
+        float3 worldPosition,
+        out float3 shadowCoords[4]);
+};
+
+void DirectionalLightShadow::GetShadowCoords(
+    uint lightIndex,
+    float3 worldPosition,
+    out float3 shadowCoords[4])
+{
+    const float4x4 depthBiasMatrices[4];
+    for (uint index = 0; index < 4; ++index)
+    {
+        const float4x4 depthBiasMatrix = depthBiasMatrices[index];
+        const float4 shadowCoordHomogeneous = mul(depthBiasMatrix,
+            float4(worldPosition, 1.));
+        shadowCoords[index] = shadowCoordHomogeneous.xyz / shadowCoordHomogeneous.w;
+    }
+}

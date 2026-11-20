@@ -9,6 +9,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
@@ -118,7 +119,9 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeatureVelocity>("FeatureVelocity", "Matches joint velocities.")
+        editContext->Class<FeatureVelocity>(
+            QT_TRANSLATE_NOOP("MotionMatching", "FeatureVelocity"),
+            QT_TRANSLATE_NOOP("MotionMatching", "Matches joint velocities."))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ;

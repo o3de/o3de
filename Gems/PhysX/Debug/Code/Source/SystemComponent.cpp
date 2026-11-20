@@ -26,6 +26,7 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -76,42 +77,42 @@ namespace PhysXDebug
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<PhysXVisualizationSettings>("PhysX Debug Draw Settings", "Settings to configure the PhysX Debug Visualization Gem properties.")
+                ec->Class<PhysXVisualizationSettings>(QT_TRANSLATE_NOOP("PhysX", "PhysX Debug Draw Settings"), QT_TRANSLATE_NOOP("PhysX", "Settings to configure the PhysX Debug Visualization Gem properties."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_visualizationEnabled, "Enable PhysX Debug Visualization", "")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionShapes, "Collision Shapes", "Enable collision shapes")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_visualizationEnabled, QT_TRANSLATE_NOOP("PhysX", "Enable PhysX Debug Visualization"), "")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionShapes, QT_TRANSLATE_NOOP("PhysX", "Collision Shapes"), QT_TRANSLATE_NOOP("PhysX", "Enable collision shapes"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionFNormals, "Collision FNormals", "Enable collision face normals")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionFNormals, QT_TRANSLATE_NOOP("PhysX", "Collision FNormals"), QT_TRANSLATE_NOOP("PhysX", "Enable collision face normals"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionEdges, "Collision Edges", "Enable collision edges")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionEdges, QT_TRANSLATE_NOOP("PhysX", "Collision Edges"), QT_TRANSLATE_NOOP("PhysX", "Enable collision edges"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionAabbs, "Collision Aabbs", "Enable collision aabbs")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionAabbs, QT_TRANSLATE_NOOP("PhysX", "Collision Aabbs"), QT_TRANSLATE_NOOP("PhysX", "Enable collision aabbs"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionCompounds, "Collision Compounds", "Enable collision compounds")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionCompounds, QT_TRANSLATE_NOOP("PhysX", "Collision Compounds"), QT_TRANSLATE_NOOP("PhysX", "Enable collision compounds"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionStatic, "Collision Static", "Enable collision static")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionStatic, QT_TRANSLATE_NOOP("PhysX", "Collision Static"), QT_TRANSLATE_NOOP("PhysX", "Enable collision static"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionDynamic, "Collision Dynamic", "Enable collision dynamic")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_collisionDynamic, QT_TRANSLATE_NOOP("PhysX", "Collision Dynamic"), QT_TRANSLATE_NOOP("PhysX", "Enable collision dynamic"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyAxes, "Body Axis", "Enable body axis")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyAxes, QT_TRANSLATE_NOOP("PhysX", "Body Axis"), QT_TRANSLATE_NOOP("PhysX", "Enable body axis"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyMassAxes, "Body Mass Axis", "Enable body mass axis")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyMassAxes, QT_TRANSLATE_NOOP("PhysX", "Body Mass Axis"), QT_TRANSLATE_NOOP("PhysX", "Enable body mass axis"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyLinVelocity, "Body Linear Velocity", "Enable body linear velocity")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyLinVelocity, QT_TRANSLATE_NOOP("PhysX", "Body Linear Velocity"), QT_TRANSLATE_NOOP("PhysX", "Enable body linear velocity"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyAngVelocity, "Body Angular Velocity", "Enable body angular velocity")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_bodyAngVelocity, QT_TRANSLATE_NOOP("PhysX", "Body Angular Velocity"), QT_TRANSLATE_NOOP("PhysX", "Enable body angular velocity"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_contactPoint, "Contact Point", "Enable contact point")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_contactPoint, QT_TRANSLATE_NOOP("PhysX", "Contact Point"), QT_TRANSLATE_NOOP("PhysX", "Enable contact point"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_contactNormal, "Contact Normal", "Enable contact normal")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_contactNormal, QT_TRANSLATE_NOOP("PhysX", "Contact Normal"), QT_TRANSLATE_NOOP("PhysX", "Enable contact normal"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLocalFrames, "Joint Local Frames", "Enable joint local frames")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLocalFrames, QT_TRANSLATE_NOOP("PhysX", "Joint Local Frames"), QT_TRANSLATE_NOOP("PhysX", "Enable joint local frames"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLimits, "Joint Limits", "Enable Joint limits")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_jointLimits, QT_TRANSLATE_NOOP("PhysX", "Joint Limits"), QT_TRANSLATE_NOOP("PhysX", "Enable Joint limits"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_mbpRegions, "MBP Regions", "Enable multi box pruning (MBP) regions")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_mbpRegions, QT_TRANSLATE_NOOP("PhysX", "MBP Regions"), QT_TRANSLATE_NOOP("PhysX", "Enable multi box pruning (MBP) regions"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_actorAxes, "Actor Axes", "Enable actor axes")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PhysXVisualizationSettings::m_actorAxes, QT_TRANSLATE_NOOP("PhysX", "Actor Axes"), QT_TRANSLATE_NOOP("PhysX", "Enable actor axes"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &PhysXVisualizationSettings::IsPhysXDebugEnabled)
                 ;
             }
@@ -131,11 +132,11 @@ namespace PhysXDebug
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<Culling>("Culling Settings", "Settings to configure the PhysX Debug Visualization Culling.")
+                ec->Class<Culling>(QT_TRANSLATE_NOOP("PhysX", "Culling Settings"), QT_TRANSLATE_NOOP("PhysX", "Settings to configure the PhysX Debug Visualization Culling."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Culling::m_enabled, "Enable Box Culling", "Enable box culling")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Culling::m_boxWireframe, "Show Culling Box", "Visualize the culling box")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &Culling::m_boxSize, "Culling Box Size", "Size of the culling box")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Culling::m_enabled, QT_TRANSLATE_NOOP("PhysX", "Enable Box Culling"), QT_TRANSLATE_NOOP("PhysX", "Enable box culling"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Culling::m_boxWireframe, QT_TRANSLATE_NOOP("PhysX", "Show Culling Box"), QT_TRANSLATE_NOOP("PhysX", "Visualize the culling box"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &Culling::m_boxSize, QT_TRANSLATE_NOOP("PhysX", "Culling Box Size"), QT_TRANSLATE_NOOP("PhysX", "Size of the culling box"))
                     ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 150.0f)
                 ;
@@ -166,12 +167,12 @@ namespace PhysXDebug
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SystemComponent>("PhysX Debug Visualization", "A debug visualization system component for PhysX.")
+                ec->Class<SystemComponent>(QT_TRANSLATE_NOOP("PhysX", "PhysX Debug Visualization"), QT_TRANSLATE_NOOP("PhysX", "A debug visualization system component for PhysX."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_settings, "Settings", "PhysX debug visualization settings")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_culling, "Culling", "PhysX culling options")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_settings, QT_TRANSLATE_NOOP("PhysX", "Settings"), QT_TRANSLATE_NOOP("PhysX", "PhysX debug visualization settings"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_culling, QT_TRANSLATE_NOOP("PhysX", "Culling"), QT_TRANSLATE_NOOP("PhysX", "PhysX culling options"))
                 ;
             }
         }

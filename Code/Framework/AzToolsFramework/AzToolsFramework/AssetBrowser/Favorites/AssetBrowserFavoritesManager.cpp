@@ -8,6 +8,7 @@
 
 #include "AssetBrowserFavoritesManager.h"
 
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -21,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesSettings.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
@@ -30,9 +32,9 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 #include <QModelIndex>
-#include <QSettings>
 
 namespace AzToolsFramework
 {
@@ -75,6 +77,12 @@ namespace AzToolsFramework
             AddFavoriteItem(item);
 
             m_favoriteEntriesCache[favorite] = item;
+
+            // If this asset was previously unresolved, remove it from the unresolved list
+            AZStd::string normalizedPath = AZ::IO::PathView(favorite->GetFullPath()).LexicallyNormal().String();
+            m_unresolvedFavoritePaths.erase(
+                AZStd::remove(m_unresolvedFavoritePaths.begin(), m_unresolvedFavoritePaths.end(), normalizedPath),
+                m_unresolvedFavoritePaths.end());
         }
 
         void AssetBrowserFavoritesManager::AddFavoriteSearchButtonPressed(SearchWidget* searchWidget)
@@ -214,53 +222,95 @@ namespace AzToolsFramework
             m_favorites.erase(m_favorites.begin(), m_favorites.end());
         }
 
+        // ============================================================
+        //  Settings Registry Path Helper
+        // ============================================================
+        //
+        //  Favorites are stored per-project in:
+        //      <ProjectPath>/user/Registry/editorpreferences.setreg
+        //  under the registry path:
+        //      /O3DE/Preferences/AssetBrowser/Favorites/<ProjectName>
+        //
+        //  Replaces the previous QSettings backing, which was platform-
+        //  specific (Windows registry on Windows) and global to the
+        //  machine rather than scoped to the project.
+        // ============================================================
+        static AZStd::string BuildFavoritesRegistryPath(const QString& projectName)
+        {
+            AZStd::string path = AssetBrowserFavoritesRegistryPrefix;
+            if (!projectName.isEmpty())
+            {
+                path += "/";
+                path += projectName.toUtf8().constData();
+            }
+            return path;
+        }
+
+        // ============================================================
+        //  Load Favorites from Settings Registry
+        // ============================================================
         void AssetBrowserFavoritesManager::LoadFavorites()
         {
             m_loading = true;
 
             ClearFavorites();
+            m_unresolvedFavoritePaths.clear();
 
-            QSettings settings;
-            settings.beginGroup("AssetBrowserFavorites");
-
-            QString projectName = GetProjectName();
-            if (projectName.length() > 0)
+            auto* registry = AZ::SettingsRegistry::Get();
+            if (registry == nullptr)
             {
-                settings.beginGroup(GetProjectName());
+                m_loading = false;
+                AssetBrowserFavoritesNotificationBus::Broadcast(&AssetBrowserFavoritesNotificationBus::Events::FavoritesChanged);
+                return;
             }
 
-            int size = settings.beginReadArray("Items");
+            const AZStd::string registryPath = BuildFavoritesRegistryPath(GetProjectName());
 
-            for (int index = 0; index < size; index++)
+            AssetBrowserFavoritesProjectSettings projectSettings;
+            registry->GetObject(projectSettings, registryPath);
+
+            for (const FavoriteRecord& record : projectSettings.m_items)
             {
-                settings.setArrayIndex(index);
-
-                QString path = settings.value("entryPath", "").toString();
-                if (!path.isEmpty())
-                {
-                    AZStd::string filePath = AZ::IO::PathView(path.toUtf8().data()).LexicallyNormal().String();
-
-                    const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
-                    if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
-                    {
-                        continue;
-                    }
-
-                    const auto itABEntry = EntryCache::GetInstance()->m_fileIdMap.find(itFile->second);
-                    if (itABEntry == EntryCache::GetInstance()->m_fileIdMap.end())
-                    {
-                        continue;
-                    }
-
-                    AddFavoriteAsset(itABEntry->second);
-                }
-
-                bool isSearch = settings.value("favoriteSearch", false).toBool();
-                if (isSearch)
+                if (record.m_isSearch)
                 {
                     SearchAssetBrowserFavoriteItem* search = aznew SearchAssetBrowserFavoriteItem();
-                    search->LoadSettings(settings);
+                    search->LoadFromRecord(record);
                     AddFavoriteItem(search);
+                    continue;
+                }
+
+                if (record.m_entryPath.empty())
+                {
+                    continue;
+                }
+
+                AZStd::string filePath = AZ::IO::PathView(record.m_entryPath).LexicallyNormal().String();
+
+                const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
+                if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
+                {
+                    // Cache not populated yet - keep so it is not lost on next save
+                    m_unresolvedFavoritePaths.push_back(filePath);
+                    continue;
+                }
+
+                const auto itABEntry = EntryCache::GetInstance()->m_fileIdMap.find(itFile->second);
+                if (itABEntry == EntryCache::GetInstance()->m_fileIdMap.end())
+                {
+                    m_unresolvedFavoritePaths.push_back(filePath);
+                    continue;
+                }
+
+                AddFavoriteAsset(itABEntry->second);
+            }
+
+            // Carry forward any previously unresolved paths that this session also could not resolve.
+            for (const AZStd::string& path : projectSettings.m_unresolvedPaths)
+            {
+                if (AZStd::find(m_unresolvedFavoritePaths.begin(), m_unresolvedFavoritePaths.end(), path)
+                    == m_unresolvedFavoritePaths.end())
+                {
+                    m_unresolvedFavoritePaths.push_back(path);
                 }
             }
 
@@ -269,6 +319,9 @@ namespace AzToolsFramework
             AssetBrowserFavoritesNotificationBus::Broadcast(&AssetBrowserFavoritesNotificationBus::Events::FavoritesChanged);
         }
 
+        // ============================================================
+        //  Save Favorites to Settings Registry
+        // ============================================================
         void AssetBrowserFavoritesManager::SaveFavorites()
         {
             if (m_loading)
@@ -276,43 +329,50 @@ namespace AzToolsFramework
                 return;
             }
 
-            QSettings settings;
-            settings.beginGroup("AssetBrowserFavorites");
-
-            QString projectName = GetProjectName();
-            if (projectName.length() > 0)
+            auto* registry = AZ::SettingsRegistry::Get();
+            if (registry == nullptr)
             {
-                // Clear the group
-                settings.beginGroup(projectName);
-                settings.remove("");
-                settings.endGroup();
-
-                settings.beginGroup(projectName);
+                AZ_Warning("AssetBrowserFavorites", false,
+                    "Settings registry unavailable; favorites will not be persisted.");
+                return;
             }
 
-            settings.remove("");
-            settings.beginWriteArray("Items");
+            AssetBrowserFavoritesProjectSettings projectSettings;
+            projectSettings.m_items.reserve(m_favorites.size());
 
-            for (size_t index = 0; index < m_favorites.size(); index++)
+            for (AssetBrowserFavoriteItem* entry : m_favorites)
             {
-                AssetBrowserFavoriteItem* entry = m_favorites.at(index);
-
-                settings.setArrayIndex(aznumeric_cast<int>(index));
+                FavoriteRecord& record = projectSettings.m_items.emplace_back();
 
                 if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
                 {
                     EntryAssetBrowserFavoriteItem* entryItem = static_cast<EntryAssetBrowserFavoriteItem*>(entry);
-                    settings.setValue("entryPath", entryItem->GetEntry()->GetFullPath().data());
+                    record.m_isSearch = false;
+                    record.m_entryPath = entryItem->GetEntry()->GetFullPath();
                 }
                 else if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
                 {
                     SearchAssetBrowserFavoriteItem* searchItem = static_cast<SearchAssetBrowserFavoriteItem*>(entry);
-                    settings.setValue("favoriteSearch", true);
-                    searchItem->SaveSettings(settings);
+                    searchItem->SaveToRecord(record);
                 }
             }
 
-            settings.endArray();
+            projectSettings.m_unresolvedPaths = m_unresolvedFavoritePaths;
+
+            const AZStd::string registryPath = BuildFavoritesRegistryPath(GetProjectName());
+
+            // Clear the prior subtree so removed entries don't linger.
+            registry->Remove(registryPath);
+
+            if (!registry->SetObject(registryPath, projectSettings))
+            {
+                AZ_Warning("AssetBrowserFavorites", false,
+                    "Failed to write favorites to settings registry at %s", registryPath.c_str());
+            }
+
+            // Flush editorpreferences.setreg through the editor settings API so
+            // the per-project user folder reflects the change immediately.
+            EditorSettingsAPIBus::Broadcast(&EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
 
             AssetBrowserFavoritesNotificationBus::Broadcast(&AssetBrowserFavoritesNotificationBus::Events::FavoritesChanged);
         }

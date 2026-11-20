@@ -10,6 +10,8 @@
 #include "SliceAsset.h"
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     void SliceSystemComponent::Reflect(ReflectContext* context)
@@ -21,7 +23,8 @@ namespace AZ
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SliceSystemComponent>(
-                    "Slice System", "Manages the Slice system")
+                    QT_TRANSLATE_NOOP("AzCore", "Slice System"),
+                    QT_TRANSLATE_NOOP("AzCore", "Manages the Slice system"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                     ;

@@ -7,12 +7,12 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <QStyledItemDelegate>
 #include <QMetaType>
 #include <QSvgRenderer>
+
 #include <AzCore/std/string/string.h>
-#endif
 
 namespace AssetProcessor
 {

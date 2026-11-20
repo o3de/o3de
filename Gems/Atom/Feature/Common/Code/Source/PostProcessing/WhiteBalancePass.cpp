@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<WhiteBalancePass> WhiteBalancePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<WhiteBalancePass> pass = aznew WhiteBalancePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         WhiteBalancePass::WhiteBalancePass(const RPI::PassDescriptor& descriptor)

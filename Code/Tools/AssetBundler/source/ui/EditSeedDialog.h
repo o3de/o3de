@@ -8,13 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 
 #include <QDialog>
 #include <QSharedPointer>
-#endif
 
 namespace Ui
 {

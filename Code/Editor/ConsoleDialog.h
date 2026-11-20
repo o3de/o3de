@@ -6,15 +6,11 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONSOLEDIALOG_H
-#define CRYINCLUDE_EDITOR_CONSOLEDIALOG_H
-
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "IEditor.h"
+
 #include <QDialog>
-#endif
 
 class CConsoleSCB;
 
@@ -31,5 +27,3 @@ public:
 private:
     CConsoleSCB* const m_consoleWidget;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONSOLEDIALOG_H

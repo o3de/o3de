@@ -65,6 +65,5 @@ namespace AzQtComponents
         return featureButton;
     }
 
-    #include <Components/Widgets/moc_CardNotification.cpp>
 }
 

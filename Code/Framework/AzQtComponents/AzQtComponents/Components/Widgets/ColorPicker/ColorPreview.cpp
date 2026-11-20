@@ -157,4 +157,3 @@ AZ::Color ColorPreview::colorUnderPoint(const QPoint& p)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_ColorPreview.cpp"

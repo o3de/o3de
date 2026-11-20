@@ -21,5 +21,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_HelpButton.cpp"

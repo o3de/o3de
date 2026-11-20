@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -41,7 +42,6 @@ namespace AzQtComponents
         : QFrame(parent)
         , m_data(new BrowseEdit::InternalData)
     {
-        AzQtComponents::Style::addClass(this, "AzQtComponentsBrowseEdit");
         setObjectName("browse-edit");
         setToolTipDuration(1000 * 10);
         setAttribute(Qt::WA_Hover, true);
@@ -58,6 +58,7 @@ namespace AzQtComponents
         setFocusProxy(m_data->m_lineEdit);
         m_data->m_lineEdit->setObjectName("line-edit");
         m_data->m_lineEdit->installEventFilter(this);
+        new LineEditRevertHandler(m_data->m_lineEdit, this);
         LineEdit::setEnableClearButtonWhenReadOnly(m_data->m_lineEdit, true);
         boxLayout->addWidget(m_data->m_lineEdit);
 
@@ -71,6 +72,8 @@ namespace AzQtComponents
         boxLayout->addWidget(m_data->m_attachedButton);
         connect(m_data->m_attachedButton, &QPushButton::clicked, this, &BrowseEdit::attachedButtonTriggered);
         setAttachedButtonIcon(QIcon(":/stylesheet/img/UI20/browse-edit.svg"));
+
+        AzQtComponents::Style::addClass(this, "AzQtComponentsBrowseEdit");
     }
 
     BrowseEdit::~BrowseEdit()
@@ -207,10 +210,15 @@ namespace AzQtComponents
                         return true;
                     }
                     break;
+
                 case QEvent::FocusIn:
+                    update();
+                    break;
+
                 case QEvent::FocusOut:
                     update();
                     break;
+
                 default:
                     break;
             }
@@ -367,6 +375,5 @@ namespace AzQtComponents
         return true;
     }
 
-} // namespace AzQtComponents
+} // namespace AzQtComponents 
 
-#include "Components/Widgets/moc_BrowseEdit.cpp"

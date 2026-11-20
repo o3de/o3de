@@ -675,4 +675,3 @@ namespace OpenParticleSystemEditor
 
 } // namespace OpenParticleSystemEditor
 
-#include <Window/moc_EffectorInspector.cpp>

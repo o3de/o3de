@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 
@@ -30,11 +31,11 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<RandomGradientConfig>(
-                    "Random Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Random Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RandomGradientConfig::m_randomSeed, "Random Seed", "Seed value for the Random Noise Generator.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RandomGradientConfig::m_randomSeed, QT_TRANSLATE_NOOP("GradientSignal", "Random Seed"), QT_TRANSLATE_NOOP("GradientSignal", "Seed value for the Random Noise Generator."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<int>::max())
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1)

@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMVALUETYPE_H
-#define CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMVALUETYPE_H
 #pragma once
 
 //! Values that animation track can hold.
@@ -36,6 +33,3 @@ enum class AnimValueType
 
     Unknown = static_cast<int>(0xFFFFFFFF)
 };
-
-
-#endif // CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMVALUETYPE_H

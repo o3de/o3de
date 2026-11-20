@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include "EMStudioConfig.h"
 #include "MotionSetHierarchyWidget.h"
+
 #include <QDialog>
-#endif
 
 
 namespace EMStudio

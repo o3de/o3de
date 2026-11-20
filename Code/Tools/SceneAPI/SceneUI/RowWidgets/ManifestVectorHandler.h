@@ -8,14 +8,12 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 #include <SceneAPI/SceneUI/RowWidgets/ManifestVectorWidget.h>
-#endif
 
 
 class QWidget;

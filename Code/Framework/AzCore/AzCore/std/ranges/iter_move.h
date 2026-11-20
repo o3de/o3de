@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -20,7 +21,6 @@
 #include <AzCore/std/utility/move.h>
 #include <AzCore/std/utility/declval.h>
 
-
 namespace AZStd
 {
     // Bring in std utility functions into AZStd namespace
@@ -32,40 +32,39 @@ namespace AZStd::ranges::Internal
 {
     void iter_move();
 
-    template <typename It, typename = void>
-    constexpr bool iter_move_adl = false;
+    template <typename It>
+    concept iter_move_adl = requires
+    {
+        iter_move(declval<It>());
+    };
 
     template <typename It>
-    constexpr bool iter_move_adl<It, void_t<decltype(iter_move(declval<It>()))>> = true;
-
-    template <typename It, typename = void>
-    constexpr bool is_class_or_enum_with_iter_move_adl = false;
-
-    template <typename It>
-    constexpr bool is_class_or_enum_with_iter_move_adl<It, enable_if_t<iter_move_adl<It>
-        && (is_class_v<remove_cvref_t<It>> || is_enum_v<remove_cvref_t<It>>)>>
-        = true;
+    concept is_class_or_enum_with_iter_move_adl =
+        iter_move_adl<It>
+        && (is_class_v<remove_cvref_t<It>> || is_enum_v<remove_cvref_t<It>>);
 
     struct iter_move_fn
     {
         template <typename It>
         constexpr auto operator()(It&& it) const
-            ->enable_if_t<is_class_or_enum_with_iter_move_adl<It>,
-            decltype(iter_move(AZStd::forward<It>(it)))>
+            -> decltype(iter_move(AZStd::forward<It>(it)))
+            requires is_class_or_enum_with_iter_move_adl<It>
         {
             return iter_move(AZStd::forward<It>(it));
         }
         template <typename It>
         constexpr auto operator()(It&& it) const
-            ->enable_if_t<!is_class_or_enum_with_iter_move_adl<It>&& is_lvalue_reference_v<decltype(*AZStd::forward<It>(it))>,
-            decltype(AZStd::move(*AZStd::forward<It>(it)))>
+            -> decltype(AZStd::move(*AZStd::forward<It>(it)))
+            requires (!is_class_or_enum_with_iter_move_adl<It>)
+                && is_lvalue_reference_v<decltype(*AZStd::forward<It>(it))>
         {
             return AZStd::move(*AZStd::forward<It>(it));
         }
         template <typename It>
         constexpr auto operator()(It&& it) const
-            ->enable_if_t<!is_class_or_enum_with_iter_move_adl<It> && !is_lvalue_reference_v<decltype(*AZStd::forward<It>(it))>,
-            decltype(*AZStd::forward<It>(it))>
+            -> decltype(*AZStd::forward<It>(it))
+            requires (!is_class_or_enum_with_iter_move_adl<It>)
+                && (!is_lvalue_reference_v<decltype(*AZStd::forward<It>(it))>)
         {
             return *AZStd::forward<It>(it);
         }

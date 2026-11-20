@@ -1,0 +1,71 @@
+// This test only validates that attributes and attribute sequences are emitted attached to the declaration which follows them
+// The actual content of the attributes doesn't have to make sense
+
+[SemanticAttribute]
+ShaderResourceGroupSemantic sem0 
+{
+    FrequencyId = 0;
+    ShaderVariantFallback = 128;
+};
+
+[StructSAttr]
+struct S 
+{
+    float4 albedo;
+};
+
+[[SRGAttribute1, SRGAttribute2]]
+ShaderResourceGroup SRG : sem0
+{
+    [StructBufferAttr]
+    StructuredBuffer<S> m_buf;
+
+    [TextureAttr]
+    Texture2D           m_tex;
+
+    [DSamplerAttr]
+    Sampler             m_dSampler;
+
+    [SSamplerAttr]
+    Sampler             m_sSampler {};
+
+    [CBAttr]
+    ConstantBuffer<S>   m_CB;
+
+    [SrgFuncAttr]
+    void SRGFunction() {}
+};
+
+[EnumAttr]
+enum Weekday {Monday = 0, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
+
+[[EnumClassAttr1, EnumClassAttr2, EnumClassAttr3]]
+enum class Season {Spring, Summer, Autumn, Winter};
+
+[FuncAttr]
+void Thingie() { }
+
+[StructAttr]
+struct MyStruct
+{
+    [AlbedoAttr]
+    float4 albedo;
+    float4 normal;
+
+    [[EmissiveAttr]]
+    float4 emissive;
+};
+
+[ClassAttr]
+class MyClass
+{
+    [ClassFuncAttr]
+    void classFunc() {}
+};
+
+[StaticConstAttr]
+static const int b = 5;
+
+[OptionAttr]
+[range(0, 10)]
+option int a = 6;

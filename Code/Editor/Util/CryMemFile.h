@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H
-#define CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H
 #pragma once
 
 #include <QBuffer>
@@ -70,5 +67,3 @@ public: // ---------------------------------------------------------------
 private:
     QByteArray m_lpBuffer;
 };
-
-#endif // CRYINCLUDE_EDITOR_UTIL_CRYMEMFILE_H

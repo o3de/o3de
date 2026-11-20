@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <LmbrCentral/Audio/AudioProxyComponentBus.h>
 
@@ -40,13 +41,17 @@ namespace EMotionFX
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorAnimAudioComponent>("Audio Animation", "Adds ability to execute audio triggers when animation events occur.")
+                    editContext->Class<EditorAnimAudioComponent>(
+                        QT_TRANSLATE_NOOP("EMotionFX", "Audio Animation"),
+                        QT_TRANSLATE_NOOP("EMotionFX", "Adds ability to execute audio triggers when animation events occur."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioAnimation.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimAudioComponent::m_editorTriggerEvents, "Trigger Map", "Maps the animation events to executable audio triggers.");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimAudioComponent::m_editorTriggerEvents,
+                            QT_TRANSLATE_NOOP("EMotionFX", "Trigger Map"),
+                            QT_TRANSLATE_NOOP("EMotionFX", "Maps the animation events to executable audio triggers."));
                 }
             }
         }

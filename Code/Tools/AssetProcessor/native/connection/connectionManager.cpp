@@ -77,7 +77,7 @@ ConnectionManager* ConnectionManager::Get()
 
 int ConnectionManager::getCount() const
 {
-    return m_connectionMap.size();
+    return static_cast<int>(m_connectionMap.size());
 }
 
 Connection* ConnectionManager::getConnection(unsigned int connectionId)
@@ -109,7 +109,7 @@ unsigned int ConnectionManager::internalAddConnection(bool isUserConnection, qin
     // If the connectionId grows, we are appending, otherwise we're inserting at the front
     if (connectionId < m_nextConnectionId)
     {
-        beginInsertRows(QModelIndex(), m_connectionMap.count(), m_connectionMap.count());
+        beginInsertRows(QModelIndex(), static_cast<int>(m_connectionMap.count()), static_cast<int>(m_connectionMap.count()));
     }
     else
     {
@@ -152,7 +152,7 @@ unsigned int ConnectionManager::addUserConnection()
 void ConnectionManager::OnStatusChanged(unsigned int connId)
 {
     QList<unsigned int> keys = m_connectionMap.keys();
-    int row = keys.indexOf(connId);
+    int row = static_cast<int>(keys.indexOf(connId));
 
     QModelIndex theIndex = index(row, 0, QModelIndex());
     QModelIndex theIndexLastColumn = index(row, Column::Max, QModelIndex());
@@ -235,7 +235,7 @@ int ConnectionManager::rowCount(const QModelIndex& parent) const
     {
         return 0;
     }
-    return m_connectionMap.count();
+    return static_cast<int>(m_connectionMap.count());
 }
 
 
@@ -1139,7 +1139,7 @@ void ConnectionManager::RemoveConnectionFromMap(unsigned int connectionId)
     if (iter != m_connectionMap.end())
     {
         QList<unsigned int> keys = m_connectionMap.keys();
-        int row = keys.indexOf(connectionId);
+        int row = static_cast<int>(keys.indexOf(connectionId));
 
         beginRemoveRows(QModelIndex(), row, row);
 

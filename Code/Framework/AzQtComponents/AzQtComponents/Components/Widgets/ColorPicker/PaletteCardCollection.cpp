@@ -142,7 +142,7 @@ namespace AzQtComponents
 
     int PaletteCardCollection::count() const
     {
-        return m_paletteCards.count();
+        return static_cast<int>(m_paletteCards.count());
     }
 
     bool PaletteCardCollection::isEmpty() const
@@ -157,7 +157,7 @@ namespace AzQtComponents
 
     int PaletteCardCollection::indexOf(const QSharedPointer<PaletteCard>& card) const
     {
-        return m_paletteCards.indexOf(card);
+        return static_cast<int>(m_paletteCards.indexOf(card));
     }
 
     void PaletteCardCollection::moveUp(QSharedPointer<PaletteCard>& card)
@@ -246,4 +246,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_PaletteCardCollection.cpp"

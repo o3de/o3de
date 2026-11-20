@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/DockBarButton.h>
 #include <AzQtComponents/Components/InteractiveWindowGeometryChanger.h>
@@ -18,7 +17,6 @@
 #include <QPoint>
 #include <QPointer>
 #include <QTimer>
-#endif
 
 class QMouseEvent;
 class QMenu;
@@ -198,7 +196,6 @@ namespace AzQtComponents
         static bool unpolish(Style* style, QWidget* widget, const Config& config);
         static int titleBarHeight(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config, const TabWidget::Config& tabConfig);
 
-        bool usesCustomTopBorderResizing() const;
         void checkEnableMouseTracking();
         QWidget* dockWidget() const;
         bool isInDockWidget() const;

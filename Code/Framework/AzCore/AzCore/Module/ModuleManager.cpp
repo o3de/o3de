@@ -21,6 +21,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace
 {
     static const char* s_moduleLoggingScope = "Module Manager";
@@ -56,8 +58,11 @@ namespace AZ
             if (EditContext* ec = serializeContext->GetEditContext())
             {
                 ec->Class<DynamicModuleDescriptor>(
-                    "Dynamic Module descriptor", "Describes a dynamic module (DLL) used by the application")
-                    ->DataElement(Edit::UIHandlers::Default, &DynamicModuleDescriptor::m_dynamicLibraryPath, "Dynamic library path", "Path to DLL.")
+                    QT_TRANSLATE_NOOP("AzCore", "Dynamic Module descriptor"),
+                    QT_TRANSLATE_NOOP("AzCore", "Describes a dynamic module (DLL) used by the application"))
+                    ->DataElement(Edit::UIHandlers::Default, &DynamicModuleDescriptor::m_dynamicLibraryPath,
+                        QT_TRANSLATE_NOOP("AzCore", "Dynamic library path"),
+                        QT_TRANSLATE_NOOP("AzCore", "Path to DLL."))
                     ;
             }
         }
@@ -632,8 +637,10 @@ namespace AZ
         {
             errorMessage.append("\n\n");
             errorMessage.append(outcome.GetError().m_extendedMessage);
-            auto choice = nativeUI->DisplayBlockingDialog(s_moduleLoggingScope, errorMessage, { "Quit", "Ignore" });
-            m_quitRequested = (choice == "Quit");
+            static const char* quitButton = QT_TRANSLATE_NOOP("AzCore", "Quit");
+            static const char* ignoreButton = QT_TRANSLATE_NOOP("AzCore", "Ignore");
+            auto choice = nativeUI->DisplayBlockingDialog(s_moduleLoggingScope, errorMessage, { quitButton, ignoreButton });
+            m_quitRequested = (choice == quitButton);
         }
     }
 

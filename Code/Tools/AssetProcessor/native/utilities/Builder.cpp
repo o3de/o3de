@@ -171,12 +171,17 @@ namespace AssetProcessor
 
     bool Builder::IsValid() const
     {
-        return m_connectionId != 0 && IsRunning();
+        return m_connectionId != 0 && IsRunning() && !m_defunct;
     }
 
     bool Builder::IsRunning(AZ::u32* exitCode) const
     {
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
+    }
+
+    bool Builder::IsReadyToWork() const
+    {
+        return !(m_busy || m_defunct);
     }
 
     AZStd::vector<AZStd::string> Builder::BuildParams(
@@ -299,26 +304,26 @@ namespace AssetProcessor
         }
         else if (!IsConnected())
         {
-            AZ_Error("Builder", false, "Lost connection to asset builder %s", UuidString().c_str());
+            AZ_Error("Builder", false, "BuildLost connection to asset builder %s - %i", UuidString().c_str(), GetConnectionId());
             return BuilderRunJobOutcome::LostConnection;
         }
         else if (!IsRunning(&exitCode))
         {
             // these are written to the debug channel because other messages are given for when asset builders die
             // that are more appropriate
-            AZ_Error("Builder", false, "AssetBuilder %s terminated with exit code %d", UuidString().c_str(), exitCode);
+            AZ_Error("Builder", false, "AssetBuilder %s - %i terminated with exit code %d", UuidString().c_str(), GetConnectionId(), exitCode);
             return BuilderRunJobOutcome::ProcessTerminated;
         }
         else if (jobCancelListener && jobCancelListener->IsCancelled())
         {
-            AZ_Error("Builder", false, "Job request was canceled");
+            AZ_Error("Builder", false, "Job request was canceled - terminating process builder %s - %i", UuidString().c_str(), GetConnectionId());
             TerminateProcess(
                 AZ::u32(-1)); // Terminate the builder. Even if it isn't deadlocked, we can't put it back in the pool while it's busy.
             return BuilderRunJobOutcome::JobCancelled;
         }
         else
         {
-            AZ_Error("Builder", false, "AssetBuilder %s failed to respond within %d seconds", UuidString().c_str(), processTimeoutLimitInSeconds);
+            AZ_Error("Builder", false, "AssetBuilder %s - %i failed to respond within %d seconds", UuidString().c_str(), GetConnectionId(), processTimeoutLimitInSeconds);
             TerminateProcess(
                 AZ::u32(-1)); // Terminate the builder. Even if it isn't deadlocked, we can't put it back in the pool while it's busy.
             return BuilderRunJobOutcome::ResponseFailure;
@@ -360,6 +365,14 @@ namespace AssetProcessor
     BuilderRef::operator bool() const
     {
         return m_builder != nullptr;
+    }
+
+    void BuilderRef::MarkAsDefunct()
+    {
+        if (m_builder)
+        {
+            m_builder->m_defunct = true;
+        }
     }
 
     void BuilderRef::release()

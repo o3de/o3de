@@ -9,14 +9,12 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include "LogPanel_Panel.h" // for TabSettings
 #include "LogTableModel.h"
 #include "LogTableItemDelegate.h"
 
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
-#endif
 
 namespace AzToolsFramework
 {

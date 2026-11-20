@@ -11,6 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -39,16 +40,16 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<DistanceBetweenFilterConfig>(
-                    "Vegetation Distance Between Filter", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Distance Between Filter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DistanceBetweenFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistanceBetweenFilterConfig::m_boundMode, "Bound Mode", "")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DistanceBetweenFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DistanceBetweenFilterConfig::m_boundMode, QT_TRANSLATE_NOOP("Vegetation", "Bound Mode"), "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->EnumAttribute(BoundMode::Radius, "Radius")
-                    ->EnumAttribute(BoundMode::MeshRadius, "MeshRadius")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistanceBetweenFilterConfig::m_radiusMin, "Radius Min", "Minimum test radius between instances for filter to pass.")
+                    ->EnumAttribute(BoundMode::Radius, QT_TRANSLATE_NOOP("Vegetation", "Radius"))
+                    ->EnumAttribute(BoundMode::MeshRadius, QT_TRANSLATE_NOOP("Vegetation", "MeshRadius"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DistanceBetweenFilterConfig::m_radiusMin, QT_TRANSLATE_NOOP("Vegetation", "Radius Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum test radius between instances for filter to pass."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f) // match current default sector size in meters.

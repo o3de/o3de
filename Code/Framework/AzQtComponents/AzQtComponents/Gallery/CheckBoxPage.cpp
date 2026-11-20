@@ -67,4 +67,3 @@ CheckBoxPage::~CheckBoxPage()
 {
 }
 
-#include "Gallery/moc_CheckBoxPage.cpp"

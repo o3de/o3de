@@ -11,6 +11,8 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     void EditorViewBookmarks::Reflect(AZ::ReflectContext* context)
@@ -21,9 +23,12 @@ namespace AzToolsFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorViewBookmarks>("EditorViewBookmarks", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Editor View Bookmarks")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks, "View Bookmarks", "")
+                editContext->Class<EditorViewBookmarks>(
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "EditorViewBookmarks"), "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Editor View Bookmarks"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorViewBookmarks::m_viewBookmarks,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "View Bookmarks"), "")
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorViewBookmarks::GetBookmarkLabel);
@@ -51,13 +56,16 @@ namespace AzToolsFramework
             {
                 editContext
                     ->Class<SharedViewBookmarkComponent>(
-                        "Shared View Bookmark Component", "The ViewBookmark Component allows to store bookmarks for a prefab")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Shared View Bookmark Component"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "The ViewBookmark Component allows to store bookmarks for a prefab"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
-                    ->Attribute(AZ::Edit::Attributes::Category, "View Bookmarks")
+                    ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "View Bookmarks"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark, "ViewBookmarks", "ViewBookmarks")
+                        AZ::Edit::UIHandlers::Default, &SharedViewBookmarkComponent::m_viewBookmark,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "ViewBookmarks"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "ViewBookmarks"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false);
             }
         }

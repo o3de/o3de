@@ -244,6 +244,12 @@ namespace AzToolsFramework
 
         void TransformComponent::Deactivate()
         {
+            AZ::TransformNotificationBus::Event(m_parentEntityId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
+            if (auto* parentTransform = AZ::TransformBus::FindFirstHandler(m_parentEntityId))
+            {
+                parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+            }
+
             AZ::EntityBus::Handler::BusDisconnect();
             AZ::SliceEntityHierarchyRequestBus::Handler::BusDisconnect();
             AZ::TransformBus::Handler::BusDisconnect();
@@ -741,6 +747,23 @@ namespace AzToolsFramework
                 GetEntityId(), &AZ::TransformNotificationBus::Events::OnParentChanged, oldParentId, parentId);
             m_parentChangedEvent.Signal(oldParentId, parentId);
 
+            if (oldParentId.IsValid() && oldParentId != parentId)
+            {
+                AZ::TransformNotificationBus::Event(oldParentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
+                auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParentId);
+                if (oldParentTransform)
+                {
+                    oldParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+                }
+            }
+
+            AZ::TransformNotificationBus::Event(parentId, &AZ::TransformNotificationBus::Events::OnChildAdded, GetEntityId());
+            auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
+            if (newParentTransform)
+            {
+                newParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
+            }
+
             TransformChanged();
         }
 
@@ -790,7 +813,7 @@ namespace AzToolsFramework
         {
             children.push_back(GetEntityId());
         }
-        
+
         bool TransformComponent::IsStaticTransform()
         {
             return m_isStatic;
@@ -821,7 +844,7 @@ namespace AzToolsFramework
             {
                 return nullptr;
             }
-            
+
             AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(otherEntityId);
             if (!entity)
             {
@@ -954,7 +977,7 @@ namespace AzToolsFramework
         AZ::u32 TransformComponent::StaticChangedInspector()
         {
             InvalidatePropertyDisplay(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree);
-           
+
             if (GetEntity())
             {
                 SetDirty();
@@ -1062,7 +1085,19 @@ namespace AzToolsFramework
 
         bool TransformComponent::IsAddNonUniformScaleButtonReadOnly()
         {
-            return FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr;
+            if (FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr)
+            {
+                return true; // its read only becuase you cannot add a second one and one already exists on it.
+            }
+
+            // You also cannot add any other kind of component to a container entity.
+            if (auto* containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get(); containerEntityInterface)
+            {
+                // if we are a container entity, the button should be read only.
+                return (containerEntityInterface->IsContainer(GetEntityId()));
+            }
+
+            return false; // nothing is preventing you from adding a non uniform scale component
         }
 
         bool TransformComponent::AddNonUniformScaleComponent(const AZ::Vector3& nonUniformScale)

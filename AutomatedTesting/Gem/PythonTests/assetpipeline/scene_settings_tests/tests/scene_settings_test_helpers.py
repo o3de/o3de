@@ -9,8 +9,8 @@ def prepare_scene_ui_for_test(test_file_name, manifest_should_exist, should_crea
     import asyncio
     from editor_python_test_tools.utils import Report
     import os
-    import PySide2
-    from PySide2 import QtWidgets
+    import PySide6
+    from PySide6 import QtWidgets
     import azlmbr.bus
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
@@ -69,8 +69,8 @@ def save_and_verify_manifest(path_to_manifest, widget_main_window):
     import asyncio
     from editor_python_test_tools.utils import Report
     import os
-    import PySide2
-    from PySide2 import QtWidgets
+    import PySide6
+    from PySide6 import QtWidgets
     import azlmbr.bus
     import azlmbr.legacy.general as general
     import azlmbr.qt

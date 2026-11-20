@@ -67,7 +67,7 @@ function Process(context)
     -- The transparent pass uses the "transparent" draw tag for both standard and low end pipelines, so this
     -- keeps both shaders from rendering to the transparent draw list.
     TrySetShaderEnabled(lowEndForwardEDS, opacityMode == OpacityMode_Opaque)
-    TrySetShaderEnabled(lowEndForward, opacityMode == OpacityMode_Cutout)
+    TrySetShaderEnabled(lowEndForward, (opacityMode == OpacityMode_Cutout) or (opacityMode == OpacityMode_Opaque))
 
     if context:HasShaderWithTag("DepthPassTransparentMin") then
         context:GetShaderByTag("DepthPassTransparentMin"):SetEnabled((opacityMode == OpacityMode_Blended)

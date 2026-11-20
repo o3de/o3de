@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : iOS specific declarations
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H
-#define CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H
-#pragma once
 
 
 #include "AppleSpecific.h"
@@ -50,5 +47,3 @@
 #if !defined(PLATFORM_64BIT)
 #error "IOS build only supports the 64bit architecture"
 #endif
-
-#endif // CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H

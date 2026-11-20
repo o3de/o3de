@@ -49,8 +49,8 @@ def Pane_Default_RetainOnSCRestart():
     """
 
     # Pyside imports
-    from PySide2 import QtCore, QtWidgets
-    from PySide2.QtCore import Qt
+    from PySide6 import QtCore, QtWidgets
+    from PySide6.QtCore import Qt
 
     # Helper imports
     from utils import Report

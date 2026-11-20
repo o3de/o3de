@@ -25,35 +25,4 @@ namespace AZStd
     {
         return AZ_OS_REALLOC(ptr, newSize, alignment);
     }
-
-    auto stateless_allocator::resize(pointer, size_type) -> size_type
-    {
-        return 0;
-    }
-
-    bool stateless_allocator::is_lock_free()
-    {
-        return false;
-    }
-
-    bool stateless_allocator::is_stale_read_allowed()
-    {
-        return false;
-    }
-
-    bool stateless_allocator::is_delayed_recycling()
-    {
-        return false;
-    }
-
-    // comparison operators
-    bool operator==(const stateless_allocator&, const stateless_allocator&)
-    {
-        return true;
-    }
-
-    bool operator!=(const stateless_allocator&, const stateless_allocator&)
-    {
-        return false;
-    }
 }

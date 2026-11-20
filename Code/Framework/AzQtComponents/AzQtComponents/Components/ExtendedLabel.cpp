@@ -117,5 +117,3 @@ namespace AzQtComponents
         emit clicked();
     }
 } // namespace AzQtComponents
-
-#include "Components/moc_ExtendedLabel.cpp"

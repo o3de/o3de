@@ -1,0 +1,7 @@
+"struct ViewSrg_Decal"
+"StructuredBuffer < ViewSrg_Decal > ViewSrg_m_decals : register"
+"struct ViewSrg_SRGConstantsStruct"
+"float4 ViewSrg_m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ ;"
+"ConstantBuffer < :: ViewSrg_SRGConstantsStruct > ViewSrg_SRGConstantBuffer : register"
+"float ViewSrg_GetNearZ ( )"
+"return :: ViewSrg_SRGConstantBuffer . ViewSrg_m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ . x ;"

@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -56,74 +57,89 @@ namespace Terrain
             if (edit)
             {
                 edit->Class<TerrainDebugQueryVisualizerConfig>(
-                    "Terrain Debug Queries", "Settings related to visualizing the results of terrain queries.")
-                    ->GroupElementToggle("Show Terrain Queries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Debug Queries"),
+                    QT_TRANSLATE_NOOP("Terrain", "Settings related to visualizing the results of terrain queries."))
+                    ->GroupElementToggle(QT_TRANSLATE_NOOP("Terrain", "Show Terrain Queries"), &TerrainDebugQueryVisualizerConfig::m_drawQueries)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainDebugQueryVisualizerConfig::m_sampler, "Sampler",
-                        "The type of query sampler to use for querying the terrain values (Exact, Clamp, Bilinear)")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainDebugQueryVisualizerConfig::m_sampler,
+                        QT_TRANSLATE_NOOP("Terrain", "Sampler"),
+                        QT_TRANSLATE_NOOP("Terrain", "The type of query sampler to use for querying the terrain values (Exact, Clamp, Bilinear)"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
-                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, "Exact")
-                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, "Clamp")
-                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, "Bilinear")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection, "Point count",
-                        "The number of points in each direction to visualize")
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, QT_TRANSLATE_NOOP("Terrain", "Exact"))
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, QT_TRANSLATE_NOOP("Terrain", "Clamp"))
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, QT_TRANSLATE_NOOP("Terrain", "Bilinear"))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection,
+                        QT_TRANSLATE_NOOP("Terrain", "Point count"),
+                        QT_TRANSLATE_NOOP("Terrain", "The number of points in each direction to visualize"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, 64)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_spacing, "Spacing (m)",
-                        "Determines how far apart the query results should be drawn in meters")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_spacing,
+                        QT_TRANSLATE_NOOP("Terrain", "Spacing (m)"),
+                        QT_TRANSLATE_NOOP("Terrain", "Determines how far apart the query results should be drawn in meters"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawHeights, "Draw Heights",
-                        "Enable visualization of terrain height queries")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawHeights,
+                        QT_TRANSLATE_NOOP("Terrain", "Draw Heights"),
+                        QT_TRANSLATE_NOOP("Terrain", "Enable visualization of terrain height queries"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_heightPointSize,
-                        "Height Point Size (m)", "Determines the size of the height point in meters")
+                        QT_TRANSLATE_NOOP("Terrain", "Height Point Size (m)"),
+                        QT_TRANSLATE_NOOP("Terrain", "Determines the size of the height point in meters"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableHeights)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f / 128.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawNormals, "Draw Normals",
-                        "Enable visualization of terrain normal queries")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawNormals,
+                        QT_TRANSLATE_NOOP("Terrain", "Draw Normals"),
+                        QT_TRANSLATE_NOOP("Terrain", "Enable visualization of terrain normal queries"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_normalHeight, "Normal Height (m)",
-                        "Determines the height of the normal line in meters")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_normalHeight,
+                        QT_TRANSLATE_NOOP("Terrain", "Normal Height (m)"),
+                        QT_TRANSLATE_NOOP("Terrain", "Determines the height of the normal line in meters"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableNormals)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_useCameraPosition, "Use Camera Position",
-                        "Determines whether to use the current camera position or a specified position")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_useCameraPosition,
+                        QT_TRANSLATE_NOOP("Terrain", "Use Camera Position"),
+                        QT_TRANSLATE_NOOP("Terrain", "Determines whether to use the current camera position or a specified position"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_centerPosition, "World Position",
-                        "Center of the area to draw query results in")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_centerPosition,
+                        QT_TRANSLATE_NOOP("Terrain", "World Position"),
+                        QT_TRANSLATE_NOOP("Terrain", "Center of the area to draw query results in"))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableCenterPosition)
                     ;
 
                 edit->Class<TerrainWorldDebuggerConfig>(
-                    "Terrain World Debugger Component", "Optional component for enabling terrain debugging features.")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain World Debugger Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Optional component for enabling terrain debugging features."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe, "Show Wireframe",
-                        "Draw a wireframe for the terrain quads in an area around the camera")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds",
-                        "Draw the current world bounds for the terrain")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe,
+                        QT_TRANSLATE_NOOP("Terrain", "Show Wireframe"),
+                        QT_TRANSLATE_NOOP("Terrain", "Draw a wireframe for the terrain quads in an area around the camera"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds,
+                        QT_TRANSLATE_NOOP("Terrain", "Show World Bounds"),
+                        QT_TRANSLATE_NOOP("Terrain", "Draw the current world bounds for the terrain"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawLastDirtyRegion,
-                        "Show Dirty Region", "Draw the most recent dirty region for the terrain")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_debugQueries, "Show Normals",
-                        "Settings for drawing terrain normals")
+                        QT_TRANSLATE_NOOP("Terrain", "Show Dirty Region"),
+                        QT_TRANSLATE_NOOP("Terrain", "Draw the most recent dirty region for the terrain"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_debugQueries,
+                        QT_TRANSLATE_NOOP("Terrain", "Show Normals"),
+                        QT_TRANSLATE_NOOP("Terrain", "Settings for drawing terrain normals"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

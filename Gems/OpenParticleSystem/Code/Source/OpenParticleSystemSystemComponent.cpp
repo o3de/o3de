@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace OpenParticleSystem
@@ -23,7 +24,7 @@ namespace OpenParticleSystem
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<OpenParticleSystemSystemComponent>(
-                      "OpenParticleSystem", "[Description of functionality provided by this System Component]")
+                      QT_TRANSLATE_NOOP("OpenParticleSystem", "OpenParticleSystem"), QT_TRANSLATE_NOOP("OpenParticleSystem", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);

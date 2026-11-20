@@ -69,4 +69,3 @@ namespace AZ
     } // namespace LyIntegration
 } // namespace AZ
 
-#include <SharedPreview/moc_SharedPreviewer.cpp>

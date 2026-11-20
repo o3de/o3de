@@ -59,7 +59,7 @@ namespace ScriptCanvas
         {
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
-            rangeOut.inputs = activationData.storage.begin();
+            rangeOut.inputs = activationData.storage.data();
 
             AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
                 "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");

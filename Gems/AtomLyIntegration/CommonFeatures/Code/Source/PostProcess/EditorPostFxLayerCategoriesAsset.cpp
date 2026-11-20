@@ -9,6 +9,7 @@
 #include <PostProcess/EditorPostFxLayerCategoriesAsset.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -27,8 +28,8 @@ namespace AZ
                 if (AZ::EditContext* edit = serialize->GetEditContext())
                 {
                     edit->Class<EditorPostFxLayerCategoriesAsset>(
-                        "Layer Categories", "Contains priority-indexed layer categories used by PostFX Layer Component")
-                        ->DataElement(0, &EditorPostFxLayerCategoriesAsset::m_layerCategories, "Layer Categories", "")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Layer Categories"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Contains priority-indexed layer categories used by PostFX Layer Component"))
+                        ->DataElement(0, &EditorPostFxLayerCategoriesAsset::m_layerCategories, QT_TRANSLATE_NOOP("AtomLyIntegration", "Layer Categories"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                         ->ElementAttribute(AZ::Edit::Attributes::MaxLength, 64)

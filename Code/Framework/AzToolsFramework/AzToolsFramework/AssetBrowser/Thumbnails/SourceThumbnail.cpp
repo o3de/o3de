@@ -147,4 +147,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Thumbnails/moc_SourceThumbnail.cpp"

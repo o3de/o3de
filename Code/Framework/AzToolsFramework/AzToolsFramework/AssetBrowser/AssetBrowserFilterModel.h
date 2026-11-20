@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
@@ -20,7 +19,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QSortFilterProxyModel>
 #include <QSharedPointer>
 #include <QCollator>
-#endif
 AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 

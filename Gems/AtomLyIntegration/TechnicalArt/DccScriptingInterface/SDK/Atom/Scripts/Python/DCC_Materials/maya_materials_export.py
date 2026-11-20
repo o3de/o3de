@@ -38,11 +38,11 @@ to use the specified python versions
     --> Need to figure out how to clear pointers for stored data properly
 """
 
-from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import Signal, Slot, QThread, QAbstractItemModel, QModelIndex, QObject
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtCore import Signal, Slot, QThread, QAbstractItemModel, QModelIndex, QObject
 from maya import OpenMayaUI as omui
 from maya.standalone import initialize
-from shiboken2 import wrapInstance
+from shiboken6 import wrapInstance
 import pymel.core as pm
 # import sphinx
 # import azpy

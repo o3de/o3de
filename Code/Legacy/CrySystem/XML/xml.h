@@ -244,7 +244,6 @@ private:
     void removeAllChildsImpl();
 
     void AddToXmlString(XmlString& xml, int level, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle, size_t chunkSizeBytes = 0) const;
-    char* AddToXmlStringUnsafe(char* xml, int level, char* endPtr, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle, size_t chunkSizeBytes = 0) const;
     XmlString MakeValidXmlString(const XmlString& xml) const;
     bool IsValidXmlString(const char* str) const;
     XmlAttrConstIter GetAttrConstIterator(const char* key) const

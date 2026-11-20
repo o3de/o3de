@@ -18,10 +18,12 @@
 #include <AtomCore/Instance/InstanceData.h>
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <OpenParticleSystem/ParticlePipelineState.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <particle/core/ParticleSystem.h>
 
 namespace OpenParticle
@@ -31,10 +33,12 @@ namespace OpenParticle
     struct DriverWrap
     {
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
+        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_shaderReadBufferPool;
     };
 
     class ParticleSystem
         : public AZ::Data::InstanceData
+        , public AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_INSTANCE_DATA(ParticleSystem, "{65680095-7b56-4d5f-91b5-d1beb26c84f7}");
@@ -68,9 +72,14 @@ namespace OpenParticle
 
         void SetMaterialDiffuseMap(AZ::u32 emitterIndex, AZStd::string mapPath);
 
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
     private:
         struct DrawParam {
+            AZ::RPI::ShaderOptionGroup optionGroup;
             AZ::Data::Instance<AZ::RPI::Shader> shader;
+            EmitterDrawKey drawKey;
+            AZ::Name materialPipelineName;
             AZ::RPI::ShaderVariant variant;
             SimuCore::ParticleCore::DrawItem item;
         };
@@ -86,7 +95,8 @@ namespace OpenParticle
         void SetParticleLight(SimuCore::ParticleCore::ParticleEmitter& emitter, const SimuCore::ParticleCore::DrawItem& item);
 
         void RenderParticle(const AZ::RHI::DrawListTag drawListTag, const DrawParam& drawParam,
-            EmitterInstance& instance, AZ::RPI::View& view, int meshIndex = -1);
+            EmitterInstance& instance, AZ::RPI::View& view, const EmitterDrawKey& drawKey,
+            AZ::u32 emitterId, int meshIndex = -1);
 
         void ClearLightEffects(AZ::u32 emitterId);
 

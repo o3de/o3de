@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QWidget>
@@ -19,7 +18,6 @@ AZ_POP_DISABLE_WARNING
 #include <QList>
 #include <QStringList>
 #include <QColor>
-#endif
 
 class QPixmap;
 

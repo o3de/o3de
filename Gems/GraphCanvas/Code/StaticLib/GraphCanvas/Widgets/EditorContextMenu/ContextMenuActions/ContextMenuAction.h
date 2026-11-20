@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <AzCore/PlatformDef.h>
 // qfontmetrics.h(118): warning C4251: 'QFontMetrics::d': class 'QExplicitlySharedDataPointer<QFontPrivate>' needs to have dll-interface to be used by clients of class 'QFontMetrics'
 // qwidget.h(858) : warning C4800 : 'uint' : forcing value to bool 'true' or 'false' (performance warning)
@@ -16,13 +16,11 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector2.h>
 
 #include <GraphCanvas/Editor/EditorTypes.h>
-#endif
 
 namespace GraphCanvas
 {

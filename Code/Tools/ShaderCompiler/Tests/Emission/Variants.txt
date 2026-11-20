@@ -1,0 +1,6 @@
+# list lines expected to have tokens matching the patterns in the strings. each space is a separation.
+
+"enum class QualityT { Low , Medium , High , } ;"
+"static const :: QualityT Quality = GetShaderVariantKey_Quality ( ) ;"
+"enum ColorT { Red , Green , Blue , } ;"
+"static const :: ColorT Color = GetShaderVariantKey_Color ( )  ;"

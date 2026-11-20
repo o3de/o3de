@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QFrame>
 #include <QRegularExpression>
 
@@ -19,7 +18,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
-#endif
 
 class QBoxLayout;
 class QLabel;
@@ -62,7 +60,7 @@ Q_SIGNALS:
 
     protected:
         void mouseReleaseEvent(QMouseEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(QEnterEvent* event) override;
         void leaveEvent(QEvent* event) override;
 
         QString m_tagText;

@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <native/unittests/AssetProcessorUnitTests.h>
-#endif
 
 namespace AssetProcessor
 {

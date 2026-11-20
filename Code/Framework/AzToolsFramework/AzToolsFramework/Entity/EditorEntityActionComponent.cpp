@@ -283,18 +283,21 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::PasteComponentsToEntity(AZ::EntityId entityId)
         {
+            // Paste whatever component data is currently on the clipboard.
+            PasteComponentsToEntityFromMimeData(entityId, ComponentMimeData::GetComponentMimeDataFromClipboard());
+        }
+
+        void EditorEntityActionComponent::PasteComponentsToEntityFromMimeData(AZ::EntityId entityId, const QMimeData* mimeData)
+        {
             auto entity = GetEntityById(entityId);
             if (!entity)
             {
                 return;
             }
 
-            // Grab component data from clipboard, if exists
-            const QMimeData* mimeData = ComponentMimeData::GetComponentMimeDataFromClipboard();
-
             if (!mimeData)
             {
-                AZ_Error("Editor", false, "No component data was found on the clipboard to paste.");
+                AZ_Error("Editor", false, "No component data was found to paste.");
                 return;
             }
 
@@ -533,7 +536,7 @@ namespace AzToolsFramework
                     }
 
                     // Run the scrubber and store the result
-                    resultMap.emplace(entity->GetId(), AZStd::move(ScrubEntity(entity)));
+                    resultMap.emplace(entity->GetId(), ScrubEntity(entity));
 
                     // Attempt to re-activate if we were previously active
                     if (reactivate)

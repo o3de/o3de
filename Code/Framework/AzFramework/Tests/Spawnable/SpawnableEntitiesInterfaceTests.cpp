@@ -22,27 +22,27 @@ namespace UnitTest
     protected:
         AZStd::array<AZ::Entity*, 4> m_values{ reinterpret_cast<AZ::Entity*>(1), reinterpret_cast<AZ::Entity*>(2),
                                                reinterpret_cast<AZ::Entity*>(3), reinterpret_cast<AZ::Entity*>(4) };
-        AzFramework::SpawnableEntityContainerView m_view{ m_values.begin(), m_values.end() };
+        AzFramework::SpawnableEntityContainerView m_view{ &*m_values.begin(), &*m_values.end() };
     };
 
     TEST_F(SpawnableEntityContainerViewTest, begin_Get_MatchesBeginOfArray)
     {
-        EXPECT_EQ(m_view.begin(), m_values.begin());
+        EXPECT_EQ(m_view.begin(), &*m_values.begin());
     }
 
     TEST_F(SpawnableEntityContainerViewTest, end_Get_MatchesEndOfArray)
     {
-        EXPECT_EQ(m_view.end(), m_values.end());
+        EXPECT_EQ(m_view.end(), &*m_values.end());
     }
 
     TEST_F(SpawnableEntityContainerViewTest, cbegin_Get_MatchesBeginOfArray)
     {
-        EXPECT_EQ(m_view.cbegin(), m_values.cbegin());
+        EXPECT_EQ(m_view.cbegin(), &*m_values.cbegin());
     }
 
     TEST_F(SpawnableEntityContainerViewTest, cend_Get_MatchesEndOfArray)
     {
-        EXPECT_EQ(m_view.cend(), m_values.cend());
+        EXPECT_EQ(m_view.cend(), &*m_values.cend());
     }
 
     TEST_F(SpawnableEntityContainerViewTest, IndexOperator_Get_MatchesThirdElement)
@@ -76,27 +76,27 @@ namespace UnitTest
     protected:
         AZStd::array<AZ::Entity*, 4> m_values{ reinterpret_cast<AZ::Entity*>(1), reinterpret_cast<AZ::Entity*>(2),
                                                reinterpret_cast<AZ::Entity*>(3), reinterpret_cast<AZ::Entity*>(4) };
-        AzFramework::SpawnableConstEntityContainerView m_view{ m_values.begin(), m_values.end() };
+        AzFramework::SpawnableConstEntityContainerView m_view{ &*m_values.begin(), &*m_values.end() };
     };
 
     TEST_F(SpawnableConstEntityContainerViewTest, begin_Get_MatchesBeginOfArray)
     {
-        EXPECT_EQ(m_view.begin(), m_values.begin());
+        EXPECT_EQ(m_view.begin(), &*m_values.begin());
     }
 
     TEST_F(SpawnableConstEntityContainerViewTest, end_Get_MatchesEndOfArray)
     {
-        EXPECT_EQ(m_view.end(), m_values.end());
+        EXPECT_EQ(m_view.end(), &*m_values.end());
     }
 
     TEST_F(SpawnableConstEntityContainerViewTest, cbegin_Get_MatchesBeginOfArray)
     {
-        EXPECT_EQ(m_view.cbegin(), m_values.cbegin());
+        EXPECT_EQ(m_view.cbegin(), &*m_values.cbegin());
     }
 
     TEST_F(SpawnableConstEntityContainerViewTest, cend_Get_MatchesEndOfArray)
     {
-        EXPECT_EQ(m_view.cend(), m_values.cend());
+        EXPECT_EQ(m_view.cend(), &*m_values.cend());
     }
 
     TEST_F(SpawnableConstEntityContainerViewTest, IndexOperator_Get_MatchesThirdElement)

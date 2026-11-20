@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_LOCK_H
-#define AZSTD_LOCK_H 1
+
+#pragma once
 
 #include <AzCore/std/parallel/config.h>
 #include <AzCore/std/createdestroy.h>
@@ -346,6 +346,3 @@ namespace AZStd
         unlock(lockable3, lockableN...);
     }
 }
-
-#endif // AZSTD_LOCK_H
-#pragma once

@@ -51,11 +51,11 @@ import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 print(_config)
 # ^ this is effectively an import and retrieve of <dccsi>\config.py
-# and init's access to Qt/Pyside2
-# init lumberyard Qy/PySide2 access
-# now default settings are extended with PySide2
+# and init's access to Qt/Pyside
+# init lumberyard Qy/PySide access
+# now default settings are extended with PySide
 # this is an alternative to "from dynaconf import settings" with Qt
-settings = _config.get_config_settings(enable_o3de_pyside2=True)
+settings = _config.get_config_settings(enable_o3de_pyside=True)
 
 
 # 3rd Party (we may or do provide)
@@ -63,10 +63,10 @@ from box import Box
 import OpenImageIO as oiio
 from OpenImageIO import ImageInput, ImageOutput
 from OpenImageIO import ImageBuf, ImageSpec, ImageBufAlgo
-# lumberyard Qt/PySide2
-from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import Signal, Slot, QThread, QProcess, QProcessEnvironment
+# lumberyard Qt/PySide
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Signal, Slot, QThread, QProcess, QProcessEnvironment
 # local tool imports
 import lumberyard_data
 import image_conversion

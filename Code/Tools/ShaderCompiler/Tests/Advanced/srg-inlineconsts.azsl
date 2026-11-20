@@ -1,0 +1,3 @@
+
+rootconstant float4 varFloat4;
+rootconstant float3x3 mat3x3;

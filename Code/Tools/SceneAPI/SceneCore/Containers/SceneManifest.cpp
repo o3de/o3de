@@ -237,7 +237,7 @@ namespace AZ
                                 rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
                                 rapidjson::Document& document = outcome.GetValue();
                                 document.Accept(writer);
-                                return AZStd::move(AZStd::string(sb.GetString()));
+                                return AZStd::string(sb.GetString());
                             }
                             AZ_Warning(ErrorWindowName, false, "SaveToJsonDocument outcome failure (%s)", outcome.GetError().c_str());
                             return {};

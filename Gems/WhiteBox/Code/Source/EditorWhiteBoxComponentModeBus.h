@@ -21,7 +21,8 @@ namespace WhiteBox
     {
         Default,
         EdgeRestore,
-        Transform
+        Transform,
+        DrawShape       // Lumberyard-style click-drag-release-pull shape drawing
     };
 
     using KeyboardModifierQueryFn = AZStd::function<AzToolsFramework::ViewportInteraction::KeyboardModifiers()>;

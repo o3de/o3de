@@ -119,4 +119,3 @@ TypographyPage::~TypographyPage()
 {
 }
 
-#include "Gallery/moc_TypographyPage.cpp"

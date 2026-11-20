@@ -1,0 +1,55 @@
+// hard cases
+
+interface I
+{
+    float4x4 M();
+};
+
+interface J
+{
+    float4x4 M(half);
+};
+
+class C : I, J
+{
+    float4x4 M() override;
+    float4x4 M(half) override;
+    void N(){}
+};
+
+class D : J
+{
+    float4x4 M(half) override;
+};
+
+float4x4 C::M() override
+{
+}
+
+enum class M { M} ;  // disconnected M. (no relation to I/M)
+
+void MainVS()
+{
+    C c;
+    c.M();     // ref to l.15
+    c.M(0.H);  // ref to l.16
+    c.M(0.L);  // unsolved case references the overload-set
+}
+
+// verify that the scope of MainVS is not affected by entry into C::M above
+// yes this happened, and yes this is a regression test.
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(MainVS, __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '/MainVS'\n");
+
+
+class E
+{
+    int v();
+};
+
+// another problem that happened is that "int v();" was moved in the global scope at emission
+// unfortunately this method doesn't test the emission result.
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(E::v, __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '/E/v'\n");

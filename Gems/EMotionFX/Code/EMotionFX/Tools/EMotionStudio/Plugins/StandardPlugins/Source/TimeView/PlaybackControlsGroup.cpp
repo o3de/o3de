@@ -68,13 +68,13 @@ namespace EMStudio
                 {
                     m_playButtonState = Pause;
                     m_playForwardAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Pause.svg"));
-                    m_playForwardAction->setToolTip("Pause animation");
+                    m_playForwardAction->setToolTip(tr("Pause animation"));
                 }
                 else
                 {
                     m_playButtonState = Play;
                     m_playForwardAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/PlayForward.svg"));
-                    m_playForwardAction->setToolTip("Play animation");
+                    m_playForwardAction->setToolTip(tr("Play animation"));
                 }
 
                 break;
@@ -98,13 +98,13 @@ namespace EMStudio
                     {
                         m_playButtonState = Pause;
                         m_playForwardAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Pause.svg"));
-                        m_playForwardAction->setToolTip("Pause playback");
+                        m_playForwardAction->setToolTip(tr("Pause playback"));
                     }
                     else
                     {
                         m_playButtonState = Play;
                         m_playForwardAction->setIcon(MysticQt::GetMysticQt()->FindIcon("Images/Icons/PlayForward.svg"));
-                        m_playForwardAction->setToolTip("Play recording");
+                        m_playForwardAction->setToolTip(tr("Play recording"));
                     }
                 }
 

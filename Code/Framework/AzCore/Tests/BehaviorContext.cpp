@@ -282,7 +282,7 @@ namespace UnitTest
             {
                 AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramFirst(params.data());
                 AZ::BehaviorArgument* paramIter = paramFirst;
 
                 AZ::Outcome<void,void> insertOutcome;
@@ -315,7 +315,7 @@ namespace UnitTest
             {
                 AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramFirst(params.data());
                 AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);
@@ -336,7 +336,7 @@ namespace UnitTest
             {
                 AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramFirst(params.data());
                 AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);
@@ -364,7 +364,7 @@ namespace UnitTest
             {
                 AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramFirst(params.data());
                 AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);

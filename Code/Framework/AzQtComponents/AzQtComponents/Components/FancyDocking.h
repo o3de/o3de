@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/DockTabWidget.h>
@@ -27,9 +26,7 @@
 #include <QScreen>
 #include <QSize>
 #include <QApplication>
-#endif
 
-class QDesktopWidget;
 class QTimer;
 
 namespace AzQtComponents
@@ -147,7 +144,7 @@ namespace AzQtComponents
         void setupDropZones(QWidget* dock, const QPoint& globalPos = QPoint());
         void raiseDockWidgets();
         void dropDockWidget(QDockWidget* dock, QWidget* onto, Qt::DockWidgetArea area);
-        QMainWindow* createFloatingMainWindow(const QString& name, const QRect& geometry, bool skipTitleBarDrawing = false);
+        QMainWindow* createFloatingMainWindow(const QString& name, const QRect& geometry);
         QString getUniqueDockWidgetName(const QString& prefix);
         void destroyIfUseless(QMainWindow* mw);
         void clearDraggingState();

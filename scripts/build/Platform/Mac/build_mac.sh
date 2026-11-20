@@ -8,6 +8,7 @@
 #
 
 set -o errexit # exit on the first failure encountered
+set -o pipefail # preserve the cmake failure when build output is piped through xcbeautify
 
 BASEDIR=$(dirname "$0")
 source $BASEDIR/env_mac.sh
@@ -51,8 +52,20 @@ fi
 # Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
 for config in $(echo $CONFIGURATION | sed "s/;/ /g")
 do
-    echo [ci_build] cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
-    cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}
+    build_cmd="cmake --build . --target ${CMAKE_TARGET} --config ${config} -j $(/usr/sbin/sysctl -n hw.ncpu) -- ${CMAKE_NATIVE_BUILD_ARGS}"
+
+    # Use xcbeautify to format the output if available
+    if command -v xcbeautify &> /dev/null; then
+        xcbeautify_args="--is-ci --disable-logging --preserve-unbeautified"
+
+        if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
+            xcbeautify_args="${xcbeautify_args} --renderer github-actions"
+        fi
+
+        build_cmd="${build_cmd} 2>&1 | xcbeautify ${xcbeautify_args}"
+    fi
+
+    eval "${build_cmd}"
 done
 
 popd

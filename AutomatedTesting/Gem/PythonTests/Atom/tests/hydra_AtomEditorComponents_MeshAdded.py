@@ -132,7 +132,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
     import os
 
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     import azlmbr.bus
     from functools import partial

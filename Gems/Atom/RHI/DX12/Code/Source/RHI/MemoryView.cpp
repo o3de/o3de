@@ -11,7 +11,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
-#include <dx12ma/D3D12MemAlloc.h>
+#include <D3D12MemAlloc.h>
 
 #if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(RHI);

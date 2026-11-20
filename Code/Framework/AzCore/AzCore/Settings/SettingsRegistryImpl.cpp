@@ -186,7 +186,7 @@ namespace AZ
     SettingsRegistryImpl::SettingsRegistryImpl()
     {
         m_serializationSettings.m_keepDefaults = true;
-        // Initialize the setting registry with a empty json object '{}'
+        // Initialize the setting registry with an empty json object '{}'
         m_settings.SetObject();
     }
 

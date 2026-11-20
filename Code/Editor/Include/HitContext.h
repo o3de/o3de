@@ -6,13 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Hit testing for editor viewport operations
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H
-#define CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H
-#pragma once
 
 struct IDisplayViewport;
 namespace AZ
@@ -126,5 +123,3 @@ struct HitContext
         iconHit = false;
     }
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H

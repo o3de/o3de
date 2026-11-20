@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/Source/ActorInstanceBus.h>
 #include "MorphTargetGroupWidget.h"
+
 #include <QVBoxLayout>
 #include <QLabel>
-#endif
 
 
 namespace EMStudio

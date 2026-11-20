@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
@@ -20,7 +19,6 @@
 
 #include <QWidget>
 #include <QScopedPointer>
-#endif
 
 namespace AZ
 {

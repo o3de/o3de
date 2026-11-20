@@ -1385,7 +1385,7 @@ namespace SettingsRegistryTests
         // Initialize the Settings Registry with an Object at /TestObject/IntValue
         m_registry->MergeSettings(R"({ "TestObject": { "IntValue": 7 } })", AZ::SettingsRegistryInterface::Format::JsonMergePatch);
 
-        // Merging a file with a empty JSON Object should be effectively a no-op.
+        // Merging a file with an empty JSON Object should be effectively a no-op.
         // There are some changes in the settings registry to record the merge history for introspection purposes.
         auto outcome = m_registry->MergeSettingsFile(path->Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
         EXPECT_TRUE(outcome);

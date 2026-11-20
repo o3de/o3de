@@ -1207,11 +1207,6 @@ QToolButton#assetTypeSelector
     padding: 0 0 0 2;
 }
 
-QToolButton#assetTypeSelector::menu-indicator
-{
-    image : url(none.jpg);
-}
-
 QToolButton#assetTypeSelector:hover
 {
     border: none;
@@ -1500,42 +1495,6 @@ QSlider::handle {
 
 QSlider::handle:disabled {
     image: url(:/stylesheet/img/slider-handle-disabled.png);
-}
-
-QMenu {
-    background-color: #333333;
-    margin: 3 5 5 5;
-}
-
-/* Setting padding-left explicitly only pads the text,
- * without taking into account the action icon, so it
- * may result in text and icon overlapping. */
-QMenu::item {
-    color: white;
-    font-size: 12px;
-    padding-right: 25px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-QMenu::item:selected {
-    color: #4285F4;
-}
-
-QMenu::item:disabled {
-    color: #555555;
-}
-
-QMenu::separator
-{
-    height: 0px;
-    margin: 2px 6px 2px 6px;
-    border-top-width: 1px;
-    border-top-style: solid;
-    border-top-color: #303030;
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: #222222;
 }
 
 QComboBox {
@@ -2346,13 +2305,6 @@ AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector
     icon-size: 16px 14px;
     max-height: 24px;
     max-width: 24px;
-}
-
-AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector::menu-indicator
-{
-    image: url(none.jpg);
-    subcontrol-position: right center;
-    subcontrol-origin: padding;
 }
 
 AzQtComponents--FilteredSearchWidget QLabel#label

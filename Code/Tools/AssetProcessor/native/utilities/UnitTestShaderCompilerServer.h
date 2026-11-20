@@ -5,14 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef UNITTESTSHADERCOMPILERSERVER_H
-#define UNITTESTSHADERCOMPILERSERVER_H
 
-#if !defined(Q_MOC_RUN)
+#pragma once
+
 #include <QString>
 #include <QByteArray>
 #include <QObject>
-#endif
 
 class QTcpServer;
 class QTcpSocket;
@@ -66,4 +64,3 @@ private:
     qint64 m_bytesRemainingInPayload;
     qint64 m_totalBytesReadInPayload;
 };
-#endif //UNITTESTSHADERCOMPILERSERVER_H

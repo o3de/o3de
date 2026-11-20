@@ -976,18 +976,30 @@ namespace AzToolsFramework
 
     using ViewPaneCallbackBus = AZ::EBus<ViewPaneCallbacks>;
 
-    /**
-     * RAII Helper class for undo batches.
+    /*! RAII Helper class for undo batches.
      *
-     * AzToolsFramework::ScopedUndoBatch undoBatch("Batch Name");
-     * entity->ChangeData(...);
-     * undoBatch.MarkEntityDirty(entity->GetId());
+     * Usage:  If you are doing a single one-off operation in one frame:
+     * 1. Open a scope.
+     * 2. ScopedUndoBatch batch("Do a thing");
+     * 3. Modify data in entities, set them dirty, and/or add child undo commands for special undo nodes.
+     * 4. Allow the ScopedUndoBatch to leave scope.
+     *
+     * Usage:  If you are doing a multi-frame operation:
+     * 1. Store a UndoSystem::URSequencePoint* resumeHandle = nullptr; in your class to remember your operation handle.
+     * 2. Each time data changes:
+     *    a) ScopedUndoBatch batch("Do a thing", &resumeHandle);
+     *       ResumeHandle will either be reused and be unchanged, or it will be set to a new value if
+     *       resumeHandle was a nullptr, or was not able to be resumed.
+     *    b) Modify the entity data and set them dirty, and/or add child undo commands for special undo nodes.
+     *    c) Allow the scoped undo batch to leave scope.  Retain the resumehandle for next time data changes.
+     * 3. When the operation is complete (as in, logical user operation, like they release the mouse in a drag),
+     *    forget the resume handle (set it to nullptr).  This will cause the next operation to start a new batch.
      */
     class AZTF_API ScopedUndoBatch
     {
     public:
         AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator);
-        explicit ScopedUndoBatch(const char* batchName);
+        [[nodiscard]] explicit ScopedUndoBatch(const char* batchName, UndoSystem::URSequencePoint** resumeHandle = nullptr);
         ~ScopedUndoBatch();
 
         // utility/convenience function for adding dirty entity

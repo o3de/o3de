@@ -1,0 +1,31 @@
+ShaderResourceGroupSemantic UpdateSrgOne
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup MySRGOne : UpdateSrgOne
+{
+    struct InnerStruct
+    {
+        float4 m_diffuseColor;
+    };
+    
+    ConstantBuffer<InnerStruct> m_materialConstants;
+};
+
+ShaderResourceGroupSemantic UpdateSrgTwo
+{
+    FrequencyId = 2;
+};
+
+struct GlobalStruct
+{
+    float4 m_diffuseColor;
+	uint64_t m_bitMask1;
+	uint64_t m_bitMask2;
+};
+
+ShaderResourceGroup MySRGTwo : UpdateSrgTwo
+{    
+    ConstantBuffer<GlobalStruct> m_materialConstants;
+};

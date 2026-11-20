@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 #include <QMenu>
@@ -17,7 +16,6 @@
 #include <AzCore/Component/Entity.h>
 
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
-#endif
 
 namespace Ui
 {

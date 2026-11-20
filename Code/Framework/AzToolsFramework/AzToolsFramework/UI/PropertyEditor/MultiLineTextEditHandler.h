@@ -11,12 +11,11 @@
  
  #include <AzToolsFramework/AzToolsFrameworkAPI.h>
  
- #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include "GrowTextEdit.h"
-#endif
 
 /* 
 =============================================================

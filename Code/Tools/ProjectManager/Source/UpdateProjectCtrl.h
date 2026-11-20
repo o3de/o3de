@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 #include <ScreenWidget.h>
 #include <GemCatalog/GemInfo.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QTabWidget)

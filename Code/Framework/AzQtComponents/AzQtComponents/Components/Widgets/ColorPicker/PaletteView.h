@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzCore/Math/Color.h>
+
 #include <QAbstractItemView>
 #include <QColor>
 #include <QRect>
 #include <QSize>
-#endif
 
 class QPainter;
 class QSettings;

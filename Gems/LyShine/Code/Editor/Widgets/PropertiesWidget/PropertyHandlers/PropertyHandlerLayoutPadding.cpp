@@ -9,13 +9,15 @@
 
 #include "PropertyHandlerLayoutPadding.h"
 
+#include <QObject>
+
 QWidget* PropertyHandlerLayoutPadding::CreateGUI(QWidget* pParent)
 {
     AzQtComponents::VectorInput* ctrl = m_common.ConstructGUI(pParent);
-    ctrl->setLabel(0, "Left");
-    ctrl->setLabel(1, "Top");
-    ctrl->setLabel(2, "Right");
-    ctrl->setLabel(3, "Bottom");
+    ctrl->setLabel(0, QObject::tr("Left"));
+    ctrl->setLabel(1, QObject::tr("Top"));
+    ctrl->setLabel(2, QObject::tr("Right"));
+    ctrl->setLabel(3, QObject::tr("Bottom"));
 
     return ctrl;
 }

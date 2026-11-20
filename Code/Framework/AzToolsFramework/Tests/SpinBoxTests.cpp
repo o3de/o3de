@@ -38,7 +38,6 @@ namespace UnitTest
             m_dummyWidget = AZStd::make_unique<QWidget>();
             // Give the test window a valid windowHandle. SpinBox code uses this to access the QScreen
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
 
             m_intSpinBox = AZStd::make_unique<AzQtComponents::SpinBox>();
             m_doubleSpinBox = AZStd::make_unique<AzQtComponents::DoubleSpinBox>();
@@ -54,12 +53,17 @@ namespace UnitTest
                 spinBox->setFocusPolicy(Qt::StrongFocus);
                 spinBox->clearFocus();
             }
+
+            // Qt6 will not deliver QEvent::FocusIn to a widget whose top-level
+            // has never been shown, even on the offscreen platform. Show after
+            // parenting children so they inherit visibility.
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
-
             // Regenerate this list in case any of them were deleted during the test
             m_spinBoxes = { m_intSpinBox.get(), m_doubleSpinBox.get(), m_doubleSpinBoxWithLineEdit.get() };
 
@@ -126,6 +130,20 @@ namespace UnitTest
 
     TEST_F(SpinBoxFixture, SpinBoxMousePressAndMoveLeftScrollsValue)
     {
+        // The leftward drag starts 1 pixel inside the widget and ends 10 pixels
+        // outside its left edge. SpinBox's mouse-drag handler relies on the
+        // platform delivering events for the off-widget portion of the drag,
+        // which requires QPA mouse grab support. The minimal QPA plugin (used
+        // on the Linux CI runner when libxcb-cursor0 is missing) prints
+        // "This plugin does not support grabbing the mouse" and the off-widget
+        // events are misreported, causing the test to observe two steps of
+        // motion instead of one. The rightward companion test passes on
+        // minimal because the drag stays in-bounds.
+        if (QApplication::platformName() == QLatin1String("minimal"))
+        {
+            GTEST_SKIP() << "minimal QPA does not support mouse grab; off-widget drag math is unreliable";
+        }
+
         m_doubleSpinBox->setValue(10.0);
 
         const int halfWidgetHeight = m_doubleSpinBox->height() / 2;
@@ -189,8 +207,11 @@ namespace UnitTest
         EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
     }
 
-    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndEscapeReturnsToPreviousValue)
+    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndEscapeReturnsToPreviousValueAndExitsField)
     {
+        // Esc cancels the in-progress edit, reverts to the focus-in value, and
+        // exits the field (clears focus). Exiting on Esc is the contract that
+        // matches the rest of the keyboard-editable input fields in the editor.
         m_doubleSpinBoxWithLineEdit->setValue(10.0);
         m_doubleSpinBoxWithLineEdit->setFocus();
         m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(QString("15"));
@@ -198,22 +219,49 @@ namespace UnitTest
         QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Escape, Qt::NoModifier);
 
         EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
-        EXPECT_TRUE(m_doubleSpinBoxWithLineEdit->GetLineEdit()->hasSelectedText());
+        EXPECT_FALSE(m_doubleSpinBoxWithLineEdit->hasFocus());
     }
 
-    TEST_F(SpinBoxFixture, SpinBoxSelectContentsAndEscapeKeepsFocus)
+    TEST_F(SpinBoxFixture, SpinBoxEscapeExitsFieldWithoutPropagating)
     {
+        // Esc on a focused spinbox exits the field. It must also be consumed by
+        // the spinbox so it does not bubble up to the MainWindow's escape
+        // action (which would, for example, deselect the active entity).
         m_doubleSpinBox->setValue(10.0);
         m_doubleSpinBox->setFocus();
         m_doubleSpinBox->selectAll();
 
         QTest::keyClick(m_doubleSpinBox.get(), Qt::Key_Escape, Qt::NoModifier);
 
-        EXPECT_TRUE(m_doubleSpinBox->hasFocus());
+        EXPECT_FALSE(m_doubleSpinBox->hasFocus());
+        EXPECT_NEAR(m_doubleSpinBox->value(), 10.0, 0.001);
+    }
 
-        QTest::keyClick(m_doubleSpinBox.get(), Qt::Key_Escape, Qt::NoModifier);
+    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndCtrlZReturnsToPreviousValueAndExitsField)
+    {
+        // Ctrl+Z is parallel to Esc when an in-progress edit exists: revert the
+        // committed value to the focus-in value and exit the field.
+        m_doubleSpinBoxWithLineEdit->setValue(10.0);
+        m_doubleSpinBoxWithLineEdit->setFocus();
+        m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(QString("15"));
 
-        EXPECT_TRUE(m_doubleSpinBox->hasFocus());
+        QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Z, Qt::ControlModifier);
+
+        EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
+        EXPECT_FALSE(m_doubleSpinBoxWithLineEdit->hasFocus());
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCtrlZWithNoInProgressEditDoesNotExitField)
+    {
+        // When there is no local edit, Ctrl+Z must bubble up so the global undo
+        // stack can handle it. The spinbox stays focused.
+        m_doubleSpinBoxWithLineEdit->setValue(10.0);
+        m_doubleSpinBoxWithLineEdit->setFocus();
+
+        QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Z, Qt::ControlModifier);
+
+        EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
+        EXPECT_TRUE(m_doubleSpinBoxWithLineEdit->hasFocus());
     }
 
     TEST_F(SpinBoxFixture, SpinBoxSuffixRemovedAndAppliedWithFocusChange)

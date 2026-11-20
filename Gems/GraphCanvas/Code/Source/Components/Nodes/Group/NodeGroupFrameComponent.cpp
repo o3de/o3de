@@ -179,19 +179,19 @@ namespace GraphCanvas
 
             if (editContext)
             {
-                editContext->Class<NodeGroupFrameComponentSaveData>("NodeGroupFrameComponentSaveData", "Structure that stores all of the save information for a Node Group.")
+                editContext->Class<NodeGroupFrameComponentSaveData>(QT_TRANSLATE_NOOP("GraphCanvas", "NodeGroupFrameComponentSaveData"), QT_TRANSLATE_NOOP("GraphCanvas", "Structure that stores all of the save information for a Node Group."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Properties")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponentSaveData::m_enableAsBookmark, "Enable as Bookmark", "Toggles whether or not the Node Group is registered as a bookmark.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponentSaveData::m_enableAsBookmark, QT_TRANSLATE_NOOP("GraphCanvas", "Enable as Bookmark"), QT_TRANSLATE_NOOP("GraphCanvas", "Toggles whether or not the Node Group is registered as a bookmark."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &NodeGroupFrameComponentSaveData::OnBookmarkStatusChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponentSaveData::m_isCollapsed, "Collapse Group", "Toggles whether or not the specified Node Group is collapsed.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponentSaveData::m_isCollapsed, QT_TRANSLATE_NOOP("GraphCanvas", "Collapse Group"), QT_TRANSLATE_NOOP("GraphCanvas", "Toggles whether or not the specified Node Group is collapsed."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &NodeGroupFrameComponentSaveData::OnCollapsedStatusChanged)
                 ;
 
-                editContext->Class<NodeGroupFrameComponent>("Node Group Frame", "A comment that applies to the visible area.")
+                editContext->Class<NodeGroupFrameComponent>(QT_TRANSLATE_NOOP("GraphCanvas", "Node Group Frame"), QT_TRANSLATE_NOOP("GraphCanvas", "A comment that applies to the visible area."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Properties")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponent::m_saveData, "SaveData", "The modifiable information about this Node Group.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NodeGroupFrameComponent::m_saveData, QT_TRANSLATE_NOOP("GraphCanvas", "SaveData"), QT_TRANSLATE_NOOP("GraphCanvas", "The modifiable information about this Node Group."))
                     ;
             }
         }

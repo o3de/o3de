@@ -1124,4 +1124,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <moc_ViewPane.cpp>

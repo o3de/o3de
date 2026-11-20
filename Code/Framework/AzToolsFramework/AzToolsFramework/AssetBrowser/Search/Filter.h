@@ -7,19 +7,17 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
 #include <QRegularExpression>
-#endif
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {

@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -18,7 +17,6 @@
 #include <QObject>
 #include <QPointer>
 #include <QTreeView>
-#endif
 
 class QModelIndex;
 class QByteArray;

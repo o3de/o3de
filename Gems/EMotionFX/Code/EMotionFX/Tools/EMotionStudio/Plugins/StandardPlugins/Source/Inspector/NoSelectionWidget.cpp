@@ -16,7 +16,7 @@ namespace EMStudio
     NoSelectionWidget::NoSelectionWidget(QWidget* parent)
         : QWidget(parent)
     {
-        m_label = new QLabel("Select an object to show its properties in the inspector.", this);
+        m_label = new QLabel(tr("Select an object to show its properties in the inspector."), this);
 
         QFrame* line = new QFrame(this);
         line->setObjectName(QString::fromUtf8("line"));

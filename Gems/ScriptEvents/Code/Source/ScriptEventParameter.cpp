@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEvents
 {
@@ -50,14 +51,20 @@ namespace ScriptEvents
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Parameter>("A Script Event's method parameter", "A parameter to a Script Event's event definition")
+                editContext->Class<Parameter>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "A Script Event's method parameter"),
+                    QT_TRANSLATE_NOOP("ScriptEvents", "A parameter to a Script Event's event definition"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &Parameter::m_name, "Name",
-                        "Name of the parameter, ex. void foo(int thisIsTheParameterName)")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Parameter::m_tooltip, "Tooltip", "A description of this parameter")
+                        AZ::Edit::UIHandlers::Default, &Parameter::m_name,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Name"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Name of the parameter, ex. void foo(int thisIsTheParameterName)"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Parameter::m_tooltip,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Tooltip"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "A description of this parameter"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &Parameter::m_type, "Type",
-                        "The typeid of the parameter, ex. void foo(AZ::type_info<int>::Uuid())")
+                        AZ::Edit::UIHandlers::ComboBox, &Parameter::m_type,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Type"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "The typeid of the parameter, ex. void foo(AZ::type_info<int>::Uuid())"))
                     ->Attribute(AZ::Edit::Attributes::GenericValueList, &Types::GetValidParameterTypes);
             }
         }

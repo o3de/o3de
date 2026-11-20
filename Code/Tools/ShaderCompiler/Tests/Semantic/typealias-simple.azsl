@@ -1,0 +1,5 @@
+typealias Bleu = float;
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(Bleu), __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '?float'\n");

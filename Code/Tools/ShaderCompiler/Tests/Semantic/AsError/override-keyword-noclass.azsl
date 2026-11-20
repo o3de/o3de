@@ -1,0 +1,3 @@
+void func() override;  // #EC 21
+
+// Semantic Error 21: line 1::5 'function /func has override specifier but is not part of a class'

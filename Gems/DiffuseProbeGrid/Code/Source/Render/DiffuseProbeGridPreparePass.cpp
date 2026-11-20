@@ -26,7 +26,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridPreparePass> DiffuseProbeGridPreparePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridPreparePass> pass = aznew DiffuseProbeGridPreparePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridPreparePass::DiffuseProbeGridPreparePass(const RPI::PassDescriptor& descriptor)

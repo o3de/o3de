@@ -1,0 +1,46 @@
+groupshared uint gs_GpShared[1024];
+
+// MainCS1 is a valid cs entry
+[numthreads(1, 1, 1)]
+void MainCS1() 
+{
+    gs_GpShared[0] = 1; 
+}
+
+// MainCS2 is a valid cs entry
+[numthreads(8, 1, 1)]
+void MainCS2() 
+{
+    gs_GpShared[0] = 1; 
+}
+
+// MainCS3 is a valid cs entry
+[numthreads(16, 4, 1)]
+void MainCS3() 
+{
+    gs_GpShared[0] = 1; 
+}
+
+// MainCS4 is a valid cs entry
+[numthreads(1, 1, 64)]
+void MainCS4() 
+{
+    gs_GpShared[0] = 1; 
+}
+
+
+struct VertexInput1  { 
+    float3 m_position : POSITION;
+    float  m_color[4] : COLOR;
+};
+
+struct VertexOutput1 { float4 m_position : SV_Position; };
+
+// MainVS1 is a valid vs entry, but has no numthreads
+VertexOutput1 MainVS1(VertexInput1 input, uint vtxIndex : SV_VertexID)
+{
+    VertexOutput1 output;
+    output.m_position = float4(input.m_position, 1.0);
+    return output;
+}
+

@@ -310,6 +310,10 @@ namespace AzFramework
                     continue;
                 }
 
+                currentEntity->SetEntityActive(false);
+                // note that the above call makes the entity know that it has been explicitly deactivated,
+                // and will not re-activate itself when its parent is removed.  Since its headed for destruction,
+                // this prevents any kind of ping-ponging.
                 if (currentEntity->GetState() == AZ::Entity::State::Active)
                 {
                     // Deactivate the entity, we'll destroy it as soon as it is safe.

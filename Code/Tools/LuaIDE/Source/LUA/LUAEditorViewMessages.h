@@ -6,13 +6,10 @@
  *
  */
 
-#ifndef LUAEDITOR_VIEWMESSAGES_H
-#define LUAEDITOR_VIEWMESSAGES_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
-
-#pragma once
 
 namespace LUAEditor
 {
@@ -47,5 +44,3 @@ namespace LUAEditor
         virtual void Repaint() = 0;
     };
 }
-
-#endif//LUAEDITOR_VIEWMESSAGES_H

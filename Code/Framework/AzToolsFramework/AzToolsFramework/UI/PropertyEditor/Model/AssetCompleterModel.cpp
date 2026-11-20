@@ -7,7 +7,6 @@
  */
 
 #include <UI/PropertyEditor/Model/AssetCompleterModel.h>
-#include <UI/PropertyEditor/Model/moc_AssetCompleterModel.cpp>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>

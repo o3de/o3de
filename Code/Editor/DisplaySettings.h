@@ -6,14 +6,10 @@
  *
  */
 
+#pragma once
 
 // Description : Display Settings definition.
 
-
-#ifndef CRYINCLUDE_EDITOR_DISPLAYSETTINGS_H
-#define CRYINCLUDE_EDITOR_DISPLAYSETTINGS_H
-
-#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 enum EDisplayRenderFlags
@@ -152,5 +148,3 @@ private:
     int m_debugFlags;
     float m_labelsDistance;
 };
-
-#endif // CRYINCLUDE_EDITOR_DISPLAYSETTINGS_H

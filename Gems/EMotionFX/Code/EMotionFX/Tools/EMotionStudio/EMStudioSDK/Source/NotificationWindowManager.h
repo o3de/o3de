@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include "NotificationWindow.h"
+
 #include <AzCore/std/containers/vector.h>
-#endif
 
 
 namespace EMStudio

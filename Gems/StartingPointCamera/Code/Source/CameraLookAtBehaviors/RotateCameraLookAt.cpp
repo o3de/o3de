@@ -12,6 +12,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "StartingPointCamera/StartingPointCameraUtilities.h"
 
 namespace Camera
@@ -31,17 +32,25 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<RotateCameraLookAt>("Rotate Camera Target"
-                    , "This will rotate a Camera Target about Axis when the EventName fires")
+                editContext->Class<RotateCameraLookAt>(
+                    QT_TRANSLATE_NOOP("Camera", "Rotate Camera Target"),
+                    QT_TRANSLATE_NOOP("Camera", "This will rotate a Camera Target about Axis when the EventName fires"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &RotateCameraLookAt::m_axisOfRotation, "Axis Of Rotation",
-                    "This is the direction vector that will be applied to the target's movement scaled for time")
-                        ->EnumAttribute(AxisOfRotation::X_Axis, "Camera Target's X Axis")
-                        ->EnumAttribute(AxisOfRotation::Y_Axis, "Camera Target's Y Axis")
-                        ->EnumAttribute(AxisOfRotation::Z_Axis, "Camera Target's Z Axis")
-                    ->DataElement(0, &RotateCameraLookAt::m_eventName, "Event Name", "The Name of the expected Event")
-                    ->DataElement(0, &RotateCameraLookAt::m_shouldInvertAxis, "Invert Axis", "True if you want to rotate along a negative axis")
-                    ->DataElement(0, &RotateCameraLookAt::m_rotationSpeedScale, "Rotation Speed Scale", "Scale greater than 1 to speed up, between 0 and 1 to slow down")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &RotateCameraLookAt::m_axisOfRotation,
+                        QT_TRANSLATE_NOOP("Camera", "Axis Of Rotation"),
+                        QT_TRANSLATE_NOOP("Camera", "This is the direction vector that will be applied to the target's movement scaled for time"))
+                        ->EnumAttribute(AxisOfRotation::X_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's X Axis"))
+                        ->EnumAttribute(AxisOfRotation::Y_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's Y Axis"))
+                        ->EnumAttribute(AxisOfRotation::Z_Axis, QT_TRANSLATE_NOOP("Camera", "Camera Target's Z Axis"))
+                    ->DataElement(0, &RotateCameraLookAt::m_eventName,
+                        QT_TRANSLATE_NOOP("Camera", "Event Name"),
+                        QT_TRANSLATE_NOOP("Camera", "The Name of the expected Event"))
+                    ->DataElement(0, &RotateCameraLookAt::m_shouldInvertAxis,
+                        QT_TRANSLATE_NOOP("Camera", "Invert Axis"),
+                        QT_TRANSLATE_NOOP("Camera", "True if you want to rotate along a negative axis"))
+                    ->DataElement(0, &RotateCameraLookAt::m_rotationSpeedScale,
+                        QT_TRANSLATE_NOOP("Camera", "Rotation Speed Scale"),
+                        QT_TRANSLATE_NOOP("Camera", "Scale greater than 1 to speed up, between 0 and 1 to slow down"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));

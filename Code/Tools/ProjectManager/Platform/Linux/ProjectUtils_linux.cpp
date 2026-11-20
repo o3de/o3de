@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
     {
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
         // Only Ubuntu has clang++-<version> symlinks, other linux distros do not,
-        // so a empty string entry is added to the end
+        // so an empty string entry is added to the end
         const QStringList SupportedClangVersions = {"-13", "-12", "-11", "-10", "-9", "-8", "-7", "-6.0", ""};
 
         QChar GetPlatformPathEnvSeparator()

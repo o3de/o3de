@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Source/Editor/ResolutionSettingItemWidget.h>
 
@@ -16,7 +15,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QWidget>
 #include <QListWidget>
 AZ_POP_DISABLE_WARNING
-#endif
 
 namespace Ui
 {

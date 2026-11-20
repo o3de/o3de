@@ -30,3 +30,4 @@ void CheckClipping(float alpha, float opacityFactor)
             break;
     }
 }
+

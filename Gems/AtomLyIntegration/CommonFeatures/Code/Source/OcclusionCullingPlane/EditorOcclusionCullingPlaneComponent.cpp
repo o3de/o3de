@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Component/Entity.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -30,7 +31,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorOcclusionCullingPlaneComponent>(
-                        "Occlusion Culling Plane", "The OcclusionCullingPlane component is used to cull meshes that are inside the view frustum and behind the occlusion plane")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Occlusion Culling Plane"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The OcclusionCullingPlane component is used to cull meshes that are inside the view frustum and behind the occlusion plane"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Occlusion")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -44,17 +45,17 @@ namespace AZ
                         "OcclusionCullingPlaneComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &OcclusionCullingPlaneComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &OcclusionCullingPlaneComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<OcclusionCullingPlaneComponentConfig>(
                         "OcclusionCullingPlaneComponentConfig", "")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Settings")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Settings"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_showVisualization, "Show Visualization", "Show the occlusion culling plane visualization")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_showVisualization, QT_TRANSLATE_NOOP("AtomLyIntegration", "Show Visualization"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Show the occlusion culling plane visualization"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_transparentVisualization, "Transparent Visualization", "Sets the occlusion culling plane visualization as transparent")
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_transparentVisualization, QT_TRANSLATE_NOOP("AtomLyIntegration", "Transparent Visualization"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Sets the occlusion culling plane visualization as transparent"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ;
                 }

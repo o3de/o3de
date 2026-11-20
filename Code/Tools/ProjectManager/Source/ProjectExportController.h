@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
 
 #include <QThread>
-#endif
 
 #include "ProjectManagerBuses.h"
 

@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <native/assetprocessor.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <QObject>
-#endif
 
 namespace AzToolsFramework
 {

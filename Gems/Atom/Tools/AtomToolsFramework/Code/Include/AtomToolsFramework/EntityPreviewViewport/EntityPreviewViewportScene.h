@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
-#endif
 
 namespace AtomToolsFramework
 {

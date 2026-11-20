@@ -9,6 +9,7 @@
 #include "DiskShapeComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "EditorDiskShapeComponent.h"
 #include "EditorShapeComponentConverters.h"
 #include "ShapeDisplay.h"
@@ -27,7 +28,8 @@ namespace LmbrCentral
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorDiskShapeComponent>(
-                    "Disk Shape", "The Disk Shape component creates a disk around the associated entity")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Disk Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Disk Shape component creates a disk around the associated entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Disk_Shape.svg")
@@ -35,7 +37,9 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/disk-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiskShapeComponent::m_diskShape, "Disk Shape", "Disk Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiskShapeComponent::m_diskShape,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Disk Shape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Disk Shape Configuration"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiskShapeComponent::ConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

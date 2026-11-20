@@ -11,7 +11,6 @@
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 
 #include <QGuiApplication>
 #include <QMainWindow>
@@ -20,11 +19,8 @@
 #include <QPainter>
 #include <QStyleOptionFrame>
 #include <QStylePainter>
+#include <QTimer>
 #include <QWindow>
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 6, 1) && defined(Q_OS_WIN32)
-#include <QtGui/private/qwindow_p.h>
-#endif
 
 namespace AzQtComponents
 {
@@ -35,30 +31,8 @@ namespace AzQtComponents
         bool FloatingWindowsSupportMinimize();
     }
 
-    static bool forceSkipTitleBarOverdraw()
-    {
-#ifdef Q_OS_WIN
-        if ((QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10)))
-        {
-            // non-win10 never uses title bar overdraw
-            return true;
-        }
-
-        return false;
-#else
-        // Non-windows never uses title bar overdraw
-        return true;
-#endif
-    }
-
     StyledDockWidget::StyledDockWidget(const QString& name, QWidget* parent)
-        : StyledDockWidget(name, false, parent)
-    {
-    }
-
-    StyledDockWidget::StyledDockWidget(const QString& name, bool skipTitleBarDrawing, QWidget* parent)
         : QDockWidget(name, parent)
-        , m_skipTitleBarOverdraw(skipTitleBarDrawing || forceSkipTitleBarOverdraw())
     {
         init();
     }
@@ -70,11 +44,6 @@ namespace AzQtComponents
 
     void StyledDockWidget::init()
     {
-        if (doesTitleBarOverdraw() && TitleBarOverdrawHandler::getInstance())
-        {
-            TitleBarOverdrawHandler::getInstance()->addTitleBarOverdrawWidget(this);
-        }
-
         connect(this, &QDockWidget::topLevelChanged, this, &StyledDockWidget::onFloatingChanged);
         createCustomTitleBar();
     }
@@ -142,15 +111,10 @@ namespace AzQtComponents
             titleBar->setDrawSideBorders(!isFloating());
         }
 
-        if (isFloating())
-        {
-            fixFramelessFlags();
-        }
-
         QDockWidget::showEvent(event);
     }
 
-    bool StyledDockWidget::nativeEvent(const QByteArray& eventType, void* message, long* result)
+    bool StyledDockWidget::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
     {
         return WindowDecorationWrapper::handleNativeEvent(eventType, message, result, this);
     }
@@ -200,36 +164,14 @@ namespace AzQtComponents
         // cannot be styled using QSS when floating.
         QStylePainter p(this);
         QStyleOptionFrame framOpt;
-        framOpt.init(this);
+        framOpt.initFrom(this);
         p.drawPrimitive(QStyle::PE_FrameDockWidget, framOpt);
-    }
-
-    bool StyledDockWidget::doesTitleBarOverdraw() const
-    {
-        return !m_skipTitleBarOverdraw;
-    }
-
-    bool StyledDockWidget::skipTitleBarOverdraw() const
-    {
-        return m_skipTitleBarOverdraw;
-    }
-
-    void StyledDockWidget::fixFramelessFlags()
-    {
-        // This ensures we have native frames (but no native titlebar)
-        QWindow* w = windowHandle();
-        if (doesTitleBarOverdraw() && w && (w->flags() & Qt::FramelessWindowHint) && isFloating())
-        {
-            w->setFlags(WindowDecorationWrapper::specialFlagsForOS() | Qt::Tool);
-        }
     }
 
     void StyledDockWidget::onFloatingChanged(bool floating)
     {
         if (floating)
         {
-            fixFramelessFlags();
-
             // Perform platform-specific handling for floating windows (e.g. minimizing into the taskbar)
             Platform::HandleFloatingWindow(window());
         }
@@ -301,5 +243,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-
-#include "Components/moc_StyledDockWidget.cpp"

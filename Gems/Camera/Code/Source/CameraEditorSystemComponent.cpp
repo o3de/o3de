@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
@@ -48,7 +49,8 @@ namespace Camera
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CameraEditorSystemComponent>(
-                    "Camera Editor Commands", "Performs global camera requests")
+                    QT_TRANSLATE_NOOP("Camera", "Camera Editor Commands"),
+                    QT_TRANSLATE_NOOP("Camera", "Performs global camera requests"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Game")
                     ;
@@ -139,8 +141,9 @@ namespace Camera
         {
             const AZStd::string_view actionIdentifier = "o3de.action.camera.createFromView";
             AzToolsFramework::ActionProperties actionProperties;
-            actionProperties.m_name = "Create camera entity from view";
-            actionProperties.m_description = "Create an entity with a camera that shows the current viewport view.";
+            actionProperties.m_name = QObject::tr("Create camera entity from view").toUtf8().constData();
+            actionProperties.m_description =
+                QObject::tr("Create an entity with a camera that shows the current viewport view.").toUtf8().constData();
             actionProperties.m_category = "Edit";
 
             actionManagerInterface->RegisterAction(

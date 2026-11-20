@@ -256,7 +256,3 @@ namespace AzToolsFramework
         return QObject::eventFilter(obj, e);
     }
 } // namespace AzToolsFramework
-
-
-
-#include <moc_ScriptTermDialog.cpp>

@@ -9,6 +9,7 @@
 #include <BuilderSettings/TextureSettings.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
@@ -62,32 +63,32 @@ namespace ImageProcessingAtom
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<TextureSettings>("Texture Setting", "")
+                edit->Class<TextureSettings>(QT_TRANSLATE_NOOP("Atom::Asset", "Texture Setting"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, "Alpha Test Bias", "Multiplies the mipmap's alpha channel by a scale value that is based on alpha coverage. \
-                                            Specify a value from 0 to 100 for each mipmap to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TextureSettings::m_mipAlphaAdjust, QT_TRANSLATE_NOOP("Atom::Asset", "Alpha Test Bias"), QT_TRANSLATE_NOOP("Atom::Asset", "Multiplies the mipmap's alpha channel by a scale value that is based on alpha coverage. \
+                                            Specify a value from 0 to 100 for each mipmap to offset the alpha test values and ensure the mipmap's alpha coverage matches the original image."))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ::Edit::UIHandlers::Slider)
                         ->ElementAttribute(AZ::Edit::Attributes::Min, 0)
                         ->ElementAttribute(AZ::Edit::Attributes::Max, 100)
                         ->ElementAttribute(AZ::Edit::Attributes::Step, 1)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, "Filter Type", "Filter Types specify sample sizes and algorithms \
-                                            for determining the color of each pixel as the texture resolution is reduced for each mipmap.")
-                        ->EnumAttribute(MipGenType::point, "Point")
-                        ->EnumAttribute(MipGenType::box, "Average")
-                        ->EnumAttribute(MipGenType::triangle, "Linear")
-                        ->EnumAttribute(MipGenType::quadratic, "Bilinear")
-                        ->EnumAttribute(MipGenType::gaussian, "Gaussian")
-                        ->EnumAttribute(MipGenType::blackmanHarris, "BlackmanHarris")
-                        ->EnumAttribute(MipGenType::kaiserSinc, "KaiserSinc")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, "Pixel Sampler", "The Pixel Sampler specifies how the final pixel value is calculated when mipmaps are generated.")
-                        ->EnumAttribute(MipGenEvalType::max, "Max")
-                        ->EnumAttribute(MipGenEvalType::min, "Min")
-                        ->EnumAttribute(MipGenEvalType::sum, "Sum")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, "Adjust Alpha", "Enable to manually adjust the alpha channel of the mipmaps with the Alpha Test Bias values.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenType, QT_TRANSLATE_NOOP("Atom::Asset", "Filter Type"), QT_TRANSLATE_NOOP("Atom::Asset", "Filter Types specify sample sizes and algorithms \
+                                            for determining the color of each pixel as the texture resolution is reduced for each mipmap."))
+                        ->EnumAttribute(MipGenType::point, QT_TRANSLATE_NOOP("Atom::Asset", "Point"))
+                        ->EnumAttribute(MipGenType::box, QT_TRANSLATE_NOOP("Atom::Asset", "Average"))
+                        ->EnumAttribute(MipGenType::triangle, QT_TRANSLATE_NOOP("Atom::Asset", "Linear"))
+                        ->EnumAttribute(MipGenType::quadratic, QT_TRANSLATE_NOOP("Atom::Asset", "Bilinear"))
+                        ->EnumAttribute(MipGenType::gaussian, QT_TRANSLATE_NOOP("Atom::Asset", "Gaussian"))
+                        ->EnumAttribute(MipGenType::blackmanHarris, QT_TRANSLATE_NOOP("Atom::Asset", "BlackmanHarris"))
+                        ->EnumAttribute(MipGenType::kaiserSinc, QT_TRANSLATE_NOOP("Atom::Asset", "KaiserSinc"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TextureSettings::m_mipGenEval, QT_TRANSLATE_NOOP("Atom::Asset", "Pixel Sampler"), QT_TRANSLATE_NOOP("Atom::Asset", "The Pixel Sampler specifies how the final pixel value is calculated when mipmaps are generated."))
+                        ->EnumAttribute(MipGenEvalType::max, QT_TRANSLATE_NOOP("Atom::Asset", "Max"))
+                        ->EnumAttribute(MipGenEvalType::min, QT_TRANSLATE_NOOP("Atom::Asset", "Min"))
+                        ->EnumAttribute(MipGenEvalType::sum, QT_TRANSLATE_NOOP("Atom::Asset", "Sum"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &TextureSettings::m_maintainAlphaCoverage, QT_TRANSLATE_NOOP("Atom::Asset", "Adjust Alpha"), QT_TRANSLATE_NOOP("Atom::Asset", "Enable to manually adjust the alpha channel of the mipmaps with the Alpha Test Bias values."))
                 ;
             }
         }

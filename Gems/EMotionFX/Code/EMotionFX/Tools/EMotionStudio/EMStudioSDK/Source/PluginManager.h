@@ -9,12 +9,12 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#if !defined(Q_MOC_RUN)
+
 #include "EMStudioConfig.h"
 #include "EMStudioPlugin.h"
 #include <AzCore/PlatformIncl.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PersistentPlugin.h>
-#endif
+
 
 namespace EMStudio
 {

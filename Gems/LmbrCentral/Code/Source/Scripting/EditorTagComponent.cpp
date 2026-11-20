@@ -11,6 +11,7 @@
 #include "EditorTagComponent.h"
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -30,7 +31,9 @@ namespace LmbrCentral
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<EditorTagComponent>("Tag", "The Tag component allows you to apply one or more labels to an entity")
+                editContext->Class<EditorTagComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Tag"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Tag component allows you to apply one or more labels to an entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
@@ -39,7 +42,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/gameplay/tag/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTagComponent::m_tags, "Tags", "The tags that will be on this entity by default")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTagComponent::m_tags,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Tags"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The tags that will be on this entity by default"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTagComponent::OnTagChanged);
             }
         }

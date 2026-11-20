@@ -8,11 +8,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <GemCatalog/GemFilterTagWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+
 #include <QFrame>
-#endif
 
 namespace O3DE::ProjectManager
 {

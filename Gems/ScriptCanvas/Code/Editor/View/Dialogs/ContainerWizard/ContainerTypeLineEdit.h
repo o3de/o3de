@@ -7,13 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QDialog>
 #include <QMenu>
 #include <QTableView>
-#include <qtimer.h>
-#include <qpixmap.h>
+#include <QTimer>
+#include <QPixmap>
 #include <QWidget>
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -21,7 +20,6 @@
 #include <Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.h>
 
 #include <GraphCanvas/Utils/StateControllers/StackStateController.h>
-#endif
 
 namespace Ui
 {

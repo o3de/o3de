@@ -10,12 +10,9 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QPlainTextEdit>
 #include <QPointer>
 #include <QScopedPointer>
-
-#endif
 
 class QMenu;
 

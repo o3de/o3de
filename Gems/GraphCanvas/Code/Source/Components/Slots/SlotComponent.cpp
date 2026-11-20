@@ -58,7 +58,7 @@ namespace GraphCanvas
             return;
         }
 
-        editContext->Class<SlotConfiguration>("Slot Configuration", "The slot's properties")
+        editContext->Class<SlotConfiguration>(QT_TRANSLATE_NOOP("GraphCanvas", "Slot Configuration"), QT_TRANSLATE_NOOP("GraphCanvas", "The slot's properties"))
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "Slot class attributes")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &SlotConfiguration::m_tooltip)

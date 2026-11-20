@@ -53,5 +53,4 @@ label->setText("&lt;a href=\"#\"&gt;This is a hyperlink.&lt;/a&gt;");
 HyperlinkPage::~HyperlinkPage()
 {
 }
-#include <Gallery/moc_HyperlinkPage.cpp>
 

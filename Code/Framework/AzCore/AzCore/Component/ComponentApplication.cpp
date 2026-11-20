@@ -28,6 +28,8 @@
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
@@ -384,21 +386,38 @@ namespace AZ
 
             if (EditContext* ec = serializeContext->GetEditContext())
             {
-                ec->Enum<Debug::AllocationRecords::Mode>("Debug::AllocationRecords::Mode", "Allocator recording mode")
-                    ->Value("No records", Debug::AllocationRecords::Mode::RECORD_NO_RECORDS)
-                    ->Value("No stack trace", Debug::AllocationRecords::Mode::RECORD_STACK_NEVER)
-                    ->Value("Stack trace when file/line missing", Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
-                    ->Value("Stack trace always", Debug::AllocationRecords::Mode::RECORD_FULL);
-                ec->Class<Descriptor>("System memory settings", "Settings for managing application memory usage")
+                ec->Enum<Debug::AllocationRecords::Mode>("Debug::AllocationRecords::Mode",
+                    QT_TRANSLATE_NOOP("AzCore", "Allocator recording mode"))
+                    ->Value(QT_TRANSLATE_NOOP("AzCore", "No records"), Debug::AllocationRecords::Mode::RECORD_NO_RECORDS)
+                    ->Value(QT_TRANSLATE_NOOP("AzCore", "No stack trace"), Debug::AllocationRecords::Mode::RECORD_STACK_NEVER)
+                    ->Value(QT_TRANSLATE_NOOP("AzCore", "Stack trace when file/line missing"), Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
+                    ->Value(QT_TRANSLATE_NOOP("AzCore", "Stack trace always"), Debug::AllocationRecords::Mode::RECORD_FULL);
+                ec->Class<Descriptor>(
+                    QT_TRANSLATE_NOOP("AzCore", "System memory settings"),
+                    QT_TRANSLATE_NOOP("AzCore", "Settings for managing application memory usage"))
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsSaveNames, "Record allocations with name saving", "Saves names/filenames information on each allocation made, useful for tracking down leaks in dynamic modules (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsAttemptDecodeImmediately, "Record allocations and attempt immediate decode", "Decode callstacks for each allocation when they occur, used for tracking allocations that fail decoding. Very expensive. (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::ComboBox, &Descriptor::m_recordingMode, "Stack recording mode", "Stack record mode. (Ignored in final builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_autoIntegrityCheck, "Validate allocations", "Check allocations for integrity on each allocation/free (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_markUnallocatedMemory, "Mark freed memory", "Set memory to 0xcd when a block is freed for debugging (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_doNotUsePools, "Don't pool allocations", "Pipe pool allocations in system/tree heap (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize, "Block size", "Memory block size in bytes (must be multiple of the page size)")
+                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsSaveNames,
+                        QT_TRANSLATE_NOOP("AzCore", "Record allocations with name saving"),
+                        QT_TRANSLATE_NOOP("AzCore", "Saves names/filenames information on each allocation made, useful for tracking down leaks in dynamic modules (ignored in Release builds)"))
+                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsAttemptDecodeImmediately,
+                        QT_TRANSLATE_NOOP("AzCore", "Record allocations and attempt immediate decode"),
+                        QT_TRANSLATE_NOOP("AzCore", "Decode callstacks for each allocation when they occur, used for tracking allocations that fail decoding. Very expensive. (ignored in Release builds)"))
+                    ->DataElement(Edit::UIHandlers::ComboBox, &Descriptor::m_recordingMode,
+                        QT_TRANSLATE_NOOP("AzCore", "Stack recording mode"),
+                        QT_TRANSLATE_NOOP("AzCore", "Stack record mode. (Ignored in final builds)"))
+                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_autoIntegrityCheck,
+                        QT_TRANSLATE_NOOP("AzCore", "Validate allocations"),
+                        QT_TRANSLATE_NOOP("AzCore", "Check allocations for integrity on each allocation/free (ignored in Release builds)"))
+                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_markUnallocatedMemory,
+                        QT_TRANSLATE_NOOP("AzCore", "Mark freed memory"),
+                        QT_TRANSLATE_NOOP("AzCore", "Set memory to 0xcd when a block is freed for debugging (ignored in Release builds)"))
+                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_doNotUsePools,
+                        QT_TRANSLATE_NOOP("AzCore", "Don't pool allocations"),
+                        QT_TRANSLATE_NOOP("AzCore", "Pipe pool allocations in system/tree heap (ignored in Release builds)"))
+                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize,
+                        QT_TRANSLATE_NOOP("AzCore", "Block size"),
+                        QT_TRANSLATE_NOOP("AzCore", "Memory block size in bytes (must be multiple of the page size)"))
                     ;
             }
         }
@@ -865,21 +884,22 @@ namespace AZ
 
     void ComponentApplication::ReportBadEngineRoot()
     {
-        AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
-                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
+        AZStd::string errorMessage = {QT_TRANSLATE_NOOP("AzCore",
+            "Unable to determine a valid path to the engine.\n"
+            "Check parameters such as --project-path and --engine-path and make sure they are valid.\n")};
         if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
         {
             AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
             if (registry->Get(filePathErrorStr, AZ::SettingsRegistryMergeUtils::FilePathKey_ErrorText); !filePathErrorStr.empty())
             {
-                errorMessage += "Additional Info:\n";
+                errorMessage += QT_TRANSLATE_NOOP("AzCore", "Additional Info:\n");
                 errorMessage += filePathErrorStr.c_str();
             }
         }
 
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
         {
-            nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+            nativeUI->DisplayOkDialog(QT_TRANSLATE_NOOP("AzCore", "O3DE Fatal Error"), errorMessage.c_str(), false);
         }
         else
         {
