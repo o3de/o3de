@@ -42,6 +42,7 @@ namespace AZ
             m_iblExposureConstantIndex.Reset();
             m_diffuseEnvMapIndex.Reset();
             m_specularEnvMapIndex.Reset();
+            SetGradientOverride({}, {}, 0);
             m_sceneSrg = {};
         }
 
@@ -58,17 +59,29 @@ namespace AZ
 
         void ImageBasedLightFeatureProcessor::SetSpecularImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset)
         {
-            m_specular = GetInstanceForImage(imageAsset, m_defaultSpecularImage);
+            m_skylightSpecular = GetInstanceForImage(imageAsset, m_defaultSpecularImage);
+            if (!m_gradientActive)
+            {
+                m_specular = m_skylightSpecular;
+            }
         }
 
         void ImageBasedLightFeatureProcessor::SetDiffuseImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset)
         {
-            m_diffuse = GetInstanceForImage(imageAsset, m_defaultDiffuseImage);
+            m_skylightDiffuse = GetInstanceForImage(imageAsset, m_defaultDiffuseImage);
+            if (!m_gradientActive)
+            {
+                m_diffuse = m_skylightDiffuse;
+            }
         }
 
         void ImageBasedLightFeatureProcessor::SetExposure(float exposure)
         {
-            m_exposure = exposure;
+            m_skylightExposure = exposure;
+            if (!m_gradientActive)
+            {
+                m_exposure = m_skylightExposure;
+            }
         }
 
         void ImageBasedLightFeatureProcessor::SetOrientation(const Quaternion& orientation)
@@ -76,11 +89,54 @@ namespace AZ
             m_orientation = orientation;
         }
 
+        void ImageBasedLightFeatureProcessor::SetGradientOverride(
+            const Data::Instance<RPI::Image>& diffuse,
+            const Data::Instance<RPI::Image>& specular,
+            float exposure)
+        {
+            if (!diffuse)
+            {
+                if (m_gradientActive)
+                {
+                    m_gradientActive = false;
+                    ApplySkylight();
+                }
+                return;
+            }
+
+            if (!m_gradientActive)
+            {
+                if (!m_skylightDiffuse)
+                {
+                    m_skylightDiffuse = m_defaultDiffuseImage;
+                }
+                if (!m_skylightSpecular)
+                {
+                    m_skylightSpecular = m_defaultSpecularImage;
+                }
+                m_gradientActive = true;
+            }
+            m_diffuse = diffuse;
+            m_specular = specular;
+            m_exposure = exposure;
+        }
+
         void ImageBasedLightFeatureProcessor::Reset()
         {
-            m_specular = m_defaultSpecularImage;
-            m_diffuse = m_defaultDiffuseImage;
-            m_exposure = 0;
+            m_skylightSpecular = m_defaultSpecularImage;
+            m_skylightDiffuse = m_defaultDiffuseImage;
+            m_skylightExposure = 0;
+            if (!m_gradientActive)
+            {
+                ApplySkylight();
+            }
+        }
+
+        void ImageBasedLightFeatureProcessor::ApplySkylight()
+        {
+            m_specular = m_skylightSpecular;
+            m_diffuse = m_skylightDiffuse;
+            m_exposure = m_skylightExposure;
         }
 
         void ImageBasedLightFeatureProcessor::LoadDefaultCubeMaps()

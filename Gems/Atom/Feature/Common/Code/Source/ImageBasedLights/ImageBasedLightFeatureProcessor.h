@@ -51,12 +51,18 @@ namespace AZ
             void SetOrientation(const Quaternion& orientation) override;
             const Quaternion& GetOrientation() const override { return m_orientation; }
 
+            void SetGradientOverride(
+                const Data::Instance<RPI::Image>& diffuse,
+                const Data::Instance<RPI::Image>& specular,
+                float exposure);
+
             void Reset() override;
 
         private:
 
             ImageBasedLightFeatureProcessor(const ImageBasedLightFeatureProcessor&) = delete;
 
+            void ApplySkylight();
             void LoadDefaultCubeMaps();
             static Data::Instance<RPI::Image> GetInstanceForImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset, const Data::Instance<RPI::Image>& defaultImage);
             static bool ValidateIsCubemap(Data::Instance<RPI::Image> image);
@@ -71,6 +77,11 @@ namespace AZ
             Data::Instance<RPI::Image> m_diffuse;
             Quaternion m_orientation = Quaternion::CreateIdentity();
             float m_exposure = 0;
+
+            Data::Instance<RPI::Image> m_skylightSpecular;
+            Data::Instance<RPI::Image> m_skylightDiffuse;
+            float m_skylightExposure = 0;
+            bool m_gradientActive = false;
 
             Data::Instance<RPI::Image> m_defaultSpecularImage;
             Data::Instance<RPI::Image> m_defaultDiffuseImage;
