@@ -9,6 +9,7 @@
 #pragma once
 
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
@@ -72,6 +73,11 @@ namespace AZ::SceneAPI::Behaviors
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
+        bool ExecuteSceneScripts(
+            const Containers::Scene& scene,
+            Events::ProcessingResult& fallbackResult,
+            const AZStd::function<void(AZStd::string&)>& executeScript);
+
         bool m_pythonLoaded = false;
 
         struct EventHandler;

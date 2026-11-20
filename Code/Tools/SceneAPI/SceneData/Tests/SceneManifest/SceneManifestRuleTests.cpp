@@ -12,9 +12,12 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <SceneAPI/SceneCore/Events/ImportEventContext.h>
 #include <SceneAPI/SceneData/ReflectionRegistrar.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
+#include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -518,7 +521,7 @@ namespace AZ
                 "values": [
                     {
                         "$type": "ScriptProcessorRule",
-                        "scriptFilename": ""
+                        "scriptFilename": "mock_update_manifest.py"
                     }
                 ]
             })JSON" };
@@ -527,6 +530,7 @@ namespace AZ
             EXPECT_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).Times(1);
             EXPECT_CALL(m_data->m_editorPythonEventsInterface, StartPython(testing::_)).Times(0);
             EXPECT_CALL(m_data->m_editorPythonEventsInterface, StopPython(testing::_)).Times(1);
+            ON_CALL(*m_data->m_fileIOMock, Exists(testing::_)).WillByDefault(testing::Return(true));
 
             auto scene = AZ::SceneAPI::Containers::Scene("mock");
             scene.SetManifestFilename("mock.fake.assetinfo");
@@ -539,6 +543,86 @@ namespace AZ
             AZ::SettingsRegistry::Unregister(m_data->m_settings.get());
             m_data->m_settings.reset();
             scriptProcessorRuleBehavior.Deactivate();
+        }
+
+        TEST_F(SceneManifest_JSON, SceneWithoutScript_DoesNotInitializePythonForUpdateOrExport)
+        {
+            using namespace SceneAPI::Events;
+
+            PrepareMockPythonInterface();
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).Times(0);
+
+            SceneAPI::Containers::Scene scene("mock");
+            ASSERT_TRUE(scene.GetManifest().AddEntry(AZStd::make_shared<SceneAPI::MockRotationRule>()));
+            SceneAPI::Behaviors::ScriptProcessorRuleBehavior behavior;
+            behavior.Activate();
+
+            EXPECT_EQ(behavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic), ProcessingResult::Ignored);
+            ExportProductList products;
+            EXPECT_EQ(Process<PreExportEventContext>(products, AZStd::string{}, scene, "pc"), ProcessingResult::Success);
+
+            behavior.Deactivate();
+        }
+
+        TEST_F(SceneManifest_JSON, ExportDiscoversManifestScriptAfterRunningDefaultScript)
+        {
+            using namespace SceneAPI::Events;
+
+            class DefaultScriptConfig : public ScriptConfigEventBus::Handler
+            {
+            public:
+                void GetScriptConfigList(AZStd::vector<ScriptConfig>&) const override {}
+                AZStd::optional<ScriptConfig> MatchesScriptConfig(const AZStd::string&) const override
+                {
+                    return ScriptConfig{ "", "default.py" };
+                }
+            } defaultScriptConfig;
+            defaultScriptConfig.BusConnect();
+
+            PrepareMockPythonInterface();
+            {
+                testing::InSequence sequence;
+                EXPECT_CALL(m_data->m_niceMockEditorPythonRunnerRequestBus, ExecuteByFilename(AZStd::string_view("default.py")));
+                EXPECT_CALL(*m_data->m_fileIOMock, Exists(testing::StrEq("manifest.py"))).WillOnce(testing::Return(true));
+                EXPECT_CALL(m_data->m_niceMockEditorPythonRunnerRequestBus, ExecuteByFilename(AZStd::string_view("manifest.py")));
+            }
+
+            SceneAPI::Containers::Scene scene("mock");
+            auto manifestRule = AZStd::make_shared<SceneAPI::SceneData::ScriptProcessorRule>();
+            manifestRule->SetScriptFilename("manifest.py");
+            ASSERT_TRUE(scene.GetManifest().AddEntry(manifestRule));
+
+            SceneAPI::Behaviors::ScriptProcessorRuleBehavior behavior;
+            behavior.Activate();
+            ExportProductList products;
+            EXPECT_EQ(Process<PreExportEventContext>(products, AZStd::string{}, scene, "pc"), ProcessingResult::Success);
+            behavior.Deactivate();
+        }
+
+        TEST_F(SceneManifest_JSON, ExportReusesManifestScriptUntilNextSceneImport)
+        {
+            using namespace SceneAPI::Events;
+
+            PrepareMockPythonInterface();
+            ON_CALL(*m_data->m_fileIOMock, Exists(testing::StrEq("manifest.py"))).WillByDefault(testing::Return(true));
+            EXPECT_CALL(m_data->m_niceMockEditorPythonRunnerRequestBus, ExecuteByFilename(AZStd::string_view("manifest.py"))).Times(2);
+
+            SceneAPI::Containers::Scene scene("mock");
+            auto manifestRule = AZStd::make_shared<SceneAPI::SceneData::ScriptProcessorRule>();
+            manifestRule->SetScriptFilename("manifest.py");
+            ASSERT_TRUE(scene.GetManifest().AddEntry(manifestRule));
+
+            SceneAPI::Behaviors::ScriptProcessorRuleBehavior behavior;
+            behavior.Activate();
+            EXPECT_EQ(behavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic), ProcessingResult::Ignored);
+            scene.GetManifest().Clear();
+            ExportProductList products;
+            EXPECT_EQ(Process<PreExportEventContext>(products, AZStd::string{}, scene, "pc"), ProcessingResult::Success);
+
+            EXPECT_EQ(Process<PreImportEventContext>("next.fbx"), ProcessingResult::Success);
+            SceneAPI::Containers::Scene nextScene("next");
+            EXPECT_EQ(Process<PreExportEventContext>(products, AZStd::string{}, nextScene, "pc"), ProcessingResult::Success);
+            behavior.Deactivate();
         }
     }
 }

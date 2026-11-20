@@ -211,11 +211,11 @@ namespace AZ::SceneAPI::Behaviors
         // used to detect that the "next" source scene is starting to be processed
         Events::ProcessingResult PreImportEventContext([[maybe_unused]] Events::PreImportEventContext& context)
         {
-            m_pythonScriptStack.clear();
+            m_lastManifestScript.clear();
             return Events::ProcessingResult::Success;
         }
 
-        AZStd::vector<AZStd::string> m_pythonScriptStack;
+        AZStd::string m_lastManifestScript;
     };
 
     void ScriptProcessorRuleBehavior::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -312,10 +312,7 @@ namespace AZ::SceneAPI::Behaviors
 
         if (scriptDiscoveryAttempts == 0)
         {
-            if (!m_eventHandler->m_pythonScriptStack.empty())
-            {
-                scriptPath = m_eventHandler->m_pythonScriptStack.back();
-            }
+            scriptPath = m_eventHandler->m_lastManifestScript;
         }
 
         if (scriptPath.empty())
@@ -325,11 +322,6 @@ namespace AZ::SceneAPI::Behaviors
                 scene.GetManifestFilename().c_str());
             return AZStd::nullopt;
         }
-        else
-        {
-            m_eventHandler->m_pythonScriptStack.push_back(scriptPath);
-        }
-
         return AZStd::make_optional(AZStd::move(scriptPath));
     }
 
@@ -420,31 +412,41 @@ namespace AZ::SceneAPI::Behaviors
         }
     }
 
+    bool ScriptProcessorRuleBehavior::ExecuteSceneScripts(
+        const Containers::Scene& scene,
+        Events::ProcessingResult& fallbackResult,
+        const AZStd::function<void(AZStd::string&)>& executeScript)
+    {
+        if (auto defaultScript = FindMatchingDefaultScript(scene))
+        {
+            if (!LoadPython())
+            {
+                return false;
+            }
+            executeScript(*defaultScript);
+        }
+
+        // The default script can affect manifest script discovery.
+        if (auto manifestScript = FindManifestScript(scene, fallbackResult))
+        {
+            if (!LoadPython())
+            {
+                return false;
+            }
+            m_eventHandler->m_lastManifestScript = *manifestScript;
+            executeScript(*manifestScript);
+        }
+
+        return true;
+    }
+
     bool ScriptProcessorRuleBehavior::DoPrepareForExport(Events::PreExportEventContext& context)
     {
-        using namespace AzToolsFramework;
-
-        auto defaultScript = FindMatchingDefaultScript(context.GetScene());
-        [[maybe_unused]] Events::ProcessingResult fallbackResult;
-        auto manifestScript = FindManifestScript(context.GetScene(), fallbackResult);
-        if (!defaultScript && !manifestScript)
-        {
-            return true;
-        }
-
-        if (LoadPython())
-        {
-            if (defaultScript)
+        Events::ProcessingResult fallbackResult;
+        if (!ExecuteSceneScripts(context.GetScene(), fallbackResult, [this, &context](AZStd::string& scriptPath)
             {
-                SignalScriptForExportEvent(context, defaultScript.value());
-            }
-
-            if (manifestScript)
-            {
-                SignalScriptForExportEvent(context, manifestScript.value());
-            }
-        }
-        else
+                SignalScriptForExportEvent(context, scriptPath);
+            }))
         {
             AZ_Error("scene", false,
                 "The scene (%s) attempted to prepare Python but Python can not start. "
@@ -500,30 +502,20 @@ namespace AZ::SceneAPI::Behaviors
         Events::AssetImportRequest::ManifestAction action,
         [[maybe_unused]] Events::AssetImportRequest::RequestingApplication requester)
     {
-        using namespace AzToolsFramework;
-
         if (action != ManifestAction::Update)
         {
             return Events::ProcessingResult::Ignored;
         }
 
-        if (LoadPython())
+        AZStd::string manifestUpdate;
+        Events::ProcessingResult fallbackResult = Events::ProcessingResult::Failure;
+        auto executeScript = [this, &scene, &manifestUpdate](AZStd::string& scriptPath)
         {
-            AZStd::string manifestUpdate;
-            Events::ProcessingResult fallbackResult = Events::ProcessingResult::Failure;
+            SignalScriptForUpdateManifest(scene, manifestUpdate, scriptPath);
+        };
 
-            auto defaultScript = FindMatchingDefaultScript(scene);
-            if (defaultScript)
-            {
-                SignalScriptForUpdateManifest(scene, manifestUpdate, defaultScript.value());
-            }
-
-            auto manifestScriptPath = FindManifestScript(scene, fallbackResult);
-            if (manifestScriptPath)
-            {
-                SignalScriptForUpdateManifest(scene, manifestUpdate, manifestScriptPath.value());
-            }
-
+        if (ExecuteSceneScripts(scene, fallbackResult, executeScript))
+        {
             // if the returned scene manifest is empty then ignore the script update
             if (manifestUpdate.empty())
             {
@@ -542,11 +534,8 @@ namespace AZ::SceneAPI::Behaviors
                 }
                 return Events::ProcessingResult::Success;
             }
-            else
-            {
-                // if the manifest was not updated by the script, then return back the fall back result
-                return fallbackResult;
-            }
+
+            return fallbackResult;
         }
         else
         {
