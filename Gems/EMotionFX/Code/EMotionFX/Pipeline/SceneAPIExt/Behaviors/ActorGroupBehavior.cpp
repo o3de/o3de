@@ -32,6 +32,7 @@
 #include <SceneAPIExt/Behaviors/LodRuleBehavior.h>
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
+#include <SceneAPIExt/Rules/SocketSetupRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
 #include <SceneAPIExt/Rules/LodRule.h>
@@ -48,6 +49,7 @@ namespace EMotionFX
                 Group::ActorGroup::Reflect(context);
                 Rule::ActorPhysicsSetupRule::Reflect(context);
                 Rule::SimulatedObjectSetupRule::Reflect(context);
+                Rule::SocketSetupRule::Reflect(context);
                 Rule::MetaDataRule::Reflect(context);
                 Rule::MorphTargetRule::Reflect(context);
                 Rule::LodRule::Reflect(context);

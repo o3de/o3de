@@ -125,6 +125,14 @@ set(FILES
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp
+    Source/Editor/Plugins/Socket/SocketHelpers.h
+    Source/Editor/Plugins/Socket/SocketHelpers.cpp
+    Source/Editor/Plugins/Socket/SocketManipulators.h
+    Source/Editor/Plugins/Socket/SocketManipulators.cpp
+    Source/Editor/Plugins/Socket/SocketOutlinerNotificationHandler.h
+    Source/Editor/Plugins/Socket/SocketOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/Socket/SocketWidget.h
+    Source/Editor/Plugins/Socket/SocketWidget.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.h
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeNameHandler.h

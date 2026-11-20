@@ -118,6 +118,17 @@ namespace EMotionFX
             AZ::Transform GetJointTransform(size_t jointIndex, Space space) const override;
             void GetJointTransformComponents(size_t jointIndex, Space space, AZ::Vector3& outPosition, AZ::Quaternion& outRotation, AZ::Vector3& outScale) const override;
             Physics::AnimationConfiguration* GetPhysicsConfig() const override;
+            size_t GetNumSockets() const override;
+            AZStd::string GetSocketName(size_t socketIndex) const override;
+            size_t GetSocketIndexByName(const char* name) const override;
+            AZ::Transform GetSocketTransform(size_t socketIndex, Space space) const override;
+            AZ::Vector3 GetSocketForward(size_t socketIndex, Space space) const override;
+            AZ::Transform GetSocketTransformByName(const char* name, Space space) const override;
+            AZ::Vector3 GetSocketForwardByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketBindTransform(size_t socketIndex, Space space) const override;
+            AZ::Transform GetSocketBindTransformByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketTransformFromEntity(size_t socketIndex) const override;
+            AZ::Transform GetSocketTransformFromEntityByName(const char* name) const override;
 
             ActorInstance* GetActorInstance() override { return m_actorInstance.get(); }
             void AttachToEntity(AZ::EntityId targetEntityId, AttachmentType attachmentType) override;

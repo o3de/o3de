@@ -15,6 +15,7 @@
 #include "Exporter.h"
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SocketSetup.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Importer/ActorFileFormat.h>
@@ -110,6 +111,50 @@ namespace ExporterLib
         }
     }
 
+    void SaveSocketSetup(MCore::MemoryFile* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType)
+    {
+        // Skip the chunk for actors without sockets so their files stay unchanged.
+        if (actor->GetSocketSetup()->GetNumSockets() == 0)
+        {
+            return;
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!serializeContext)
+        {
+            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+            return;
+        }
+
+        AZStd::vector<AZ::u8> buffer;
+        AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> stream(&buffer);
+        const bool result = AZ::Utils::SaveObjectToStream<EMotionFX::SocketSetup>(stream, AZ::ObjectStream::ST_BINARY, actor->GetSocketSetup().get(), serializeContext);
+        if (result)
+        {
+            const AZ::u32 bufferSize = static_cast<AZ::u32>(buffer.size());
+
+            EMotionFX::FileFormat::FileChunk chunkHeader;
+            chunkHeader.m_chunkId = EMotionFX::FileFormat::ACTOR_CHUNK_SOCKETSETUP;
+            chunkHeader.m_version = 1;
+            chunkHeader.m_sizeInBytes = bufferSize + sizeof(AZ::u32);
+
+            ConvertFileChunk(&chunkHeader, targetEndianType);
+            file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
+
+            // Write the number of bytes again as inside the chunk processor we don't have access to the file chunk.
+            AZ::u32 endianBufferSize = bufferSize;
+            ConvertUnsignedInt(&endianBufferSize, targetEndianType);
+            file->Write(&endianBufferSize, sizeof(AZ::u32));
+
+            file->Write(buffer.data(), bufferSize);
+        }
+        else
+        {
+            AZ_Error("EMotionFX", false, "Cannot save socket setup. SaveObjectToStream() failed.");
+        }
+    }
+
     void SaveMeshAssetChunk(MCore::Stream* file, const AZStd::optional<AZ::Data::AssetId> meshAssetId, MCore::Endian::EEndianType targetEndianType)
     {
         // Skip writing the mesh asset chunk in case there is no asset assigned.
@@ -188,6 +233,8 @@ namespace ExporterLib
         SavePhysicsSetup(file, actor.get(), targetEndianType);
 
         SaveSimulatedObjectSetup(file, actor.get(), targetEndianType);
+
+        SaveSocketSetup(file, actor.get(), targetEndianType);
 
         const float saveTime = saveTimer.GetDeltaTimeInSeconds() * 1000.0f;
         MCore::LogInfo("Actor saved in %.2f ms.", saveTime);
