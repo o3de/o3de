@@ -149,6 +149,7 @@ namespace AZ::ShaderCompiler
 	    m_permMarks.clear();
 	    m_tempMarks.clear();
 	    m_result.clear();
+	    m_selectCursor = 0;
     }
 
     template< typename NodeIdT, EasyToReadMaxDepCountInteger MaxDepPerNode >
@@ -190,15 +191,12 @@ namespace AZ::ShaderCompiler
     template< typename NodeIdT, EasyToReadMaxDepCountInteger MaxDepPerNode >
     typename DependencySolver<NodeIdT, MaxDepPerNode>::ID DependencySolver<NodeIdT, MaxDepPerNode>::SelectUnmarked()
     {
-        // assumes not empty
-	    auto iter = m_order.begin();
-	    ID nodeId;
-	    do
-	    {
-            nodeId = *iter;
-		    ++iter;
-	    } while (iter != m_order.end() && HasPermMark(nodeId));
-	    return nodeId;
+        // Solve() guarantees an unmarked node remains.
+        while (m_selectCursor < m_order.size() && HasPermMark(m_order[m_selectCursor]))
+        {
+            ++m_selectCursor;
+        }
+        return m_order[m_selectCursor];
     }
 }
 

@@ -10,7 +10,7 @@ include(cmake/Platform/Common/Configurations_common.cmake)
 
 # Exceptions are disabled by default.  Use this to turn them on just for a specific target.
 # MSVC-Clang uses MSVC compiler option syntax (so /EHsc instead of -fexceptions)
-set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc)
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC /EHsc /U_HAS_EXCEPTIONS)
 
 # O3DE Sets visibility to hidden by default, requiring explicit export on non-windows platforms
 # But on MSVC or MS-Clang, these compilers use MSVC compiler options and behavior, which means
