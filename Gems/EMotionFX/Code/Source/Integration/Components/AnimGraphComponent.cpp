@@ -184,6 +184,11 @@ namespace EMotionFX
 
                     ->Event("StartAnimGraph", &AnimGraphComponentRequestBus::Events::StartAnimGraph)
                     ->Event("StopAnimGraph", &AnimGraphComponentRequestBus::Events::StopAnimGraph)
+                    ->Event("FireEvent", &AnimGraphComponentRequestBus::Events::FireEvent)
+                    ->Event("ClearEvent", &AnimGraphComponentRequestBus::Events::ClearEvent)
+                    ->Event("ClearAllEvents", &AnimGraphComponentRequestBus::Events::ClearAllEvents)
+                    ->Event("IsStateActive", &AnimGraphComponentRequestBus::Events::IsStateActive)
+                    ->Event("TransitionToState", &AnimGraphComponentRequestBus::Events::TransitionToState)
                     ;
 
                 behaviorContext->EBus<AnimGraphComponentNotificationBus>("AnimGraphComponentNotificationBus")
@@ -1282,6 +1287,40 @@ namespace EMotionFX
                     m_actorInstance->SetAnimGraphInstance(nullptr);
                 }
             }
+        }
+
+        void AnimGraphComponent::FireEvent(const char* eventName)
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->FireScriptEvent(eventName);
+            }
+        }
+
+        void AnimGraphComponent::ClearEvent(const char* eventName)
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->ConsumeScriptEvent(AZ::Crc32(eventName));
+            }
+        }
+
+        void AnimGraphComponent::ClearAllEvents()
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->ClearAllScriptEvents();
+            }
+        }
+
+        bool AnimGraphComponent::IsStateActive(const char* stateName)
+        {
+            return m_animGraphInstance && m_animGraphInstance->IsStateActive(stateName);
+        }
+
+        bool AnimGraphComponent::TransitionToState(const char* stateName)
+        {
+            return m_animGraphInstance && m_animGraphInstance->RequestStateTransition(stateName);
         }
     } // namespace Integration
 } // namespace EMotionFXAnimation

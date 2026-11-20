@@ -83,6 +83,7 @@
 #include "AnimGraphStateCondition.h"
 #include "AnimGraphTimeCondition.h"
 #include "AnimGraphTagCondition.h"
+#include "AnimGraphScriptEventCondition.h"
 #include "AnimGraphVector2Condition.h"
 #include "AnimGraphPlayTimeCondition.h"
 
@@ -141,6 +142,7 @@ namespace EMotionFX
         AnimGraphTransitionCondition::Reflect(context);
         AnimGraphPlayTimeCondition::Reflect(context);
         AnimGraphTagCondition::Reflect(context);
+        AnimGraphScriptEventCondition::Reflect(context);
 
         TriggerActionSetup::Reflect(context);
         AnimGraphParameterAction::Reflect(context);
@@ -265,6 +267,7 @@ namespace EMotionFX
             azrtti_typeid<AnimGraphTimeCondition>(),
             azrtti_typeid<AnimGraphPlayTimeCondition>(),
             azrtti_typeid<AnimGraphTagCondition>(),
+            azrtti_typeid<AnimGraphScriptEventCondition>(),
             azrtti_typeid<AnimGraphParameterAction>(),
             azrtti_typeid<AnimGraphFollowerParameterAction>(),
             azrtti_typeid<AnimGraphSymbolicFollowerParameterAction>(),
