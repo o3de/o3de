@@ -90,9 +90,15 @@ namespace ImageProcessingAtom
             EPixelFormat desiredUncompressedFmt = compressor->GetSuggestedUncompressedFormat(compressedFmt, uncompressedFmt);
             if (desiredUncompressedFmt != uncompressedFmt)
             {
-                //we need to do intermedia convertion to convert to the temperory format
+                // Convert through a format the compressor supports.
                 ConvertFormat(desiredUncompressedFmt);
-                ConvertFormat(fmtDst);
+                if (Get())
+                {
+                    if (Get()->GetPixelFormat() == desiredUncompressedFmt)
+                    {
+                        ConvertFormat(fmtDst);
+                    }
+                }
             }
             else
             {
