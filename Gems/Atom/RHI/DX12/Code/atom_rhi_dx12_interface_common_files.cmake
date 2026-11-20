@@ -8,5 +8,6 @@
 
 set(FILES
     Include/Atom/RHI.Interface/DX12/RHIDX12Interface.h
+    Include/Atom/RHI.Interface/DX12/SwapChainProxy.h
     Source/RHI.Reflect/RHIDX12Interface.cpp
 )
