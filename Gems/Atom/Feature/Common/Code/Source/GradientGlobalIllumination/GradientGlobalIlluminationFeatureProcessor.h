@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessorInterface.h>
 #include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationLogic.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
+#include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -96,20 +96,10 @@ namespace AZ::Render
 
         bool NeedsPassRehost() const;
 
-        //! Install default IBL images when the specular slot is empty.
-        void EnsureIblFloor();
 
-        //! Publish GPU output directly to the scene SRG after simulation.
-        void WriteSceneSrgFromPass();
-
-        //! True when IBL still holds our CPU specular image, allowing us to reset its bindings.
-        bool OwnsIblSlots() const;
-
-        void CacheSceneSrgIndices();
 
     private:
-        // CPU output is published through IBL. GPU output binds directly to the scene SRG.
-        ImageBasedLightFeatureProcessorInterface* m_iblFeatureProcessor = nullptr;
+        ImageBasedLightFeatureProcessor* m_iblFeatureProcessor = nullptr;
 
         Color m_lowColor = Color(0.05f, 0.06f, 0.08f, 1.0f);
         Color m_midColor = Color(0.20f, 0.30f, 0.55f, 1.0f);
@@ -165,12 +155,5 @@ namespace AZ::Render
         // Retain output briefly across editor Deactivate/Activate cycles, then release it if unused.
         static constexpr uint8_t TeardownGraceFrames = 5;
         uint8_t m_teardownCountdown = 0;
-
-        // Scene-owned SRG used for GPU output.
-        Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
-        RHI::ShaderInputImageIndex m_specularEnvMapIndex;
-        RHI::ShaderInputImageIndex m_diffuseEnvMapIndex;
-        RHI::ShaderInputConstantIndex m_iblExposureIndex;
-        bool m_sceneSrgIndicesCached = false;
     };
 } // namespace AZ::Render

@@ -27,10 +27,11 @@
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ::Render
 {
-    /*static*/ bool GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported()
+    bool GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported()
     {
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         if (!imageSystem)
@@ -44,12 +45,9 @@ namespace AZ::Render
             return false;
         }
 
-        RHI::ImageDescriptor testDesc = RHI::ImageDescriptor::CreateCubemap(
-            RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite,
-            /*width=*/4,
-            RHI::Format::R16G16B16A16_FLOAT);
+        RHI::ImageDescriptor testDesc = RHI::ImageDescriptor::CreateCubemap(RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::ShaderWrite, 4, RHI::Format::R16G16B16A16_FLOAT);
 
-        auto testImage = RPI::AttachmentImage::Create(*attachmentPool, testDesc, AZ::Name("GradientGlobalIllumination_CapProbe"), nullptr, nullptr);
+        auto testImage = RPI::AttachmentImage::Create(*attachmentPool, testDesc, AZ_NAME_LITERAL("GradientGlobalIllumination_CapProbe"), nullptr, nullptr);
 
         return testImage != nullptr;
     }
@@ -106,11 +104,17 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationCubemapPass::BuildInternal()
     {
+        if (m_buildFailed)
+        {
+            return;
+        }
+
         const char* shaderPath = "Shaders/GradientGlobalIllumination/GradientGlobalIlluminationCubemap.azshader";
         auto shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderPath);
         if (!shaderAsset.IsReady())
         {
             AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to load shader: %s", shaderPath);
+            m_buildFailed = true;
             SetEnabled(false);
             return;
         }
@@ -119,6 +123,7 @@ namespace AZ::Render
         if (!m_shader)
         {
             AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to create Shader instance from: %s", shaderPath);
+            m_buildFailed = true;
             SetEnabled(false);
             return;
         }
@@ -130,20 +135,28 @@ namespace AZ::Render
         if (!m_pipelineState)
         {
             AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to acquire pipeline state for GradientGlobalIlluminationCubemap.");
+            m_buildFailed = true;
             SetEnabled(false);
             return;
         }
 
-        auto srgLayout = m_shader->FindShaderResourceGroupLayout(AZ::Name("PassSrg"));
+        auto srgLayout = m_shader->FindShaderResourceGroupLayout(AZ_NAME_LITERAL("PassSrg"));
         if (srgLayout)
         {
             m_passSrg = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), srgLayout->GetName());
 
-            AZ_Error("GradientGlobalIlluminationCubemapPass", m_passSrg, "Failed to create PassSrg for GradientGlobalIlluminationCubemap.");
+            if (!m_passSrg)
+            {
+                AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to create PassSrg for GradientGlobalIlluminationCubemap.");
+                m_buildFailed = true;
+                SetEnabled(false);
+                return;
+            }
         }
         else
         {
             AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Could not find PassSrg layout in GradientGlobalIlluminationCubemap shader.");
+            m_buildFailed = true;
             SetEnabled(false);
             return;
         }
@@ -151,8 +164,8 @@ namespace AZ::Render
         // Reuse adopted images only if both still match the requested face size.
         if (!OutputImagesMatchFaceSize())
         {
-            m_diffuseImage = CreateOutputCubemap("GradientGlobalIllumination_Diffuse");
-            m_specularImage = CreateOutputCubemap("GradientGlobalIllumination_Specular");
+            m_diffuseImage = CreateOutputCubemap(AZ_NAME_LITERAL("GradientGlobalIllumination_Diffuse"));
+            m_specularImage = CreateOutputCubemap(AZ_NAME_LITERAL("GradientGlobalIllumination_Specular"));
             m_outputsWritten = false;
         }
 
@@ -163,6 +176,7 @@ namespace AZ::Render
                 false,
                 "Failed to create AttachmentImage(s) for gradient cubemap. "
                 "GPU compute (UAV cubemap) is not supported on this platform.");
+            m_buildFailed = true;
             SetEnabled(false);
             return;
         }
@@ -212,10 +226,14 @@ namespace AZ::Render
         return descriptor.m_size.m_width == m_faceSize;
     }
 
-    Data::Instance<RPI::AttachmentImage> GradientGlobalIlluminationCubemapPass::CreateOutputCubemap(const char* debugName) const
+    Data::Instance<RPI::AttachmentImage> GradientGlobalIlluminationCubemapPass::CreateOutputCubemap(const AZ::Name& debugName) const
     {
         auto* imageSystem = RPI::ImageSystemInterface::Get();
-        auto* attachmentPool = imageSystem ? imageSystem->GetSystemAttachmentPool().get() : nullptr;
+        if (!imageSystem)
+        {
+            return nullptr;
+        }
+        auto* attachmentPool = imageSystem->GetSystemAttachmentPool().get();
         if (!attachmentPool)
         {
             AZ_Error("GradientGlobalIlluminationCubemapPass", false, "System attachment pool not available.");
@@ -229,7 +247,7 @@ namespace AZ::Render
 
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
 
-        return RPI::AttachmentImage::Create(*attachmentPool, imageDesc, AZ::Name(debugName), nullptr, &cubemapViewDesc);
+        return RPI::AttachmentImage::Create(*attachmentPool, imageDesc, debugName, nullptr, &cubemapViewDesc);
     }
 
     Data::Instance<RPI::Image> GradientGlobalIlluminationCubemapPass::GetOrCreateWhiteFallbackCube()
@@ -250,7 +268,7 @@ namespace AZ::Render
         Data::Asset<RPI::ImageMipChainAsset> mipChainAsset;
         {
             RPI::ImageMipChainAssetCreator mipCreator;
-            mipCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), /*mipLevels=*/1, /*arraySize=*/6);
+            mipCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), 1, 6);
             mipCreator.BeginMip(faceLayout);
             for (uint32_t face = 0; face < 6; ++face)
             {
@@ -309,33 +327,35 @@ namespace AZ::Render
         const auto strIdx = m_passSrg->FindShaderInputConstantIndex(strengthName);
         const auto enIdx = m_passSrg->FindShaderInputConstantIndex(enabledName);
 
-        bool isCube = false;
-        if (texture && texture->GetRHIImage())
+        const bool cubeRequested = mapping == 2;
+        bool enabled = false;
+        Data::Instance<RPI::Image> tex2D = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
+        Data::Instance<RPI::Image> texCube = GetOrCreateWhiteFallbackCube();
+        if (texture && texture->GetImageView())
         {
-            const RHI::ImageDescriptor& d = texture->GetRHIImage()->GetDescriptor();
-            isCube = d.m_isCubemap || d.m_arraySize == 6;
+            const auto& descriptor = texture->GetRHIImage()->GetDescriptor();
+            const auto& view = texture->GetImageView()->GetDescriptor();
+            if (GradientGlobalIllumination::IsTextureLayerEnabled(descriptor, view, cubeRequested))
+            {
+                enabled = true;
+                if (cubeRequested)
+                {
+                    texCube = texture;
+                }
+                else
+                {
+                    tex2D = texture;
+                }
+            }
         }
 
-        const bool cubeRequested = (mapping == 2); // GradientGlobalIlluminationTextureMapping::Cube
-        const bool useCube = cubeRequested && isCube;
-        // Do not bind a cubemap to a 2D slot or a 2D texture to the cube slot.
-        const bool enabled = GradientGlobalIllumination::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
-
-        const Data::Instance<RPI::Image>& systemWhite2D = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
-
-        // Keep the unused slot valid even though the shader selects only the active mapping.
-        Data::Instance<RPI::Image> tex2D = (enabled && !useCube) ? texture : systemWhite2D;
-        Data::Instance<RPI::Image> texCube = useCube ? texture : GetOrCreateWhiteFallbackCube();
-
-        m_passSrg->SetImage(tex2DIdx, tex2D);
-        if (texCube)
-        {
-            m_passSrg->SetImage(texCubeIdx, texCube);
-        }
+        const bool bound2D = m_passSrg->SetImage(tex2DIdx, tex2D);
+        const bool boundCube = texCube && m_passSrg->SetImage(texCubeIdx, texCube);
+        enabled = enabled && ((cubeRequested && boundCube) || (!cubeRequested && bound2D));
         m_passSrg->SetConstant(mapIdx, static_cast<uint32_t>(mapping));
         m_passSrg->SetConstant(blendIdx, static_cast<uint32_t>(blend));
         m_passSrg->SetConstant(strIdx, strength);
-        m_passSrg->SetConstant(enIdx, enabled ? 1u : 0u);
+        m_passSrg->SetConstant(enIdx, static_cast<uint32_t>(enabled));
     }
 
     void GradientGlobalIlluminationCubemapPass::FrameBeginInternal(FramePrepareParams params)
@@ -372,12 +392,7 @@ namespace AZ::Render
 
             RHI::ImageScopeAttachmentDescriptor uavDesc;
             uavDesc.m_attachmentId = image->GetAttachmentId();
-            uavDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
-                RHI::Format::Unknown,
-                /*mipSliceMin=*/0,
-                /*mipSliceMax=*/0,
-                /*arraySliceMin=*/0,
-                /*arraySliceMax=*/5);
+            uavDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 0, 0, 5);
             uavDesc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::DontCare;
             uavDesc.m_loadStoreAction.m_storeAction = RHI::AttachmentStoreAction::Store;
 
@@ -395,12 +410,7 @@ namespace AZ::Render
         {
             RHI::ImageScopeAttachmentDescriptor readDesc;
             readDesc.m_attachmentId = image->GetAttachmentId();
-            readDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
-                RHI::Format::Unknown,
-                /*mipSliceMin=*/0,
-                /*mipSliceMax=*/0,
-                /*arraySliceMin=*/0,
-                /*arraySliceMax=*/5);
+            readDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(RHI::Format::Unknown, 0, 0, 0, 5);
             readDesc.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
 
             frameGraph.UseShaderAttachment(readDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::AnyGraphics);
@@ -419,12 +429,12 @@ namespace AZ::Render
 
         if (m_writeThisFrame)
         {
-            const auto lowIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
-            const auto midIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
-            const auto highIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
-            const auto sizeIdx = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
-            const auto diffIdx = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputDiffuse"));
-            const auto specIdx = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputSpecular"));
+            const auto lowIdx = m_passSrg->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_lowColor"));
+            const auto midIdx = m_passSrg->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_midColor"));
+            const auto highIdx = m_passSrg->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_highColor"));
+            const auto sizeIdx = m_passSrg->FindShaderInputConstantIndex(AZ_NAME_LITERAL("m_faceSize"));
+            const auto diffIdx = m_passSrg->FindShaderInputImageIndex(AZ_NAME_LITERAL("m_outputDiffuse"));
+            const auto specIdx = m_passSrg->FindShaderInputImageIndex(AZ_NAME_LITERAL("m_outputSpecular"));
 
             m_passSrg->SetConstant(lowIdx, AZ::Vector3(m_lowColor.GetR(), m_lowColor.GetG(), m_lowColor.GetB()));
             m_passSrg->SetConstant(midIdx, AZ::Vector3(m_midColor.GetR(), m_midColor.GetG(), m_midColor.GetB()));
@@ -447,31 +457,30 @@ namespace AZ::Render
             }
 
             BindTextureLayer(
-                AZ::Name("m_detailTex2D"),
-                AZ::Name("m_detailTexCube"),
-                AZ::Name("m_detailMapping"),
-                AZ::Name("m_detailBlend"),
-                AZ::Name("m_detailStrength"),
-                AZ::Name("m_detailEnabled"),
+                AZ_NAME_LITERAL("m_detailTex2D"),
+                AZ_NAME_LITERAL("m_detailTexCube"),
+                AZ_NAME_LITERAL("m_detailMapping"),
+                AZ_NAME_LITERAL("m_detailBlend"),
+                AZ_NAME_LITERAL("m_detailStrength"),
+                AZ_NAME_LITERAL("m_detailEnabled"),
                 m_detailTexture,
                 m_detailMapping,
                 m_detailBlend,
                 m_detailStrength);
 
             BindTextureLayer(
-                AZ::Name("m_specularTex2D"),
-                AZ::Name("m_specularTexCube"),
-                AZ::Name("m_specularMapping"),
-                AZ::Name("m_specularBlend"),
-                AZ::Name("m_specularStrength"),
-                AZ::Name("m_specularEnabled"),
+                AZ_NAME_LITERAL("m_specularTex2D"),
+                AZ_NAME_LITERAL("m_specularTexCube"),
+                AZ_NAME_LITERAL("m_specularMapping"),
+                AZ_NAME_LITERAL("m_specularBlend"),
+                AZ_NAME_LITERAL("m_specularStrength"),
+                AZ_NAME_LITERAL("m_specularEnabled"),
                 m_specularTexture,
                 m_specularMapping,
                 m_specularBlend,
                 m_specularStrength);
+            m_passSrg->Compile();
         }
-
-        m_passSrg->Compile();
     }
 
     void GradientGlobalIlluminationCubemapPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

@@ -55,6 +55,11 @@ namespace AZ::Render
         //! True for adopted output or a scheduled write. This is not a GPU completion fence.
         bool HasWrittenOutputs() const;
 
+        bool HasBuildFailed() const
+        {
+            return m_buildFailed;
+        }
+
     protected:
         void BuildInternal() override;
         void FrameBeginInternal(FramePrepareParams params) override;
@@ -63,7 +68,7 @@ namespace AZ::Render
         void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
     private:
-        Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const char* debugName) const;
+        Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const AZ::Name& debugName) const;
 
         //! Check both image dimensions before reusing them for a resized dispatch.
         bool OutputImagesMatchFaceSize() const;
@@ -116,6 +121,7 @@ namespace AZ::Render
         Data::Instance<RPI::Image> m_whiteFallbackCube;
 
         bool m_dirty = true;
+        bool m_buildFailed = false;
 
         // Keep frame-graph declarations and dispatch decisions consistent for the entire frame.
         bool m_writeThisFrame = false;

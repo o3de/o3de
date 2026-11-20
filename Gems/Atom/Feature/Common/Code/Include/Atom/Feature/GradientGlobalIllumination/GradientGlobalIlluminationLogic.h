@@ -9,6 +9,8 @@
 #pragma once
 
 #include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessorInterface.h>
+#include <Atom/RHI.Reflect/ImageDescriptor.h>
+#include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
@@ -72,7 +74,7 @@ namespace AZ::Render::GradientGlobalIllumination
     {
         using UpdateMode = GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode;
 
-        if (requested == UpdateMode::Dynamic && !gpuComputeSupported)
+        if (requested != UpdateMode::Dynamic || !gpuComputeSupported)
         {
             return UpdateMode::Static;
         }
@@ -139,9 +141,20 @@ namespace AZ::Render::GradientGlobalIllumination
     };
 
     //! Disable the layer when the texture does not match the requested 2D/cubemap mapping.
-    inline bool IsTextureLayerEnabled(bool hasTexture, bool cubeMappingRequested, bool textureIsCube)
+    inline bool IsTextureLayerEnabled(
+        const RHI::ImageDescriptor& image,
+        const RHI::ImageViewDescriptor& view,
+        bool cubeRequested)
     {
-        return hasTexture && (cubeMappingRequested == textureIsCube);
+        if (image.m_dimension != RHI::ImageDimension::Image2D || image.m_multisampleState.m_samples != 1 || view.m_isArray)
+        {
+            return false;
+        }
+        if (cubeRequested)
+        {
+            return view.m_isCubemap && image.m_arraySize == 6;
+        }
+        return !view.m_isCubemap && image.m_arraySize == 1;
     }
 
     //! Replace backslashes and strip leading separators. Empty or all-separator input returns an empty path.

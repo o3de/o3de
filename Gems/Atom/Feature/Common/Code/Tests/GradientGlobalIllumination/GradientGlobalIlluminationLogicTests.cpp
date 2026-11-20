@@ -80,12 +80,12 @@ namespace UnitTest
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_DynamicFallsBackWhenGpuUnsupported)
     {
-        EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, /*gpuSupported*/ false), UpdateMode::Static);
+        EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, false), UpdateMode::Static);
     }
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_DynamicHonouredWhenGpuSupported)
     {
-        EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, /*gpuSupported*/ true), UpdateMode::Dynamic);
+        EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, true), UpdateMode::Dynamic);
     }
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_StaticAlwaysStatic)
@@ -94,22 +94,22 @@ namespace UnitTest
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Static, true), UpdateMode::Static);
     }
 
-    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_DisabledWhenNoTexture)
+    TEST_F(GradientGlobalIlluminationLogicFixture, TextureLayerRequiresMatchingDimensionAndView)
     {
-        EXPECT_FALSE(IsTextureLayerEnabled(/*hasTexture*/ false, /*cubeRequested*/ false, /*textureIsCube*/ false));
-        EXPECT_FALSE(IsTextureLayerEnabled(false, true, true));
-    }
-
-    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_NonCubeMappingRequires2DTexture)
-    {
-        EXPECT_TRUE(IsTextureLayerEnabled(true, /*cubeRequested*/ false, /*textureIsCube*/ false));
-        EXPECT_FALSE(IsTextureLayerEnabled(true, false, true));
-    }
-
-    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_CubeMappingRequiresCubeTexture)
-    {
-        EXPECT_FALSE(IsTextureLayerEnabled(true, /*cubeRequested*/ true, /*textureIsCube*/ false));
-        EXPECT_TRUE(IsTextureLayerEnabled(true, true, true));
+        AZ::RHI::ImageDescriptor image;
+        AZ::RHI::ImageViewDescriptor view;
+        image.m_dimension = AZ::RHI::ImageDimension::Image2D;
+        EXPECT_TRUE(IsTextureLayerEnabled(image, view, false));
+        EXPECT_FALSE(IsTextureLayerEnabled(image, view, true));
+        image.m_arraySize = 6;
+        EXPECT_FALSE(IsTextureLayerEnabled(image, view, false));
+        EXPECT_FALSE(IsTextureLayerEnabled(image, view, true));
+        view = AZ::RHI::ImageViewDescriptor::CreateCubemap();
+        EXPECT_TRUE(IsTextureLayerEnabled(image, view, true));
+        EXPECT_FALSE(IsTextureLayerEnabled(image, view, false));
+        image.m_arraySize = 1;
+        image.m_dimension = AZ::RHI::ImageDimension::Image3D;
+        EXPECT_FALSE(IsTextureLayerEnabled(image, {}, false));
     }
 
     TEST_F(GradientGlobalIlluminationLogicFixture, NormalizeAssetPath_UnifiesSeparators)
@@ -165,7 +165,7 @@ namespace UnitTest
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_StableRequestCommitsOnceAfterSettle)
     {
-        ResolutionDebounce debounce(/*threshold*/ 3);
+        ResolutionDebounce debounce(3);
         debounce.Commit(64);
         debounce.Request(128);
         EXPECT_TRUE(debounce.HasPendingCommit());
@@ -185,7 +185,7 @@ namespace UnitTest
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_ActiveScrubNeverCommitsThenSettlesOnFinalValue)
     {
-        ResolutionDebounce debounce(/*threshold*/ 3);
+        ResolutionDebounce debounce(3);
         debounce.Commit(64);
 
         // Change the request before each frame advance, then allow the final value to settle.
@@ -209,7 +209,7 @@ namespace UnitTest
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_ReturningToCommittedValueCancelsPending)
     {
-        ResolutionDebounce debounce(/*threshold*/ 3);
+        ResolutionDebounce debounce(3);
         debounce.Commit(64);
         debounce.Request(128);
         EXPECT_TRUE(debounce.HasPendingCommit());
@@ -222,7 +222,7 @@ namespace UnitTest
 
     TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_RespectsCustomThreshold)
     {
-        ResolutionDebounce debounce(/*threshold*/ 1);
+        ResolutionDebounce debounce(1);
         debounce.Commit(10);
         debounce.Request(20);
         EXPECT_FALSE(debounce.AdvanceFrame().has_value()); // one settle frame
@@ -299,6 +299,11 @@ namespace UnitTest
 
         owners.Remove(entity);
         EXPECT_TRUE(owners.Empty());
+    }
+
+    TEST_F(GradientGlobalIlluminationLogicFixture, UnsupportedNumericModeUsesStatic)
+    {
+        EXPECT_EQ(ResolveUpdateMode(static_cast<UpdateMode>(2), true), UpdateMode::Static);
     }
 
     TEST_F(GradientGlobalIlluminationLogicFixture, HalfConversionRoundsAtFormatBoundaries)

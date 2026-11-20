@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
@@ -38,7 +39,7 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationFeatureProcessor::Activate()
     {
-        m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
+        m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessor>();
         AZ_Error(
             "GradientGlobalIllumination",
             m_iblFeatureProcessor,
@@ -57,11 +58,6 @@ namespace AZ::Render
         m_enabled = false;
         m_needsRebuild = false;
 
-        if (m_updateMode == UpdateMode::Dynamic && !m_sceneSrgIndicesCached)
-        {
-            CacheSceneSrgIndices();
-        }
-
         EnableSceneNotification();
     }
 
@@ -76,8 +72,6 @@ namespace AZ::Render
         m_enabled = false;
         m_teardownCountdown = 0;
         m_iblFeatureProcessor = nullptr;
-        m_sceneSrg = nullptr;
-        m_sceneSrgIndicesCached = false;
     }
 
     void GradientGlobalIlluminationFeatureProcessor::Enable(EntityId owner)
@@ -89,8 +83,6 @@ namespace AZ::Render
         // Notify before enabling output so the new owner can stage its configuration.
         m_ownerChangedEvent.Signal(owner);
         m_enabled = true;
-
-        EnsureIblFloor();
 
         if (m_updateMode == UpdateMode::Static)
         {
@@ -145,12 +137,12 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationFeatureProcessor::ReleaseOutput()
     {
-        // Reset IBL only while its bindings still reference our CPU image.
-        if (OwnsIblSlots())
+        if (m_iblFeatureProcessor)
         {
-            m_iblFeatureProcessor->Reset();
+            m_iblFeatureProcessor->SetGradientOverride({}, {}, 0);
         }
-        m_needsRebuild = false;
+        m_detailTexture = nullptr;
+        m_specularTexture = nullptr;
 
         if (m_gradientPass)
         {
@@ -209,7 +201,11 @@ namespace AZ::Render
             {
                 entityList += ", ";
             }
-            entityList += name.empty() ? AZStd::string("<unnamed>") : name;
+            if (name.empty())
+            {
+                name = "<unnamed>";
+            }
+            entityList += name;
             entityList += AZStd::string::format(" [%llu]", static_cast<AZ::u64>(owner));
         }
 
@@ -233,33 +229,17 @@ namespace AZ::Render
         m_needsRebuild = false;
     }
 
-    void GradientGlobalIlluminationFeatureProcessor::CacheSceneSrgIndices()
-    {
-        m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
-        if (m_sceneSrg)
-        {
-            m_specularEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_specularEnvMap"));
-            m_diffuseEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
-            m_iblExposureIndex = m_sceneSrg->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
-            m_sceneSrgIndicesCached = true;
-        }
-        else
-        {
-            AZ_Error("GradientGlobalIllumination", false, "Scene SRG is NULL! Dynamic mode cannot write IBL slots.");
-        }
-    }
-
-    void GradientGlobalIlluminationFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
+    void GradientGlobalIlluminationFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket&)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGlobalIlluminationFeatureProcessor: Simulate");
 
-        if (!m_enabled || m_updateMode != UpdateMode::Static || !m_iblFeatureProcessor)
+        if (!m_enabled || (m_updateMode == UpdateMode::Dynamic && m_gradientPass) || !m_iblFeatureProcessor)
         {
             return;
         }
 
         // StreamingImage is immutable. Coalesce changes to at most one replacement per rendered frame.
-        if (m_needsRebuild && !m_rebuiltThisFrame)
+        if ((m_needsRebuild || !m_cubemapImage) && !m_rebuiltThisFrame)
         {
             m_cubemapImage = nullptr;
             m_imageAsset = {};
@@ -334,7 +314,7 @@ namespace AZ::Render
 
         DestroyPass();
 
-        RPI::PassDescriptor passDescriptor(AZ::Name("GradientGlobalIlluminationCubemapPass"));
+        RPI::PassDescriptor passDescriptor(AZ_NAME_LITERAL("GradientGlobalIlluminationCubemapPass"));
         m_gradientPass = aznew GradientGlobalIlluminationCubemapPass(passDescriptor);
 
         // Keep initialized output available while replacing the pass.
@@ -346,11 +326,16 @@ namespace AZ::Render
         m_gradientPass->SetEnabled(m_enabled);
 
         // Dispatch before passes that sample IBL.
-        const bool injected = renderPipeline->AddPassBefore(m_gradientPass, AZ::Name("DepthPrePass"));
+        AZ::Name anchor = AZ_NAME_LITERAL("DepthPrePass");
+        if (!renderPipeline->FindFirstPass(anchor))
+        {
+            anchor = AZ_NAME_LITERAL("ForwardPass");
+        }
+        const bool injected = renderPipeline->FindFirstPass(anchor) && renderPipeline->AddPassBefore(m_gradientPass, anchor);
 
         if (!injected)
         {
-            // Some auxiliary pipelines have no DepthPrePass. Do not retain an uninjected pass.
+            // Keep the CPU fallback active until a pipeline can host the pass.
             m_failedHostPipelineId = renderPipeline->GetId();
             DestroyPass();
             return;
@@ -373,14 +358,6 @@ namespace AZ::Render
         }
         m_gradientPass = nullptr;
         m_passPipelineId = RPI::RenderPipelineId();
-    }
-
-    void GradientGlobalIlluminationFeatureProcessor::EnsureIblFloor()
-    {
-        if (m_iblFeatureProcessor && !m_iblFeatureProcessor->GetSpecularImage())
-        {
-            m_iblFeatureProcessor->Reset();
-        }
     }
 
     void GradientGlobalIlluminationFeatureProcessor::OnRenderPipelineChanged(
@@ -406,10 +383,6 @@ namespace AZ::Render
 
         if (m_updateMode == UpdateMode::Dynamic)
         {
-            // Pipeline changes can replace the scene SRG.
-            m_sceneSrgIndicesCached = false;
-            CacheSceneSrgIndices();
-
             // PassChanged can precede detachment. OnBeginPrepareRender handles the eventual orphan.
             if (changeType == ChangeType::Added)
             {
@@ -428,30 +401,37 @@ namespace AZ::Render
 
         TickMultipleOwnerReport();
 
-        // Simulation jobs have finished. IBL consumes these values in its next simulation.
-        if (m_updateMode == UpdateMode::Static)
+        // A host can accept the pass before shader or output allocation fails in BuildInternal.
+        if (m_gradientPass && m_gradientPass->HasBuildFailed())
         {
-            if (m_iblFeatureProcessor && m_cubemapImage && m_imageAsset.GetId().IsValid())
-            {
-                if (!OwnsIblSlots())
-                {
-                    m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
-                    m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
-                }
-                m_iblFeatureProcessor->SetExposure(m_exposure);
-            }
-            return;
+            SetUpdateMode(UpdateMode::Static);
         }
 
-        if (m_updateMode != UpdateMode::Dynamic || !NeedsPassRehost())
+        if (m_updateMode == UpdateMode::Dynamic && NeedsPassRehost())
+        {
+            EnsurePass();
+        }
+
+        if (!m_iblFeatureProcessor)
         {
             return;
         }
 
-        EnsurePass();
+        if (m_gradientPass && m_gradientPass->HasWrittenOutputs())
+        {
+            m_diffuseImage = m_gradientPass->GetDiffuseImage();
+            m_specularImage = m_gradientPass->GetSpecularImage();
+            m_iblFeatureProcessor->SetGradientOverride(m_diffuseImage, m_specularImage, m_exposure);
+            m_cubemapImage = nullptr;
+            m_imageAsset = {};
+        }
+        else if (m_cubemapImage)
+        {
+            m_iblFeatureProcessor->SetGradientOverride(m_cubemapImage, m_cubemapImage, m_exposure);
+        }
     }
 
-    void GradientGlobalIlluminationFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
+    void GradientGlobalIlluminationFeatureProcessor::Render(const FeatureProcessor::RenderPacket&)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGlobalIlluminationFeatureProcessor: Render");
 
@@ -459,33 +439,6 @@ namespace AZ::Render
         m_rebuiltThisFrame = false;
 
         TickResolutionSettle();
-
-        if (!m_enabled || m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
-        {
-            return;
-        }
-
-        WriteSceneSrgFromPass();
-    }
-
-    void GradientGlobalIlluminationFeatureProcessor::WriteSceneSrgFromPass()
-    {
-        // Keep the previous output pair until the replacement has scheduled a write.
-        if (m_gradientPass->HasWrittenOutputs())
-        {
-            m_diffuseImage = m_gradientPass->GetDiffuseImage();
-            m_specularImage = m_gradientPass->GetSpecularImage();
-        }
-
-        if (!m_diffuseImage || !m_specularImage)
-        {
-            return;
-        }
-
-        // Render preparation follows simulation, so IBL is no longer updating these SRG slots.
-        m_sceneSrg->SetImageView(m_specularEnvMapIndex, m_specularImage->GetImageView());
-        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex, m_diffuseImage->GetImageView());
-        m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
     void GradientGlobalIlluminationFeatureProcessor::SetGradientColors(const Color& low, const Color& mid, const Color& high)
@@ -500,11 +453,11 @@ namespace AZ::Render
         m_midColor = mid;
         m_highColor = high;
 
-        if (m_updateMode == UpdateMode::Static)
+        if (!m_gradientPass)
         {
             m_needsRebuild = true;
         }
-        else if (m_gradientPass)
+        else
         {
             m_gradientPass->SetGradientColors(low, mid, high, m_faceResolution);
         }
@@ -550,11 +503,11 @@ namespace AZ::Render
         m_faceResolution = value;
         m_faceResolutionApplied = true;
 
-        if (m_updateMode == UpdateMode::Static)
+        if (!m_gradientPass)
         {
             m_needsRebuild = true;
         }
-        else if (m_gradientPass)
+        else
         {
             m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_faceResolution);
         }
@@ -578,7 +531,7 @@ namespace AZ::Render
         const UpdateMode mode = GradientGlobalIllumination::ResolveUpdateMode(
             requestedMode,
             requestedMode != UpdateMode::Dynamic || GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported());
-        AZ_Warning("GradientGlobalIllumination", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
+        AZ_Warning("GradientGlobalIllumination", mode == requestedMode, "Requested gradient update mode is unavailable. Using Static mode.");
 
         if (m_updateMode == mode)
         {
@@ -603,32 +556,20 @@ namespace AZ::Render
 
             m_needsRebuild = m_enabled;
         }
-        else
+        else if (m_enabled)
         {
-            if (!m_sceneSrgIndicesCached)
-            {
-                CacheSceneSrgIndices();
-            }
-
-            // GPU output bypasses IBL. Release only the CPU bindings we still own.
-            if (OwnsIblSlots())
-            {
-                m_iblFeatureProcessor->Reset();
-            }
-            m_cubemapImage = nullptr;
-            m_imageAsset = {};
-
-            if (m_enabled)
-            {
-                EnsurePass();
-            }
+            EnsurePass();
         }
     }
 
     void GradientGlobalIlluminationFeatureProcessor::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
         // Retain the runtime texture so color edits do not reload it.
-        m_detailTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
+        m_detailTexture = nullptr;
+        if (texture.GetId().IsValid())
+        {
+            m_detailTexture = RPI::StreamingImage::FindOrCreate(texture);
+        }
 
         if (m_gradientPass)
         {
@@ -650,7 +591,11 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationFeatureProcessor::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
-        m_specularTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
+        m_specularTexture = nullptr;
+        if (texture.GetId().IsValid())
+        {
+            m_specularTexture = RPI::StreamingImage::FindOrCreate(texture);
+        }
 
         if (m_gradientPass)
         {
@@ -673,11 +618,6 @@ namespace AZ::Render
     GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode GradientGlobalIlluminationFeatureProcessor::GetUpdateMode() const
     {
         return m_updateMode;
-    }
-
-    bool GradientGlobalIlluminationFeatureProcessor::OwnsIblSlots() const
-    {
-        return m_iblFeatureProcessor && m_cubemapImage && m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
     }
 
     Vector3 GradientGlobalIlluminationFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
@@ -740,12 +680,6 @@ namespace AZ::Render
         constexpr RHI::Format format = RHI::Format::R16G16B16A16_FLOAT;
         const uint32_t faceSize = GradientGlobalIllumination::SnapCpuFaceResolutionToPow2(m_faceResolution);
 
-        AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
-        for (uint32_t face = 0; face < 6; ++face)
-        {
-            GenerateFacePixels(face, faceSize, facePixels[face]);
-        }
-
         RHI::Size faceDimensions(faceSize, faceSize, 1);
         RHI::DeviceImageSubresourceLayout faceLayout = RHI::GetImageSubresourceLayout(faceDimensions, format);
         const size_t bytesPerFace = faceLayout.m_bytesPerImage;
@@ -753,18 +687,20 @@ namespace AZ::Render
         Data::Asset<RPI::ImageMipChainAsset> mipChainAsset;
         {
             RPI::ImageMipChainAssetCreator mipCreator;
-            mipCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), /*mipLevels=*/1, /*arraySize=*/6);
+            mipCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), 1, 6);
 
+            AZStd::vector<uint8_t> facePixels;
             mipCreator.BeginMip(faceLayout);
             for (uint32_t face = 0; face < 6; ++face)
             {
+                GenerateFacePixels(face, faceSize, facePixels);
                 AZ_Assert(
-                    facePixels[face].size() >= bytesPerFace,
+                    facePixels.size() >= bytesPerFace,
                     "GradientGlobalIllumination: Face pixel data too small (expected %zu, got %zu)",
                     bytesPerFace,
-                    facePixels[face].size());
+                    facePixels.size());
 
-                mipCreator.AddSubImage(facePixels[face].data(), bytesPerFace);
+                mipCreator.AddSubImage(facePixels.data(), bytesPerFace);
             }
             mipCreator.EndMip();
 
