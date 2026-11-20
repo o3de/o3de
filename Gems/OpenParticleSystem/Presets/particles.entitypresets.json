@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Particle System (Empty)",
+                "description": "A Particle component with no particle asset. Set Asset to a .particle file to see anything.",
+                "category": "Particles",
+                "components": [
+                    {
+                        "component": "Particle",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Particle System (Firework)",
+                "description": "A Particle component playing the OpenParticleSystem gem's firework sample. Swap Asset for your own effect.",
+                "category": "Particles",
+                "components": [
+                    {
+                        "component": "Particle",
+                        "properties": [
+                            {
+                                "path": "Controller|Configuration|Asset",
+                                "type": "asset",
+                                "value": "particles/firework.azparticle"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EditorComponents/EditorTerrainSystemComponent.h>
+#include <EntityPresets/TerrainPreset.h>
 #include <TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h>
 
 namespace Terrain
@@ -26,11 +27,28 @@ namespace Terrain
     void EditorTerrainSystemComponent::Activate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void EditorTerrainSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+    }
+
+    void EditorTerrainSystemComponent::OnMenuRegistrationHook()
+    {
+        TerrainPreset::RegisterMenus();
+    }
+
+    void EditorTerrainSystemComponent::OnActionRegistrationHook()
+    {
+        TerrainPreset::RegisterActions();
+    }
+
+    void EditorTerrainSystemComponent::OnMenuBindingHook()
+    {
+        TerrainPreset::BindMenus();
     }
 
 } // namespace Terrain

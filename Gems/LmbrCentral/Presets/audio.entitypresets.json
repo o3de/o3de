@@ -1,0 +1,47 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Audio Trigger",
+                "category": "Audio",
+                "components": [
+                    {
+                        "component": "Audio Proxy",
+                        "properties": []
+                    },
+                    {
+                        "component": "Audio Trigger",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Audio Listener",
+                "category": "Audio",
+                "components": [
+                    {
+                        "component": "Audio Listener",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Audio Environment",
+                "category": "Audio",
+                "components": [
+                    {
+                        "component": "Audio Proxy",
+                        "properties": []
+                    },
+                    {
+                        "component": "Audio Environment",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}

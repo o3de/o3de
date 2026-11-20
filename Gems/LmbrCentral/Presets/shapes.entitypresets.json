@@ -1,0 +1,89 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PresetFile",
+    "ClassData": {
+        "presets": [
+            {
+                "name": "Box Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Box Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Sphere Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Sphere Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Capsule Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Capsule Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Cylinder Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Cylinder Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Tube Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Tube Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Disk Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Disk Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Polygon Prism Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Polygon Prism Shape",
+                        "properties": []
+                    }
+                ]
+            },
+            {
+                "name": "Compound Shape",
+                "category": "Shapes",
+                "components": [
+                    {
+                        "component": "Compound Shape",
+                        "properties": []
+                    }
+                ]
+            }
+        ]
+    }
+}
