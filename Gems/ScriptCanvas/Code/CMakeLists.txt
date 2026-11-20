@@ -108,7 +108,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ScriptEvents.Static
-            Gem::ExpressionEvaluation.Static
             Gem::${gem_name}.Extensions
         PRIVATE
             AZ::AzCore
@@ -150,7 +149,6 @@ ly_add_target(
             Gem::ScriptEvents.Static
     RUNTIME_DEPENDENCIES
         Gem::ScriptEvents
-        Gem::ExpressionEvaluation
 )
 
 # Inject the gem name into the Module source file
@@ -204,7 +202,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.API
                 Gem::ScriptEvents.Static
                 Gem::GraphCanvasWidgets
-                Gem::ExpressionEvaluation.Static
             PRIVATE
                 Legacy::EditorCore
                 Gem::AtomToolsFramework.Static
@@ -242,7 +239,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AzQtComponents
             Gem::GraphCanvas.Editor
             Gem::ScriptEvents.Editor
-            Gem::ExpressionEvaluation
     )
 
 if(SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION)

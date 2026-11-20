@@ -132,16 +132,6 @@
                     }
                 }
             },
-            "ExpressionEvaluation": {
-                "Targets": {
-                    "ExpressionEvaluation": {
-                        "AutoLoad": false
-                    },
-                    "ExpressionEvaluation.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "AtomTressFX": {
                 "Targets": {
                     "AtomTressFX": {

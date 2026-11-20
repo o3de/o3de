@@ -7,7 +7,7 @@
             "details": {
                 "name": "Math Expression",
                 "category": "Math",
-                "tooltip": "Will evaluate a series of math operations, allowing users to specify inputs using {}."
+                "tooltip": "Evaluates math, comparisons, logical operators and condition ? a : b. Use {name} for inputs; angles are radians."
             },
             "slots": [
                 {

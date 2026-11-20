@@ -32,6 +32,14 @@ namespace ScriptCanvas
 
             }
 
+            bool ExpressionNodeBase::VersionConverter(
+                [[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& element)
+            {
+                // The expression text and existing slots are authoritative; discard the old parser cache.
+                element.RemoveElementByName(AZ_CRC_CE("m_expressionTree"));
+                return true;
+            }
+
             AZ::Outcome<DependencyReport, void> ExpressionNodeBase::GetDependencies() const
             {
                 return AZ::Success(DependencyReport{});
@@ -52,7 +60,13 @@ namespace ScriptCanvas
                 m_stringInterface.SetPropertyReference(&m_format);
                 m_stringInterface.RegisterListener(this);
 
-                const auto& variableList = m_expressionTree.GetVariables();
+                m_slotToVariableMap.clear();
+                m_slotsByVariables.clear();
+                if (!ParseExpression())
+                {
+                    return;
+                }
+                const auto& variableList = m_expression.m_variables;
 
                 for (const auto& variableName : variableList)
                 {
@@ -62,24 +76,6 @@ namespace ScriptCanvas
                     {
                         m_slotToVariableMap[variableSlot->GetId()] = variableName;
                         m_slotsByVariables[variableName] = variableSlot->GetId();
-                    }
-                }
-            }
-
-            void ExpressionNodeBase::OnPostActivate()
-            {
-                for (auto variableListing : m_slotToVariableMap)
-                {
-                    Slot* variableSlot = GetSlot(variableListing.first);
-
-                    if (variableSlot && !HasConnectedNodes((*variableSlot)))
-                    {
-                        const Datum* datum = FindDatum(variableSlot->GetId());
-
-                        if (datum)
-                        {
-                            PushVariable(variableListing.second, (*datum));
-                        }
                     }
                 }
             }
@@ -120,7 +116,7 @@ namespace ScriptCanvas
 
             SlotId ExpressionNodeBase::HandleExtension(AZ::Crc32 extensionId)
             {
-                if (extensionId == GetExtensionId() && !m_isInError)
+                if (extensionId == GetExtensionId() && (!m_isInError || m_format.empty()))
                 {
                     int value = 0;
                     AZStd::string name = "Value";
@@ -219,15 +215,15 @@ namespace ScriptCanvas
                 // This means we were loaded up with an error, but we haven't re-parsed so we
                 // don't know what the error is. Force a reparse here to ensure
                 // we report errors correctly.
-                if (m_isInError && m_parseError.IsValidExpression())
+                if (m_isInError && m_parseError.empty())
                 {
                     const bool signalError = false;
                     ParseFormat(signalError);
                 }
 
-                if (!m_parseError.IsValidExpression())
+                if (m_isInError)
                 {
-                    InvalidExpressionEvent* invaildExpressionEvent = aznew InvalidExpressionEvent(GetEntityId(), m_parseError.m_errorString);
+                    InvalidExpressionEvent* invaildExpressionEvent = aznew InvalidExpressionEvent(GetEntityId(), m_parseError);
 
                     validationResults.AddValidationEvent(invaildExpressionEvent);
 
@@ -239,75 +235,30 @@ namespace ScriptCanvas
 
             void ExpressionNodeBase::ParseFormat(bool signalError)
             {
-                ExpressionEvaluation::ParseOutcome parseOutcome = ParseExpression(m_format);
-
-                if (!parseOutcome.IsSuccess())
+                if (!ParseExpression())
                 {
-                    m_isInError = true;
-                    m_parseError = parseOutcome.GetError();
-
-                    if (signalError)
+                    if (signalError && GetGraph())
                     {
-                        AZStd::string parseError = m_parseError.m_errorString;
-                        GetGraph()->ReportError((*this), "Parsing Error", parseError);
+                        GetGraph()->ReportError((*this), "Parsing Error", m_parseError);
                     }
 
                     return;
                 }
                 else
                 {
-                    m_isInError = false;
-                    m_parseError.Clear();
-
-                    m_parsingFormat = true;
-
                     AZStd::unordered_map< AZStd::string, SlotCacheSetup > variableSlotMapping;
+                    const auto& variableList = m_expression.m_variables;
 
-                    m_expressionTree = parseOutcome.GetValue();
-
-                    const AZStd::vector< AZStd::string >& variableList = m_expressionTree.GetVariables();
-
-                    for (const AZStd::string& variableString : variableList)
+                    for (const auto& variable : variableList)
                     {
+                        const AZStd::string variableString(variable.data(), variable.size());
                         Slot* slot = GetSlotByName(variableString);
 
                         if (slot)
                         {
-                            if (slot->IsExecution() || slot->IsOutput())
-                            {
-                                m_isInError = true;
-                                m_parseError = ExpressionEvaluation::ParsingError();
-                                m_parseError.m_offsetIndex = m_format.find_first_of(variableString);
-
-                                const auto& totalSlots = GetSlots();
-
-                                AZStd::string reservedNames;
-
-                                for (const auto& slot2 : totalSlots)
-                                {
-                                    if (slot2.IsExecution() || slot2.IsOutput())
-                                    {
-                                        if (!reservedNames.empty())
-                                        {
-                                            reservedNames.append(", ");
-                                        }
-
-                                        reservedNames.append(slot2.GetName());
-                                    }
-                                }
-
-                                m_parseError.m_errorString = AZStd::string::format("Using one of the reserved slot names \"%s\" in expression at position %zu", reservedNames.c_str(), m_parseError.m_offsetIndex);
-
-                                AZStd::string parseError = m_parseError.m_errorString;
-                                GetGraph()->ReportError((*this), "Parsing Error", parseError);
-
-                                return;
-                            }
-
                             SlotCacheSetup& cacheSetup = variableSlotMapping[variableString];
 
                             cacheSetup.m_previousId = slot->GetId();
-                            cacheSetup.m_displayType = slot->GetDisplayType();
                             cacheSetup.m_reference = slot->GetVariableReference();
 
                             const Datum* datum = FindDatum(slot->GetId());
@@ -319,6 +270,7 @@ namespace ScriptCanvas
                         }
                     }
 
+                    m_parsingFormat = true;
                     AZStd::vector<const Slot*> eraseSlots = GetAllSlotsByDescriptor(SlotDescriptors::DataIn());
 
                     for (const Slot* eraseSlot : eraseSlots)
@@ -331,89 +283,28 @@ namespace ScriptCanvas
                         SlotId slotId = eraseSlot->GetId();
 
                         RemoveSlot(slotId, signalRemoval);
-
-                        if (signalRemoval)
-                        {
-                            m_slotToVariableMap.erase(slotId);
-                        }
                     }
+
+                    m_slotToVariableMap.clear();
+                    m_slotsByVariables.clear();
 
                     // Start our counting from our raw variable position ignoring any other slots that might have been added.
                     int slotOrder = static_cast<int>(GetSlots().size()) -1;
 
                     for (const auto& variableName : variableList)
                     {
-                        const AZStd::vector<AZ::Uuid>& supportedTypes = m_expressionTree.GetSupportedTypes(variableName);
-
-                        if (supportedTypes.empty())
-                        {
-                            // Just bypass any slots that have no valid types for now. We can sort it out later.
-                            continue;
-                        }
-
                         auto mappingIter = variableSlotMapping.find(variableName);
 
                         bool isNewSlot = (mappingIter == variableSlotMapping.end());
 
-                        SlotId slotId;
-
-                        // If we have a single data type. Create a typed data slot.
-                        if (supportedTypes.size() == 1)
+                        DataSlotConfiguration configuration(Data::Type::Number());
+                        ConfigureSlot(variableName, configuration);
+                        if (!isNewSlot)
                         {
-                            ScriptCanvas::Data::Type dataType = Data::FromAZType(supportedTypes.front());
-
-                            if (dataType.IsValid())
-                            {
-                                DataSlotConfiguration dataSlotConfiguration(dataType);
-
-                                ConfigureSlot(variableName, dataSlotConfiguration);
-
-                                if (mappingIter != variableSlotMapping.end())
-                                {
-                                    dataSlotConfiguration.m_slotId = mappingIter->second.m_previousId;                                    
-
-                                    if (dataType != mappingIter->second.m_displayType && mappingIter->second.m_displayType.IsValid())
-                                    {
-                                        AZ_Error("ScriptCanvas", false, "Variable supported type changed. Need to invalidate all connections. Currently unsupported.");
-                                    }
-
-                                    dataSlotConfiguration.ConfigureDatum(AZStd::move(mappingIter->second.m_defaultValue));
-                                }
-
-                                slotId = InsertSlot(slotOrder, dataSlotConfiguration, isNewSlot);
-                            }
+                            configuration.m_slotId = mappingIter->second.m_previousId;
+                            configuration.ConfigureDatum(AZStd::move(mappingIter->second.m_defaultValue));
                         }
-                        // Otherwise if we can support multiple types make a dynamic slot.
-                        else
-                        {
-                            DynamicDataSlotConfiguration dynamicSlotConfiguration;
-
-                            ConfigureSlot(variableName, dynamicSlotConfiguration);
-
-                            dynamicSlotConfiguration.m_dynamicDataType = DynamicDataType::Any;
-
-                            AZStd::vector< ScriptCanvas::Data::Type > dataTypes;
-                            dataTypes.reserve(supportedTypes.size());
-
-                            for (const auto& supportedType : supportedTypes)
-                            {
-                                dataTypes.emplace_back(ScriptCanvas::Data::FromAZType(supportedType));
-                            }
-
-                            dynamicSlotConfiguration.m_contractDescs = AZStd::vector<ScriptCanvas::ContractDescriptor>
-                            {
-                                // Restricted Type Contract
-                                { [dataTypes]() { return aznew ScriptCanvas::RestrictedTypeContract(dataTypes); } }
-                            };
-
-                            if (mappingIter != variableSlotMapping.end())
-                            {
-                                dynamicSlotConfiguration.m_slotId = mappingIter->second.m_previousId;
-                                dynamicSlotConfiguration.m_displayType = mappingIter->second.m_displayType;
-                            }
-
-                            slotId = InsertSlot(slotOrder, dynamicSlotConfiguration, isNewSlot);
-                        }
+                        SlotId slotId = InsertSlot(slotOrder, configuration, isNewSlot);
 
                         Slot* slot = GetSlot(slotId);
 
@@ -426,6 +317,7 @@ namespace ScriptCanvas
                         }
 
                         m_slotToVariableMap[slotId] = variableName;
+                        m_slotsByVariables[variableName] = slotId;
 
                         ++slotOrder;
                     }
@@ -444,25 +336,35 @@ namespace ScriptCanvas
                 });
             }
 
-            ExpressionEvaluation::ParseOutcome ExpressionNodeBase::ParseExpression([[maybe_unused]] const AZStd::string& formatString)
+            bool ExpressionNodeBase::ParseExpression()
             {
-                AZ_Assert(false , "Implementing node must override OnResult.");
-
-                ExpressionEvaluation::ParsingError error;
-                error.m_errorString = "Unable to parse string due to unknown parsing parameters";
-
-                return AZ::Failure(error);
+                const auto tokens = ScriptCanvas::Expression::Tokenize(m_format, true);
+                auto parsed = tokens ? ScriptCanvas::Expression::ShuntingYard(tokens.m_value)
+                                     : ScriptCanvas::Expression::Result<ScriptCanvas::Expression::Program>{ {}, tokens.m_error };
+                if (parsed)
+                {
+                    for (const auto& variable : parsed.m_value.m_variables)
+                    {
+                        const auto* slot = GetSlotByName(variable);
+                        if (slot && (slot->IsExecution() || slot->IsOutput()))
+                        {
+                            parsed.m_error = "Expression uses a reserved slot name: " + variable;
+                            break;
+                        }
+                    }
+                }
+                m_isInError = !parsed;
+                m_parseError = parsed.m_error;
+                if (parsed)
+                {
+                    m_expression = AZStd::move(parsed.m_value);
+                }
+                return !m_isInError;
             }
 
             AZStd::string ExpressionNodeBase::GetExpressionSeparator() const
             {
                 return "";
-            }
-
-            void ExpressionNodeBase::PushVariable(const AZStd::string& variableName, const Datum& datum)
-            {
-                auto& variableValue = m_expressionTree.ModVariable(variableName);
-                variableValue = datum.ToAny();
             }
 
             void ExpressionNodeBase::OnPropertyChanged()
