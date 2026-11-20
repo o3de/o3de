@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"mode", "alphaSource", "textureMap"}
+    return {"mode", "alphaSource", "textureMap", "alphaToCoverage"}
 end
  
 OpacityMode_Opaque = 0
@@ -53,6 +53,18 @@ function ProcessEditor(context)
         context:SetMaterialPropertyVisibility("alphaAffectsSpecular", MaterialPropertyVisibility_Enabled)
     else
         context:SetMaterialPropertyVisibility("alphaAffectsSpecular", MaterialPropertyVisibility_Hidden)
+    end
+
+    if(opacityMode == OpacityMode_Cutout) then
+        context:SetMaterialPropertyVisibility("alphaToCoverage", MaterialPropertyVisibility_Enabled)
+        if(context:GetMaterialPropertyValue_bool("alphaToCoverage")) then
+            context:SetMaterialPropertyVisibility("edgeSoftness", MaterialPropertyVisibility_Enabled)
+        else
+            context:SetMaterialPropertyVisibility("edgeSoftness", MaterialPropertyVisibility_Disabled)
+        end
+    else
+        context:SetMaterialPropertyVisibility("alphaToCoverage", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("edgeSoftness", MaterialPropertyVisibility_Hidden)
     end
 
     if(mainVisibility == MaterialPropertyVisibility_Enabled) then
