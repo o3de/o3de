@@ -26,7 +26,9 @@ namespace AZ
         {
             RealTime,
             Baked,
-            AutoSelect
+            AutoSelect,
+            RealTimeSoftware, //!< Retained for existing assets; the quality setting controls the active mode.
+            RealTimeHardware
         };
 
         enum class DiffuseProbeGridTextureNotificationType

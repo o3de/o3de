@@ -23,6 +23,7 @@
 #include <Render/DiffuseProbeGridQueryFullscreenPass.h>
 #include <Render/DiffuseProbeGridQueryFullscreenPassData.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
+#include <Render/DiffuseProbeGridSoftwareRayTracingPass.h>
 #include <Render/DiffuseProbeGridRelocationPass.h>
 #include <Render/DiffuseProbeGridRenderPass.h>
 #include <Render/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
@@ -90,6 +91,7 @@ namespace AZ
             // load the DiffuseProbeGrid pass classes
             passSystem->AddPassCreator(Name("DiffuseProbeGridPreparePass"), &DiffuseProbeGridPreparePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRayTracingPass"), &DiffuseProbeGridRayTracingPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridSoftwareRayTracingPass"), &DiffuseProbeGridSoftwareRayTracingPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendIrradiancePass"), &DiffuseProbeGridBlendIrradiancePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBlendDistancePass"), &DiffuseProbeGridBlendDistancePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridBorderUpdatePass"), &DiffuseProbeGridBorderUpdatePass::Create);

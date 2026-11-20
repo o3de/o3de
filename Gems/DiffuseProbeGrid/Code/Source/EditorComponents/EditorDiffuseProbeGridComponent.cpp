@@ -7,6 +7,7 @@
  */
 
 #include <EditorComponents/EditorDiffuseProbeGridComponent.h>
+#include <Render/DiffuseProbeGridTracing.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -176,28 +177,9 @@ namespace AZ
                                 ->Attribute(Edit::Attributes::Max, 2.0f)
                         ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Grid mode"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_editorMode,
-                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Editor Mode"),
-                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Controls whether the editor uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available"))
-                                ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnModeChangeValidate)
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEditorModeChanged)
-                                ->EnumAttribute(DiffuseProbeGridMode::RealTime,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Real Time (Ray-Traced)"))
-                                ->EnumAttribute(DiffuseProbeGridMode::Baked,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Baked"))
-                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Auto Select"))
-                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_runtimeMode,
-                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Runtime Mode"),
-                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Controls whether the runtime uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available"))
-                                ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnModeChangeValidate)
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnRuntimeModeChanged)
-                                ->EnumAttribute(DiffuseProbeGridMode::RealTime,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Real Time (Ray-Traced)"))
-                                ->EnumAttribute(DiffuseProbeGridMode::Baked,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Baked"))
-                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect,
-                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Auto Select"))
+                            ->UIElement(Edit::UIHandlers::Label, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Mode"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Project-wide mode controlled by r_diffuseGI_mode in the quality setreg"))
+                                ->Attribute(Edit::Attributes::ValueText, &EditorDiffuseProbeGridComponent::GetQualityModeLabel)
                         ->EndGroup()
                         ->UIElement(AZ::Edit::UIHandlers::Button,
                             QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Bake Textures"),
@@ -271,6 +253,13 @@ namespace AZ
             if (!m_controller.m_featureProcessor)
             {
                 return;
+            }
+
+            const auto qualityMode = GetDiffuseProbeGridMode();
+            if (m_qualityMode != qualityMode)
+            {
+                m_qualityMode = qualityMode;
+                InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
             }
 
             DiffuseProbeGridComponentConfig& configuration = m_controller.m_configuration;
@@ -439,7 +428,7 @@ namespace AZ
             bool newScrolling = (*(reinterpret_cast<bool*>(newValue)));
 
             // scrolling requires Real-Time mode
-            if (newScrolling && (m_editorMode == DiffuseProbeGridMode::Baked || m_runtimeMode == DiffuseProbeGridMode::Baked))
+            if (newScrolling && GetDiffuseProbeGridMode() == DiffuseProbeGridMode::Baked)
             {
                 return AZ::Failure(AZStd::string("Scrolling requires that the Editor and Runtime modes are both set to Real-Time."));
             }
@@ -532,10 +521,25 @@ namespace AZ
             return AZ::Success();
         }
 
+        AZStd::string EditorDiffuseProbeGridComponent::GetQualityModeLabel() const
+        {
+            switch (GetDiffuseProbeGridMode())
+            {
+            case DiffuseProbeGridMode::RealTimeSoftware:
+                return "Software";
+            case DiffuseProbeGridMode::Baked:
+                return "Baked";
+            case DiffuseProbeGridMode::AutoSelect:
+                return "Auto";
+            default:
+                return "Hardware";
+            }
+        }
+
         AZ::u32 EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting()
         {
             // the Bake button is visible only when the editor mode is set to RealTime
-            return m_editorMode == DiffuseProbeGridMode::RealTime ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+            return GetDiffuseProbeGridMode() != DiffuseProbeGridMode::Baked ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
         }
 
         AZ::u32 EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid()
@@ -569,7 +573,7 @@ namespace AZ
                 QMessageBox::information(
                     QApplication::activeWindow(),
                     "Diffuse Probe Grid",
-                    "Can't bake the textures. Diffuse probe calculations require GPU raytracing support",
+                    "Can't bake the textures. Select an available real-time tracing backend before baking",
                     QMessageBox::Ok);
 
                 return AZ::Edit::PropertyRefreshLevels::None;

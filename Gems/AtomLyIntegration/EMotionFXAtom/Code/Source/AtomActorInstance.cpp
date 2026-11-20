@@ -152,6 +152,12 @@ namespace AZ::Render
         return SkinningMethod::LinearSkinning;
     }
 
+    bool AtomActorInstance::RequiresUpdateWhenOutOfView() const
+    {
+        return m_rayTracingEnabled && m_skinnedMeshFeatureProcessor &&
+            m_skinnedMeshFeatureProcessor->GetLowestLodSkinningEnabled();
+    }
+
     void AtomActorInstance::SetIsVisible(bool isVisible)
     {
         if (IsVisible() != isVisible)

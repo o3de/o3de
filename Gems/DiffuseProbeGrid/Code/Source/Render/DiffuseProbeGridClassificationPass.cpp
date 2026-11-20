@@ -20,6 +20,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridClassificationPass.h>
+#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -92,8 +93,14 @@ namespace AZ
                 return false;
             }
 
+            if (IsDiffuseProbeGridSoftwareTracing() && !IsDiffuseProbeGridSoftwareTracingReady(*this))
+            {
+                return false;
+            }
+
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
+            if (!IsDiffuseProbeGridSoftwareTracing() &&
+                (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount()))
             {
                 // empty scene
                 return false;

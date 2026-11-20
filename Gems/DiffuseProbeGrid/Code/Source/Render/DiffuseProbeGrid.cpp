@@ -10,11 +10,17 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Render/DiffuseProbeGrid.h>
+#include <Render/DiffuseProbeGridTracing.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
+#include <cmath>
+
+AZ_CVAR(bool, r_diffuseGI_stochasticProbeSampling, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Rotate non-fixed probe rays each frame to improve angular coverage without increasing the ray count.");
 
 namespace AZ
 {
@@ -103,7 +109,23 @@ namespace AZ
                 }
             }
 
-            m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            if (r_diffuseGI_stochasticProbeSampling && m_mode == DiffuseProbeGridMode::RealTime)
+            {
+                // Uniformly sample unit quaternions rather than Euler angles, which bias the ray distribution.
+                // The DDGI shaders leave relocation/classification rays fixed and rotate only the remaining rays.
+                const float u = m_random.GetRandomFloat();
+                const float phi = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float theta = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float xyRadius = std::sqrt(1.0f - u);
+                const float zwRadius = std::sqrt(u);
+                m_probeRayRotation = AZ::Quaternion(
+                    xyRadius * std::sin(phi), xyRadius * std::cos(phi),
+                    zwRadius * std::sin(theta), zwRadius * std::cos(theta));
+            }
+            else
+            {
+                m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            }
             m_frameUpdateIndex = (m_frameUpdateIndex + 1) % m_frameUpdateCount;
         }
 
@@ -195,15 +217,10 @@ namespace AZ
 
         void DiffuseProbeGrid::SetMode(DiffuseProbeGridMode mode)
         {
-            // handle auto-select
-            if (mode == DiffuseProbeGridMode::AutoSelect)
-            {
-                m_mode = (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
-            }
-            else
-            {
-                m_mode = mode;
-            }
+            m_requestedMode = mode;
+            // Serialized component modes remain readable, but quality settings select the mode for every grid.
+            m_mode = GetDiffuseProbeGridMode() == DiffuseProbeGridMode::Baked ?
+                DiffuseProbeGridMode::Baked : DiffuseProbeGridMode::RealTime;
 
             m_updateTextures = true;
         }
@@ -805,19 +822,24 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_querySrg.get(), "Failed to create Query shader resource group");
             }
 
-            m_querySrg->SetBufferView(
+            UpdateQuerySrgBindings(m_querySrg);
+        }
+
+        void DiffuseProbeGrid::UpdateQuerySrgBindings(const Data::Instance<RPI::ShaderResourceGroup>& srg)
+        {
+            srg->SetBufferView(
                 m_renderData->m_querySrgGridDataNameIndex,
                 m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeIrradianceNameIndex,
                 GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeDistanceNameIndex,
                 GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeDataNameIndex,
                 GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-            m_querySrg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, m_ambientMultiplier);
+            srg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, m_ambientMultiplier);
         }
 
         void DiffuseProbeGrid::UpdateCulling()

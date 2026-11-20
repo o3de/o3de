@@ -627,8 +627,9 @@ namespace EMotionFX
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
                 const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
+                const bool updateGeometry = isInCameraFrustum || m_renderActorInstance->RequiresUpdateWhenOutOfView();
                 const bool renderActorSolid = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
-                m_renderActorInstance->SetIsVisible(isInCameraFrustum && renderActorSolid);
+                m_renderActorInstance->SetIsVisible(updateGeometry && renderActorSolid);
 
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
@@ -636,7 +637,7 @@ namespace EMotionFX
                 {
                     // Update the skeleton in case solid mesh rendering or any of the debug visualizations are enabled and the character is in the camera frustum.
                     const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
+                    m_actorInstance->SetIsVisible(updateGeometry && updateTransforms);
                 }
             }
         }

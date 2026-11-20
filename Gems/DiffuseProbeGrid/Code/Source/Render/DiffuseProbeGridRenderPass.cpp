@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridRenderPass.h>
+#include <Render/DiffuseProbeGridTracing.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 
 namespace AZ
@@ -92,8 +93,8 @@ namespace AZ
 
             Base::FrameBeginInternal(params);
 
-            // process attachment readback for RealTime grids, if raytracing is supported on this device
-            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
+            // Process attachment readback for RealTime grids with an available tracing backend.
+            if (IsDiffuseProbeGridSoftwareTracing() || RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
                 {
@@ -223,8 +224,8 @@ namespace AZ
                 return false;
             }
 
-            // check for RealTime mode without ray tracing
-            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
+            // Check for RealTime mode without an available tracing backend.
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime && !IsDiffuseProbeGridSoftwareTracing() &&
                 (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices))
             {
                 return false;

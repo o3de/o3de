@@ -1,0 +1,548 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/MeshInfo/MeshInfoBufferUtil.azsli>
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#define CS_SAMPLERS
+#include <Atom/Features/GoboTexture.azsli>
+#include "DiffuseProbeGridSoftwareBvh.azsli"
+
+// RTXGI 1.2 packed volume contract, also used by the existing precompiled Atom probe solver.
+struct SoftwareProbeGrid
+{
+    float3 origin; float historyWeight;
+    float4 rotation;
+    float4 rayRotation;
+    float maxDistance; float normalBias; float viewBias; float distanceExponent;
+    float3 spacing; uint packed0;
+    float encodingGamma; float irradianceThreshold; float brightnessThreshold; uint packed1;
+    float minFrontfaceDistance; uint packed2; uint packed3; uint packed4;
+};
+
+// Matches the existing DiffuseProbeGridQuery input: two aligned float3 values, 32 bytes per record.
+struct SoftwareIrradianceQuery
+{
+    float3 position; float padding0;
+    float3 direction; float padding1;
+};
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    StructuredBuffer<SoftwareBvhNode> m_nodes;
+    StructuredBuffer<SoftwareBvhBounds> m_bounds;
+    StructuredBuffer<uint> m_primitiveIndices;
+    StructuredBuffer<SoftwareBvhInstance> m_instances;
+    StructuredBuffer<SoftwareProbeGrid> m_gridData;
+    Texture2D<float4> m_probeData;
+    RWTexture2D<float4> m_output;
+    RWStructuredBuffer<SoftwareIrradianceQuery> m_hitQueries;
+    RWStructuredBuffer<float4> m_hitAlbedo;
+    uint m_instanceCount;
+    uint m_tlasTopologyBase;
+    uint m_tlasBoundsBase;
+    uint m_tlasPrimitiveBase;
+    uint m_frameUpdateCount;
+    uint m_frameUpdateIndex;
+    float m_ambientMultiplier;
+    float m_emissiveMultiplier;
+    uint m_giShadows;
+    uint m_transparencyMode;
+    uint m_frameNumber;
+    uint m_useDiffuseIbl;
+    Sampler MaterialSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+};
+
+#include "DiffuseProbeGridSoftwareTrace.azsli"
+
+uint SoftwareHash(uint value)
+{
+    value ^= value >> 16;
+    value *= 0x7feb352d;
+    value ^= value >> 15;
+    value *= 0x846ca68b;
+    return value ^ (value >> 16);
+}
+
+SoftwareTraceHit SoftwareTraceTransport(float3 origin, float3 direction, float maximum, uint seed)
+{
+    float minimum = 0.0001f;
+    bool first = true;
+    while (true)
+    {
+        SoftwareTraceHit hit = SoftwareTrace(origin, direction, minimum, maximum, false);
+        if (!hit.found || PassSrg::m_transparencyMode == 2 || (!first && PassSrg::m_transparencyMode == 1))
+        {
+            return hit;
+        }
+        SoftwareBvhInstance instance = PassSrg::m_instances[hit.instanceIndex];
+        float opacity = saturate(SceneSrg::m_fallbackPBRMaterial[instance.meshInfoIndex].m_irradianceColor.a);
+        seed = SoftwareHash(seed + 0x9e3779b9);
+        // Stochastic alpha visibility keeps one query per existing probe ray. The retained temporal solver
+        // integrates its unbiased radiance estimate without increasing the ray budget or changing atlas formats.
+        if (opacity >= 1.0f || float(seed >> 8) * (1.0f / 16777216.0f) < opacity)
+        {
+            return hit;
+        }
+        minimum = hit.distance + max(1e-5f, abs(hit.distance) * 1.192092896e-7f);
+        first = false;
+    }
+}
+
+float3 SoftwareRotate(float3 value, float4 quaternion)
+{
+    return value + 2.0f * cross(quaternion.xyz, cross(quaternion.xyz, value) + quaternion.w * value);
+}
+
+uint3 SoftwareProbeCounts(SoftwareProbeGrid grid)
+{
+    return uint3(grid.packed0 & 255, (grid.packed0 >> 8) & 255, (grid.packed0 >> 16) & 255);
+}
+
+int3 SoftwareScroll(SoftwareProbeGrid grid)
+{
+    int3 result = int3(grid.packed3 & 32767, (grid.packed3 >> 16) & 32767, grid.packed4 & 32767);
+    result.x *= (grid.packed3 & 32768) ? -1 : 1;
+    result.y *= (grid.packed3 & 0x80000000) ? -1 : 1;
+    result.z *= (grid.packed4 & 32768) ? -1 : 1;
+    return result;
+}
+
+uint3 SoftwareProbeCoords(uint index, uint3 counts)
+{
+    return uint3((index / counts.y) % counts.x, index % counts.y, index / (counts.x * counts.y));
+}
+
+uint SoftwareProbeIndex(uint3 coords, uint3 counts)
+{
+    return coords.z * counts.x * counts.y + coords.x * counts.y + coords.y;
+}
+
+uint3 SoftwarePhysicalCoords(uint3 coords, SoftwareProbeGrid grid)
+{
+    int3 counts = int3(SoftwareProbeCounts(grid));
+    return uint3(((int3(coords) + SoftwareScroll(grid)) % counts + counts) % counts);
+}
+
+uint2 SoftwareProbeTile(uint3 physicalCoords, uint3 counts)
+{
+    return uint2(physicalCoords.y + physicalCoords.z * counts.y, physicalCoords.x);
+}
+
+float3 SoftwareProbePosition(uint3 coords, SoftwareProbeGrid grid)
+{
+    uint3 counts = SoftwareProbeCounts(grid);
+    float3 position = (float3(coords) - (float3(counts) - 1.0f) * 0.5f) * grid.spacing;
+    if (((grid.packed4 >> 16) & 1) == 0)
+    {
+        position = SoftwareRotate(position, grid.rotation);
+    }
+    position += grid.origin + float3(SoftwareScroll(grid)) * grid.spacing;
+    if ((grid.packed4 >> 19) & 1)
+    {
+        uint2 tile = SoftwareProbeTile(SoftwarePhysicalCoords(coords, grid), counts);
+        position += PassSrg::m_probeData.Load(int3(tile, 0)).xyz * grid.spacing;
+    }
+    return position;
+}
+
+float3 SoftwareProbeDirection(uint rayIndex, uint count, float4 rotation)
+{
+    bool fixedRay = rayIndex < 32;
+    uint sampleIndex = fixedRay ? rayIndex : rayIndex - 32;
+    uint samples = fixedRay ? 32 : count - 32;
+    float z = 1.0f - (2.0f * sampleIndex + 1.0f) / samples;
+    float angle = 6.28318530718f * frac(sampleIndex * 0.61803398875f);
+    float radius = sqrt(max(0.0f, 1.0f - z * z));
+    float3 direction = float3(radius * cos(angle), radius * sin(angle), z);
+    if (!fixedRay)
+    {
+        rotation.xyz = -rotation.xyz;
+        direction = SoftwareRotate(direction, rotation);
+    }
+    return normalize(direction);
+}
+
+float SoftwareVisibility(float3 position, float3 normal, float3 direction, float distance)
+{
+    if (PassSrg::m_giShadows == 0)
+    {
+        return 1.0f;
+    }
+    float3 origin = position + normal * 0.001f;
+    float maximum = max(0.0001f, distance - 0.002f);
+    if (PassSrg::m_transparencyMode == 2)
+    {
+        return SoftwareTrace(origin, direction, 0.0001f, maximum, true).found ? 0.0f : 1.0f;
+    }
+    float visibility = 1.0f;
+    float minimum = 0.0001f;
+    bool first = true;
+    while (visibility > 0.0f)
+    {
+        SoftwareTraceHit hit = SoftwareTrace(origin, direction, minimum, maximum, false);
+        if (!hit.found)
+        {
+            return visibility;
+        }
+        if (!first && PassSrg::m_transparencyMode == 1)
+        {
+            return 0.0f;
+        }
+        SoftwareBvhInstance instance = PassSrg::m_instances[hit.instanceIndex];
+        visibility *= 1.0f - saturate(SceneSrg::m_fallbackPBRMaterial[instance.meshInfoIndex].m_irradianceColor.a);
+        minimum = hit.distance + max(1e-5f, abs(hit.distance) * 1.192092896e-7f);
+        first = false;
+    }
+    return 0.0f;
+}
+
+float3 SoftwareLocalLight(float3 position, float3 normal, float3 geometricNormal, float3 lightPosition,
+    float3 intensity, float inverseRadiusSquared, float minimumDistanceSquared)
+{
+    float3 toLight = lightPosition - position;
+    float distanceSquared = dot(toLight, toLight);
+    float attenuation = saturate(1.0f - distanceSquared * distanceSquared * inverseRadiusSquared * inverseRadiusSquared);
+    float distance = sqrt(max(distanceSquared, 1e-12f));
+    float3 direction = toLight / distance;
+    float cosine = max(0.0f, dot(normal, direction));
+    if (attenuation == 0.0f || cosine == 0.0f || all(intensity <= 0.0f))
+    {
+        return 0.0f;
+    }
+    return intensity * (attenuation * attenuation * cosine / max(max(distanceSquared, minimumDistanceSquared), 1e-6f)) *
+        SoftwareVisibility(position, geometricNormal, direction, distance);
+}
+
+float3 SoftwareCosineEdge(float3 a, float3 b)
+{
+    float lengths = dot(a, a) * dot(b, b);
+    if (lengths <= 1e-20f)
+    {
+        return 0.0f;
+    }
+    float inverseLengths = rsqrt(lengths);
+    float3 edge = cross(a, b) * inverseLengths;
+    float sine = length(edge);
+    float cosine = clamp(dot(a, b) * inverseLengths, -1.0f, 1.0f);
+    return edge * (sine > 1e-6f ? atan2(sine, cosine) / sine : 1.0f);
+}
+
+float SoftwareQuadIrradiance(float3 position, float3 normal, QuadLight light)
+{
+    float3 left = light.m_leftDir * light.m_halfWidth;
+    float3 up = light.m_upDir * light.m_halfHeight;
+    float3 center = light.m_position - position;
+    float facing = dot(center, -cross(light.m_leftDir, light.m_upDir));
+    if ((light.m_flags & 1) == 0 && facing <= 0.0f)
+    {
+        return 0.0f;
+    }
+    float3 corners[4] = {center - left + up, center - left - up, center + left - up, center + left + up};
+    // Clip to the surface hemisphere before integrating the spherical polygon. Keep the new horizon edge;
+    // simply dropping below-horizon edges loses energy when a light crosses the receiver's tangent plane.
+    float3 first = 0.0f;
+    float3 previous = 0.0f;
+    float3 integral = 0.0f;
+    uint vertices = 0;
+    for (uint i = 0; i < 4; ++i)
+    {
+        float3 a = corners[(i + 3) % 4];
+        float3 b = corners[i];
+        float da = dot(normal, a);
+        float db = dot(normal, b);
+        if ((da > 0.0f) != (db > 0.0f))
+        {
+            float3 crossing = lerp(a, b, da / (da - db));
+            if (vertices++ == 0) { first = crossing; }
+            else { integral += SoftwareCosineEdge(previous, crossing); }
+            previous = crossing;
+        }
+        if (db > 0.0f)
+        {
+            if (vertices++ == 0) { first = b; }
+            else { integral += SoftwareCosineEdge(previous, b); }
+            previous = b;
+        }
+    }
+    if (vertices < 3)
+    {
+        return 0.0f;
+    }
+    integral += SoftwareCosineEdge(previous, first);
+    float falloff = saturate(1.0f - pow(dot(center, center) * light.m_invAttenuationRadiusSquared, 2.0f));
+    return min(3.14159265359f, 0.5f * abs(dot(normal, integral))) * falloff * falloff;
+}
+
+float3 SoftwareCapsuleIrradiance(float3 position, float3 normal, CapsuleLight light)
+{
+    float3 a = light.m_startPoint - position;
+    float3 segment = light.m_direction * light.m_length;
+    float projection = dot(-a, light.m_direction);
+    float3 closest = a + light.m_direction * clamp(projection, 0.0f, light.m_length);
+    float falloff = saturate(1.0f - pow(dot(closest, closest) * light.m_invAttenuationRadiusSquared, 2.0f));
+    if (light.m_length <= 1e-5f)
+    {
+        return light.m_rgbIntensityCandelas * max(0.0f, dot(normal, a / max(length(a), 0.001f))) * falloff * falloff /
+            max(dot(a, a), max(light.m_radius * light.m_radius, 1e-6f));
+    }
+    float3 b = a + segment;
+    float da = dot(normal, a);
+    float db = dot(normal, b);
+    if (max(da, db) <= 0.0f)
+    {
+        return 0.0f;
+    }
+    float ratio = 1.0f;
+    if (min(da, db) < 0.0f)
+    {
+        float t = da / (da - db);
+        if (da < 0.0f) { a = lerp(a, b, t); ratio = 1.0f - t; }
+        else { b = lerp(a, b, t); ratio = t; }
+    }
+    float distanceA = max(length(a), 0.001f);
+    float distanceB = max(length(b), 0.001f);
+    float cosine = max(0.0f, dot(normal, a) / distanceA + dot(normal, b) / distanceB);
+    return light.m_rgbIntensityCandelas * cosine * ratio * falloff * falloff /
+        max(distanceA * distanceB + dot(a, b), max(light.m_radius * light.m_radius, 1e-6f));
+}
+
+float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNormal, uint channels)
+{
+    float3 irradiance = 0.0f;
+    for (uint i = 0; i < SceneSrg::m_directionalLightCount; ++i)
+    {
+        DirectionalLight light = SceneSrg::m_directionalLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            float3 direction = normalize(-light.m_direction);
+            float cosine = max(0.0f, dot(normal, direction));
+            if (cosine > 0.0f)
+            {
+                irradiance += light.m_rgbIntensityLux * light.m_affectsGIFactor * cosine *
+                    SoftwareVisibility(position, geometricNormal, direction, 1e20f);
+            }
+        }
+    }
+    // These are the complete light buffers, not the per-view visible-light index lists.
+    for (uint i = 0; i < ViewSrg::m_simplePointLightCount; ++i)
+    {
+        SimplePointLight light = ViewSrg::m_simplePointLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+                light.m_rgbIntensityCandelas * light.m_affectsGIFactor, light.m_invAttenuationRadiusSquared, 0.0f);
+        }
+    }
+    for (uint i = 0; i < ViewSrg::m_pointLightCount; ++i)
+    {
+        PointLight light = ViewSrg::m_pointLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+                light.m_rgbIntensityCandelas * light.m_affectsGIFactor, light.m_invAttenuationRadiusSquared, light.m_bulbRadius * light.m_bulbRadius);
+        }
+    }
+    for (uint i = 0; i < ViewSrg::m_simpleSpotLightCount; ++i)
+    {
+        SimpleSpotLight light = ViewSrg::m_simpleSpotLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            float cosine = dot(normalize(position - light.m_position), light.m_direction);
+            float cone = saturate((cosine - light.m_cosOuterConeAngle) / max(1e-6f, light.m_cosInnerConeAngle - light.m_cosOuterConeAngle));
+            float gobo = light.m_goboTexIndex < ViewSrg::MaxGoboTextureCount ?
+                SampleGoboTexture(int(light.m_goboTexIndex), PassSrg::MaterialSampler, light.m_viewProjectionMatrix, position) : 1.0f;
+            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+                light.m_rgbIntensityCandelas * (cone * cone * (3.0f - 2.0f * cone) * light.m_affectsGIFactor) * gobo,
+                light.m_invAttenuationRadiusSquared, 0.0f);
+        }
+    }
+    for (uint i = 0; i < ViewSrg::m_diskLightCount; ++i)
+    {
+        DiskLight light = ViewSrg::m_diskLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            float3 toLight = light.m_position - position;
+            float distanceSquared = max(dot(toLight, toLight), 1e-6f);
+            float distance = sqrt(distanceSquared);
+            float planeDistance = dot(toLight, -light.m_direction);
+            float attenuation = saturate(1.0f - pow(distanceSquared * light.m_invAttenuationRadiusSquared, 2.0f));
+            if (planeDistance <= 0.0f || attenuation <= 0.0f)
+            {
+                continue;
+            }
+            float3 plane = -light.m_direction * planeDistance;
+            float3 lateral = toLight - plane;
+            float lateralDistance = length(lateral);
+            float3 effectiveDirection = toLight / distance;
+            if (lateralDistance > 1e-6f)
+            {
+                float3 lateralDirection = lateral / lateralDistance;
+                float3 nearSide = plane + lateralDirection * (lateralDistance - light.m_diskRadius);
+                float3 farSide = plane + lateralDirection * (lateralDistance + light.m_diskRadius);
+                effectiveDirection = normalize(normalize(nearSide) + normalize(farSide));
+            }
+            float3 coneTip = light.m_position - light.m_direction * light.m_bulbPositionOffset;
+            float3 fromCone = position - coneTip;
+            float coneCosine = dot(fromCone / max(length(fromCone), 1e-6f), light.m_direction);
+            float cone = (light.m_flags & 1) ? saturate((coneCosine - light.m_cosOuterConeAngle) /
+                max(1e-6f, light.m_cosInnerConeAngle - light.m_cosOuterConeAngle)) : 1.0f;
+            cone = cone * cone * (3.0f - 2.0f * cone);
+            float cosine = max(0.0f, dot(normal, effectiveDirection));
+            float intensity = attenuation * attenuation * (planeDistance / distance) * cone * cosine /
+                (distanceSquared * (light.m_diskRadius / planeDistance + 1.0f));
+            if (intensity > 0.0f)
+            {
+                irradiance += light.m_rgbIntensityCandelas * light.m_affectsGIFactor * intensity *
+                    SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+            }
+        }
+    }
+    for (uint i = 0; i < ViewSrg::m_capsuleLightCount; ++i)
+    {
+        CapsuleLight light = ViewSrg::m_capsuleLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            float3 center = light.m_startPoint + light.m_direction * clamp(dot(position - light.m_startPoint,
+                light.m_direction), 0.0f, light.m_length);
+            float3 toLight = center - position;
+            float distance = max(length(toLight), 0.001f);
+            irradiance += SoftwareCapsuleIrradiance(position, normal, light) * light.m_affectsGIFactor *
+                SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+        }
+    }
+    for (uint i = 0; i < ViewSrg::m_quadLightCount; ++i)
+    {
+        QuadLight light = ViewSrg::m_quadLights[i];
+        if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
+        {
+            float cosineIntegral = SoftwareQuadIrradiance(position, normal, light);
+            if (cosineIntegral > 0.0f)
+            {
+                float3 toLight = light.m_position - position;
+                float distance = max(length(toLight), 0.001f);
+                irradiance += light.m_rgbIntensityNits * light.m_affectsGIFactor * cosineIntegral *
+                    SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+            }
+        }
+    }
+    return irradiance;
+}
+
+float3 SoftwareEnvironment(float3 direction)
+{
+    if (PassSrg::m_useDiffuseIbl == 0)
+    {
+        return 0.0f;
+    }
+    float3 rotated = MultiplyVectorQuaternion(direction, SceneSrg::m_iblOrientation);
+    return SceneSrg::m_diffuseEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(rotated), 0).rgb *
+        exp2(SceneSrg::m_iblExposure) * PassSrg::m_ambientMultiplier;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 id : SV_DispatchThreadID)
+{
+    SoftwareProbeGrid grid = PassSrg::m_gridData[0];
+    uint3 counts = SoftwareProbeCounts(grid);
+    uint rayCount = grid.packed2 & 65535;
+    uint queryCount;
+    uint queryStride;
+    PassSrg::m_hitQueries.GetDimensions(queryCount, queryStride);
+    uint queryIndex = id.y * rayCount + id.x;
+    if (id.x >= rayCount || queryIndex >= queryCount)
+    {
+        return;
+    }
+    // Inactive/fixed/missed/back-facing rays do not consume indirect feedback. Give their query a finite position
+    // outside this volume rather than leaving scratch data uninitialized for the retained query shader.
+    SoftwareIrradianceQuery query = (SoftwareIrradianceQuery)0;
+    query.position = grid.origin + grid.spacing * (float3(counts) + 2.0f);
+    query.direction = float3(0.0f, 0.0f, 1.0f);
+    PassSrg::m_hitQueries[queryIndex] = query;
+    PassSrg::m_hitAlbedo[queryIndex] = 0.0f;
+    uint probeIndex = id.y * PassSrg::m_frameUpdateCount + PassSrg::m_frameUpdateIndex;
+    if (probeIndex >= counts.x * counts.y * counts.z)
+    {
+        return;
+    }
+    uint3 coords = SoftwareProbeCoords(probeIndex, counts);
+    uint3 physicalCoords = SoftwarePhysicalCoords(coords, grid);
+    uint physicalIndex = SoftwareProbeIndex(physicalCoords, counts);
+    uint2 output = uint2(id.x, physicalIndex);
+    uint2 tile = SoftwareProbeTile(physicalCoords, counts);
+    bool inactive = ((grid.packed4 >> 20) & 1) && PassSrg::m_probeData.Load(int3(tile, 0)).w != 0.0f;
+    if (inactive && id.x >= 32)
+    {
+        PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, 1e27f);
+        return;
+    }
+    float3 origin = SoftwareProbePosition(coords, grid);
+    float3 direction = SoftwareProbeDirection(id.x, rayCount, grid.rayRotation);
+    // Keep fixed relocation/classification rays deterministic; only radiance rays vary alpha samples over time.
+    uint seed = SoftwareHash(probeIndex * rayCount + id.x) ^ (id.x < 32 ? 0 : SoftwareHash(PassSrg::m_frameNumber));
+    SoftwareTraceHit hit = SoftwareTraceTransport(origin, direction, grid.maxDistance, seed);
+    if (!hit.found)
+    {
+        PassSrg::m_output[output] = float4(SoftwareEnvironment(direction), 1e27f);
+        return;
+    }
+    SoftwareBvhInstance instance = PassSrg::m_instances[hit.instanceIndex];
+    MeshInfo mesh = (MeshInfo)0;
+    GetMeshInfoEntry(int(instance.meshInfoIndex), mesh);
+    uint3 indices = LoadIndex(mesh, hit.triangleIndex);
+    float4x4 transform = SceneSrg::GetObjectToWorldMatrix(mesh.m_objectIdForTransform);
+    float3 a = mul(transform, float4(LoadPosition(mesh, indices.x), 1.0f)).xyz;
+    float3 b = mul(transform, float4(LoadPosition(mesh, indices.y), 1.0f)).xyz;
+    float3 c = mul(transform, float4(LoadPosition(mesh, indices.z), 1.0f)).xyz;
+    float3 geometricNormal = normalize(cross(b - a, c - a));
+    if (dot(geometricNormal, direction) > 0.0f)
+    {
+        PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, -0.2f * hit.distance);
+        return;
+    }
+    if (id.x < 32)
+    {
+        PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, hit.distance);
+        return;
+    }
+    float3 barycentrics = float3(1.0f - hit.barycentrics.x - hit.barycentrics.y, hit.barycentrics);
+    float3 localNormal = LoadNormal(mesh, indices.x) * barycentrics.x + LoadNormal(mesh, indices.y) * barycentrics.y + LoadNormal(mesh, indices.z) * barycentrics.z;
+    float3 normal = mul(SceneSrg::GetObjectToWorldInverseTransposeMatrix(mesh.m_objectIdForTransform), localNormal);
+    normal = dot(normal, normal) > 1e-12f ? normalize(normal) : geometricNormal;
+    if (dot(normal, geometricNormal) < 0.0f)
+    {
+        normal = -normal;
+    }
+    float2 uv = LoadUv0(mesh, indices.x) * barycentrics.x + LoadUv0(mesh, indices.y) * barycentrics.y + LoadUv0(mesh, indices.z) * barycentrics.z;
+    float3 position = origin + direction * hit.distance;
+    MaterialInfo material = SceneSrg::m_fallbackPBRMaterial[instance.meshInfoIndex];
+    TextureData textureData = GetFallbackPBRMaterialTextureData(material, PassSrg::MaterialSampler, uv);
+    // Atom has already applied the selected manual/tint/average-texture GI color and irradiance factor.
+    // Multiplying the base-color texture here would tint that established contract twice.
+    float3 albedo = material.m_irradianceColor.rgb;
+    albedo = max(albedo, 0.0f) * (1.0f - textureData.m_metallic);
+    float3 irradiance = SoftwareDirectLighting(position, normal, geometricNormal, mesh.m_lightingChannels);
+    query.position = position;
+    query.direction = normal;
+    PassSrg::m_hitQueries[queryIndex] = query;
+    // The integral remains in Atom's query shader. Keep only reflectance and the destination ray row here.
+    PassSrg::m_hitAlbedo[queryIndex] = float4(albedo, float(physicalIndex + 1));
+    float3 radiance = textureData.m_emissiveColor * PassSrg::m_emissiveMultiplier + albedo * irradiance * 0.31830988618f;
+    PassSrg::m_output[output] = float4(max(radiance, 0.0f), hit.distance);
+}

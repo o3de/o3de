@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Buffer<float4> m_indirect;
+    StructuredBuffer<float4> m_hitAlbedo;
+    RWTexture2D<float4> m_output;
+    uint m_rayCount;
+};
+
+[numthreads(64, 1, 1)]
+void MainCS(uint3 id : SV_DispatchThreadID)
+{
+    uint count;
+    PassSrg::m_indirect.GetDimensions(count);
+    if (id.x >= count)
+    {
+        return;
+    }
+    float4 surface = PassSrg::m_hitAlbedo[id.x];
+    if (surface.w <= 0.0f)
+    {
+        return;
+    }
+    uint2 ray = uint2(id.x % PassSrg::m_rayCount, uint(surface.w) - 1);
+    float4 radianceAndDistance = PassSrg::m_output[ray];
+    // The retained query returns irradiance and a separate volume support weight, as used by DiffuseComposite.
+    float4 indirect = PassSrg::m_indirect[id.x];
+    radianceAndDistance.rgb += surface.rgb * indirect.rgb * saturate(indirect.a) * 0.31830988618f;
+    PassSrg::m_output[ray] = radianceAndDistance;
+}

@@ -8,6 +8,7 @@
 
 #include <Components/DiffuseProbeGridComponentController.h>
 #include <Components/DiffuseProbeGridComponentConstants.h>
+#include <Render/DiffuseProbeGridTracing.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -177,12 +178,10 @@ namespace AZ
                 m_configuration.m_bakedDistanceTextureAsset.QueueLoad();
                 m_configuration.m_bakedProbeDataTextureAsset.QueueLoad();
             }
-            else if (m_configuration.m_runtimeMode == DiffuseProbeGridMode::Baked ||
-                     m_configuration.m_runtimeMode == DiffuseProbeGridMode::AutoSelect ||
-                     m_configuration.m_editorMode == DiffuseProbeGridMode::Baked ||
-                     m_configuration.m_editorMode == DiffuseProbeGridMode::AutoSelect)
+            else if (GetDiffuseProbeGridMode() == DiffuseProbeGridMode::Baked)
             {
-                AZ_Error("DiffuseProbeGrid", false, "DiffuseProbeGrid mode is set to Baked or Auto-Select, but it does not have baked texture assets. Please re-bake this DiffuseProbeGrid.");
+                AZ_Warning("DiffuseProbeGrid", false,
+                    "Baked GI is selected, but this grid has no baked textures. It will be skipped until textures are baked.");
             }
 
             m_featureProcessor->SetMode(m_handle, m_configuration.m_runtimeMode);

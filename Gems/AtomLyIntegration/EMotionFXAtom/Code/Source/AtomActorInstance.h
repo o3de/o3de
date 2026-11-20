@@ -95,6 +95,7 @@ namespace AZ
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
+            bool RequiresUpdateWhenOutOfView() const override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() const override;

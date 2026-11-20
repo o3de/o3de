@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// These layouts match the Gem-private C++ scene structures. Offsets/escape links are local to each tree.
+struct SoftwareBvhNode
+{
+    uint first;
+    uint count;
+    uint escape;
+    uint parent;
+};
+
+struct SoftwareBvhBounds
+{
+    float3 minimum;
+    uint padding0;
+    float3 maximum;
+    uint padding1;
+};
+
+struct SoftwareBvhInstance
+{
+    uint topologyBase;
+    uint boundsBase;
+    uint primitiveBase;
+    uint meshInfoIndex;
+};
+
+struct SoftwareBvhRefitWork
+{
+    uint node;
+    uint topologyBase;
+    uint boundsBase;
+    uint primitiveBase;
+    uint meshInfoIndex;
+    uint kind;
+    uint2 padding;
+};
