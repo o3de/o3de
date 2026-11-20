@@ -9,6 +9,7 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
@@ -23,6 +24,31 @@
 
 namespace UnitTest
 {
+    class TestCameraCollisionProvider : public Camera::EditorCameraCollisionInterface
+    {
+    public:
+        TestCameraCollisionProvider()
+        {
+            AZ::Interface<Camera::EditorCameraCollisionInterface>::Register(this);
+        }
+        ~TestCameraCollisionProvider() override
+        {
+            AZ::Interface<Camera::EditorCameraCollisionInterface>::Unregister(this);
+        }
+        bool IsCameraCollisionEnabled() const override { return m_enabled; }
+        void SetCameraCollisionEnabled(bool enabled) override { m_enabled = enabled; }
+        AZ::Vector3 ConstrainCameraMovement([[maybe_unused]] const AZ::Vector3& previous, const AZ::Vector3& desired) const override
+        {
+            auto result = desired;
+            if (m_enabled)
+            {
+                result.SetY(AZ::GetMin(result.GetY(), 2.0f));
+            }
+            return result;
+        }
+        bool m_enabled = true;
+    };
+
     class EditorCameraFixture : public UnitTest::LeakDetectionFixture
     {
     public:
@@ -108,6 +134,66 @@ namespace UnitTest
             }
         }
     };
+
+    TEST_F(EditorCameraFixture, CameraCollisionSynchronizesSmoothedTarget)
+    {
+        TestCameraCollisionProvider provider;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+            AZ::Vector3(0.0f, 10.0f, 0.0f));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.2f), AZ::ScriptTimePoint() });
+        EXPECT_NEAR(m_cameraViewportContextView->GetCameraTransform().GetTranslation().GetY(), 2.0f, 0.001f);
+
+        // Disabling collision must not release movement that accumulated behind the wall.
+        provider.SetCameraCollisionEnabled(false);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
+        EXPECT_NEAR(m_cameraViewportContextView->GetCameraTransform().GetTranslation().GetY(), 2.0f, 0.001f);
+
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetCameraPivotAttached,
+            AZ::Vector3::CreateZero());
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
+        EXPECT_TRUE(m_cameraViewportContextView->GetCameraTransform().GetTranslation().IsClose(AZ::Vector3::CreateZero()));
+    }
+
+    TEST_F(EditorCameraFixture, CameraCollisionPreservesOrbitPivot)
+    {
+        TestCameraCollisionProvider provider;
+        using Bus = AtomToolsFramework::ModularViewportCameraControllerRequestBus;
+        Bus::Event(TestViewportId, &Bus::Events::SetCameraPivotAttachedImmediate, AZ::Vector3(0.0f, 10.0f, 0.0f));
+        Bus::Event(TestViewportId, &Bus::Events::SetCameraOffsetImmediate, AZ::Vector3(0.0f, -10.0f, 0.0f));
+        Bus::Event(TestViewportId, &Bus::Events::SetCameraOffset, AZ::Vector3(0.0f, -1.0f, 0.0f));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
+        EXPECT_NEAR(m_cameraViewportContextView->GetCameraTransform().GetTranslation().GetY(), 2.0f, 0.001f);
+
+        provider.SetCameraCollisionEnabled(false);
+        Bus::Event(TestViewportId, &Bus::Events::SetCameraPivotAttached, AZ::Vector3(0.0f, 11.0f, 0.0f));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
+        EXPECT_NEAR(m_cameraViewportContextView->GetCameraTransform().GetTranslation().GetY(), 3.0f, 0.001f);
+    }
+
+    TEST_F(EditorCameraFixture, CameraCollisionStopsFocusAnimationAtObstacle)
+    {
+        TestCameraCollisionProvider provider;
+        using Bus = AtomToolsFramework::ModularViewportCameraControllerRequestBus;
+        Bus::Event(TestViewportId, &Bus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 0.0f)), 1.0f);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
+        EXPECT_NEAR(m_cameraViewportContextView->GetCameraTransform().GetTranslation().GetY(), 2.0f, 0.001f);
+        bool interpolating = true;
+        Bus::EventResult(interpolating, TestViewportId, &Bus::Events::IsInterpolating);
+        EXPECT_FALSE(interpolating);
+    }
+
+    TEST_F(EditorCameraFixture, CameraCollisionDoesNotOverrideTrackedEntity)
+    {
+        TestCameraCollisionProvider provider;
+        const auto transform = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 0.0f));
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, transform);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
+        EXPECT_TRUE(m_cameraViewportContextView->GetCameraTransform().IsClose(transform));
+    }
 
     TEST_F(EditorCameraFixture, ModularViewportCameraControllerReferenceFrameUpdatedWhenViewportEntityisChanged)
     {
