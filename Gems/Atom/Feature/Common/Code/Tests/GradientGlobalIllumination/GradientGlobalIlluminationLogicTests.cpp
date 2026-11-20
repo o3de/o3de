@@ -301,6 +301,17 @@ namespace UnitTest
         EXPECT_TRUE(owners.Empty());
     }
 
+    TEST_F(GradientGlobalIlluminationLogicFixture, HalfConversionRoundsAtFormatBoundaries)
+    {
+        EXPECT_EQ(FloatToHalf(-0.0f), 0x8000);
+        EXPECT_EQ(FloatToHalf(0x1p-25f), 0);
+        EXPECT_EQ(FloatToHalf(0x1p-24f), 1);
+        EXPECT_EQ(FloatToHalf(0x1p-15f), 0x0200);
+        EXPECT_EQ(FloatToHalf(0x1.002p0f), 0x3c00);
+        EXPECT_EQ(FloatToHalf(0x1.006p0f), 0x3c02);
+        EXPECT_EQ(FloatToHalf(65520.0f), 0x7c00);
+    }
+
     TEST_F(GradientGlobalIlluminationLogicFixture, Rgba16FloatWriterPreservesHdrValuesAndSupportsUnalignedDestination)
     {
         uint8_t bytes[9]{};

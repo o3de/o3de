@@ -13,29 +13,35 @@
 
 namespace AZ::Render::GradientGlobalIllumination
 {
-    //! Truncate normal values. Half subnormals become signed zero, and exponent overflow or NaN becomes signed infinity.
+    //! Round binary32 to binary16 using round-to-nearest, ties-to-even.
     inline uint16_t FloatToHalf(float value)
     {
-        uint32_t fbits;
-        std::memcpy(&fbits, &value, sizeof(uint32_t));
-
-        uint32_t sign = (fbits >> 16) & 0x8000u;
-        int32_t exponent = ((fbits >> 23) & 0xFF) - 127;
-        uint32_t mantissa = fbits & 0x007FFFFFu;
-
-        if (exponent < -14)
+        uint32_t bits;
+        std::memcpy(&bits, &value, sizeof(bits));
+        const uint32_t sign = (bits >> 16) & 0x8000u;
+        const uint32_t magnitude = bits & 0x7fffffffu;
+        if (magnitude > 0x7f800000u)
+        {
+            return static_cast<uint16_t>(sign | 0x7e00u);
+        }
+        if (magnitude >= 0x477ff000u)
+        {
+            return static_cast<uint16_t>(sign | 0x7c00u);
+        }
+        if (magnitude < 0x33000000u)
         {
             return static_cast<uint16_t>(sign);
         }
 
-        if (exponent > 15)
+        uint32_t shift = 13;
+        uint32_t significand = magnitude - 0x38000000u;
+        if (magnitude < 0x38800000u)
         {
-            return static_cast<uint16_t>(sign | 0x7C00u);
+            shift = 126 - (magnitude >> 23);
+            significand = (magnitude & 0x7fffffu) | 0x800000u;
         }
-
-        uint16_t halfExponent = static_cast<uint16_t>((exponent + 15) << 10);
-        uint16_t halfMantissa = static_cast<uint16_t>(mantissa >> 13);
-        return static_cast<uint16_t>(sign | halfExponent | halfMantissa);
+        const uint32_t rounded = (significand + (1u << (shift - 1)) - 1u + ((significand >> shift) & 1u)) >> shift;
+        return static_cast<uint16_t>(sign | rounded);
     }
 
     inline void WriteRgba16FloatPixel(uint8_t* destination, float red, float green, float blue, float alpha)
