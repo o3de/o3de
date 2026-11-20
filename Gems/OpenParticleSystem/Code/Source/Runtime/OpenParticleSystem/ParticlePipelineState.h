@@ -12,6 +12,7 @@
 #include <AzCore/Instance/InstanceData.h>
 
 #include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -93,6 +94,14 @@ namespace OpenParticle
         AZ::RPI::Material::ChangeId m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
         AZ::RPI::Scene* m_scene = nullptr;
         AZ::u32 m_sortId = 0;
+        AZ::u32 m_lightingChannelMask = 0;
+        AZ::u32 m_objectId = 0;
+        //! Set when an object SRG constant changed; Render pushes the constants and compiles once, then clears it.
+        bool m_objSrgDirty = true;
+        AZ::RHI::ShaderInputNameIndex m_objectIdIndex = "m_objectId";
+        AZ::RHI::ShaderInputNameIndex m_materialTypeIdIndex = "m_materialTypeId";
+        AZ::RHI::ShaderInputNameIndex m_materialInstanceIdIndex = "m_materialInstanceId";
+        AZ::RHI::ShaderInputNameIndex m_lightingChannelMaskIndex = "m_lightingChannelMask";
         bool m_needsPipelineRebuild = false;
         //! Set when ApplyMaterialOverrides could not compile the material this frame, so it is retried.
         bool m_needsMaterialOverrideApply = false;
@@ -102,6 +111,10 @@ namespace OpenParticle
         void ReBuildPipeline();
         bool TryRebuildPipeline();
         void Reset();
+        //! Records the transform-service object id for this emitter and marks the object SRG dirty.
+        void ConfigureObjectSrg(AZ::u32 objectId);
+        //! Pushes object id, material ids and lighting channel mask into m_objSrg. Does not compile.
+        void ReconfigureObjectSrg();
     };
 
     struct ParticlePipelineState
