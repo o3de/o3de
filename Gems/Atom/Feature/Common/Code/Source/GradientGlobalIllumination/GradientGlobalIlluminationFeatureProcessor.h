@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
-#include <Atom/Feature/GradientGI/GradientGILogic.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessorInterface.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationLogic.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -19,21 +19,22 @@
 
 namespace AZ::Render
 {
-    class GradientGICubemapPass;
+    class GradientGlobalIlluminationCubemapPass;
 
-    class GradientGIFeatureProcessor final : public GradientGIFeatureProcessorInterface
+    class GradientGlobalIlluminationFeatureProcessor final
+        : public GradientGlobalIlluminationFeatureProcessorInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientGIFeatureProcessor, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(GradientGlobalIlluminationFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(
-            AZ::Render::GradientGIFeatureProcessor,
+            AZ::Render::GradientGlobalIlluminationFeatureProcessor,
             "{F2E7A3B1-D5C8-4F9A-B0E6-7C1D3A8F5E02}",
-            AZ::Render::GradientGIFeatureProcessorInterface);
+            AZ::Render::GradientGlobalIlluminationFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        GradientGIFeatureProcessor() = default;
-        ~GradientGIFeatureProcessor() override = default;
+        GradientGlobalIlluminationFeatureProcessor() = default;
+        ~GradientGlobalIlluminationFeatureProcessor() override = default;
 
         void Activate() override;
         void Deactivate() override;
@@ -62,9 +63,9 @@ namespace AZ::Render
         EntityId GetCurrentOwner() const override;
 
     private:
-        using PassPtr = AZStd::intrusive_ptr<GradientGICubemapPass>;
+        using PassPtr = AZStd::intrusive_ptr<GradientGlobalIlluminationCubemapPass>;
 
-        GradientGIFeatureProcessor(const GradientGIFeatureProcessor&) = delete;
+        GradientGlobalIlluminationFeatureProcessor(const GradientGlobalIlluminationFeatureProcessor&) = delete;
 
         void GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const;
 
@@ -117,7 +118,7 @@ namespace AZ::Render
         uint32_t m_faceResolution = 64; // size builds actually use; held steady during a scrub
 
         // Keep the committed CPU size while resolution edits settle.
-        GradientGI::ResolutionDebounce m_resolutionDebounce;
+        GradientGlobalIllumination::ResolutionDebounce m_resolutionDebounce;
         bool m_faceResolutionApplied = false; // first push applies immediately
 
         // Mapping and blend codes match the component enums.
@@ -133,7 +134,7 @@ namespace AZ::Render
 
         UpdateMode m_updateMode = UpdateMode::Static;
 
-        GradientGI::OwnerRegistry m_owners;
+        GradientGlobalIllumination::OwnerRegistry m_owners;
         OwnerChangedEvent m_ownerChangedEvent;
         bool m_enabled = false;
 
@@ -172,5 +173,4 @@ namespace AZ::Render
         RHI::ShaderInputConstantIndex m_iblExposureIndex;
         bool m_sceneSrgIndicesCached = false;
     };
-
 } // namespace AZ::Render

@@ -17,9 +17,9 @@ set(FILES
     Source/DisplayMapper/DisplayMapperFullScreenPass.h
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
     Source/DisplayMapper/OutputTransformPass.h
-    Source/GradientGI/GradientGIImageUtils.h
-    Source/GradientGI/GradientGICubemapPass.h
-    Source/GradientGI/GradientGIFeatureProcessor.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationImageUtils.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationCubemapPass.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessor.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Source/LookupTable/LookupTableAsset.h
     Source/SkyBox/SkyBoxLUT.h
@@ -121,8 +121,8 @@ set(FILES
     Source/DisplayMapper/OutputTransformPass.cpp
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
-    Source/GradientGI/GradientGICubemapPass.cpp
-    Source/GradientGI/GradientGIFeatureProcessor.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationCubemapPass.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessor.cpp
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp

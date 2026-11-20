@@ -6,9 +6,9 @@
  *
  */
 
-#include "GradientGIFeatureProcessor.h"
-#include "GradientGICubemapPass.h"
-#include "GradientGIImageUtils.h"
+#include "GradientGlobalIlluminationFeatureProcessor.h"
+#include "GradientGlobalIlluminationCubemapPass.h"
+#include "GradientGlobalIlluminationImageUtils.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -28,30 +28,30 @@
 
 namespace AZ::Render
 {
-    void GradientGIFeatureProcessor::Reflect(AZ::ReflectContext* context)
+    void GradientGlobalIlluminationFeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GradientGIFeatureProcessor, RPI::FeatureProcessor>()->Version(0);
+            serializeContext->Class<GradientGlobalIlluminationFeatureProcessor, RPI::FeatureProcessor>()->Version(0);
         }
     }
 
-    void GradientGIFeatureProcessor::Activate()
+    void GradientGlobalIlluminationFeatureProcessor::Activate()
     {
         m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
         AZ_Error(
-            "GradientGI",
+            "GradientGlobalIllumination",
             m_iblFeatureProcessor,
-            "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
+            "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGlobalIllumination requires it.");
 
-        const UpdateMode resolvedMode = GradientGI::ResolveUpdateMode(
+        const UpdateMode resolvedMode = GradientGlobalIllumination::ResolveUpdateMode(
             m_updateMode,
-            m_updateMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
+            m_updateMode != UpdateMode::Dynamic || GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported());
         AZ_Warning(
-            "GradientGI",
+            "GradientGlobalIllumination",
             resolvedMode == m_updateMode,
             "GPU compute UAV cubemaps are not supported on this platform. "
-            "GradientGI falling back to Static mode.");
+            "GradientGlobalIllumination falling back to Static mode.");
         m_updateMode = resolvedMode;
 
         m_enabled = false;
@@ -65,7 +65,7 @@ namespace AZ::Render
         EnableSceneNotification();
     }
 
-    void GradientGIFeatureProcessor::Deactivate()
+    void GradientGlobalIlluminationFeatureProcessor::Deactivate()
     {
         DisableSceneNotification();
 
@@ -80,7 +80,7 @@ namespace AZ::Render
         m_sceneSrgIndicesCached = false;
     }
 
-    void GradientGIFeatureProcessor::Enable(EntityId owner)
+    void GradientGlobalIlluminationFeatureProcessor::Enable(EntityId owner)
     {
         m_owners.Add(owner);
 
@@ -111,7 +111,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::Disable(EntityId owner)
+    void GradientGlobalIlluminationFeatureProcessor::Disable(EntityId owner)
     {
         const EntityId previousOwner = m_owners.Current();
         m_owners.Remove(owner);
@@ -133,17 +133,17 @@ namespace AZ::Render
         ReleaseOutput();
     }
 
-    void GradientGIFeatureProcessor::ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler)
+    void GradientGlobalIlluminationFeatureProcessor::ConnectToOwnerChangedEvent(OwnerChangedEvent::Handler& handler)
     {
         handler.Connect(m_ownerChangedEvent);
     }
 
-    EntityId GradientGIFeatureProcessor::GetCurrentOwner() const
+    EntityId GradientGlobalIlluminationFeatureProcessor::GetCurrentOwner() const
     {
         return m_owners.Current();
     }
 
-    void GradientGIFeatureProcessor::ReleaseOutput()
+    void GradientGlobalIlluminationFeatureProcessor::ReleaseOutput()
     {
         // Reset IBL only while its bindings still reference our CPU image.
         if (OwnsIblSlots())
@@ -164,7 +164,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::TickDeferredTeardown()
+    void GradientGlobalIlluminationFeatureProcessor::TickDeferredTeardown()
     {
         if (m_teardownCountdown == 0)
         {
@@ -177,7 +177,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::TickMultipleOwnerReport()
+    void GradientGlobalIlluminationFeatureProcessor::TickMultipleOwnerReport()
     {
         const size_t ownerCount = m_owners.Count();
 
@@ -197,7 +197,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::ReportMultipleOwners() const
+    void GradientGlobalIlluminationFeatureProcessor::ReportMultipleOwners() const
     {
         AZStd::string entityList;
         for (const EntityId& owner : m_owners.Entities())
@@ -214,16 +214,16 @@ namespace AZ::Render
         }
 
         AZ_Warning(
-            "GradientGI",
+            "GradientGlobalIllumination",
             false,
-            "%zu Gradient GI components are lighting this scene at the same time: %s. "
+            "%zu Gradient Global Illumination components are lighting this scene at the same time: %s. "
             "Only the most recently activated one has any effect -- the others are redundant. "
             "If this is not deliberate, one of them is probably a duplicated entity or prefab.",
             m_owners.Count(),
             entityList.c_str());
     }
 
-    void GradientGIFeatureProcessor::ReleaseGeneratedImages()
+    void GradientGlobalIlluminationFeatureProcessor::ReleaseGeneratedImages()
     {
         DestroyPass();
         m_diffuseImage = nullptr;
@@ -233,7 +233,7 @@ namespace AZ::Render
         m_needsRebuild = false;
     }
 
-    void GradientGIFeatureProcessor::CacheSceneSrgIndices()
+    void GradientGlobalIlluminationFeatureProcessor::CacheSceneSrgIndices()
     {
         m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
         if (m_sceneSrg)
@@ -245,13 +245,13 @@ namespace AZ::Render
         }
         else
         {
-            AZ_Error("GradientGI", false, "Scene SRG is NULL! Dynamic mode cannot write IBL slots.");
+            AZ_Error("GradientGlobalIllumination", false, "Scene SRG is NULL! Dynamic mode cannot write IBL slots.");
         }
     }
 
-    void GradientGIFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
+    void GradientGlobalIlluminationFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
-        AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Simulate");
+        AZ_PROFILE_SCOPE(RPI, "GradientGlobalIlluminationFeatureProcessor: Simulate");
 
         if (!m_enabled || m_updateMode != UpdateMode::Static || !m_iblFeatureProcessor)
         {
@@ -270,7 +270,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
+    void GradientGlobalIlluminationFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
         if (!m_enabled)
         {
@@ -280,7 +280,7 @@ namespace AZ::Render
         EnsurePass(renderPipeline);
     }
 
-    bool GradientGIFeatureProcessor::NeedsPassRehost() const
+    bool GradientGlobalIlluminationFeatureProcessor::NeedsPassRehost() const
     {
         if (!m_gradientPass)
         {
@@ -296,7 +296,7 @@ namespace AZ::Render
         return GetParentScene()->GetRenderPipeline(m_passPipelineId) == nullptr;
     }
 
-    void GradientGIFeatureProcessor::EnsurePass(RPI::RenderPipeline* renderPipeline)
+    void GradientGlobalIlluminationFeatureProcessor::EnsurePass(RPI::RenderPipeline* renderPipeline)
     {
         if (m_updateMode != UpdateMode::Dynamic)
         {
@@ -334,8 +334,8 @@ namespace AZ::Render
 
         DestroyPass();
 
-        RPI::PassDescriptor passDescriptor(AZ::Name("GradientGICubemapPass"));
-        m_gradientPass = aznew GradientGICubemapPass(passDescriptor);
+        RPI::PassDescriptor passDescriptor(AZ::Name("GradientGlobalIlluminationCubemapPass"));
+        m_gradientPass = aznew GradientGlobalIlluminationCubemapPass(passDescriptor);
 
         // Keep initialized output available while replacing the pass.
         m_gradientPass->AdoptOutputImages(m_diffuseImage, m_specularImage);
@@ -359,7 +359,7 @@ namespace AZ::Render
         m_passPipelineId = renderPipeline->GetId();
     }
 
-    void GradientGIFeatureProcessor::DestroyPass()
+    void GradientGlobalIlluminationFeatureProcessor::DestroyPass()
     {
         if (!m_gradientPass)
         {
@@ -375,7 +375,7 @@ namespace AZ::Render
         m_passPipelineId = RPI::RenderPipelineId();
     }
 
-    void GradientGIFeatureProcessor::EnsureIblFloor()
+    void GradientGlobalIlluminationFeatureProcessor::EnsureIblFloor()
     {
         if (m_iblFeatureProcessor && !m_iblFeatureProcessor->GetSpecularImage())
         {
@@ -383,7 +383,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::OnRenderPipelineChanged(
+    void GradientGlobalIlluminationFeatureProcessor::OnRenderPipelineChanged(
         RPI::RenderPipeline* renderPipeline,
         RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
@@ -418,7 +418,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::OnBeginPrepareRender()
+    void GradientGlobalIlluminationFeatureProcessor::OnBeginPrepareRender()
     {
         if (!m_enabled)
         {
@@ -451,9 +451,9 @@ namespace AZ::Render
         EnsurePass();
     }
 
-    void GradientGIFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
+    void GradientGlobalIlluminationFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
     {
-        AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Render");
+        AZ_PROFILE_SCOPE(RPI, "GradientGlobalIlluminationFeatureProcessor: Render");
 
         // Render runs even when simulation is skipped, keeping the rebuild cap frame-based.
         m_rebuiltThisFrame = false;
@@ -468,7 +468,7 @@ namespace AZ::Render
         WriteSceneSrgFromPass();
     }
 
-    void GradientGIFeatureProcessor::WriteSceneSrgFromPass()
+    void GradientGlobalIlluminationFeatureProcessor::WriteSceneSrgFromPass()
     {
         // Keep the previous output pair until the replacement has scheduled a write.
         if (m_gradientPass->HasWrittenOutputs())
@@ -488,7 +488,7 @@ namespace AZ::Render
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
-    void GradientGIFeatureProcessor::SetGradientColors(const Color& low, const Color& mid, const Color& high)
+    void GradientGlobalIlluminationFeatureProcessor::SetGradientColors(const Color& low, const Color& mid, const Color& high)
     {
         // Editor reactivation reapplies configuration, so unchanged colors must not trigger an upload.
         if (low == m_lowColor && mid == m_midColor && high == m_highColor)
@@ -510,16 +510,16 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetExposure(float exposureStops)
+    void GradientGlobalIlluminationFeatureProcessor::SetExposure(float exposureStops)
     {
         m_exposure = exposureStops;
 
         // Apply exposure at IBL sampling, without rebuilding the cubemaps.
     }
 
-    void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
+    void GradientGlobalIlluminationFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
-        const uint32_t clamped = GradientGI::ClampFaceResolution(resolution);
+        const uint32_t clamped = GradientGlobalIllumination::ClampFaceResolution(resolution);
 
         // GPU output resizes attachment images directly. Only CPU StreamingImage allocations are debounced.
         if (m_updateMode == UpdateMode::Dynamic)
@@ -540,7 +540,7 @@ namespace AZ::Render
         m_resolutionDebounce.Request(clamped);
     }
 
-    void GradientGIFeatureProcessor::ApplyFaceResolution(uint32_t value)
+    void GradientGlobalIlluminationFeatureProcessor::ApplyFaceResolution(uint32_t value)
     {
         if (m_faceResolutionApplied && value == m_faceResolution)
         {
@@ -560,7 +560,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::TickResolutionSettle()
+    void GradientGlobalIlluminationFeatureProcessor::TickResolutionSettle()
     {
         if (const AZStd::optional<uint32_t> settled = m_resolutionDebounce.AdvanceFrame())
         {
@@ -568,17 +568,17 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode requestedMode)
+    void GradientGlobalIlluminationFeatureProcessor::SetUpdateMode(UpdateMode requestedMode)
     {
         if (m_updateMode == requestedMode)
         {
             return;
         }
 
-        const UpdateMode mode = GradientGI::ResolveUpdateMode(
+        const UpdateMode mode = GradientGlobalIllumination::ResolveUpdateMode(
             requestedMode,
-            requestedMode != UpdateMode::Dynamic || GradientGICubemapPass::IsGpuComputeSupported());
-        AZ_Warning("GradientGI", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
+            requestedMode != UpdateMode::Dynamic || GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported());
+        AZ_Warning("GradientGlobalIllumination", mode == requestedMode, "GPU compute UAV cubemaps not supported. Staying in Static mode.");
 
         if (m_updateMode == mode)
         {
@@ -625,7 +625,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
+    void GradientGlobalIlluminationFeatureProcessor::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
         // Retain the runtime texture so color edits do not reload it.
         m_detailTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
@@ -636,7 +636,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetDetailParams(uint8_t mapping, uint8_t blend, float strength)
+    void GradientGlobalIlluminationFeatureProcessor::SetDetailParams(uint8_t mapping, uint8_t blend, float strength)
     {
         m_detailMapping = mapping;
         m_detailBlend = blend;
@@ -648,7 +648,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
+    void GradientGlobalIlluminationFeatureProcessor::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
     {
         m_specularTexture = texture.GetId().IsValid() ? RPI::StreamingImage::FindOrCreate(texture) : Data::Instance<RPI::Image>{};
 
@@ -658,7 +658,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::SetSpecularParams(uint8_t mapping, uint8_t blend, float strength)
+    void GradientGlobalIlluminationFeatureProcessor::SetSpecularParams(uint8_t mapping, uint8_t blend, float strength)
     {
         m_specularMapping = mapping;
         m_specularBlend = blend;
@@ -670,17 +670,17 @@ namespace AZ::Render
         }
     }
 
-    GradientGIFeatureProcessorInterface::UpdateMode GradientGIFeatureProcessor::GetUpdateMode() const
+    GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode GradientGlobalIlluminationFeatureProcessor::GetUpdateMode() const
     {
         return m_updateMode;
     }
 
-    bool GradientGIFeatureProcessor::OwnsIblSlots() const
+    bool GradientGlobalIlluminationFeatureProcessor::OwnsIblSlots() const
     {
         return m_iblFeatureProcessor && m_cubemapImage && m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
     }
 
-    Vector3 GradientGIFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
+    Vector3 GradientGlobalIlluminationFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
     {
         // Match the shader: texture V points downward, so side faces negate it for Y.
         switch (face)
@@ -702,7 +702,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGIFeatureProcessor::GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const
+    void GradientGlobalIlluminationFeatureProcessor::GenerateFacePixels(uint32_t face, uint32_t faceSize, AZStd::vector<uint8_t>& outPixels) const
     {
         const size_t bpp = RHI::GetFormatSize(RHI::Format::R16G16B16A16_FLOAT);
         outPixels.resize(faceSize * faceSize * bpp);
@@ -730,15 +730,15 @@ namespace AZ::Render
                 }
 
                 size_t offset = (static_cast<size_t>(y) * faceSize + x) * bpp;
-                GradientGI::WriteRgba16FloatPixel(outPixels.data() + offset, c.GetR(), c.GetG(), c.GetB(), 1.0f);
+                GradientGlobalIllumination::WriteRgba16FloatPixel(outPixels.data() + offset, c.GetR(), c.GetG(), c.GetB(), 1.0f);
             }
         }
     }
 
-    Data::Instance<RPI::StreamingImage> GradientGIFeatureProcessor::BuildGradientCubemap()
+    Data::Instance<RPI::StreamingImage> GradientGlobalIlluminationFeatureProcessor::BuildGradientCubemap()
     {
         constexpr RHI::Format format = RHI::Format::R16G16B16A16_FLOAT;
-        const uint32_t faceSize = GradientGI::SnapCpuFaceResolutionToPow2(m_faceResolution);
+        const uint32_t faceSize = GradientGlobalIllumination::SnapCpuFaceResolutionToPow2(m_faceResolution);
 
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
         for (uint32_t face = 0; face < 6; ++face)
@@ -760,7 +760,7 @@ namespace AZ::Render
             {
                 AZ_Assert(
                     facePixels[face].size() >= bytesPerFace,
-                    "GradientGI: Face pixel data too small (expected %zu, got %zu)",
+                    "GradientGlobalIllumination: Face pixel data too small (expected %zu, got %zu)",
                     bytesPerFace,
                     facePixels[face].size());
 
@@ -770,7 +770,7 @@ namespace AZ::Render
 
             if (!mipCreator.End(mipChainAsset))
             {
-                AZ_Error("GradientGI", false, "Failed to create ImageMipChainAsset.");
+                AZ_Error("GradientGlobalIllumination", false, "Failed to create ImageMipChainAsset.");
                 return nullptr;
             }
         }
@@ -780,7 +780,7 @@ namespace AZ::Render
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         if (!imageSystem)
         {
-            AZ_Error("GradientGI", false, "ImageSystemInterface not available.");
+            AZ_Error("GradientGlobalIllumination", false, "ImageSystemInterface not available.");
             return nullptr;
         }
 
@@ -795,7 +795,7 @@ namespace AZ::Render
 
             if (!assetCreator.End(m_imageAsset))
             {
-                AZ_Error("GradientGI", false, "Failed to create StreamingImageAsset.");
+                AZ_Error("GradientGlobalIllumination", false, "Failed to create StreamingImageAsset.");
                 return nullptr;
             }
         }
@@ -803,11 +803,10 @@ namespace AZ::Render
         Data::Instance<RPI::StreamingImage> image = RPI::StreamingImage::FindOrCreate(m_imageAsset);
         if (!image)
         {
-            AZ_Error("GradientGI", false, "Failed to create StreamingImage instance.");
+            AZ_Error("GradientGlobalIllumination", false, "Failed to create StreamingImage instance.");
             return nullptr;
         }
 
         return image;
     }
-
 } // namespace AZ::Render

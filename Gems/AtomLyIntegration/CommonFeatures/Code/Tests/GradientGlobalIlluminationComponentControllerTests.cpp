@@ -12,15 +12,16 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
-#include <Atom/Feature/GradientGI/GradientGILogic.h>
-#include <GradientGI/GradientGIComponentController.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationLogic.h>
+#include <GradientGlobalIllumination/GradientGlobalIlluminationComponentController.h>
 
 namespace UnitTest
 {
     using namespace AZ;
     using namespace AZ::Render;
 
-    class GradientGIFeatureProcessorStub final : public GradientGIFeatureProcessorInterface
+    class GradientGlobalIlluminationFeatureProcessorStub final
+        : public GradientGlobalIlluminationFeatureProcessorInterface
     {
     public:
         void SetGradientColors(const Color& low, const Color&, const Color&) override
@@ -96,7 +97,7 @@ namespace UnitTest
         }
 
     public:
-        GradientGI::OwnerRegistry m_owners;
+        GradientGlobalIllumination::OwnerRegistry m_owners;
         OwnerChangedEvent m_ownerChanged;
         UpdateMode m_mode = UpdateMode::Static;
         Color m_lowColor = Color::CreateZero();
@@ -108,10 +109,11 @@ namespace UnitTest
         uint32_t m_specularWrites = 0;
     };
 
-    class GradientGIComponentControllerFixture : public ::testing::Test
+    class GradientGlobalIlluminationComponentControllerFixture
+        : public ::testing::Test
     {
     protected:
-        void Attach(GradientGIComponentController& controller, EntityId id)
+        void Attach(GradientGlobalIlluminationComponentController& controller, EntityId id)
         {
             controller.m_entityId = id;
             controller.m_featureProcessor = &m_processor;
@@ -226,7 +228,7 @@ namespace UnitTest
             EXPECT_FALSE(m_processor.m_specular.GetId().IsValid());
         }
 
-        void SetMode(GradientGIUpdateMode mode)
+        void SetMode(GradientGlobalIlluminationUpdateMode mode)
         {
             m_controller.SetUpdateMode(mode);
         }
@@ -251,31 +253,31 @@ namespace UnitTest
     protected:
         RPI::AssetHandler<RPI::StreamingImageAsset> m_imageHandler;
         RPI::AssetHandler<RPI::ImageMipChainAsset> m_mipHandler;
-        GradientGIFeatureProcessorStub m_processor;
-        GradientGIComponentController m_controller;
+        GradientGlobalIlluminationFeatureProcessorStub m_processor;
+        GradientGlobalIlluminationComponentController m_controller;
     };
 
-    TEST_F(GradientGIComponentControllerFixture, DetailPendingReplacementIsNeverForwardedToGpu)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, DetailPendingReplacementIsNeverForwardedToGpu)
     {
         ReadyThenReplaceBeforeTick(false);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, SpecularPendingReplacementIsNeverForwardedToGpu)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, SpecularPendingReplacementIsNeverForwardedToGpu)
     {
         ReadyThenReplaceBeforeTick(true);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, ChangingDetailPreservesSharedSpecularSubscription)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, ChangingDetailPreservesSharedSpecularSubscription)
     {
         CheckSharedSubscription(false);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, ChangingSpecularPreservesSharedDetailSubscription)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, ChangingSpecularPreservesSharedDetailSubscription)
     {
         CheckSharedSubscription(true);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, DeactivateCancelsPendingTextureWrites)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, DeactivateCancelsPendingTextureWrites)
     {
         ArmPendingUpdates();
         const uint32_t detailWrites = m_processor.m_detailWrites;
@@ -288,31 +290,31 @@ namespace UnitTest
         EXPECT_EQ(m_processor.m_specularWrites, specularWrites);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, ModeRoundTripForwardsSnappedResolution)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, ModeRoundTripForwardsSnappedResolution)
     {
-        SetMode(GradientGIUpdateMode::Dynamic);
+        SetMode(GradientGlobalIlluminationUpdateMode::Dynamic);
         SetResolution(91.0f);
 
         EXPECT_EQ(m_processor.m_resolution, 91u);
 
-        SetMode(GradientGIUpdateMode::Static);
+        SetMode(GradientGlobalIlluminationUpdateMode::Static);
 
         EXPECT_EQ(m_controller.GetConfiguration().m_faceResolution, 64u);
         EXPECT_EQ(m_processor.m_resolution, 64u);
 
-        SetMode(GradientGIUpdateMode::Dynamic);
+        SetMode(GradientGlobalIlluminationUpdateMode::Dynamic);
 
         EXPECT_EQ(m_processor.m_resolution, 64u);
     }
 
-    TEST_F(GradientGIComponentControllerFixture, RemovingNewestOwnerRestoresSurvivingConfiguration)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, RemovingNewestOwnerRestoresSurvivingConfiguration)
     {
         SetExposure(2.0f);
 
-        GradientGIComponentConfig otherConfig;
+        GradientGlobalIlluminationComponentConfig otherConfig;
         otherConfig.m_exposure = -3.0f;
 
-        GradientGIComponentController other(otherConfig);
+        GradientGlobalIlluminationComponentController other(otherConfig);
         Attach(other, EntityId(2));
 
         EXPECT_EQ(m_processor.m_exposure, -3.0f);
@@ -327,12 +329,12 @@ namespace UnitTest
         EXPECT_EQ(m_processor.GetCurrentOwner(), EntityId(1));
     }
 
-    TEST_F(GradientGIComponentControllerFixture, ConfigurationReplacementAppliesOnlyForCurrentOwner)
+    TEST_F(GradientGlobalIlluminationComponentControllerFixture, ConfigurationReplacementAppliesOnlyForCurrentOwner)
     {
-        GradientGIComponentController other;
+        GradientGlobalIlluminationComponentController other;
         Attach(other, EntityId(2));
 
-        GradientGIComponentConfig config;
+        GradientGlobalIlluminationComponentConfig config;
         config.m_exposure = 5.0f;
         m_controller.SetConfiguration(config);
 

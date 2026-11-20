@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessorInterface.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/vector.h>
@@ -18,7 +18,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <cstdint>
 
-namespace AZ::Render::GradientGI
+namespace AZ::Render::GradientGlobalIllumination
 {
     inline constexpr uint32_t MinFaceResolution = 4;
     inline constexpr uint32_t MaxFaceResolution = 256;
@@ -66,11 +66,11 @@ namespace AZ::Render::GradientGI
     }
 
     //! Fall back to CPU generation when writable cubemap allocation is unavailable.
-    inline GradientGIFeatureProcessorInterface::UpdateMode ResolveUpdateMode(
-        GradientGIFeatureProcessorInterface::UpdateMode requested,
+    inline GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode ResolveUpdateMode(
+        GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode requested,
         bool gpuComputeSupported)
     {
-        using UpdateMode = GradientGIFeatureProcessorInterface::UpdateMode;
+        using UpdateMode = GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode;
 
         if (requested == UpdateMode::Dynamic && !gpuComputeSupported)
         {
@@ -248,5 +248,4 @@ namespace AZ::Render::GradientGI
         uint8_t m_threshold = DefaultSettleFrames;
         bool m_changePending = false;
     };
-
-} // namespace AZ::Render::GradientGI
+} // namespace AZ::Render::GradientGlobalIllumination

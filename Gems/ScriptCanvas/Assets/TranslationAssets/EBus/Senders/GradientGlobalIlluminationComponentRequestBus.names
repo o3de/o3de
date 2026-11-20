@@ -1,11 +1,11 @@
 {
     "entries": [
         {
-            "base": "GradientGIComponentRequestBus",
+            "base": "GradientGlobalIlluminationComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Gradient GI",
+                "name": "Gradient Global Illumination",
                 "category": "Rendering"
             },
             "methods": [
@@ -13,7 +13,7 @@
                     "base": "SetLowColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Low Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Set Low Color is invoked" },
-                    "details": { "name": "Set Low Color", "tooltip": "Sets the nadir (ground, -Y) color of the gradient GI cubemap" },
+                    "details": { "name": "Set Low Color", "tooltip": "Sets the nadir (ground, -Y) color of the gradient global illumination cubemap" },
                     "params": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low (Nadir)" } }
                     ]
@@ -22,7 +22,7 @@
                     "base": "GetLowColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Low Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Get Low Color is invoked" },
-                    "details": { "name": "Get Low Color", "tooltip": "Gets the nadir (ground, -Y) color of the gradient GI cubemap" },
+                    "details": { "name": "Get Low Color", "tooltip": "Gets the nadir (ground, -Y) color of the gradient global illumination cubemap" },
                     "results": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low (Nadir)" } }
                     ]
@@ -31,7 +31,7 @@
                     "base": "SetMidColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Mid Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Set Mid Color is invoked" },
-                    "details": { "name": "Set Mid Color", "tooltip": "Sets the horizon (equator) color of the gradient GI cubemap" },
+                    "details": { "name": "Set Mid Color", "tooltip": "Sets the horizon (equator) color of the gradient global illumination cubemap" },
                     "params": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid (Horizon)" } }
                     ]
@@ -40,7 +40,7 @@
                     "base": "GetMidColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Mid Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Get Mid Color is invoked" },
-                    "details": { "name": "Get Mid Color", "tooltip": "Gets the horizon (equator) color of the gradient GI cubemap" },
+                    "details": { "name": "Get Mid Color", "tooltip": "Gets the horizon (equator) color of the gradient global illumination cubemap" },
                     "results": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid (Horizon)" } }
                     ]
@@ -49,7 +49,7 @@
                     "base": "SetHighColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set High Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Set High Color is invoked" },
-                    "details": { "name": "Set High Color", "tooltip": "Sets the zenith (sky, +Y) color of the gradient GI cubemap" },
+                    "details": { "name": "Set High Color", "tooltip": "Sets the zenith (sky, +Y) color of the gradient global illumination cubemap" },
                     "params": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High (Zenith)" } }
                     ]
@@ -58,7 +58,7 @@
                     "base": "GetHighColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get High Color" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Get High Color is invoked" },
-                    "details": { "name": "Get High Color", "tooltip": "Gets the zenith (sky, +Y) color of the gradient GI cubemap" },
+                    "details": { "name": "Get High Color", "tooltip": "Gets the zenith (sky, +Y) color of the gradient global illumination cubemap" },
                     "results": [
                         { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High (Zenith)" } }
                     ]
@@ -87,7 +87,7 @@
                     "base": "GetExposure",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Exposure" },
                     "exit": { "name": "Out", "tooltip": "Signaled after Get Exposure is invoked" },
-                    "details": { "name": "Get Exposure", "tooltip": "Gets the exposure in EV stops applied to the gradient GI" },
+                    "details": { "name": "Get Exposure", "tooltip": "Gets the exposure in EV stops applied to the gradient global illumination" },
                     "results": [
                         { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure (EV)" } }
                     ]

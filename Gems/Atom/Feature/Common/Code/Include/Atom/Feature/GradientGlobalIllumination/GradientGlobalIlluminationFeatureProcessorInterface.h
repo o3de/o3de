@@ -19,10 +19,11 @@ namespace AZ::Render
     //! Generates single-mip gradient cubemaps for ambient IBL. Specular output is not roughness-prefiltered.
     //! CPU image and exposure updates are published after simulation and consumed by IBL in the next simulation.
     //! Call configuration and ownership methods on the main thread.
-    class GradientGIFeatureProcessorInterface : public RPI::FeatureProcessor
+    class GradientGlobalIlluminationFeatureProcessorInterface
+        : public RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(AZ::Render::GradientGIFeatureProcessorInterface, "{8A3D1F9E-C4B2-4E6D-A7F0-3B5C8D2E1A09}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(AZ::Render::GradientGlobalIlluminationFeatureProcessorInterface, "{8A3D1F9E-C4B2-4E6D-A7F0-3B5C8D2E1A09}", AZ::RPI::FeatureProcessor);
 
         enum class UpdateMode : uint8_t
         {
@@ -75,5 +76,4 @@ namespace AZ::Render
         //! Current owner, or an invalid ID when no owners are registered.
         virtual EntityId GetCurrentOwner() const = 0;
     };
-
 } // namespace AZ::Render

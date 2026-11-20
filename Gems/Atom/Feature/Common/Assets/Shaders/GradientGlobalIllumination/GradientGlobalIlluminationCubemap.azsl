@@ -9,6 +9,7 @@
 // Generate single-mip diffuse and specular IBL cubemaps. Exposure is applied later by the IBL samplers.
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/RPI/Math.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -32,7 +33,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         MagFilter = Linear;
         MipFilter = Linear;
     };
-    // Mapping and blend values match GradientGIComponentConstants.h.
+    // Mapping and blend values match GradientGlobalIlluminationComponentConstants.h.
     uint m_detailMapping;
     uint m_detailBlend;
     float m_detailStrength;
@@ -46,7 +47,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_specularEnabled;
 }
 
-// Match GradientGIFeatureProcessor::CubeFaceDirection. Texture V increases downward.
+// Match GradientGlobalIlluminationFeatureProcessor::CubeFaceDirection. Texture V increases downward.
 float3 GetCubemapDirection(uint face, float uc, float vc)
 {
     float3 dir;
@@ -77,13 +78,11 @@ float3 GetCubemapDirection(uint face, float uc, float vc)
     return normalize(dir);
 }
 
-static const float GGI_PI = 3.14159265f;
-
 // Stretched mapping uses equirectangular UVs.
 float2 EquirectUV(float3 dir)
 {
-    float u = atan2(dir.z, dir.x) / (2.0f * GGI_PI) + 0.5f;
-    float v = acos(clamp(dir.y, -1.0f, 1.0f)) / GGI_PI;
+    float u = atan2(dir.z, dir.x) / TWO_PI + 0.5f;
+    float v = acos(clamp(dir.y, -1.0f, 1.0f)) / PI;
     return float2(u, v);
 }
 
@@ -93,24 +92,24 @@ float2 TiledUV(float uc, float vc)
     return float2(0.5f * (uc + 1.0f), 0.5f * (vc + 1.0f));
 }
 
-// Blend mode codes match GradientGIBlendMode.
+// Blend mode codes match GradientGlobalIlluminationBlendMode.
 float3 BlendLayer(float3 base, float3 layer, uint mode)
 {
     switch (mode)
     {
-    case 1:
-        return base + layer; // Add
-    case 2:
-        return 1.0f - (1.0f - base) * (1.0f - layer); // Screen
+    case 1: // Add
+        return base + layer;
+    case 2: // Screen
+        return 1.0f - (1.0f - base) * (1.0f - layer);
     case 3: // Overlay
         return float3(
             base.r < 0.5f ? (2.0f * base.r * layer.r) : (1.0f - 2.0f * (1.0f - base.r) * (1.0f - layer.r)),
             base.g < 0.5f ? (2.0f * base.g * layer.g) : (1.0f - 2.0f * (1.0f - base.g) * (1.0f - layer.g)),
             base.b < 0.5f ? (2.0f * base.b * layer.b) : (1.0f - 2.0f * (1.0f - base.b) * (1.0f - layer.b)));
-    case 4:
-        return layer; // Replace
-    default:
-        return base * layer; // Multiply (0)
+    case 4: // Replace
+        return layer;
+    default: // Multiply (0)
+        return base * layer;
     }
 }
 

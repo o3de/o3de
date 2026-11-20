@@ -6,9 +6,9 @@
  *
  */
 
-#include "GradientGICubemapPass.h"
+#include "GradientGlobalIlluminationCubemapPass.h"
 
-#include <Atom/Feature/GradientGI/GradientGILogic.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationLogic.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -30,7 +30,7 @@
 
 namespace AZ::Render
 {
-    /*static*/ bool GradientGICubemapPass::IsGpuComputeSupported()
+    /*static*/ bool GradientGlobalIlluminationCubemapPass::IsGpuComputeSupported()
     {
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         if (!imageSystem)
@@ -49,17 +49,17 @@ namespace AZ::Render
             /*width=*/4,
             RHI::Format::R16G16B16A16_FLOAT);
 
-        auto testImage = RPI::AttachmentImage::Create(*attachmentPool, testDesc, AZ::Name("GradientGI_CapProbe"), nullptr, nullptr);
+        auto testImage = RPI::AttachmentImage::Create(*attachmentPool, testDesc, AZ::Name("GradientGlobalIllumination_CapProbe"), nullptr, nullptr);
 
         return testImage != nullptr;
     }
 
-    GradientGICubemapPass::GradientGICubemapPass(const RPI::PassDescriptor& descriptor)
+    GradientGlobalIlluminationCubemapPass::GradientGlobalIlluminationCubemapPass(const RPI::PassDescriptor& descriptor)
         : RPI::RenderPass(descriptor)
     {
     }
 
-    void GradientGICubemapPass::SetGradientColors(const Color& low, const Color& mid, const Color& high, uint32_t faceSize)
+    void GradientGlobalIlluminationCubemapPass::SetGradientColors(const Color& low, const Color& mid, const Color& high, uint32_t faceSize)
     {
         const bool faceSizeChanged = (faceSize != m_faceSize);
 
@@ -76,17 +76,17 @@ namespace AZ::Render
         }
     }
 
-    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetDiffuseImage() const
+    Data::Instance<RPI::AttachmentImage> GradientGlobalIlluminationCubemapPass::GetDiffuseImage() const
     {
         return m_diffuseImage;
     }
 
-    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetSpecularImage() const
+    Data::Instance<RPI::AttachmentImage> GradientGlobalIlluminationCubemapPass::GetSpecularImage() const
     {
         return m_specularImage;
     }
 
-    void GradientGICubemapPass::SetDetailLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    void GradientGlobalIlluminationCubemapPass::SetDetailLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
     {
         m_detailTexture = texture;
         m_detailMapping = mapping;
@@ -95,7 +95,7 @@ namespace AZ::Render
         m_dirty = true;
     }
 
-    void GradientGICubemapPass::SetSpecularLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    void GradientGlobalIlluminationCubemapPass::SetSpecularLayer(const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
     {
         m_specularTexture = texture;
         m_specularMapping = mapping;
@@ -104,13 +104,13 @@ namespace AZ::Render
         m_dirty = true;
     }
 
-    void GradientGICubemapPass::BuildInternal()
+    void GradientGlobalIlluminationCubemapPass::BuildInternal()
     {
-        const char* shaderPath = "Shaders/GradientGI/GradientGICubemap.azshader";
+        const char* shaderPath = "Shaders/GradientGlobalIllumination/GradientGlobalIlluminationCubemap.azshader";
         auto shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderPath);
         if (!shaderAsset.IsReady())
         {
-            AZ_Error("GradientGICubemapPass", false, "Failed to load shader: %s", shaderPath);
+            AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to load shader: %s", shaderPath);
             SetEnabled(false);
             return;
         }
@@ -118,7 +118,7 @@ namespace AZ::Render
         m_shader = RPI::Shader::FindOrCreate(shaderAsset);
         if (!m_shader)
         {
-            AZ_Error("GradientGICubemapPass", false, "Failed to create Shader instance from: %s", shaderPath);
+            AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to create Shader instance from: %s", shaderPath);
             SetEnabled(false);
             return;
         }
@@ -129,7 +129,7 @@ namespace AZ::Render
         m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
         if (!m_pipelineState)
         {
-            AZ_Error("GradientGICubemapPass", false, "Failed to acquire pipeline state for GradientGICubemap.");
+            AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Failed to acquire pipeline state for GradientGlobalIlluminationCubemap.");
             SetEnabled(false);
             return;
         }
@@ -139,11 +139,11 @@ namespace AZ::Render
         {
             m_passSrg = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), srgLayout->GetName());
 
-            AZ_Error("GradientGICubemapPass", m_passSrg, "Failed to create PassSrg for GradientGICubemap.");
+            AZ_Error("GradientGlobalIlluminationCubemapPass", m_passSrg, "Failed to create PassSrg for GradientGlobalIlluminationCubemap.");
         }
         else
         {
-            AZ_Error("GradientGICubemapPass", false, "Could not find PassSrg layout in GradientGICubemap shader.");
+            AZ_Error("GradientGlobalIlluminationCubemapPass", false, "Could not find PassSrg layout in GradientGlobalIlluminationCubemap shader.");
             SetEnabled(false);
             return;
         }
@@ -151,15 +151,15 @@ namespace AZ::Render
         // Reuse adopted images only if both still match the requested face size.
         if (!OutputImagesMatchFaceSize())
         {
-            m_diffuseImage = CreateOutputCubemap("GradientGI_Diffuse");
-            m_specularImage = CreateOutputCubemap("GradientGI_Specular");
+            m_diffuseImage = CreateOutputCubemap("GradientGlobalIllumination_Diffuse");
+            m_specularImage = CreateOutputCubemap("GradientGlobalIllumination_Specular");
             m_outputsWritten = false;
         }
 
         if (!m_diffuseImage || !m_specularImage)
         {
             AZ_Error(
-                "GradientGICubemapPass",
+                "GradientGlobalIlluminationCubemapPass",
                 false,
                 "Failed to create AttachmentImage(s) for gradient cubemap. "
                 "GPU compute (UAV cubemap) is not supported on this platform.");
@@ -185,7 +185,7 @@ namespace AZ::Render
         m_dirty = true;
     }
 
-    void GradientGICubemapPass::AdoptOutputImages(
+    void GradientGlobalIlluminationCubemapPass::AdoptOutputImages(
         const Data::Instance<RPI::AttachmentImage>& diffuse,
         const Data::Instance<RPI::AttachmentImage>& specular)
     {
@@ -196,12 +196,12 @@ namespace AZ::Render
         m_outputsWritten = m_diffuseImage && m_specularImage;
     }
 
-    bool GradientGICubemapPass::HasWrittenOutputs() const
+    bool GradientGlobalIlluminationCubemapPass::HasWrittenOutputs() const
     {
         return m_outputsWritten;
     }
 
-    bool GradientGICubemapPass::OutputImagesMatchFaceSize() const
+    bool GradientGlobalIlluminationCubemapPass::OutputImagesMatchFaceSize() const
     {
         if (!m_diffuseImage || !m_specularImage)
         {
@@ -212,13 +212,13 @@ namespace AZ::Render
         return descriptor.m_size.m_width == m_faceSize;
     }
 
-    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::CreateOutputCubemap(const char* debugName) const
+    Data::Instance<RPI::AttachmentImage> GradientGlobalIlluminationCubemapPass::CreateOutputCubemap(const char* debugName) const
     {
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         auto* attachmentPool = imageSystem ? imageSystem->GetSystemAttachmentPool().get() : nullptr;
         if (!attachmentPool)
         {
-            AZ_Error("GradientGICubemapPass", false, "System attachment pool not available.");
+            AZ_Error("GradientGlobalIlluminationCubemapPass", false, "System attachment pool not available.");
             return nullptr;
         }
 
@@ -232,7 +232,7 @@ namespace AZ::Render
         return RPI::AttachmentImage::Create(*attachmentPool, imageDesc, AZ::Name(debugName), nullptr, &cubemapViewDesc);
     }
 
-    Data::Instance<RPI::Image> GradientGICubemapPass::GetOrCreateWhiteFallbackCube()
+    Data::Instance<RPI::Image> GradientGlobalIlluminationCubemapPass::GetOrCreateWhiteFallbackCube()
     {
         if (m_whiteFallbackCube)
         {
@@ -290,7 +290,7 @@ namespace AZ::Render
         return m_whiteFallbackCube;
     }
 
-    void GradientGICubemapPass::BindTextureLayer(
+    void GradientGlobalIlluminationCubemapPass::BindTextureLayer(
         const AZ::Name& tex2DName,
         const AZ::Name& texCubeName,
         const AZ::Name& mappingName,
@@ -316,10 +316,10 @@ namespace AZ::Render
             isCube = d.m_isCubemap || d.m_arraySize == 6;
         }
 
-        const bool cubeRequested = (mapping == 2); // GradientGITextureMapping::Cube
+        const bool cubeRequested = (mapping == 2); // GradientGlobalIlluminationTextureMapping::Cube
         const bool useCube = cubeRequested && isCube;
         // Do not bind a cubemap to a 2D slot or a 2D texture to the cube slot.
-        const bool enabled = GradientGI::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
+        const bool enabled = GradientGlobalIllumination::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
 
         const Data::Instance<RPI::Image>& systemWhite2D = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
 
@@ -338,7 +338,7 @@ namespace AZ::Render
         m_passSrg->SetConstant(enIdx, enabled ? 1u : 0u);
     }
 
-    void GradientGICubemapPass::FrameBeginInternal(FramePrepareParams params)
+    void GradientGlobalIlluminationCubemapPass::FrameBeginInternal(FramePrepareParams params)
     {
         // Freeze the write decision before declaring resources or recording commands.
         const bool canWrite = m_pipelineState && m_passSrg && m_diffuseImage && m_specularImage && m_sampleAccessScope;
@@ -355,7 +355,7 @@ namespace AZ::Render
         }
     }
 
-    void GradientGICubemapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+    void GradientGlobalIlluminationCubemapPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
         RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
 
@@ -388,7 +388,7 @@ namespace AZ::Render
         declareUav(m_specularImage);
     }
 
-    void GradientGICubemapPass::DeclareSampleAccess(RHI::FrameGraphInterface frameGraph)
+    void GradientGlobalIlluminationCubemapPass::DeclareSampleAccess(RHI::FrameGraphInterface frameGraph)
     {
         // Scene SRG bindings declare no frame-graph reads. This scope orders sampling after the UAV writes.
         auto declareRead = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
@@ -410,7 +410,7 @@ namespace AZ::Render
         declareRead(m_specularImage);
     }
 
-    void GradientGICubemapPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+    void GradientGlobalIlluminationCubemapPass::CompileResources(const RHI::FrameGraphCompileContext& context)
     {
         if (!m_passSrg)
         {
@@ -474,7 +474,7 @@ namespace AZ::Render
         m_passSrg->Compile();
     }
 
-    void GradientGICubemapPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+    void GradientGlobalIlluminationCubemapPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
     {
         if (!m_writeThisFrame || !m_pipelineState || !m_passSrg)
         {
@@ -505,5 +505,4 @@ namespace AZ::Render
         // Avoid a second dispatch if the scope is split across command lists.
         m_writeThisFrame = false;
     }
-
 } // namespace AZ::Render

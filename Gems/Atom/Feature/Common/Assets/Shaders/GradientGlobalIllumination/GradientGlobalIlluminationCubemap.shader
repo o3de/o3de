@@ -1,5 +1,5 @@
 {
-    "Source": "GradientGICubemap.azsl",
+    "Source": "GradientGlobalIlluminationCubemap.azsl",
 
     "ProgramSettings":
     {

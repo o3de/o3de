@@ -10,7 +10,7 @@ set(FILES
     Mocks/MockMeshFeatureProcessor.h
     Tests/CommonTest.cpp
     Tests/CoreLights/ShadowmapAtlasTest.cpp
-    Tests/GradientGI/GradientGILogicTests.cpp
+    Tests/GradientGlobalIllumination/GradientGlobalIlluminationLogicTests.cpp
     Tests/IndexedDataVectorTests.cpp
     Tests/Mesh/MeshInstanceManagerTests.cpp
     Tests/MultiIndexedDataVectorTests.cpp

@@ -18,7 +18,7 @@
 #include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <Grid/GridComponent.h>
-#include <GradientGI/GradientGIComponent.h>
+#include <GradientGlobalIllumination/GradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
@@ -59,7 +59,7 @@
 #include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <Grid/EditorGridComponent.h>
-#include <GradientGI/EditorGradientGIComponent.h>
+#include <GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialSystemComponent.h>
@@ -123,7 +123,7 @@ namespace AZ
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
                         HDRiSkyboxComponent::CreateDescriptor(),
-                        GradientGIComponent::CreateDescriptor(),
+                        GradientGlobalIlluminationComponent::CreateDescriptor(),
                         ImageBasedLightComponent::CreateDescriptor(),
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
@@ -164,7 +164,7 @@ namespace AZ
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),
                         EditorHDRiSkyboxComponent::CreateDescriptor(),
-                        EditorGradientGIComponent::CreateDescriptor(),
+                        EditorGradientGlobalIlluminationComponent::CreateDescriptor(),
                         EditorImageBasedLightComponent::CreateDescriptor(),
                         EditorMaterialComponent::CreateDescriptor(),
                         EditorMaterialSystemComponent::CreateDescriptor(),

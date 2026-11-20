@@ -6,22 +6,23 @@
  *
  */
 
-#include <GradientGI/GradientGIImageUtils.h>
-#include <Atom/Feature/GradientGI/GradientGILogic.h>
+#include <GradientGlobalIllumination/GradientGlobalIlluminationImageUtils.h>
+#include <Atom/Feature/GradientGlobalIllumination/GradientGlobalIlluminationLogic.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <limits>
 
 namespace UnitTest
 {
     using namespace AZ::Render;
-    using namespace AZ::Render::GradientGI;
-    using UpdateMode = GradientGIFeatureProcessorInterface::UpdateMode;
+    using namespace AZ::Render::GradientGlobalIllumination;
+    using UpdateMode = GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode;
 
-    class GradientGILogicFixture : public LeakDetectionFixture
+    class GradientGlobalIlluminationLogicFixture
+        : public LeakDetectionFixture
     {
     };
 
-    TEST_F(GradientGILogicFixture, ClampFaceResolution_HoldsRangeBounds)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ClampFaceResolution_HoldsRangeBounds)
     {
         EXPECT_EQ(ClampFaceResolution(64), 64u);
         EXPECT_EQ(ClampFaceResolution(MinFaceResolution), MinFaceResolution);
@@ -31,7 +32,7 @@ namespace UnitTest
         EXPECT_EQ(ClampFaceResolution(1000), MaxFaceResolution); // above ceiling
     }
 
-    TEST_F(GradientGILogicFixture, SnapCpuFaceResolutionToPow2_AvoidsTheBlackBand)
+    TEST_F(GradientGlobalIlluminationLogicFixture, SnapCpuFaceResolutionToPow2_AvoidsTheBlackBand)
     {
         // Existing powers of two remain unchanged.
         EXPECT_EQ(SnapCpuFaceResolutionToPow2(4), 4u);
@@ -55,7 +56,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(GradientGILogicFixture, RoundAndClampFaceResolution_RoundsThenClamps)
+    TEST_F(GradientGlobalIlluminationLogicFixture, RoundAndClampFaceResolution_RoundsThenClamps)
     {
         EXPECT_EQ(RoundAndClampFaceResolution(63.4f), 63u);
         EXPECT_EQ(RoundAndClampFaceResolution(63.6f), 64u);
@@ -68,7 +69,7 @@ namespace UnitTest
         EXPECT_EQ(RoundAndClampFaceResolution(9000.0f), MaxFaceResolution);
     }
 
-    TEST_F(GradientGILogicFixture, RoundAndClampFaceResolution_HandlesNonFiniteAndExtremeValues)
+    TEST_F(GradientGlobalIlluminationLogicFixture, RoundAndClampFaceResolution_HandlesNonFiniteAndExtremeValues)
     {
         EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::max()), MaxFaceResolution);
         EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::lowest()), MinFaceResolution);
@@ -77,73 +78,73 @@ namespace UnitTest
         EXPECT_EQ(RoundAndClampFaceResolution(std::numeric_limits<float>::quiet_NaN()), MinFaceResolution);
     }
 
-    TEST_F(GradientGILogicFixture, ResolveUpdateMode_DynamicFallsBackWhenGpuUnsupported)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_DynamicFallsBackWhenGpuUnsupported)
     {
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, /*gpuSupported*/ false), UpdateMode::Static);
     }
 
-    TEST_F(GradientGILogicFixture, ResolveUpdateMode_DynamicHonouredWhenGpuSupported)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_DynamicHonouredWhenGpuSupported)
     {
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Dynamic, /*gpuSupported*/ true), UpdateMode::Dynamic);
     }
 
-    TEST_F(GradientGILogicFixture, ResolveUpdateMode_StaticAlwaysStatic)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolveUpdateMode_StaticAlwaysStatic)
     {
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Static, false), UpdateMode::Static);
         EXPECT_EQ(ResolveUpdateMode(UpdateMode::Static, true), UpdateMode::Static);
     }
 
-    TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_DisabledWhenNoTexture)
+    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_DisabledWhenNoTexture)
     {
         EXPECT_FALSE(IsTextureLayerEnabled(/*hasTexture*/ false, /*cubeRequested*/ false, /*textureIsCube*/ false));
         EXPECT_FALSE(IsTextureLayerEnabled(false, true, true));
     }
 
-    TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_NonCubeMappingRequires2DTexture)
+    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_NonCubeMappingRequires2DTexture)
     {
         EXPECT_TRUE(IsTextureLayerEnabled(true, /*cubeRequested*/ false, /*textureIsCube*/ false));
         EXPECT_FALSE(IsTextureLayerEnabled(true, false, true));
     }
 
-    TEST_F(GradientGILogicFixture, IsTextureLayerEnabled_CubeMappingRequiresCubeTexture)
+    TEST_F(GradientGlobalIlluminationLogicFixture, IsTextureLayerEnabled_CubeMappingRequiresCubeTexture)
     {
         EXPECT_FALSE(IsTextureLayerEnabled(true, /*cubeRequested*/ true, /*textureIsCube*/ false));
         EXPECT_TRUE(IsTextureLayerEnabled(true, true, true));
     }
 
-    TEST_F(GradientGILogicFixture, NormalizeAssetPath_UnifiesSeparators)
+    TEST_F(GradientGlobalIlluminationLogicFixture, NormalizeAssetPath_UnifiesSeparators)
     {
         EXPECT_EQ(NormalizeAssetPath("textures\\foo.streamingimage"), "textures/foo.streamingimage");
         EXPECT_EQ(NormalizeAssetPath("a\\b/c"), "a/b/c");
     }
 
-    TEST_F(GradientGILogicFixture, NormalizeAssetPath_StripsLeadingSlashes)
+    TEST_F(GradientGlobalIlluminationLogicFixture, NormalizeAssetPath_StripsLeadingSlashes)
     {
         EXPECT_EQ(NormalizeAssetPath("/leading"), "leading");
         EXPECT_EQ(NormalizeAssetPath("///multi"), "multi");
         EXPECT_EQ(NormalizeAssetPath("\\\\winlead"), "winlead");
     }
 
-    TEST_F(GradientGILogicFixture, NormalizeAssetPath_AllSeparatorsOrEmptyYieldEmpty)
+    TEST_F(GradientGlobalIlluminationLogicFixture, NormalizeAssetPath_AllSeparatorsOrEmptyYieldEmpty)
     {
         EXPECT_EQ(NormalizeAssetPath("/"), "");
         EXPECT_EQ(NormalizeAssetPath("///"), "");
         EXPECT_EQ(NormalizeAssetPath(""), "");
     }
 
-    TEST_F(GradientGILogicFixture, NormalizeAssetPath_LeavesCleanRelativePathUnchanged)
+    TEST_F(GradientGlobalIlluminationLogicFixture, NormalizeAssetPath_LeavesCleanRelativePathUnchanged)
     {
         EXPECT_EQ(NormalizeAssetPath("envhdri/photo.streamingimage"), "envhdri/photo.streamingimage");
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_DefaultsToThreeFrameSettle)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_DefaultsToThreeFrameSettle)
     {
         EXPECT_EQ(ResolutionDebounce::DefaultSettleFrames, 3);
         ResolutionDebounce debounce;
         EXPECT_EQ(debounce.Threshold(), 3);
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_CommitSetsBaselineWithNoPendingChange)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_CommitSetsBaselineWithNoPendingChange)
     {
         ResolutionDebounce debounce;
         debounce.Commit(64);
@@ -153,7 +154,7 @@ namespace UnitTest
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_RequestingCommittedValueIsNoOp)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_RequestingCommittedValueIsNoOp)
     {
         ResolutionDebounce debounce;
         debounce.Commit(64);
@@ -162,7 +163,7 @@ namespace UnitTest
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_StableRequestCommitsOnceAfterSettle)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_StableRequestCommitsOnceAfterSettle)
     {
         ResolutionDebounce debounce(/*threshold*/ 3);
         debounce.Commit(64);
@@ -182,7 +183,7 @@ namespace UnitTest
         EXPECT_FALSE(debounce.AdvanceFrame().has_value());
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_ActiveScrubNeverCommitsThenSettlesOnFinalValue)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_ActiveScrubNeverCommitsThenSettlesOnFinalValue)
     {
         ResolutionDebounce debounce(/*threshold*/ 3);
         debounce.Commit(64);
@@ -206,7 +207,7 @@ namespace UnitTest
         EXPECT_EQ(debounce.Committed(), 256u);
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_ReturningToCommittedValueCancelsPending)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_ReturningToCommittedValueCancelsPending)
     {
         ResolutionDebounce debounce(/*threshold*/ 3);
         debounce.Commit(64);
@@ -219,7 +220,7 @@ namespace UnitTest
         EXPECT_EQ(debounce.Committed(), 64u);
     }
 
-    TEST_F(GradientGILogicFixture, ResolutionDebounce_RespectsCustomThreshold)
+    TEST_F(GradientGlobalIlluminationLogicFixture, ResolutionDebounce_RespectsCustomThreshold)
     {
         ResolutionDebounce debounce(/*threshold*/ 1);
         debounce.Commit(10);
@@ -230,7 +231,7 @@ namespace UnitTest
         EXPECT_EQ(*committed, 20u);
     }
 
-    TEST_F(GradientGILogicFixture, OwnerRegistry_LatestOwnerDrives)
+    TEST_F(GradientGlobalIlluminationLogicFixture, OwnerRegistry_LatestOwnerDrives)
     {
         OwnerRegistry owners;
         const AZ::EntityId first(0x1111);
@@ -244,7 +245,7 @@ namespace UnitTest
         EXPECT_EQ(owners.Count(), 2u);
     }
 
-    TEST_F(GradientGILogicFixture, OwnerRegistry_PromotesEarlierOwnerInsteadOfStopping)
+    TEST_F(GradientGlobalIlluminationLogicFixture, OwnerRegistry_PromotesEarlierOwnerInsteadOfStopping)
     {
         // Removing the newest owner must restore the surviving one.
         OwnerRegistry owners;
@@ -259,7 +260,7 @@ namespace UnitTest
         EXPECT_EQ(owners.Current(), original);
     }
 
-    TEST_F(GradientGILogicFixture, OwnerRegistry_StaleDisableIsHarmless)
+    TEST_F(GradientGlobalIlluminationLogicFixture, OwnerRegistry_StaleDisableIsHarmless)
     {
         // Teardown from an earlier activation must not disable its replacement.
         OwnerRegistry owners;
@@ -273,7 +274,7 @@ namespace UnitTest
         EXPECT_EQ(owners.Current(), editorCopy);
     }
 
-    TEST_F(GradientGILogicFixture, OwnerRegistry_StopsOnlyWhenTheLastOwnerLeaves)
+    TEST_F(GradientGlobalIlluminationLogicFixture, OwnerRegistry_StopsOnlyWhenTheLastOwnerLeaves)
     {
         OwnerRegistry owners;
         const AZ::EntityId only(0x1234);
@@ -287,7 +288,7 @@ namespace UnitTest
         EXPECT_TRUE(owners.Empty());
     }
 
-    TEST_F(GradientGILogicFixture, OwnerRegistry_ReEnableDoesNotDuplicateAnOwner)
+    TEST_F(GradientGlobalIlluminationLogicFixture, OwnerRegistry_ReEnableDoesNotDuplicateAnOwner)
     {
         OwnerRegistry owners;
         const AZ::EntityId entity(0x1234);
@@ -300,7 +301,7 @@ namespace UnitTest
         EXPECT_TRUE(owners.Empty());
     }
 
-    TEST_F(GradientGILogicFixture, Rgba16FloatWriterPreservesHdrValuesAndSupportsUnalignedDestination)
+    TEST_F(GradientGlobalIlluminationLogicFixture, Rgba16FloatWriterPreservesHdrValuesAndSupportsUnalignedDestination)
     {
         uint8_t bytes[9]{};
         WriteRgba16FloatPixel(bytes + 1, -1.0f, 0.5f, 2.0f, 1.0f);
@@ -308,5 +309,4 @@ namespace UnitTest
         EXPECT_EQ(std::memcmp(bytes + 1, expected, sizeof(expected)), 0);
         EXPECT_EQ(bytes[0], 0);
     }
-
 } // namespace UnitTest

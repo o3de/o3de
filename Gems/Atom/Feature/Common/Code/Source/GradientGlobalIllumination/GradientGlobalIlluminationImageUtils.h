@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <cstring>
 
-namespace AZ::Render::GradientGI
+namespace AZ::Render::GradientGlobalIllumination
 {
     //! Truncate normal values. Half subnormals become signed zero, and exponent overflow or NaN becomes signed infinity.
     inline uint16_t FloatToHalf(float value)
@@ -43,5 +43,4 @@ namespace AZ::Render::GradientGI
         const uint16_t pixel[] = { FloatToHalf(red), FloatToHalf(green), FloatToHalf(blue), FloatToHalf(alpha) };
         std::memcpy(destination, pixel, sizeof(pixel));
     }
-
-} // namespace AZ::Render::GradientGI
+} // namespace AZ::Render::GradientGlobalIllumination

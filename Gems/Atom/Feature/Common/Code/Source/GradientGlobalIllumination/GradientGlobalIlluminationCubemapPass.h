@@ -24,17 +24,18 @@ namespace AZ::Render
 {
     //! Composites diffuse and specular cubemaps when inputs change.
     //! A following scope declares shader-read access because scene SRG bindings are invisible to the frame graph.
-    class GradientGICubemapPass final : public RPI::RenderPass
+    class GradientGlobalIlluminationCubemapPass final
+        : public RPI::RenderPass
     {
     public:
-        AZ_RTTI(GradientGICubemapPass, "{A2B3C4D5-E6F7-8901-BCDE-F12345678902}", RPI::RenderPass);
-        AZ_CLASS_ALLOCATOR(GradientGICubemapPass, AZ::SystemAllocator);
+        AZ_RTTI(GradientGlobalIlluminationCubemapPass, "{A2B3C4D5-E6F7-8901-BCDE-F12345678902}", RPI::RenderPass);
+        AZ_CLASS_ALLOCATOR(GradientGlobalIlluminationCubemapPass, AZ::SystemAllocator);
 
         //! Probe writable RGBA16F cubemap allocation in the current attachment pool.
         static bool IsGpuComputeSupported();
 
-        explicit GradientGICubemapPass(const RPI::PassDescriptor& descriptor);
-        ~GradientGICubemapPass() override = default;
+        explicit GradientGlobalIlluminationCubemapPass(const RPI::PassDescriptor& descriptor);
+        ~GradientGlobalIlluminationCubemapPass() override = default;
 
         void SetGradientColors(const Color& low, const Color& mid, const Color& high, uint32_t faceSize);
 
@@ -102,13 +103,13 @@ namespace AZ::Render
         uint32_t m_faceSize = 64;
 
         Data::Instance<RPI::Image> m_detailTexture; // null = layer disabled
-        uint8_t m_detailMapping = 1; // GradientGITextureMapping (Stretched)
-        uint8_t m_detailBlend = 3; // GradientGIBlendMode (Overlay)
+        uint8_t m_detailMapping = 1; // GradientGlobalIlluminationTextureMapping (Stretched)
+        uint8_t m_detailBlend = 3; // GradientGlobalIlluminationBlendMode (Overlay)
         float m_detailStrength = 1.0f;
 
         Data::Instance<RPI::Image> m_specularTexture; // null = specular == diffuse base
-        uint8_t m_specularMapping = 1; // GradientGITextureMapping (Stretched)
-        uint8_t m_specularBlend = 3; // GradientGIBlendMode (Overlay)
+        uint8_t m_specularMapping = 1; // GradientGlobalIlluminationTextureMapping (Stretched)
+        uint8_t m_specularBlend = 3; // GradientGlobalIlluminationBlendMode (Overlay)
         float m_specularStrength = 1.0f;
 
         // Both texture slots need valid SRVs, including when a layer is disabled.
@@ -121,5 +122,4 @@ namespace AZ::Render
 
         bool m_outputsWritten = false;
     };
-
 } // namespace AZ::Render
