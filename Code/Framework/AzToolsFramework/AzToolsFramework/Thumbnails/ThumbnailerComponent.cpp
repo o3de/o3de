@@ -23,6 +23,14 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        namespace
+        {
+            void RequestAssetBrowserRepaint()
+            {
+                AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
+            }
+        }
+
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
@@ -120,33 +128,44 @@ namespace AzToolsFramework
                     // complete to update the image.
                     if (thumbnail->GetState() == Thumbnail::State::Unloaded)
                     {
-                        // Connect thumbnailer component to the busy label repaint signal to notify the asset browser as it changes. 
-                        AzQtComponents::StyledBusyLabel* busyLabel = {};
-                        AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
-                        if (busyLabel)
+                        if (!m_busyLabelConnection)
                         {
-                            QObject::connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, m_placeholderObject.get(), [](){
-                                AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
-                            });
+                            AzQtComponents::StyledBusyLabel* busyLabel = nullptr;
+                            AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(
+                                busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
+                            if (busyLabel)
+                            {
+                                m_busyLabelConnection = QObject::connect(
+                                    busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded,
+                                    m_placeholderObject.get(), &RequestAssetBrowserRepaint);
+                            }
                         }
 
-                        // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
-                        // disconnect from all of the signals.
-                        QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail, busyLabel]()
-                            {
-                                if (busyLabel)
-                                {
-                                    QObject::disconnect(busyLabel, nullptr, m_placeholderObject.get(), nullptr);
-                                }
-                                QObject::disconnect(thumbnail.get(), nullptr, key.get(), nullptr);
+                        // A cached thumbnail can return to the unloaded state.
+                        QObject::disconnect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), nullptr);
 
-                                QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, key.get(), &ThumbnailKey::ThumbnailUpdated);
-                                QObject::connect(key.get(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.get(), &Thumbnail::Update);
+                        // The initial update marks the end of the load, including failures.
+                        QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail]()
+                            {
+                                QObject::connect(
+                                    thumbnail.get(), &Thumbnail::ThumbnailUpdated, key.get(), &ThumbnailKey::ThumbnailUpdated,
+                                    Qt::UniqueConnection);
+                                QObject::connect(
+                                    key.get(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.get(), &Thumbnail::Update,
+                                    Qt::UniqueConnection);
 
                                 key->SetReady(true);
                                 m_thumbnailsBeingLoaded.erase(thumbnail);
-                                AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
-                            });
+                                if (m_thumbnailsBeingLoaded.empty())
+                                {
+                                    QObject::disconnect(m_busyLabelConnection);
+                                    m_busyLabelConnection = {};
+                                }
+                            }, Qt::SingleShotConnection);
+
+                        // A browser entry can replace its key while continuing to use the cached thumbnail.
+                        QObject::connect(
+                            thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), &RequestAssetBrowserRepaint);
 
                         // Add the thumbnail to the set of thumbnails in progress then queue the job to load it. The job will send the
                         // ThumbnailUpdated signal from the main thread when complete.
@@ -183,6 +202,7 @@ namespace AzToolsFramework
             m_missingThumbnail.reset();
             m_loadingThumbnail.reset();
             m_placeholderObject.reset();
+            m_busyLabelConnection = {};
             m_thumbnailsBeingLoaded.clear();
         }
     } // namespace Thumbnailer
