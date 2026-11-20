@@ -8,6 +8,8 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Console/Console.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 
 #if defined(HAVE_BENCHMARK)
@@ -22,6 +24,17 @@ namespace Benchmark
     {
         void internalSetUp()
         {
+            m_console = new AZ::Console;
+            AZ::Interface<AZ::IConsole>::Register(m_console);
+            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+            m_console->GetCvarValue("bg_octreeUseQuadtree", m_savedUseQuadtree);
+            m_console->GetCvarValue("bg_octreeMaxWorldExtents", m_savedBounds);
+            m_console->GetCvarValue("bg_octreeNodeMaxEntries", m_savedMaxEntries);
+            m_console->GetCvarValue("bg_octreeNodeMinEntries", m_savedMinEntries);
+            m_console->PerformCommand("bg_octreeUseQuadtree false", AZ::ConsoleSilentMode::Silent, AZ::ConsoleInvokedFrom::AzConsole, AZ::ConsoleFunctorFlags::Null, AZ::ConsoleFunctorFlags::Null);
+            m_console->PerformCommand("bg_octreeMaxWorldExtents 16384");
+            m_console->PerformCommand("bg_octreeNodeMaxEntries 64");
+            m_console->PerformCommand("bg_octreeNodeMinEntries 32");
             if (!AZ::NameDictionary::IsReady())
             {
                 AZ::NameDictionary::Create();
@@ -70,6 +83,18 @@ namespace Benchmark
             delete m_octreeSystemComponent;
             AZ::NameDictionary::Destroy();
 
+            AZStd::string command = "bg_octreeUseQuadtree false";
+            if (m_savedUseQuadtree)
+            {
+                command = "bg_octreeUseQuadtree true";
+            }
+            m_console->PerformCommand(command.c_str(), AZ::ConsoleSilentMode::Silent, AZ::ConsoleInvokedFrom::AzConsole, AZ::ConsoleFunctorFlags::Null, AZ::ConsoleFunctorFlags::Null);
+            m_console->PerformCommand(AZStd::string::format("bg_octreeMaxWorldExtents %f", m_savedBounds).c_str());
+            m_console->PerformCommand(AZStd::string::format("bg_octreeNodeMaxEntries %u", m_savedMaxEntries).c_str());
+            m_console->PerformCommand(AZStd::string::format("bg_octreeNodeMinEntries %u", m_savedMinEntries).c_str());
+            AZ::Interface<AZ::IConsole>::Unregister(m_console);
+            delete m_console;
+
             m_dataArray.clear();
             m_dataArray.shrink_to_fit();
 
@@ -112,6 +137,35 @@ namespace Benchmark
             }
         }
 
+        void SetRootStraddlingBounds(uint32_t entryCount)
+        {
+            const AZ::Aabb rootStraddlingBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
+            for (uint32_t i = 0; i < entryCount; ++i)
+            {
+                m_dataArray[i].m_boundingVolume = rootStraddlingBounds;
+            }
+        }
+
+        void VerifyGrowth(benchmark::State& state, AzFramework::VisibilityEntry& entry)
+        {
+            bool contained = false;
+            m_visScene->Enumerate(entry.m_boundingVolume,
+                [&entry, &contained](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                {
+                    for (const auto* candidate : nodeData.m_entries)
+                    {
+                        if (candidate == &entry)
+                        {
+                            contained = AZ::ShapeIntersection::Contains(nodeData.m_bounds, entry.m_boundingVolume);
+                        }
+                    }
+                });
+            if (!contained)
+            {
+                state.SkipWithError("The entry beyond the initial root was not contained after growth");
+            }
+        }
+
         struct QueryData
         {
             AZ::Aabb aabb;
@@ -123,6 +177,11 @@ namespace Benchmark
         AZStd::vector<QueryData> m_queryDataArray;
         AzFramework::OctreeSystemComponent* m_octreeSystemComponent = nullptr;
         AzFramework::IVisibilityScene* m_visScene = nullptr;
+        AZ::Console* m_console = nullptr;
+        bool m_savedUseQuadtree = false;
+        float m_savedBounds = 0.0f;
+        uint32_t m_savedMaxEntries = 0;
+        uint32_t m_savedMinEntries = 0;
     };
 
     BENCHMARK_F(BM_Octree, InsertDelete1000)(benchmark::State& state)
@@ -164,6 +223,157 @@ namespace Benchmark
             RemoveEntries(EntryCount);
         }
     }
+
+    BENCHMARK_DEFINE_F(BM_Octree, GrowToContainDistributed)(benchmark::State& state)
+    {
+        const uint32_t entryCount = aznumeric_cast<uint32_t>(state.range(0));
+        for ([[maybe_unused]] auto _ : state)
+        {
+            state.PauseTiming();
+            InsertEntries(entryCount);
+            const AZ::Aabb originalBounds = m_dataArray[0].m_boundingVolume;
+            constexpr float FarPosition = 35423.84375f;
+            m_dataArray[0].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(FarPosition, 0.0f, 0.0f), AZ::Vector3(FarPosition + 0.25f, 0.25f, 0.25f));
+            state.ResumeTiming();
+
+            m_visScene->InsertOrUpdateEntry(m_dataArray[0]);
+
+            state.PauseTiming();
+            VerifyGrowth(state, m_dataArray[0]);
+            RemoveEntries(entryCount);
+            m_dataArray[0].m_boundingVolume = originalBounds;
+            state.ResumeTiming();
+        }
+    }
+
+    // Measure one fresh expansion per invocation. Use --benchmark_repetitions for statistical sampling.
+    BENCHMARK_REGISTER_F(BM_Octree, GrowToContainDistributed)
+        ->Arg(1000)
+        ->Arg(10000)
+        ->Arg(100000)
+        ->Arg(1000000)
+        ->Iterations(1)
+        ->UseRealTime();
+
+    BENCHMARK_DEFINE_F(BM_Octree, GrowToContainRootStraddlers)(benchmark::State& state)
+    {
+        const uint32_t entryCount = aznumeric_cast<uint32_t>(state.range(0));
+        for ([[maybe_unused]] auto _ : state)
+        {
+            state.PauseTiming();
+            SetRootStraddlingBounds(entryCount);
+            InsertEntries(entryCount);
+            constexpr float FarPosition = 35423.84375f;
+            m_dataArray[0].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(FarPosition, 0.0f, 0.0f), AZ::Vector3(FarPosition + 0.25f, 0.25f, 0.25f));
+            state.ResumeTiming();
+
+            m_visScene->InsertOrUpdateEntry(m_dataArray[0]);
+
+            state.PauseTiming();
+            VerifyGrowth(state, m_dataArray[0]);
+            RemoveEntries(entryCount);
+            state.ResumeTiming();
+        }
+    }
+
+    BENCHMARK_REGISTER_F(BM_Octree, GrowToContainRootStraddlers)
+        ->Arg(1000)
+        ->Arg(10000)
+        ->Arg(100000)
+        ->Arg(1000000)
+        ->Iterations(1)
+        ->UseRealTime();
+
+    BENCHMARK_DEFINE_F(BM_Octree, EnumerateAabbAfterGrowth)(benchmark::State& state)
+    {
+        const uint32_t entryCount = aznumeric_cast<uint32_t>(state.range(0));
+        constexpr uint32_t LocalEntryCount = 64;
+        constexpr float FarOffset = 35423.84375f;
+        InsertEntries(entryCount);
+        for (uint32_t entryIndex = LocalEntryCount; entryIndex < entryCount; ++entryIndex)
+        {
+            m_dataArray[entryIndex].m_boundingVolume = m_dataArray[entryIndex].m_boundingVolume.GetTranslated(AZ::Vector3(FarOffset, 0.0f, 0.0f));
+            m_visScene->InsertOrUpdateEntry(m_dataArray[entryIndex]);
+        }
+        VerifyGrowth(state, m_dataArray[LocalEntryCount]);
+
+        const AZ::Aabb localQuery = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3(8000.0f));
+        size_t candidateCount = 0;
+        for ([[maybe_unused]] auto _ : state)
+        {
+            candidateCount = 0;
+            m_visScene->Enumerate(
+                localQuery,
+                [&candidateCount](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                {
+                    candidateCount += nodeData.m_entries.size();
+                    for (AzFramework::VisibilityEntry* entry : nodeData.m_entries)
+                    {
+                        benchmark::DoNotOptimize(entry);
+                    }
+                });
+        }
+        state.counters["Candidates"] = aznumeric_cast<double>(candidateCount);
+        if (candidateCount != LocalEntryCount)
+        {
+            state.SkipWithError("The local query returned entries from the distant population");
+        }
+        RemoveEntries(entryCount);
+    }
+
+    BENCHMARK_REGISTER_F(BM_Octree, EnumerateAabbAfterGrowth)
+        ->Arg(1000)
+        ->Arg(10000)
+        ->Arg(100000)
+        ->Arg(1000000);
+
+    BENCHMARK_DEFINE_F(BM_Octree, UpdateStationaryEntries)(benchmark::State& state)
+    {
+        const uint32_t entryCount = aznumeric_cast<uint32_t>(state.range(0));
+        InsertEntries(entryCount);
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (uint32_t entryIndex = 0; entryIndex < entryCount; ++entryIndex)
+            {
+                m_visScene->InsertOrUpdateEntry(m_dataArray[entryIndex]);
+            }
+        }
+        state.SetItemsProcessed(state.iterations() * entryCount);
+        RemoveEntries(entryCount);
+    }
+
+    BENCHMARK_REGISTER_F(BM_Octree, UpdateStationaryEntries)
+        ->Arg(1000)
+        ->Arg(10000)
+        ->Arg(100000)
+        ->Arg(1000000)
+        ->UseRealTime();
+
+    BENCHMARK_DEFINE_F(BM_Octree, UpdateMovingEntries)(benchmark::State& state)
+    {
+        const uint32_t entryCount = aznumeric_cast<uint32_t>(state.range(0));
+        InsertEntries(entryCount);
+        AZ::Vector3 offset(0.125f, 0.0f, 0.0f);
+        for ([[maybe_unused]] auto _ : state)
+        {
+            for (uint32_t entryIndex = 0; entryIndex < entryCount; ++entryIndex)
+            {
+                auto& entry = m_dataArray[entryIndex];
+                entry.m_boundingVolume = entry.m_boundingVolume.GetTranslated(offset);
+                m_visScene->InsertOrUpdateEntry(entry);
+            }
+            offset = -offset;
+        }
+        state.SetItemsProcessed(state.iterations() * entryCount);
+        RemoveEntries(entryCount);
+    }
+
+    BENCHMARK_REGISTER_F(BM_Octree, UpdateMovingEntries)
+        ->Arg(1000)
+        ->Arg(10000)
+        ->Arg(100000)
+        ->Arg(1000000)
+        ->UseRealTime();
 
     BENCHMARK_F(BM_Octree, EnumerateAabb1000)(benchmark::State& state)
     {
