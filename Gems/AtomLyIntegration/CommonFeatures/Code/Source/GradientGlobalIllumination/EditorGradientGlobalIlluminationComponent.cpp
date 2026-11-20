@@ -129,6 +129,7 @@ namespace AZ::Render
                     ->EnumAttribute(GradientGlobalIlluminationBlendMode::Add, "Add")
                     ->EnumAttribute(GradientGlobalIlluminationBlendMode::Screen, "Screen")
                     ->EnumAttribute(GradientGlobalIlluminationBlendMode::Overlay, "Overlay")
+                    ->EnumAttribute(GradientGlobalIlluminationBlendMode::Replace, "Replace")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &GradientGlobalIlluminationComponentConfig::m_detailStrength,

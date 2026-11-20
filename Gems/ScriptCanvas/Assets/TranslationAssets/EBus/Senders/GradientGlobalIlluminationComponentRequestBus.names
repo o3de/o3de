@@ -98,7 +98,7 @@
                     "exit": { "name": "Out", "tooltip": "Signaled after Set Resolution is invoked" },
                     "details": { "name": "Set Resolution", "tooltip": "Set face size in pixels, rounded and clamped to 4-256. CPU mode snaps to a power of two." },
                     "params": [
-                        { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Resolution" } }
                     ]
                 },
                 {
@@ -107,7 +107,7 @@
                     "exit": { "name": "Out", "tooltip": "Signaled after Get Resolution is invoked" },
                     "details": { "name": "Get Resolution", "tooltip": "Get the configured face size. CPU output can lag while resolution edits settle." },
                     "results": [
-                        { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Resolution" } }
                     ]
                 },
                 {

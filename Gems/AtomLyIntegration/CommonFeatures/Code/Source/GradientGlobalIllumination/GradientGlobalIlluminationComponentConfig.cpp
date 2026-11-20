@@ -37,8 +37,10 @@ namespace AZ::Render
 
     AZ::Crc32 GradientGlobalIlluminationComponentConfig::GetGpuLayerVisibility() const
     {
-        return m_updateMode == GradientGlobalIlluminationUpdateMode::Dynamic
-            ? AZ::Edit::PropertyVisibility::Show
-            : AZ::Edit::PropertyVisibility::Hide;
+        if (m_updateMode == GradientGlobalIlluminationUpdateMode::Dynamic)
+        {
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+        return AZ::Edit::PropertyVisibility::Hide;
     }
 } // namespace AZ::Render

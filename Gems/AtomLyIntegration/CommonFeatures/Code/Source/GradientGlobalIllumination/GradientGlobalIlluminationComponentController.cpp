@@ -42,7 +42,7 @@ namespace AZ::Render
                 ->Enum<static_cast<uint32_t>(GradientGlobalIlluminationBlendMode::Overlay)>("GradientGlobalIlluminationBlendMode_Overlay")
                 ->Enum<static_cast<uint32_t>(GradientGlobalIlluminationBlendMode::Replace)>("GradientGlobalIlluminationBlendMode_Replace");
 
-            behaviorContext->EBus<GradientGlobalIlluminationComponentRequestBus>("GradientGlobalIlluminationComponentRequestBus")
+            behaviorContext->EBus<GradientGlobalIlluminationComponentRequestBus>("GradientGlobalIlluminationComponentRequestBus", "GradientGIComponentRequestBus")
                 ->Attribute(AZ::Script::Attributes::Module, "render")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("SetLowColor", &GradientGlobalIlluminationComponentRequestBus::Events::SetLowColor)
@@ -256,11 +256,13 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationComponentController::SetUpdateMode(GradientGlobalIlluminationUpdateMode mode)
     {
-        m_configuration.m_updateMode = mode;
+        using UpdateMode = GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode;
+        const UpdateMode requested = GradientGlobalIllumination::ResolveUpdateMode(static_cast<UpdateMode>(mode), true);
+        m_configuration.m_updateMode = static_cast<GradientGlobalIlluminationUpdateMode>(requested);
 
         if (IsActiveOwner())
         {
-            m_featureProcessor->SetUpdateMode(static_cast<GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode>(mode));
+            m_featureProcessor->SetUpdateMode(requested);
         }
 
         SnapResolutionForCurrentMode();
@@ -457,12 +459,9 @@ namespace AZ::Render
 
     void GradientGlobalIlluminationComponentController::ApplyConfiguration()
     {
-        m_featureProcessor->SetUpdateMode(static_cast<GradientGlobalIlluminationFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
+        SetUpdateMode(m_configuration.m_updateMode);
         UpdateColors();
         m_featureProcessor->SetExposure(m_configuration.m_exposure);
-
-        SnapResolutionForCurrentMode();
-        m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
 
         PushDetailParams();
         PushSpecularParams();
@@ -608,7 +607,7 @@ namespace AZ::Render
         AZ::TickBus::Handler::BusConnect();
     }
 
-    void GradientGlobalIlluminationComponentController::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void GradientGlobalIlluminationComponentController::OnTick(float, AZ::ScriptTimePoint)
     {
         AZ::TickBus::Handler::BusDisconnect();
 
