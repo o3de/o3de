@@ -330,6 +330,17 @@ function(o3de_copy_file_to_filesystem)
             file(TOUCH_NOCREATE "${target_file}")
             set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY ANYTHING_NEW TRUE)
         endif()
+
+        # shortcut: sign the flat ISPCTexComp runtime copy until the macOS package ships it signed.
+        if(NOT target_bundle_content_dir AND target_file MATCHES "/libispc_texcomp[.]dylib$")
+            find_program(LY_CODESIGN codesign REQUIRED)
+            execute_process(COMMAND "${LY_CODESIGN}" --display "${target_file}"
+                RESULT_VARIABLE codesign_display_result ERROR_QUIET)
+            if(NOT "${codesign_display_result}" STREQUAL "0")
+                execute_process(COMMAND "${LY_CODESIGN}" --sign - "${target_file}"
+                    COMMAND_ERROR_IS_FATAL ANY)
+            endif()
+        endif()
     endif()
 endfunction()
 

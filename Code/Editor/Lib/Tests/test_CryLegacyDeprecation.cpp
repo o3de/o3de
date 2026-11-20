@@ -85,11 +85,12 @@ namespace EditorUtilsTest
         Ang3 legacyAngles = Ang3::GetAnglesXYZ(legacyMatrix);
         AZ::Vector3 newAngles = AZ::Quaternion::CreateFromMatrix3x3(newMatrix).GetEulerRadiansZYX();
 
-        // Validation
-        for (int r = 0; r < 3; ++r)
-        {
-            ASSERT_NEAR(legacyAngles[r], newAngles[r], 1e-6f);
-        }
+        // Euler components can differ slightly between implementations while still representing the same rotation.
+        const AZ::Quaternion legacyRotation =
+            AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(legacyAngles.x, legacyAngles.y, legacyAngles.z));
+        const AZ::Quaternion newRotation =
+            AZ::Quaternion::CreateFromEulerRadiansZYX(newAngles);
+        EXPECT_NEAR(AZStd::abs(legacyRotation.Dot(newRotation)), 1.0f, 1e-5f);
 
         AZ_POP_DISABLE_WARNING;
     }

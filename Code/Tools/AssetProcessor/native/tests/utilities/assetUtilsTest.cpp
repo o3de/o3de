@@ -462,8 +462,8 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_GivenJobDependencies_AffectsOutco
 
     QTemporaryDir dir;
     QDir tempPath(dir.path());
-    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
     QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
+    UnitTests::MockPathConversion mockPathConversion(canonicalTempDirPath.toUtf8().constData());
     UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
     tempPath = QDir(canonicalTempDirPath);
     QString absoluteTestFilePath1 = tempPath.absoluteFilePath("basicfile.txt");

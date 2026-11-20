@@ -420,13 +420,21 @@ namespace AZ
 
     Matrix3x4 Matrix3x4::GetInverseFull() const
     {
+        // Round both products before subtracting so equal products cancel even on targets with FMA.
+        const auto differenceOfProducts = [](float a, float b, float c, float d)
+        {
+            const float lhs = a * b;
+            const float rhs = c * d;
+            return lhs - rhs;
+        };
+
         Matrix3x4 result;
 
         // compute the first row of the matrix of cofactors
         result.SetRow(0,
-            GetElement(1, 1) * GetElement(2, 2) - GetElement(1, 2) * GetElement(2, 1),
-            GetElement(2, 1) * GetElement(0, 2) - GetElement(2, 2) * GetElement(0, 1),
-            GetElement(0, 1) * GetElement(1, 2) - GetElement(0, 2) * GetElement(1, 1),
+            differenceOfProducts(GetElement(1, 1), GetElement(2, 2), GetElement(1, 2), GetElement(2, 1)),
+            differenceOfProducts(GetElement(2, 1), GetElement(0, 2), GetElement(2, 2), GetElement(0, 1)),
+            differenceOfProducts(GetElement(0, 1), GetElement(1, 2), GetElement(0, 2), GetElement(1, 1)),
             0.0f
         );
 
@@ -441,15 +449,15 @@ namespace AZ
             float determinantInv = 1.0f / determinant;
             result.m_rows[0] *= determinantInv;
             result.SetRow(1,
-                determinantInv * (GetElement(1, 2) * GetElement(2, 0) - GetElement(1, 0) * GetElement(2, 2)),
-                determinantInv * (GetElement(2, 2) * GetElement(0, 0) - GetElement(2, 0) * GetElement(0, 2)),
-                determinantInv * (GetElement(0, 2) * GetElement(1, 0) - GetElement(0, 0) * GetElement(1, 2)),
+                determinantInv * differenceOfProducts(GetElement(1, 2), GetElement(2, 0), GetElement(1, 0), GetElement(2, 2)),
+                determinantInv * differenceOfProducts(GetElement(2, 2), GetElement(0, 0), GetElement(2, 0), GetElement(0, 2)),
+                determinantInv * differenceOfProducts(GetElement(0, 2), GetElement(1, 0), GetElement(0, 0), GetElement(1, 2)),
                 0.0f
             );
             result.SetRow(2,
-                determinantInv * (GetElement(1, 0) * GetElement(2, 1) - GetElement(1, 1) * GetElement(2, 0)),
-                determinantInv * (GetElement(2, 0) * GetElement(0, 1) - GetElement(2, 1) * GetElement(0, 0)),
-                determinantInv * (GetElement(0, 0) * GetElement(1, 1) - GetElement(0, 1) * GetElement(1, 0)),
+                determinantInv * differenceOfProducts(GetElement(1, 0), GetElement(2, 1), GetElement(1, 1), GetElement(2, 0)),
+                determinantInv * differenceOfProducts(GetElement(2, 0), GetElement(0, 1), GetElement(2, 1), GetElement(0, 0)),
+                determinantInv * differenceOfProducts(GetElement(0, 0), GetElement(1, 1), GetElement(0, 1), GetElement(1, 0)),
                 0.0f
             );
         }

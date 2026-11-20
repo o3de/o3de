@@ -59,6 +59,11 @@ namespace UnitTest
             // Return is [[nodiscard]] in Qt6; offscreen QPA may legitimately
             // return false, so the value is discarded rather than asserted.
             (void)QTest::qWaitForWindowExposed(m_dummyWidget.get());
+            // TODO: Refactor these tests so focus transitions do not depend on an active top-level window,
+            // then remove this deprecated workaround.
+            AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
+            QApplication::setActiveWindow(m_dummyWidget.get());
+            AZ_POP_DISABLE_WARNING
             // Some QPA plugins (including Linux offscreen) auto-focus the
             // first focusable child when the top-level is shown, firing
             // FocusIn before the test body can set the value it expects to

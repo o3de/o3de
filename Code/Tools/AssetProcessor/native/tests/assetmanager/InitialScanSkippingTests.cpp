@@ -20,6 +20,8 @@ namespace UnitTests
         // This pair of tests are regression tests for an issue where having scan skipping turned on would result in AP never processing
         // files This particular test verifies everything works when scan skipping is off
 
+        m_assetProcessorManager->SetInitialScanSkippingFeature(false);
+
         QSet<AssetProcessor::AssetFileInfo> filePaths = {};
 
         // Simulate running through the scanning phase
@@ -36,10 +38,12 @@ namespace UnitTests
             Qt::QueuedConnection,
             Q_ARG(AssetProcessor::AssetScanningStatus, AssetProcessor::AssetScanningStatus::Completed));
 
-        CreateBuilder("stage1", "*.stage1", "stage2", false, AssetBuilderSDK::ProductOutputFlags::ProductAsset);
+        // Process the scanner callbacks, then the FinishAssetScan callback queued by AssessFilesFromScanner.
+        // The file-monitor event below should arrive after the initial scan has finished, as it does outside this test.
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
 
-        // Test with scan skipping off
-        m_assetProcessorManager->SetInitialScanSkippingFeature(false);
+        CreateBuilder("stage1", "*.stage1", "stage2", false, AssetBuilderSDK::ProductOutputFlags::ProductAsset);
 
         // Update the file
         AZ::Utils::WriteFile("unit test file", m_testFilePath.c_str());
@@ -53,6 +57,8 @@ namespace UnitTests
         using namespace AssetProcessor;
         // This pair of tests are regression tests for an issue where having scan skipping turned on would result in AP never processing
         // files This particular test verifies files can be processed after scanning is done when scan skipping is enabled
+
+        m_assetProcessorManager->SetInitialScanSkippingFeature(true);
 
         QSet<AssetProcessor::AssetFileInfo> filePaths = {};
         QMetaObject::invokeMethod(
@@ -68,9 +74,13 @@ namespace UnitTests
             Qt::QueuedConnection,
             Q_ARG(AssetProcessor::AssetScanningStatus, AssetProcessor::AssetScanningStatus::Completed));
 
+        // Process the scanner callbacks, then the FinishAssetScan callback queued by AssessFilesFromScanner.
+        // The file-monitor event below should arrive after the initial scan has finished, as it does outside this test.
+        QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
+
         CreateBuilder("stage1", "*.stage1", "stage2", false, AssetBuilderSDK::ProductOutputFlags::ProductAsset);
 
-        m_assetProcessorManager->SetInitialScanSkippingFeature(true);
         AZ::Utils::WriteFile("unit test file", m_testFilePath.c_str());
         ProcessFileMultiStage(1, true);
     }
