@@ -977,6 +977,61 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     return true;
 }
 
+void CCryEditDoc::SaveUnsavedNestedPrefabs(const QString& backupLevelFolder)
+{
+    // The level file holds only the root prefab. Edits made inside a nested prefab live in that prefab's own template until it
+    // is saved, so a backup of the level alone would lose them. The copies are written next to the backup, at their
+    // project-relative paths; the templates keep their own paths and dirty flags, since nothing has been saved for real.
+    if (!m_prefabEditorEntityOwnershipInterface || !m_prefabSystemComponentInterface || !m_prefabLoaderInterface)
+    {
+        return;
+    }
+
+    const AzToolsFramework::Prefab::TemplateId rootTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+    if (rootTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
+    {
+        return;
+    }
+
+    // Resolved the way SaveLevel resolves the level file, so the copies land next to it.
+    QString levelFolder = Path::ToUnixPath(backupLevelFolder);
+    if (QFileInfo(levelFolder).isRelative())
+    {
+        levelFolder = Path::ToUnixPath(QDir(QString::fromUtf8(gEnv->pFileIO->GetAlias("@projectroot@"))).absoluteFilePath(levelFolder));
+    }
+    const AZ::IO::Path unsavedPrefabsFolder = AZ::IO::Path(levelFolder.toUtf8().constData()) / "UnsavedPrefabs";
+
+    for (const AZ::IO::PathView dirtyTemplatePath : m_prefabSystemComponentInterface->GetDirtyTemplatePaths(rootTemplateId))
+    {
+        const AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(dirtyTemplatePath);
+        if (templateId == rootTemplateId || templateId == AzToolsFramework::Prefab::InvalidTemplateId)
+        {
+            continue;
+        }
+
+        AZStd::string prefabJson;
+        if (!m_prefabLoaderInterface->SaveTemplateToString(templateId, prefabJson))
+        {
+            AZ_Warning("Editor", false, "Could not back up the unsaved prefab '%.*s'.", AZ_STRING_ARG(dirtyTemplatePath.Native()));
+            continue;
+        }
+
+        // Template paths are relative to their scan folder; keep only the file name if one is not.
+        AZ::IO::Path relativePath = AZ::IO::Path(dirtyTemplatePath).LexicallyNormal();
+        if (relativePath.IsAbsolute() || relativePath.Native().starts_with(".."))
+        {
+            relativePath = relativePath.Filename();
+        }
+
+        const AZ::IO::Path backupPath = unsavedPrefabsFolder / relativePath;
+        if (auto outcome = AZ::Utils::WriteFile(prefabJson, backupPath.Native()); !outcome.IsSuccess())
+        {
+            AZ_Warning("Editor", false, "Could not back up the unsaved prefab '%.*s': %s", AZ_STRING_ARG(dirtyTemplatePath.Native()),
+                outcome.GetError().c_str());
+        }
+    }
+}
+
 bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
 {
     bool loadedSuccessfully = false;
@@ -1054,6 +1109,7 @@ void CCryEditDoc::Hold(const QString& holdName, const QString& relativeHoldPath)
         Internal::ScopedRootTemplateRestore restoreRootTemplate(m_prefabEditorEntityOwnershipInterface, m_prefabSystemComponentInterface);
         SaveLevel(holdFilename);
     }
+    SaveUnsavedNestedPrefabs(holdPath);
     gSettings.bBackupOnSave = oldBackup;
 
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
@@ -1277,11 +1333,13 @@ void CCryEditDoc::SaveAutoBackup(bool bForce)
     QString subFolder = theTime.toString(QStringLiteral("yyyy-MM-dd [HH.mm.ss]"));
 
     QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-    QString filename = autoBackupPath + "/" + subFolder + "/" + levelName + "/" + levelName + GetIEditor()->GetGameEngine()->GetLevelExtension();
+    QString backupLevelFolder = autoBackupPath + "/" + subFolder + "/" + levelName;
+    QString filename = backupLevelFolder + "/" + levelName + GetIEditor()->GetGameEngine()->GetLevelExtension();
     {
         Internal::ScopedRootTemplateRestore restoreRootTemplate(m_prefabEditorEntityOwnershipInterface, m_prefabSystemComponentInterface);
         SaveLevel(filename);
     }
+    SaveUnsavedNestedPrefabs(backupLevelFolder);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
     isInProgress = false;
