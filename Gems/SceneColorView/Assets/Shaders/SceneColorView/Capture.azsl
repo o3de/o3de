@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+
+// This is the capture shader's OWN per-pass layout, not the forward layout.
+// ViewSrg is used by the later consumers, not by this producer shader.
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_source;
+    Sampler SourceSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    OUT.m_color = PassSrg::m_source.SampleLevel(PassSrg::SourceSampler, IN.m_texCoord, 0.0);
+    return OUT;
+}
