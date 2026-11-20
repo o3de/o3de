@@ -23,6 +23,9 @@ namespace AtomToolsFramework
         // This notification is sent whenever graph compilation has started.
         virtual void OnCompileGraphStarted([[maybe_unused]] const AZ::Uuid& documentId){};
 
+        //! Sent once generated files are written, before waiting on the Asset Processor; GetGeneratedFilePaths is already populated.
+        virtual void OnCompileGraphProcessing([[maybe_unused]] const AZ::Uuid& documentId){};
+
         // This notification is sent whenever graph compilation has completed.
         virtual void OnCompileGraphCompleted([[maybe_unused]] const AZ::Uuid& documentId){};
 

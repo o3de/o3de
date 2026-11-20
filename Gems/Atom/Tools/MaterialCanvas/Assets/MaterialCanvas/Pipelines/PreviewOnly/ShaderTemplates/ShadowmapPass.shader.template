@@ -1,0 +1,38 @@
+{
+    // Preview-only engine template copy with vulkan disabled to halve the job; remove "vulkan" if the editor runs on Vulkan.
+    "DisabledRHIBackends": ["null", "vulkan"],
+
+    // Compiled in process by the viewport; skipping include dependencies avoids a racing AP rebuild (see MaterialCanvasViewportContent).
+    "SkipIncludeFileDependencies": true,
+
+    // Preview shaders don't need optimised bytecode, so use -O1 instead of DXC's -O3 default (-O0 is slower); see README.md.
+    "AddBuildArguments": {
+        "dxc": ["-O1"]
+    },
+
+    "Source": "",
+
+    "DepthStencilState": {
+        "Depth": { "Enable": true, "CompareFunc": "LessEqual" }
+    },
+
+    // Note that lights now expose their own bias controls.
+    // It may be worth increasing their default values in the future and reducing the depthBias values encoded here.
+    "RasterState": {
+        "depthBias": "10",
+        "depthBiasSlopeScale": "4"
+    },
+
+    "Definitions" : ["SHADOWMAP=1"],
+
+    "ProgramSettings": {
+        "EntryPoints": [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            }
+        ]
+    },
+
+    "DrawList": "shadow"
+}

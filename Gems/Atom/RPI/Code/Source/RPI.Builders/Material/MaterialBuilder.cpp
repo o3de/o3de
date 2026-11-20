@@ -215,6 +215,8 @@ namespace AZ
             AzFramework::StringFunc::Path::ConstructFull(
                 request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
+            MaterialBuilderUtils::JobPhaseTimer jobTimer(MaterialBuilderName, request.m_sourceFile);
+
             const auto& materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
             if (!materialSourceDataOutcome)
             {
@@ -223,6 +225,8 @@ namespace AZ
             }
 
             const auto& materialSourceData = materialSourceDataOutcome.GetValue();
+
+            jobTimer.Mark("load material source");
 
             // Load the material file and create the MaterialAsset object
             const auto& materialAssetOutcome = materialSourceData.CreateMaterialAsset(
@@ -250,6 +254,9 @@ namespace AZ
             fileName += ".";
             fileName += MaterialAsset::Extension;
             AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
+
+            // Everything above resolved the material type and built the MaterialAsset in memory; everything below writes it out.
+            jobTimer.Mark("create material asset");
 
             if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_BINARY, materialAsset.Get()))
             {

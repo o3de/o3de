@@ -137,6 +137,13 @@ namespace GraphModelIntegration
         //! Create a new GraphModel::Connection using the given source and target slots. This will also remove any existing connections on the target slot.
         GraphModel::ConnectionPtr CreateConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot);
 
+        //! Resolves and displays an opt-in passthrough node's type from the source connected to its input slot.
+        bool GetDataTypePassthroughSlots(
+            GraphModel::ConstNodePtr node, GraphModel::ConstSlotPtr& inputSlot, GraphModel::ConstSlotPtr& outputSlot) const;
+        GraphModel::DataTypePtr GetEffectiveDataType(GraphModel::ConstSlotPtr slot) const;
+        bool IsDataTypeSupportedByPassthroughOutputs(GraphModel::ConstNodePtr node, GraphModel::DataTypePtr dataType) const;
+        void UpdateDataTypePassthroughDisplay(GraphModel::ConstNodePtr node) const;
+
         //! Check if creating a connection between the specified target and source node would
         //! cause a connection loopback.
         bool CheckForLoopback(GraphModel::NodePtr sourceNode, GraphModel::NodePtr targetNode) const;
