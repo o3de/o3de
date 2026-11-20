@@ -720,11 +720,11 @@ namespace AtomToolsFramework
         // Whenever a document is opened or selected select the corresponding tab
         m_tabWidget->setCurrentIndex(GetDocumentTabIndex(documentId));
 
+        // An empty path cancels a pending selection when the last tab closes.
+        m_assetBrowser->SelectEntries(absolutePath);
+
         if (!absolutePath.empty())
         {
-            // Find and select the file path in the asset browser
-            m_assetBrowser->SelectEntries(absolutePath);
-
             SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()).toUtf8().constData());
         }
     }

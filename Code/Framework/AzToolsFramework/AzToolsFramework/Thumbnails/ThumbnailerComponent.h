@@ -67,6 +67,7 @@ namespace AzToolsFramework
             SharedThumbnail m_loadingThumbnail;
             //! Using placeholder object rather than inheritance for connecting signals and slots
             AZStd::unique_ptr<QObject> m_placeholderObject;
+            QMetaObject::Connection m_busyLabelConnection;
             //! Current number of jobs running.
             AZStd::set<SharedThumbnail> m_thumbnailsBeingLoaded;
         };
