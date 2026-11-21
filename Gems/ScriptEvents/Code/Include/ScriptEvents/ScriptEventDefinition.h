@@ -156,6 +156,9 @@ namespace ScriptEvents
         AZStd::string_view GetLabel() const { return { m_name.Get<AZStd::string>()->data(), m_name.Get<AZStd::string>()->size() }; }
 
         void SetVersion(AZ::u32 version) { m_version = version; }
+        //! A generated definition is built from another source asset; the editor shows it read-only and refuses to save it.
+        bool IsGenerated() const { return m_isGenerated; }
+        void SetGenerated(bool generated) { m_isGenerated = generated; }
         ScriptEventData::VersionedProperty& GetNameProperty() { return m_name; }
         ScriptEventData::VersionedProperty& GetCategoryProperty() { return m_category; }
         ScriptEventData::VersionedProperty& GetTooltipProperty() { return m_tooltip; }
@@ -202,6 +205,7 @@ namespace ScriptEvents
     private:
 
         AZ::u32 m_version;
+        bool m_isGenerated = false;
         ScriptEventData::VersionedProperty m_name;
         ScriptEventData::VersionedProperty m_category;
         ScriptEventData::VersionedProperty m_tooltip;

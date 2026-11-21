@@ -51,6 +51,9 @@ namespace AZ
         {
             AZ_TYPE_INFO(AssetId, "{652ED536-3402-439B-AEBE-4A5DBC554085}");
 
+            //! The sub ID of a source asset's own asset ID. Any other sub ID identifies one of the products made from that source.
+            static constexpr u32 SourceAssetSubId = 0;
+
             /// Create asset id in invalid state
             AssetId();
             explicit AssetId(AZStd::string_view guidString, u32 subId = 0);
