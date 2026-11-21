@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/optional.h>
@@ -97,8 +98,10 @@ namespace EditorPythonBindings
         //! Converts a behavior value parameter to a Python object
         //! @param behaviorValue is a parameter that came from a result or some prepared behavior value
         //! @param stackVariableAllocator manages the allocated parameter while in scope
+        //! @param error if not null, receives why the value could not be converted; a null pointer converts to None without an error
         //! @return a valid Python object or None if no conversion was possible
-        pybind11::object BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator);
+        pybind11::object BehaviorValueParameterToPython(
+            AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator, AZStd::string* error = nullptr);
 
         //! Converts Python object to a behavior value parameter using an existing behaviorArgument from a Behavior Method
         //! @param behaviorArgument the stored argument slot from a Behavior Method to match with the pyObj to covert in the parameter
@@ -120,8 +123,43 @@ namespace EditorPythonBindings
         AZStd::string GetPythonTypeName(pybind11::object pyObj);
     }
 
+    namespace PythonProxyObjectManagement
+    {
+        //! Creates a Python object that owns a copy of the value at data, made with the class's reflected cloner.
+        //! When data is null, the proxy holds a default constructed value of the type instead.
+        //! Returns None and sets a Python TypeError if the type is not a reflected class.
+        //! The caller must hold the Python interpreter lock.
+        pybind11::object CreatePythonProxyObject(const AZ::TypeId& typeId, void* data);
+
+        //! Checks if function can be reflected as a class member method
+        bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId);
+    } // namespace PythonProxyObjectManagement
+
     namespace Call
     {
+        //! The Python value a structured call returns, or a message saying why the call failed
+        using StructuredResult = AZ::Outcome<pybind11::object, AZStd::string>;
+
+        //! Calls a BehaviorMethod with the same marshaling as StaticMethod and ClassMethod, but reports a wrong
+        //! argument count, a failed argument conversion, a failed call or a result that cannot be marshaled as an error
+        //! instead of returning None.
+        //! @param target None for a non-member function; otherwise a PythonProxyObject that becomes the first argument
+        //! @param didInvoke if not null, set to true once the native method has run, even when the call then fails
+        //! The caller must hold the Python interpreter lock.
+        StructuredResult StructuredMethod(
+            AZ::BehaviorMethod* method, pybind11::object target, pybind11::args args, bool* didInvoke = nullptr);
+
+        //! Calls a member BehaviorMethod on native storage that no proxy owns yet, such as memory allocated for a constructor.
+        //! The call borrows self only for its duration.
+        StructuredResult StructuredMethod(
+            AZ::BehaviorMethod* method, AZ::BehaviorObject self, pybind11::args args, bool* didInvoke = nullptr);
+
+        //! Constructs a reflected class into a new PythonProxyObject that Python owns.
+        //! @param constructorIndex an index into behaviorClass.m_constructors, or empty to use the default constructor
+        //! Fails if the class is not flagged for editor automation or the index is out of range.
+        StructuredResult StructuredConstruct(
+            const AZ::BehaviorClass& behaviorClass, AZStd::optional<size_t> constructorIndex, pybind11::args args);
+
         //! Calls a BehaviorMethod with a tuple of arguments for non-member functions
         pybind11::object StaticMethod(AZ::BehaviorMethod* behaviorMethod, pybind11::args args);
 
@@ -131,6 +169,9 @@ namespace EditorPythonBindings
 
     namespace Text
     {
+        //! Reads a string or const char* attribute, such as a tooltip; returns an empty string if it is not present
+        AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute);
+
         class PythonBehaviorDescription
         {
         public:

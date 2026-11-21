@@ -8,6 +8,7 @@
 #include "PythonTestingUtility.h"
 #include "PythonTraceMessageSink.h"
 #include <EditorPythonBindings/PythonCommon.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 
@@ -16,6 +17,9 @@
 #include <Source/PythonProxyObject.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/std/any.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace UnitTest
@@ -192,7 +196,303 @@ namespace UnitTest
     };
 
     //////////////////////////////////////////////////////////////////////////
+    // structured call test types
+
+    //! A reflected value that counts its live instances, so tests can check that structured construction
+    //! and structured calls destroy every object they create
+    struct StructuredConstructValue
+    {
+        AZ_TYPE_INFO(StructuredConstructValue, "{62762668-3D5C-4894-8D46-23C4DFB10BE6}");
+
+        //! Any negative value makes the int constructor set a Python error without throwing
+        static constexpr int ValueThatSetsPythonError = -1;
+
+        static int s_liveCount;
+
+        StructuredConstructValue()
+        {
+            ++s_liveCount;
+        }
+
+        StructuredConstructValue(const StructuredConstructValue& other)
+            : m_value(other.m_value)
+        {
+            ++s_liveCount;
+        }
+
+        explicit StructuredConstructValue(int value)
+            : m_value(value)
+        {
+            ++s_liveCount;
+            if (value < 0)
+            {
+                PyErr_SetString(PyExc_RuntimeError, "Constructor reported a Python error");
+            }
+        }
+
+        ~StructuredConstructValue()
+        {
+            --s_liveCount;
+        }
+
+        int Read() const
+        {
+            return m_value;
+        }
+
+        int m_value = 0;
+    };
+
+    int StructuredConstructValue::s_liveCount = 0;
+
+    //! A result type with no Python marshaller of its own
+    struct StructuredUnmarshalable
+    {
+        AZ_TYPE_INFO(StructuredUnmarshalable, "{88EA5E91-520A-497D-B874-70579531B177}");
+    };
+
+    //! A registered marshaller that declines every value, which a structured call must report as an error
+    class StructuredDeclinedConverter final : public EditorPythonBindings::PythonMarshalComponent::TypeConverter
+    {
+    public:
+        using Requests = EditorPythonBindings::PythonMarshalTypeRequests;
+
+        // PythonMarshalComponent::TypeConverter overrides
+        AZStd::optional<Requests::BehaviorValueResult> PythonToBehaviorValueParameter(
+            Requests::BehaviorTraits, pybind11::object, AZ::BehaviorArgument&) override
+        {
+            return AZStd::nullopt;
+        }
+
+        AZStd::optional<Requests::PythonValueResult> BehaviorValueParameterToPython(AZ::BehaviorArgument&) override
+        {
+            return AZStd::nullopt;
+        }
+
+        bool CanConvertPythonToBehaviorValue(Requests::BehaviorTraits, pybind11::object) const override
+        {
+            return false;
+        }
+    };
+
+    //////////////////////////////////////////////////////////////////////////
     // tests
+
+    TEST_F(PythonGlobalsTests, StructuredFixtureUsesConfiguredEngine)
+    {
+        const auto expected = AZ::IO::FixedMaxPath(EDITOR_PYTHON_BINDINGS_TEST_ENGINE_ROOT).LexicallyNormal();
+        EXPECT_EQ(AZ::Utils::GetEnginePath(), expected.Native());
+        EXPECT_TRUE(AZ::IO::SystemFile::Exists((expected / "engine.json").c_str()));
+    }
+
+    TEST_F(PythonGlobalsTests, StructuredCallErrorsAndValues)
+    {
+        using EditorPythonBindings::Call::StructuredMethod;
+
+        PythonGlobalsTester tester;
+        tester.Reflect(m_app.GetBehaviorContext());
+        m_app.GetBehaviorContext()
+            ->Method(
+                "structured_int_arg",
+                +[](int)
+                {
+                })
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
+
+        AZ::Entity entity;
+        Activate(entity);
+        SimulateEditorBecomingInitialized();
+        {
+            auto* context = m_app.GetBehaviorContext();
+            auto noArgs = pybind11::args(pybind11::make_tuple());
+
+            // a result comes back as a Python value, and a method without a result returns None
+            auto ping = StructuredMethod(context->m_methods.at("ping"), pybind11::none(), noArgs);
+            ASSERT_TRUE(ping);
+            EXPECT_GT(ping.GetValue().cast<unsigned int>(), 0u);
+
+            auto reset = StructuredMethod(context->m_methods.at("reset"), pybind11::none(), noArgs);
+            ASSERT_TRUE(reset);
+            EXPECT_TRUE(reset.GetValue().is_none());
+
+            // a missing method, too few or too many arguments, and a target that is not a proxy are errors
+            EXPECT_FALSE(StructuredMethod(nullptr, pybind11::none(), noArgs));
+
+            auto missingArgs = StructuredMethod(context->m_methods.at("accept_two_strings"), pybind11::none(), noArgs);
+            ASSERT_FALSE(missingArgs);
+            EXPECT_NE(missingArgs.GetError().find("expects"), AZStd::string::npos);
+
+            auto excessArgs = StructuredMethod(context->m_methods.at("ping"), pybind11::none(), pybind11::args(pybind11::make_tuple(1)));
+            EXPECT_FALSE(excessArgs);
+
+            EXPECT_FALSE(StructuredMethod(context->m_methods.at("ping"), pybind11::int_(1), noArgs));
+
+            // an argument that cannot be converted is reported with its index
+            auto conversion = StructuredMethod(
+                context->m_methods.at("structured_int_arg"), pybind11::none(), pybind11::args(pybind11::make_tuple(pybind11::list())));
+            ASSERT_FALSE(conversion);
+            EXPECT_NE(conversion.GetError().find("Argument 0 conversion failed"), AZStd::string::npos);
+        }
+        Deactivate(entity);
+    }
+
+    TEST_F(PythonGlobalsTests, StructuredConstructorSelectionAndOwnership)
+    {
+        using EditorPythonBindings::Call::StructuredConstruct;
+        using EditorPythonBindings::Call::StructuredMethod;
+
+        constexpr int ConstructedValue = 42;
+        constexpr size_t IntConstructorIndex = 0;
+
+        auto* context = m_app.GetBehaviorContext();
+        context->Class<StructuredConstructValue>("StructuredConstructValue")
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+            ->Constructor<int>()
+            ->Property("value", BehaviorValueProperty(&StructuredConstructValue::m_value))
+            ->Method("Read", &StructuredConstructValue::Read)
+            ->Method(
+                "Copy",
+                +[](const StructuredConstructValue& value)
+                {
+                    return value;
+                });
+
+        AZ::Entity entity;
+        Activate(entity);
+        SimulateEditorBecomingInitialized();
+        {
+            pybind11::module::import("azlmbr.object");
+            EXPECT_EQ(StructuredConstructValue::s_liveCount, 0);
+
+            auto* behaviorClass = context->m_classes.at("StructuredConstructValue");
+            auto noArgs = pybind11::args(pybind11::make_tuple());
+            auto valueArgs = pybind11::args(pybind11::make_tuple(ConstructedValue));
+            auto errorArgs = pybind11::args(pybind11::make_tuple(StructuredConstructValue::ValueThatSetsPythonError));
+
+            // these constructions fail and leave no live object and no pending Python error: an index past the last
+            // constructor, arguments for the default constructor, no arguments for the int constructor, and a
+            // constructor that sets a Python error
+            EXPECT_FALSE(StructuredConstruct(*behaviorClass, behaviorClass->m_constructors.size(), valueArgs));
+            EXPECT_FALSE(StructuredConstruct(*behaviorClass, AZStd::nullopt, valueArgs));
+            EXPECT_FALSE(StructuredConstruct(*behaviorClass, IntConstructorIndex, noArgs));
+            EXPECT_FALSE(StructuredConstruct(*behaviorClass, IntConstructorIndex, errorArgs));
+            EXPECT_EQ(StructuredConstructValue::s_liveCount, 0);
+            EXPECT_FALSE(PyErr_Occurred());
+
+            auto constructed = StructuredConstruct(*behaviorClass, IntConstructorIndex, valueArgs);
+            ASSERT_TRUE(constructed);
+            EXPECT_EQ(constructed.GetValue().attr("value").cast<int>(), ConstructedValue);
+
+            auto defaultConstructed = StructuredConstruct(*behaviorClass, AZStd::nullopt, noArgs);
+            ASSERT_TRUE(defaultConstructed);
+            EXPECT_EQ(defaultConstructed.GetValue().attr("value").cast<int>(), 0);
+
+            // a proxy target is passed as the first argument, and the returned value is a copy that Python owns
+            auto copied = StructuredMethod(behaviorClass->m_methods.at("Copy"), constructed.GetValue(), noArgs);
+            ASSERT_TRUE(copied);
+            EXPECT_EQ(copied.GetValue().attr("value").cast<int>(), ConstructedValue);
+
+            // a bound method that is kept keeps its object alive after the object itself is dropped
+            pybind11::object retainedRead = constructed.GetValue().attr("Read");
+            constructed.GetValue() = pybind11::none();
+            EXPECT_EQ(StructuredConstructValue::s_liveCount, 3); // constructed, defaultConstructed and copied
+            EXPECT_EQ(retainedRead().cast<int>(), ConstructedValue);
+
+            retainedRead = pybind11::none();
+            EXPECT_EQ(StructuredConstructValue::s_liveCount, 2); // defaultConstructed and copied
+        }
+        EXPECT_EQ(StructuredConstructValue::s_liveCount, 0);
+        Deactivate(entity);
+    }
+
+    TEST_F(PythonGlobalsTests, StructuredCompletionAndEmptyAny)
+    {
+        using EditorPythonBindings::Call::StructuredMethod;
+
+        // static so that the captureless lambda below can count its calls
+        static int callCount = 0;
+        callCount = 0;
+
+        auto* context = m_app.GetBehaviorContext();
+
+        // reflected without the Automation scope, so a result of this type cannot be copied into a proxy
+        context->Class<StructuredUnmarshalable>("StructuredUnmarshalable");
+        context
+            ->Method(
+                "structured_unmarshalable",
+                +[]()
+                {
+                    ++callCount;
+                    return StructuredUnmarshalable{};
+                })
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
+        context
+            ->Method(
+                "structured_empty_any",
+                +[]()
+                {
+                    return AZStd::any();
+                })
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
+
+        AZ::Entity entity;
+        Activate(entity);
+        SimulateEditorBecomingInitialized();
+        {
+            pybind11::module::import("azlmbr.object");
+            auto noArgs = pybind11::args(pybind11::make_tuple());
+
+            // the method ran, and only marshaling its result failed
+            bool didInvoke = false;
+            auto unmarshalable =
+                StructuredMethod(context->m_methods.at("structured_unmarshalable"), pybind11::none(), noArgs, &didInvoke);
+            EXPECT_FALSE(unmarshalable);
+            EXPECT_TRUE(didInvoke);
+            EXPECT_EQ(callCount, 1);
+
+            // an empty AZStd::any result is None, not an error
+            auto emptyAny = StructuredMethod(context->m_methods.at("structured_empty_any"), pybind11::none(), noArgs, &didInvoke);
+            ASSERT_TRUE(emptyAny);
+            EXPECT_TRUE(didInvoke);
+            EXPECT_TRUE(emptyAny.GetValue().is_none());
+        }
+        Deactivate(entity);
+    }
+
+    TEST_F(PythonGlobalsTests, StructuredDeclinedMarshallerIsAnError)
+    {
+        using EditorPythonBindings::Call::StructuredMethod;
+
+        auto* context = m_app.GetBehaviorContext();
+        context->Class<StructuredUnmarshalable>("StructuredUnmarshalable")
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
+        context
+            ->Method(
+                "structured_declined",
+                +[]()
+                {
+                    return StructuredUnmarshalable{};
+                })
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
+
+        AZ::Entity entity;
+        Activate(entity);
+        SimulateEditorBecomingInitialized();
+        entity.FindComponent<EditorPythonBindings::PythonMarshalComponent>()->RegisterTypeConverter(
+            azrtti_typeid<StructuredUnmarshalable>(), AZStd::make_shared<StructuredDeclinedConverter>());
+        {
+            pybind11::module::import("azlmbr.object");
+            auto noArgs = pybind11::args(pybind11::make_tuple());
+
+            // the registered marshaller's refusal is reported instead of falling back to a proxy
+            bool didInvoke = false;
+            auto result = StructuredMethod(context->m_methods.at("structured_declined"), pybind11::none(), noArgs, &didInvoke);
+            EXPECT_FALSE(result);
+            EXPECT_TRUE(didInvoke);
+            EXPECT_NE(result.GetError().find("marshaller refused"), AZStd::string::npos);
+        }
+        Deactivate(entity);
+    }
 
     TEST_F(PythonGlobalsTests, GlobalMethodTest)
     {

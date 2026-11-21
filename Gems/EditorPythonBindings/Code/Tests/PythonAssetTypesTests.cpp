@@ -26,6 +26,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace UnitTest
 {
@@ -221,7 +222,6 @@ namespace UnitTest
         AZ::Data::Asset<MyTestAssetData> m_myTestAssetDataAsset;
         MyTestAssetData m_testAssetData;
         ClassWithAssets m_mockDescriptor;
-        AZStd::unique_ptr<MyTestAssetData> m_myTestAssetData;
 
         PythonReflectionAssetTypes()
         {
@@ -325,11 +325,10 @@ namespace UnitTest
 
         AZ::Data::Asset<MyTestAssetData> CreateMyTestAssetData()
         {
-            m_myTestAssetData = AZStd::make_unique<MyTestAssetData>();
-            m_myTestAssetData->m_number = 42;
-            return AZ::Data::Asset<MyTestAssetData>(
-                static_cast<AZ::Data::AssetData*>(m_myTestAssetData.get()),
-                AZ::Data::AssetLoadBehavior::NoLoad);
+            auto asset = AZ::Data::AssetManager::Instance().CreateAsset<MyTestAssetData>(
+                AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0), AZ::Data::AssetLoadBehavior::NoLoad);
+            asset->m_number = 42;
+            return asset;
         }
 
         void ReadMyTestAssetData(const AZ::Data::Asset<MyTestAssetData>& data)
@@ -356,7 +355,6 @@ namespace UnitTest
                 serializeContext->Class<PythonReflectionAssetTypes>()
                     ->Field("assetId", &PythonReflectionAssetTypes::m_assetId)
                     ->Field("assetData", &PythonReflectionAssetTypes::m_assetData)
-                    ->Field("myTestAssetData", &PythonReflectionAssetTypes::m_myTestAssetData)
                     ->Field("mockDescriptor", &PythonReflectionAssetTypes::m_mockDescriptor)
                     ;
             }
@@ -501,6 +499,25 @@ namespace UnitTest
 
     TEST_F(PythonAssetTypesTests, AssetDataTypes)
     {
+        // CreateMyTestAssetData creates its asset through the asset manager, which needs a handler for the type
+        AZ::Data::AssetManager::Create({});
+
+        // destroys the asset manager when the test ends, even if an assertion returns early
+        AZStd::unique_ptr<AZ::Data::AssetManager, void (*)(AZ::Data::AssetManager*)> assetManager(
+            &AZ::Data::AssetManager::Instance(),
+            [](AZ::Data::AssetManager*)
+            {
+                // the static mock asset is not heap allocated, so release it the way the fixture releases m_testAssetData
+                Internal::s_mockAssetData.SetUseCount(2);
+                Internal::s_mockAssetData.AcquireWeak();
+                Internal::s_asset = {};
+                AZ::Data::AssetManager::Destroy();
+            });
+
+        AzFramework::GenericAssetHandler<MyTestAssetData> handler(
+            "Test asset", "Tests", "testasset", AZ::Uuid::CreateNull(), m_app.GetSerializeContext());
+        handler.Register();
+
         enum class LogTypes
         {
             Skip = 0,

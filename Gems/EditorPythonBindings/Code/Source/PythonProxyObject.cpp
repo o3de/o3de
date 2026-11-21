@@ -24,6 +24,7 @@
 #include <AzCore/JSON/rapidjson.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -129,7 +130,7 @@ namespace EditorPythonBindings
             {
                 return pybind11::cast<pybind11::none>(Py_None);
             }
-            return pybind11::cast(this);
+            return pybind11::cast(this, pybind11::return_value_policy::take_ownership);
         }
 
         // find the right constructor
@@ -153,19 +154,95 @@ namespace EditorPythonBindings
 
                 if (match)
                 {
-                    // prepare wrapped object instance
-                    m_wrappedObject.m_address = behaviorClass.Allocate();
-                    m_wrappedObject.m_typeId = behaviorClass.m_typeId;
-                    PrepareWrappedObject(behaviorClass);
-
-                    // execute constructor
-                    Call::ClassMethod(constructor, m_wrappedObject, args);
-                    return pybind11::cast(this);
+                    auto result = ConstructSelected(behaviorClass, constructor, args);
+                    return result ? result.TakeValue() : pybind11::none();
                 }
             }
         }
         return pybind11::cast<pybind11::none>(Py_None);
     }
+
+    Call::StructuredResult PythonProxyObject::ConstructSelected(
+        const AZ::BehaviorClass& behaviorClass, AZ::BehaviorMethod* constructor, pybind11::args args)
+    {
+        if (m_wrappedObject.IsValid())
+        {
+            return AZ::Failure(AZStd::string("Construction requires an empty proxy"));
+        }
+
+        if (!constructor)
+        {
+            // without a selected constructor only the default constructor applies, and it takes no arguments
+            const bool canUseDefaultConstructor = args.size() == 0 && behaviorClass.m_defaultConstructor;
+            if (!canUseDefaultConstructor || !CreateDefault(&behaviorClass) || !m_wrappedObject.IsValid())
+            {
+                return AZ::Failure(AZStd::string("Default reflected construction failed"));
+            }
+        }
+        else
+        {
+            AZ::BehaviorObject storage{ behaviorClass.Allocate(), behaviorClass.m_typeId };
+            if (!storage.IsValid())
+            {
+                return AZ::Failure(AZStd::string("Reflected constructor allocation failed"));
+            }
+
+            bool didInvoke = false;
+            auto invoked = Call::StructuredMethod(constructor, storage, args, &didInvoke);
+            if (!invoked)
+            {
+                // a constructor that ran built an object that has to be destroyed; otherwise only the memory is freed
+                if (didInvoke)
+                {
+                    behaviorClass.Destroy(storage);
+                }
+                else
+                {
+                    behaviorClass.Deallocate(storage.m_address);
+                }
+                return AZ::Failure(invoked.TakeError());
+            }
+
+            m_wrappedObject = storage;
+            PrepareWrappedObject(behaviorClass);
+        }
+
+        return AZ::Success(pybind11::cast(this, pybind11::return_value_policy::take_ownership));
+    }
+
+    namespace Call
+    {
+        StructuredResult StructuredConstruct(
+            const AZ::BehaviorClass& behaviorClass, AZStd::optional<size_t> constructorIndex, pybind11::args args)
+        {
+            if (!Scope::IsBehaviorFlaggedForEditor(behaviorClass.m_attributes))
+            {
+                return AZ::Failure(AZStd::string("Class scope excludes editor automation"));
+            }
+
+            if (constructorIndex && *constructorIndex >= behaviorClass.m_constructors.size())
+            {
+                return AZ::Failure(AZStd::string("Constructor index is out of range"));
+            }
+
+            AZ::BehaviorMethod* constructor = constructorIndex ? behaviorClass.m_constructors[*constructorIndex] : nullptr;
+            try
+            {
+                // Python owns the proxy once construction succeeds; until then it is freed here
+                AZStd::unique_ptr<PythonProxyObject> instance(aznew PythonProxyObject());
+                auto result = instance->ConstructSelected(behaviorClass, constructor, args);
+                if (result)
+                {
+                    instance.release();
+                }
+                return result;
+            }
+            catch (const std::exception& exception)
+            {
+                return AZ::Failure(AZStd::string(exception.what()));
+            }
+        }
+    } // namespace Call
 
     bool PythonProxyObject::CanConvertPythonToBehaviorValue(const AZ::BehaviorParameter& behaviorArg, pybind11::object pythonArg) const
     {
@@ -252,10 +329,21 @@ namespace EditorPythonBindings
         if (methodEntry != m_methods.end())
         {
             AZ::BehaviorMethod* method = methodEntry->second;
-            return pybind11::cpp_function([this, method](pybind11::args pythonArgs)
+            pybind11::cpp_function function(
+                [method](PythonProxyObject& proxy, pybind11::args pythonArgs)
+                {
+                    return EditorPythonBindings::Call::ClassMethod(method, proxy.m_wrappedObject, pythonArgs);
+                });
+
+            // bind the method to this proxy's Python object instead of capturing 'this', so a method that a script
+            // keeps after dropping the object still keeps the proxy and its wrapped value alive
+            auto pythonSelf = pybind11::cast(this, pybind11::return_value_policy::reference);
+            PyObject* boundMethod = PyMethod_New(function.ptr(), pythonSelf.ptr());
+            if (!boundMethod)
             {
-                return EditorPythonBindings::Call::ClassMethod(method, m_wrappedObject, pythonArgs);
-            });
+                throw pybind11::error_already_set();
+            }
+            return pybind11::reinterpret_steal<pybind11::object>(boundMethod);
         }
 
         // the attribute could refer to a property
@@ -716,23 +804,25 @@ namespace EditorPythonBindings
 
         pybind11::object CreatePythonProxyObject(const AZ::TypeId& typeId, void* data)
         {
-            PythonProxyObject* instance = nullptr;
+            AZStd::unique_ptr<PythonProxyObject> instance;
             if (!data)
             {
-                instance = aznew PythonProxyObject(typeId);
+                instance.reset(aznew PythonProxyObject(typeId));
             }
             else
             {
-                instance = aznew PythonProxyObject(AZ::BehaviorObject(data, typeId));
+                instance.reset(aznew PythonProxyObject(AZ::BehaviorObject(data, typeId)));
             }
 
             if (!instance->GetWrappedType())
             {
-                delete instance;
                 PyErr_SetString(PyExc_TypeError, "Failed to create proxy object by type name.");
                 return pybind11::cast<pybind11::none>(Py_None);
             }
-            return pybind11::cast(instance);
+            // Python owns the proxy once the cast succeeds
+            auto result = pybind11::cast(instance.get(), pybind11::return_value_policy::take_ownership);
+            instance.release();
+            return result;
         }
 
         pybind11::object CreatePythonProxyObjectByTypename(const char* classTypename)
@@ -755,15 +845,15 @@ namespace EditorPythonBindings
                 return pybind11::cast<pybind11::none>(Py_None);
             }
 
-            PythonProxyObject* instance = aznew PythonProxyObject();
+            AZStd::unique_ptr<PythonProxyObject> instance(aznew PythonProxyObject());
             pybind11::object pythonInstance = instance->Construct(*behaviorClass, args);
             if (pythonInstance.is_none())
             {
-                delete instance;
                 PyErr_SetString(PyExc_TypeError, "Failed to construct proxy object with provided args.");
                 return pybind11::cast<pybind11::none>(Py_None);
             }
-            return pybind11::cast(instance);
+            instance.release();
+            return pythonInstance;
         }
 
         void ExportStaticBehaviorClassElements(pybind11::module parentModule, pybind11::module defaultModule)
