@@ -873,8 +873,8 @@ namespace AssetProcessor
             isSourceType = m_sourceAssetTypes.find(assetType) != m_sourceAssetTypes.end();
         }
 
-        // If the assetType is registered as a source type, look up the source info
-        if (isSourceType)
+        // Any other sub ID identifies a product, including the products of a source-editable type.
+        if (isSourceType && assetId.m_subId == AZ::Data::AssetId::SourceAssetSubId)
         {
             SourceAssetReference sourceAsset;
 
@@ -1131,8 +1131,8 @@ namespace AssetProcessor
                 {
                     watchFolder = scanEntry.m_scanFolder;
                     // since we are returning the UUID of a source file, as opposed to the full assetId of a product file produced by that source file,
-                    // the subId part of the assetId will always be set to zero.
-                    assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, 0);
+                    // the subId part of the assetId is always AssetId::SourceAssetSubId.
+                    assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, AZ::Data::AssetId::SourceAssetSubId);
 
                     assetInfo.m_relativePath = entry.m_sourceName;
                     AZStd::string absolutePath;
@@ -1169,7 +1169,7 @@ namespace AssetProcessor
 
     bool AssetCatalog::GetSourceInfoBySourceUUID(const AZ::Uuid& sourceUuid, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
-        AZ::Data::AssetId partialId(sourceUuid, 0);
+        AZ::Data::AssetId partialId(sourceUuid, AZ::Data::AssetId::SourceAssetSubId);
         SourceAssetReference sourceAsset;
 
         if (GetSourceFileInfoFromAssetId(partialId, sourceAsset))
@@ -1667,7 +1667,7 @@ namespace AssetProcessor
                 // Go through the list of source assets and see if this asset's file path matches any of the filters
                 for (const auto& pair : m_sourceAssetTypeFilters)
                 {
-                    if (AZStd::wildcard_match(pair.first, sourceAsset.AbsolutePath().c_str()))
+                    if (id.m_subId == AZ::Data::AssetId::SourceAssetSubId && AZStd::wildcard_match(pair.first, sourceAsset.AbsolutePath().c_str()))
                     {
                         assetInfo.m_assetId = id;
                         assetInfo.m_assetType = pair.second;
@@ -1761,7 +1761,7 @@ namespace AssetProcessor
             return false;
         }
 
-        AZ::Data::AssetId sourceAssetId(sourceUUID.GetValue(), 0);
+        AZ::Data::AssetId sourceAssetId(sourceUUID.GetValue(), AZ::Data::AssetId::SourceAssetSubId);
 
         assetInfo.m_assetId = sourceAssetId;
         assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();

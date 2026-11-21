@@ -258,6 +258,8 @@ namespace ScriptEventData
         }
 
         AZ::Uuid GetId() const { return m_id; }
+        //! Allows asset builders to preserve slot identity when rebuilding generated definitions.
+        void SetId(const AZ::Uuid& id) { m_id = id; }
         AZ::u32 GetVersion() const { return m_version; }
 
         const AZStd::vector<VersionedProperty>& GetVersions() const { return m_versions; }

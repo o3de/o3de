@@ -34,8 +34,9 @@ namespace ScriptEvents
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ScriptEvent>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("m_version", &ScriptEvent::m_version)
+                ->Field("isGenerated", &ScriptEvent::m_isGenerated)
                 ->Field("m_name", &ScriptEvent::m_name)
                 ->Field("m_category", &ScriptEvent::m_category)
                 ->Field("m_tooltip", &ScriptEvent::m_tooltip)
@@ -50,6 +51,7 @@ namespace ScriptEvents
                     QT_TRANSLATE_NOOP("ScriptEvents", "Script Event Definition"),
                     QT_TRANSLATE_NOOP("ScriptEvents", "Data driven script event definition"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &ScriptEvent::IsGenerated)
                         ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &ScriptEvent::GetLabel)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_name,

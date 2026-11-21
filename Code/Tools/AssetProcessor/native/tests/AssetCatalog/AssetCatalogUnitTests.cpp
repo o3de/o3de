@@ -1048,6 +1048,46 @@ namespace AssetProcessor
         EXPECT_TRUE(GetSourceInfoBySourcePath(true, m_customDataMembers->m_assetAFullPath.c_str(), m_customDataMembers->m_assetA.m_guid, m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_subfolder1AbsolutePath.c_str()));
     }
 
+    TEST_F(AssetCatalogTest_AssetInfo, ProductOfRegisteredSourceTypeDoesNotResolveToSource)
+    {
+        // AssetId::SourceAssetSubId is the source's own asset ID; any other sub ID names one of its products.
+        constexpr AZ::u32 ProductSubId = 1;
+
+        AZ::s64 jobId;
+        ASSERT_TRUE(AddSourceAndJob(
+            "subfolder1",
+            m_customDataMembers->m_assetASourceRelPath.c_str(),
+            &m_data->m_dbConn,
+            jobId,
+            m_customDataMembers->m_assetA.m_guid));
+
+        ProductDatabaseEntry product(
+            jobId, ProductSubId, m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAType);
+        ASSERT_TRUE(m_data->m_dbConn.SetProduct(product));
+
+        AzToolsFramework::ToolsAssetSystemBus::Broadcast(
+            &AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType,
+            m_customDataMembers->m_assetAType,
+            m_customDataMembers->m_assetAFileFilter.c_str());
+
+        // Announce the product, whose type is also registered as a source type.
+        m_customDataMembers->m_assetA.m_subId = ProductSubId;
+        AssetNotificationMessage message(
+            m_customDataMembers->m_assetAProductRelPath.c_str(),
+            AssetNotificationMessage::AssetChanged,
+            m_customDataMembers->m_assetAType,
+            "pc");
+        message.m_sizeBytes = m_customDataMembers->m_productTestString.size();
+        message.m_assetId = m_customDataMembers->m_assetA;
+        m_data->m_assetCatalog->OnAssetMessage(message);
+
+        // The product ID resolves to the product, and the source ID still resolves to the source.
+        EXPECT_TRUE(GetAssetInfoByIdPair(true, m_customDataMembers->m_assetAProductRelPath, ""));
+
+        m_customDataMembers->m_assetA.m_subId = AZ::Data::AssetId::SourceAssetSubId;
+        EXPECT_TRUE(GetAssetInfoByIdPair(true, m_customDataMembers->m_assetASourceRelPath, m_customDataMembers->m_subfolder1AbsolutePath));
+    }
+
     TEST_F(AssetCatalogTest_AssetInfo, FindAssetInBuildQueue_FindsSource)
     {
         // Setup:  Add a source to queue.
