@@ -245,6 +245,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
     private:
         friend class BatchOperatorTool;
+        friend class GraphAutomation;
         friend class ScriptCanvasBatchConverter;
         friend class Workspace;
 
@@ -767,6 +768,10 @@ namespace ScriptCanvasEditor
         AZStd::unordered_map< AZ::Crc32, QObject* > m_automationLookUpMap;
 
         bool m_closeCurrentGraphAfterSave;
+
+        //! True while a save started by GraphAutomation runs. Its result goes to GraphAutomationNotificationBus,
+        //! and a failure does not open the save failure dialog.
+        bool m_automationSave = false;
 
         AZStd::unordered_map< SourceHandle, TypeDefs::EntityComponentId > m_assetCreationRequests;
 
