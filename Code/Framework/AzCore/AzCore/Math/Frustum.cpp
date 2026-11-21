@@ -182,18 +182,22 @@ namespace AZ
             PlaneId::Far,
             Plane::CreateFromNormalAndPoint(-forward, translation + (forward * viewFrustumAttributes.m_farClip)));
 
-        const Vector3 leftNormal =
-            (right + forward * (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip)).GetNormalized();
-        const Vector3 rightNormal =
-            (-right + forward * (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip)).GetNormalized();
+        // If the near clip is close to zero, any attempt to calculate the slide amounts by dividing by the near clip 
+        // would result in a divide by zero.  Check if its close to zero.  If it is, we don't slide the planes at all.
+        // Note that sliding the near plane does not change the side plane normals, its just offsetting
+        // the near plane forward along the "forward" direction.
+        const bool nearClipIsZero = (AZ::IsClose(viewFrustumAttributes.m_nearClip, AZStd::numeric_limits<float>::epsilon()));
+        float nearPlaneLeftRightSlideAmount = nearClipIsZero ? 0.0f : (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip);
+        float nearPlaneUpDownSlideAmount = nearClipIsZero ? 0.0f : (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip);
+
+        const Vector3 leftNormal = (right + forward * nearPlaneLeftRightSlideAmount).GetNormalized();
+        const Vector3 rightNormal = (-right + forward * nearPlaneLeftRightSlideAmount).GetNormalized();
 
         SetPlane(PlaneId::Left, Plane::CreateFromNormalAndPoint(leftNormal, translation));
         SetPlane(PlaneId::Right, Plane::CreateFromNormalAndPoint(rightNormal, translation));
 
-        const Vector3 topNormal =
-            (-up + forward * (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip)).GetNormalized();
-        const Vector3 bottomNormal =
-            (up + forward * (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip)).GetNormalized();
+        const Vector3 topNormal = (-up + forward * nearPlaneUpDownSlideAmount).GetNormalized();
+        const Vector3 bottomNormal = (up + forward * nearPlaneUpDownSlideAmount).GetNormalized();
 
         SetPlane(PlaneId::Top, Plane::CreateFromNormalAndPoint(topNormal, translation));
         SetPlane(PlaneId::Bottom, Plane::CreateFromNormalAndPoint(bottomNormal, translation));
