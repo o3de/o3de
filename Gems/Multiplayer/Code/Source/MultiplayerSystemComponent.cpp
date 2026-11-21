@@ -189,7 +189,21 @@ namespace Multiplayer
                 })
                     ->Attribute(
                         AZ::Script::Attributes::AzEventDescription,
-                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected Event",
+                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected Event", { "Type of Multiplayer Agent that disconnected" } })
+                ->Method("GetOnEndpointDisconnectedEventWithReason", []() -> EndpointDisconnectedEventWithReason*
+                {
+                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
+                    if (!mpComponent)
+                    {
+                        AZ_Assert(false, "GetOnEndpointDisconnectedEventWithReason failed to find the multiplayer system component. Please update behavior context to properly retrieve the event.");
+                        return nullptr;
+                    }
+
+                    return &mpComponent->m_endpointDisconnectedEventWithReason;
+                })
+                    ->Attribute(
+                        AZ::Script::Attributes::AzEventDescription,
+                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected With Reason Event",
                             { "Type of Multiplayer Agent that disconnected", "Disconnect Reason", "Termination Endpoint" } })
                 ->Method("ClearAllEntities", []()
                 {
@@ -1311,7 +1325,8 @@ namespace Multiplayer
             }
         }
 
-        m_endpointDisconnectedEvent.Signal(m_agentType, reason, endpoint);
+        m_endpointDisconnectedEvent.Signal(m_agentType);
+        m_endpointDisconnectedEventWithReason.Signal(m_agentType, reason, endpoint);
 
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
@@ -1446,6 +1461,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler)
     {
         handler.Connect(m_endpointDisconnectedEvent);
+    }
+
+    void MultiplayerSystemComponent::AddEndpointDisconnectedWithReasonHandler(EndpointDisconnectedEventWithReason::Handler& handler)
+    {
+        handler.Connect(m_endpointDisconnectedEventWithReason);
     }
 
     void MultiplayerSystemComponent::AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler)

@@ -134,6 +134,7 @@ namespace Multiplayer
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
         void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) override;
+        void AddEndpointDisconnectedWithReasonHandler(EndpointDisconnectedEventWithReason::Handler& handler) override;
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
@@ -214,6 +215,7 @@ namespace Multiplayer
         NetworkInitEvent m_networkInitEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;
+        EndpointDisconnectedEventWithReason m_endpointDisconnectedEventWithReason;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;
