@@ -32,6 +32,8 @@
 
 namespace ScriptCanvasEditor
 {
+    class GraphAutomation;
+
     class SystemComponent
         : public AZ::Component
         , private SystemRequestBus::Handler
@@ -125,6 +127,7 @@ namespace ScriptCanvasEditor
 
         void PopulateEditorCreatableTypes();
         
+        AZStd::unique_ptr<GraphAutomation> m_graphAutomation;
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
         AZStd::unique_ptr<VersionExplorer::Model> m_versionExplorer;

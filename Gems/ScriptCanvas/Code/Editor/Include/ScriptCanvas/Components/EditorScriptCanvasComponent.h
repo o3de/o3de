@@ -49,6 +49,12 @@ namespace ScriptCanvasEditor
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
 
+        //! Returns the source graph selected on this component.
+        const SourceHandle& GetSource() const
+        {
+            return m_configuration.GetSource();
+        }
+
         //=====================================================================
         // EditorComponentBase
         void SetPrimaryAsset(const AZ::Data::AssetId&) override;

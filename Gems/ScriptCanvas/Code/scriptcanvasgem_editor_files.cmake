@@ -7,6 +7,11 @@
 #
 
 set(FILES
+    Editor/Include/ScriptCanvas/Bus/GraphAutomationRequestBus.h
+    Editor/GraphAutomation.h
+    Editor/GraphAutomation.cpp
+    Editor/GraphAutomationGraph.cpp
+    Editor/GraphAutomationAttachment.cpp
     Editor/ScriptCanvasContextIdentifiers.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
