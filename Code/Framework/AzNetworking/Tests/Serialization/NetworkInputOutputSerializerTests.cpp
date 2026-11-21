@@ -9,6 +9,8 @@
 #include <AzCore/Console/Console.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/memorytoascii.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -200,6 +202,44 @@ namespace UnitTest
             InternalTestSerializeType(testValue, "string", expected);
         }
 
+    }
+
+    // Writes a value, as a peer would send it, then reads it back into a possibly different type
+    template <typename WRITE_TYPE, typename READ_TYPE>
+    static bool WriteThenRead(WRITE_TYPE& written, READ_TYPE& read)
+    {
+        constexpr uint32_t BufferCapacity = 64;
+        AZStd::vector<uint8_t> buffer(BufferCapacity);
+        AzNetworking::NetworkInputSerializer writer(buffer.data(), BufferCapacity);
+        AzNetworking::ISerializer& writerSerializer = writer;
+        EXPECT_TRUE(writerSerializer.Serialize(written, "Value"));
+
+        AzNetworking::NetworkOutputSerializer reader(buffer.data(), writer.GetSize());
+        AzNetworking::ISerializer& readerSerializer = reader;
+        return readerSerializer.Serialize(read, "Value");
+    }
+
+    TEST_F(InputOutputSerializerTests, ContainerSizesFromTheNetworkAreBounded)
+    {
+        constexpr uint32_t ContainerCapacity = 4;
+
+        // A count above a fixed_vector's capacity is clamped to the capacity
+        AZStd::vector<int32_t> fiveValues = { 1, 2, 3, 4, 5 };
+        AZStd::fixed_vector<int32_t, ContainerCapacity> fixedVector;
+        EXPECT_TRUE(WriteThenRead(fiveValues, fixedVector));
+        EXPECT_EQ(fixedVector.size(), ContainerCapacity);
+
+        // A length above a fixed_string's capacity is clamped, and the longer string behind it fails to read
+        AZStd::fixed_string<ContainerCapacity + 1> fiveChars = "ABCDE";
+        AZStd::fixed_string<ContainerCapacity> fixedString;
+        EXPECT_FALSE(WriteThenRead(fiveChars, fixedString));
+        EXPECT_LE(fixedString.size(), ContainerCapacity);
+
+        // A huge count with no elements behind it stops at the first element that fails to read
+        uint32_t hugeCount = AZStd::numeric_limits<uint32_t>::max();
+        AZStd::vector<int32_t> dynamicVector;
+        EXPECT_FALSE(WriteThenRead(hugeCount, dynamicVector));
+        EXPECT_LE(dynamicVector.size(), 1u);
     }
 
 

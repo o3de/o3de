@@ -211,6 +211,7 @@ namespace Multiplayer
             SizeType origSize = aznumeric_cast<SizeType>(value.size());
             SizeType newSize = origSize;
             serializer.Serialize(newSize, "Size");
+            newSize = AZStd::min(newSize, static_cast<SizeType>(SIZE)); // Network input, clamp to capacity
             value.resize(newSize);
             if (modifyRecord && origSize == newSize)
             {
