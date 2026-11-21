@@ -11,6 +11,12 @@
 
 namespace AZ
 {
+    namespace
+    {
+        // The tag of the AZLOG message this thread is emitting; logging is synchronous, so handlers see it.
+        thread_local const char* s_currentTag = nullptr;
+    } // namespace
+
     const char* GetEnumString(LogLevel logLevel)
     {
         switch (logLevel)
@@ -138,6 +144,47 @@ namespace AZ
         }
     }
 
+    void LoggerSystemComponent::RegisterTag(AZ::HashValue32 hashValue, const char* tagName)
+    {
+        AZStd::scoped_lock lock(m_enabledTagsMutex);
+        m_tagNames.try_emplace(hashValue, tagName);
+    }
+
+    void LoggerSystemComponent::VisitTags(const AZStd::function<void(const char* tagName, bool enabled)>& visitor)
+    {
+        // Copy under the lock and visit outside it, so a visitor may log.
+        AZStd::vector<AZStd::pair<AZStd::string, bool>> tags;
+        {
+            AZStd::scoped_lock lock(m_enabledTagsMutex);
+            tags.reserve(m_tagNames.size());
+            for (const auto& [hashValue, tagName] : m_tagNames)
+            {
+                const bool enabled = AZStd::find(m_enabledTags.begin(), m_enabledTags.end(), hashValue) != m_enabledTags.end();
+                tags.emplace_back(tagName, enabled);
+            }
+        }
+
+        for (const auto& [tagName, enabled] : tags)
+        {
+            visitor(tagName.c_str(), enabled);
+        }
+    }
+
+    const char* LoggerSystemComponent::GetCurrentTag() const
+    {
+        return s_currentTag;
+    }
+
+    void LoggerSystemComponent::LogTaggedInternalV(
+        const char* tag, LogLevel level, const char* format, const char* file, const char* function, int32_t line, va_list args)
+    {
+        // Restore the previous tag afterwards, so a handler that logs a tagged message of its own doesn't clear the outer one.
+        const char* previousTag = s_currentTag;
+        s_currentTag = tag;
+        LogInternalV(level, format, file, function, line, args);
+        s_currentTag = previousTag;
+    }
+
     void LoggerSystemComponent::SetLevel(const AZ::ConsoleCommandContainer& arguments)
     {
         if (arguments.empty())
@@ -164,6 +211,7 @@ namespace AZ
         {
             AZ::CVarFixedString argument{ arguments[i] };
             const AZ::HashValue32 tagHash = AZ::TypeHash32(argument.c_str());
+            RegisterTag(tagHash, argument.c_str());
             if (!IsTagEnabledHelper(tagHash))
             {
                 EnableLogHelper(tagHash);
@@ -177,6 +225,7 @@ namespace AZ
         {
             AZ::CVarFixedString argument{ arguments[i] };
             const AZ::HashValue32 tagHash = AZ::TypeHash32(argument.c_str());
+            RegisterTag(tagHash, argument.c_str());
             if (IsTagEnabledHelper(tagHash))
             {
                 DisableLogHelper(tagHash);
@@ -190,6 +239,7 @@ namespace AZ
         {
             AZ::CVarFixedString argument{ arguments[i] };
             const AZ::HashValue32 tagHash = AZ::TypeHash32(argument.c_str());
+            RegisterTag(tagHash, argument.c_str());
             if (IsTagEnabledHelper(tagHash))
             {
                 DisableLogHelper(tagHash);
