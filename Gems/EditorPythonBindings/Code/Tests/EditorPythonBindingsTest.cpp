@@ -15,6 +15,7 @@
 
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
@@ -424,6 +425,12 @@ print ('EditorPythonBindingsTest_VerifyExpectedLibrariesPresent')
         e.Deactivate();
 
         EXPECT_EQ(m_testSink.m_evaluationMap[(int)LogTypes::ScriptWorked], 1);
+    }
+
+    TEST_F(EditorPythonBindingsLibraryTest, RuntimePathsRetainConfiguredSourceEngine)
+    {
+        EXPECT_EQ(AZ::Utils::GetEnginePath(), m_engineRoot.Native());
+        EXPECT_TRUE(AZ::IO::SystemFile::Exists((AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "engine.json").c_str()));
     }
 
     TEST_F(EditorPythonBindingsLibraryTest, PythonVMLoads_sys_Works)
