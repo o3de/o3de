@@ -26,7 +26,7 @@ class PropertyEntityIdComboBoxCtrl : public QWidget
 public:
     AZ_CLASS_ALLOCATOR(PropertyEntityIdComboBoxCtrl, AZ::SystemAllocator);
 
-    PropertyEntityIdComboBoxCtrl(QWidget* pParent = NULL);
+    PropertyEntityIdComboBoxCtrl(QWidget* pParent = nullptr);
     virtual ~PropertyEntityIdComboBoxCtrl() = default;
 
     AZ::EntityId value() const;

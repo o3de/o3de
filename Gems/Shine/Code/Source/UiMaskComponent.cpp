@@ -5,9 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "UiMaskComponent.h"
 #include <Shine/IDraw2d.h>
 
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -22,7 +24,7 @@
 #include <Shine/Bus/UiCanvasBus.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -347,7 +349,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiMaskComponent>("Mask", "A component that masks child elements using its visual component");
+            auto editInfo = ec->Class<UiMaskComponent>(QT_TRANSLATE_NOOP("Shine", "Mask"), QT_TRANSLATE_NOOP("Shine", "A component that masks child elements using its visual component"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -356,37 +358,37 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, "Enable masking",
-                "When checked, only the parts of child elements that are revealed by the mask will be seen.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, QT_TRANSLATE_NOOP("Shine", "Enable masking"),
+                QT_TRANSLATE_NOOP("Shine", "When checked, only the parts of child elements that are revealed by the mask will be seen."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_maskInteraction, "Mask interaction",
-                "Check this box to prevent children hidden by the mask from getting input events.");
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_maskInteraction, QT_TRANSLATE_NOOP("Shine", "Mask interaction"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to prevent children hidden by the mask from getting input events."));
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiMaskComponent::m_childMaskElement, "Child mask element",
-                "A child element that is rendered as part of the mask.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiMaskComponent::m_childMaskElement, QT_TRANSLATE_NOOP("Shine", "Child mask element"),
+                QT_TRANSLATE_NOOP("Shine", "A child element that is rendered as part of the mask."))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiMaskComponent::PopulateChildEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-             editInfo->DataElement(0, &UiMaskComponent::m_useRenderToTexture, "Use alpha gradient",
-                "If true, this element's content and the mask are rendered to separate render targets\n"
+             editInfo->DataElement(nullptr, &UiMaskComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("Shine", "Use alpha gradient"),
+                QT_TRANSLATE_NOOP("Shine", "If true, this element's content and the mask are rendered to separate render targets\n"
                 "and then rendered to the screen using the mask render target as an alpha gradient mask.\n"
-                "This allows soft-edged masking. The effect is limited to the rect of this element.")
+                "This allows soft-edged masking. The effect is limited to the rect of this element."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnRenderTargetChange);
 
-             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, "Draw behind",
-                "Check this box to draw the mask visual behind the child elements.")
+             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, QT_TRANSLATE_NOOP("Shine", "Draw behind"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to draw the mask visual behind the child elements."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualInFrontOfChildren, "Draw in front",
-                "Check this box to draw the mask in front of the child elements.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualInFrontOfChildren, QT_TRANSLATE_NOOP("Shine", "Draw in front"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to draw the mask in front of the child elements."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_useAlphaTest, "Use alpha test",
-                "Check this box to use the alpha channel in the mask visual's texture to define the mask.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_useAlphaTest, QT_TRANSLATE_NOOP("Shine", "Use alpha test"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to use the alpha channel in the mask visual's texture to define the mask."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
         }
@@ -697,7 +699,7 @@ void UiMaskComponent::RenderUsingStencilMask(Shine::IRenderGraph* renderGraph, U
 {
     // begin the mask render node
     renderGraph->BeginMask(m_enableMasking, m_useAlphaTest, m_drawMaskVisualBehindChildren, m_drawMaskVisualInFrontOfChildren);
-            
+
     // We never want to apply the fade value when rendering the mask visual to stencil buffer
     renderGraph->PushOverrideAlphaFade(1.0f);
 
@@ -820,7 +822,7 @@ void UiMaskComponent::RenderDisabledMask(Shine::IRenderGraph* renderGraph, UiEle
     // The calling function ensures this method is never called when we want to render both behind and in front.
     // That would not work because the same primitive cannot be added to the render graph twice due to the use of
     // intrusive lists.
-    // Note that (currently at least) we never draw behind or in front when render to texture is enabled, so the value of 
+    // Note that (currently at least) we never draw behind or in front when render to texture is enabled, so the value of
     // m_drawMaskVisualBehindChildren and m_drawMaskVisualInFrontOfChildren is irrelevant in that case.
     AZ_Assert(!(!GetUseRenderToTexture() && m_drawMaskVisualBehindChildren && m_drawMaskVisualInFrontOfChildren),
         "Cannot use RenderDisabledMask when we are drawing behind and in front");
@@ -847,7 +849,7 @@ void UiMaskComponent::RenderDisabledMaskWithDoubleRender(Shine::IRenderGraph* re
 {
     // we still need to use a mask render node in order to render the behind and in-front mask visual twice
     renderGraph->BeginMask(m_enableMasking, m_useAlphaTest, m_drawMaskVisualBehindChildren, m_drawMaskVisualInFrontOfChildren);
-            
+
     // No need to render the mask primitives since masking is disabled
 
     // tell render graph we have finished rendering the mask primitives and are starting the content primitives

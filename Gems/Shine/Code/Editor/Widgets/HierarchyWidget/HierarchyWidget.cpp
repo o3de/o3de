@@ -1187,6 +1187,39 @@ void HierarchyWidget::PasteAsChild()
     HierarchyClipboard::CreateElementsFromClipboard(this, selectedItems(), true);
 }
 
+void HierarchyWidget::SelectHierarchy()
+{
+    QTreeWidgetItemRawPtrQList selection = selectedItems();
+    if (selection.empty())
+    {
+        return;
+    }
+
+    // Gather the selection plus every descendant into one QItemSelection so the selection change signals once.
+    QItemSelection newSelection;
+    AZStd::vector<QTreeWidgetItem*> pending(selection.begin(), selection.end());
+    while (!pending.empty())
+    {
+        QTreeWidgetItem* item = pending.back();
+        pending.pop_back();
+
+        QModelIndex index = indexFromItem(item);
+        newSelection.select(index, index);
+
+        if (item->childCount() > 0)
+        {
+            item->setExpanded(true);
+        }
+
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            pending.push_back(item->child(i));
+        }
+    }
+
+    selectionModel()->select(newSelection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+}
+
 void HierarchyWidget::SetEditorOnlyForSelectedItems(bool editorOnly)
 {
     QTreeWidgetItemRawPtrQList selection = selectedItems();

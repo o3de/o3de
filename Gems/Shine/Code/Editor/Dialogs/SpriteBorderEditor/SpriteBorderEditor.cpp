@@ -75,7 +75,7 @@ SpriteBorderEditor::SpriteBorderEditor(const char* path, QWidget* parent)
 
     CreateLayout();
 
-    setWindowTitle("Sprite Editor");
+    setWindowTitle(tr("Sprite Editor"));
     setModal(true);
     setWindowModality(Qt::ApplicationModal);
 
@@ -358,10 +358,10 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
 
             if (!numCellsSupported)
             {
-                QString warningMessage = QString("Too many rows and columns have been specified!\n"
+                QString warningMessage = tr("Too many rows and columns have been specified!\n"
                                                  "The maximum number of sprite-sheet cells is limited to %1")
                                              .arg(maxNumCellsSupported);
-                QMessageBox(QMessageBox::Warning, "Warning", warningMessage, QMessageBox::Ok, QApplication::activeWindow()).exec();
+                QMessageBox(QMessageBox::Warning, tr("Warning"), warningMessage, QMessageBox::Ok, QApplication::activeWindow()).exec();
             }
         }
     };
@@ -385,11 +385,11 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
 
     // Finally, add the widgets to the layout
     int innerLayoutCol = 0;
-    innerLayout->addWidget(new QLabel("Rows", this), 0, innerLayoutCol++, Qt::AlignLeft);
+    innerLayout->addWidget(new QLabel(tr("Rows"), this), 0, innerLayoutCol++, Qt::AlignLeft);
     innerLayout->addItem(new QSpacerItem(interElementSpacing, 0), 0, innerLayoutCol++, Qt::AlignLeft);
     innerLayout->addWidget(numRowsLineEdit, 0, innerLayoutCol++, Qt::AlignLeft);
     innerLayout->addItem(new QSpacerItem(interElementSpacing, 0), 0, innerLayoutCol++, Qt::AlignLeft);
-    innerLayout->addWidget(new QLabel("Columns", this), 0, innerLayoutCol++, Qt::AlignLeft);
+    innerLayout->addWidget(new QLabel(tr("Columns"), this), 0, innerLayoutCol++, Qt::AlignLeft);
     innerLayout->addItem(new QSpacerItem(interElementSpacing, 0), 0, innerLayoutCol++, Qt::AlignLeft);
     innerLayout->addWidget(numColsLineEdit, 0, innerLayoutCol++, Qt::AlignLeft);
 
@@ -641,7 +641,7 @@ void SpriteBorderEditor::AddSelectCellSection(QGridLayout* gridLayout, int& rowN
 
 void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowNum)
 {
-    gridLayout->addWidget(new QLabel(QString("<h2>Border Properties</h2>"), this), rowNum++, 0, 1, 6);
+    gridLayout->addWidget(new QLabel(tr("<h2>Border Properties</h2>"), this), rowNum++, 0, 1, 6);
 
     // Create an "inner layout" to set margins on the pixmap to align with
     // the rest of the contents of the dialog.
@@ -730,7 +730,7 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
 
             // Text field for modifying cell string alias
             int columnCount = 0;
-            propertyFieldsLayout->addWidget(new QLabel("Alias", this), row, columnCount++, Qt::AlignLeft);
+            propertyFieldsLayout->addWidget(new QLabel(tr("Alias"), this), row, columnCount++, Qt::AlignLeft);
             propertyFieldsLayout->addItem(new QSpacerItem(interElementSpacing, 0), row, columnCount++, Qt::AlignLeft);
 
             m_cellAliasLineEdit = new QLineEdit(this);
@@ -770,8 +770,8 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
                             {
                                 QMessageBox(
                                     QMessageBox::Information,
-                                    "Alias Value Updated",
-                                    "The cell alias that was entered has been modified to remove additional whitespace characters.",
+                                    tr("Alias Value Updated"),
+                                    tr("The cell alias that was entered has been modified to remove additional whitespace characters."),
                                     QMessageBox::Ok,
                                     QApplication::activeWindow())
                                     .exec();
@@ -784,8 +784,8 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
                         {
                             QMessageBox(
                                 QMessageBox::Warning,
-                                "Warning",
-                                "Unable to set cell alias value. Only alphanumeric characters are supported.",
+                                tr("Warning"),
+                                tr("Unable to set cell alias value. Only alphanumeric characters are supported."),
                                 QMessageBox::Ok,
                                 QApplication::activeWindow())
                                 .exec();
@@ -794,8 +794,8 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
                         {
                             QMessageBox(
                                 QMessageBox::Warning,
-                                "Warning",
-                                "Unable to set cell alias value. The alias is too long.",
+                                tr("Warning"),
+                                tr("Unable to set cell alias value. The alias is too long."),
                                 QMessageBox::Ok,
                                 QApplication::activeWindow())
                                 .exec();
@@ -826,10 +826,10 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
                 edit->setFixedWidth(textInputWidth);
 
                 int innerLayoutCol = 0;
-                propertyFieldsLayout->addWidget(new QLabel(SpriteBorderToString(b), this), row, innerLayoutCol++, Qt::AlignLeft);
+                propertyFieldsLayout->addWidget(new QLabel(tr(SpriteBorderToString(b)), this), row, innerLayoutCol++, Qt::AlignLeft);
                 propertyFieldsLayout->addItem(new QSpacerItem(interElementSpacing, 0), row, innerLayoutCol++, Qt::AlignLeft);
                 propertyFieldsLayout->addWidget(edit, row, innerLayoutCol++, Qt::AlignLeft);
-                propertyFieldsLayout->addWidget(new QLabel("px", this), row, innerLayoutCol++, Qt::AlignLeft);
+                propertyFieldsLayout->addWidget(new QLabel(tr("px"), this), row, innerLayoutCol++, Qt::AlignLeft);
                 row++;
 
                 // Setup tab order
@@ -866,7 +866,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
         QGridLayout* leftAlignedLayout = new QGridLayout();
         gridLayout->addLayout(leftAlignedLayout, rowNum, 0, Qt::AlignLeft);
 
-        QPushButton* configureButton = new QPushButton("Configure Spritesheet", this);
+        QPushButton* configureButton = new QPushButton(tr("Configure Spritesheet"), this);
 
         QObject::connect(
             configureButton,
@@ -888,7 +888,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
     // Add buttons.
     {
         // Save button.
-        QPushButton* saveButton = new QPushButton("Save", this);
+        QPushButton* saveButton = new QPushButton(tr("Save"), this);
         QObject::connect(
             saveButton,
             &QPushButton::clicked,
@@ -936,8 +936,8 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
 
                 QMessageBox(
                     QMessageBox::Critical,
-                    "Error",
-                    "Unable to save file. Is the file read-only?",
+                    tr("Error"),
+                    tr("Unable to save file. Is the file read-only?"),
                     QMessageBox::Ok,
                     QApplication::activeWindow())
                     .exec();
@@ -946,7 +946,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
         innerLayout->addWidget(saveButton, rowNum, 0);
 
         // Cancel button.
-        QPushButton* cancelButton = new QPushButton("Cancel", this);
+        QPushButton* cancelButton = new QPushButton(tr("Cancel"), this);
         QObject::connect(
             cancelButton,
             &QPushButton::clicked,
@@ -977,8 +977,8 @@ void SpriteBorderEditor::AddSeparator(QGridLayout* gridLayout, int& rowNum)
 
 void SpriteBorderEditor::SetDisplayedTextureSize(float width, float height)
 {
-    QString imageDescription = m_sprite->GetSpriteSheetCells().size() <= 1 ? "Texture" : "Cell size";
-    m_textureSizeLabel->setText(QString("%1 is %2 x %3").arg(imageDescription).arg(QString::number(width)).arg(QString::number(height)));
+    QString imageDescription = m_sprite->GetSpriteSheetCells().size() <= 1 ? tr("Texture") : tr("Cell size");
+    m_textureSizeLabel->setText(tr("%1 is %2 x %3").arg(imageDescription).arg(QString::number(width)).arg(QString::number(height)));
 }
 
 bool SpriteBorderEditor::IsConfiguringSpriteSheet() const

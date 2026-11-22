@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <Shine/Bus/UiAnimateEntityBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -605,7 +606,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::GetTrackForAzField(const UiAnimParamData& par
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

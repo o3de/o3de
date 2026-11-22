@@ -38,6 +38,8 @@
 #include <AtomLyIntegration/AtomFont/FFont.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace
 {
     AZStd::string DefaultDisplayedTextFunction(const AZStd::string& originalText)
@@ -591,7 +593,7 @@ namespace
         // Keep track of the last space char we encountered as ideal
         // locations for inserting newlines for word-wrapping. We also need
         // to track which DrawBatch contained the last-encountered space.
-        const char* pLastSpace = NULL;
+        const char* pLastSpace = nullptr;
         UiTextComponent::DrawBatch* lastSpaceBatch = nullptr;
         int lastSpace = -1;
         int lastSpaceIndexInBatch = -1;
@@ -3081,7 +3083,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiTextComponent>("Text", "A visual component that draws a text string");
+            auto editInfo = ec->Class<UiTextComponent>(QT_TRANSLATE_NOOP("Shine", "Text"), QT_TRANSLATE_NOOP("Shine", "A visual component that draws a text string"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -3090,63 +3092,63 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiTextComponent::m_text, "Text", "The text string")
+            editInfo->DataElement(nullptr, &UiTextComponent::m_text, QT_TRANSLATE_NOOP("Shine", "Text"), QT_TRANSLATE_NOOP("Shine", "The text string"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnTextChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isMarkupEnabled, "Enable markup", "Enable to support XML markup in the text string")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isMarkupEnabled, QT_TRANSLATE_NOOP("Shine", "Enable markup"), QT_TRANSLATE_NOOP("Shine", "Enable to support XML markup in the text string"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnMarkupEnabledChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiTextComponent::m_color, "Color", "The color to draw the text string")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiTextComponent::m_color, QT_TRANSLATE_NOOP("Shine", "Color"), QT_TRANSLATE_NOOP("Shine", "The color to draw the text string"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnColorChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiTextComponent::m_alpha, "Alpha", "The transparency of the text string")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiTextComponent::m_alpha, QT_TRANSLATE_NOOP("Shine", "Alpha"), QT_TRANSLATE_NOOP("Shine", "The transparency of the text string"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnColorChange)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-            editInfo->DataElement("SimpleAssetRef", &UiTextComponent::m_fontFilename, "Font path", "The pathname to the font")
+            editInfo->DataElement("SimpleAssetRef", &UiTextComponent::m_fontFilename, QT_TRANSLATE_NOOP("Shine", "Font path"), QT_TRANSLATE_NOOP("Shine", "The pathname to the font"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnFontPathnameChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_fontEffectIndex, "Font effect", "The font effect (from font file)")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_fontEffectIndex, QT_TRANSLATE_NOOP("Shine", "Font effect"), QT_TRANSLATE_NOOP("Shine", "The font effect (from font file)"))
                 ->Attribute("EnumValues", &UiTextComponent::PopulateFontEffectList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnFontEffectChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextComponent::m_fontSize, "Font size", "The size of the font in points")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextComponent::m_fontSize, QT_TRANSLATE_NOOP("Shine", "Font size"), QT_TRANSLATE_NOOP("Shine", "The size of the font in points"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnFontSizeChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Step, 1.0f);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_textHAlignment, "Horizontal text alignment", "How to align the text within the rect")
-                ->EnumAttribute(IDraw2d::HAlign::Left, "Left")
-                ->EnumAttribute(IDraw2d::HAlign::Center, "Center")
-                ->EnumAttribute(IDraw2d::HAlign::Right, "Right")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_textHAlignment, QT_TRANSLATE_NOOP("Shine", "Horizontal text alignment"), QT_TRANSLATE_NOOP("Shine", "How to align the text within the rect"))
+                ->EnumAttribute(IDraw2d::HAlign::Left, QT_TRANSLATE_NOOP("Shine", "Left"))
+                ->EnumAttribute(IDraw2d::HAlign::Center, QT_TRANSLATE_NOOP("Shine", "Center"))
+                ->EnumAttribute(IDraw2d::HAlign::Right, QT_TRANSLATE_NOOP("Shine", "Right"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnAlignmentChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_textVAlignment, "Vertical text alignment", "How to align the text within the rect")
-                ->EnumAttribute(IDraw2d::VAlign::Top, "Top")
-                ->EnumAttribute(IDraw2d::VAlign::Center, "Center")
-                ->EnumAttribute(IDraw2d::VAlign::Bottom, "Bottom")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_textVAlignment, QT_TRANSLATE_NOOP("Shine", "Vertical text alignment"), QT_TRANSLATE_NOOP("Shine", "How to align the text within the rect"))
+                ->EnumAttribute(IDraw2d::VAlign::Top, QT_TRANSLATE_NOOP("Shine", "Top"))
+                ->EnumAttribute(IDraw2d::VAlign::Center, QT_TRANSLATE_NOOP("Shine", "Center"))
+                ->EnumAttribute(IDraw2d::VAlign::Bottom, QT_TRANSLATE_NOOP("Shine", "Bottom"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnAlignmentChange);
-            editInfo->DataElement(0, &UiTextComponent::m_charSpacing, "Character Spacing",
-                "The spacing in 1/1000th of ems to add between each two consecutive characters.\n"
-                "One em is equal to the currently specified font size.")
+            editInfo->DataElement(nullptr, &UiTextComponent::m_charSpacing, QT_TRANSLATE_NOOP("Shine", "Character Spacing"),
+                QT_TRANSLATE_NOOP("Shine", "The spacing in 1/1000th of ems to add between each two consecutive characters.\n"
+                "One em is equal to the currently specified font size."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnCharSpacingChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(0, &UiTextComponent::m_lineSpacing, "Line Spacing", "The amount of pixels to add between each two consecutive lines.")
+            editInfo->DataElement(nullptr, &UiTextComponent::m_lineSpacing, QT_TRANSLATE_NOOP("Shine", "Line Spacing"), QT_TRANSLATE_NOOP("Shine", "The amount of pixels to add between each two consecutive lines."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnLineSpacingChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_overflowMode, "Overflow mode", "How text should fit within the element")
-                ->EnumAttribute(OverflowMode::OverflowText, "Overflow")
-                ->EnumAttribute(OverflowMode::ClipText, "Clip text")
-                ->EnumAttribute(OverflowMode::Ellipsis, "Ellipsis")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_overflowMode, QT_TRANSLATE_NOOP("Shine", "Overflow mode"), QT_TRANSLATE_NOOP("Shine", "How text should fit within the element"))
+                ->EnumAttribute(OverflowMode::OverflowText, QT_TRANSLATE_NOOP("Shine", "Overflow"))
+                ->EnumAttribute(OverflowMode::ClipText, QT_TRANSLATE_NOOP("Shine", "Clip text"))
+                ->EnumAttribute(OverflowMode::Ellipsis, QT_TRANSLATE_NOOP("Shine", "Ellipsis"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnOverflowChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_wrapTextSetting, "Wrap text", "Determines whether text is wrapped")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_wrapTextSetting, QT_TRANSLATE_NOOP("Shine", "Wrap text"), QT_TRANSLATE_NOOP("Shine", "Determines whether text is wrapped"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnWrapTextSettingChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties)
-                ->EnumAttribute(WrapTextSetting::NoWrap, "No wrap")
-                ->EnumAttribute(WrapTextSetting::Wrap, "Wrap text");
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_shrinkToFit, "Shrink to Fit", "Shrinks overflowing text to fit element bounds")
+                ->EnumAttribute(WrapTextSetting::NoWrap, QT_TRANSLATE_NOOP("Shine", "No wrap"))
+                ->EnumAttribute(WrapTextSetting::Wrap, QT_TRANSLATE_NOOP("Shine", "Wrap text"));
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextComponent::m_shrinkToFit, QT_TRANSLATE_NOOP("Shine", "Shrink to Fit"), QT_TRANSLATE_NOOP("Shine", "Shrinks overflowing text to fit element bounds"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnShrinkToFitChange)
-                ->EnumAttribute(ShrinkToFit::None, "None")
-                ->EnumAttribute(ShrinkToFit::Uniform, "Uniform")
-                ->EnumAttribute(ShrinkToFit::WidthOnly, "Width Only");
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextComponent::m_minShrinkScale, "Minimum Shrink Scale", "Smallest scale that can be applied when 'Shrink to Fit' is specified")
+                ->EnumAttribute(ShrinkToFit::None, QT_TRANSLATE_NOOP("Shine", "None"))
+                ->EnumAttribute(ShrinkToFit::Uniform, QT_TRANSLATE_NOOP("Shine", "Uniform"))
+                ->EnumAttribute(ShrinkToFit::WidthOnly, QT_TRANSLATE_NOOP("Shine", "Width Only"));
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextComponent::m_minShrinkScale, QT_TRANSLATE_NOOP("Shine", "Minimum Shrink Scale"), QT_TRANSLATE_NOOP("Shine", "Smallest scale that can be applied when 'Shrink to Fit' is specified"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnMinShrinkScaleChange)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);

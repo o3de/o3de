@@ -13,6 +13,7 @@
 #include <Shine/Bus/UiCanvasBus.h>
 #include <Shine/ShineBus.h>
 #include <Shine/IShine.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasAssetRefNotificationBus Behavior context handler class
@@ -168,7 +169,7 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            auto editInfo = editContext->Class<UiCanvasAssetRefComponent>("UI Canvas Asset Ref", "The UI Canvas Asset Ref component allows you to associate a UI Canvas with an entity");
+            auto editInfo = editContext->Class<UiCanvasAssetRefComponent>(QT_TRANSLATE_NOOP("Shine", "UI Canvas Asset Ref"), QT_TRANSLATE_NOOP("Shine", "The UI Canvas Asset Ref component allows you to associate a UI Canvas with an entity"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -178,16 +179,16 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
             editInfo->DataElement("CanvasAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
-                "Canvas pathname", "The pathname of the canvas.")
+                QT_TRANSLATE_NOOP("Shine", "Canvas pathname"), QT_TRANSLATE_NOOP("Shine", "The pathname of the canvas."))
                 ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                 ->Attribute("EditButton", "")
-                ->Attribute("EditDescription", "Open in UI Editor")
+                ->Attribute("EditDescription", QT_TRANSLATE_NOOP("Shine", "Open in UI Editor"))
                 ->Attribute("EditCallback", &UiCanvasAssetRefComponent::LaunchUIEditor);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_isAutoLoad,
-                "Load automatically", "When checked, the canvas is loaded when this component is activated.")
+                QT_TRANSLATE_NOOP("Shine", "Load automatically"), QT_TRANSLATE_NOOP("Shine", "When checked, the canvas is loaded when this component is activated."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_shouldLoadDisabled,
-                "Load in disabled state", "When checked and loading automatically, the canvas is loaded in a disabled state.")
+                QT_TRANSLATE_NOOP("Shine", "Load in disabled state"), QT_TRANSLATE_NOOP("Shine", "When checked and loading automatically, the canvas is loaded in a disabled state."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasAssetRefComponent::m_isAutoLoad);
         }
     }

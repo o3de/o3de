@@ -27,7 +27,7 @@ class CUiAVSequenceProps
 {
     Q_OBJECT
 public:
-    CUiAVSequenceProps(CUiAnimViewSequence* pSequence, float fps, QWidget* pParent = NULL);    // standard constructor
+    CUiAVSequenceProps(CUiAnimViewSequence* pSequence, float fps, QWidget* pParent = nullptr); // standard constructor
     ~CUiAVSequenceProps();
 
 private:

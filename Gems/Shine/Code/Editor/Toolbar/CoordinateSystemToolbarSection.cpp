@@ -36,12 +36,12 @@ CoordinateSystemToolbarSection::CoordinateSystemToolbarSection(QToolBar* parent,
     : QObject()
     , m_editorWindow(qobject_cast<EditorWindow*>(parent->parent()))
     , m_combobox(new QComboBox(parent))
-    , m_snapCheckbox(new QCheckBox("Snap to grid", parent))
+    , m_snapCheckbox(new QCheckBox(tr("Snap to grid"), parent))
 {
     AZ_Assert(m_editorWindow, "Invalid hierarchy of windows.");
 
     m_combobox->setToolTip(
-        QString("Reference coordinate system (%1)").arg(UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE.toString()));
+        tr("Reference coordinate system (%1)").arg(UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE.toString()));
     m_combobox->setMinimumContentsLength(6);
 
     // Combobox.
@@ -50,7 +50,7 @@ CoordinateSystemToolbarSection::CoordinateSystemToolbarSection(QToolBar* parent,
 
         for (const auto s : ViewportInteraction::CoordinateSystem())
         {
-            m_combobox->addItem(ViewportHelpers::CoordinateSystemToString((int)s), (int)s);
+            m_combobox->addItem(tr(ViewportHelpers::CoordinateSystemToString((int)s)), (int)s);
         }
 
         QObject::connect(
@@ -70,7 +70,7 @@ CoordinateSystemToolbarSection::CoordinateSystemToolbarSection(QToolBar* parent,
         parent->addSeparator();
 
         m_snapCheckbox->setToolTip(
-            QString("Toggle snap to grid (%1)").arg(UICANVASEDITOR_SNAP_TO_GRID_TOGGLE_SHORTCUT_KEY_SEQUENCE.toString()));
+            tr("Toggle snap to grid (%1)").arg(UICANVASEDITOR_SNAP_TO_GRID_TOGGLE_SHORTCUT_KEY_SEQUENCE.toString()));
 
         // IMPORTANT: The MainToolbar is creater BEFORE the canvas is loaded.
         // The checked state of m_snapCheckbox will be set by

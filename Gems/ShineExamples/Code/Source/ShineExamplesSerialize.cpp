@@ -13,6 +13,7 @@
 #include <ShineExamples/UiCustomImageBus.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // NAMESPACE FUNCTIONS
@@ -85,13 +86,13 @@ namespace ShineExamplesSerialize
                 AZ::EditContext* ec = serializeContext->GetEditContext();
                 if (ec)
                 {
-                    auto editInfo = ec->Class<UiCustomImageInterface::UVRect>(0, "");
-                    editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "UVRect")
+                    auto editInfo = ec->Class<UiCustomImageInterface::UVRect>(nullptr, "");
+                    editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, QT_TRANSLATE_NOOP("ShineExamples", "UVRect"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_left, "Left", "The lower X UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_top, "Top", "The higher Y UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_right, "Right", "The higher X UV coordinate.");
-                    editInfo->DataElement(0, &UiCustomImageInterface::UVRect::m_bottom, "Bottom", "The lower Y UV coordinate.");
+                    editInfo->DataElement(nullptr, &UiCustomImageInterface::UVRect::m_left, QT_TRANSLATE_NOOP("ShineExamples", "Left"), QT_TRANSLATE_NOOP("ShineExamples", "The lower X UV coordinate."));
+                    editInfo->DataElement(nullptr, &UiCustomImageInterface::UVRect::m_top, QT_TRANSLATE_NOOP("ShineExamples", "Top"), QT_TRANSLATE_NOOP("ShineExamples", "The higher Y UV coordinate."));
+                    editInfo->DataElement(nullptr, &UiCustomImageInterface::UVRect::m_right, QT_TRANSLATE_NOOP("ShineExamples", "Right"), QT_TRANSLATE_NOOP("ShineExamples", "The higher X UV coordinate."));
+                    editInfo->DataElement(nullptr, &UiCustomImageInterface::UVRect::m_bottom, QT_TRANSLATE_NOOP("ShineExamples", "Bottom"), QT_TRANSLATE_NOOP("ShineExamples", "The lower Y UV coordinate."));
                 }
             }
 

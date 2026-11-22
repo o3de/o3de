@@ -12,6 +12,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/sort.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,25 +129,25 @@ void UiNavigationSettings::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiNavigationSettings>("Navigation", "Navigation settings");
+            auto editInfo = ec->Class<UiNavigationSettings>(QT_TRANSLATE_NOOP("Shine", "Navigation"), QT_TRANSLATE_NOOP("Shine", "Navigation settings"));
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_navigationMode, "Mode",
-                "Determines how the next element to receive focus is chosen when a navigation event occurs")
-                ->EnumAttribute(NavigationMode::Automatic, "Automatic")
-                ->EnumAttribute(NavigationMode::Custom, "Custom")
-                ->EnumAttribute(NavigationMode::None, "None")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_navigationMode, QT_TRANSLATE_NOOP("Shine", "Mode"),
+                QT_TRANSLATE_NOOP("Shine", "Determines how the next element to receive focus is chosen when a navigation event occurs"))
+                ->EnumAttribute(NavigationMode::Automatic, QT_TRANSLATE_NOOP("Shine", "Automatic"))
+                ->EnumAttribute(NavigationMode::Custom, QT_TRANSLATE_NOOP("Shine", "Custom"))
+                ->EnumAttribute(NavigationMode::None, QT_TRANSLATE_NOOP("Shine", "None"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onUpEntity, "Up Element", "The element to receive focus on an up event")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onUpEntity, QT_TRANSLATE_NOOP("Shine", "Up Element"), QT_TRANSLATE_NOOP("Shine", "The element to receive focus on an up event"))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiNavigationSettings::PopulateNavigableEntityList)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiNavigationSettings::IsNavigationModeCustom);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onDownEntity, "Down Element", "The element to receive focus on a down event")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onDownEntity, QT_TRANSLATE_NOOP("Shine", "Down Element"), QT_TRANSLATE_NOOP("Shine", "The element to receive focus on a down event"))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiNavigationSettings::PopulateNavigableEntityList)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiNavigationSettings::IsNavigationModeCustom);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onLeftEntity, "Left Element", "The element to receive focus on a left event")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onLeftEntity, QT_TRANSLATE_NOOP("Shine", "Left Element"), QT_TRANSLATE_NOOP("Shine", "The element to receive focus on a left event"))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiNavigationSettings::PopulateNavigableEntityList)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiNavigationSettings::IsNavigationModeCustom);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onRightEntity, "Right Element", "The element to receive focus on a right event")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onRightEntity, QT_TRANSLATE_NOOP("Shine", "Right Element"), QT_TRANSLATE_NOOP("Shine", "The element to receive focus on a right event"))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiNavigationSettings::PopulateNavigableEntityList)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiNavigationSettings::IsNavigationModeCustom);
         }

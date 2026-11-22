@@ -17,6 +17,7 @@
 
 #include <Shine/Bus/UiGameEntityContextBus.h>
 #include <Shine/Bus/UiElementBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // BehaviorContext UiSpawnerNotificationBus forwarder
 class BehaviorUiSpawnerNotificationBusHandler
@@ -72,8 +73,8 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            auto editInfo = editContext->Class<UiSpawnerComponent>("UiSpawner",
-                    "The spawner component provides dynamic UI spawnable spawning support.");
+            auto editInfo = editContext->Class<UiSpawnerComponent>(QT_TRANSLATE_NOOP("Shine", "UiSpawner"),
+                    QT_TRANSLATE_NOOP("Shine", "The spawner component provides dynamic UI spawnable spawning support."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -82,9 +83,9 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiSpawnerComponent::m_spawnableAsset, "Spawnable", "The spawnable to spawn");
-            editInfo->DataElement(0, &UiSpawnerComponent::m_spawnOnActivate, "Spawn on activate",
-                "Should the component spawn the selected spawnable upon activation?");
+            editInfo->DataElement(nullptr, &UiSpawnerComponent::m_spawnableAsset, QT_TRANSLATE_NOOP("Shine", "Spawnable"), QT_TRANSLATE_NOOP("Shine", "The spawnable to spawn"));
+            editInfo->DataElement(nullptr, &UiSpawnerComponent::m_spawnOnActivate, QT_TRANSLATE_NOOP("Shine", "Spawn on activate"),
+                QT_TRANSLATE_NOOP("Shine", "Should the component spawn the selected spawnable upon activation?"));
         }
     }
 

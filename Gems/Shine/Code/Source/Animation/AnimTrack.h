@@ -31,7 +31,7 @@ public:
     EUiAnimValue GetValueType() override { return eUiAnimValue_Unknown; }
 
     int GetSubTrackCount() const override { return 0; };
-    IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return 0; };
+    IUiAnimTrack* GetSubTrack([[maybe_unused]] int nIndex) const override { return nullptr; };
     AZStd::string GetSubTrackName([[maybe_unused]] int nIndex) const override { return AZStd::string(); };
     void SetSubTrackName([[maybe_unused]] int nIndex, [[maybe_unused]] const char* name) override { assert(0); }
 
@@ -280,7 +280,7 @@ template <class KeyType>
 inline void TUiAnimTrack<KeyType>::GetKey(int index, IKey* key) const
 {
     AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-    AZ_Assert(key != 0, "Key cannot be null!");
+    AZ_Assert(key != nullptr, "Key cannot be null!");
     *(KeyType*)key = m_keys[index];
 }
 
@@ -289,7 +289,7 @@ template <class KeyType>
 inline void TUiAnimTrack<KeyType>::SetKey(int index, IKey* key)
 {
     AZ_Assert(index >= 0 && index < (int)m_keys.size(), "Key index is out of range");
-    AZ_Assert(key != 0, "Key cannot be null!");
+    AZ_Assert(key != nullptr, "Key cannot be null!");
     m_keys[index] = *(KeyType*)key;
     Invalidate();
 }
@@ -514,7 +514,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
 {
     CheckValid();
 
-    if (key == NULL)
+    if (key == nullptr)
     {
         return -1;
     }
@@ -532,7 +532,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
     if ((m_flags & eUiAnimTrackFlags_Cycle) || (m_flags & eUiAnimTrackFlags_Loop))
     {
         // Warp time.
-        const char* desc = 0;
+        const char* desc = nullptr;
         float duration = 0;
         GetKeyInfo(nkeys - 1, desc, duration);
         float endtime = GetKeyTime(nkeys - 1) + duration;

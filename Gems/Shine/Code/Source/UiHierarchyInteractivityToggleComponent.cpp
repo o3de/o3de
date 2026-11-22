@@ -14,6 +14,8 @@
 #include <Shine/Bus/UiElementBus.h>
 #include <Shine/Bus/UiInteractableBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 AZ_COMPONENT_IMPL(UiHierarchyInteractivityToggleComponent, "UiHierarchyInteractivityToggleComponent", "{B8C5A864-1A98-48B9-BEBB-1FDE06E6D463}");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +109,7 @@ void UiHierarchyInteractivityToggleComponent::Reflect(AZ::ReflectContext* contex
         {
             editContext
                 ->Class<UiHierarchyInteractivityToggleComponent>(
-                    "HierarchyInteractivityToggle", "A grouping handler that allows interaction and rendering for the entire hierarchy of children.")
+                    QT_TRANSLATE_NOOP("Shine", "HierarchyInteractivityToggle"), QT_TRANSLATE_NOOP("Shine", "A grouping handler that allows interaction and rendering for the entire hierarchy of children."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -115,8 +117,8 @@ void UiHierarchyInteractivityToggleComponent::Reflect(AZ::ReflectContext* contex
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
                     &UiHierarchyInteractivityToggleComponent::m_isInteractionLocallyEnabled,
-                    "Is Interactive",
-                    "Whether this entity and children will be interactable.")
+                    QT_TRANSLATE_NOOP("Shine", "Is Interactive"),
+                    QT_TRANSLATE_NOOP("Shine", "Whether this entity and children will be interactable."))
                     ;
         }
     }

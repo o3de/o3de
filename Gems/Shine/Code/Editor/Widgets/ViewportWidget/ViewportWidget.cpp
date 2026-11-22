@@ -1246,7 +1246,7 @@ void ViewportWidget::SetupShortcuts()
 
     // Give the viewport focus and activate the space bar
     {
-        QAction* action = new QAction("Viewport Focus", this);
+        QAction* action = new QAction(tr("Viewport Focus"), this);
         action->setShortcut(QKeySequence(Qt::Key_Space));
         QObject::connect(action,
             &QAction::triggered,

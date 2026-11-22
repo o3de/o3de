@@ -14,6 +14,7 @@
 
 #include "UiDynamicContentDatabase.h"
 #include "ShineExamplesCppExample.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ShineExamples
 {
@@ -31,7 +32,7 @@ namespace ShineExamples
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ShineExamplesSystemComponent>("ShineExamples", "This provides example code using Shine and code used by sample UI canvases and levels")
+                ec->Class<ShineExamplesSystemComponent>(QT_TRANSLATE_NOOP("ShineExamples", "ShineExamples"), QT_TRANSLATE_NOOP("ShineExamples", "This provides example code using Shine and code used by sample UI canvases and levels"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "UI")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

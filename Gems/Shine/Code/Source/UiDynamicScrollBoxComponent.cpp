@@ -21,6 +21,8 @@
 #include <Shine/Bus/UiLayoutCellBus.h>
 #include <Shine/Bus/UiLayoutCellDefaultBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiDynamicScrollBoxDataBus Behavior context handler class
 class BehaviorUiDynamicScrollBoxDataBusHandler
@@ -734,10 +736,10 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDynamicScrollBoxComponent>("DynamicScrollBox",
-                    "A component that dynamically sets up scroll box content as a horizontal or vertical list of elements that\n"
+            auto editInfo = ec->Class<UiDynamicScrollBoxComponent>(QT_TRANSLATE_NOOP("Shine", "DynamicScrollBox"),
+                    QT_TRANSLATE_NOOP("Shine", "A component that dynamically sets up scroll box content as a horizontal or vertical list of elements that\n"
                     "are cloned from a prototype element. Only the minimum number of elements are created for efficient scrolling.\n"
-                    "The scroll box's content element's first child acts as the prototype element.");
+                    "The scroll box's content element's first child acts as the prototype element."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -746,60 +748,60 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, "Refresh on activate",
-                "Whether the list should automatically prepare and refresh its content post activation.");
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoRefreshOnPostActivate, QT_TRANSLATE_NOOP("Shine", "Refresh on activate"),
+                QT_TRANSLATE_NOOP("Shine", "Whether the list should automatically prepare and refresh its content post activation."));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_itemPrototypeElement, "Prototype element",
-                "The prototype element to be used for the elements in the list. If empty, the prototype element will default to the first child of the content element.");
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_itemPrototypeElement, QT_TRANSLATE_NOOP("Shine", "Prototype element"),
+                QT_TRANSLATE_NOOP("Shine", "The prototype element to be used for the elements in the list. If empty, the prototype element will default to the first child of the content element."));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableItemElementSize, "Variable element size",
-                "Whether elements in the list can vary in size. If not, the element size is fixed and is determined by the prototype element.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_variableItemElementSize, QT_TRANSLATE_NOOP("Shine", "Variable element size"),
+                QT_TRANSLATE_NOOP("Shine", "Whether elements in the list can vary in size. If not, the element size is fixed and is determined by the prototype element."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, "Auto calc element size",
-                "Whether element sizes should be auto calculated or whether they should be requested.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoCalculateItemElementSize, QT_TRANSLATE_NOOP("Shine", "Auto calc element size"),
+                QT_TRANSLATE_NOOP("Shine", "Whether element sizes should be auto calculated or whether they should be requested."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_variableItemElementSize);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_estimatedItemElementSize, "Estimated element size",
-                "The element size to use as an estimate before the element appears in the view. If set to 0, sizes will be calculated up front.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_estimatedItemElementSize, QT_TRANSLATE_NOOP("Shine", "Estimated element size"),
+                QT_TRANSLATE_NOOP("Shine", "The element size to use as an estimate before the element appears in the view. If set to 0, sizes will be calculated up front."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_variableItemElementSize)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicScrollBoxComponent::m_defaultNumElements, "Default num elements",
-                "The default number of elements in the list.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicScrollBoxComponent::m_defaultNumElements, QT_TRANSLATE_NOOP("Shine", "Default num elements"),
+                QT_TRANSLATE_NOOP("Shine", "The default number of elements in the list."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Sections")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Sections"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_hasSections, "Enabled",
-                "Whether the list should be divided into sections with headers.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_hasSections, QT_TRANSLATE_NOOP("Shine", "Enabled"),
+                QT_TRANSLATE_NOOP("Shine", "Whether the list should be divided into sections with headers."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, "Prototype header",
-                "The prototype element to be used for the section headers in the list.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_headerPrototypeElement, QT_TRANSLATE_NOOP("Shine", "Prototype header"),
+                QT_TRANSLATE_NOOP("Shine", "The prototype element to be used for the section headers in the list."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_stickyHeaders, "Sticky headers",
-                "Whether headers should stick to the beginning of the visible list area.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_stickyHeaders, QT_TRANSLATE_NOOP("Shine", "Sticky headers"),
+                QT_TRANSLATE_NOOP("Shine", "Whether headers should stick to the beginning of the visible list area."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, "Variable header size",
-                "Whether headers in the list can vary in size. If not, the header size is fixed and is determined by the prototype element.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_variableHeaderElementSize, QT_TRANSLATE_NOOP("Shine", "Variable header size"),
+                QT_TRANSLATE_NOOP("Shine", "Whether headers in the list can vary in size. If not, the header size is fixed and is determined by the prototype element."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, "Auto calc header size",
-                "Whether header sizes should be auto calculated or whether they should be requested.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_autoCalculateHeaderElementSize, QT_TRANSLATE_NOOP("Shine", "Auto calc header size"),
+                QT_TRANSLATE_NOOP("Shine", "Whether header sizes should be auto calculated or whether they should be requested."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::HeadersHaveVariableSizes);
 
-            editInfo->DataElement(0, &UiDynamicScrollBoxComponent::m_estimatedHeaderElementSize, "Estimated header size",
-                "The header size to use as an estimate before the header appears in the view. If set to 0, sizes will be calculated up front.")
+            editInfo->DataElement(nullptr, &UiDynamicScrollBoxComponent::m_estimatedHeaderElementSize, QT_TRANSLATE_NOOP("Shine", "Estimated header size"),
+                QT_TRANSLATE_NOOP("Shine", "The header size to use as an estimate before the header appears in the view. If set to 0, sizes will be calculated up front."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::HeadersHaveVariableSizes)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicScrollBoxComponent::m_defaultNumSections, "Default num sections",
-                "The default number of sections in the list.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiDynamicScrollBoxComponent::m_defaultNumSections, QT_TRANSLATE_NOOP("Shine", "Default num sections"),
+                QT_TRANSLATE_NOOP("Shine", "The default number of sections in the list."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiDynamicScrollBoxComponent::m_hasSections)
                 ->Attribute(AZ::Edit::Attributes::Min, 1);
         }

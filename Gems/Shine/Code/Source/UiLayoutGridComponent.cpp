@@ -16,6 +16,8 @@
 
 #include "UiSerialize.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -478,7 +480,7 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiLayoutGridComponent>("LayoutGrid", "A layout component that arranges its children in a grid");
+            auto editInfo = ec->Class<UiLayoutGridComponent>(QT_TRANSLATE_NOOP("Shine", "LayoutGrid"), QT_TRANSLATE_NOOP("Shine", "A layout component that arranges its children in a grid"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -487,23 +489,23 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutGridComponent::m_padding, "Padding", "The layout padding")
+            editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutGridComponent::m_padding, QT_TRANSLATE_NOOP("Shine", "Padding"), QT_TRANSLATE_NOOP("Shine", "The layout padding"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(0, &UiLayoutGridComponent::m_spacing, "Spacing", "The spacing between children")
-                ->Attribute(AZ::Edit::Attributes::LabelForX, "Horizontal")
-                ->Attribute(AZ::Edit::Attributes::LabelForY, "Vertical")
+            editInfo->DataElement(nullptr, &UiLayoutGridComponent::m_spacing, QT_TRANSLATE_NOOP("Shine", "Spacing"), QT_TRANSLATE_NOOP("Shine", "The spacing between children"))
+                ->Attribute(AZ::Edit::Attributes::LabelForX, QT_TRANSLATE_NOOP("Shine", "Horizontal"))
+                ->Attribute(AZ::Edit::Attributes::LabelForY, QT_TRANSLATE_NOOP("Shine", "Vertical"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateParentLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
 
-            editInfo->DataElement(0, &UiLayoutGridComponent::m_cellSize, "Cell size", "The size of the cells")
-                ->Attribute(AZ::Edit::Attributes::LabelForX, "Width")
-                ->Attribute(AZ::Edit::Attributes::LabelForY, "Height")
+            editInfo->DataElement(nullptr, &UiLayoutGridComponent::m_cellSize, QT_TRANSLATE_NOOP("Shine", "Cell size"), QT_TRANSLATE_NOOP("Shine", "The size of the cells"))
+                ->Attribute(AZ::Edit::Attributes::LabelForX, QT_TRANSLATE_NOOP("Shine", "Width"))
+                ->Attribute(AZ::Edit::Attributes::LabelForY, QT_TRANSLATE_NOOP("Shine", "Height"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateParentLayout)
@@ -511,44 +513,44 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
 
             // Order group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Order")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Order"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_horizontalOrder, "Horizontal",
-                    "Which direction the rows fill")
-                    ->EnumAttribute(UiLayoutInterface::HorizontalOrder::LeftToRight, "Left to right")
-                    ->EnumAttribute(UiLayoutInterface::HorizontalOrder::RightToLeft, "Right to left")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_horizontalOrder, QT_TRANSLATE_NOOP("Shine", "Horizontal"),
+                    QT_TRANSLATE_NOOP("Shine", "Which direction the rows fill"))
+                    ->EnumAttribute(UiLayoutInterface::HorizontalOrder::LeftToRight, QT_TRANSLATE_NOOP("Shine", "Left to right"))
+                    ->EnumAttribute(UiLayoutInterface::HorizontalOrder::RightToLeft, QT_TRANSLATE_NOOP("Shine", "Right to left"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_verticalOrder, "Vertical",
-                    "Which direction the columns fill")
-                    ->EnumAttribute(UiLayoutInterface::VerticalOrder::TopToBottom, "Top to bottom")
-                    ->EnumAttribute(UiLayoutInterface::VerticalOrder::BottomToTop, "Bottom to top")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_verticalOrder, QT_TRANSLATE_NOOP("Shine", "Vertical"),
+                    QT_TRANSLATE_NOOP("Shine", "Which direction the columns fill"))
+                    ->EnumAttribute(UiLayoutInterface::VerticalOrder::TopToBottom, QT_TRANSLATE_NOOP("Shine", "Top to bottom"))
+                    ->EnumAttribute(UiLayoutInterface::VerticalOrder::BottomToTop, QT_TRANSLATE_NOOP("Shine", "Bottom to top"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_startingDirection, "Starting with",
-                    "Start filling horizontally or vertically")
-                    ->EnumAttribute(UiLayoutGridInterface::StartingDirection::HorizontalOrder, "Horizontal")
-                    ->EnumAttribute(UiLayoutGridInterface::StartingDirection::VerticalOrder, "Vertical")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_startingDirection, QT_TRANSLATE_NOOP("Shine", "Starting with"),
+                    QT_TRANSLATE_NOOP("Shine", "Start filling horizontally or vertically"))
+                    ->EnumAttribute(UiLayoutGridInterface::StartingDirection::HorizontalOrder, QT_TRANSLATE_NOOP("Shine", "Horizontal"))
+                    ->EnumAttribute(UiLayoutGridInterface::StartingDirection::VerticalOrder, QT_TRANSLATE_NOOP("Shine", "Vertical"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout);
             }
 
             // Alignment
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Child Alignment")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Child Alignment"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_childHAlignment, "Horizontal",
-                    "How to align the children if they don't take up all the available width")
-                    ->EnumAttribute(IDraw2d::HAlign::Left, "Left")
-                    ->EnumAttribute(IDraw2d::HAlign::Center, "Center")
-                    ->EnumAttribute(IDraw2d::HAlign::Right, "Right")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_childHAlignment, QT_TRANSLATE_NOOP("Shine", "Horizontal"),
+                    QT_TRANSLATE_NOOP("Shine", "How to align the children if they don't take up all the available width"))
+                    ->EnumAttribute(IDraw2d::HAlign::Left, QT_TRANSLATE_NOOP("Shine", "Left"))
+                    ->EnumAttribute(IDraw2d::HAlign::Center, QT_TRANSLATE_NOOP("Shine", "Center"))
+                    ->EnumAttribute(IDraw2d::HAlign::Right, QT_TRANSLATE_NOOP("Shine", "Right"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_childVAlignment, "Vertical",
-                    "How to align the children if they don't take up all the available height")
-                    ->EnumAttribute(IDraw2d::VAlign::Top, "Top")
-                    ->EnumAttribute(IDraw2d::VAlign::Center, "Center")
-                    ->EnumAttribute(IDraw2d::VAlign::Bottom, "Bottom")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiLayoutGridComponent::m_childVAlignment, QT_TRANSLATE_NOOP("Shine", "Vertical"),
+                    QT_TRANSLATE_NOOP("Shine", "How to align the children if they don't take up all the available height"))
+                    ->EnumAttribute(IDraw2d::VAlign::Top, QT_TRANSLATE_NOOP("Shine", "Top"))
+                    ->EnumAttribute(IDraw2d::VAlign::Center, QT_TRANSLATE_NOOP("Shine", "Center"))
+                    ->EnumAttribute(IDraw2d::VAlign::Bottom, QT_TRANSLATE_NOOP("Shine", "Bottom"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutGridComponent::InvalidateLayout);
             }
         }

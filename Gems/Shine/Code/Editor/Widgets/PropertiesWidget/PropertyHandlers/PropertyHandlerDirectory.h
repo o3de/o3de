@@ -42,7 +42,7 @@ class PropertyAssetDirectorySelectionCtrl : public AzToolsFramework::PropertyAss
 {
 public:
     AZ_CLASS_ALLOCATOR(PropertyAssetDirectorySelectionCtrl, AZ::SystemAllocator)
-    PropertyAssetDirectorySelectionCtrl(QWidget* pParent = NULL)
+    PropertyAssetDirectorySelectionCtrl(QWidget* pParent = nullptr)
         : PropertyAssetCtrl(pParent)
     {
     }

@@ -21,6 +21,7 @@
 #include <Shine/ISprite.h>
 #include <Shine/UiSerializeHelpers.h>
 #include "UiSerialize.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCheckboxNotificationBus Behavior context handler class
@@ -236,7 +237,7 @@ void UiCheckboxComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiCheckboxComponent>("Checkbox", "An interactable component for Checkbox/Toggle behavior.");
+            auto editInfo = ec->Class<UiCheckboxComponent>(QT_TRANSLATE_NOOP("Shine", "Checkbox"), QT_TRANSLATE_NOOP("Shine", "An interactable component for Checkbox/Toggle behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -247,32 +248,32 @@ void UiCheckboxComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCheckboxComponent::m_optionalCheckedEntity, "On", "The child element to show when Checkbox is in on state.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCheckboxComponent::m_optionalCheckedEntity, QT_TRANSLATE_NOOP("Shine", "On"), QT_TRANSLATE_NOOP("Shine", "The child element to show when Checkbox is in on state."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiCheckboxComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCheckboxComponent::m_optionalUncheckedEntity, "Off", "The child element to show when Checkbox is in off state.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCheckboxComponent::m_optionalUncheckedEntity, QT_TRANSLATE_NOOP("Shine", "Off"), QT_TRANSLATE_NOOP("Shine", "The child element to show when Checkbox is in off state."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiCheckboxComponent::PopulateChildEntityList);
             }
 
             // Value group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Value")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Value"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiCheckboxComponent::m_isOn, "Checked", "The initial state of the Checkbox.");
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_isOn, QT_TRANSLATE_NOOP("Shine", "Checked"), QT_TRANSLATE_NOOP("Shine", "The initial state of the Checkbox."));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiCheckboxComponent::m_changedActionName, "Change", "The action triggered when value changes either way.");
-                editInfo->DataElement(0, &UiCheckboxComponent::m_turnOnActionName, "On", "The action triggered when turned on.");
-                editInfo->DataElement(0, &UiCheckboxComponent::m_turnOffActionName, "Off", "The action triggered when turned off.");
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_changedActionName, QT_TRANSLATE_NOOP("Shine", "Change"), QT_TRANSLATE_NOOP("Shine", "The action triggered when value changes either way."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_turnOnActionName, QT_TRANSLATE_NOOP("Shine", "On"), QT_TRANSLATE_NOOP("Shine", "The action triggered when turned on."));
+                editInfo->DataElement(nullptr, &UiCheckboxComponent::m_turnOffActionName, QT_TRANSLATE_NOOP("Shine", "Off"), QT_TRANSLATE_NOOP("Shine", "The action triggered when turned off."));
             }
         }
     }

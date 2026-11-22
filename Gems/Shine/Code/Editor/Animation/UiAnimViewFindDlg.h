@@ -30,7 +30,7 @@ class CUiAnimViewFindDlg
     Q_OBJECT
     // Construction
 public:
-    CUiAnimViewFindDlg(const char* title = NULL, QWidget* pParent = NULL);   // standard constructor
+    CUiAnimViewFindDlg(const char* title = nullptr, QWidget* pParent = nullptr);   // standard constructor
     ~CUiAnimViewFindDlg();
 
     //Functions

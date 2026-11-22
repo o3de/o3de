@@ -36,7 +36,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool a
 
     if (showMask & (Show::kNew_EmptyElement | Show::kNew_EmptyElementAtRoot))
     {
-        QMenu* menu = (addMenuForNewElement ? addMenu("&New...") : this);
+        QMenu* menu = (addMenuForNewElement ? addMenu(tr("&New...")) : this);
 
         if (showMask & (Show::kNew_EmptyElement | Show::kNew_EmptyElementAtRoot))
         {
@@ -93,7 +93,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Cut element.
     {
-        action = new QAction("Cut", this);
+        action = new QAction(tr("Cut"), this);
         action->setShortcut(QKeySequence::Cut);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -116,7 +116,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Copy element.
     {
-        action = new QAction("Copy", this);
+        action = new QAction(tr("Copy"), this);
         action->setShortcut(QKeySequence::Copy);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -141,7 +141,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
     // Paste element.
     {
-        action = new QAction(QIcon(":/Icons/Eye_Open.png"), (itemsAreSelected ? "Paste as sibling" : "Paste"), this);
+        action = new QAction(QIcon(":/Icons/Eye_Open.png"), (itemsAreSelected ? tr("Paste as sibling") : tr("Paste")), this);
         action->setShortcut(QKeySequence::Paste);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -163,7 +163,7 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
 
         if (itemsAreSelected)
         {
-            action = new QAction(QIcon(":/Icons/Eye_Open.png"), ("Paste as child"), this);
+            action = new QAction(QIcon(":/Icons/Eye_Open.png"), tr("Paste as child"), this);
             {
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V), QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V) });
@@ -187,6 +187,35 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
             }
         }
     }
+
+    // Select the selected elements and everything below them.
+    {
+        action = new QAction(tr("Select Hierarchy"), this);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                QMetaObject::invokeMethod(hierarchy, "SelectHierarchy", Qt::QueuedConnection);
+            });
+        addAction(action);
+
+        bool anyHaveChildren = false;
+        for (QTreeWidgetItem* item : selectedItems)
+        {
+            if (item->childCount() > 0)
+            {
+                anyHaveChildren = true;
+                break;
+            }
+        }
+
+        if (!anyHaveChildren)
+        {
+            action->setEnabled(false);
+        }
+    }
 }
 
 void HierarchyMenu::New_EmptyElement(
@@ -206,7 +235,7 @@ void HierarchyMenu::DeleteElement(HierarchyWidget* hierarchy, QTreeWidgetItemRaw
 
     // Delete element.
     {
-        action = new QAction("Delete", this);
+        action = new QAction(tr("Delete"), this);
         action->setShortcut(QKeySequence::Delete);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -234,7 +263,7 @@ void HierarchyMenu::FindElements(HierarchyWidget* hierarchy, [[maybe_unused]] QT
 
     // Find elements
     {
-        action = new QAction("Find Elements...", this);
+        action = new QAction(tr("Find Elements..."), this);
         action->setShortcut(QKeySequence::Find);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(
@@ -293,7 +322,7 @@ void HierarchyMenu::EditorOnly(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtr
 
     // Toggle editor only state.
     {
-        action = new QAction("Editor Only", this);
+        action = new QAction(tr("Editor Only"), this);
         action->setCheckable(true);
 
         if (selectedItems.empty())

@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Shine/Bus/UiCanvasBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -68,7 +69,7 @@ void UiCanvasProxyRefComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            auto editInfo = editContext->Class<UiCanvasProxyRefComponent>("UI Canvas Proxy Ref", "The UI Canvas Proxy Ref component allows you to associate an entity with another entity that is managing a UI Canvas");
+            auto editInfo = editContext->Class<UiCanvasProxyRefComponent>(QT_TRANSLATE_NOOP("Shine", "UI Canvas Proxy Ref"), QT_TRANSLATE_NOOP("Shine", "The UI Canvas Proxy Ref component allows you to associate an entity with another entity that is managing a UI Canvas"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -77,8 +78,8 @@ void UiCanvasProxyRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-proxy-ref/")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
-            editInfo->DataElement(0, &UiCanvasProxyRefComponent::m_canvasAssetRefEntityId,
-                "Canvas Asset Ref entity", "The entity that holds the UI Canvas Asset Ref component.");
+            editInfo->DataElement(nullptr, &UiCanvasProxyRefComponent::m_canvasAssetRefEntityId,
+                QT_TRANSLATE_NOOP("Shine", "Canvas Asset Ref entity"), QT_TRANSLATE_NOOP("Shine", "The entity that holds the UI Canvas Asset Ref component."));
         }
     }
 

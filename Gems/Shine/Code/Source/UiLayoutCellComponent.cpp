@@ -14,6 +14,8 @@
 #include <Shine/Bus/UiElementBus.h>
 #include <Shine/Bus/UiLayoutManagerBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -258,7 +260,7 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiLayoutCellComponent>("LayoutCell", "Allows default layout cell properties to be overridden.");
+            auto editInfo = ec->Class<UiLayoutCellComponent>(QT_TRANSLATE_NOOP("Shine", "LayoutCell"), QT_TRANSLATE_NOOP("Shine", "Allows default layout cell properties to be overridden."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -267,90 +269,90 @@ void UiLayoutCellComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_minWidthOverridden, "Min Width",
-                "Check this box to override the minimum width.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_minWidthOverridden, QT_TRANSLATE_NOOP("Shine", "Min Width"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the minimum width."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_minWidth, "Value",
-                "Specify minimum width.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_minWidth, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify minimum width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_minWidthOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_minHeightOverridden, "Min Height",
-                "Check this box to override the minimum height.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_minHeightOverridden, QT_TRANSLATE_NOOP("Shine", "Min Height"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the minimum height."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_minHeight, "Value",
-                "Specify minimum height.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_minHeight, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify minimum height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_minHeightOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_targetWidthOverridden, "Target Width",
-                "Check this box to override the target width.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_targetWidthOverridden, QT_TRANSLATE_NOOP("Shine", "Target Width"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the target width."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_targetWidth, "Value",
-                "Specify target width.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_targetWidth, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify target width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_targetWidthOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_targetHeightOverridden, "Target Height",
-                "Check this box to override the target height.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_targetHeightOverridden, QT_TRANSLATE_NOOP("Shine", "Target Height"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the target height."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_targetHeight, "Value",
-                "Specify target height.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_targetHeight, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify target height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_targetHeightOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_maxWidthOverridden, "Max Width",
-                "Check this box to override the max width.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_maxWidthOverridden, QT_TRANSLATE_NOOP("Shine", "Max Width"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the max width."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_maxWidth, "Value",
-                "Specify max width.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_maxWidth, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify max width."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_maxWidthOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_maxHeightOverridden, "Max Height",
-                "Check this box to override the max height.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_maxHeightOverridden, QT_TRANSLATE_NOOP("Shine", "Max Height"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the max height."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_maxHeight, "Value",
-                "Specify max height.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_maxHeight, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify max height."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_maxHeightOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_extraWidthRatioOverridden, "Extra Width Ratio",
-                "Check this box to override the extra width ratio.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_extraWidthRatioOverridden, QT_TRANSLATE_NOOP("Shine", "Extra Width Ratio"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the extra width ratio."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_extraWidthRatio, "Value",
-                "Specify extra width ratio.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_extraWidthRatio, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify extra width ratio."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_extraWidthRatioOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_extraHeightRatioOverridden, "Extra Height Ratio",
-                "Check this box to override the extra height ratio.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiLayoutCellComponent::m_extraHeightRatioOverridden, QT_TRANSLATE_NOOP("Shine", "Extra Height Ratio"),
+                QT_TRANSLATE_NOOP("Shine", "Check this box to override the extra height ratio."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);
 
-            editInfo->DataElement(0, &UiLayoutCellComponent::m_extraHeightRatio, "Value",
-                "Specify extra height ratio.")
+            editInfo->DataElement(nullptr, &UiLayoutCellComponent::m_extraHeightRatio, QT_TRANSLATE_NOOP("Shine", "Value"),
+                QT_TRANSLATE_NOOP("Shine", "Specify extra height ratio."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiLayoutCellComponent::m_extraHeightRatioOverridden)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiLayoutCellComponent::InvalidateLayout);

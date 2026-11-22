@@ -66,7 +66,7 @@ void CUiAnimViewKeyUIControls::OnInternalVariableChange(IVariable* pVar)
 
 CUiAnimViewKeyPropertiesDlg::CUiAnimViewKeyPropertiesDlg(QWidget* hParentWnd)
     : QWidget(hParentWnd)
-    , m_pLastTrackSelected(NULL)
+    , m_pLastTrackSelected(nullptr)
 {
     QVBoxLayout* l = new QVBoxLayout();
     l->setContentsMargins(0, 0, 0, 0);

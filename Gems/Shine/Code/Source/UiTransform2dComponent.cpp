@@ -21,6 +21,8 @@
 #include "UiElementComponent.h"
 #include "UiCanvasComponent.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 #include <set>
 #include <list>
 
@@ -1250,9 +1252,9 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiTransform2dComponent>("Transform2D",
-                    "All 2D UI elements have this component.\n"
-                    "It controls the placement of the element's rectangle relative to its parent");
+            auto editInfo = ec->Class<UiTransform2dComponent>(QT_TRANSLATE_NOOP("Shine", "Transform2D"),
+                    QT_TRANSLATE_NOOP("Shine", "All 2D UI elements have this component.\n"
+                    "It controls the placement of the element's rectangle relative to its parent"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTransform2d.png")
@@ -1260,48 +1262,48 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // Cannot be added or removed by user
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement("Anchor", &UiTransform2dComponent::m_anchors, "Anchors",
-                "The anchors specify proportional positions within the parent element's rectangle.\n"
+            editInfo->DataElement("Anchor", &UiTransform2dComponent::m_anchors, QT_TRANSLATE_NOOP("Shine", "Anchors"),
+                QT_TRANSLATE_NOOP("Shine", "The anchors specify proportional positions within the parent element's rectangle.\n"
                 "If the anchors are together (e.g. left = right or top = bottom) then, in that dimension,\n"
                 "there is a single anchor point that the element is offset from.\n"
                 "If they are apart, then there are two anchor points and as the parent changes size\n"
-                "this element will change size also")
+                "this element will change size also"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues")) // Refresh attributes for scale to device mode
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                 ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
-                ->Attribute(AZ::Edit::Attributes::Suffix, "%")
+                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Shine", "%"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show) // needed because sub-elements are hidden
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &UiTransform2dComponent::IsControlledByParent)
                 ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiTransform2dComponent::GetAnchorPropertyLabel);
 
-            editInfo->DataElement("Offset", &UiTransform2dComponent::m_offsets, "Offsets",
-                "The offsets (in pixels) from the anchors.\n"
+            editInfo->DataElement("Offset", &UiTransform2dComponent::m_offsets, QT_TRANSLATE_NOOP("Shine", "Offsets"),
+                QT_TRANSLATE_NOOP("Shine", "The offsets (in pixels) from the anchors.\n"
                 "When anchors are together, the offset to the pivot plus the size is displayed.\n"
-                "When they are apart, the offsets to each edge of the element's rect are displayed")
+                "When they are apart, the offsets to each edge of the element's rect are displayed"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiTransform2dComponent::IsNotControlledByParent)
                 ->Attribute(AZ_CRC_CE("LayoutFitterType"), &UiTransform2dComponent::GetLayoutFitterType)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
-            editInfo->DataElement("Pivot", &UiTransform2dComponent::m_pivot, "Pivot",
-                "Rotation and scaling happens around the pivot point.\n"
-                "If the anchors are together then the offsets specify the offset from the anchor to the pivot")
+            editInfo->DataElement("Pivot", &UiTransform2dComponent::m_pivot, QT_TRANSLATE_NOOP("Shine", "Pivot"),
+                QT_TRANSLATE_NOOP("Shine", "Rotation and scaling happens around the pivot point.\n"
+                "If the anchors are together then the offsets specify the offset from the anchor to the pivot"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTransform2dComponent::m_rotation, "Rotation",
-                "The rotation in degrees about the pivot point")
+            editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTransform2dComponent::m_rotation, QT_TRANSLATE_NOOP("Shine", "Rotation"),
+                QT_TRANSLATE_NOOP("Shine", "The rotation in degrees about the pivot point"))
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Shine", " degrees"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTransform2dComponent::OnTransformPropertyChanged);
 
-            editInfo->DataElement(0, &UiTransform2dComponent::m_scale, "Scale",
-                "The X and Y scale around the pivot point")
+            editInfo->DataElement(nullptr, &UiTransform2dComponent::m_scale, QT_TRANSLATE_NOOP("Shine", "Scale"),
+                QT_TRANSLATE_NOOP("Shine", "The X and Y scale around the pivot point"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTransform2dComponent::OnTransformPropertyChanged)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
@@ -1309,20 +1311,20 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
             editInfo->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,
                 &UiTransform2dComponent::m_isFlooringOffsets,
-                "Floor offsets",
-                "When checked, this element's offsets are floored");
+                QT_TRANSLATE_NOOP("Shine", "Floor offsets"),
+                QT_TRANSLATE_NOOP("Shine", "When checked, this element's offsets are floored"));
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTransform2dComponent::m_scaleToDeviceMode, "Scale to device",
-                "Controls how this element and all its children will be scaled to allow for\n"
-                "the difference between the authored canvas size and the actual viewport size")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::None, "None")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit,  "Scale to fit (uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFill, "Scale to fill (uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFitX, "Scale to fit X (uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFitY, "Scale to fit Y (uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::NonUniformScale,    "Stretch to fill (non-uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleXOnly,         "Stretch to fit X (non-uniformly)")
-                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleYOnly,         "Stretch to fit Y (non-uniformly)")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTransform2dComponent::m_scaleToDeviceMode, QT_TRANSLATE_NOOP("Shine", "Scale to device"),
+                QT_TRANSLATE_NOOP("Shine", "Controls how this element and all its children will be scaled to allow for\n"
+                "the difference between the authored canvas size and the actual viewport size"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::None, QT_TRANSLATE_NOOP("Shine", "None"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFit,  QT_TRANSLATE_NOOP("Shine", "Scale to fit (uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFill, QT_TRANSLATE_NOOP("Shine", "Scale to fill (uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFitX, QT_TRANSLATE_NOOP("Shine", "Scale to fit X (uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::UniformScaleToFitY, QT_TRANSLATE_NOOP("Shine", "Scale to fit Y (uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::NonUniformScale,    QT_TRANSLATE_NOOP("Shine", "Stretch to fill (non-uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleXOnly,         QT_TRANSLATE_NOOP("Shine", "Stretch to fit X (non-uniformly)"))
+                ->EnumAttribute(UiTransformInterface::ScaleToDeviceMode::ScaleYOnly,         QT_TRANSLATE_NOOP("Shine", "Stretch to fit Y (non-uniformly)"))
                 ->Attribute("Warning", &UiTransform2dComponent::GetScaleToDeviceModeWarningTooltipText)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
         }

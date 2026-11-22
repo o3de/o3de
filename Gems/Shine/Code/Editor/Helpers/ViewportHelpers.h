@@ -14,7 +14,7 @@
 #include <Shine/Bus/UiTransform2dBus.h>
 #include <Shine/IDraw2d.h>
 
-#include <qnamespace.h>
+#include <Qt>
 
 class Draw2dHelper;
 class ViewportInteraction;

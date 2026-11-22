@@ -18,6 +18,8 @@
 #include <Shine/Bus/UiDropdownBus.h>
 #include <Shine/UiSerializeHelpers.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiDropdownNotificationBusBehaviorHandler  Behavior context handler class
 class UiDropdownOptionNotificationBusBehaviorHandler
@@ -141,7 +143,7 @@ void UiDropdownOptionComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDropdownOptionComponent>("DropdownOption", "An interactable component for DropdownOption behavior.");
+            auto editInfo = ec->Class<UiDropdownOptionComponent>(QT_TRANSLATE_NOOP("Shine", "DropdownOption"), QT_TRANSLATE_NOOP("Shine", "An interactable component for DropdownOption behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -152,16 +154,16 @@ void UiDropdownOptionComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Shine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_owningDropdown, "Owning Dropdown", "The dropdown this option belongs to (does not have to be its parent dropdown).")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_owningDropdown, QT_TRANSLATE_NOOP("Shine", "Owning Dropdown"), QT_TRANSLATE_NOOP("Shine", "The dropdown this option belongs to (does not have to be its parent dropdown)."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownOptionComponent::PopulateDropdownsEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_textElement, "Text Element", "The text element to use to show this option is selected.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_textElement, QT_TRANSLATE_NOOP("Shine", "Text Element"), QT_TRANSLATE_NOOP("Shine", "The text element to use to show this option is selected."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownOptionComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_iconElement, "Icon Element", "The icon element to use to show this option is selected.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownOptionComponent::m_iconElement, QT_TRANSLATE_NOOP("Shine", "Icon Element"), QT_TRANSLATE_NOOP("Shine", "The icon element to use to show this option is selected."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownOptionComponent::PopulateChildEntityList);
             }
         }

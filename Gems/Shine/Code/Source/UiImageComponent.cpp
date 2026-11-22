@@ -32,6 +32,8 @@
 #include <Shine/ISprite.h>
 #include <Shine/IRenderGraph.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 #include "UiSerialize.h"
 #include "UiLayoutHelpers.h"
 #include "Sprite.h"
@@ -998,7 +1000,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiImageComponent>("Image", "A visual component to draw a rectangle with an optional sprite/texture");
+            auto editInfo = ec->Class<UiImageComponent>(QT_TRANSLATE_NOOP("Shine", "Image"), QT_TRANSLATE_NOOP("Shine", "A visual component to draw a rectangle with an optional sprite/texture"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -1007,88 +1009,88 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, "SpriteType", "The sprite type.")
-                ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, "Sprite/Texture asset")
-                ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, "Render target")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, QT_TRANSLATE_NOOP("Shine", "SpriteType"), QT_TRANSLATE_NOOP("Shine", "The sprite type."))
+                ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, QT_TRANSLATE_NOOP("Shine", "Sprite/Texture asset"))
+                ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, QT_TRANSLATE_NOOP("Shine", "Render target"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpriteTypeChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, QT_TRANSLATE_NOOP("Shine", "Sprite path"), QT_TRANSLATE_NOOP("Shine", "The sprite path. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, QT_TRANSLATE_NOOP("Shine", "Index"), QT_TRANSLATE_NOOP("Shine", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
                 ->Attribute("EnumValues", &UiImageComponent::PopulateIndexStringList);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, "Attachment Image Asset", "The render target associated with the sprite.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, QT_TRANSLATE_NOOP("Shine", "Attachment Image Asset"), QT_TRANSLATE_NOOP("Shine", "The render target associated with the sprite."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteAttachmentImageAssetChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, "Render Target sRGB", "Check this box if the render target is in sRGB space instead of linear RGB space.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, QT_TRANSLATE_NOOP("Shine", "Render Target sRGB"), QT_TRANSLATE_NOOP("Shine", "Check this box if the render target is in sRGB space instead of linear RGB space."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiImageComponent::m_color, "Color", "The color tint for the image. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiImageComponent::m_color, QT_TRANSLATE_NOOP("Shine", "Color"), QT_TRANSLATE_NOOP("Shine", "The color tint for the image. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnColorChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_alpha, "Alpha", "The transparency. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_alpha, QT_TRANSLATE_NOOP("Shine", "Alpha"), QT_TRANSLATE_NOOP("Shine", "The transparency. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnColorChange)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_imageType, "ImageType", "The image type. Affects how the texture/sprite is mapped to the image rectangle.")
-                ->EnumAttribute(UiImageInterface::ImageType::Stretched, "Stretched")
-                ->EnumAttribute(UiImageInterface::ImageType::Sliced, "Sliced")
-                ->EnumAttribute(UiImageInterface::ImageType::Fixed, "Fixed")
-                ->EnumAttribute(UiImageInterface::ImageType::Tiled, "Tiled")
-                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, "Stretched To Fit")
-                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, "Stretched To Fill")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_imageType, QT_TRANSLATE_NOOP("Shine", "ImageType"), QT_TRANSLATE_NOOP("Shine", "The image type. Affects how the texture/sprite is mapped to the image rectangle."))
+                ->EnumAttribute(UiImageInterface::ImageType::Stretched, QT_TRANSLATE_NOOP("Shine", "Stretched"))
+                ->EnumAttribute(UiImageInterface::ImageType::Sliced, QT_TRANSLATE_NOOP("Shine", "Sliced"))
+                ->EnumAttribute(UiImageInterface::ImageType::Fixed, QT_TRANSLATE_NOOP("Shine", "Fixed"))
+                ->EnumAttribute(UiImageInterface::ImageType::Tiled, QT_TRANSLATE_NOOP("Shine", "Tiled"))
+                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, QT_TRANSLATE_NOOP("Shine", "Stretched To Fit"))
+                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, QT_TRANSLATE_NOOP("Shine", "Stretched To Fill"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorImageTypeChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, "Fill Center", "Sliced image center is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, QT_TRANSLATE_NOOP("Shine", "Fill Center"), QT_TRANSLATE_NOOP("Shine", "Sliced image center is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isSlicingStretched, "Stretch Center/Edges",
-                "If true, sliced image center and edges are stretched. If false, they act as fixed in the same way as the corners and the pivot controls how they are anchored.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isSlicingStretched, QT_TRANSLATE_NOOP("Shine", "Stretch Center/Edges"),
+                QT_TRANSLATE_NOOP("Shine", "If true, sliced image center and edges are stretched. If false, they act as fixed in the same way as the corners and the pivot controls how they are anchored."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_blendMode, "BlendMode", "The blend mode used to draw the image")
-                ->EnumAttribute(Shine::BlendMode::Normal, "Normal")
-                ->EnumAttribute(Shine::BlendMode::Add, "Add")
-                ->EnumAttribute(Shine::BlendMode::Screen, "Screen")
-                ->EnumAttribute(Shine::BlendMode::Darken, "Darken")
-                ->EnumAttribute(Shine::BlendMode::Lighten, "Lighten")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_blendMode, QT_TRANSLATE_NOOP("Shine", "BlendMode"), QT_TRANSLATE_NOOP("Shine", "The blend mode used to draw the image"))
+                ->EnumAttribute(Shine::BlendMode::Normal, QT_TRANSLATE_NOOP("Shine", "Normal"))
+                ->EnumAttribute(Shine::BlendMode::Add, QT_TRANSLATE_NOOP("Shine", "Add"))
+                ->EnumAttribute(Shine::BlendMode::Screen, QT_TRANSLATE_NOOP("Shine", "Screen"))
+                ->EnumAttribute(Shine::BlendMode::Darken, QT_TRANSLATE_NOOP("Shine", "Darken"))
+                ->EnumAttribute(Shine::BlendMode::Lighten, QT_TRANSLATE_NOOP("Shine", "Lighten"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillType, "Fill Type", "The fill style used to draw the image.")
-                ->EnumAttribute(UiImageComponent::FillType::None, "None")
-                ->EnumAttribute(UiImageComponent::FillType::Linear, "Linear")
-                ->EnumAttribute(UiImageComponent::FillType::Radial, "Radial")
-                ->EnumAttribute(UiImageComponent::FillType::RadialCorner, "RadialCorner")
-                ->EnumAttribute(UiImageComponent::FillType::RadialEdge, "RadialEdge")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillType, QT_TRANSLATE_NOOP("Shine", "Fill Type"), QT_TRANSLATE_NOOP("Shine", "The fill style used to draw the image."))
+                ->EnumAttribute(UiImageComponent::FillType::None, QT_TRANSLATE_NOOP("Shine", "None"))
+                ->EnumAttribute(UiImageComponent::FillType::Linear, QT_TRANSLATE_NOOP("Shine", "Linear"))
+                ->EnumAttribute(UiImageComponent::FillType::Radial, QT_TRANSLATE_NOOP("Shine", "Radial"))
+                ->EnumAttribute(UiImageComponent::FillType::RadialCorner, QT_TRANSLATE_NOOP("Shine", "RadialCorner"))
+                ->EnumAttribute(UiImageComponent::FillType::RadialEdge, QT_TRANSLATE_NOOP("Shine", "RadialEdge"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, "Fill Amount", "The amount of the image to be filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, QT_TRANSLATE_NOOP("Shine", "Fill Amount"), QT_TRANSLATE_NOOP("Shine", "The amount of the image to be filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsFilled)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillStartAngle, "Fill Start Angle", "The start angle for the fill in degrees measured clockwise from straight up.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillStartAngle, QT_TRANSLATE_NOOP("Shine", "Fill Start Angle"), QT_TRANSLATE_NOOP("Shine", "The start angle for the fill in degrees measured clockwise from straight up."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsRadialFilled)
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Shine", " degrees"))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillCornerOrigin, "Corner Fill Origin", "The corner from which the image is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillCornerOrigin, QT_TRANSLATE_NOOP("Shine", "Corner Fill Origin"), QT_TRANSLATE_NOOP("Shine", "The corner from which the image is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsCornerFilled)
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopLeft, "TopLeft")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopRight, "TopRight")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomRight, "BottomRight")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomLeft, "BottomLeft")
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopLeft, QT_TRANSLATE_NOOP("Shine", "TopLeft"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopRight, QT_TRANSLATE_NOOP("Shine", "TopRight"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomRight, QT_TRANSLATE_NOOP("Shine", "BottomRight"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomLeft, QT_TRANSLATE_NOOP("Shine", "BottomLeft"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillEdgeOrigin, "Edge Fill Origin", "The edge from which the image is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillEdgeOrigin, QT_TRANSLATE_NOOP("Shine", "Edge Fill Origin"), QT_TRANSLATE_NOOP("Shine", "The edge from which the image is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsEdgeFilled)
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Left, "Left")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Top, "Top")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Right, "Right")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Bottom, "Bottom")
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Left, QT_TRANSLATE_NOOP("Shine", "Left"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Top, QT_TRANSLATE_NOOP("Shine", "Top"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Right, QT_TRANSLATE_NOOP("Shine", "Right"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Bottom, QT_TRANSLATE_NOOP("Shine", "Bottom"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillClockwise, "Fill Clockwise", "Image is filled clockwise about the origin.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillClockwise, QT_TRANSLATE_NOOP("Shine", "Fill Clockwise"), QT_TRANSLATE_NOOP("Shine", "Image is filled clockwise about the origin."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsRadialAnyFilled)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
         }
