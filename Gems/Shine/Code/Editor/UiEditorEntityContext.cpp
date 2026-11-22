@@ -263,20 +263,13 @@ bool UiEditorEntityContext::CloneUiEntities(const AZStd::vector<AZ::EntityId>& s
         }
     }
 
-    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
-    AzFramework::EntityList* clonedEntities =
-        AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(&sourceEntityList, idMap);
-    if (!clonedEntities)
+    if (!UiEntityCloneContainer::CloneEntities(sourceEntityList, resultEntities))
     {
         AZ_Error("UiEntityContext", false, "Failed to clone source entities.");
         return false;
     }
 
-    resultEntities = *clonedEntities;
-
     AddUiEntities(resultEntities);
-
-    delete clonedEntities;
 
     return true;
 }

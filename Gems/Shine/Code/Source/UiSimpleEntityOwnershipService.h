@@ -10,6 +10,30 @@
 #include <AzFramework/Entity/EntityOwnershipService.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/TypeInfo.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//! Reflected wrapper around a list of entities so the whole list can be cloned as a single object.
+//! SerializeContext cannot clone a bare AZStd::vector<AZ::Entity*> as the root object, and cloning
+//! the entities together lets references between them (e.g. parent/child ids) be remapped consistently.
+//! The container never owns the entities; whoever takes m_entities is responsible for them.
+struct UiEntityCloneContainer
+{
+    AZ_TYPE_INFO(UiEntityCloneContainer, "{B0458645-61D9-4A00-9287-1D6EE7DD3330}");
+    AZ_CLASS_ALLOCATOR(UiEntityCloneContainer, AZ::SystemAllocator);
+
+    static void Reflect(AZ::ReflectContext* context);
+
+    //! Clone the given entities as one group, generating new entity ids and fixing up references between them.
+    //! The cloned entities are appended to clonedEntities. Returns false if cloning failed.
+    static bool CloneEntities(
+        const AzFramework::EntityList& sourceEntities,
+        AzFramework::EntityList& clonedEntities,
+        AZ::SerializeContext* serializeContext = nullptr);
+
+    AzFramework::EntityList m_entities;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A minimal entity ownership service for UI contexts.

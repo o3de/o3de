@@ -14,6 +14,44 @@
 #include <AzCore/Serialization/Utils.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiEntityCloneContainer::Reflect(AZ::ReflectContext* context)
+{
+    if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<UiEntityCloneContainer>()
+            ->Version(1)
+            ->Field("Entities", &UiEntityCloneContainer::m_entities);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiEntityCloneContainer::CloneEntities(
+    const AzFramework::EntityList& sourceEntities,
+    AzFramework::EntityList& clonedEntities,
+    AZ::SerializeContext* serializeContext)
+{
+    if (sourceEntities.empty())
+    {
+        return true;
+    }
+
+    UiEntityCloneContainer source;
+    source.m_entities = sourceEntities;
+
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
+    UiEntityCloneContainer* cloned =
+        AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(&source, idMap, serializeContext);
+    if (!cloned)
+    {
+        return false;
+    }
+
+    clonedEntities.insert(clonedEntities.end(), cloned->m_entities.begin(), cloned->m_entities.end());
+    delete cloned; // does not delete the entities, ownership passed to the caller
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 UiSimpleEntityOwnershipService::UiSimpleEntityOwnershipService(
     const AzFramework::EntityContextId& contextId, AZ::SerializeContext* serializeContext)
     : m_contextId(contextId)

@@ -20,6 +20,7 @@
 #include <UiElementComponent.h>
 #include <UiCanvasComponent.h>
 #include <UiLayoutGridComponent.h>
+#include "UiSimpleEntityOwnershipService.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
@@ -318,9 +319,8 @@ namespace UiSerialize
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
 
-        if (serializeContext)
-        {
-        }
+        // Wrapper used to clone groups of UI entities (CloneUiEntities, spawnable instantiation)
+        UiEntityCloneContainer::Reflect(context);
 
         // Vec2 (still used in UI Animation sequence splines)
         {

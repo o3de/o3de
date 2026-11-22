@@ -93,20 +93,13 @@ bool UiGameEntityContext::CloneUiEntities(const AZStd::vector<AZ::EntityId>& sou
         }
     }
 
-    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
-    AzFramework::EntityList* clonedEntities =
-        AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(&sourceEntityList, idMap);
-    if (!clonedEntities)
+    if (!UiEntityCloneContainer::CloneEntities(sourceEntityList, resultEntities))
     {
         AZ_Error("UiEntityContext", false, "Failed to clone source entities.");
         return false;
     }
 
-    resultEntities = *clonedEntities;
-
     AddUiEntities(resultEntities);
-
-    delete clonedEntities;
 
     return true;
 }
@@ -317,20 +310,18 @@ void UiGameEntityContext::ProcessSpawnableEntities(UiSpawnId spawnId, const AzFr
         return;
     }
 
-    // Clone entities from the spawnable template with new entity IDs
-    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
-    AzFramework::EntityList clonedEntities;
-    clonedEntities.reserve(templateEntities.size());
-
+    // Clone entities from the spawnable template with new entity IDs. They are cloned as one group so that
+    // references between them (e.g. an element's child list) are remapped to the new ids regardless of order.
+    AzFramework::EntityList templateEntityList;
+    templateEntityList.reserve(templateEntities.size());
     for (const auto& templateEntity : templateEntities)
     {
-        AZ::Entity* clonedEntity = AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(
-            templateEntity.get(), idMap, m_serializeContext);
-        if (clonedEntity)
-        {
-            clonedEntities.push_back(clonedEntity);
-        }
+        templateEntityList.push_back(templateEntity.get());
     }
+
+    AzFramework::EntityList clonedEntities;
+    clonedEntities.reserve(templateEntities.size());
+    UiEntityCloneContainer::CloneEntities(templateEntityList, clonedEntities, m_serializeContext);
 
     if (clonedEntities.empty())
     {
