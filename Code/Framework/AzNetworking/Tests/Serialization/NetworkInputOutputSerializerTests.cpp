@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Console/Console.h>
+#include <AzNetworking/DataStructures/FixedSizeVectorBitset.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -206,7 +207,7 @@ namespace UnitTest
 
     // Writes a value, as a peer would send it, then reads it back into a possibly different type
     template <typename WRITE_TYPE, typename READ_TYPE>
-    static bool WriteThenRead(WRITE_TYPE& written, READ_TYPE& read)
+    static bool WriteThenRead(WRITE_TYPE& written, READ_TYPE& read, bool& readerValid)
     {
         constexpr uint32_t BufferCapacity = 64;
         AZStd::vector<uint8_t> buffer(BufferCapacity);
@@ -216,30 +217,59 @@ namespace UnitTest
 
         AzNetworking::NetworkOutputSerializer reader(buffer.data(), writer.GetSize());
         AzNetworking::ISerializer& readerSerializer = reader;
-        return readerSerializer.Serialize(read, "Value");
+        const bool result = readerSerializer.Serialize(read, "Value");
+        readerValid = reader.IsValid();
+        return result;
     }
 
     TEST_F(InputOutputSerializerTests, ContainerSizesFromTheNetworkAreBounded)
     {
         constexpr uint32_t ContainerCapacity = 4;
+        bool readerValid = true;
 
-        // A count above a fixed_vector's capacity is clamped to the capacity
+        // A count above a fixed_vector's capacity fails and invalidates the serializer
         AZStd::vector<int32_t> fiveValues = { 1, 2, 3, 4, 5 };
         AZStd::fixed_vector<int32_t, ContainerCapacity> fixedVector;
-        EXPECT_TRUE(WriteThenRead(fiveValues, fixedVector));
-        EXPECT_EQ(fixedVector.size(), ContainerCapacity);
+        EXPECT_FALSE(WriteThenRead(fiveValues, fixedVector, readerValid));
+        EXPECT_FALSE(readerValid);
+        EXPECT_TRUE(fixedVector.empty());
 
-        // A length above a fixed_string's capacity is clamped, and the longer string behind it fails to read
+        // A length above a fixed_string's capacity fails and invalidates the serializer
         AZStd::fixed_string<ContainerCapacity + 1> fiveChars = "ABCDE";
         AZStd::fixed_string<ContainerCapacity> fixedString;
-        EXPECT_FALSE(WriteThenRead(fiveChars, fixedString));
-        EXPECT_LE(fixedString.size(), ContainerCapacity);
+        EXPECT_FALSE(WriteThenRead(fiveChars, fixedString, readerValid));
+        EXPECT_FALSE(readerValid);
+        EXPECT_TRUE(fixedString.empty());
 
         // A huge count with no elements behind it stops at the first element that fails to read
         uint32_t hugeCount = AZStd::numeric_limits<uint32_t>::max();
         AZStd::vector<int32_t> dynamicVector;
-        EXPECT_FALSE(WriteThenRead(hugeCount, dynamicVector));
+        EXPECT_FALSE(WriteThenRead(hugeCount, dynamicVector, readerValid));
         EXPECT_LE(dynamicVector.size(), 1u);
+    }
+
+    TEST_F(InputOutputSerializerTests, BitsetCountsFromTheNetworkAreBounded)
+    {
+        bool readerValid = true;
+
+        // A bit count above the capacity, as a replication record's dirty bits could carry, fails before any bits are read
+        uint16_t hugeBitCount = AZStd::numeric_limits<uint16_t>::max();
+        AzNetworking::FixedSizeVectorBitset<2048> recordBits;
+        EXPECT_FALSE(WriteThenRead(hugeBitCount, recordBits, readerValid));
+        EXPECT_FALSE(readerValid);
+        EXPECT_EQ(recordBits.GetSize(), 0u);
+
+        // Bits past the count are cleared even when the stream sets them
+        AZStd::array<uint8_t, 2> threeBitsInAFullByte = { 3, 0xFF };
+        AzNetworking::FixedSizeVectorBitset<16> threeBits;
+        EXPECT_TRUE(WriteThenRead(threeBitsInAFullByte, threeBits, readerValid));
+        EXPECT_EQ(threeBits.GetSize(), 3u);
+        EXPECT_FALSE(threeBits.GetBit(3));
+        threeBits.Resize(8);
+        for (uint32_t i = 3; i < 8; ++i)
+        {
+            EXPECT_FALSE(threeBits.GetBit(i));
+        }
     }
 
 

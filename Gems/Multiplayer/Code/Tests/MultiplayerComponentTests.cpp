@@ -73,7 +73,7 @@ namespace Multiplayer
         EXPECT_EQ(valueMap.size(), NumTestEntriesPlusSize);
     }
 
-    TEST_F(MultiplayerComponentTests, SerializeNetworkPropertyHelperVectorClampsSizeToCapacity)
+    TEST_F(MultiplayerComponentTests, SerializeNetworkPropertyHelperVectorRejectsSizeAboveCapacity)
     {
         constexpr size_t NumTestEntries = 5;
         constexpr size_t NumTestEntriesPlusSize = NumTestEntries + 1;
@@ -102,7 +102,9 @@ namespace Multiplayer
         AzNetworking::NetworkOutputSerializer reader(buffer.data(), writer.GetSize());
         SerializeNetworkPropertyHelperVector(reader, bitsetView, testValues, componentId, propertyIndex, stats);
 
-        EXPECT_EQ(testValues.size(), NumTestEntries);
+        // The oversized count fails the stream instead of resizing the vector
+        EXPECT_FALSE(reader.IsValid());
+        EXPECT_EQ(testValues.size(), 2u);
     }
 
 } // namespace Multiplayer
