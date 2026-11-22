@@ -287,6 +287,23 @@ namespace UnitTest
         EXPECT_NEAR(viewFrustumAttributes.m_farClip, farClip, 1e-3f);
     }
 
+    TEST(MATH_Frustum, CalculateViewFrustumAttributes_ZeroNearClip)
+    {
+        const auto transform = AZ::Transform::CreateIdentity();
+        constexpr float aspectRatio = 1920.0f / 1080.0f;
+        constexpr float fovRadians = AZ::DegToRad(60.0f);
+        constexpr float farClip = 100.0f;
+
+        const AZ::Frustum frustum(AZ::ViewFrustumAttributes(transform, aspectRatio, fovRadians, 0.0f, farClip));
+        const AZ::ViewFrustumAttributes attributes = frustum.CalculateViewFrustumAttributes();
+
+        EXPECT_THAT(attributes.m_worldTransform, IsClose(transform));
+        EXPECT_NEAR(attributes.m_aspectRatio, aspectRatio, 1e-3f);
+        EXPECT_NEAR(attributes.m_verticalFovRadians, fovRadians, 1e-3f);
+        EXPECT_NEAR(attributes.m_nearClip, 0.0f, 1e-3f);
+        EXPECT_NEAR(attributes.m_farClip, farClip, 1e-3f);
+    }
+
     TEST(MATH_Frustum, TestGetSetPlane)
     {
         // Assumes +x runs to the 'right', +y runs 'out' and +z points 'up'
