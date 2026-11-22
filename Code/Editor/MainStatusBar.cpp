@@ -61,6 +61,14 @@ void StatusBarItem::SetText(const QString& text)
 
 void StatusBarItem::SetIcon(const QPixmap& icon)
 {
+    qint64 iconCacheKey = icon.cacheKey();
+    if (iconCacheKey == m_iconCacheKey)
+    {
+        return;
+    }
+
+    m_iconCacheKey = iconCacheKey;
+
     QIcon origIcon = m_icon;
 
     if (icon.isNull())
@@ -86,16 +94,20 @@ void StatusBarItem::SetIcon(const QPixmap& icon)
     }
 
     // don't generate paintevents unless we absolutely have changed!
-    if (origIcon.cacheKey() != m_icon.cacheKey())
-    {
-        update();
-    }
+    update();
 }
 
 void StatusBarItem::SetIcon(const QIcon& icon)
 {
     QIcon origIcon = m_icon;
 
+    qint64 iconCacheKey = icon.cacheKey();
+    if (iconCacheKey == m_iconCacheKey)
+    {
+        return;
+    }
+
+    m_iconCacheKey = iconCacheKey;
     m_icon = icon;
 
     if (icon.isNull() ^ origIcon.isNull())
@@ -103,11 +115,7 @@ void StatusBarItem::SetIcon(const QIcon& icon)
         updateGeometry();
     }
 
-    // don't generate paintevents unless we absolutely have changed!
-    if (origIcon.cacheKey() != m_icon.cacheKey())
-    {
-        update();
-    }
+    update();
 }
 
 void StatusBarItem::SetToolTip(const QString& tip)

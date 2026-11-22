@@ -21,7 +21,7 @@ namespace AZ
     class AZCORE_API ZStd
     {
     public:
-        ZStd(IAllocator* workMemAllocator = 0);
+        ZStd(IAllocator* workMemAllocator = nullptr);
         ~ZStd();
 
         enum FlushType

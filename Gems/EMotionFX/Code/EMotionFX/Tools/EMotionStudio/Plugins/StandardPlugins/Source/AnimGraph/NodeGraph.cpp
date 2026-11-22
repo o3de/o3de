@@ -980,25 +980,16 @@ namespace EMStudio
 
     void NodeGraph::RenderBackground(QPainter& painter, int32 width, int32 height)
     {
-        // grid line color
-        painter.setPen(QColor(40, 40, 40));
-
         // calculate the coordinates in 'zoomed out and scrolled' coordinates, of the window rect
-        QPoint upperLeft    = m_transform.inverted().map(QPoint(0, 0));
-        QPoint lowerRight   = m_transform.inverted().map(QPoint(width, height));
+        const QTransform inverseTransform = m_transform.inverted();
+        const QPoint upperLeft  = inverseTransform.map(QPoint(0, 0));
+        const QPoint lowerRight = inverseTransform.map(QPoint(width, height));
 
-        // calculate the start and end ranges in 'scrolled and zoomed out' coordinates
-        // we need to render sub-grids covering that area
+        // calculate the start and end ranges in 'scrolled and zoomed out' coordinates, starting on a major grid line
         const int32 startX  = upperLeft.x() - (upperLeft.x() % 100) - 100;
         const int32 startY  = upperLeft.y() - (upperLeft.y() % 100) - 100;
         const int32 endX    = lowerRight.x();
         const int32 endY    = lowerRight.y();
-        /*
-            // render the subgrid patches
-            for (int32 x=startX; x<endX; x+=300)
-                for (int32 y=startY; y<endY; y+=300)
-                    RenderSubGrid(painter, x, y);
-        */
 
         // calculate the alpha
         float scale = m_scale * m_scale * 1.5f;
@@ -1010,53 +1001,51 @@ namespace EMStudio
             return;
         }
 
-        m_gridPen.setColor(QColor(61, 61, 61, alpha));
-        m_subgridPen.setColor(QColor(55, 55, 55, alpha));
+        // The lines are drawn 1 px wide in screen space, so fade them by the zoom to match the old scaled hairlines.
+        const qreal zoom = m_transform.m11();
+        const int32 screenAlpha = aznumeric_cast<int32>(alpha * MCore::Clamp<float>(aznumeric_cast<float>(zoom), 0.0f, 1.0f));
+        m_gridPen.setColor(QColor(61, 61, 61, screenAlpha));
+        m_subgridPen.setColor(QColor(55, 55, 55, screenAlpha));
 
-        // setup spacing and size of the grid
-        const int32 spacing = 10;       // grid cell size of 20
+        // The sub grid is skipped once its lines get so dense they would only tint the whole background.
+        const int32 majorSpacing = 100;
+        const int32 subSpacing = 10;
+        const bool drawSubgrid = (zoom * subSpacing) >= s_minSubgridPixelSpacing;
+        const int32 spacing = drawSubgrid ? subSpacing : majorSpacing;
+
+        m_gridLines.clear();
+        m_subgridLines.clear();
+
+        for (int32 x = startX; x < endX; x += spacing)
+        {
+            const int32 screenX = qRound(x * zoom + m_transform.dx());
+            AZStd::vector<QLine>& lines = ((x - startX) % majorSpacing == 0) ? m_gridLines : m_subgridLines;
+            lines.emplace_back(screenX, 0, screenX, height);
+        }
+
+        for (int32 y = startY; y < endY; y += spacing)
+        {
+            const int32 screenY = qRound(y * zoom + m_transform.dy());
+            AZStd::vector<QLine>& lines = ((y - startY) % majorSpacing == 0) ? m_gridLines : m_subgridLines;
+            lines.emplace_back(0, screenY, width, screenY);
+        }
+
+        // Axis aligned 1 px lines need no antialiasing, and without the zoom transform Qt can fill them as plain spans.
+        painter.save();
+        painter.resetTransform();
+        painter.setRenderHint(QPainter::Antialiasing, false);
 
         // draw subgridlines first
-        painter.setPen(m_subgridPen);
-
-        // draw vertical lines
-        for (int32 x = startX; x < endX; x += spacing)
+        if (!m_subgridLines.empty())
         {
-            if ((x - startX) % 100 != 0)
-            {
-                painter.drawLine(x, startY, x, endY);
-            }
+            painter.setPen(m_subgridPen);
+            painter.drawLines(m_subgridLines.data(), aznumeric_cast<int>(m_subgridLines.size()));
         }
 
-        // draw horizontal lines
-        for (int32 y = startY; y < endY; y += spacing)
-        {
-            if ((y - startY) % 100 != 0)
-            {
-                painter.drawLine(startX, y, endX, y);
-            }
-        }
-
-        // draw render grid lines
         painter.setPen(m_gridPen);
+        painter.drawLines(m_gridLines.data(), aznumeric_cast<int>(m_gridLines.size()));
 
-        // draw vertical lines
-        for (int32 x = startX; x < endX; x += spacing)
-        {
-            if ((x - startX) % 100 == 0)
-            {
-                painter.drawLine(x, startY, x, endY);
-            }
-        }
-
-        // draw horizontal lines
-        for (int32 y = startY; y < endY; y += spacing)
-        {
-            if ((y - startY) % 100 == 0)
-            {
-                painter.drawLine(startX, y, endX, y);
-            }
-        }
+        painter.restore();
     }
 
     // NOTE: Based on code from: http://alienryderflex.com/intersect/

@@ -139,7 +139,7 @@ namespace AzToolsFramework
             Below
         };
 
-        EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
+        EntityPropertyEditor(QWidget* pParent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
         void BeforeUndoRedo() override;
@@ -218,6 +218,7 @@ namespace AzToolsFramework
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
         void OnPrepareForContextReset() override;
+        void OnContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
         // PropertyEditorEntityChangeNotificationBus overrides ...

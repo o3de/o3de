@@ -50,10 +50,10 @@ namespace Vegetation
                     ->EnumAttribute(DescriptorListSourceType::EXTERNAL, QT_TRANSLATE_NOOP("Vegetation", "External"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    ->DataElement(0, &DescriptorListConfig::m_descriptorListAsset, QT_TRANSLATE_NOOP("Vegetation", "External Assets"), QT_TRANSLATE_NOOP("Vegetation", "Asset containing a set of vegetation descriptors."))
+                    ->DataElement(nullptr, &DescriptorListConfig::m_descriptorListAsset, QT_TRANSLATE_NOOP("Vegetation", "External Assets"), QT_TRANSLATE_NOOP("Vegetation", "Asset containing a set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsExternalSource)
 
-                    ->DataElement(0, &DescriptorListConfig::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Embedded Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
+                    ->DataElement(nullptr, &DescriptorListConfig::m_descriptors, QT_TRANSLATE_NOOP("Vegetation", "Embedded Assets"), QT_TRANSLATE_NOOP("Vegetation", "Set of vegetation descriptors."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsEmbeddedSource)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)

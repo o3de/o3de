@@ -1,0 +1,12 @@
+{
+    "PackageName": "zlib",
+    "Version": "1.4",
+    "URL": "https://zlib.net/",
+    "License": "Zlib",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/madler/zlib/archive/refs/tags/v1.4.tar.gz",
+        "Revision": "99623ef7097352da7993ba614161fd6a311e046e",
+        "SHA256": "4331355048e286908260fdbeaa0b8cf75ceaf2907c75855a093a6487c7032aaa"
+    }
+}

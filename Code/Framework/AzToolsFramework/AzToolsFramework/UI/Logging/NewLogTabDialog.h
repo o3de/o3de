@@ -27,7 +27,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            NewLogTabDialog(QWidget* pParent = 0);
+            NewLogTabDialog(QWidget* pParent = nullptr);
             ~NewLogTabDialog();
 
             QString m_windowName;

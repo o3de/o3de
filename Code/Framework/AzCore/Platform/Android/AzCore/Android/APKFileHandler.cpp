@@ -256,7 +256,7 @@ namespace AZ
                     }
 
                     jstring str = static_cast<jstring>(jniEnv->GetObjectArrayElement(javaFileListObject, i));
-                    const char* entryName = jniEnv->GetStringUTFChars(str, 0);
+                    const char* entryName = jniEnv->GetStringUTFChars(str, nullptr);
                     newDirectory.first->second.push_back(StringType(entryName));
 
                     parseResults = findCallback(entryName);

@@ -286,6 +286,12 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     if (INSTALLED_ENGINE)
         cmake_path(IS_PREFIX LY_ROOT_FOLDER "${package_folder_path}" NORMALIZE _pkg_in_engine_source)
         if (_pkg_in_engine_source)
+            # Writable engines keep the editable install; only a read-only one needs the copy
+            execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${package_folder_path}/.o3de_write_test"
+                RESULT_VARIABLE _pkg_read_only OUTPUT_QUIET ERROR_QUIET)
+            file(REMOVE "${package_folder_path}/.o3de_write_test")
+        endif()
+        if (_pkg_in_engine_source AND _pkg_read_only)
             # In the read-only engine source: prefer a pre-built sdist under
             # <package>/dist/ (pip runs entirely from the tarball, never touching
             # the source), else fall back to a plain non-editable install.

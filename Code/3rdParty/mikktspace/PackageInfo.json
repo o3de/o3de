@@ -1,0 +1,12 @@
+{
+    "PackageName": "MikkTSpace",
+    "Version": "1.0",
+    "URL": "https://github.com/mmikk/MikkTSpace",
+    "License": "Zlib",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/mmikk/MikkTSpace/archive/3e895b49d05ea07e4c2133156cfa94369e19e409.tar.gz",
+        "Revision": "3e895b49d05ea07e4c2133156cfa94369e19e409",
+        "SHA256": "aeba65ddee85a679133d510d71d00b108f603752f90b15b9ecf7777033f6e351"
+    }
+}

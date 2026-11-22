@@ -29,7 +29,7 @@ namespace AssetProcessor
         : public AssetProcessorManager
     {
     public:
-        explicit AssetProcessorManagerUnit_Test(PlatformConfiguration* config, QObject* parent = 0)
+        explicit AssetProcessorManagerUnit_Test(PlatformConfiguration* config, QObject* parent = nullptr)
             : AssetProcessorManager(config, parent)
         {}
 

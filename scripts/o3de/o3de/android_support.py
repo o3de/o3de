@@ -67,6 +67,7 @@ ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK, ASSET_MODE_NONE]
 
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
+CMAKE_MIN_VERSION = Version('3.25.0')
 
 DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION = '8.1.0'
 ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
@@ -946,14 +947,18 @@ def validate_cmake(android_config) -> (Path, str):
     :param android_config:      The android configuration to get the tool home if needed
     :return:    Tuple of : The full path of the tool and the tool version
     """
-    return validate_build_tool(tool_name='Cmake',
-                               tool_command=f'cmake{EXE_EXTENSION}',
-                               tool_config_key=SETTINGS_CMAKE_HOME.key,
-                               tool_environment_var='CMAKE_HOME',
-                               tool_config_sub_path='bin',
-                               tool_version_arg='--version',
-                               version_regex=r'.*(cmake version)\s*\"?([\d\_\.]+)',
-                               android_config=android_config)
+    cmake_path, cmake_version = validate_build_tool(tool_name='CMake',
+                                                    tool_command=f'cmake{EXE_EXTENSION}',
+                                                    tool_config_key=SETTINGS_CMAKE_HOME.key,
+                                                    tool_environment_var='CMAKE_HOME',
+                                                    tool_config_sub_path='bin',
+                                                    tool_version_arg='--version',
+                                                    version_regex=r'.*(cmake version)\s*\"?([\d\_\.]+)',
+                                                    android_config=android_config)
+    if Version(cmake_version) < CMAKE_MIN_VERSION:
+        raise AndroidToolError(
+            f'CMake {cmake_version} is unsupported. O3DE requires CMake {CMAKE_MIN_VERSION} or newer.')
+    return cmake_path, cmake_version
 
 
 def validate_ninja(android_config) -> (Path, str):

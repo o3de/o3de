@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IEDITORFILEMONITOR_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IEDITORFILEMONITOR_H
 #pragma once
 
 struct IFileChangeListener
@@ -53,5 +50,3 @@ struct IEditorFileMonitor
     : public IFileChangeMonitor
 {
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IEDITORFILEMONITOR_H

@@ -31,6 +31,8 @@ namespace AtomToolsFramework
         : QWidget(parent)
         , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDefault())
     {
+        setMinimumSize(1, 1);
+
         if (shouldInitializeViewportContext)
         {
             InitializeViewportContext();

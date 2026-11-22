@@ -323,7 +323,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTooltipDisplayInterface::TriggerMode::OnHover, QT_TRANSLATE_NOOP("LyShine", "On Hover"))
                 ->EnumAttribute(UiTooltipDisplayInterface::TriggerMode::OnPress, QT_TRANSLATE_NOOP("LyShine", "On Press"))
                 ->EnumAttribute(UiTooltipDisplayInterface::TriggerMode::OnClick, QT_TRANSLATE_NOOP("LyShine", "On Click"));
-            editInfo->DataElement(0, &UiTooltipDisplayComponent::m_autoPosition, QT_TRANSLATE_NOOP("LyShine", "Auto position"),
+            editInfo->DataElement(nullptr, &UiTooltipDisplayComponent::m_autoPosition, QT_TRANSLATE_NOOP("LyShine", "Auto position"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether the element will automatically be positioned."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_autoPositionMode, QT_TRANSLATE_NOOP("LyShine", "Positioning"),
@@ -331,18 +331,18 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(UiTooltipDisplayInterface::AutoPositionMode::OffsetFromMouse, QT_TRANSLATE_NOOP("LyShine", "Offset from mouse"))
                 ->EnumAttribute(UiTooltipDisplayInterface::AutoPositionMode::OffsetFromElement, QT_TRANSLATE_NOOP("LyShine", "Offset from element"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiTooltipDisplayComponent::m_autoPosition);
-            editInfo->DataElement(0, &UiTooltipDisplayComponent::m_offset, QT_TRANSLATE_NOOP("LyShine", "Offset"),
+            editInfo->DataElement(nullptr, &UiTooltipDisplayComponent::m_offset, QT_TRANSLATE_NOOP("LyShine", "Offset"),
                 QT_TRANSLATE_NOOP("LyShine", "The offset to use when positioning the element."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiTooltipDisplayComponent::m_autoPosition);
-            editInfo->DataElement(0, &UiTooltipDisplayComponent::m_autoSize, QT_TRANSLATE_NOOP("LyShine", "Auto size"),
+            editInfo->DataElement(nullptr, &UiTooltipDisplayComponent::m_autoSize, QT_TRANSLATE_NOOP("LyShine", "Auto size"),
                 QT_TRANSLATE_NOOP("LyShine", "Whether the element will automatically be sized so that the text element's size is the same as the size of the tooltip string.\n"
                 "If auto size is on, the text element's anchors should be apart."));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_textEntity, QT_TRANSLATE_NOOP("LyShine", "Text"),
                 QT_TRANSLATE_NOOP("LyShine", "The UI element to hold the main tooltip text. Also used for auto sizing."))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiTooltipDisplayComponent::PopulateTextEntityList);
-            editInfo->DataElement(0, &UiTooltipDisplayComponent::m_delayTime, QT_TRANSLATE_NOOP("LyShine", "Delay Time"),
+            editInfo->DataElement(nullptr, &UiTooltipDisplayComponent::m_delayTime, QT_TRANSLATE_NOOP("LyShine", "Delay Time"),
                 QT_TRANSLATE_NOOP("LyShine", "The amount of time to wait before displaying the element."));
-            editInfo->DataElement(0, &UiTooltipDisplayComponent::m_displayTime, QT_TRANSLATE_NOOP("LyShine", "Display Time"),
+            editInfo->DataElement(nullptr, &UiTooltipDisplayComponent::m_displayTime, QT_TRANSLATE_NOOP("LyShine", "Display Time"),
                 QT_TRANSLATE_NOOP("LyShine", "The amount of time the element is to be displayed."));
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTooltipDisplayComponent::m_showSequenceName, QT_TRANSLATE_NOOP("LyShine", "Show Sequence"),
                 QT_TRANSLATE_NOOP("LyShine", "The sequence to be played when the element is about to show."))

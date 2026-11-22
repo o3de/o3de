@@ -1,0 +1,167 @@
+// This test validates that all attributes valid in HLSL are valid in AZSL too
+// This code does not represent a valid HLSL code. Rather, it aims to provide syntax 
+//   reference between HLSL and AZSL
+
+// Flow control statements
+// - break
+// - continue
+// - discard
+// - do
+// - for
+// - if
+// - switch
+// - while
+
+void DoStuff()
+{
+    int i = 0;
+    [fastopt]
+    do
+    {
+        break;
+        continue;
+        discard;
+        int a = i;
+        i++;
+    } while (i < 10);
+
+    [unroll]
+    for (i = 0; i < 10; i++)
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [unroll(5)]
+    for (i = 0; i < 10; i++)
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [loop]
+    for (i = 0; i < 10; i++)
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [fastopt]
+    for (i = 0; i < 10; i++)
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [allow_uav_condition]
+    for (i = 0; i < 10; i++)
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [branch]
+    if (i > 10)
+    {
+        int b = i;
+        int c = b + i;
+    }
+    else
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [flatten]
+    if (i > 10)
+    {
+        int b = i;
+        int c = b + i;
+    }
+    else
+    {
+        int b = i;
+        int c = b + i;
+    }
+
+    [flatten]
+    switch (i)
+    {
+        case 0:
+            return 0;
+        case 10:
+            return 10;
+        default:
+            return i;
+    }
+
+    [branch]
+    switch (i)
+    {
+        case 0:
+            return 0;
+        case 10:
+            return 10;
+        default:
+            return i;
+    }
+
+    [forcecase]
+    switch (i)
+    {
+        case 0:
+            return 0;
+        case 10:
+            return 10;
+        default:
+            return i;
+    }
+
+    [call]
+    switch (i)
+    {
+        case 0:
+            return 0;
+        case 10:
+            return 10;
+        default:
+            return i;
+    }
+
+    [unroll]
+    while (i < 10)
+    {
+        int b = i;
+        i++;
+    }
+
+    [unroll(7)]
+    while (i < 10)
+    {
+        int b = i;
+        i++;
+    }
+
+    [loop]
+    while (i < 10)
+    {
+        int b = i;
+        i++;
+    }
+
+    [fastopt]
+    while (i < 10)
+    {
+        int b = i;
+        i++;
+    }
+
+    [allow_uav_condition]
+    while (i < 10)
+    {
+        int b = i;
+        i++;
+    }
+}
+
+

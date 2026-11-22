@@ -83,14 +83,14 @@ namespace AZStd
                 m_container->increment(m_element);
                 if (m_element == m_container->m_last)
                 {
-                    m_element = 0;
+                    m_element = nullptr;
                 }
                 return *this;
             }
             AZ_FORCE_INLINE this_type operator++(int)   { this_type tmp = *this; ++*this; return tmp; }
             AZ_FORCE_INLINE this_type& operator--()
             {
-                if (m_element == 0)
+                if (m_element == nullptr)
                 {
                     m_element = m_container->m_last;
                 }
@@ -106,12 +106,12 @@ namespace AZStd
                     m_element = m_container->add(m_element, n);
                     if (m_element == m_container->m_last)
                     {
-                        m_element = 0;
+                        m_element = nullptr;
                     }
                 }
                 else if (n < 0)
                 {
-                    m_element = m_container->sub(m_element == 0 ? m_container->m_last : m_element, -n);
+                    m_element = m_container->sub(m_element == nullptr ? m_container->m_last : m_element, -n);
                 }
                 return *this;
             }
@@ -120,14 +120,14 @@ namespace AZStd
             {
                 if (n > 0)
                 {
-                    m_element = m_container->sub(m_element == 0 ? m_container->m_last : m_element, n);
+                    m_element = m_container->sub(m_element == nullptr ? m_container->m_last : m_element, n);
                 }
                 else if (n < 0)
                 {
                     m_element = m_container->add(m_element, -n);
                     if (m_element == m_container->m_last)
                     {
-                        m_element = 0;
+                        m_element = nullptr;
                     }
                 }
                 return *this;
@@ -146,7 +146,7 @@ namespace AZStd
             /// Get a pointer which would point to the same element as the iterator in case the circular buffer is linearized.
             AZ_FORCE_INLINE pointer linearize_pointer() const
             {
-                return m_element == 0 ? m_container->m_buff + m_container->size() :
+                return m_element == nullptr ? m_container->m_buff + m_container->size() :
                        (m_element < m_container->m_first ? m_element + (m_container->m_end - m_container->m_first)
                         : m_container->m_buff + (m_element - m_container->m_first));
             }
@@ -205,10 +205,10 @@ namespace AZStd
 
     public:
         AZ_FORCE_INLINE explicit ring_buffer(const allocator_type& alloc = allocator_type())
-            : m_buff(0)
-            , m_end(0)
-            , m_first(0)
-            , m_last(0)
+            : m_buff(nullptr)
+            , m_end(nullptr)
+            , m_first(nullptr)
+            , m_last(nullptr)
             , m_size(0)
             , m_allocator(alloc) {}
         AZ_FORCE_INLINE explicit ring_buffer(size_type capacity, const allocator_type& alloc = allocator_type())
@@ -251,7 +251,7 @@ namespace AZStd
             }
             else
             {
-                m_buff = m_end = m_first = m_last = 0;
+                m_buff = m_end = m_first = m_last = nullptr;
             }
         }
 
@@ -332,7 +332,7 @@ namespace AZStd
         {
             if (m_size == 0)
             {
-                return 0;
+                return nullptr;
             }
             if (m_first < m_last || m_last == m_buff)
             {
@@ -388,7 +388,7 @@ namespace AZStd
         /// Rotate elements in the <code>circular_buffer</code>. A more effective implementation of <code><a href="http://www.sgi.com/tech/stl/rotate.html">AZStd::rotate</a></code>.
         inline void rotate(iterator new_begin)
         {
-            AZSTD_CONTAINER_ASSERT(AZSTD_GET_ITER(new_begin).m_element != 0, "AZStd::ring_buffer::rotate - invalid iterator!");      // check for iterator pointing to end()
+            AZSTD_CONTAINER_ASSERT(AZSTD_GET_ITER(new_begin).m_element != nullptr, "AZStd::ring_buffer::rotate - invalid iterator!");      // check for iterator pointing to end()
             if (full())
             {
                 m_first = m_last = const_cast<pointer>(AZSTD_GET_ITER(new_begin).m_element);
@@ -595,7 +595,7 @@ namespace AZStd
         {
             iterator pos = AZStd::Internal::ConstIteratorCast<iterator>(constPos);
             pointer next = AZSTD_GET_ITER(pos).m_element;
-            AZSTD_CONTAINER_ASSERT(next != 0, "AZStd::ring_buffer::erase - invalid position!");
+            AZSTD_CONTAINER_ASSERT(next != nullptr, "AZStd::ring_buffer::erase - invalid position!");
             increment(next);
             for (pointer p = AZSTD_GET_ITER(pos).m_element; next != m_last; p = next, increment(next))
             {
@@ -617,7 +617,7 @@ namespace AZStd
                 return first;
             }
             pointer p = AZSTD_GET_ITER(first).m_element;
-            while (AZSTD_GET_ITER(last).m_element != 0)
+            while (AZSTD_GET_ITER(last).m_element != nullptr)
             {
                 replace(AZSTD_GET_ITER((first++)).m_element, *last++);
             }
@@ -982,7 +982,7 @@ namespace AZStd
         inline iterator insert_item(const iterator& pos, const_reference value)
         {
             pointer p = AZSTD_GET_ITER(pos).m_element;
-            if (p == 0)
+            if (p == nullptr)
             {
                 construct_or_replace(!full(), m_last, value);
                 p = m_last;
@@ -1106,7 +1106,7 @@ namespace AZStd
             {
                 construct = size;
             }
-            if (AZSTD_GET_ITER(pos).m_element == 0)
+            if (AZSTD_GET_ITER(pos).m_element == nullptr)
             {
                 size_type ii = 0;
                 pointer p = m_last;

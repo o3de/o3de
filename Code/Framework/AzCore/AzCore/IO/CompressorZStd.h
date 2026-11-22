@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_COMPRESSOR_ZSTD_H
-#define AZCORE_COMPRESSOR_ZSTD_H
+
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/vector.h>
@@ -48,7 +48,7 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(CompressorZStdData, AZ::SystemAllocator);
 
-            CompressorZStdData(IAllocator* zstdMemAllocator = 0)
+            CompressorZStdData(IAllocator* zstdMemAllocator = nullptr)
             {
                 m_zstd = zstdMemAllocator;
             }
@@ -128,6 +128,3 @@ namespace AZ
         };
     }   // namespace IO
 }   // namespace AZ
-
-#endif  // AZCORE_COMPRESSOR_ZSTD_H
-#pragma once

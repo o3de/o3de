@@ -1,0 +1,87 @@
+// This file is used to validate the functionality of the --strip-unused-srgs flag.
+// There are three SRGs in this file: SRG1, SRG2 and SRG3.
+// Nothing references SRG3, but SRG3 references SRG2.
+// The MainPS function references SRG1 and SRG2.
+// Only SRG3 should be removed. Both SRG1 and SRG2 should survive.
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroupSemantic slot2
+{
+    FrequencyId = 2;
+};
+
+ShaderResourceGroupSemantic slot3
+{
+    FrequencyId = 3;
+};
+
+//Referenced by MainPS
+ShaderResourceGroup SRG1 : slot1
+{
+    struct CB
+    {
+        float4 color;
+    };
+
+    ConstantBuffer<CB> m_uniforms;
+};
+
+// Referenced by SRG3 and MainPS()
+ShaderResourceGroup SRG2 : slot2
+{
+    struct MB
+    {
+        float4 position;
+    };
+
+    ConstantBuffer<MB> m_uniforms;
+    MB m_other;
+};
+
+// Unused, but references SRG2.
+ShaderResourceGroup SRG3 : slot3
+{
+    ConstantBuffer<SRG2::MB> m_mycbs; ConstantBuffer<SRG1::CB> m_srgcb; SRG2::MB m_mbr;
+    float4          m_uniformColor;
+    Texture2D       m_texture;
+    Buffer<float>   m_buffer;
+    Sampler m_dynamicSampler;
+    Sampler m_staticSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+        MagFilter = Linear;
+    };
+    
+    row_major float3x4 m_modelToWorld;
+    row_major float3x3 m_normalMatrix;
+ 
+    float4x4 GetWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+ 
+        modelToWorld[0] = m_modelToWorld[0];
+        modelToWorld[1] = m_modelToWorld[1];
+        modelToWorld[2] = m_modelToWorld[2];
+        return modelToWorld;
+    }
+     
+    float3x3 GetNormalMatrix()
+    {
+        return m_normalMatrix;
+    }
+};
+
+float4 MainPS(float2 uv) : SV_Target0
+{
+    return SRG1::m_uniforms.color + SRG2::m_other.position;
+}

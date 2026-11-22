@@ -54,6 +54,13 @@ namespace Maestro
         }
     }
 
+    void CLayerNode::Shutdown()
+    {
+        using namespace LayerNodeHelper;
+        s_nodeParamsInitialized = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_nodeParams);
+    }
+
     void CLayerNode::Animate(SAnimContext& ec)
     {
         int trackCount = NumTracks();

@@ -1,0 +1,12 @@
+{
+    "PackageName": "mimalloc",
+    "Version": "3.5.1",
+    "URL": "https://github.com/microsoft/mimalloc",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/microsoft/mimalloc/archive/refs/tags/v3.5.1.tar.gz",
+        "Revision": "v3.5.1",
+        "SHA256": "2602daad9b64b213a8835dee6fadda96d2081c0171bfcd3fb2db39bdc669d6b3"
+    }
+}

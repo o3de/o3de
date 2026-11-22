@@ -1,0 +1,24 @@
+// It is an error to start a struct with a [[pad_to(N)]] attribute
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStruct
+{
+    [[pad_to(16)]] // EC 133
+    float m_red;
+};
+
+ShaderResourceGroup DemoSrg : slot1
+{
+    MyStruct m_data;
+};
+
+float4 PSMain() : SV_Target0
+{
+    float4 color = float4(0, 0, 0, 0);
+    color.r = DemoSrg::m_data.m_red;
+    return color;
+}

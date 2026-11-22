@@ -23,10 +23,9 @@
 #include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Settings/SettingsRegistry.h>

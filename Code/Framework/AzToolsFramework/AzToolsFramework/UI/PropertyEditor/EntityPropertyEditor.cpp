@@ -1690,11 +1690,11 @@ namespace AzToolsFramework
     {
         if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
         {
-            AZStd::span<AZ::Component* const> components = componentEditor.GetComponents();
-            AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
+            const auto& components = componentEditor.GetEntityComponentIdPairs();
+            AZ_Assert(!components.empty(), "ComponentEditor should have at least one component.");
 
             // Overrides on container entities are for internal use only and should not be exposed
-            AZ::EntityId entityId = components[0]->GetEntityId();
+            AZ::EntityId entityId = components[0].GetEntityId();
             if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
             {
                 return;
@@ -1702,8 +1702,7 @@ namespace AzToolsFramework
 
             // Get icon path based on current component override state
             AZStd::string iconOverlayPath;
-            AZ::EntityComponentIdPair entityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId());
-            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair);
+            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(components[0]);
                 overrideType.has_value())
             {
                 if (overrideType == AzToolsFramework::Prefab::OverrideType::AddComponent)
@@ -2132,10 +2131,6 @@ namespace AzToolsFramework
             // Sometimes, these events cause it to repeatedly refresh, so instead, give it a delay of more than 0 so that
             // tick can happen first.
             QTimer::singleShot(0, this, &EntityPropertyEditor::UpdateContents);
-
-            //saving state any time refresh gets queued because requires valid components
-            //attempting to call directly anywhere state needed to be preserved always occurred with QueuePropertyRefresh
-            SaveComponentEditorState();
 
             QScrollBar* verticalScroll = m_gui->m_componentList->verticalScrollBar();
             QScrollBar* horizontalScroll = m_gui->m_componentList->horizontalScrollBar();
@@ -3286,8 +3281,8 @@ namespace AzToolsFramework
             {
                 auto& sourceComponentEditor = componentEditors[sourceComponentEditorIndex];
                 auto& targetComponentEditor = componentEditors[targetComponentEditorIndex];
-                auto sourceComponents = sourceComponentEditor->GetComponents();
-                auto targetComponents = targetComponentEditor->GetComponents();
+                auto sourceComponents = sourceComponentEditor->ResolveComponentPointers();
+                auto targetComponents = targetComponentEditor->ResolveComponentPointers();
                 MoveComponentRowBefore(sourceComponents, targetComponents, undoBatch);
                 AZStd::swap(targetComponentEditor, sourceComponentEditor);
             }
@@ -3314,8 +3309,8 @@ namespace AzToolsFramework
             {
                 auto& sourceComponentEditor = componentEditors[sourceComponentEditorIndex];
                 auto& targetComponentEditor = componentEditors[targetComponentEditorIndex];
-                auto sourceComponents = sourceComponentEditor->GetComponents();
-                auto targetComponents = targetComponentEditor->GetComponents();
+                auto sourceComponents = sourceComponentEditor->ResolveComponentPointers();
+                auto targetComponents = targetComponentEditor->ResolveComponentPointers();
                 MoveComponentRowAfter(sourceComponents, targetComponents, undoBatch);
                 AZStd::swap(targetComponentEditor, sourceComponentEditor);
             }
@@ -3506,8 +3501,8 @@ namespace AzToolsFramework
     {
         const auto sourceComponentEditor = componentEditors[sourceComponentEditorIndex];
         const auto targetComponentEditor = componentEditors[targetComponentEditorIndex];
-        const auto& sourceComponents = sourceComponentEditor->GetComponents();
-        const auto& targetComponents = targetComponentEditor->GetComponents();
+        const auto& sourceComponents = sourceComponentEditor->ResolveComponentPointers();
+        const auto& targetComponents = targetComponentEditor->ResolveComponentPointers();
         return
             sourceComponentEditor->isVisible() &&
             targetComponentEditor->isVisible() &&
@@ -3663,7 +3658,6 @@ namespace AzToolsFramework
         {
             componentEditor->SetSelected(false);
         }
-        SaveComponentEditorState();
         UpdateInternalState();
     }
 
@@ -3704,15 +3698,21 @@ namespace AzToolsFramework
             // only want to allow selection when component editor is enabled
             if (componentEditor->isEnabled())
             {
-                componentEditor->SetSelected(true);
-                m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
-                selectedChanged = true;
+                if (!componentEditor->isSelected())
+                {
+                    componentEditor->SetSelected(true);
+                    m_componentEditorLastSelectedIndex = GetComponentEditorIndex(componentEditor);
+                    selectedChanged = true;
+                }
             }
         }
-        SaveComponentEditorState();
-        UpdateInternalState();
-        NotifySelectionChanges();
 
+        if (selectedChanged)
+        {
+            SaveComponentEditorState();
+            UpdateInternalState();
+            NotifySelectionChanges();
+        }
         return selectedChanged;
     }
 
@@ -3801,7 +3801,7 @@ namespace AzToolsFramework
         m_selectedComponents.clear();
         for (auto componentEditor : m_selectedComponentEditors)
         {
-            const auto& components = componentEditor->GetComponents();
+            const auto& components = componentEditor->ResolveComponentPointers();
             m_selectedComponents.insert(m_selectedComponents.end(), components.begin(), components.end());
         }
 
@@ -3833,7 +3833,7 @@ namespace AzToolsFramework
         bool canSave = false;
         for (auto componentEditor : m_componentEditors)
         {
-            if (!componentEditor->GetComponents().empty())
+            if (!componentEditor->GetEntityComponentIdPairs().empty())
             {
                 canSave = true;
                 break;
@@ -3852,9 +3852,9 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::SaveComponentEditorState(ComponentEditor* componentEditor)
     {
-        for (auto component : componentEditor->GetComponents())
+        for (auto component : componentEditor->GetEntityComponentIdPairs())
         {
-            AZ::ComponentId componentId = component->GetId();
+            AZ::ComponentId componentId = component.GetComponentId();
             ComponentEditorSaveState& state = m_componentEditorSaveStateTable[componentId];
             state.m_selected = componentEditor->IsSelected();
         }
@@ -3865,9 +3865,9 @@ namespace AzToolsFramework
         for (auto componentEditor : m_componentEditors)
         {
             ComponentEditorSaveState state;
-            if (!componentEditor->GetComponents().empty())
+            if (!componentEditor->GetEntityComponentIdPairs().empty())
             {
-                AZ::ComponentId componentId = componentEditor->GetComponents().front()->GetId();
+                AZ::ComponentId componentId = componentEditor->GetEntityComponentIdPairs().front().GetComponentId();
                 state = m_componentEditorSaveStateTable[componentId];
             }
 
@@ -3914,9 +3914,9 @@ namespace AzToolsFramework
             {
                 if (m_componentEditors[componentIndex])
                 {
-                    for (const auto component : m_componentEditors[componentIndex]->GetComponents())
+                    for (const auto& component : m_componentEditors[componentIndex]->GetEntityComponentIdPairs())
                     {
-                        if (component->GetId() == newComponentId)
+                        if (component.GetComponentId() == newComponentId)
                         {
                             newComponentIndex = componentIndex;
                         }
@@ -4395,7 +4395,7 @@ namespace AzToolsFramework
             GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
         if (targetComponentEditor)
         {
-            targetComponents = targetComponentEditor->GetComponents();
+            targetComponents = targetComponentEditor->ResolveComponentPointers();
             return true;
         }
 
@@ -4416,10 +4416,11 @@ namespace AzToolsFramework
 
         for (auto componentEditor : componentEditors)
         {
+            auto actualComponents = componentEditor->ResolveComponentPointers();
             if (!componentEditor ||
                 !componentEditor->isVisible() ||
-                !AreComponentsRemovable(componentEditor->GetComponents()) ||
-                !AreComponentsDraggable(componentEditor->GetComponents()))
+                !AreComponentsRemovable(actualComponents) ||
+                !AreComponentsDraggable(actualComponents))
             {
                 return false;
             }
@@ -4556,8 +4557,8 @@ namespace AzToolsFramework
         auto targetItr = AZStd::find(m_componentEditors.begin(), m_componentEditors.end(), targetComponentEditor);
         while (targetComponentEditor
             && (targetComponentEditor->IsDragged()
-                || !AreComponentsRemovable(targetComponentEditor->GetComponents())
-                || !AreComponentsDraggable(targetComponentEditor->GetComponents())
+                || !AreComponentsRemovable(targetComponentEditor->ResolveComponentPointers())
+                || !AreComponentsDraggable(targetComponentEditor->ResolveComponentPointers())
                 || (globalRect.center().y() > GetWidgetGlobalRect(targetComponentEditor).center().y())))
         {
             if (targetItr == m_componentEditors.end() || targetComponentEditor == m_componentEditors.back() || !targetComponentEditor->isVisible())
@@ -5178,7 +5179,7 @@ namespace AzToolsFramework
 
             for (const ComponentEditor* sourceComponentEditor : sourceComponentEditors)
             {
-                AZStd::span<AZ::Component* const> sourceComponents = sourceComponentEditor->GetComponents();
+                auto sourceComponents = sourceComponentEditor->ResolveComponentPointers();
                 MoveComponentRowBefore(sourceComponents, targetComponents, undo);
             }
 
@@ -5334,6 +5335,11 @@ namespace AzToolsFramework
         {
             CloseInspectorWindow();
         }
+    }
+
+    void EntityPropertyEditor::OnContextReset()
+    {
+        ClearInstances(true);
     }
 
     void EntityPropertyEditor::CloseInspectorWindow()

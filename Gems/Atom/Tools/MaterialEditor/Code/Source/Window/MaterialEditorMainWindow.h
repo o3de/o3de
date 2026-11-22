@@ -29,7 +29,7 @@ namespace MaterialEditor
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialEditorMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
+        MaterialEditorMainWindow(const AZ::Crc32& toolId, QWidget* parent = nullptr);
 
     protected:
         // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...

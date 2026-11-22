@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Instance/InstanceData.h>
 #include <AzCore/Math/Color.h>
-#include <AtomCore/Instance/InstanceData.h>
 
 class ISprite;
 
@@ -89,7 +90,7 @@ public: // member functions
 
     //! Gets the source location of the image to be displayed by the element
     virtual AZStd::string GetSpritePathname() = 0;
-    
+
     //! Sets the source location of the image to be displayed by the element
     virtual void SetSpritePathname(AZStd::string spritePath) = 0;
 
@@ -119,7 +120,7 @@ public: // member functions
 
     //! Sets the type of the image
     virtual void SetImageType(ImageType imageType) = 0;
-    
+
     //! Gets the fill type for the image
     virtual FillType GetFillType() = 0;
 
@@ -169,4 +170,3 @@ public: // static member data
 };
 
 typedef AZ::EBus<UiImageInterface> UiImageBus;
-

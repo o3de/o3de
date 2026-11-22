@@ -1,0 +1,11 @@
+{
+    "PackageName": "SQLite",
+    "Version": "3.54.1",
+    "URL": "https://www.sqlite.org/",
+    "License": "blessing",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://sqlite.org/2026/sqlite-amalgamation-3540100.zip",
+        "SHA256": "0a9c8e34352dad46006aa82836d5383bff9dc6bc9ce5a60553c05aa30e6ad1f9"
+    }
+}

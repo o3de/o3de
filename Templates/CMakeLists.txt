@@ -12,6 +12,7 @@ ly_install_directory(
         AddTestsToProject
         CppToolGem
         DefaultGem
+        GameplayGem
         PrebuiltGem
         PythonToolGem
         RemoteRepo
@@ -23,5 +24,13 @@ ly_install_directory(
         UnifiedMultiplayerGem
         GraphicsGem
         ScriptOnlyProject
+        EngineFinder
+        Attimage
+        DataAsset
+        FullscreenPostProcess
+        LevelComponent
+        LyShineComponent
+        ScreenSpaceRenderPass
+        SystemComponent
     VERBATIM
 )

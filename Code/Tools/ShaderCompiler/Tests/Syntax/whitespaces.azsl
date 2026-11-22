@@ -1,0 +1,24 @@
+//------------------------------------------------------------------------------
+//
+// Convert RGB to YCbCr space
+//
+//------------------------------------------------------------------------------
+
+
+   void		ConvertRGBToYCbCr
+   
+   
+   (float3 rgbColor,out
+
+   float3 YCbCrColor   			)
+{
+    float Y  = dot(rgbColor,float3(0.299,0.587,0.114));
+    ;;;;
+    
+;
+    
+    
+    float Cb = dot(rgbColor,float3(-0.168,-0.331,0.5))  + 0.5;
+    float Cr = dot(rgbColor,float3(0.5,-0.418,-0.0081)) + 0.5;
+
+    YCbCrColor.r=Y;YCbCrColor.g=Cb;YCbCrColor.b=Cr;} // End of ConvertRGBToYCbCr

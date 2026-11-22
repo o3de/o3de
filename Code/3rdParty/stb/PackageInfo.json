@@ -1,0 +1,12 @@
+{
+    "PackageName": "stb",
+    "Version": "4e9b368b",
+    "URL": "https://github.com/nothings/stb",
+    "License": "MIT OR Unlicense",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/nothings/stb/archive/4e9b368bfc071e97206ea5c6adba68dd0cbf8897.tar.gz",
+        "Revision": "4e9b368bfc071e97206ea5c6adba68dd0cbf8897",
+        "SHA256": "e60706ab084e0cae35ee7282deb4a7f283e4a28be1896d097437205da01a0683"
+    }
+}

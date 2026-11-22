@@ -1180,7 +1180,7 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
     const bool multiLine = strSize.y > GetRestoredFontSize(ctx).y;
 
     int lastSpace = -1;
-    const wchar_t* pLastSpace = NULL;
+    const wchar_t* pLastSpace = nullptr;
     float lastSpaceWidth = 0.0f;
 
     float curCharWidth = 0.0f;

@@ -144,9 +144,16 @@ namespace AzQtComponents
 
                     case QEvent::DynamicPropertyChange:
                     {
-                        auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
-                        styleSheet->unpolish(cbWidget);
-                        styleSheet->polish(cbWidget);
+                        // ignore properties coming from inside the style sheet system itself, which are all by convention
+                        // prefixed with _q_
+                        QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+                        QString propertyName = QString::fromUtf8(eventFull->propertyName());
+                        if (!propertyName.startsWith(QStringLiteral("_q_")))
+                        {
+                            auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
+                            styleSheet->unpolish(cbWidget);
+                            styleSheet->polish(cbWidget);
+                        }
                     }
                     break;
 

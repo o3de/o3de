@@ -140,9 +140,6 @@ protected slots:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
-#endif
     bool event(QEvent* event) override;
 
 private slots:
@@ -185,10 +182,6 @@ private:
     void ReadTrackColors();
 
     void SetCursorPosText(float fTime);
-
-#if defined(AZ_PLATFORM_WINDOWS)
-    bool processRawInput(MSG* pMsg);
-#endif
 
     void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
     void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;

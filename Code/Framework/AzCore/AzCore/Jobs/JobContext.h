@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBCONTEXT_H
-#define AZCORE_JOBS_JOBCONTEXT_H 1
+
+#pragma once
 
 #include <AzCore/Jobs/JobCancelGroup.h>
 
@@ -25,7 +25,7 @@ namespace AZ
 
         JobContext(JobManager& jobManager)
             : m_jobManager(jobManager)
-            , m_cancelGroup(NULL) { }
+            , m_cancelGroup(nullptr) { }
 
         JobContext(JobManager& jobManager, JobCancelGroup& cancelGroup)
             : m_jobManager(jobManager)
@@ -66,6 +66,3 @@ namespace AZ
         JobCancelGroup* m_cancelGroup;
     };
 }
-
-#endif
-#pragma once

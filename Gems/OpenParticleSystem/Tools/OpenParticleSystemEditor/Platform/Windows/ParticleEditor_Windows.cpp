@@ -25,7 +25,7 @@ namespace Platform
         {
             UINT rawInputSize;
             const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-            GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
+            GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
 
             if (rawInputSize <= 0)
             {

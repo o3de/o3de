@@ -17,6 +17,9 @@ set(FILES
     Source/DisplayMapper/DisplayMapperFullScreenPass.h
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
     Source/DisplayMapper/OutputTransformPass.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationImageUtils.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationCubemapPass.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessor.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Source/LookupTable/LookupTableAsset.h
     Source/SkyBox/SkyBoxLUT.h
@@ -118,6 +121,8 @@ set(FILES
     Source/DisplayMapper/OutputTransformPass.cpp
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationCubemapPass.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationFeatureProcessor.cpp
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
@@ -184,14 +189,16 @@ set(FILES
     Source/PostProcess/MotionBlur/MotionBlurSettings.h
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
-    Source/PostProcess/Ssao/SsaoSettings.cpp
-    Source/PostProcess/Ssao/SsaoSettings.h
+    Source/PostProcess/AmbientOcclusion/AoSettings.cpp
+    Source/PostProcess/AmbientOcclusion/AoSettings.h
     Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
     Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
     Source/PostProcess/Vignette/VignetteSettings.cpp
     Source/PostProcess/Vignette/VignetteSettings.h
     Source/PostProcess/LookModification/LookModificationSettings.cpp
     Source/PostProcess/LookModification/LookModificationSettings.h
+    Source/PostProcessing/AoParentPass.cpp
+    Source/PostProcessing/AoParentPass.h
     Source/PostProcessing/BlendColorGradingLutsPass.h
     Source/PostProcessing/BlendColorGradingLutsPass.cpp
     Source/PostProcessing/DepthOfFieldPencilMap.h
@@ -234,6 +241,8 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/GtaoPasses.cpp
+    Source/PostProcessing/GtaoPasses.h
     Source/PostProcessing/HDRColorGradingPass.cpp
     Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp

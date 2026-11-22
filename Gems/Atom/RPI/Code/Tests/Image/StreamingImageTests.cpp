@@ -22,8 +22,7 @@
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
-
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/containers/intrusive_list.h>
 

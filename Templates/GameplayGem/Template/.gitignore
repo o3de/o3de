@@ -1,0 +1,8 @@
+build/
+bin/
+user/
+*.user
+*.suo
+.vs/
+.idea/
+*.ninja

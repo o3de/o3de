@@ -8,7 +8,7 @@ This file is being deprecated. relevant functions should be added to EditorPytho
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide6 import QtWidgets, QtTest, QtCore
+from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 from PySide6.QtCore import Qt
 from editor_python_test_tools.utils import Report
 import pyside_utils
@@ -44,7 +44,7 @@ def save_script_event_file(self, file_path):
     returns: true if the Save action is successful and the * character disappears from the asset editor label
     """
     editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, file_path)
-    action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
+    action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtGui.QAction, "iconText": SAVE_STRING})
     action.trigger()
     # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
     # if there are no unsaved changes we will not have any * in the text
@@ -114,7 +114,7 @@ def open_node_palette(self):
     returns none
     """
     if self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
-        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtGui.QAction})
         action.trigger()
 
 
@@ -220,7 +220,7 @@ def create_new_sc_graph(sc_editor_main_window):
     returns: none
     """
     create_new_graph_action = pyside_utils.find_child_by_pattern(
-        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+        sc_editor_main_window, {"objectName": "action_New_Script", "type": QtGui.QAction}
     )
     create_new_graph_action.trigger()
 
@@ -267,7 +267,7 @@ def get_sc_editor_node_inspector(sc_editor):
     """
     node_inspector_widget = sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT)
     if sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT) is None:
-        action = pyside_utils.find_child_by_pattern(sc_editor, {"text": NODE_INSPECTOR_UI, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(sc_editor, {"text": NODE_INSPECTOR_UI, "type": QtGui.QAction})
         action.trigger()
 
     return node_inspector_widget
@@ -281,7 +281,7 @@ def create_script_event(self):
 
     returns None
     """
-    action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
+    action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtGui.QAction, "text": SCRIPT_EVENT_UI})
     action.trigger()
     result = helper.wait_for_condition(
         lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3

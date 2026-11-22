@@ -498,8 +498,8 @@ static void DebugDrawAlignedTextWithOriginBox(AZ::Vector2 pos,
 {
     Draw2dHelper draw2d(g_deferDrawsToEndOfFrame);
 
-    const char* haStr = 0;
-    const char* vaStr = 0;
+    const char* haStr = nullptr;
+    const char* vaStr = nullptr;
     switch (horizontalAlignment)
     {
     case IDraw2d::HAlign::Left:
@@ -761,11 +761,11 @@ static void DebugDraw2dImageColor()
 
         // Draw the image with this color
         imageOptions.color = g_colorVec3[color];
-        draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+        draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, nullptr, &imageOptions);
 
         // draw below with half opacity to test combination of color and opacity
         pos.SetY(pos.GetY() + ySpacing);
-        draw2d->DrawImage(texture, pos, size, 0.5f, 0.0f, 0, 0, &imageOptions);
+        draw2d->DrawImage(texture, pos, size, 0.5f, 0.0f, nullptr, nullptr, &imageOptions);
     }
 }
 #endif
@@ -831,7 +831,7 @@ static void DebugDraw2dImageBlendMode()
             IDraw2d::RenderState renderState;
             renderState.m_blendState.m_blendSource = g_srcBlendModes[srcIndex];
             renderState.m_blendState.m_blendDest = g_dstBlendModes[dstIndex];
-            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, nullptr, &imageOptions);
         }
     }
 }
@@ -862,25 +862,25 @@ static void DebugDraw2dImageUVs()
     // full image
     minMaxTexCoords[0] = AZ::Vector2(0, 0);
     minMaxTexCoords[1] = AZ::Vector2(1, 1);
-    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, minMaxTexCoords);
 
     // top left quadrant of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0, 0);
     minMaxTexCoords[1] = AZ::Vector2(0.5, 0.5);
-    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, minMaxTexCoords);
 
     // middle of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0.25, 0.25);
     minMaxTexCoords[1] = AZ::Vector2(0.75, 0.75);
-    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, minMaxTexCoords);
 
     // flip of image
     pos.SetX(pos.GetX() + xSpacing);
     minMaxTexCoords[0] = AZ::Vector2(0.0, 1.0);
     minMaxTexCoords[1] = AZ::Vector2(1.0, 0.0);
-    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, minMaxTexCoords);
+    draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, minMaxTexCoords);
 }
 #endif
 
@@ -919,7 +919,7 @@ static void DebugDraw2dImagePixelRounding()
 
             imageOptions.pixelRounding = roundings[j];
 
-            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
+            draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, nullptr, nullptr, &imageOptions);
         }
     }
 }

@@ -90,6 +90,7 @@ class Surface
                                                         // Search the code for 'GetDefaultNormal' to see how/where this is applied
     real3 GetVertexNormal() { return vertexNormal; }    // Returns the interpolated vertex normal
     real3 GetSpecularF0() { return specularF0; }
+    real GetMetallic() { return metallic; }
 };
 
 void Surface::CalculateRoughnessA()

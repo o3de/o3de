@@ -30,7 +30,7 @@ namespace SurfaceData
                 edit->Class<EditorSurfaceTagListAsset>(
                     QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag Name List Asset"),
                     QT_TRANSLATE_NOOP("SurfaceData", "Contains a list of tag names"))
-                    ->DataElement(0, &EditorSurfaceTagListAsset::m_surfaceTagNames,
+                    ->DataElement(nullptr, &EditorSurfaceTagListAsset::m_surfaceTagNames,
                         QT_TRANSLATE_NOOP("SurfaceData", "Surface Tag Name List"), "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)

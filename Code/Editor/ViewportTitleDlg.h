@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
-#define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #pragma once
 
 #include "SandboxAPI.h"
@@ -122,6 +119,3 @@ namespace AzToolsFramework
     };
 
 } // namespace AzToolsFramework
-
-
-#endif // CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H

@@ -242,7 +242,7 @@ namespace TextureAtlasNamespace
                     if (temp.m_atlas)
                     {
                         delete temp.m_atlas;
-                        temp.m_atlas = NULL;
+                        temp.m_atlas = nullptr;
                     }
                 }
                 return;

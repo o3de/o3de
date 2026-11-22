@@ -26,6 +26,7 @@ namespace Maestro
         explicit CShadowsSetupNode(const int id);
 
         static void Initialize();
+        static void Shutdown();
 
         //-----------------------------------------------------------------------------
         //! Overrides from CAnimNode

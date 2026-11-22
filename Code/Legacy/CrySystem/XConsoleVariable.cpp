@@ -112,7 +112,7 @@ CXConsoleVariableBase::CXConsoleVariableBase(CXConsole* pConsole, const char* sN
     assert(pConsole);
 
     m_psHelp = (char*)help;
-    m_pChangeFunc = NULL;
+    m_pChangeFunc = nullptr;
 
     m_pConsole = pConsole;
 
@@ -130,7 +130,7 @@ CXConsoleVariableBase::CXConsoleVariableBase(CXConsole* pConsole, const char* sN
 
     if (gEnv->IsDedicated())
     {
-        m_pDataProbeString = NULL;
+        m_pDataProbeString = nullptr;
     }
 }
 

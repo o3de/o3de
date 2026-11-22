@@ -24,7 +24,6 @@ namespace AZ
             using ::testing::Return;
             using ::testing::ReturnRef;
             using ::testing::Eq;
-            using ::testing::Invoke;
             using ::testing::_;
             using ::testing::Matcher;
 
@@ -74,7 +73,7 @@ namespace AZ
                         }
                     };
                     EXPECT_CALL(m_testNodeSelectionList, EnumerateSelectedNodes(_))
-                        .WillRepeatedly(Invoke(enumerateSelectedNodesInvoke));
+                        .WillRepeatedly(enumerateSelectedNodesInvoke);
 
                     auto enumerateUnselectedNodesInvoke =
                         [&unselectedNodes](const DataTypes::ISceneNodeSelectionList::EnumerateNodesCallback& callback)
@@ -88,41 +87,41 @@ namespace AZ
                         }
                     };
                     EXPECT_CALL(m_testNodeSelectionList, EnumerateUnselectedNodes(_))
-                        .WillRepeatedly(Invoke(enumerateUnselectedNodesInvoke));
+                        .WillRepeatedly(enumerateUnselectedNodesInvoke);
 
                     auto isSelectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
                     {
                         return (AZStd::find(selectedNodes.begin(), selectedNodes.end(), name) != selectedNodes.end());
                     };
-                    EXPECT_CALL(m_testNodeSelectionList, IsSelectedNode(_)).WillRepeatedly(Invoke(isSelectedNodeInvoke));
+                    EXPECT_CALL(m_testNodeSelectionList, IsSelectedNode(_)).WillRepeatedly(isSelectedNodeInvoke);
 
                     auto selectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
                         {
                             selectedNodes.push_back(name);
                         };
                     EXPECT_CALL(m_testNodeSelectionList, AddSelectedNode(_))
-                        .WillRepeatedly(Invoke(selectedNodeInvoke));
+                        .WillRepeatedly(selectedNodeInvoke);
 
                     auto removeNodeInvoke = [&unselectedNodes](const AZStd::string& name)
                         {
                             unselectedNodes.push_back(name);
                         };
                     EXPECT_CALL(m_testNodeSelectionList, RemoveSelectedNode(Matcher<const AZStd::string&>(_)))
-                        .WillRepeatedly(Invoke(removeNodeInvoke));
+                        .WillRepeatedly(removeNodeInvoke);
 
                     auto clearSelectedNodes = [&selectedNodes]()
                         {
                             selectedNodes.clear();
                         };
                     EXPECT_CALL(m_testNodeSelectionList, ClearSelectedNodes())
-                        .WillRepeatedly(Invoke(clearSelectedNodes));
+                        .WillRepeatedly(clearSelectedNodes);
 
                     auto clearUnselectedNodes = [&unselectedNodes]()
                         {
                             unselectedNodes.clear();
                         };
                     EXPECT_CALL(m_testNodeSelectionList, ClearUnselectedNodes())
-                        .WillRepeatedly(Invoke(clearUnselectedNodes));
+                        .WillRepeatedly(clearUnselectedNodes);
                 }
 
                 static bool IsValidTestNodeType([[maybe_unused]] const Containers::SceneGraph& graph, [[maybe_unused]] Containers::SceneGraph::NodeIndex& index)

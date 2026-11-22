@@ -68,6 +68,9 @@ namespace AzNetworking
         uint32_t GetConnectionMtu() const override;
         // @}
 
+        //! Returns whether the goodbye sent by a local Disconnect is still unacked.
+        bool IsTerminatePending() const;
+
         //! Returns a suitable encryption endpoint for this connection type.
         //! @return reference to the connections encryption endpoint
         DtlsEndpoint& GetDtlsEndpoint();

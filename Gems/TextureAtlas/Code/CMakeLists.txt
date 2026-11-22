@@ -15,12 +15,10 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
-            AZ::AzFramework
         PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
             Gem::Atom_RPI.Public
-            AZ::AtomCore
 )
 
 ly_add_target(
@@ -33,7 +31,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::${gem_name}.Static
 )
 
@@ -61,7 +58,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AssetBuilderSDK

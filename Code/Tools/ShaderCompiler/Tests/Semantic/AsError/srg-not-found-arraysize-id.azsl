@@ -1,0 +1,10 @@
+ShaderResourceGroupSemantic freq1
+{
+    FrequencyId = 1;
+};
+ShaderResourceGroup MySRG : freq1
+{
+    Buffer<float4> stuff[dim];  // ERROR at semantic check: (4): in array dimension specifier: identifier dim not found
+};
+
+// TODO

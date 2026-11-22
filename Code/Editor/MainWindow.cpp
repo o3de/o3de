@@ -345,6 +345,11 @@ void MainWindow::SystemTick()
     }
 }
 
+void MainWindow::OpenAssetImporter()
+{
+    m_assetImporterManager->Exec();
+}
+
 void MainWindow::OnOpenAssetImporterManager(const QStringList& dragAndDropFileList)
 {
     m_assetImporterManager->Exec(dragAndDropFileList);
@@ -1083,7 +1088,7 @@ void MainWindow::RegisterOpenWndCommands()
 
 bool MainWindow::event(QEvent* event)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     if (event->type() == QEvent::HoverMove)
     {
         // this fixes a problem on macOS where the mouse cursor was not

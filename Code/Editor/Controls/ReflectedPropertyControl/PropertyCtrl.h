@@ -6,13 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_PROPERTYCTRL_H
-#define CRYINCLUDE_EDITOR_UTILS_PROPERTYCTRL_H
 #pragma once
 
 void RegisterReflectedVarHandlers();
-
-
-
-
-#endif // CRYINCLUDE_EDITOR_UTILS_PROPERTYCTRL_H

@@ -115,7 +115,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/animation/actor/")
-                        ->DataElement(0, &EditorActorComponent::m_actorAsset,
+                        ->DataElement(nullptr, &EditorActorComponent::m_actorAsset,
                             QT_TRANSLATE_NOOP("EMotionFX", "Actor asset"), QT_TRANSLATE_NOOP("EMotionFX", "Assigned actor asset"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -130,15 +130,15 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
-                        ->DataElement(0, &EditorActorComponent::m_renderCharacter,
+                        ->DataElement(nullptr, &EditorActorComponent::m_renderCharacter,
                             QT_TRANSLATE_NOOP("EMotionFX", "Draw character"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles rendering of character mesh."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
-                        ->DataElement(0, &EditorActorComponent::m_renderSkeleton,
+                        ->DataElement(nullptr, &EditorActorComponent::m_renderSkeleton,
                             QT_TRANSLATE_NOOP("EMotionFX", "Draw skeleton"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles rendering of skeleton."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
-                        ->DataElement(0, &EditorActorComponent::m_renderBounds, QT_TRANSLATE_NOOP("EMotionFX", "Draw bounds"), QT_TRANSLATE_NOOP("EMotionFX", "Draw the World Space AABBs. <br>Teal: Static. <br>Red: Bone position-based. <br>Blue: Mesh vertex-based."))
+                        ->DataElement(nullptr, &EditorActorComponent::m_renderBounds, QT_TRANSLATE_NOOP("EMotionFX", "Draw bounds"), QT_TRANSLATE_NOOP("EMotionFX", "Draw the World Space AABBs. <br>Teal: Static. <br>Red: Bone position-based. <br>Blue: Mesh vertex-based."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
-                        ->DataElement(0, &EditorActorComponent::m_rayTracingEnabled,
+                        ->DataElement(nullptr, &EditorActorComponent::m_rayTracingEnabled,
                             QT_TRANSLATE_NOOP("EMotionFX", "Enable Raytracing"), QT_TRANSLATE_NOOP("EMotionFX", "Toggles adding this actor to the raytracing acceleration structure."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnEnableRaytracingChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
@@ -158,7 +158,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAttachmentTypeChanged)
                         ->EnumAttribute(AttachmentType::None, QT_TRANSLATE_NOOP("EMotionFX", "None"))
                         ->EnumAttribute(AttachmentType::SkinAttachment, QT_TRANSLATE_NOOP("EMotionFX", "Skin attachment"))
-                        ->DataElement(0, &EditorActorComponent::m_attachmentTarget,
+                        ->DataElement(nullptr, &EditorActorComponent::m_attachmentTarget,
                             QT_TRANSLATE_NOOP("EMotionFX", "Target entity"), QT_TRANSLATE_NOOP("EMotionFX", "Entity Id whose actor instance we should attach to."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("EMotionFXActorService"))
@@ -166,10 +166,10 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAttachmentTargetChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("EMotionFX", "Out of view"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorActorComponent::m_forceUpdateJointsOOV,
+                        ->DataElement(nullptr, &EditorActorComponent::m_forceUpdateJointsOOV,
                             QT_TRANSLATE_NOOP("EMotionFX", "Force update joints"), QT_TRANSLATE_NOOP("EMotionFX", "Force update the joint transforms of actor, even when the character is out of the camera view."))
 
-                        ->DataElement(0, &EditorActorComponent::m_bboxConfig,
+                        ->DataElement(nullptr, &EditorActorComponent::m_bboxConfig,
                                       QT_TRANSLATE_NOOP("EMotionFX", "Bounding box configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
                         ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("EMotionFX", "Add Material Component"), QT_TRANSLATE_NOOP("EMotionFX", "Add Material Component"))

@@ -31,7 +31,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(PropertyDoubleSpinCtrl, AZ::SystemAllocator);
 
-        PropertyDoubleSpinCtrl(QWidget* pParent = NULL);
+        PropertyDoubleSpinCtrl(QWidget* pParent = nullptr);
         virtual ~PropertyDoubleSpinCtrl();
 
         double value() const;

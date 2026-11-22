@@ -29,7 +29,7 @@ include(${LY_ROOT_FOLDER}/cmake/LySet.cmake)
 # also allowed:
 # "s3://bucketname" (it will use LYPackage_S3Downloader.cmake to download it from a s3 bucket)
 
-set(LY_PACKAGE_SERVER_URLS "https://d3t6xeg4fgfoum.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
+set(LY_PACKAGE_SERVER_URLS "https://prod.packages.o3debinaries.org" CACHE STRING "Server URLS to fetch packages from")
 # Note: if you define the "LY_PACKAGE_SERVER_URLS" environment variable
 # it will be added to this value in the front, so that users can set
 # an env var and use that as an "additional" set of servers beyond the default set.
@@ -746,32 +746,19 @@ function(ly_package_is_newer_than package_name reference_file output_variable)
     endif()
 endfunction()
 
-# if we're in script mode, we dont want to declare package associations
-if (NOT CMAKE_SCRIPT_MODE_FILE)
-    # include the built in 3rd party packages that are for every platform.
-    # you can put your package associations anywhere, but this provides
-    # a good starting point.
-    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
-endif()
-
-get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
-    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
-    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
-    ly_parse_third_party_dependencies(3rdParty::Qt)
-endif()
-
 # Wrapper around FetchContent_Declare that tries url-based download first, and falls back to git clone if all urls fail.
 #
 # At least one of URL or GIT must be provided.
 # If URL is provided, each URL is attempted with retries.
 # If all URLs fail and GIT is also provided, it will fall back to a git clone.
 # Downloads are cached in LY_PACKAGE_DOWNLOAD_CACHE_LOCATION/<name>/
+# NO_ADD_SUBDIR populates sources without configuring the upstream CMakeLists.txt.
+# It cannot be combined with an explicit SOURCE_SUBDIR.
 #
 # NOTE: This function only calls FetchContent_Declare.
 # The caller must call FetchContent_MakeAvailable(<name>) after setting any desired build options.
 function(o3de_fetch_content arg_NAME)
-    set(options)
+    set(options NO_ADD_SUBDIR)
     set(oneValueArgs
         VERSION # Human-readable version string (e.g. "v1.15.2")
         LICENSE # License identifier (e.g. "BSD-3-Clause", "MIT")
@@ -781,6 +768,7 @@ function(o3de_fetch_content arg_NAME)
     )
     set(multiValueArgs
         URL # One or more archive urls to try in order
+        PATCH_FILES # One or more unified diffs to apply in order
     )
     cmake_parse_arguments(PARSE_ARGV 1 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
@@ -799,13 +787,32 @@ function(o3de_fetch_content arg_NAME)
     # would insert a spurious empty argument into FetchContent_Declare.
     set(fc_args)
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
-        list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    if(arg_NO_ADD_SUBDIR)
+        if("SOURCE_SUBDIR" IN_LIST arg_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "NO_ADD_SUBDIR and SOURCE_SUBDIR cannot both be specified.")
+        endif()
+        list(APPEND fc_args SOURCE_SUBDIR "no-add-subdir")
     endif()
+
+    # Stamp extracted files with the extraction time, matching CMP0135 NEW (see cmake/Policy.cmake).
+    # Keeping the archive's own timestamps makes a newly extracted version look older than the
+    # object files built from the previous one, so a version bump silently links stale objects
+    # against the new headers instead of recompiling.
+    list(APPEND fc_args DOWNLOAD_EXTRACT_TIMESTAMP FALSE)
 
     # Forward any extra arguments we don't explicitly handle
     if(arg_UNPARSED_ARGUMENTS)
         list(APPEND fc_args ${arg_UNPARSED_ARGUMENTS})
+    endif()
+
+    if(arg_PATCH_FILES)
+        list(FIND arg_UNPARSED_ARGUMENTS "PATCH_COMMAND" patch_command_index)
+        list(FIND arg_PATCH_FILES "PATCH_COMMAND" patch_command_in_files_index)
+        if(NOT patch_command_index EQUAL -1 OR NOT patch_command_in_files_index EQUAL -1)
+            message(FATAL_ERROR "PATCH_FILES and PATCH_COMMAND cannot both be specified.")
+        endif()
+
+        list(APPEND fc_args PATCH_COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/Tools/apply_patch.py" ${arg_PATCH_FILES})
     endif()
 
     # Set up cache directory for downloads
@@ -818,10 +825,11 @@ function(o3de_fetch_content arg_NAME)
     set(url_download_succeeded FALSE)
     if(arg_URL AND NOT O3DE_FETCHCONTENT_FORCE_GIT)
         foreach(current_url IN LISTS arg_URL)
+            get_filename_component(url_filename "${current_url}" NAME)
             if(download_cache_dir)
-                set(target_file "${download_cache_dir}/${arg_URL_HASH}")
+                set(target_file "${download_cache_dir}/${arg_URL_HASH}-${url_filename}")
             else()
-                set(target_file "${CMAKE_BINARY_DIR}/downloads/${arg_NAME}/${arg_URL_HASH}")
+                set(target_file "${CMAKE_BINARY_DIR}/downloads/${arg_NAME}/${arg_URL_HASH}-${url_filename}")
             endif()
 
             # Check if we already have the file with the correct hash
@@ -900,3 +908,16 @@ function(o3de_fetch_content arg_NAME)
 
     message(STATUS "${status_msg}")
 endfunction()
+
+if(NOT CMAKE_SCRIPT_MODE_FILE)
+    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
+endif()
+
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND NOT O3DE_SCRIPT_ONLY)
+    # Load the pinned FreeType target first so Qt and later targets share it.
+    ly_parse_third_party_dependencies(3rdParty::Freetype)
+    # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
+    ly_parse_third_party_dependencies(3rdParty::Qt)
+endif()

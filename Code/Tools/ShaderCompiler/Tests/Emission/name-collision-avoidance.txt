@@ -1,0 +1,9 @@
+# use string notation (double quotes) to list a series of tests you want to match from the output of compilation
+# spaces separate tokens. e.g. "id1 , id2" will match "thing<id1,id2>"
+
+"struct MySRGOne_InnerStruct3"
+"struct MySRGOne_InnerStruct31"
+"ConstantBuffer < :: MySRGOne_InnerStruct3 > MySRGOne_m_materialConstants : register ( b0 , space0 ) ;"
+":: MySRGOne_InnerStruct3 mystruct = :: MySRGOne_m_materialConstants ;"
+":: MySRGOne_InnerStruct31 meta ;"
+"MySRGOne_InnerStruct2 myuv ;"

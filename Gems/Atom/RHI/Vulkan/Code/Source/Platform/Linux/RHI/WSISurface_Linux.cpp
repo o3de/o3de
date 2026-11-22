@@ -43,7 +43,7 @@ namespace AZ
                 createInfo.display = display;
                 createInfo.surface = (wl_surface*)m_descriptor.m_windowHandle.GetIndex();
                 const VkResult result = instance.GetContext().CreateWaylandSurfaceKHR(instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
-                AssertSuccess(result);
+                VK_RESULT_ASSERT(result);
 
                 return ConvertResult(result);
             }

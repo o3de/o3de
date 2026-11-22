@@ -26,7 +26,7 @@ protected:
 
 PlatformConfigurationUnitTests::PlatformConfigurationUnitTests()
     : m_argc(0)
-    , m_argv(0)
+    , m_argv(nullptr)
 {
 }
 

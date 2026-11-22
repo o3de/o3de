@@ -1,0 +1,81 @@
+// This test case is used to validate that the exception code 131 is NOT thrown
+// when using the command line argument '--no-alignment-validation'
+// Exception code 131 (IR_POTENTIAL_DX12_VS_VULKAN_ALIGNMENT_ERROR) means
+// that AZSLc detected data layout issues within struct, classes or SRGs
+// that are known to produce different layout data by DXC when using
+// the command line option: -fvk-use-dx-layout
+// See https://github.com/o3de/o3de-azslc/issues/8
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct A
+{
+    struct D
+    {
+        int m_i0;
+        float3x3 m_mat1;
+        float3x3 m_mat2;
+        float m_f3;  //<-- Dummy float2 must be inserted before this variable.
+    } m_d4;
+
+    float m_f5;
+    float3x3 m_mat6;
+};
+
+class B
+{
+    A m_a7;
+    int m_f8;  //<-- Dummy float2 must be inserted before this variable.
+    
+    struct E
+    {
+        float m_f9;
+        float3x3 m_mat10;
+    } m_e11;
+
+    bool IsFalse()
+    {
+        float3x3 someMatrix;
+        return m_mat12 != someMatrix;
+    }
+
+    float3x3 m_mat12;
+};
+
+struct C
+{
+    B m_b13;
+    bool m_f14; //<-- Dummy float2 must be inserted before this variable.
+    struct F
+    {
+        float m_f15;
+        
+        struct G
+        {
+            float m_f16;
+            float3x3 m_mat17;
+        } m_sg18;
+
+        float m_f19; //<-- Dummy float2 must be inserted before this variable.
+    } m_sf20;
+    float3x3 m_mat21;
+};
+
+ShaderResourceGroup SRG1 : slot1
+{
+    float3x3 m_srg_mat22;
+    C m_c23;
+    uint m_u24; //<-- Dummy float2 must be inserted before this variable.
+    float3x3 m_srg_mat25;
+    int m_i26; //<-- Dummy float2 must be inserted before this variable.
+};
+
+float4 MainPS(float2 uv : TEXCOORD0) : SV_Target0
+{
+    float3x3 anotherMatrix;
+    float4 diffuse = float4(SRG1::m_i26, 0, 0, 0);    
+    return diffuse;
+}

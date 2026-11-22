@@ -405,7 +405,7 @@ const AZ::ScriptContextDebug::DebugValue *WatchesDataModel::GetDV(const QModelIn
         return dv;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 const QModelIndex WatchesDataModel::GetTopmostIndex(const QModelIndex& index)
@@ -471,7 +471,7 @@ void WatchesDataModel::RegenerateParentsMap() const
 
         for (int idx = 0; idx < m_DebugValues.size(); ++idx)
         {
-            m_parents[ &m_DebugValues[idx] ] = NULL;
+            m_parents[ &m_DebugValues[idx] ] = nullptr;
 
             RegenerateParentsMapRecurse(m_DebugValues[idx]);
         }
@@ -566,7 +566,7 @@ Qt::ItemFlags WatchesDataModel::flags (const QModelIndex& index) const
     case 1: // VALUE
     {
         bool RO =
-            (dv == NULL)
+            (dv == nullptr)
             || (dv->m_type == LUA_TFUNCTION)
             || (static_cast<int>(dv->m_type) == LUA_TNONE)
                 || (dv->m_flags & AZ::ScriptContextDebug::DebugValue::FLAG_READ_ONLY);
@@ -619,7 +619,7 @@ QModelIndex WatchesDataModel::index (int row, int column, const QModelIndex& ind
         {
             if ((m_OperatingMode == WATCHES_MODE_GENERAL) && (row == m_DebugValues.size()))
             {
-                return createIndex(row, column, (void*)NULL);
+                return createIndex(row, column, (void*)nullptr);
             }
             return QModelIndex();
         }
@@ -646,7 +646,7 @@ QModelIndex WatchesDataModel::parent (const QModelIndex& index) const
         return QModelIndex();
     }
 
-    if (index.internalPointer() != NULL)
+    if (index.internalPointer() != nullptr)
     {
         const AZ::ScriptContextDebug::DebugValue *dv = static_cast<const AZ::ScriptContextDebug::DebugValue *>(index.internalPointer());
 
@@ -830,17 +830,17 @@ bool WatchesDataModel::setData (const QModelIndex& index, const QVariant& value,
 
 const char* WatchesDataModel::SafetyType(char c) const
 {
-    if (static_cast<int>(c) <= LUA_TNONE || c > LUA_NUMTAGS)
+    if (static_cast<int>(c) < LUA_TNIL || c >= LUA_NUMTYPES)
     {
         return "<invalid>";
     }
-    static_assert(WatchesPanel::typeStringLUT.size() == LUA_NUMTAGS, "number of lua tags does not match the number of typeStringLUT");
+    static_assert(WatchesPanel::typeStringLUT.size() == LUA_NUMTYPES, "number of Lua types does not match the type lookup table");
     return WatchesPanel::typeStringLUT[aznumeric_cast<int>(c)];
 }
 
 const bool WatchesDataModel::IsRealIndex(const QModelIndex& index) const
 {
-    if ((!index.isValid() && index.row() >= m_DebugValues.size()) || index.internalPointer() == NULL)
+    if ((!index.isValid() && index.row() >= m_DebugValues.size()) || index.internalPointer() == nullptr)
     {
         return false;
     }

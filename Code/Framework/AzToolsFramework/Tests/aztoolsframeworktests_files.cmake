@@ -124,6 +124,7 @@ set(FILES
     Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabProcessorRemoveComponentPerPlatformTests.cpp
+    Prefab/PrefabTemplateFileHandlerTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
     Prefab/PrefabTestData.cpp
@@ -186,6 +187,7 @@ set(FILES
     UI/EntityIdQLineEditTests.cpp
     UI/EntityOutlinerTests.cpp
     UI/EntityPropertyEditorTests.cpp
+    UI/PropertyAssetCtrlTests.cpp
     UI/AssetBrowserTests.cpp
     UndoStack.cpp
     Viewport/ClusterTests.cpp

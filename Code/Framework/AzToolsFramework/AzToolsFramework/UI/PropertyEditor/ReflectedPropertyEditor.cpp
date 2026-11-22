@@ -2166,29 +2166,31 @@ namespace AzToolsFramework
 
             ReflectedPropertyEditor* promptEditor = new ReflectedPropertyEditor(&dialog);
 
+            // Do not allow the following elements to leave scope until the prompt is closed.
+            AZ::Edit::ElementData syntheticData;
+            bool hasProvidedFirstDynamicEditData = false;
+            auto dynamicEditDataProvider = [&](const void* objectPtr, const AZ::SerializeContext::ClassData* classData) -> const AZ::Edit::ElementData*
+            {
+                Q_UNUSED(classData)
+
+                // Ensure we only override the first instance of dynamic element data
+                // This prevents overriding the name field for compound editors like AZ::EntityId where the address
+                // of the first field may be equivalent to the object address
+                if (objectPtr == value && !hasProvidedFirstDynamicEditData)
+                {
+                    hasProvidedFirstDynamicEditData = true;
+                    return &syntheticData;
+                }
+                return nullptr;
+            };
+
             if (message)
             {
                 // Set the edit data for the key prompt
-                AZ::Edit::ElementData syntheticData;
                 syntheticData.m_elementId = AZ::Crc32();
                 syntheticData.m_name = message;
                 syntheticData.m_description = "";
-
-                bool hasProvidedFirstDynamicEditData = false;
-                promptEditor->SetDynamicEditDataProvider([&](const void* objectPtr, const AZ::SerializeContext::ClassData* classData) -> const AZ::Edit::ElementData*
-                    {
-                        Q_UNUSED(classData)
-
-                        // Ensure we only override the first instance of dynamic element data
-                        // This prevents overriding the name field for compound editors like AZ::EntityId where the address
-                        // of the first field may be equivalent to the object address
-                        if (objectPtr == value && !hasProvidedFirstDynamicEditData)
-                        {
-                            hasProvidedFirstDynamicEditData = true;
-                            return &syntheticData;
-                        }
-                        return nullptr;
-                    });
+                promptEditor->SetDynamicEditDataProvider(dynamicEditDataProvider);
             }
 
             // Prompt using a new ReflectedPropertyEditor to query the value

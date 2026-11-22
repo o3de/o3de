@@ -1,0 +1,6 @@
+ShaderResourceGroupSemantic UpdateFrequency; // Error! ShaderResourceGroupSemantic must have a body!
+
+ShaderResourceGroup SomeSRG : UpdateFrequency
+{
+    
+};

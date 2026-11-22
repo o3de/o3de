@@ -1,0 +1,23 @@
+ShaderResourceGroupSemantic sem
+{
+    FrequencyId = 0;
+};
+
+partial ShaderResourceGroup SRG : sem
+{
+    int m_i;
+};
+
+// more of SRG
+partial ShaderResourceGroup SRG
+{
+    float4 m_f4;
+};
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(SRG::m_i), __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '?int'\n");
+
+__azslc_print_message("@check predicate ");
+__azslc_print_symbol(typeof(SRG::m_f4), __azslc_prtsym_fully_qualified);
+__azslc_print_message(" == '?float4'\n");

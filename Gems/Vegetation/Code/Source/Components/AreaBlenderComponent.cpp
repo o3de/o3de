@@ -41,9 +41,9 @@ namespace Vegetation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &AreaBlenderConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
-                    ->DataElement(0, &AreaBlenderConfig::m_propagateBehavior, QT_TRANSLATE_NOOP("Vegetation", "Propagate Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters to affect referenced areas."))
-                    ->DataElement(0, &AreaBlenderConfig::m_vegetationAreaIds, QT_TRANSLATE_NOOP("Vegetation", "Vegetation Areas"), QT_TRANSLATE_NOOP("Vegetation", "Ordered list of vegetation areas."))
+                    ->DataElement(nullptr, &AreaBlenderConfig::m_inheritBehavior, QT_TRANSLATE_NOOP("Vegetation", "Inherit Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters of a parent to affect this area."))
+                    ->DataElement(nullptr, &AreaBlenderConfig::m_propagateBehavior, QT_TRANSLATE_NOOP("Vegetation", "Propagate Behavior"), QT_TRANSLATE_NOOP("Vegetation", "Allow shapes, modifiers, filters to affect referenced areas."))
+                    ->DataElement(nullptr, &AreaBlenderConfig::m_vegetationAreaIds, QT_TRANSLATE_NOOP("Vegetation", "Vegetation Areas"), QT_TRANSLATE_NOOP("Vegetation", "Ordered list of vegetation areas."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("VegetationAreaService"));

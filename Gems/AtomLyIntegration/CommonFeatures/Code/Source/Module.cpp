@@ -18,6 +18,7 @@
 #include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <Grid/GridComponent.h>
+#include <GradientGlobalIllumination/GradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
@@ -30,7 +31,7 @@
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
-#include <PostProcess/Ssao/SsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/AoComponent.h>
 #include <PostProcess/LookModification/LookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/RadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
@@ -58,6 +59,7 @@
 #include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <Grid/EditorGridComponent.h>
+#include <GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialSystemComponent.h>
@@ -72,7 +74,7 @@
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
-#include <PostProcess/Ssao/EditorSsaoComponent.h>
+#include <PostProcess/AmbientOcclusion/EditorAoComponent.h>
 #include <PostProcess/LookModification/EditorLookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/EditorRadiusWeightModifierComponent.h>
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
@@ -105,7 +107,9 @@ namespace AZ
             AtomLyIntegrationCommonFeaturesModule()
                 : AZ::Module()
             {
-                m_descriptors.insert(m_descriptors.end(), {
+                m_descriptors.insert(
+                    m_descriptors.end(),
+                    {
                         AtomLyIntegrationCommonFeaturesSystemComponent::CreateDescriptor(),
                         AreaLightComponent::CreateDescriptor(),
                         DecalComponent::CreateDescriptor(),
@@ -115,10 +119,11 @@ namespace AZ
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
-                        SsaoComponent::CreateDescriptor(),
+                        AoComponent::CreateDescriptor(),
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
                         HDRiSkyboxComponent::CreateDescriptor(),
+                        GradientGlobalIlluminationComponent::CreateDescriptor(),
                         ImageBasedLightComponent::CreateDescriptor(),
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
@@ -155,10 +160,11 @@ namespace AZ
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),
-                        EditorSsaoComponent::CreateDescriptor(),
+                        EditorAoComponent::CreateDescriptor(),
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),
                         EditorHDRiSkyboxComponent::CreateDescriptor(),
+                        EditorGradientGlobalIlluminationComponent::CreateDescriptor(),
                         EditorImageBasedLightComponent::CreateDescriptor(),
                         EditorMaterialComponent::CreateDescriptor(),
                         EditorMaterialSystemComponent::CreateDescriptor(),

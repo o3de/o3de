@@ -26,7 +26,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(DHQComboBox, AZ::SystemAllocator);
 
-        explicit DHQComboBox(QWidget* parent = 0);
+        explicit DHQComboBox(QWidget* parent = nullptr);
 
         void showPopup() override;
 

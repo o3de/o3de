@@ -64,7 +64,7 @@ namespace GraphCanvas
             QModelIndex sourceIndex = static_cast<const NodePaletteSortFilterProxyModel*>(index.model())->mapToSource(index);
             NodePaletteTreeItem* treeItem = static_cast<NodePaletteTreeItem*>(sourceIndex.internalPointer());
 
-            const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, options.widget) + 1;
+            const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, options.widget) + 1;
             QRect textRect = options.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &options);
             textRect = textRect.adjusted(textMargin, 0, -textMargin, 0);
 
@@ -232,7 +232,6 @@ namespace GraphCanvas
             m_ui->searchFilter->clear();
 
             m_model->ClearFilter();
-            m_model->invalidate();
         }
 
         {
@@ -659,7 +658,6 @@ namespace GraphCanvas
         QString text = m_ui->searchFilter->userInputText();
 
         m_model->SetFilter(text);
-        m_model->invalidate();
 
         if (!m_model->HasFilter())
         {

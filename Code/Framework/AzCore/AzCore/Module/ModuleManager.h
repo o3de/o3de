@@ -160,6 +160,9 @@ namespace AZ
         // Helper function for initializing module entities
         void ActivateEntities(const AZStd::vector<AZStd::shared_ptr<ModuleDataImpl>>& modulesToInit);
 
+        // Helper function to leave descriptors that another loaded module lists to that module
+        void RemoveDescriptorsOwnedByOtherModules(Module& module);
+
         // Helper function to preprocess the module names to handle any special processing
         static AZ::OSString PreProcessModule(AZStd::string_view moduleName);
 

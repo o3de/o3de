@@ -57,6 +57,13 @@ namespace Maestro
         }
     }
 
+    void CShadowsSetupNode::Shutdown()
+    {
+        using namespace ShadowSetupNodeHelper;
+        s_shadowSetupParamsInit = false;
+        AZStd::vector<CAnimNode::SParamInfo>().swap(s_shadowSetupParams);
+    }
+
     void CShadowsSetupNode::Animate(SAnimContext& ac)
     {
         IAnimTrack* pGsmCache = GetTrackForParameter(AnimParamType::GSMCache);

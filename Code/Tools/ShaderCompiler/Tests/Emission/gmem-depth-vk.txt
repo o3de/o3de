@@ -1,0 +1,8 @@
+/*
+    Cmdargs: ['--namespace', 'vk']
+*/
+"[[ vk :: input_attachment_index ( 0 ) ]]"
+"[[ vk :: binding ( 0 , 0 ) ]]"
+"SubpassInput SRG_m_sub ;"
+"return spi . SubpassLoad ( ) ;"
+"MainPS"

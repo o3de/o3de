@@ -1128,6 +1128,8 @@ namespace EMStudio
             auto itModelIndex = m_modelIndexByAssetId.find(asset.GetId());
             if (itModelIndex != m_modelIndexByAssetId.end())
             {
+                // Drop the selection first so nothing keeps showing the graph that is about to be freed
+                m_selectionModel.clear();
                 EMotionFX::AnimGraph* removeGraph = data(itModelIndex->second, AnimGraphModel::ROLE_ANIM_GRAPH_OBJECT_PTR).value<EMotionFX::AnimGraphObject*>()->GetAnimGraph();
                 Remove(removeGraph);
             }

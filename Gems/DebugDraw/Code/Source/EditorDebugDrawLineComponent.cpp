@@ -37,12 +37,12 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawLine.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawLine.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(0, &EditorDebugDrawLineComponent::m_element,
+                    ->DataElement(nullptr, &EditorDebugDrawLineComponent::m_element,
                         QT_TRANSLATE_NOOP("DebugDraw", "Line element settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Settings for the line element."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawLineComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorDebugDrawLineComponent::m_settings,
+                    ->DataElement(nullptr, &EditorDebugDrawLineComponent::m_settings,
                         QT_TRANSLATE_NOOP("DebugDraw", "Visibility settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawLineComponent::OnPropertyUpdate)

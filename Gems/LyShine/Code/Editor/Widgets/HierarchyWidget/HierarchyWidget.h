@@ -90,6 +90,7 @@ public slots:
     void PasteAsSibling();
     void PasteAsChild();
     void Duplicate();
+    void SelectHierarchy();
     void SetEditorOnlyForSelectedItems(bool editorOnly);
 
 signals:

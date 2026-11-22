@@ -90,8 +90,7 @@ void FlyCameraInputComponent::GetIncompatibleServices(AZ::ComponentDescriptor::D
 //////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
 {
-    AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
-    if (serializeContext)
+    if (auto* const serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
     {
         serializeContext->Class<FlyCameraInputComponent, AZ::Component>()
             ->Version(1)
@@ -102,8 +101,7 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             ->Field("Invert Rotation Input Y", &FlyCameraInputComponent::m_InvertRotationInputAxisY)
             ->Field("Is enabled", &FlyCameraInputComponent::m_isEnabled);
 
-        AZ::EditContext* editContext = serializeContext->GetEditContext();
-        if (editContext)
+        if (auto* const editContext = serializeContext->GetEditContext())
         {
             editContext->Class<FlyCameraInputComponent>(QT_TRANSLATE_NOOP("AtomBridge", "Fly Camera Input"), QT_TRANSLATE_NOOP("AtomBridge", "The Fly Camera Input allows you to control the camera"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -113,29 +111,27 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/fly-camera-input/")
                 ->Attribute("AutoExpand", true)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC_CE("Game"))
-                ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Move Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera moves"))
+                ->DataElement(nullptr, &FlyCameraInputComponent::m_moveSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Move Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera moves"))
+                ->Attribute("Min", 1.0f)
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
+                ->DataElement(nullptr, &FlyCameraInputComponent::m_rotationSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Rotation Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera rotates"))
                 ->Attribute("Min", 1.0f)
                 ->Attribute("Max", 100.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_rotationSpeed, QT_TRANSLATE_NOOP("AtomBridge", "Rotation Speed"), QT_TRANSLATE_NOOP("AtomBridge", "Speed at which the camera rotates"))
-                ->Attribute("Min", 1.0f)
-                ->Attribute("Max", 100.0f)
-                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_mouseSensitivity, QT_TRANSLATE_NOOP("AtomBridge", "Mouse Sensitivity"), QT_TRANSLATE_NOOP("AtomBridge", "Mouse sensitivity factor"))
+                ->DataElement(nullptr, &FlyCameraInputComponent::m_mouseSensitivity, QT_TRANSLATE_NOOP("AtomBridge", "Mouse Sensitivity"), QT_TRANSLATE_NOOP("AtomBridge", "Mouse sensitivity factor"))
                 ->Attribute("Min", 0.0f)
                 ->Attribute("Max", 1.0f)
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisX, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input X"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input x-axis"))
+                ->DataElement(nullptr, &FlyCameraInputComponent::m_InvertRotationInputAxisX, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input X"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input x-axis"))
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
-                ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisY, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input Y"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input y-axis"))
+                ->DataElement(nullptr, &FlyCameraInputComponent::m_InvertRotationInputAxisY, QT_TRANSLATE_NOOP("AtomBridge", "Invert Rotation Input Y"), QT_TRANSLATE_NOOP("AtomBridge", "Invert rotation input y-axis"))
                 ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &FlyCameraInputComponent::m_isEnabled,
                     QT_TRANSLATE_NOOP("AtomBridge", "Is Initially Enabled"), QT_TRANSLATE_NOOP("AtomBridge", "When checked, the fly cam input is enabled on activate, else it has to be specifically enabled."));
         }
     }
 
-    AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection);
-    if (behaviorContext)
+    if (auto* const behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
     {
         behaviorContext->EBus<FlyCameraInputBus>("FlyCameraInputBus")
             ->Event("SetIsEnabled", &FlyCameraInputBus::Events::SetIsEnabled)

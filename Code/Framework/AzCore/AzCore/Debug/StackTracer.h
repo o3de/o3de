@@ -37,7 +37,7 @@ namespace AZ
             *                      which will just hide this function itself.
             * \param nativeThread pointer to thread native type to capture a stack other than the currently running stack
             */
-            static unsigned int Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount = 0, void* nativeThread = 0);
+            static unsigned int Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount = 0, void* nativeThread = nullptr);
         };
 
         class AZCORE_API StackConverter

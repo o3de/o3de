@@ -53,6 +53,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
+#include <AzToolsFramework/ViewportSnapping/ViewportSnappingSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
@@ -116,6 +117,7 @@ namespace AzToolsFramework
             AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor(),
             AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor(),
             AzToolsFramework::EditorInteractionSystemComponent::CreateDescriptor(),
+            AzToolsFramework::ViewportSnapping::ViewportSnappingSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorComponentAPIComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorLevelComponentAPIComponent::CreateDescriptor(),
             AzToolsFramework::Components::PropertyTreeEditorComponent::CreateDescriptor(),

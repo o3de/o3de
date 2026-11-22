@@ -34,8 +34,6 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-#include "PluginManager.h"
-#include "Util/3DConnexionDriver.h"
 #include "UiAnimViewNewSequenceDialog.h"
 #include "UiAnimViewCurveEditor.h"
 
@@ -73,7 +71,7 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUiAnimViewDialog* CUiAnimViewDialog::s_pUiAnimViewDialog = NULL;
+CUiAnimViewDialog* CUiAnimViewDialog::s_pUiAnimViewDialog = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 class CUiAnimViewExpanderWatcher
@@ -191,7 +189,7 @@ CUiAnimViewDialog::~CUiAnimViewDialog()
         m_findDlg->deleteLater();
         m_findDlg = nullptr;
     }
-    s_pUiAnimViewDialog = 0;
+    s_pUiAnimViewDialog = nullptr;
 
     const CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
     CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByName(m_currentSequenceName);
@@ -287,8 +285,8 @@ bool CUiAnimViewDialog::OnInitDialog()
     QString cursorPosText = QString("0.000(%1fps)").arg(FloatToIntRet(m_wndCurveEditor->GetFPS()));
     m_cursorPos->setText(cursorPosText);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
-    // EXCEPTION: OCX Property Pages should return FALSE
+    return true;  // return true unless you set the focus to a control
+    // EXCEPTION: OCX Property Pages should return false
 }
 
 void CUiAnimViewDialog::InitToolbar()

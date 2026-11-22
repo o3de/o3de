@@ -220,7 +220,7 @@ void ImGuiManager::Initialize()
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
 
-    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::NavigationHome;
+    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::PunctuationTilde;
     if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
     {
         AZStd::string consoleKeyName;
@@ -919,7 +919,7 @@ void ImGuiManager::RegisterImGuiCVARs()
     }
 
     // Register CVARs
-    gEnv->pConsole->RegisterString(ImGuiCVARNames::s_imgui_AutoEnableComponents_Name, 0, VF_DEV_ONLY, CVARHELP("Enable ImGui Components by search string, as they are added to the Scene. Comma delimited list."), OnAutoEnableComponentsCBFunc);
+    gEnv->pConsole->RegisterString(ImGuiCVARNames::s_imgui_AutoEnableComponents_Name, nullptr, VF_DEV_ONLY, CVARHELP("Enable ImGui Components by search string, as they are added to the Scene. Comma delimited list."), OnAutoEnableComponentsCBFunc);
     gEnv->pConsole->RegisterInt(ImGuiCVARNames::s_imgui_EnableImGui_Name, 0, VF_DEV_ONLY, CVARHELP("Enable ImGui on Startup"), OnShowImGuiCBFunc);
     gEnv->pConsole->RegisterInt(ImGuiCVARNames::s_imgui_EnableEntityOutliner_Name, 0, VF_DEV_ONLY, CVARHELP("Enable ImGui Entity Outliner on Startup"), OnEnableEntityOutlinerCBFunc);
     gEnv->pConsole->RegisterInt(ImGuiCVARNames::s_imgui_EnableCameraMonitor_Name, 0, VF_DEV_ONLY, CVARHELP("Enable ImGui Camera Monitor on Startup"), OnEnableCameraMonitorCBFunc);

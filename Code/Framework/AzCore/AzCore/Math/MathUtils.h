@@ -452,6 +452,22 @@ namespace AZ
         }
     }
 
+    //! Returns the successive critically dampted value and updated rate..
+    AZ_MATH_INLINE AZStd::tuple<float, float> SmoothCriticallyDamped(float& value, float& valueRate, float timeDelta, const float& target, float smoothTime)
+    {
+        SmoothCriticallyDamped<float>(value, valueRate, timeDelta, target, smoothTime);
+        return AZStd::make_tuple(value, valueRate);
+    }
+
+    //! Returns a smooth S-curve interpolation between 2 values.
+    template<typename T>
+    AZ_MATH_INLINE T SmoothStep(const T& a, const T& b, float t)
+    {
+        t = GetClamp(t, 0.f, 1.f);
+        float smoothT = t * t * (3.f - 2.f * t);
+        return a + (b - a) * smoothT;
+    }
+
     //! Returns true if the number provided is even.
     template<typename T>
     constexpr AZStd::enable_if_t<AZStd::is_integral<T>::value, bool> IsEven(T a)

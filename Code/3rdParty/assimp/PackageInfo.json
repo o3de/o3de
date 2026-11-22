@@ -1,0 +1,12 @@
+{
+    "PackageName": "assimp",
+    "Version": "6.0.6",
+    "URL": "https://github.com/assimp/assimp",
+    "License": "Custom BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/assimp/assimp/archive/refs/tags/v6.0.6.tar.gz",
+        "Revision": "a79ff6bbce54d3e01186a918dc6374ed55317426",
+        "SHA256": "5f7ed412b76575621df0525a762b31da5874afff352b3a890c6308db4ac7204c"
+    }
+}

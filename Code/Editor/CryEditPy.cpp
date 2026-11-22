@@ -227,11 +227,6 @@ namespace
         return tempLevelPath.c_str();
     }
 
-    void Command_LoadPlugins()
-    {
-        GetIEditor()->LoadPlugins();
-    }
-
     AZ::Vector3 PyGetCurrentViewPosition()
     {
         if (const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get())
@@ -428,7 +423,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_current_level_name", PyGetCurrentLevelName, nullptr, "Gets the name of the current level."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_path", PyGetCurrentLevelPath, nullptr, "Gets the fully specified path of the current level."));
 
-            addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));

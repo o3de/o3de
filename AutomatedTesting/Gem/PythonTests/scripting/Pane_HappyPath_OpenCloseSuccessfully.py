@@ -47,12 +47,12 @@ def Pane_HappyPath_OpenCloseSuccessfully():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
 
     PANE_WIDGETS = ("NodePalette", "VariableManager")
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

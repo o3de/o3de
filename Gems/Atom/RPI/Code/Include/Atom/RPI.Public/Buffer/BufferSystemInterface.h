@@ -14,8 +14,8 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
 
-#include <AtomCore/Instance/Instance.h>
-#include <AtomCore/Instance/InstanceId.h>
+#include <AzCore/Instance/Instance.h>
+#include <AzCore/Instance/InstanceId.h>
 #include <AzCore/Interface/Interface.h>
 
 namespace AZ

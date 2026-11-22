@@ -37,12 +37,12 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(0, &EditorDebugDrawSphereComponent::m_element,
+                    ->DataElement(nullptr, &EditorDebugDrawSphereComponent::m_element,
                         QT_TRANSLATE_NOOP("DebugDraw", "Sphere element settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Settings for the sphere element."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawSphereComponent::OnPropertyUpdate)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorDebugDrawSphereComponent::m_settings,
+                    ->DataElement(nullptr, &EditorDebugDrawSphereComponent::m_settings,
                         QT_TRANSLATE_NOOP("DebugDraw", "Visibility settings"),
                         QT_TRANSLATE_NOOP("DebugDraw", "Common settings for DebugDraw components."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawSphereComponent::OnPropertyUpdate)

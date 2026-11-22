@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
 #include <QLineEdit>
@@ -499,16 +500,20 @@ namespace AzQtComponents
 
     void LineEdit::setExternalError(QLineEdit* lineEdit, bool hasExternalError)
     {
-        lineEdit->setProperty(HasExternalError, hasExternalError);
-        lineEdit->style()->unpolish(lineEdit);
-        lineEdit->style()->polish(lineEdit);
+        if (AzQtComponents::StyleManager::setObjectProperty(lineEdit, HasExternalError, hasExternalError))
+        {
+            lineEdit->style()->unpolish(lineEdit);
+            lineEdit->style()->polish(lineEdit);
+        }
     }
 
     void LineEdit::setErrorIconEnabled(QLineEdit* lineEdit, bool enabled)
     {
-        lineEdit->setProperty(ErrorIconEnabled, enabled);
-        lineEdit->style()->unpolish(lineEdit);
-        lineEdit->style()->polish(lineEdit);
+        if (AzQtComponents::StyleManager::setObjectProperty(lineEdit, ErrorIconEnabled, enabled))
+        {
+            lineEdit->style()->unpolish(lineEdit);
+            lineEdit->style()->polish(lineEdit);
+        }
     }
 
     bool LineEdit::errorIconEnabled(QLineEdit* lineEdit)

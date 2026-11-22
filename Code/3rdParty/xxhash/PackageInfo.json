@@ -1,0 +1,12 @@
+{
+    "PackageName": "xxHash",
+    "Version": "0.8.4",
+    "URL": "https://github.com/Cyan4973/xxHash",
+    "License": "BSD-2-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.4.tar.gz",
+        "Revision": "c87183a77d67f7d37e3d2d1b7eaac5e7c695e4f0",
+        "SHA256": "5738270935e7c3d38a79b3adf7c9692566ce7895a25f67de43ad52ab504acd32"
+    }
+}

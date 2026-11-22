@@ -1,0 +1,49 @@
+ShaderResourceGroupSemantic ExampleBinding { FrequencyId = 0; };
+
+ShaderResourceGroup ExampleSRG : ExampleBinding
+{
+    // This sample structure used to test packing rules is taken from here:
+    // https://github.com/Microsoft/DirectXShaderCompiler/blob/master/docs/SPIR-V.rst
+    struct S {
+        float3 f;
+    };
+
+    // Packing offsets can be veryfied here:
+    // http://shader-playground.timjones.io/e61c324359d57bc5914a090be821bee4
+    // Packing  offset                        // ConstantBuffer         StructuredBuffer       RelaxedStd140
+    struct T {
+                  float    a_float;           // 0                      0                      0
+                  float3   b_float3;          // 4                      4                      4
+                  S        c_S_float3;        // 16                     16                     16
+                  float2x3 d_float2x3;        // 32                     28                     32
+        row_major float2x3 e_float2x3;        // 80                     52                     80
+                  int      f_int_3[3];        // 112                    76                     112
+                  float2   g_float2_2[2];     // 160                    88                     160
+                  S        h_S_float3[2];     // 192                    104                    192
+                  float    i_float[3][3];     // 224                    128                    224
+                  S        j_S_float3[2][2];  // 368                    164                    368
+    };                                        // Size is 428            Size is 212            Size is 432
+    
+     struct Light {     // 144 bytes  Source : https://developer.nvidia.com/content/how-about-constant-buffers
+        float3 Position;
+        float Radius;
+        float4 Color;
+        float3 AttenuationParams;
+        uint Type;
+        float4 SpotDirectionAndAngle;
+        float4 ShadowRect;
+        float4x4 ShadowMatrix;
+    };
+
+    T m_T;
+    ConstantBuffer<T> m_CB_a;           // stride = 272 (relaxed) or 428 (strict)
+    ConstantBuffer<T> m_CB_b[2];        // stride = 272 (relaxed) or 428 (strict)
+    ConstantBuffer<Light> m_CB_c;       // stride = 144
+    Buffer<float4> m_B_d;               // stride =  16
+    StructuredBuffer<S> m_SB_e;         // stride =  12
+    Buffer<float2> m_B_f[2];            // stride =   8
+    StructuredBuffer<S> m_SB_g[2];      // stride =  12
+
+    TextureCube m_texCube1;             // stride =  16 (default)
+    Texture2D<float3> m_tex2d1;         // stride =  12
+};

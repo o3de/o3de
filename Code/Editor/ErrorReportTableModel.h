@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ERRORREPORTTABLEMODEL_H
-#define ERRORREPORTTABLEMODEL_H
+
+#pragma once
 
 #include "Util/AbstractSortModel.h"
 
@@ -41,7 +41,7 @@ public:
         SeverityRole = Qt::UserRole + 1
     };
 
-    CErrorReportTableModel(QObject* parent = 0);
+    CErrorReportTableModel(QObject* parent = nullptr);
     ~CErrorReportTableModel();
 
     void setErrorReport(CErrorReport* report);
@@ -66,5 +66,3 @@ private:
 };
 
 Q_DECLARE_OPAQUE_POINTER(const CErrorRecord*)
-
-#endif

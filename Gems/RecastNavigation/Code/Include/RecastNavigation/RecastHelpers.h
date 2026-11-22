@@ -10,7 +10,9 @@
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/math.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -92,4 +94,25 @@ namespace RecastNavigation
         unsigned char* m_data = nullptr;
         int m_size = 0;
     };
+
+    //! Origin of the tile grid, shifted so any tile over-extension is even across all sides; the Detour mesh and every tile must share it.
+    inline AZ::Vector3 GetAdjustedOriginBasedOnTileSize(const AZ::Aabb& worldVolume, float tileSize)
+    {
+        if (tileSize <= 0.f)
+        {
+            AZ_Warning("Recast Navigation", false, "Tile size is invalid. It should be a positive number.");
+            return AZ::Vector3::CreateZero();
+        }
+
+        AZ::Vector3 origin = worldVolume.GetMin();
+        const AZ::Vector3& extents = worldVolume.GetExtents();
+
+        const float tileOverExtensionOnX = AZStd::ceil(extents.GetX() / tileSize) * tileSize - extents.GetX();
+        origin.SetX(origin.GetX() - tileOverExtensionOnX / 2.f);
+
+        const float tileOverExtensionOnY = AZStd::ceil(extents.GetY() / tileSize) * tileSize - extents.GetY();
+        origin.SetY(origin.GetY() - tileOverExtensionOnY / 2.f);
+
+        return origin;
+    }
 } // namespace RecastNavigation

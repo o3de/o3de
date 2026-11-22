@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PLATFORMCONFIGURATION_H
-#define PLATFORMCONFIGURATION_H
+
+#pragma once
 
 #include <QList>
 #include <QString>
@@ -334,5 +334,3 @@ namespace AssetProcessor
         mutable AZStd::string m_fatalError;
     };
 } // end namespace AssetProcessor
-
-#endif // PLATFORMCONFIGURATION_H

@@ -47,7 +47,7 @@ namespace StartingPointInput
                         QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Bindings"),
                         QT_TRANSLATE_NOOP("StartingPointInput", "Holds InputEventBindings"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(0, &InputEventBindings::m_inputEventGroups,
+                        ->DataElement(nullptr, &InputEventBindings::m_inputEventGroups,
                             QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Groups"),
                             QT_TRANSLATE_NOOP("StartingPointInput", "Input Event Groups"));
                 }
@@ -117,7 +117,7 @@ namespace StartingPointInput
                 {
                     edit->Class<InputEventBindingsAsset>(
                         QT_TRANSLATE_NOOP("StartingPointInput", "Input to Event Bindings Asset"), "")
-                        ->DataElement(0, &InputEventBindingsAsset::m_bindings,
+                        ->DataElement(nullptr, &InputEventBindingsAsset::m_bindings,
                             QT_TRANSLATE_NOOP("StartingPointInput", "Bindings"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ;

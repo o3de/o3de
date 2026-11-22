@@ -17,7 +17,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::Atom_RPI.Public
-            AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
 )
@@ -68,8 +67,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::${gem_name}.Static
                 Gem::AtomToolsFramework.Static
-        RUNTIME_DEPENDENCIES
-            Legacy::EditorCommon
     )
 
     # tools and builders use the above module.

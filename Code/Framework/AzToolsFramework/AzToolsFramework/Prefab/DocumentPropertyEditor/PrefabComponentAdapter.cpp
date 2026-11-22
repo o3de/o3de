@@ -41,6 +41,14 @@ namespace AzToolsFramework::Prefab
 
     void PrefabComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
+        if (!componentInstance)
+        {
+            // the component we were looking at is destroyed - stop performing logic, a refresh is coming soon.
+            m_entityAlias.clear();
+            m_componentAlias.clear();
+            ClearValue();
+            return;
+        }
         auto owningInstance = AZ::Interface<InstanceEntityMapperInterface>::Get()->FindOwningInstance(
             componentInstance->GetEntityId());
         AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");

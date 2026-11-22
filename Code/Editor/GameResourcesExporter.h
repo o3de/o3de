@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_GAMERESOURCESEXPORTER_H
-#define CRYINCLUDE_EDITOR_GAMERESOURCESEXPORTER_H
 #pragma once
 
 class CUsedResources;
@@ -40,6 +37,3 @@ private:
     void GetFilesFromVarBlock(CVarBlock* pVB);
     void GetFilesFromVariable(IVariable* pVar);
 };
-
-#endif // CRYINCLUDE_EDITOR_GAMERESOURCESEXPORTER_H
-

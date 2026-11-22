@@ -119,7 +119,6 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, PrepareRequest_UnsupportedRequestIsForwarded_RequestIsForwarded)
     {
         using ::testing::_;
-        using ::testing::Invoke;
 
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
@@ -128,7 +127,7 @@ namespace AZ::IO
         FileRequest* request = this->CreateUnknownRequest();
         EXPECT_CALL(*mock, PrepareRequest(_))
             .Times(1)
-            .WillOnce(Invoke([request](FileRequest* forwarded) { EXPECT_EQ(request, forwarded); }));
+            .WillOnce([request](FileRequest* forwarded) { EXPECT_EQ(request, forwarded); });
 
         entry.PrepareRequest(request);
 
@@ -138,7 +137,6 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, QueueRequest_UnsupportedRequestIsForwarded_RequestIsForwarded)
     {
         using ::testing::_;
-        using ::testing::Invoke;
 
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
@@ -147,7 +145,7 @@ namespace AZ::IO
         FileRequest* request = this->CreateUnknownRequest();
         EXPECT_CALL(*mock, QueueRequest(_))
             .Times(1)
-            .WillOnce(Invoke([request](FileRequest* forwarded) { EXPECT_EQ(request, forwarded); }));
+            .WillOnce([request](FileRequest* forwarded) { EXPECT_EQ(request, forwarded); });
 
         entry.QueueRequest(request);
 

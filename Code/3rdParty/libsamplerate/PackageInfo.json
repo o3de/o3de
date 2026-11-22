@@ -1,0 +1,12 @@
+{
+    "PackageName": "libsamplerate",
+    "Version": "0.2.2",
+    "URL": "https://github.com/libsndfile/libsamplerate",
+    "License": "BSD-2-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/libsndfile/libsamplerate/archive/refs/tags/0.2.2.tar.gz",
+        "Revision": "c96f5e3de9c4488f4e6c97f59f5245f22fda22f7",
+        "SHA256": "16e881487f184250deb4fcb60432d7556ab12cb58caea71ef23960aec6c0405a"
+    }
+}

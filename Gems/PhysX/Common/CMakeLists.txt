@@ -6,11 +6,9 @@
 #
 #
 
-add_subdirectory(Code)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-
 o3de_gem_setup("PhysXCommon")
+
+add_subdirectory(Code)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)

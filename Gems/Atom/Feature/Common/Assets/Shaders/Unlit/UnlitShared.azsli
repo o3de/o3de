@@ -11,16 +11,12 @@
 #include <viewsrg_all.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/InstancedTransforms.azsli>
-#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/AlphaInput.azsli>
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
 
 option bool o_baseColor_useTexture = false;
 option bool o_opacity_useTexture = false;
 option bool o_billboardEnabled = false;
-
-ShaderResourceGroup UnlitDrawSrg : SRG_PerDraw
-{
-}
 
 ShaderResourceGroup UnlitColorSrg : SRG_PerMaterial
 {
@@ -35,8 +31,12 @@ ShaderResourceGroup UnlitColorSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
     };
-    float3x3 m_uvMatrix;
-    float2 m_uvMatrixPadding;
+    float4 m_uvMatrixRow0;
+    float4 m_uvMatrixRow1;
+    float4 m_uvMatrixRow2;
+    float4 m_uvMatrixInverseRow0;
+    float4 m_uvMatrixInverseRow1;
+    float4 m_uvMatrixInverseRow2;
     uint m_baseColorMapUvIndex;
     Texture2D m_opacityMap;
     uint m_opacityMapUvIndex;
@@ -57,9 +57,12 @@ struct VertexShaderOutput
     float2 m_uvs[2] : TEXCOORD0;
 };
 
-float2 TransformUv(float2 uv, uint uvIndex)
+float2 TransformUv0(float2 uv)
 {
-    return uvIndex == 0 ? mul(UnlitColorSrg::m_uvMatrix, float3(uv, 1.0)).xy : uv;
+    const float3 uvHomogeneous = float3(uv, 1.0);
+    return float2(
+        dot(UnlitColorSrg::m_uvMatrixRow0.xyz, uvHomogeneous),
+        dot(UnlitColorSrg::m_uvMatrixRow1.xyz, uvHomogeneous));
 }
 
 float3 CalculateBillboardPosition(float4x4 objectToWorld, float3 localPosition)
@@ -91,21 +94,24 @@ VertexShaderOutput TransformVertex(VertexShaderInput IN, uint instanceId)
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 
-    OUT.m_uvs[0] = TransformUv(IN.m_uv0, 0);
-    OUT.m_uvs[1] = TransformUv(IN.m_uv1, 1);
+    // By design, only UV0 supports material UV transforms.
+    OUT.m_uvs[0] = TransformUv0(IN.m_uv0);
+    OUT.m_uvs[1] = IN.m_uv1;
 
     return OUT;
 }
 
-float4 SampleBaseColorTexture(VertexShaderOutput IN)
+float4 EvaluateBaseColor(VertexShaderOutput IN)
 {
+    float4 baseColor = float4(UnlitColorSrg::m_unlitColor, 1.0);
+
     if (!o_baseColor_useTexture)
     {
-        return float4(1.0, 1.0, 1.0, 1.0);
+        return baseColor;
     }
 
     const float2 baseColorUv = IN.m_uvs[UnlitColorSrg::m_baseColorMapUvIndex];
-    return UnlitColorSrg::m_baseColorTexture.Sample(UnlitColorSrg::m_textureSampler, baseColorUv);
+    return baseColor * UnlitColorSrg::m_baseColorTexture.Sample(UnlitColorSrg::m_textureSampler, baseColorUv);
 }
 
 real ResolveOpacityAlpha(VertexShaderOutput IN, real baseColorAlpha = 1.0)
@@ -113,7 +119,7 @@ real ResolveOpacityAlpha(VertexShaderOutput IN, real baseColorAlpha = 1.0)
     switch (o_opacity_source)
     {
     case OpacitySource::Packed:
-        return o_baseColor_useTexture ? baseColorAlpha : 1.0;
+        return baseColorAlpha;
     case OpacitySource::Split:
         if (o_opacity_useTexture)
         {

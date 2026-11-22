@@ -56,15 +56,16 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
     {
+        drawable.layer.displaySyncEnabled = syncInterval != 0;
         bool framePresented = false;
         
         //seconds per frame (1/refreshrate) * num frames (sync interval)
-        float presentAfterMinimumDuration = syncInterval / refreshRate;
-        
+        float presentAfterMinimumDuration = refreshRate > 0 ? syncInterval / refreshRate : 0;
+
 #if defined(__MAC_10_15_4)
         if(@available(macOS 10.15.4, *))
         {
-            if(presentAfterMinimumDuration > 0.0f)
+            if (syncInterval > 1 && presentAfterMinimumDuration > 0.0f)
             {
                 [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
                 framePresented = true;
@@ -76,6 +77,17 @@ namespace Platform
         {
             [mtlCommandBuffer presentDrawable:drawable];
         }
+    }
+
+    uint32_t GetMaximumVerticalSyncInterval()
+    {
+#if defined(__MAC_10_15_4)
+        if (@available(macOS 10.15.4, *))
+        {
+            return UINT32_MAX;
+        }
+#endif
+        return 1;
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)

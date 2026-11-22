@@ -9,7 +9,7 @@
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AzCore/Instance/InstanceDatabase.h>
 #include <OpenParticleSystem/ParticleComponent.h>
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 #include <OpenParticleSystem/SystemComponent.h>

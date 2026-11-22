@@ -228,8 +228,6 @@ set(FILES
     res/water.bmp
     res/work_in_progress_icon.ico
     res/MannFileManagerImageList.bmp
-    PluginManager.cpp
-    PluginManager.h
     IEditor.h
     IEditorImpl.cpp
     IEditorImpl.h
@@ -263,7 +261,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IKeyTimeSet.h
-    Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
@@ -291,6 +288,86 @@ set(FILES
     AssetImporter/UI/SelectDestinationDialog.cpp
     AssetImporter/UI/SelectDestinationDialog.h
     AssetImporter/UI/SelectDestinationDialog.ui
+    AssetImporter/AssetBrowserContextProvider.cpp
+    AssetImporter/AssetBrowserContextProvider.h
+    AssetImporter/AssetImporter.qrc
+    AssetImporter/AssetImporterDocument.cpp
+    AssetImporter/AssetImporterDocument.h
+    AssetImporter/AssetImporterTool.cpp
+    AssetImporter/AssetImporterTool.h
+    AssetImporter/AssetImporterWindow.cpp
+    AssetImporter/AssetImporterWindow.h
+    AssetImporter/AssetImporterWindow.ui
+    AssetImporter/ImporterRootDisplay.cpp
+    AssetImporter/ImporterRootDisplay.h
+    AssetImporter/ImporterRootDisplay.ui
+    AssetImporter/SceneSerializationHandler.cpp
+    AssetImporter/SceneSerializationHandler.h
+    AssetImporter/ActionOutput.cpp
+    AssetImporter/ActionOutput.h
+    AssetImporter/SaveUtilities/AsyncSaveRunner.cpp
+    AssetImporter/SaveUtilities/AsyncSaveRunner.h
+    ComponentEntityEditor/ComponentEntityEditorTool.h
+    ComponentEntityEditor/ComponentEntityEditorTool.cpp
+    ComponentEntityEditor/ContextMenuHandlers.h
+    ComponentEntityEditor/ContextMenuHandlers.cpp
+    ComponentEntityEditor/SandboxIntegration.h
+    ComponentEntityEditor/SandboxIntegration.cpp
+    ComponentEntityEditor/UI/QComponentEntityEditorMainWindow.h
+    ComponentEntityEditor/UI/QComponentEntityEditorMainWindow.cpp
+    ComponentEntityEditor/UI/QComponentEntityEditorOutlinerWindow.h
+    ComponentEntityEditor/UI/QComponentEntityEditorOutlinerWindow.cpp
+    ComponentEntityEditor/UI/AssetCatalogModel.h
+    ComponentEntityEditor/UI/AssetCatalogModel.cpp
+    ComponentEntityEditor/UI/ComponentPalette/ComponentPaletteSettings.h
+    ProjectSettingsTool/ProjectSettingsEditorTool.cpp
+    ProjectSettingsTool/ProjectSettingsEditorTool.h
+    ProjectSettingsTool/DefaultImageValidator.cpp
+    ProjectSettingsTool/DefaultImageValidator.h
+    ProjectSettingsTool/FunctorValidator.cpp
+    ProjectSettingsTool/FunctorValidator.h
+    ProjectSettingsTool/LastPathBus.h
+    ProjectSettingsTool/Platforms.h
+    ProjectSettingsTool/PlatformSettings.h
+    ProjectSettingsTool/PlatformSettings_Android.cpp
+    ProjectSettingsTool/PlatformSettings_Android.h
+    ProjectSettingsTool/PlatformSettings_Base.cpp
+    ProjectSettingsTool/PlatformSettings_Base.h
+    ProjectSettingsTool/PlatformSettings_common.h
+    ProjectSettingsTool/PlatformSettings_Ios.cpp
+    ProjectSettingsTool/PlatformSettings_Ios.h
+    ProjectSettingsTool/PlatformSettings_Windows.cpp
+    ProjectSettingsTool/PlatformSettings_Windows.h
+    ProjectSettingsTool/PlistDictionary.cpp
+    ProjectSettingsTool/PlistDictionary.h
+    ProjectSettingsTool/ProjectSettingsContainer.cpp
+    ProjectSettingsTool/ProjectSettingsContainer.h
+    ProjectSettingsTool/ProjectSettingsSerialization.cpp
+    ProjectSettingsTool/ProjectSettingsSerialization.h
+    ProjectSettingsTool/ProjectSettingsTool.qrc
+    ProjectSettingsTool/ProjectSettingsToolWidget.ui
+    ProjectSettingsTool/ProjectSettingsToolWindow.cpp
+    ProjectSettingsTool/ProjectSettingsToolWindow.h
+    ProjectSettingsTool/ProjectSettingsValidator.cpp
+    ProjectSettingsTool/ProjectSettingsValidator.h
+    ProjectSettingsTool/PropertyFileSelect.cpp
+    ProjectSettingsTool/PropertyFileSelect.h
+    ProjectSettingsTool/PropertyFuncValBrowseEdit.cpp
+    ProjectSettingsTool/PropertyFuncValBrowseEdit.h
+    ProjectSettingsTool/PropertyFuncValLineEdit.cpp
+    ProjectSettingsTool/PropertyFuncValLineEdit.h
+    ProjectSettingsTool/PropertyImagePreview.cpp
+    ProjectSettingsTool/PropertyImagePreview.h
+    ProjectSettingsTool/PropertyLinked.cpp
+    ProjectSettingsTool/PropertyLinked.h
+    ProjectSettingsTool/Utils.cpp
+    ProjectSettingsTool/Utils.h
+    ProjectSettingsTool/ValidationHandler.cpp
+    ProjectSettingsTool/ValidationHandler.h
+    ProjectSettingsTool/ValidatorBus.h
+    ProjectSettingsTool/Validators.cpp
+    ProjectSettingsTool/Validators.h
+    ProjectSettingsTool/Validators_impl.h
     AssetEditor/AssetEditorRequestsHandler.cpp
     AssetEditor/AssetEditorRequestsHandler.h
     AssetEditor/AssetEditorWindow.cpp
@@ -578,8 +655,6 @@ set(FILES
     Util/ColumnGroupTreeView.cpp
     Util/ModalWindowDismisser.h
     Util/ModalWindowDismisser.cpp
-    Util/3DConnexionDriver.cpp
-    Util/3DConnexionDriver.h
     Util/FileChangeMonitor.cpp
     Util/FileChangeMonitor.h
     Util/ImageGif.cpp

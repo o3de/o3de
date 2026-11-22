@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_EDITOR_UTILS_REFLECTEDVARWRAPPER_H
-#define CRYINCLUDE_EDITOR_UTILS_REFLECTEDVARWRAPPER_H
 #pragma once
 
 #include "Util/Variable.h"
@@ -263,6 +261,3 @@ public:
 private:
     QScopedPointer<CReflectedVarMotion > m_reflectedVar;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_UTILS_REFLECTEDVARWRAPPER_H

@@ -21,6 +21,14 @@ namespace AZ::DocumentPropertyEditor
             });
         m_sourceAdapter->ConnectResetHandler(m_resetHandler);
 
+        m_resetQueuedHandler = DocumentAdapter::ResetQueuedEvent::Handler(
+            [this]()
+            {
+                // forward this up the chain so that any views above us know that this has happened. 
+                NotifyResetQueued();
+            });
+        m_sourceAdapter->ConnectResetQueuedHandler(m_resetQueuedHandler);
+
         m_changedHandler = DocumentAdapter::ChangedEvent::Handler(
             [this](const Dom::Patch& patch)
             {
@@ -78,12 +86,13 @@ namespace AZ::DocumentPropertyEditor
 
     void MetaAdapter::ExecuteQueuedReset()
     {
-        DocumentAdapter::ExecuteQueuedReset();
         // if we're told to execute a queued reset, we need to forward that to our source.
         if (m_sourceAdapter)
         {
             m_sourceAdapter->ExecuteQueuedReset();
         }
+        // and then update ourselves since we're probably some sort of filtered map or view of the source we just reset.
+        DocumentAdapter::ExecuteQueuedReset();
     }
 
 } // namespace AZ::DocumentPropertyEditor

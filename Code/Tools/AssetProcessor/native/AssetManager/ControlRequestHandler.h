@@ -24,7 +24,7 @@ class ControlRequestHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit ControlRequestHandler(ApplicationManagerBase* parent = 0);
+    explicit ControlRequestHandler(ApplicationManagerBase* parent = nullptr);
     ~ControlRequestHandler();
 
 public slots:

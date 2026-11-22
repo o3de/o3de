@@ -15,7 +15,7 @@
 #include <PostProcess/Bloom/BloomSettings.h>
 #include <PostProcess/DepthOfField/DepthOfFieldSettings.h>
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
-#include <PostProcess/Ssao/SsaoSettings.h>
+#include <PostProcess/AmbientOcclusion/AoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
 #include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
@@ -81,6 +81,11 @@ namespace AZ
             // (More detail: The PostProcessFeatureProcessor will blend together PostProcessSettings based on application
             // frequency (Level, Volume, Camera) and per-setting override values. Simulate will be called on those combined settings)
             void Simulate(float deltaTime);
+
+            // Clears all owned sub-settings. Called from the PostProcessFeatureProcessor when rebuilding
+            // the aggregated level settings, so that sub-settings whose provider was removed do not
+            // linger in the blended result.
+            void Reset();
 
             // Auto-gen post process members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>

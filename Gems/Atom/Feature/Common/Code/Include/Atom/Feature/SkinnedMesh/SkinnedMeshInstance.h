@@ -12,7 +12,7 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 #include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 #include <Atom/RPI.Public/Model/Model.h>
-#include <AtomCore/Instance/InstanceData.h>
+#include <AzCore/Instance/InstanceData.h>
 
 namespace AZ
 {

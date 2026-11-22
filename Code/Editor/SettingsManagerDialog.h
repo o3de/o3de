@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_SETTINGSMANAGERDIALOG_H
-#define CRYINCLUDE_EDITOR_SETTINGSMANAGERDIALOG_H
-
 #pragma once
 
 #include <AzCore/Math/Guid.h>
@@ -52,5 +48,3 @@ private:
 
     QScopedPointer<Ui::SettingsManagerDialog> ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_SETTINGSMANAGERDIALOG_H

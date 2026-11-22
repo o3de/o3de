@@ -332,6 +332,18 @@ namespace AZ
         return Vector3(Simd::Vec3::Madd(GetSimdValue(), Simd::Vec3::SplatIndex1(sinCos), relVecSinTheta));
     }
 
+    AZ_MATH_INLINE Vector3 Vector3::SmoothCriticallyDamped(Vector3& valueRate, float timeDelta, const Vector3& target, float smoothTime) const
+    {
+        Vector3 result = *this;
+        AZ::SmoothCriticallyDamped(result, valueRate, timeDelta, target, smoothTime);
+        return result;
+    }
+
+    AZ_MATH_INLINE Vector3 Vector3::SmoothStep(const Vector3& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
     AZ_MATH_INLINE Vector3 Vector3::Nlerp(const Vector3& dest, float t) const
     {
         return Lerp(dest, t).GetNormalizedSafe(Constants::Tolerance);

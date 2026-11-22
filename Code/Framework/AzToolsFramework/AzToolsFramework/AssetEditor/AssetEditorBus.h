@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ::Data
@@ -67,6 +68,8 @@ namespace AzToolsFramework
             virtual void OpenAssetEditor(const AZ::Data::Asset<AZ::Data::AssetData>& asset) = 0;
             //! Open Asset Editor (if it is not already open) and load asset by id
             virtual void OpenAssetEditorById(const AZ::Data::AssetId assetId) = 0;
+            //! Open Asset Editor (if it is not already open) and load asset by source path (absolute or relative to a scan folder, like Open Recent)
+            virtual void OpenAssetEditorByPath(const AZStd::string& path) = 0;
         };
         using AssetEditorRequestsBus = AZ::EBus<AssetEditorRequests>;
 
@@ -102,6 +105,8 @@ namespace AzToolsFramework
             virtual void OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset) = 0;
             //! Opens the asset provided (by id) in the currently open Asset Editor window
             virtual void OpenAssetById(const AZ::Data::AssetId assetId) = 0;
+            //! Opens the asset at the source path provided in the currently open Asset Editor window
+            virtual void OpenAssetByPath(const AZStd::string& path) = 0;
         };
         using AssetEditorWidgetRequestsBus = AZ::EBus<AssetEditorWidgetRequests>;
 

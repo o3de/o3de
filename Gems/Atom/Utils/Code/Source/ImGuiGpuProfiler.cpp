@@ -999,86 +999,76 @@ namespace AZ
 
                         if (ImGui::BeginChild(childID.c_str(), ImVec2(areaWidth, 0)))
                         {
-                            // Set column settings.
-                            ImGui::Columns(3, "view", false);
-                            ImGui::SetColumnWidth(0, 340.0f);
-                            ImGui::SetColumnWidth(1, 100.0f);
-
-                            if (m_viewType == ProfilerViewType::Hierarchical)
+                            // Set up a user-resizable 3 column table (drag the column borders to resize).
+                            const ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV;
+                            if (ImGui::BeginTable("view", 3, tableFlags))
                             {
-                                // Set the tab header.
+                                const auto timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
+                                const AZStd::string metricUnitText =
+                                    AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
+
+                                const auto frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
+                                const AZStd::string frameWorkloadViewText =
+                                    AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+
+                                ImGui::TableSetupColumn("Pass Names", ImGuiTableColumnFlags_WidthFixed, 340.0f);
+                                ImGui::TableSetupColumn(metricUnitText.c_str(), ImGuiTableColumnFlags_WidthFixed, 100.0f);
+                                ImGui::TableSetupColumn(frameWorkloadViewText.c_str(), ImGuiTableColumnFlags_WidthStretch);
+
+                                if (m_viewType == ProfilerViewType::Hierarchical)
                                 {
+                                    ImGui::TableNextRow();
+                                    ImGui::TableNextColumn();
                                     ImGui::Text("Pass Names");
-                                    ImGui::NextColumn();
-
-                                    // Render the text depending on the metric unit.
-                                    {
-                                        const int32_t timestampMetricUnitNumeric = static_cast<int32_t>(m_timestampMetricUnit);
-                                        const AZStd::string metricUnitText =
-                                            AZStd::string::format("Time in %s", MetricUnitText[timestampMetricUnitNumeric]);
-                                        ImGui::Text("%s", metricUnitText.c_str());
-                                        ImGui::NextColumn();
-                                    }
-
-                                    // Render the text depending on the metric unit.
-                                    {
-                                        const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                        const AZStd::string frameWorkloadViewText =
-                                            AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
-                                        ImGui::Text("%s", frameWorkloadViewText.c_str());
-                                        ImGui::NextColumn();
-                                    }
+                                    ImGui::TableNextColumn();
+                                    ImGui::Text("%s", metricUnitText.c_str());
+                                    ImGui::TableNextColumn();
+                                    ImGui::Text("%s", frameWorkloadViewText.c_str());
 
                                     ImGui::Separator();
-                                }
 
-                                // Draw the hierarchical view.
-                                DrawHierarchicalView(rootPassEntry, deviceIndex);
-                            }
-                            else if (m_viewType == ProfilerViewType::Flat)
-                            {
-                                // Set the tab header.
+                                    // Draw the hierarchical view.
+                                    DrawHierarchicalView(rootPassEntry, deviceIndex);
+                                }
+                                else if (m_viewType == ProfilerViewType::Flat)
                                 {
                                     // Check whether it should be sorted by name.
-                                    const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                    const auto sortType = static_cast<uint32_t>(m_sortType);
                                     AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
                                     bool sortByName =
                                         (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
                                          (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
                                     AZ_POP_DISABLE_WARNING
 
+                                    ImGui::TableNextRow();
+                                    ImGui::TableNextColumn();
                                     if (ImGui::Selectable("Pass Names", sortByName))
                                     {
                                         ToggleOrSwitchSortType(ProfilerSortType::Alphabetical, ProfilerSortType::AlphabeticalCount);
                                     }
-                                    ImGui::NextColumn();
 
-                                    if (ImGui::Selectable("Time in ms", !sortByName))
+                                    ImGui::TableNextColumn();
+                                    if (ImGui::Selectable(metricUnitText.c_str(), !sortByName))
                                     {
                                         ToggleOrSwitchSortType(ProfilerSortType::Timestamp, ProfilerSortType::TimestampCount);
                                     }
-                                    ImGui::NextColumn();
 
-                                    const int32_t frameWorkloadViewNumeric = static_cast<int32_t>(m_frameWorkloadView);
-                                    const AZStd::string frameWorkloadViewText =
-                                        AZStd::string::format("Frame workload in %s FPS", FrameWorkloadUnit[frameWorkloadViewNumeric]);
+                                    ImGui::TableNextColumn();
                                     ImGui::Text("%s", frameWorkloadViewText.c_str());
-                                    ImGui::NextColumn();
+
+                                    ImGui::Separator();
+
+                                    // Create the sorting buttons.
+                                    SortFlatView();
+                                    DrawFlatView(deviceIndex);
+                                }
+                                else
+                                {
+                                    AZ_Assert(false, "Invalid ViewType.");
                                 }
 
-                                ImGui::Separator();
-
-                                // Create the sorting buttons.
-                                SortFlatView();
-                                DrawFlatView(deviceIndex);
+                                ImGui::EndTable();
                             }
-                            else
-                            {
-                                AZ_Assert(false, "Invalid ViewType.");
-                            }
-
-                            // Set back to default.
-                            ImGui::Columns(1, "view", false);
                         }
                         ImGui::EndChild();
                         ImGui::SameLine();
@@ -1109,26 +1099,23 @@ namespace AZ
 
             const auto drawWorkloadBar = [this](const AZStd::string& entryTime, const PassEntry* entry)
             {
-                ImGui::NextColumn();
+                ImGui::TableNextColumn();
                 if (entry->m_isParent)
                 {
-                    ImGui::NextColumn();
-                    ImGui::NextColumn();
+                    ImGui::TableNextColumn();
                 }
                 else
                 {
                     ImGui::Text("%s", entryTime.c_str());
-                    ImGui::NextColumn();
+                    ImGui::TableNextColumn();
                     DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
-                    ImGui::NextColumn();
                 }
             };
 
             static const auto createHoverMarker = [](const char* text)
             {
                 const ImVec2 textSize = ImGui::CalcTextSize(text);
-                const int32_t passNameColumnIndex = 0;
-                if (textSize.x + ImGui::GetCursorPosX() > ImGui::GetColumnWidth(passNameColumnIndex))
+                if (textSize.x > ImGui::GetContentRegionAvail().x)
                 {
                     GpuProfilerImGuiHelper::HoverMarker(text);
                 }
@@ -1137,6 +1124,8 @@ namespace AZ
             if (entry->m_children.empty() && entry->m_deviceIndex == deviceIndex)
             {
                 // Draw the workload bar when it doesn't have children.
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
                 ImGui::Text("%s", entry->m_name.GetCStr());
                 // Show a HoverMarker if the text is bigger than the column.
                 createHoverMarker(entry->m_name.GetCStr());
@@ -1147,6 +1136,8 @@ namespace AZ
             {
                 // Recursively create another tree node.
                 const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen;
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
                 GpuProfilerImGuiHelper::TreeNode(
                     entry->m_name.GetCStr(),
                     flags,
@@ -1204,12 +1195,13 @@ namespace AZ
                 }
                 const AZStd::string entryTime = FormatTimestampLabel(entry->m_interpolatedTimestampInNanoseconds);
 
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
                 ImGui::Text("%s", entry->m_name.GetCStr());
-                ImGui::NextColumn();
+                ImGui::TableNextColumn();
                 ImGui::Text("%s", entryTime.c_str());
-                ImGui::NextColumn();
+                ImGui::TableNextColumn();
                 DrawFrameWorkloadBar(NormalizeFrameWorkload(entry->m_interpolatedTimestampInNanoseconds));
-                ImGui::NextColumn();
             }
         }
 

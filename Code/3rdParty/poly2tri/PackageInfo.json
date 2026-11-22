@@ -1,0 +1,12 @@
+{
+    "PackageName": "poly2tri",
+    "Version": "4732e46",
+    "URL": "https://github.com/jhasse/poly2tri",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/jhasse/poly2tri/archive/4732e46da88086c6b7b3935a5b4f6f87360062c3.tar.gz",
+        "Revision": "4732e46da88086c6b7b3935a5b4f6f87360062c3",
+        "SHA256": "65df56280d51aec49db0234e26e8b96d7c349324c667a156355d30c9bc0969f8"
+    }
+}

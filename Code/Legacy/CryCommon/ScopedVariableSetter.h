@@ -6,11 +6,7 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_SCOPEDVARIABLESETTER_H
-#define CRYINCLUDE_CRYCOMMON_SCOPEDVARIABLESETTER_H
 #pragma once
-
 
 // The idea of this class is to set the value of a variable in its constructor,
 // and then in the destructor to reset it to its initial value.
@@ -36,5 +32,3 @@ private:
     Value m_oldValue;
     Value& m_variable;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_SCOPEDVARIABLESETTER_H

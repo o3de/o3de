@@ -30,6 +30,8 @@ set(FILES
     Source/Decals/EditorDecalComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
+    Source/GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.h
+    Source/GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp
@@ -84,8 +86,8 @@ set(FILES
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.h
     Source/PostProcess/ExposureControl/EditorExposureControlComponent.cpp
     Source/PostProcess/ExposureControl/EditorExposureControlComponent.h
-    Source/PostProcess/Ssao/EditorSsaoComponent.cpp
-    Source/PostProcess/Ssao/EditorSsaoComponent.h
+    Source/PostProcess/AmbientOcclusion/EditorAoComponent.cpp
+    Source/PostProcess/AmbientOcclusion/EditorAoComponent.h
     Source/PostProcess/LookModification/EditorLookModificationComponent.cpp
     Source/PostProcess/LookModification/EditorLookModificationComponent.h
     Source/PostProcess/RadiusWeightModifier/EditorRadiusWeightModifierComponent.cpp

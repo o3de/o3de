@@ -7,24 +7,22 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 #include "VirtualGamepadButtonComponent.h"
 #include "VirtualGamepadSystemComponent.h"
 #include "VirtualGamepadThumbStickComponent.h"
 
-#include <IGem.h>
-
 namespace VirtualGamepad
 {
     class VirtualGamepadModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
-        AZ_RTTI(VirtualGamepadModule, "{0454CF83-A35E-443B-A9BE-858EBE9C908F}", CryHooksModule);
+        AZ_RTTI(VirtualGamepadModule, "{0454CF83-A35E-443B-A9BE-858EBE9C908F}", AZ::Module);
         AZ_CLASS_ALLOCATOR(VirtualGamepadModule, AZ::SystemAllocator);
 
         VirtualGamepadModule()
-            : CryHooksModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {

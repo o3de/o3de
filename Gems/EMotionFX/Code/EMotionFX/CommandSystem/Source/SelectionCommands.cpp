@@ -166,6 +166,7 @@ namespace CommandSystem
         //  return false;
 
         SelectionList& selection        = GetCommandManager()->GetCurrentSelection();
+        selection.MakeValid();
         const size_t numActors          = EMotionFX::GetActorManager().GetNumActors();
         const size_t numActorInstances  = EMotionFX::GetActorManager().GetNumActorInstances();
         const size_t numMotions         = EMotionFX::GetMotionManager().GetNumMotions();

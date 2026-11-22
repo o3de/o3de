@@ -6,29 +6,24 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_UTIL_FASTLIB_H
-#define CRYINCLUDE_EDITOR_UTIL_FASTLIB_H
 #pragma once
 
-__forceinline int RoundFloatToInt(float fValue)
+AZ_FORCE_INLINE int RoundFloatToInt(float fValue)
 {
     return (int)(fValue + 0.5f);
 }
 
-__forceinline int __stdcall FloatToIntRet(float fValue)
+AZ_FORCE_INLINE int FloatToIntRet(float fValue)
 {
     return (int)(fValue + 0.5f);
 }
 
-__forceinline int ftoi(float fValue)
+AZ_FORCE_INLINE int ftoi(float fValue)
 {
     return (int)(fValue);
 }
 
-__forceinline unsigned int __stdcall ifloor(float fValue)
+AZ_FORCE_INLINE unsigned int ifloor(float fValue)
 {
     return ftoi(floor(fValue));
 }
-
-#endif // CRYINCLUDE_EDITOR_UTIL_FASTLIB_H

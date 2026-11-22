@@ -75,9 +75,9 @@ namespace
 
 //-------------------------------------------------------------------------------------------------
 AZ::FontRenderer::FontRenderer()
-    : m_library(0)
-    , m_face(0)
-    , m_glyph(0)
+    : m_library(nullptr)
+    , m_face(nullptr)
+    , m_glyph(nullptr)
     , m_sizeRatio(IFFontConstants::defaultSizeRatio)
     , m_encoding(AZ_FONT_ENCODING_UNICODE)
     , m_glyphBitmapWidth(0)
@@ -91,8 +91,8 @@ AZ::FontRenderer::~FontRenderer()
     FT_Done_Face(m_face);
     ;
     FT_Done_FreeType(m_library);
-    m_face = NULL;
-    m_library = NULL;
+    m_face = nullptr;
+    m_library = nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ int AZ::FontRenderer::LoadFromFile(const AZStd::string& fileName)
     if (m_face)
     {
         FT_Done_Face(m_face);
-        m_face = 0;
+        m_face = nullptr;
     }
 
     iError = FT_New_Face(m_library, fileName.c_str(), 0, &m_face);
@@ -136,7 +136,7 @@ int AZ::FontRenderer::LoadFromMemory(unsigned char* buffer, int bufferSize)
     if (m_face)
     {
         FT_Done_Face(m_face);
-        m_face = 0;
+        m_face = nullptr;
     }
     iError = FT_New_Memory_Face(m_library, buffer, bufferSize, 0, &m_face);
 
@@ -156,8 +156,8 @@ int AZ::FontRenderer::Release()
     FT_Done_Face(m_face);
     ;
     FT_Done_FreeType(m_library);
-    m_face = NULL;
-    m_library = NULL;
+    m_face = nullptr;
+    m_library = nullptr;
 
     return 1;
 }

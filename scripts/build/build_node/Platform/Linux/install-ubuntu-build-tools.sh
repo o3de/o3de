@@ -103,20 +103,6 @@ else
 fi
 
 #
-# Add the repository for ROS2
-#
-ROS2_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep http://packages.ros.org/ros2/ubuntu | wc -l)
-
-if [ $ROS2_REPO_COUNT -eq 0 ]
-then
-    echo Adding ROS2 Repository
-    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $UBUNTU_DISTRO main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-else
-    echo ROS2 repo already set
-fi
-
-#
 # Finally, update the sources repos
 #
 apt-get update

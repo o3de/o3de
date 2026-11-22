@@ -78,7 +78,7 @@ public:
         CTrackViewNode* m_pNode;
     };
 
-    CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent = 0);
+    CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* parent = nullptr);
     ~CTrackViewNodesCtrl();
 
     void SetTrackViewDialog(CTrackViewDialog* dlg) { m_pTrackViewDialog = dlg; }
@@ -195,8 +195,8 @@ private:
     QCursor m_arrowCursor;
     QCursor m_noIcon;
 
-    UINT m_currentMatchIndex;
-    UINT m_matchCount;
+    unsigned int m_currentMatchIndex;
+    unsigned int m_matchCount;
 
     bool m_bIgnoreNotifications;
     bool m_bNeedReload;

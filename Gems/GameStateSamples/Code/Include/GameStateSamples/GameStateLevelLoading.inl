@@ -42,7 +42,7 @@ namespace GameStateSamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    inline void GameStateLevelLoading::OnSystemEvent(ESystemEvent event, UINT_PTR, UINT_PTR)
+    inline void GameStateLevelLoading::OnSystemEvent(ESystemEvent event, uintptr_t, uintptr_t)
     {
         if (event == ESYSTEM_EVENT_LEVEL_LOAD_END)
         {

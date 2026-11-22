@@ -420,10 +420,10 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditorBegin);
-
-        //cache the current selected entities.
+        // cache the current selected entities.
         ToolsApplicationRequests::Bus::BroadcastResult(m_selectedBeforeStartingGame, &ToolsApplicationRequests::GetSelectedEntities);
+
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditorBegin);
         //deselect entities if selected when entering game mode before deactivating the entities in StartPlayInEditor(...)
         if (!m_selectedBeforeStartingGame.empty())
         {
@@ -455,10 +455,10 @@ namespace AzToolsFramework
             "PrefabEditorEntityOwnershipInterface");
         service->StopPlayInEditor();
 
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStopPlayInEditor);
+        
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, m_selectedBeforeStartingGame);
         m_selectedBeforeStartingGame.clear();
-
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStopPlayInEditor);
     }
 
     //=========================================================================

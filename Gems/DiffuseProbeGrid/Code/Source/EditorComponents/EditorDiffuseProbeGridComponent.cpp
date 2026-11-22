@@ -605,12 +605,10 @@ namespace AZ
             CheckoutSourceTextureFile(probeDataTextureFullPath);
 
             // update the configuration
-            AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid bake");
             configuration.m_bakedIrradianceTextureRelativePath = irradianceTextureRelativePath;
             configuration.m_bakedDistanceTextureRelativePath = distanceTextureRelativePath;
             configuration.m_bakedProbeDataTextureRelativePath = probeDataTextureRelativePath;
-            SetDirty();
-
+            
             // callback for the texture readback
             DiffuseProbeGridBakeTexturesCallback bakeTexturesCallback = [this, irradianceTextureFullPath, distanceTextureFullPath, probeDataTextureFullPath](
                 DiffuseProbeGridTexture irradianceTexture,
@@ -638,6 +636,9 @@ namespace AZ
                     AZ_Assert(outcome.IsSuccess(), "Failed to write ProbeData texture .dds file [%s]", probeDataTextureFullPath.c_str());
                 }
 
+                // Only create the batch when the callback completes, as this is when data is valid for saving.
+                AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid bake");
+                SetDirty();
                 m_bakeInProgress = false;
             };
 

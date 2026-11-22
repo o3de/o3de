@@ -192,6 +192,7 @@ private:
 #endif
 
     void DoNodeStaticInitialisation();
+    void DoNodeStaticShutdown();
     void UpdateInternal(const float dt, const bool bPreUpdate);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING

@@ -20,7 +20,6 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            AZ::AtomCore
             Gem::Atom_RPI.Public
     RUNTIME_DEPENDENCIES
         Gem::Atom_RPI.Private

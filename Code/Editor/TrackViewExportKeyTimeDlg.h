@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEWEXPORTKEYTIMEDLG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEWEXPORTKEYTIMEDLG_H
 #pragma once
 
 #include <QDialog>
@@ -32,4 +29,3 @@ public:
 private:
     QScopedPointer<Ui::TrackViewExportKeyTimeDlg> m_ui;
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEWEXPORTKEYTIMEDLG_H

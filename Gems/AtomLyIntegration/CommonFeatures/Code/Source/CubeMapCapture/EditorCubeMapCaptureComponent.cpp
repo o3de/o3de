@@ -109,9 +109,6 @@ namespace AZ
         {
             CubeMapCaptureComponentConfig& configuration = m_controller.m_configuration;
 
-            AzToolsFramework::ScopedUndoBatch undoBatch("CubeMap Render");
-            SetDirty();
-
             return RenderCubeMap(
                 [&](RenderCubeMapCallback callback, AZStd::string& relativePath) { m_controller.RenderCubeMap(callback, relativePath); },
                 "Capturing Cubemap...",

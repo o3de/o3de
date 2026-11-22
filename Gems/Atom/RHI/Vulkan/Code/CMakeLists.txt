@@ -149,7 +149,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::${gem_name}.Reflect
             Gem::${gem_name}.Glad.Static
-            3rdParty::amd_vma
+            3rdParty::vulkan-memory-allocator
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
@@ -189,7 +189,8 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Private.Static
             Gem::Atom_RHI.Public
-            ${VULKAN_VALIDATION_LAYER}
+    RUNTIME_DEPENDENCIES
+        ${VULKAN_VALIDATION_LAYER}
 )
 
 # Inject the gem name into the Module source file

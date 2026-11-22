@@ -26,7 +26,7 @@ namespace ImGui
         AZ_CLASS_ALLOCATOR(ImGuiModule, AZ::SystemAllocator)
         AZ_RTTI(ImGuiModule, "{ECA9F41C-716E-4395-A096-5A519227F9A4}", CryHooksModule);
 
-        void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
+        void OnSystemEvent(ESystemEvent event, uintptr_t wparam, uintptr_t lparam) override;
 
     private:
         #ifdef IMGUI_ENABLED

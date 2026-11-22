@@ -330,10 +330,21 @@ namespace RecastNavigation
         dtNavMeshParams params = {};
         RecastNavigationProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationProviderRequests::GetWorldBounds);
 
-        const RecastVector3 worldCenter = RecastVector3::CreateFromVector3SwapYZ(worldVolume.GetMin());
+        // Must match the providers' tile grid, which is centred over the bounds; the raw minimum shifts every tile lookup.
+        const RecastVector3 worldCenter = RecastVector3::CreateFromVector3SwapYZ(GetAdjustedOriginBasedOnTileSize(worldVolume, m_configuration.m_tileSize));
         rcVcopy(params.orig, worldCenter.m_xyz);
 
         RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, m_configuration.m_tileSize);
+
+        // Detour sizes its polygon-ref bit field from maxPolys; left at 0, every polygon decodes to index 0 of its tile.
+        {
+            int tileBits = 0;
+            while ((1 << tileBits) < params.maxTiles)
+            {
+                ++tileBits;
+            }
+            params.maxPolys = 1 << AZStd::min(14, 22 - tileBits);
+        }
 
         // in world units
         params.tileWidth = m_configuration.m_tileSize;

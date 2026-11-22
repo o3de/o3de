@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef CRYINCLUDE_CRYCOMMON_ICONSOLEMOCK_H
-#define CRYINCLUDE_CRYCOMMON_ICONSOLEMOCK_H
+
 #pragma once
 
 #include <IConsole.h>
@@ -77,5 +76,3 @@ public:
     // can't mock variadic methods, so just override here.
     void Exit([[maybe_unused]] const char* command, ...) override {};
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_ICONSOLEMOCK_H

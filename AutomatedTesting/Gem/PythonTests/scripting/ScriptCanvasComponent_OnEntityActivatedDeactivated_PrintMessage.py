@@ -82,8 +82,8 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
      2) Create all the entities we need for the test
      3) Start the Tracer
      4) Enter Game Mode
-     5) Wait one second for graph timers then exit game mode
-     6) Validate Print message
+     5) Wait for graph timers and expected print messages
+     6) Exit Game Mode
 
     Note:
      - Any passed and failed tests are written to the Editor.log file.
@@ -94,7 +94,7 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     from editor_python_test_tools.utils import TestHelper
     from editor_python_test_tools.utils import Report, Tracer
     import azlmbr.legacy.general as general
-    from scripting_utils.scripting_constants import (WAIT_TIME_3, WAIT_TIME_1)
+    from scripting_utils.scripting_constants import WAIT_TIME_3
 
     test_entities = [
         testEntity("ActivationTest", "inactive", "activator.scriptcanvas"),
@@ -118,13 +118,14 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
         # 4) Enter Game Mode
         TestHelper.enter_game_mode(Tests.game_mode_entered)
 
-        # 5) Wait one second for graph timers then exit game mode
-        general.idle_wait(WAIT_TIME_1)
-        TestHelper.exit_game_mode(Tests.game_mode_exited)
+        # 5) Wait until both activation callbacks have been reported.  The callbacks are
+        # scheduled by the graph timer, so a fixed wait can inspect the tracer too early.
+        found_expected_lines = TestHelper.wait_for_condition(
+            lambda: scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES), WAIT_TIME_3
+        )
 
-        # 6) Validate Print message
-        found_expected_lines = scripting_tools.located_expected_tracer_lines(section_tracer, EXPECTED_LINES)
-        TestHelper.wait_for_condition(lambda: found_expected_lines is not None, WAIT_TIME_3)
+        # 6) Exit Game Mode after the messages have been observed.
+        TestHelper.exit_game_mode(Tests.game_mode_exited)
 
     Report.result(Tests.lines_found, found_expected_lines)
 

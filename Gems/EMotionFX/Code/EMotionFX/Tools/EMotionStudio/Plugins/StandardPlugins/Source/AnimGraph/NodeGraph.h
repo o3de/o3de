@@ -14,6 +14,7 @@
 
 #include <QColor>
 #include <QFont>
+#include <QLine>
 #include <QPen>
 #include <QTextOption>
 #include <QTimer>
@@ -229,8 +230,11 @@ namespace EMStudio
         GraphNode*                  m_replaceTransitionTargetNode;
         bool                        m_replaceTransitionValid;
 
+        static constexpr qreal      s_minSubgridPixelSpacing = 6.0; // closer sub grid lines are not drawn
         QPen                        m_subgridPen;
         QPen                        m_gridPen;
+        AZStd::vector<QLine>        m_subgridLines; // per-frame scratch, kept to avoid reallocating
+        AZStd::vector<QLine>        m_gridLines;
 
         // Overlay drawing
         QFont                       m_font;

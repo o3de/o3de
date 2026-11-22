@@ -44,6 +44,9 @@ namespace AzNetworking
         //! @return the number of unacked reliable messages still pending in the reliable queue
         uint32_t GetQueueSize() const;
 
+        //! Returns whether a sent packet of the given type is still unacked.
+        bool IsPending(PacketType packetType) const;
+
         //! Called when we're going to transmit a packet that we want to be reliable.
         //! @param packetId           packet id of the packet we're sending
         //! @param reliableSequenceId the reliable sequence identifier of the packet we're sending

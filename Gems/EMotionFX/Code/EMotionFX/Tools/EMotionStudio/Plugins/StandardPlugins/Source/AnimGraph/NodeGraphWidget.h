@@ -50,6 +50,11 @@ namespace EMStudio
         MCORE_INLINE void SetMousePos(const QPoint& pos)                { m_mousePos = pos; }
         MCORE_INLINE void SetShowFPS(bool showFPS)                      { m_showFps = showFPS; }
 
+        // The plugin repaints the graph only when something changed; these report and request that.
+        void RequestRedraw()                                            { m_redrawRequested = true; }
+        bool GetNeedsRedraw() const;
+        bool GetHasLiveContent() const;
+
         size_t CalcNumSelectedNodes() const;
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
@@ -99,6 +104,7 @@ namespace EMStudio
         void ActiveGraphChanged();
 
     protected:
+        bool event(QEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
@@ -146,6 +152,12 @@ namespace EMStudio
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;
         QString                     m_titleBarText;
+
+        // View state at the last paint, so scrolling or zooming from anywhere triggers a repaint.
+        bool                        m_redrawRequested = true;
+        NodeGraph*                  m_paintedGraph = nullptr;
+        QPoint                      m_paintedScrollOffset;
+        float                       m_paintedScale = 0.0f;
 
         void SelectNodesInGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
     };

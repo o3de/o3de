@@ -58,7 +58,7 @@ class CFolderTreeCtrl
     };
 
 public:
-    CFolderTreeCtrl(QWidget* parent = 0);
+    CFolderTreeCtrl(QWidget* parent = nullptr);
     virtual ~CFolderTreeCtrl();
 
     void Configure(const AZStd::vector<QString>& folders, const QString& fileNameSpec,

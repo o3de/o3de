@@ -11,7 +11,6 @@
 
 #include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
-#include <osdefs.h> // for DELIM
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #include <pybind11/pybind11.h>
@@ -43,14 +42,14 @@
 #include <AzFramework/Translation/TranslationDef.h>
 
 // this is called the first time a Python script contains "import azlmbr"
-PYBIND11_EMBEDDED_MODULE(azlmbr, m)
+PYBIND11_MODULE(azlmbr, m)
 {
     EditorPythonBindings::EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindings::EditorPythonBindingsNotificationBus::Events::OnImportModule, m.ptr());
 }
 
 namespace RedirectOutput
 {
-    using RedirectOutputFunc = AZStd::function<void(const char*)>;
+    using RedirectOutputFunc = void (*)(const char*);
 
     struct RedirectOutput
     {
@@ -87,52 +86,31 @@ namespace RedirectOutput
         {"flush", RedirectFlush, METH_VARARGS, "sys.stdout.flush"},
         {"write", RedirectWrite, METH_VARARGS, "sys.stderr.write"},
         {"flush", RedirectFlush, METH_VARARGS, "sys.stderr.flush"},
-        {0, 0, 0, 0} // sentinel
+        {nullptr, nullptr, 0, nullptr} // sentinel
     };
 
-    PyTypeObject RedirectOutputType =
-    {
-        PyVarObject_HEAD_INIT(0, 0)
-        "azlmbr_redirect.RedirectOutputType", // tp_name
-        sizeof(RedirectOutput), /* tp_basicsize */
-        0,                    /* tp_itemsize */
-        0,                    /* tp_dealloc */
-        0,                    /* tp_print */
-        0,                    /* tp_getattr */
-        0,                    /* tp_setattr */
-        0,                    /* tp_reserved */
-        0,                    /* tp_repr */
-        0,                    /* tp_as_number */
-        0,                    /* tp_as_sequence */
-        0,                    /* tp_as_mapping */
-        0,                    /* tp_hash  */
-        0,                    /* tp_call */
-        0,                    /* tp_str */
-        0,                    /* tp_getattro */
-        0,                    /* tp_setattro */
-        0,                    /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT,   /* tp_flags */
-        "azlmbr_redirect objects", /* tp_doc */
-        0,                    /* tp_traverse */
-        0,                    /* tp_clear */
-        0,                    /* tp_richcompare */
-        0,                    /* tp_weaklistoffset */
-        0,                    /* tp_iter */
-        0,                    /* tp_iternext */
-        RedirectMethods,      /* tp_methods */
-        0,                    /* tp_members */
-        0,                    /* tp_getset */
-        0,                    /* tp_base */
-        0,                    /* tp_dict */
-        0,                    /* tp_descr_get */
-        0,                    /* tp_descr_set */
-        0,                    /* tp_dictoffset */
-        0,                    /* tp_init */
-        0,                    /* tp_alloc */
-        0                     /* tp_new */
+    PyType_Slot RedirectOutputSlots[] = {
+        {Py_tp_new, reinterpret_cast<void*>(PyType_GenericNew)},
+        {Py_tp_methods, RedirectMethods},
+        {Py_tp_doc, const_cast<char*>("azlmbr_redirect objects")},
+        {0, nullptr},
     };
 
-    PyModuleDef RedirectOutputModule = { PyModuleDef_HEAD_INIT, "azlmbr_redirect", 0, -1, 0, };
+    PyType_Spec RedirectOutputSpec = {
+        "azlmbr_redirect.RedirectOutputType",
+        sizeof(RedirectOutput),
+        0,
+        Py_TPFLAGS_DEFAULT,
+        RedirectOutputSlots,
+    };
+
+    PyModuleDef RedirectOutputModule = {
+        PyModuleDef_HEAD_INIT,
+        "azlmbr_redirect",
+        nullptr,
+        -1,
+        nullptr,
+    };
 
     // Internal state
     PyObject* g_redirect_stdout = nullptr;
@@ -147,33 +125,39 @@ namespace RedirectOutput
         g_redirect_stderr = nullptr;
         g_redirect_stderr_saved = nullptr;
 
-        RedirectOutputType.tp_new = PyType_GenericNew;
-        if (PyType_Ready(&RedirectOutputType) < 0)
+        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
+        if (!redirectModule)
         {
-            return 0;
+            return nullptr;
         }
 
-        PyObject* m = PyModule_Create(&RedirectOutputModule);
-        if (m)
+        // A fresh type avoids retaining Python's method-cache state across interpreter restarts.
+        PyObject* redirectType = PyType_FromSpec(&RedirectOutputSpec);
+        if (!redirectType || PyModule_AddObject(redirectModule, "Redirect", redirectType) < 0)
         {
-            Py_INCREF(&RedirectOutputType);
-            PyModule_AddObject(m, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
+            Py_XDECREF(redirectType);
+            Py_DECREF(redirectModule);
+            return nullptr;
         }
-        return m;
+        return redirectModule;
     }
 
-    void SetRedirection(const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
+    void SetRedirection(PyObject* module, const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
     {
-        if (PyType_Ready(&RedirectOutputType) < 0)
-        {
-            AZ_Warning("python", false, "RedirectOutputType not ready!");
-            return;
-        }
-
         if (!current)
         {
+            PyObject* redirectType = PyObject_GetAttrString(module, "Redirect");
+            if (!redirectType)
+            {
+                throw pybind11::error_already_set();
+            }
+            current = PyObject_CallNoArgs(redirectType);
+            Py_DECREF(redirectType);
+            if (!current)
+            {
+                throw pybind11::error_already_set();
+            }
             saved = PySys_GetObject(funcname); // borrowed
-            current = RedirectOutputType.tp_new(&RedirectOutputType, 0, 0);
         }
 
         RedirectOutput* redirectOutput = reinterpret_cast<RedirectOutput*>(current);
@@ -197,14 +181,18 @@ namespace RedirectOutput
     {
         using namespace AzToolsFramework;
 
+        if (!module)
+        {
+            throw pybind11::error_already_set();
+        }
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg)
+        SetRedirection(module, "stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg)
         {
             EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnTraceMessage, msg);
         });
 
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, [](const char* msg)
+        SetRedirection(module, "stderr", g_redirect_stderr_saved, g_redirect_stderr, [](const char* msg)
         {
             EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnErrorMessage, msg);
         });
@@ -271,8 +259,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex& m_lock;
         int& m_lockRecursiveCounter;
         bool m_locked = false;
-        AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
-        AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
+        PyGILState_STATE m_gilState = PyGILState_UNLOCKED;
     };
 
     PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
@@ -314,8 +301,7 @@ namespace EditorPythonBindings
         // to be locked) and therefore it's already got the GIL acquired.
         if (m_lockRecursiveCounter == 1)
         {
-            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
-            m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
+            m_gilState = PyGILState_Ensure();
         }
     }
 
@@ -326,8 +312,10 @@ namespace EditorPythonBindings
             return;
         }
 
-        m_acquireGIL.reset();
-        m_releaseGIL.reset();
+        if (m_lockRecursiveCounter == 1)
+        {
+            PyGILState_Release(m_gilState);
+        }
         m_lockRecursiveCounter--;
         m_locked = false;
         m_lock.unlock();
@@ -417,6 +405,7 @@ namespace EditorPythonBindings
             ExecuteByString("import azlmbr", false);
             ExecuteBootstrapScripts(pythonPathStack);
             EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
+            m_initialThreadState = PyEval_SaveThread();
             return true;
         }
         return false;
@@ -428,6 +417,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", silenceWarnings, "Python is not active!");
             return false;
+        }
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_lock);
+        if (m_initialThreadState)
+        {
+            if (!PyGILState_Check())
+            {
+                PyEval_RestoreThread(m_initialThreadState);
+            }
+            m_initialThreadState = nullptr;
         }
 
         bool result = false;
@@ -574,25 +573,42 @@ namespace EditorPythonBindings
         }
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
-        Py_SetPythonHome(pyHomePath.c_str());
 
-        PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
+        if (PyImport_AppendInittab("azlmbr", PyInit_azlmbr) == -1
+            || PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput) == -1)
+        {
+            AZ_Error("python", false, "Could not register the embedded Python modules.");
+            return false;
+        }
         try
         {
-            // ignore system location for sites site-packages
-            Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
-            Py_IgnoreEnvironmentFlag = 1; // -E
-            Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
-            Py_DontWriteBytecodeFlag = 1; // Do not generate precompiled bytecode
-
-            const bool initializeSignalHandlers = true;
-            pybind11::initialize_interpreter(initializeSignalHandlers);
+            // Configure and start the interpreter through the PyConfig API
+            // (Py_SetPythonHome and the pre-init configuration globals are
+            // deprecated). The isolated configuration ignores the environment
+            // and the user site directory, matching the intent of the previous
+            // Py_IsolatedFlag / Py_IgnoreEnvironmentFlag setup.
+            PyConfig config;
+            PyConfig_InitIsolatedConfig(&config);
+            config.install_signal_handlers = 1;
+            config.inspect = 1; // unhandled SystemExit will terminate the process unless inspect is set
+            config.write_bytecode = 0; // Do not generate precompiled bytecode
+            PyStatus pyStatus = PyConfig_SetString(&config, &config.home, pyHomePath.c_str());
+            if (!PyStatus_Exception(pyStatus))
+            {
+                pyStatus = Py_InitializeFromConfig(&config);
+            }
+            PyConfig_Clear(&config);
+            if (PyStatus_Exception(pyStatus))
+            {
+                AZ_Warning("python", false, "Python initialization failed with %s!", pyStatus.err_msg ? pyStatus.err_msg : "an unknown error");
+                return false;
+            }
 
             // display basic Python information
             AZ_Trace("python", "Py_GetVersion=%s \n", Py_GetVersion());
-            AZ_Trace("python", "Py_GetPath=%ls \n", Py_GetPath());
-            AZ_Trace("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
-            AZ_Trace("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
+            AZ_Trace("python", "sys.executable=%s \n", pybind11::module_::import("sys").attr("executable").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.exec_prefix=%s \n", pybind11::module_::import("sys").attr("exec_prefix").cast<std::string>().c_str());
+            AZ_Trace("python", "sys.path=%s \n", pybind11::str(pybind11::module_::import("sys").attr("path")).cast<std::string>().c_str());
 
             // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
             // alters the behavior of the initializer to not compute default search paths. See https://docs.python.org/3/c-api/init.html#c.Py_SetPath
@@ -624,19 +640,23 @@ namespace EditorPythonBindings
 
     bool PythonSystemComponent::ExtendSysPath(const AZStd::unordered_set<AZStd::string>& extendPaths)
     {
+        // Collect the interpreter's current sys.path entries (Py_GetPath is deprecated)
         AZStd::unordered_set<AZStd::string> oldPathSet;
-        auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
+        for (pybind11::handle pathEntry : pybind11::module_::import("sys").attr("path"))
         {
-            oldPathSet.emplace(pathPart);
-        };
-        AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
+            oldPathSet.emplace(pathEntry.cast<std::string>().c_str());
+        }
         bool appended{ false };
-        AZStd::string pathAppend{ "import sys\n" };
+        // site.addsitedir instead of sys.path.append: it also executes any
+        // .pth files in the added directory, which is how pip's PEP 660
+        // editable installs (__editable__.*.pth import hooks) become
+        // importable; a plain sys.path entry never runs them.
+        AZStd::string pathAppend{ "import sys\nimport site\n" };
         for (const auto& thisStr : extendPaths)
         {
             if (!oldPathSet.contains(thisStr))
             {
-                pathAppend.append(AZStd::string::format("sys.path.append(r'%s')\n", thisStr.c_str()));
+                pathAppend.append(AZStd::string::format("site.addsitedir(r'%s')\n", thisStr.c_str()));
                 appended = true;
             }
         }
@@ -659,6 +679,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
+        // Python retains this table across restarts, but the binding DLL can be unloaded between applications.
+        _inittab* destination = PyImport_Inittab;
+        for (const _inittab* entry = PyImport_Inittab; entry->name; ++entry)
+        {
+            if (entry->initfunc != PyInit_azlmbr && entry->initfunc != RedirectOutput::PyInit_RedirectOutput)
+            {
+                *destination++ = *entry;
+            }
+        }
+        *destination = {};
         return true;
     }
 
@@ -799,29 +829,24 @@ namespace EditorPythonBindings
             // Acquire GIL before calling Python code
             PythonGILScopedLock lock(m_lock, m_lockRecursiveCounter);
 
-            // Create standard "argc" / "argv" command-line parameters to pass in to the Python script via sys.argv.
-            // argc = number of parameters.  This will always be at least 1, since the first parameter is the script name.
-            // argv = the list of parameters, in wchar format.
-            // Our expectation is that the args passed into this function does *not* already contain the script name.
-            int argc = aznumeric_cast<int>(args.size()) + 1;
-
-            // Note:  This allocates from PyMem to ensure that Python has access to the memory.
-            wchar_t** argv = static_cast<wchar_t**>(PyMem_Malloc(argc * sizeof(wchar_t*)));
-
-            // Python 3.x is expecting wchar* strings for the command-line args.
-            argv[0] = Py_DecodeLocale(theFilename.c_str(), nullptr);
-
-            for (int arg = 0; arg < args.size(); arg++)
+            // Pass the standard command-line parameters to the Python script via sys.argv.
+            // The first entry is always the script name; our expectation is that the args
+            // passed into this function does *not* already contain the script name.
+            // (PySys_SetArgvEx is deprecated.) Mirroring its updatePath behavior, the
+            // script's folder is prepended to sys.path for "import" commands.
+            pybind11::list pythonArgs;
+            pythonArgs.append(theFilename.c_str());
+            for (const AZStd::string_view& arg : args)
             {
-                AZStd::string argString(args[arg]);
-                argv[arg + 1] = Py_DecodeLocale(argString.c_str(), nullptr);
+                pythonArgs.append(AZStd::string(arg).c_str());
             }
-            // Tell Python the command-line args.
-            // Note that this has a side effect of adding the script's path to the set of directories checked for "import" commands.
-            const int updatePath = 1;
-            PySys_SetArgvEx(argc, argv, updatePath);
+            auto pySys = pybind11::module_::import("sys");
+            pySys.attr("argv") = pythonArgs;
 
-            Py_DontWriteBytecodeFlag = 1;
+            AZStd::string scriptFolder;
+            AzFramework::StringFunc::Path::GetFullPath(theFilename.c_str(), scriptFolder);
+            pySys.attr("path").attr("insert")(0, scriptFolder.c_str());
+
             PyCompilerFlags flags;
             flags.cf_flags = 0;
             const int bAutoCloseFile = true;
@@ -834,13 +859,6 @@ namespace EditorPythonBindings
                 EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnExceptionMessage, message.c_str());
                 pythonScriptResult = Result::Error_PythonException;
             }
-
-            // Free any memory allocated for the command-line args.
-            for (int arg = 0; arg < argc; arg++)
-            {
-                PyMem_RawFree(argv[arg]);
-            }
-            PyMem_Free(argv);
         }
         catch ([[maybe_unused]] const std::exception& e)
         {

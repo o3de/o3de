@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -62,9 +63,10 @@ namespace AzToolsFramework::Prefab
         AZStd::string_view labelText = PrefabOverrideLabel::Value.ExtractFromDomNode(m_node).value_or("");
         m_textLabel->setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
 
-        m_textLabel->setProperty(OverriddenPropertyName, QVariant(m_overridden));
-        m_textLabel->RefreshStyle();
-
+        if (AzQtComponents::StyleManager::setObjectProperty(m_textLabel, OverriddenPropertyName, m_overridden))
+        {
+            m_textLabel->RefreshStyle();
+        }
         // Set up icon
         m_iconButton->setIcon(m_overridden ? *m_overrideIcon : *m_emptyIcon);
         m_iconButton->setIconSize(kIconSize);
@@ -73,9 +75,9 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabOverrideLabelHandler::ResetToDefaults()
     {
+        // avoid setting properties related to styling, we'll do that in refreshUI
         m_overridden = false;
-        m_textLabel->setText(QString());
-        m_textLabel->setProperty(OverriddenPropertyName, false);
+        m_textLabel->setText(QString()); 
         m_iconButton->setIcon(*m_emptyIcon);
         m_iconButton->setIconSize(kIconSize);
         m_node = AZ::Dom::Value();

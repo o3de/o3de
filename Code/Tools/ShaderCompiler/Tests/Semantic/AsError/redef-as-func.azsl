@@ -1,0 +1,5 @@
+option bool p;
+
+void p(){}  // #EC 32
+
+// Semantic error: redeclaration of /p with a different kind: OverloadSet but was Variable, first seen line 1

@@ -20,7 +20,7 @@ class RCcontrollerTest
 public:
     RCcontrollerTest()
         : m_argc(0)
-        , m_argv(0)
+        , m_argv(nullptr)
     {
         m_qApp = new QCoreApplication(m_argc, m_argv);
 

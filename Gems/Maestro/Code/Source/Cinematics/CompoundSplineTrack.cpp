@@ -633,7 +633,8 @@ namespace Maestro
                 continue;
             }
             
-            if (const int subKeyIdx = m_subTracks[i]->FindKey(time) >= 0)
+            const int subKeyIdx = m_subTracks[i]->FindKey(time);
+            if (subKeyIdx >= 0)
             {
                 m_subTracks[i]->RemoveKey(subKeyIdx);
             }
@@ -675,7 +676,7 @@ namespace Maestro
     void CCompoundSplineTrack::GetKeyInfo(int keyIndex, const char*& description, float& duration) const
     {
         duration = 0;
-        description = 0;
+        description = nullptr;
 
         if (keyIndex < 0 || keyIndex >= GetNumKeys())
         {

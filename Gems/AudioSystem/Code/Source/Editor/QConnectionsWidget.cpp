@@ -128,6 +128,7 @@ namespace AudioControls
             m_connectionPropertiesWidget = nullptr;
         }
 
+        bool hideConnectionProperties = true;
         if (connection && connection->HasProperties())
         {
             if (IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl())
@@ -148,9 +149,12 @@ namespace AudioControls
                     {
                         connect(m_connectionPropertiesWidget, SIGNAL(PropertiesChanged()), this, SLOT(CurrentConnectionModified()));
                     }
+                    hideConnectionProperties = false;
                 }
             }
         }
+
+        m_connectionPropertiesFrame->setHidden(hideConnectionProperties);
     }
 
     //-------------------------------------------------------------------------------------------//

@@ -1,0 +1,12 @@
+{
+    "PackageName": "vulkan-validationlayers",
+    "Version": "1.4.363.1",
+    "URL": "https://github.com/KhronosGroup/Vulkan-ValidationLayers",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/KhronosGroup/Vulkan-ValidationLayers/archive/refs/tags/vulkan-sdk-1.4.363.1.tar.gz",
+        "Revision": "317cff060893783f96d4174f50491e6374eb3714",
+        "SHA256": "e79809a172639518c4a3a0703ec16dfc41f95a3c15e3f390745c51c326819790"
+    }
+}

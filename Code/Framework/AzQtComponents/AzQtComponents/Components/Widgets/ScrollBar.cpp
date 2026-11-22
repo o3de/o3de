@@ -165,10 +165,17 @@ namespace AzQtComponents
                 {
                     case QEvent::DynamicPropertyChange:
                     {
-                        if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
+                        // ignore properties coming from inside the style sheet system itself, which are all by convention
+                        // prefixed with _q_
+                        QDynamicPropertyChangeEvent* eventFull = static_cast<QDynamicPropertyChangeEvent*>(event);
+                        QString propertyName = QString::fromUtf8(eventFull->propertyName());
+                        if (!propertyName.startsWith(QStringLiteral("_q_")))
                         {
-                            styleSheet->unpolish(cornerWidget);
-                            styleSheet->polish(cornerWidget);
+                            if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
+                            {
+                                styleSheet->unpolish(cornerWidget);
+                                styleSheet->polish(cornerWidget);
+                            }
                         }
                     }
                     break;

@@ -88,6 +88,12 @@ namespace AZ
         return result;
     }
 
+    AZ_MATH_INLINE Color Color::CreateFromU32(u32 c)
+    {
+        Color result;
+        result.FromU32(c);
+        return result;
+    }
 
     AZ_MATH_INLINE u32 Color::CreateU32(u8 r, u8 g, u8 b, u8 a)
     {

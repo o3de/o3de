@@ -13,8 +13,6 @@
 
 namespace AZ
 {
-    class HphaSchema;
-
     /**
      * System allocator
      * The system allocator is the base allocator for
@@ -47,7 +45,7 @@ namespace AZ
         size_type       deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
         AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
         size_type get_allocated_size(pointer ptr, size_type alignment) const override;
-        void            GarbageCollect() override                 { m_subAllocator->GarbageCollect(); }
+        void            GarbageCollect() override;
 
         size_type       NumAllocatedBytes() const override;
 

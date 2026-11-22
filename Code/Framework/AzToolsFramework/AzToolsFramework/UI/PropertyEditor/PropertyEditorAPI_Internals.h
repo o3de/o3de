@@ -208,24 +208,17 @@ namespace AzToolsFramework
 
         ~RpePropertyHandlerWrapper()
         {
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
+
             if (m_widget)
             {
-                // Detect whether this is being run in the Editor or during a Unit Test.
-                AZ::ApplicationTypeQuery appType;
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                if (appType.IsValid() && !appType.IsEditor())
-                {
-                    // In Unit Tests, immediately delete the widget to prevent triggering the leak detection mechanism.
-                    delete m_widget;
-                    m_widget = nullptr;
-                }
-                else
-                {
-                    // In the Editor, use deleteLater as it is more stable.
-                    m_widget->deleteLater();
-                }
+                // Its tempting to call deleteLater here, but the case where a handler is destroyed is
+                // when the DPE is either itself being destroyed, or, the DPE is re-pooling all of its handlers
+                // and this is a handler that cannot be pooled.  In that case, we don't want any widgets
+                // sitting around as hidden children for any amount of time, as the style manager will iterate over them
+                // and try to apply styles to them, which is a super heavy slow down.
+                delete m_widget;
             }
-            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
 
         QWidget* GetWidget() override

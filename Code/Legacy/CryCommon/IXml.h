@@ -118,7 +118,7 @@ private:
     IXmlNode* p;
 public:
     XmlNodeRef()
-        : p(NULL) {}
+        : p(nullptr) {}
     XmlNodeRef(IXmlNode* p_);
     XmlNodeRef(const XmlNodeRef& p_);
 

@@ -18,12 +18,15 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/parallel/thread.h>
 
 namespace AzNetworking
 {
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
-    AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
+    // A DTLS 1.2 record adds 13 (header) + 8 (explicit nonce) + 16 (GCM tag) = 37 bytes with the default
+    // net_SslCertCiphers (AES-GCM); 32 let packets of 988-992 bytes through unfragmented, cut after encryption.
+    AZ_CVAR(uint32_t, net_SslInflationOverhead, 64, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Bytes DTLS encryption may add to a packet (record header, nonce, tag, padding): taken out of the MTU before deciding to fragment. Must be at least the negotiated cipher's per-record overhead");
 #else
     static const bool net_UdpUseEncryption = false;
     static const uint32_t net_SslInflationOverhead = 0;
@@ -38,6 +41,7 @@ namespace AzNetworking
     AZ_CVAR(float, net_RttFudgeScalar, 2.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scalar value to multiply computed Rtt by to determine an optimal packet timeout threshold");
     AZ_CVAR(uint32_t, net_FragmentedHeaderOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A fudge overhead value to take out of fragmented packet payloads");
     AZ_CVAR(bool, net_FragmentsAlwaysReliable, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether fragmented packets should be reliable by default or use their source packet's reliability type");
+    AZ_CVAR(AZ::TimeMs, net_UdpTerminateAckWaitMs, AZ::TimeMs{ 1000 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Longest time StopListening waits for the remote endpoints to ack the goodbyes sent to them");
     AZ_CVAR(AZ::CVarFixedString, net_UdpCompressor, "MultiplayerCompressor", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "UDP compressor to use."); // WARN: similar to encryption this needs to be set once and only once before creating the network interface
 
     static uint64_t ConstructTimeoutId(ConnectionId connectionId, PacketId packetId, ReliabilityType reliability)
@@ -216,11 +220,6 @@ namespace AzNetworking
             }
             
             const ConnectionState connectionState = connection->GetConnectionState();
-            if (connectionState == ConnectionState::Disconnecting || connectionState == ConnectionState::Disconnected)
-            {
-                // Skip packets from disconnected connections
-                continue;
-            }
 
             int32_t decodedPacketSize = 0;
             m_decryptBuffer.Resize(m_decryptBuffer.GetCapacity());
@@ -283,8 +282,9 @@ namespace AzNetworking
                     continue;
                 }
 
-                // Note that the serializer passed in here is unused for UDP
-                if (!connection->ProcessReceived(header, packetSerializer, packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs))
+                // Note that the serializer passed in here is unused for UDP. Packets from disconnected connections only deliver acks
+                if (!connection->ProcessReceived(header, packetSerializer, packet.m_receivedBytes + UdpPacketHeaderSize, currentTimeMs)
+                    || connectionState == ConnectionState::Disconnecting || connectionState == ConnectionState::Disconnected)
                 {
                     continue;
                 }
@@ -338,13 +338,17 @@ namespace AzNetworking
         // Time out any packets that haven't been acked within our timeout window
         m_packetTimeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item) { return HandlePacketTimeout(item); }, static_cast<int32_t>(net_MaxTimeoutsPerFrame));
 
-        // Delete any connections we've disconnected
-        for (RemovedConnection& removedConnection : m_removedConnections)
+        // Delete any connections we've disconnected, except, while StopListening waits, one whose goodbye is unacked
+        AZStd::erase_if(m_removedConnections, [this](const RemovedConnection& removedConnection)
         {
+            if (removedConnection.m_connection->IsTerminatePending() && AZ::GetElapsedTimeMs() < m_terminateWaitEndMs)
+            {
+                return false;
+            }
             m_connectionListener.OnDisconnect(removedConnection.m_connection, removedConnection.m_reason, removedConnection.m_endpoint);
             m_connectionSet.DeleteConnection(removedConnection.m_connection->GetConnectionId()); // Will delete the connection
-        }
-        m_removedConnections.clear();
+            return true;
+        });
 
         // Update metrics
         GetMetrics().m_sendPackets = m_socket->GetSentPackets();
@@ -395,9 +399,17 @@ namespace AzNetworking
             return false;
         }
 
+        m_allowIncomingConnections = false;
+        // Until the goodbyes are acked, at most net_UdpTerminateAckWaitMs, Update receives acks, resends and deletes acked connections
+        m_terminateWaitEndMs = AZ::GetElapsedTimeMs() + net_UdpTerminateAckWaitMs;
+        while (!m_removedConnections.empty() && AZ::GetElapsedTimeMs() < m_terminateWaitEndMs)
+        {
+            m_readerThread.SwapBuffers();
+            Update();
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+        }
         m_port = 0;
         m_readerThread.UnregisterSocket(m_socket.get());
-        m_allowIncomingConnections = false;
         m_socket->Close();
         return true;
     }
@@ -702,7 +714,14 @@ namespace AzNetworking
         connection->m_state = result == DtlsEndpoint::ConnectResult::Complete ? ConnectionState::Connected : ConnectionState::Connecting;
         connection->SetTimeoutId(timeoutId);
         m_connectionListener.OnConnect(connection.get());
+        UdpConnection* accepted = connection.get();
         m_connectionSet.AddConnection(AZStd::move(connection));
+        // The client's first DTLS flight (its ClientHello) rides in the InitiateConnectionPacket: hand it to
+        // the new endpoint now, instead of waiting for the client's OpenSSL to resend it (1 s later).
+        if (result == DtlsEndpoint::ConnectResult::Pending && packet.GetHandshakeBuffer().GetSize() > 0)
+        {
+            accepted->ProcessHandshakeData(packet.GetHandshakeBuffer());
+        }
     }
 
     void UdpNetworkInterface::RequestDisconnect(UdpConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint)

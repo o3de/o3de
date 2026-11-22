@@ -1,0 +1,196 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
+struct Instance
+{
+    float4x4 World;
+    float4x4 WorldInvTrans;
+    float Scale;
+    uint Flags;
+};
+
+struct Constants
+{
+    float4x4 View;
+    float4x4 ViewProj;
+    float4 Planes[6];
+
+    float3 ViewPosition;
+    uint HighlightedIndex;
+
+    float3 CullViewPosition;
+    uint SelectedIndex;
+
+    uint DrawMeshlets;
+};
+
+struct MeshInfo
+{
+    uint IndexSize;
+    uint MeshletCount;
+
+    uint LastMeshletVertCount;
+    uint LastMeshletPrimCount;
+};
+
+struct Meshlet
+{
+    uint VertCount;
+    uint VertOffset;
+    uint PrimCount;
+    uint PrimOffset;
+};
+
+struct CullData
+{
+    float4 BoundingSphere;
+    uint NormalCone;
+    float ApexOffset;
+};
+
+bool IsConeDegenerate(CullData c)
+{
+    return (c.NormalCone >> 24) == 0xff;
+}
+
+float4 UnpackCone(uint packed)
+{
+    float4 v;
+    v.x = float((packed >> 0) & 0xFF);
+    v.y = float((packed >> 8) & 0xFF);
+    v.z = float((packed >> 16) & 0xFF);
+    v.w = float((packed >> 24) & 0xFF);
+
+    v = v / 255.0;
+    v.xyz = v.xyz * 2.0 - 1.0;
+
+    return v;
+}
+
+struct Vertex
+{
+    float3 Position;
+    float3 Normal;
+};
+
+struct VertexOut
+{
+    float4 PositionHS : SV_Position;
+    float3 PositionVS : POSITION0;
+    float3 Normal : NORMAL0;
+    uint MeshletIndex : COLOR0;
+};
+
+struct Payload
+{
+    uint MeshletIndices[ 32 ];
+};
+
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup u_ : slot1
+{
+	ConstantBuffer<Constants> GConstants;
+	ConstantBuffer<MeshInfo> GMeshInfo;
+	ConstantBuffer<Instance> GInstance;
+	StructuredBuffer<Vertex> Vertices;
+	StructuredBuffer<Meshlet> Meshlets; 
+	ByteAddressBuffer UniqueVertexIndices;
+	StructuredBuffer<uint> PrimitiveIndices;
+	StructuredBuffer<CullData> MeshletCullData;
+}
+
+float3 RotateVector(float3 v0, float3 axis, float angle)
+{
+    float cs = cos(angle);
+    return cs * v0 + sin(angle) * cross(axis, v0) + (1 - cs) * dot(axis, v0) * axis;
+}
+
+uint3 UnpackPrimitive(uint primitive) { return uint3(primitive & 0x3FF, (primitive >> 10) & 0x3FF, (primitive >> 20) & 0x3FF); }
+
+
+uint GetVertexIndex(Meshlet m, uint localIndex)
+{
+    localIndex = m.VertOffset + localIndex;
+
+    if (u_::GMeshInfo.IndexSize == 4)
+    {
+        return u_::UniqueVertexIndices.Load(localIndex * 4);
+    }
+    else
+    {
+
+        uint wordOffset = (localIndex & 0x1);
+        uint byteOffset = (localIndex / 2) * 4;
+
+
+        uint indexPair = u_::UniqueVertexIndices.Load(byteOffset);
+        uint index = (indexPair >> (wordOffset * 16)) & 0xffff;
+
+        return index;
+    }
+}
+
+uint3 GetPrimitive(Meshlet m, uint index)
+{
+    return UnpackPrimitive(u_::PrimitiveIndices[m.PrimOffset + index]);
+}
+
+VertexOut GetVertexAttributes(uint meshletIndex, uint vertexIndex)
+{
+    Vertex v = u_::Vertices[vertexIndex];
+
+    float4 positionWS = mul(float4(v.Position, 1), u_::GInstance.World);
+
+    VertexOut vout;
+    vout.PositionVS = mul(positionWS, u_::GConstants.View).xyz;
+    vout.PositionHS = mul(positionWS, u_::GConstants.ViewProj);
+    vout.Normal = mul(float4(v.Normal, 0), u_::GInstance.WorldInvTrans).xyz;
+    vout.MeshletIndex = meshletIndex;
+
+    return vout;
+}
+
+
+[RootSignature( "CBV(b0), CBV(b1), CBV(b2), SRV(t0), SRV(t1), SRV(t2), SRV(t3), SRV(t4)" )]
+[NumThreads(128, 1, 1)]
+[OutputTopology("triangle")]
+void main(
+    uint dtid : SV_DispatchThreadID,
+    uint gtid : SV_GroupThreadID,
+    uint gid : SV_GroupID,
+    in payload Payload a_payload,
+    out vertices VertexOut verts[64],
+    out indices uint3 tris[126]
+)
+{
+    uint meshletIndex = a_payload.MeshletIndices[gid];
+
+    if (meshletIndex >= u_::GMeshInfo.MeshletCount)
+        return;
+
+    Meshlet m = u_::Meshlets[meshletIndex];
+    SetMeshOutputCounts(m.VertCount, m.PrimCount);
+
+    if (gtid < m.VertCount)
+    {
+        uint vertexIndex = GetVertexIndex(m, gtid);
+        verts[gtid] = GetVertexAttributes(meshletIndex, vertexIndex);
+    }
+
+    if (gtid < m.PrimCount)
+    {
+        tris[gtid] = GetPrimitive(m, gtid);
+    }
+}

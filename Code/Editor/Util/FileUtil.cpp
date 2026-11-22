@@ -1326,9 +1326,9 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
 
                         switch (ret) {
                         case QMessageBox::YesToAll: /* fall-through */
-                        case QMessageBox::Yes:    nUserOption = IDYES; break;
-                        case QMessageBox::No:     nUserOption = IDNO; break;
-                        case QMessageBox::Cancel: nUserOption = IDCANCEL; break;
+                        case QMessageBox::Yes:    nUserOption = QMessageBox::Yes; break;
+                        case QMessageBox::No:     nUserOption = QMessageBox::No; break;
+                        case QMessageBox::Cancel: nUserOption = QMessageBox::Cancel; break;
                         }
 
                         oFileOptions.SetOption(nUserOption, ret == QMessageBox::YesToAll);
@@ -1341,13 +1341,13 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
 
                 switch (nUserOption)
                 {
-                case IDYES:
+                case QMessageBox::Yes:
                 {
                     // Actually, we need to do nothing in this case.
                 }
                 break;
 
-                case IDNO:
+                case QMessageBox::No:
                 {
                     eCopyResult = IFileUtil::ETREECOPYUSERDIDNTCOPYSOMEITEMS;
                     continue;
@@ -1355,7 +1355,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                 break;
 
                 // This IS ALWAYS for all... so it's easy to deal with.
-                case IDCANCEL:
+                case QMessageBox::Cancel:
                 {
                     return IFileUtil::ETREECOPYUSERCANCELED;
                 }
@@ -1412,9 +1412,9 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
 
                         switch (ret) {
                             case QMessageBox::YesToAll: /* fall-through */
-                            case QMessageBox::Yes:    nUserOption = IDYES; break;
-                            case QMessageBox::No:     nUserOption = IDNO; break;
-                            case QMessageBox::Cancel: nUserOption = IDCANCEL; break;
+                            case QMessageBox::Yes:    nUserOption = QMessageBox::Yes; break;
+                            case QMessageBox::No:     nUserOption = QMessageBox::No; break;
+                            case QMessageBox::Cancel: nUserOption = QMessageBox::Cancel; break;
                         }
 
                         oDirectoryOptions.SetOption(nUserOption, ret == QMessageBox::YesToAll);
@@ -1427,13 +1427,13 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
 
                 switch (nUserOption)
                 {
-                case IDYES:
+                case QMessageBox::Yes:
                 {
                     // Actually, we need to do nothing in this case.
                 }
                 break;
 
-                case IDNO:
+                case QMessageBox::No:
                 {
                     // If no, we just need to go to the next item.
                     eCopyResult = IFileUtil::ETREECOPYUSERDIDNTCOPYSOMEITEMS;
@@ -1442,7 +1442,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                 break;
 
                 // This IS ALWAYS for all... so it's easy to deal with.
-                case IDCANCEL:
+                case QMessageBox::Cancel:
                 {
                     return IFileUtil::ETREECOPYUSERCANCELED;
                 }
@@ -1523,9 +1523,9 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                     switch (ret) {
-                    case QMessageBox::Yes:    nUserOption = IDYES; break;
-                    case QMessageBox::No:     nUserOption = IDNO; break;
-                    case QMessageBox::Cancel: nUserOption = IDCANCEL; break;
+                    case QMessageBox::Yes:    nUserOption = QMessageBox::Yes; break;
+                    case QMessageBox::No:     nUserOption = QMessageBox::No; break;
+                    case QMessageBox::Cancel: nUserOption = QMessageBox::Cancel; break;
                     }
 
                     oFileOptions.SetOption(nUserOption, false);
@@ -1538,20 +1538,20 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
 
             switch (nUserOption)
             {
-            case IDYES:
+            case QMessageBox::Yes:
             {
                 // Actually, we need to do nothing in this case.
             }
             break;
 
-            case IDNO:
+            case QMessageBox::No:
             {
                 return eCopyResult = IFileUtil::ETREECOPYUSERCANCELED;
             }
             break;
 
             // This IS ALWAYS for all... so it's easy to deal with.
-            case IDCANCEL:
+            case QMessageBox::Cancel:
             {
                 return IFileUtil::ETREECOPYUSERCANCELED;
             }
@@ -1700,9 +1700,9 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
 
                         switch (ret) {
                         case QMessageBox::YesToAll: /* fall-through */
-                        case QMessageBox::Yes:    nUserOption = IDYES; break;
-                        case QMessageBox::No:     nUserOption = IDNO; break;
-                        case QMessageBox::Cancel: nUserOption = IDCANCEL; break;
+                        case QMessageBox::Yes:    nUserOption = QMessageBox::Yes; break;
+                        case QMessageBox::No:     nUserOption = QMessageBox::No; break;
+                        case QMessageBox::Cancel: nUserOption = QMessageBox::Cancel; break;
                         }
 
                         oFileOptions.SetOption(nUserOption, ret == QMessageBox::YesToAll);
@@ -1715,13 +1715,13 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
 
                 switch (nUserOption)
                 {
-                case IDYES:
+                case QMessageBox::Yes:
                 {
                     // Actually, we need to do nothing in this case.
                 }
                 break;
 
-                case IDNO:
+                case QMessageBox::No:
                 {
                     eCopyResult = IFileUtil::ETREECOPYUSERDIDNTCOPYSOMEITEMS;
                     continue;
@@ -1729,7 +1729,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                 break;
 
                 // This IS ALWAYS for all... so it's easy to deal with.
-                case IDCANCEL:
+                case QMessageBox::Cancel:
                 {
                     return IFileUtil::ETREECOPYUSERCANCELED;
                 }
@@ -1786,9 +1786,9 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
 
                         switch (ret) {
                         case QMessageBox::YesToAll: /* fall-through */
-                        case QMessageBox::Yes:    nUserOption = IDYES; break;
-                        case QMessageBox::No:     nUserOption = IDNO; break;
-                        case QMessageBox::Cancel: nUserOption = IDCANCEL; break;
+                        case QMessageBox::Yes:    nUserOption = QMessageBox::Yes; break;
+                        case QMessageBox::No:     nUserOption = QMessageBox::No; break;
+                        case QMessageBox::Cancel: nUserOption = QMessageBox::Cancel; break;
                         }
 
                         oDirectoryOptions.SetOption(nUserOption, ret == QMessageBox::YesToAll);
@@ -1801,13 +1801,13 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
 
                 switch (nUserOption)
                 {
-                case IDYES:
+                case QMessageBox::Yes:
                 {
                     // Actually, we need to do nothing in this case.
                 }
                 break;
 
-                case IDNO:
+                case QMessageBox::No:
                 {
                     // If no, we just need to go to the next item.
                     eCopyResult = IFileUtil::ETREECOPYUSERDIDNTCOPYSOMEITEMS;
@@ -1816,7 +1816,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                 break;
 
                 // This IS ALWAYS for all... so it's easy to deal with.
-                case IDCANCEL:
+                case QMessageBox::Cancel:
                 {
                     return IFileUtil::ETREECOPYUSERCANCELED;
                 }

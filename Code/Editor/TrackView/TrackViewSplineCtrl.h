@@ -35,7 +35,7 @@ public:
     const AZStd::vector<CTrackViewTrack*>& GetTracks() const { return m_tracks; }
     void RemoveAllSplines();
 
-    void OnUserCommand(UINT cmd);
+    void OnUserCommand(unsigned int cmd);
     bool IsUnifiedKeyCurrentlySelected() const;
     bool IsKeysFrozen() const { return m_bKeysFreeze; }
     bool IsTangentsFrozen() const { return m_bTangentsFreeze; }

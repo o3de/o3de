@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H
-#define CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H
-
 #pragma once
 
 #include "LayoutWnd.h"
@@ -44,5 +40,3 @@ protected:
     EViewLayout m_layout;
     QScopedPointer<Ui::CLayoutConfigDialog> ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_LAYOUTCONFIGDIALOG_H

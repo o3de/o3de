@@ -31,7 +31,7 @@ namespace Camera
                     QT_TRANSLATE_NOOP("Camera", "Rotate"),
                     QT_TRANSLATE_NOOP("Camera", "Rotate Camera Angle degrees about its Axis"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &Rotate::m_angleInDegrees,
+                    ->DataElement(nullptr, &Rotate::m_angleInDegrees,
                         QT_TRANSLATE_NOOP("Camera", "Angle"),
                         QT_TRANSLATE_NOOP("Camera", "The angle of rotation"))
                         ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "degrees"))

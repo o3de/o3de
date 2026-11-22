@@ -6,11 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_LAYOUTWND_H
-#define CRYINCLUDE_EDITOR_LAYOUTWND_H
-
 #pragma once
+
 // LayoutWnd.h : header file
 //
 
@@ -157,5 +154,3 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
-#endif // CRYINCLUDE_EDITOR_LAYOUTWND_H

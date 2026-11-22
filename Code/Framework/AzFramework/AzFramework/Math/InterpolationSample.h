@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_INTERPOLATION_SAMPLE_H
-#define AZ_INTERPOLATION_SAMPLE_H
+
+#pragma once
 
 namespace AzFramework
 {
@@ -158,5 +158,3 @@ namespace AzFramework
         }
     };
 }
-
-#endif //AZ_INTERPOLATION_SAMPLE_H

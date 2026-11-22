@@ -49,27 +49,27 @@ namespace Camera
                             ->EnumAttribute(EulerAngleType::Pitch, QT_TRANSLATE_NOOP("Camera", "Pitch"))
                             ->EnumAttribute(EulerAngleType::Roll, QT_TRANSLATE_NOOP("Camera", "Roll"))
                             ->EnumAttribute(EulerAngleType::Yaw, QT_TRANSLATE_NOOP("Camera", "Yaw"))
-                        ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_maximumPositiveSlideDistance,
+                        ->DataElement(nullptr, &SlideAlongAxisBasedOnAngle::m_maximumPositiveSlideDistance,
                             QT_TRANSLATE_NOOP("Camera", "Max Positive Slide Distance"),
                             QT_TRANSLATE_NOOP("Camera", "The maximum distance to slide in the positive"))
                             ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
-                        ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_maximumNegativeSlideDistance,
+                        ->DataElement(nullptr, &SlideAlongAxisBasedOnAngle::m_maximumNegativeSlideDistance,
                             QT_TRANSLATE_NOOP("Camera", "Max Negative Slide Distance"),
                             QT_TRANSLATE_NOOP("Camera", "The maximum distance to slide in the negative"))
                             ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"))
                         ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Camera", "Vector Components To Ignore"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreX,
+                            ->DataElement(nullptr, &SlideAlongAxisBasedOnAngle::m_ignoreX,
                                 QT_TRANSLATE_NOOP("Camera", "X"),
                                 QT_TRANSLATE_NOOP("Camera", "When active, the X Component will be ignored."))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SlideAlongAxisBasedOnAngle::YAndZIgnored)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                            ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreY,
+                            ->DataElement(nullptr, &SlideAlongAxisBasedOnAngle::m_ignoreY,
                                 QT_TRANSLATE_NOOP("Camera", "Y"),
                                 QT_TRANSLATE_NOOP("Camera", "When active, the Y Component will be ignored."))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SlideAlongAxisBasedOnAngle::XAndZIgnored)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                            ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreZ,
+                            ->DataElement(nullptr, &SlideAlongAxisBasedOnAngle::m_ignoreZ,
                                 QT_TRANSLATE_NOOP("Camera", "Z"),
                                 QT_TRANSLATE_NOOP("Camera", "When active, the Z Component will be ignored."))
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SlideAlongAxisBasedOnAngle::XAndYIgnored)

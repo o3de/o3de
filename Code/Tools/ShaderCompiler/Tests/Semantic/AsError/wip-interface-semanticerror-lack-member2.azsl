@@ -1,0 +1,9 @@
+interface my_name
+{
+    associatedtype T;
+};
+
+class s : my_name
+{
+};
+// error: my_name/T not reimplemented

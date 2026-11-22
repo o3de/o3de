@@ -466,10 +466,8 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::SetOverridden(bool overridden)
     {
-        bool currentOverrideValue = property("IsOverridden").toBool();
-        if (currentOverrideValue != overridden)
+        if (AzQtComponents::StyleManager::setObjectProperty(this, "IsOverridden", overridden))
         {
-            setProperty("IsOverridden", overridden);
             RefreshStyle();
         }
     }

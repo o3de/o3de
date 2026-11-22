@@ -61,10 +61,10 @@ struct UCol
 struct Vec3f16
     : public CryHalf4
 {
-    _inline Vec3f16()
+    inline Vec3f16()
     {
     }
-    _inline Vec3f16(f32 _x, f32 _y, f32 _z)
+    inline Vec3f16(f32 _x, f32 _y, f32 _z)
     {
         x = CryConvertFloatToHalf(_x);
         y = CryConvertFloatToHalf(_y);
@@ -76,7 +76,7 @@ struct Vec3f16
         assert(i <= 3);
         return CryConvertHalfToFloat(((CryHalf*)this)[i]);
     }
-    _inline Vec3f16& operator = (const Vec3& sl)
+    inline Vec3f16& operator = (const Vec3& sl)
     {
         x = CryConvertFloatToHalf(sl.x);
         y = CryConvertFloatToHalf(sl.y);
@@ -84,7 +84,7 @@ struct Vec3f16
         w = CryConvertFloatToHalf(1.0f);
         return *this;
     }
-    _inline Vec3f16& operator = (const Vec4& sl)
+    inline Vec3f16& operator = (const Vec4& sl)
     {
         x = CryConvertFloatToHalf(sl.x);
         y = CryConvertFloatToHalf(sl.y);
@@ -92,7 +92,7 @@ struct Vec3f16
         w = CryConvertFloatToHalf(sl.w);
         return *this;
     }
-    _inline Vec3 ToVec3() const
+    inline Vec3 ToVec3() const
     {
         Vec3 v;
         v.x = CryConvertHalfToFloat(x);

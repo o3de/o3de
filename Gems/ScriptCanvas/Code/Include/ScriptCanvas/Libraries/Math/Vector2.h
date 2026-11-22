@@ -66,6 +66,11 @@ namespace ScriptCanvas
 
         Vector2Type Slerp(const Vector2Type from, const Vector2Type to, const NumberType t);
 
+        AZStd::tuple<Vector2Type, Vector2Type> SmoothCriticallyDamped(
+            Vector2Type from, Vector2Type rate, const NumberType deltaTime, const Vector2Type target, const NumberType smoothTime);
+
+        Vector2Type SmoothStep(const Vector2Type& from, const Vector2Type& to, NumberType t);
+
         Vector2Type ToPerpendicular(const Vector2Type source);
 
         AZStd::tuple<Vector2Type, NumberType> DirectionTo(const Vector2Type from, const Vector2Type to, NumberType optionalScale = 1.f);

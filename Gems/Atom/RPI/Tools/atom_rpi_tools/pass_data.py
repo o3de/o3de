@@ -23,7 +23,6 @@ class PassTemplate:
         
         if 'ClassName' not in self.file_data or 'ClassData' not in self.file_data or self.file_data['ClassName']!='PassAsset' or 'PassTemplate' not in self.file_data['ClassData']:
             raise KeyError('the json file is not a PassAsset file')
-            return
        
         if 'PassRequests' in self.file_data['ClassData']['PassTemplate']:
             self.passRequests = self.file_data['ClassData']['PassTemplate']['PassRequests']

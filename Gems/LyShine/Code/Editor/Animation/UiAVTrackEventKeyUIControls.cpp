@@ -141,7 +141,7 @@ void CUiAnimViewTrackEventKeyUIControls::BuildEventDropDown(QString& curEvent, c
     {
         bool curEventExists = false;
         bool addedEventExists = false;
-        mv_event.SetEnumList(NULL);
+        mv_event.SetEnumList(nullptr);
         const int eventCount = sequence->GetTrackEventsCount();
 
         // Need to check if event exists before adding all events

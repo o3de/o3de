@@ -21,8 +21,8 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
-#include <AtomCore/Utils/ScopedValue.h>
+#include <AzCore/Instance/InstanceDatabase.h>
+#include <AzCore/Utils/ScopedValue.h>
 
 namespace AZ
 {

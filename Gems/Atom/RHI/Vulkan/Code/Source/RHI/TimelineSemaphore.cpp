@@ -23,7 +23,7 @@ namespace AZ
         {
             VkSemaphoreCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            createInfo.pNext = 0;
+            createInfo.pNext = nullptr;
             createInfo.flags = 0;
 
             VkSemaphoreTypeCreateInfo timelineCreateInfo{};

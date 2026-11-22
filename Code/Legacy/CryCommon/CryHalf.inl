@@ -6,13 +6,7 @@
  *
  */
 
-
-#ifndef CRY_HALF_INL
-#define CRY_HALF_INL
-
 #pragma once
-
-
 
 typedef uint16 CryHalf;
 
@@ -22,7 +16,7 @@ typedef union floatint_union
     uint32 i;
 } floatint_union;
 
-__forceinline CryHalf CryConvertFloatToHalf(const float Value)
+AZ_FORCE_INLINE CryHalf CryConvertFloatToHalf(const float Value)
 {
 #if defined(LINUX) || defined(MAC)
     asm volatile("" ::: "memory");
@@ -58,7 +52,7 @@ __forceinline CryHalf CryConvertFloatToHalf(const float Value)
     return (CryHalf)(Result | Sign);
 }
 
-__forceinline float CryConvertHalfToFloat(const CryHalf Value)
+AZ_FORCE_INLINE float CryConvertHalfToFloat(const CryHalf Value)
 {
 #if defined(LINUX) || defined(MAC)
     asm volatile("" ::: "memory");
@@ -190,5 +184,3 @@ struct CryHalf4
         return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
     }
 };
-
-#endif // #ifndef CRY_HALF_INL

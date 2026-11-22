@@ -583,7 +583,7 @@ namespace EditorPythonBindings
             {
                 return pybind11::cast<PythonProxyObject*>(pyObj)->GetWrappedTypeName();
             }
-            return pybind11::cast<AZStd::string>(pybind11::str(pyObj.get_type()));
+            return pybind11::cast<AZStd::string>(pybind11::str(pybind11::type::of(pyObj)));
         }
     }
 

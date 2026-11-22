@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
@@ -70,7 +70,7 @@ class TestFileMenuDefaultNewOpen:
 
         # 4) Trigger open new graph file action
         action = pyside_utils.find_child_by_pattern(
-            sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction})
+            sc_main, {"objectName": "action_New_Script", "type": QtGui.QAction})
         action.trigger()
 
         # 5) Check tab count again to verify a new tab has been opened
@@ -78,7 +78,7 @@ class TestFileMenuDefaultNewOpen:
         Report.info(f"{Tests.newTabTestResults}: {result}")
 
         # 6) Trigger open file popup action then close the popup.
-        action = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_Open", "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_Open", "type": QtGui.QAction})
         pyside_utils.trigger_action_async(action)
         popup = await pyside_utils.wait_for_modal_widget()
         result = popup and 'Open' in popup.windowTitle()

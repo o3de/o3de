@@ -1,0 +1,37 @@
+class S
+{
+    bool c;  // member variable
+};
+
+void func(S param)
+{
+    bool c = param.c; // reference to func::param and S::c
+
+    /*
+    desire: visit all references throughout the statement.
+    how: listen to idExpression (every reference is necessarily a leaf. a leaf is necessarily an idExpression)
+       difficulty: need to get left context resolved in case of MemberAccess
+
+    sequence:
+        idExpression
+            param
+            -> no left context.
+                LookupSymbol -> found /func/param
+                    register reference.
+
+        idExpression
+            c
+            -> context on the left
+            get typeof(left-hand-side-expression) to know what type to search for member c
+            access AST to get left-hand-side-expression (LHSExpr)
+                find idExpression
+                    param
+                    check left context -> no left context. STOP recursion here.
+                    LookupSymbol -> found /func/param
+            typeof(/func/param) -> /S
+            LookupSymbol(/S + / + c) -> found /S/c
+                register reference
+    */
+
+    /* UPDATE: now implemented in AzslcListener.cpp:SemaCheckListener::enterIdExpression */
+}

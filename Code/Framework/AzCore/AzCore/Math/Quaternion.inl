@@ -405,6 +405,20 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Quaternion Quaternion::SmoothCriticallyDamped(Quaternion& valueRate, float timeDelta, const Quaternion& target, float smoothTime) const
+    {
+        Quaternion result = *this;
+        AZ::SmoothCriticallyDamped(result, valueRate, timeDelta, target, smoothTime);
+        return result;
+    }
+
+
+    AZ_MATH_INLINE Quaternion Quaternion::SmoothStep(const Quaternion& dest, float t) const
+    {
+        return AZ::SmoothStep(*this, dest, t);
+    }
+
+
     AZ_MATH_INLINE bool Quaternion::IsClose(const Quaternion& q, float tolerance) const
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR

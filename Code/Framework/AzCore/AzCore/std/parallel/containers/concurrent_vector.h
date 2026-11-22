@@ -37,7 +37,7 @@ namespace AZStd
             m_size.store(0, memory_order_release);
             for (unsigned int i = 0; i < MAX_NUM_CHUNKS; ++i)
             {
-                m_chunks[i].store(NULL, memory_order_release);
+                m_chunks[i].store(nullptr, memory_order_release);
             }
         }
 
@@ -136,7 +136,7 @@ namespace AZStd
             //allocate a new chunk, and attempt to assign it atomically with a compareAndSwap
             unsigned int chunkSize = GetChunkSize(chunkIndex);
             T* newChunk = static_cast<T*>(m_alloc.allocate(chunkSize * sizeof(T), alignment_of_v<T>));
-            T* oldChunk = NULL;
+            T* oldChunk = nullptr;
             if (!m_chunks[chunkIndex].compare_exchange_strong(oldChunk, newChunk, memory_order_acq_rel, memory_order_acquire))
             {
                 //somebody beat us to it, that's ok, use their chunk and free our attempted allocation

@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_OBJECTEVENT_H
-#define CRYINCLUDE_EDITOR_INCLUDE_OBJECTEVENT_H
 #pragma once
 
 //! Standart objects types.
@@ -40,6 +37,3 @@ enum ObjectEvent
     EVENT_CONFIG_SPEC_CHANGE,   //!< Called when config spec changed.
     EVENT_HIDE_HELPER, //!< Signals that happens when Helper mode switches to be hidden.
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_OBJECTEVENT_H
-

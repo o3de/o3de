@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <SerializeFwd.h>
 #include <smartptr.h>
 #include <LyShine/Bus/UiTransformBus.h>
+#include <AzCore/Instance/Instance.h>
 #include <AzCore/Math/Vector2.h>
-#include <AtomCore/Instance/Instance.h>
 
 namespace AZ
 {
@@ -129,7 +130,7 @@ public: // member functions
 
     //! Gets the sliced border UV coordinates in texture space for a given cell within a sprite-sheet.
     //!
-    //! The returned UV border coordinates are in texture space. For example, a top-left border of (0.5, 0.5) 
+    //! The returned UV border coordinates are in texture space. For example, a top-left border of (0.5, 0.5)
     //! would be the center of the sprite-sheet.
     virtual Borders GetTextureSpaceCellUvBorders(int cellIndex) const = 0;
 
@@ -141,7 +142,7 @@ public: // member functions
 
     //! Returns the sprite-sheet cell index that corresponds to the given string alias.
     virtual int GetCellIndexFromAlias(const AZStd::string& cellAlias) const = 0;
-    
+
     //! Returns true if this sprite is configured as a sprite-sheet, false otherwise
     virtual bool IsSpriteSheet() const = 0;
 

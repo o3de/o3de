@@ -19,10 +19,15 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/parallel/lock.h>
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+
+#include <algorithm>
 
 using namespace AzFramework;
 
@@ -136,11 +141,85 @@ namespace AZ
 
         // Show a scrolling child region in which to display all debug log entires.
         const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
+        AZStd::unique_lock<AZStd::mutex> logLock(m_logMutex);
+        if (auto* logWindow = ImGui::FindWindowByID(m_logWindowId); logWindow && m_evictedLogHeight > 0 &&
+            (m_logSelection[0] != m_logSelection[1] || ImGui::GetActiveID() == logWindow->GetID("LogSelection")))
+        {
+            ImGui::SetNextWindowScroll(ImVec2(-1, AZStd::max(0.0f, logWindow->Scroll.y - m_evictedLogHeight)));
+        }
+        m_evictedLogHeight = 0;
         ImGui::BeginChild("DebugLogEntriesScrollBox", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
         {
+            m_logWindowId = ImGui::GetCurrentWindow()->ID;
+            m_logLineHeight = ImGui::GetTextLineHeight();
+            m_logItemSpacing = ImGui::GetStyle().ItemSpacing.y;
+            m_logOriginY = ImGui::GetCursorScreenPos().y;
+            const auto& io = ImGui::GetIO();
+            const ImGuiID selectionId = ImGui::GetID("LogSelection");
+            const ImRect clip = ImGui::GetCurrentWindow()->InnerClipRect;
+            const bool clicked = ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(clip.Min, clip.Max) && ImGui::IsMouseClicked(0);
+            if (clicked)
+            {
+                ImGui::SetWindowFocus();
+                ImGui::SetActiveID(selectionId, ImGui::GetCurrentWindow());
+                m_logSelection[1] = {};
+            }
+            const bool dragging = ImGui::GetActiveID() == selectionId;
+            size_t entryIndex = 0;
             // Display each debug log entry individually so they can be colored.
             for (const auto& debugLogEntry : m_debugLogEntires)
             {
+                const auto& text = debugLogEntry.first;
+                if (dragging ||
+                    (AZStd::min(m_logSelection[0], m_logSelection[1]).first <= entryIndex &&
+                     entryIndex <= AZStd::max(m_logSelection[0], m_logSelection[1]).first && m_logSelection[0] != m_logSelection[1]))
+                {
+                    const ImVec2 origin = ImGui::GetCursorScreenPos();
+                    const char* line = text.data();
+                    const char* end = line + text.size();
+                    float y = origin.y;
+                    do
+                    {
+                        const char* newline = AZStd::find(line, end, '\n');
+                        const size_t from = static_cast<size_t>(line - text.data());
+                        const size_t lineEnd = static_cast<size_t>(newline - text.data());
+                        const size_t to = lineEnd +
+                            (newline != end || (&debugLogEntry != &m_debugLogEntires.back() && (text.empty() || text.back() != '\n')));
+                        const float height = ImGui::GetTextLineHeight();
+                        LogPosition cursor = m_logSelection[1];
+                        if (dragging && ImGui::IsMouseDown(0))
+                        {
+                            const char* hit = newline;
+                            if (io.MousePos.y >= y && io.MousePos.y < y + height)
+                            {
+                                ImGui::GetFont()->CalcTextSizeA(
+                                    ImGui::GetFontSize(), AZStd::max(0.0f, io.MousePos.x - origin.x) + 0.01f, 0, line, newline, &hit);
+                            }
+                            cursor = { entryIndex,
+                                       io.MousePos.y < y                 ? from
+                                           : io.MousePos.y >= y + height ? to
+                                                                         : static_cast<size_t>(hit - text.data()) };
+                            if (io.MousePos.y >= y)
+                            {
+                                m_logSelection[1] = { entryIndex, AZStd::min(cursor.second, text.size()) };
+                            }
+                        }
+                        const LogPosition begin{ entryIndex, from };
+                        const LogPosition limit{ entryIndex, to };
+                        const size_t a = AZStd::clamp(AZStd::min(m_logSelection[0], cursor), begin, limit).second;
+                        const size_t b = AZStd::clamp(AZStd::max(m_logSelection[0], cursor), begin, limit).second;
+                        if (!clicked && a < b && y + height >= clip.Min.y && y < clip.Max.y)
+                        {
+                            const float x1 = ImGui::CalcTextSize(line, text.data() + AZStd::min(a, lineEnd)).x;
+                            const float x2 = ImGui::CalcTextSize(line, text.data() + AZStd::min(b, lineEnd)).x +
+                                (b > lineEnd ? ImGui::CalcTextSize(" ").x : 0);
+                            ImGui::GetWindowDrawList()->AddRectFilled(
+                                ImVec2(origin.x + x1, y), ImVec2(origin.x + x2, y + height), ImGui::GetColorU32(ImGuiCol_TextSelectedBg));
+                        }
+                        y += height;
+                        line = newline != end ? newline + 1 : end;
+                    } while (line < end);
+                }
                 const ImVec4 color(debugLogEntry.second.GetR(),
                     debugLogEntry.second.GetG(),
                     debugLogEntry.second.GetB(),
@@ -148,16 +227,46 @@ namespace AZ
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
                 ImGui::TextUnformatted(debugLogEntry.first.c_str());
                 ImGui::PopStyleColor();
+                ++entryIndex;
+            }
+            if (clicked)
+            {
+                m_logSelection[0] = m_logSelection[1];
+            }
+            if (dragging && !ImGui::IsMouseDown(0))
+            {
+                ImGui::ClearActiveID();
+            }
+            if (ImGui::IsWindowFocused() && (io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl) &&
+                ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false) && m_logSelection[0] != m_logSelection[1])
+            {
+                AZStd::string selected;
+                const auto first = AZStd::min(m_logSelection[0], m_logSelection[1]);
+                const auto last = AZStd::max(m_logSelection[0], m_logSelection[1]);
+                for (size_t index = first.first; index <= last.first; ++index)
+                {
+                    const auto& text = m_debugLogEntires[index].first;
+                    const size_t a = index == first.first ? first.second : 0;
+                    const size_t b = index == last.first ? last.second : text.size();
+                    selected.append(text.data() + a, b - a);
+                    if (index != last.first && (text.empty() || text.back() != '\n'))
+                    {
+                        selected.push_back('\n');
+                    }
+                }
+                ImGui::SetClipboardText(selected.c_str());
             }
 
             // Scroll to the last debug log entry if needed.
-            if (m_forceScroll || (m_autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+            if (m_forceScroll ||
+                (m_autoScroll && !dragging && m_logSelection[0] == m_logSelection[1] && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
             {
                 ImGui::SetScrollHereY(1.0f);
                 m_forceScroll = false;
             }
         }
         ImGui::EndChild();
+        logLock.unlock();
 
         // Show a text input field.
         ImGui::Separator();
@@ -215,10 +324,22 @@ namespace AZ
 
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
+        AZStd::lock_guard<AZStd::mutex> logLock(m_logMutex);
         // Add the debug to our display, removing the oldest entry if we exceed the maximum.
         m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
         if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
+            const auto& removed = m_debugLogEntires.front().first;
+            // TextUnformatted's large-text path counts a trailing CR as another line.
+            const auto last = removed.size() > 2000 ? removed.size() - 1 : removed.find_last_not_of('\r');
+            const auto lines = std::count(removed.begin(), removed.end(), '\n') + (last == AZStd::string::npos || removed[last] != '\n');
+            const float nextY = IM_FLOOR(m_logOriginY + static_cast<float>(lines) * m_logLineHeight + m_logItemSpacing);
+            m_evictedLogHeight += nextY - m_logOriginY;
+            m_logOriginY = nextY;
+            for (auto& endpoint : m_logSelection)
+            {
+                endpoint = endpoint.first ? LogPosition{ endpoint.first - 1, endpoint.second } : LogPosition{};
+            }
             m_debugLogEntires.pop_front();
         }
     }
@@ -244,7 +365,10 @@ namespace AZ
 
     void DebugConsole::ClearDebugLog()
     {
+        AZStd::lock_guard<AZStd::mutex> logLock(m_logMutex);
         m_debugLogEntires.clear();
+        m_logSelection[0] = m_logSelection[1] = {};
+        m_evictedLogHeight = 0;
     }
 
     bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)

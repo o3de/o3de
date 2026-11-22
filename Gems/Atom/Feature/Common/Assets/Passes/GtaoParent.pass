@@ -1,0 +1,143 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "GtaoParentTemplate",
+            "PassClass": "GtaoParentPass",
+            "Slots": [
+                {
+                    "Name": "Modulate",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "ModulateWithGtao",
+                        "Attachment": "InputOutput"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DepthDownsample",
+                    "TemplateName": "DepthDownsampleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "FullResDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "GtaoCompute",
+                    "TemplateName": "GtaoComputeTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "GtaoBlur",
+                    "TemplateName": "FastDepthAwareBlurTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "GtaoCompute",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Upsample",
+                    "TemplateName": "DepthUpsampleTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "FullResDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HalfResDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthDownsample",
+                                "Attachment": "HalfResDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HalfResSource",
+                            "AttachmentRef": {
+                                "Pass": "GtaoBlur",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ModulateWithGtao",
+                    "TemplateName": "ModulateTextureTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Upsample",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Modulate"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/ModulateTexture.shader"
+                        },
+                        "FullscreenDispatch": true
+                    }
+                }
+            ]
+        }
+    }
+}

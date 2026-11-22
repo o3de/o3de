@@ -48,6 +48,9 @@ namespace AzFramework
         //! The provided entry must be bound to this node.
         void Remove(OctreeScene& octreeScene, VisibilityEntry* entry);
 
+        //! Recursively enumerates all allocated OctreeNodes, including nodes with no entries.
+        void Enumerate(const IVisibilityScene::EnumerateCallback& callback) const;
+
         //! Recursively enumerates any OctreeNodes and their children that intersect the provided bounding volume.
         //! @{
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const;
@@ -108,6 +111,7 @@ namespace AzFramework
         const AZ::Name& GetName() const override;
         void InsertOrUpdateEntry(VisibilityEntry& entry) override;
         void RemoveEntry(VisibilityEntry& entry) override;
+        void Enumerate(const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Aabb& aabb, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Sphere& sphere, const IVisibilityScene::EnumerateCallback& callback) const override;
         void Enumerate(const AZ::Hemisphere& hemisphere, const IVisibilityScene::EnumerateCallback& callback) const override;

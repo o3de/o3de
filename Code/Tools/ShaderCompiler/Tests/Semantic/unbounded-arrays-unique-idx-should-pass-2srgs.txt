@@ -1,0 +1,9 @@
+# list lines expected to have tokens matching the patterns in the strings. each space is a separation.
+
+"ByteAddressBuffer SRG1_m_meshBuffers [] : register ( t8 , space1000 ) ;"
+"ConstantBuffer < :: SRG1_SRGConstantsStruct > SRG1_SRGConstantBuffer : register ( b6 , space0 ) ;"
+"ConstantBuffer < :: MyStruct > SRG1_m_data : register ( b7 , space0 ) ;"
+
+"ByteAddressBuffer SRG2_m_meshBuffers [] : register ( t8 , space1001 ) ;"
+"ConstantBuffer < :: SRG2_SRGConstantsStruct > SRG2_SRGConstantBuffer : register ( b6 , space1 ) ;"
+"ConstantBuffer < :: MyStruct > SRG2_m_data : register ( b7 , space1 ) ;"

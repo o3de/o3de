@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from typing import List
 
+from cmake_text import find_calls, find_files_block_end
 from command_plugin import WizardCommand, CommandContext, CommandRegistry, CMakeTarget, CMakeAnalyzer
 
 
@@ -82,9 +83,8 @@ class RegisterInterfaceHeaderCommand(WizardCommand):
             ctx.log(f"Interface header already in {files_cmake_path.name}")
             return
 
-        match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-        if match:
-            end_pos = match.end(1)
+        end_pos = find_files_block_end(text)
+        if end_pos is not None:
             text = text[:end_pos] + f"    {rel_hdr}\n" + text[end_pos:]
         else:
             text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n)\n"
@@ -100,16 +100,20 @@ class RegisterInterfaceHeaderCommand(WizardCommand):
             ctx.log(f"Interface header already in {cmake_path.name}")
             return
 
-        pattern = rf'target_sources\s*\(\s*{re.escape(target.name)}\s+INTERFACE\s+([^)]*)\)'
-        match = re.search(pattern, text, flags=re.S)
+        # Find this target's target_sources(<name> INTERFACE ...) call; its files start after "INTERFACE"
+        sources_call, files_start = None, 0
+        for call in find_calls(text, 'target_sources'):
+            head = re.match(rf'\s*{re.escape(target.name)}\s+INTERFACE\s+', call.code_body)
+            if head:
+                sources_call, files_start = call, call.body_start + head.end()
+                break
 
-        if match:
-            content = match.group(1)
+        if sources_call:
+            content = text[files_start:sources_call.body_end]
             indent_match = re.search(r'\n(\s+)', content)
             indent = indent_match.group(1) if indent_match else '    '
             new_content = content.rstrip() + f'\n{indent}{rel_hdr}\n'
-            new_text = text[:match.start(1)] + new_content + text[match.end(1):]
-            text = new_text
+            text = text[:files_start] + new_content + text[sources_call.body_end:]
         else:
             append = (
                 f"\n# Interface header\n"

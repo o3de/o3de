@@ -1,0 +1,12 @@
+{
+    "PackageName": "lz4",
+    "Version": "1.11.1",
+    "URL": "https://github.com/lz4/lz4",
+    "License": "BSD-2-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/lz4/lz4/archive/refs/tags/v1.11.1.tar.gz",
+        "Revision": "aa4647fad575d01a874aaaadcdbe8e6a40e072f5",
+        "SHA256": "683fed08a844ad012196381e40badf80c0bbe4962959761416d41c9e67d77ec7"
+    }
+}

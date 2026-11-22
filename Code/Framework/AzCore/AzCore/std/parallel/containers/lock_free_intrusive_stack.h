@@ -130,7 +130,7 @@ namespace AZStd
     template<typename T, typename Hook>
     inline lock_free_intrusive_stack<T, Hook>::lock_free_intrusive_stack()
     {
-        m_top.store(NULL, memory_order_release);
+        m_top.store(nullptr, memory_order_release);
     }
 
     template<typename T, typename Hook>
@@ -142,7 +142,7 @@ namespace AZStd
         {
             hook_node_type* hookNode = Hook::to_node_ptr(node);
             node_type* next = hookNode->m_next;
-            hookNode->m_next = NULL;
+            hookNode->m_next = nullptr;
             node = next;
         }
 #endif
@@ -181,14 +181,14 @@ namespace AZStd
             node_type* oldTop = m_top.load(memory_order_acquire);
             if (!oldTop)
             {
-                return NULL;
+                return nullptr;
             }
             hook_node_type* oldHookTop = Hook::to_node_ptr(oldTop);
             node_type* newTop = oldHookTop->m_next;
             if (m_top.compare_exchange_weak(oldTop, newTop, memory_order_acq_rel, memory_order_acquire))
             {
 #ifdef AZ_DEBUG_BUILD
-                oldHookTop->m_next = NULL;
+                oldHookTop->m_next = nullptr;
 #endif
                 return oldTop;
             }
@@ -199,7 +199,7 @@ namespace AZStd
     template<typename T, typename Hook>
     inline bool lock_free_intrusive_stack<T, Hook>::empty() const
     {
-        return (m_top.load(memory_order_acquire) == NULL);
+        return (m_top.load(memory_order_acquire) == nullptr);
     }
 }
 

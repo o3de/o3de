@@ -53,10 +53,10 @@ namespace Vegetation
                     QT_TRANSLATE_NOOP("Vegetation", "Vegetation Instance System"), QT_TRANSLATE_NOOP("Vegetation", "Manages vegetation instance and render groups"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &InstanceSystemConfig::m_maxInstanceProcessTimeMicroseconds, QT_TRANSLATE_NOOP("Vegetation", "Max Instance Process Time Microseconds"), QT_TRANSLATE_NOOP("Vegetation", "Maximum number of microseconds allowed for processing instance management tasks each tick"))
+                    ->DataElement(nullptr, &InstanceSystemConfig::m_maxInstanceProcessTimeMicroseconds, QT_TRANSLATE_NOOP("Vegetation", "Max Instance Process Time Microseconds"), QT_TRANSLATE_NOOP("Vegetation", "Maximum number of microseconds allowed for processing instance management tasks each tick"))
                         ->Attribute(AZ::Edit::Attributes::Min, InstanceSystemUtil::Constants::s_minTaskTimePerTick)
                         ->Attribute(AZ::Edit::Attributes::Max, InstanceSystemUtil::Constants::s_maxTaskTimePerTick)
-                    ->DataElement(0, &InstanceSystemConfig::m_maxInstanceTaskBatchSize, QT_TRANSLATE_NOOP("Vegetation", "Max Instance Task Batch Size"), QT_TRANSLATE_NOOP("Vegetation", "Maximum number of instance management tasks that can be batch processed together"))
+                    ->DataElement(nullptr, &InstanceSystemConfig::m_maxInstanceTaskBatchSize, QT_TRANSLATE_NOOP("Vegetation", "Max Instance Task Batch Size"), QT_TRANSLATE_NOOP("Vegetation", "Maximum number of instance management tasks that can be batch processed together"))
                         ->Attribute(AZ::Edit::Attributes::Min, InstanceSystemUtil::Constants::s_minTaskBatchSize)
                         ->Attribute(AZ::Edit::Attributes::Max, InstanceSystemUtil::Constants::s_maxTaskBatchSize)
                     ;
@@ -94,7 +94,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
-                    ->DataElement(0, &InstanceSystemComponent::m_configuration, QT_TRANSLATE_NOOP("Vegetation", "Configuration"), "")
+                    ->DataElement(nullptr, &InstanceSystemComponent::m_configuration, QT_TRANSLATE_NOOP("Vegetation", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

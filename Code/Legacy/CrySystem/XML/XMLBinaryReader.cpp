@@ -48,7 +48,7 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromFile(
     if (!xmlFile.Open(filename, "rb"))
     {
         SetErrorDescription("Can't open file.");
-        return 0;
+        return nullptr;
     }
 
     const size_t fileSize = xmlFile.GetLength();
@@ -56,7 +56,7 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromFile(
     {
         result = eResult_NotBinXml;
         SetErrorDescription("File is not a binary XML file (file size is too small).");
-        return 0;
+        return nullptr;
     }
 
     // Read in the entire file - this buffer will not be deallocated immediately, since the nodes
@@ -68,14 +68,14 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromFile(
     if (!pFileContents)
     {
         SetErrorDescription("Can't allocate memory for binary XML file contents.");
-        return 0;
+        return nullptr;
     }
 
     if (xmlFile.ReadRaw(pFileContents, fileSize) != fileSize)
     {
         delete [] pFileContents;
         SetErrorDescription("Failed to read binary XML file, the file is corrupt.");
-        return 0;
+        return nullptr;
     }
 
     Check(pFileContents, fileSize, result);
@@ -83,16 +83,16 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromFile(
     if (result != eResult_Success)
     {
         delete [] pFileContents;
-        return 0;
+        return nullptr;
     }
 
     CBinaryXmlData* const pData = Create(pFileContents, fileSize, result);
 
     if (result != eResult_Success)
     {
-        assert(pData == 0);
+        assert(pData == nullptr);
         delete [] pFileContents;
-        return 0;
+        return nullptr;
     }
 
     assert(pData);
@@ -116,10 +116,10 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromBuffer(
 
     if (result != eResult_Success)
     {
-        return 0;
+        return nullptr;
     }
 
-    CBinaryXmlData* pData = 0;
+    CBinaryXmlData* pData = nullptr;
 
     if (bufferMemoryHandling == eBufferMemoryHandling_MakeCopy)
     {
@@ -127,7 +127,7 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromBuffer(
         if (!ownBuffer)
         {
             SetErrorDescription("Can't allocate memory for binary XML data.");
-            return 0;
+            return nullptr;
         }
         memcpy(ownBuffer, buffer, size);
 
@@ -135,9 +135,9 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromBuffer(
 
         if (result != eResult_Success)
         {
-            assert(pData == 0);
+            assert(pData == nullptr);
             delete [] ownBuffer;
-            return 0;
+            return nullptr;
         }
     }
     else
@@ -148,8 +148,8 @@ XmlNodeRef XMLBinary::XMLBinaryReader::LoadFromBuffer(
 
         if (result != eResult_Success)
         {
-            assert(pData == 0);
-            return 0;
+            assert(pData == nullptr);
+            return nullptr;
         }
     }
 
@@ -166,7 +166,7 @@ void XMLBinary::XMLBinaryReader::Check(const char* buffer, size_t size, EResult&
     m_errorDescription[0] = 0;
     result = eResult_Error;
 
-    if (buffer == 0)
+    if (buffer == nullptr)
     {
         SetErrorDescription("Buffer is null.");
         return;
@@ -228,7 +228,7 @@ void XMLBinary::XMLBinaryReader::CheckHeader(const BinaryFileHeader& header, siz
 
 CBinaryXmlData* XMLBinary::XMLBinaryReader::Create(const char* buffer, size_t size, EResult& result)
 {
-    assert((buffer != 0) && (size >= sizeof(BinaryFileHeader)));
+    assert((buffer != nullptr) && (size >= sizeof(BinaryFileHeader)));
 
     m_errorDescription[0] = 0;
     result = eResult_Error;
@@ -237,7 +237,7 @@ CBinaryXmlData* XMLBinary::XMLBinaryReader::Create(const char* buffer, size_t si
     if (!pData)
     {
         SetErrorDescription("Can't allocate memory for binary XML object.");
-        return 0;
+        return nullptr;
     }
 
     pData->pFileContents = buffer;
@@ -252,7 +252,7 @@ CBinaryXmlData* XMLBinary::XMLBinaryReader::Create(const char* buffer, size_t si
     {
         delete pData;
         SetErrorDescription("Can't allocate memory for binary XML nodes.");
-        return 0;
+        return nullptr;
     }
 
     pData->pAttributes   = reinterpret_cast<const Attribute*>(buffer + header.nAttributeTablePosition);

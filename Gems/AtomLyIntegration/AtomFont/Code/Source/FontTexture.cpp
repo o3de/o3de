@@ -31,7 +31,7 @@ AZ::FontTexture::FontTexture()
     , m_widthCellCount(0)
     , m_heightCellCount(0)
     , m_textureSlotCount(0)
-    , m_buffer(0)
+    , m_buffer(nullptr)
     , m_smoothMethod(AZ::FontSmoothMethod::None)
     , m_smoothAmount(AZ::FontSmoothAmount::None)
 {
@@ -134,7 +134,7 @@ int AZ::FontTexture::Create(int width, int height, AZ::FontSmoothMethod smoothMe
 int AZ::FontTexture::Release()
 {
     delete[] m_buffer;
-    m_buffer = 0;
+    m_buffer = nullptr;
 
     ReleaseSlotList();
 
@@ -182,14 +182,14 @@ AZ::TextureSlot* AZ::FontTexture::GetCharSlot(uint32_t character, const  AZ::Ato
         return pItor->second;
     }
 
-    return 0;
+    return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
 AZ::TextureSlot* AZ::FontTexture::GetLRUSlot()
 {
     uint16_t wMaxSlotAge = 0;
-    TextureSlot* pLRUSlot = 0;
+    TextureSlot* pLRUSlot = nullptr;
     TextureSlot* slot;
 
     TextureSlotListItor pItor = m_slotList.begin();
@@ -222,7 +222,7 @@ AZ::TextureSlot* AZ::FontTexture::GetLRUSlot()
 AZ::TextureSlot* AZ::FontTexture::GetMRUSlot()
 {
     uint16_t wMinSlotAge = 0xFFFF;
-    TextureSlot* pMRUSlot = 0;
+    TextureSlot* pMRUSlot = nullptr;
     TextureSlot* slot;
 
     TextureSlotListItor pItor = m_slotList.begin();

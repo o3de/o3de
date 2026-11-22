@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTYEDITORAPI_INTERNALS_IMPL_H
-#define PROPERTYEDITORAPI_INTERNALS_IMPL_H
+
+#pragma once
 
 #include <QObject>
 
@@ -102,5 +102,3 @@ namespace AzToolsFramework
         }
     }
 }
-
-#endif

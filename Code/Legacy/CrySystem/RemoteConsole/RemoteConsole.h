@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H
-#define CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H
 #pragma once
 
 #include <CryCommon/IConsole.h>
@@ -67,5 +64,3 @@ public:
     SRemoteServer* m_pServer;
 #endif
 };
-
-#endif // CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H

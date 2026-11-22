@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CRYEDIT_H
-#define CRYINCLUDE_EDITOR_CRYEDIT_H
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
@@ -26,6 +23,9 @@ class CConsoleDialog;
 class QAction;
 class MainWindow;
 class QSharedMemory;
+class ComponentEntityEditorTool;
+class ProjectSettingsEditorTool;
+class AssetImporterTool;
 
 namespace AzToolsFramework
 {
@@ -134,9 +134,10 @@ public:
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
-    AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
+    AZ::Outcome<void, AZStd::string> InitGameSystem(void* hwndForInputSystem);
     void CreateSplashScreen();
-    void InitPlugins();
+    void InitEditorTools();
+    void ShutdownEditorTools();
     bool InitGame();
 
     bool InitConsole();
@@ -161,7 +162,7 @@ public:
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
-    virtual bool OnIdle(LONG lCount);
+    virtual bool OnIdle(AZ::s64 lCount);
     virtual CCryEditDoc* OpenDocumentFile(const char* filename,
         bool addToMostRecentFileList=true,
         COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
@@ -263,7 +264,7 @@ private:
     // Level load test mode
     bool m_bLevelLoadTestMode = false;
     //! Current file in preview mode.
-    char m_sPreviewFile[_MAX_PATH];
+    char m_sPreviewFile[AZ_TRAIT_OS_MAX_PATH_LEN];
     //! True if "/runpythontest" was passed as a flag.
     bool m_bRunPythonTestScript = false;
     //! True if "/runpython" was passed as a flag.
@@ -280,7 +281,7 @@ private:
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
-    ULONG_PTR m_gdiplusToken;
+    uintptr_t m_gdiplusToken;
     QSharedMemory* m_mutexApplication = nullptr;
     //! was the editor active in the previous frame ... needed to detect if the game lost focus and
     //! dispatch proper SystemEvent (needed to release input keys)
@@ -307,6 +308,10 @@ private:
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
 
     CCryDocManager* m_pDocManager = nullptr;
+
+    AZStd::unique_ptr<ComponentEntityEditorTool> m_componentEntityEditor;
+    AZStd::unique_ptr<ProjectSettingsEditorTool> m_projectSettingsTool;
+    AZStd::unique_ptr<AssetImporterTool> m_assetImporter;
 
 // Disable warning for dll export since this member won't be used outside this class
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
@@ -391,7 +396,7 @@ public:
     // avoid creating another CMainFrame
     // close other type docs before opening any things
     virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = true);
     virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
 private:
@@ -450,5 +455,3 @@ namespace AzToolsFramework
 
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
-
-#endif // CRYINCLUDE_EDITOR_CRYEDIT_H

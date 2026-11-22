@@ -94,7 +94,7 @@ namespace AZStd
     template< class T >
     AZStd::shared_ptr< T > make_shared()
     {
-        AZStd::shared_ptr< T > pt(static_cast< T* >(0), AZStd::Internal::sp_inplace_tag< AZStd::Internal::sp_ms_deleter< T > >());
+        AZStd::shared_ptr< T > pt(static_cast< T* >(nullptr), AZStd::Internal::sp_inplace_tag< AZStd::Internal::sp_ms_deleter< T > >());
 
         AZStd::Internal::sp_ms_deleter< T >* pd = AZStd::get_deleter< AZStd::Internal::sp_ms_deleter< T > >(pt);
 
@@ -112,7 +112,7 @@ namespace AZStd
     template< class T, class A >
     AZStd::shared_ptr< T > allocate_shared(A const& a)
     {
-        AZStd::shared_ptr< T > pt(static_cast< T* >(0), AZStd::Internal::sp_inplace_tag< AZStd::Internal::sp_ms_deleter< T > >(), a);
+        AZStd::shared_ptr< T > pt(static_cast< T* >(nullptr), AZStd::Internal::sp_inplace_tag< AZStd::Internal::sp_ms_deleter< T > >(), a);
 
         AZStd::Internal::sp_ms_deleter< T >* pd = AZStd::get_deleter< AZStd::Internal::sp_ms_deleter< T > >(pt);
 
@@ -131,7 +131,7 @@ namespace AZStd
     template< class T, class ... Args >
     AZStd::shared_ptr< T > make_shared(Args&& ... args)
     {
-        AZStd::shared_ptr< T > pt(static_cast< T* >(0), AZStd::Internal::sp_inplace_tag<AZStd::Internal::sp_ms_deleter< T > >());
+        AZStd::shared_ptr< T > pt(static_cast< T* >(nullptr), AZStd::Internal::sp_inplace_tag<AZStd::Internal::sp_ms_deleter< T > >());
 
         AZStd::Internal::sp_ms_deleter< T >* pd = AZStd::get_deleter< AZStd::Internal::sp_ms_deleter< T > >(pt);
 
@@ -149,7 +149,7 @@ namespace AZStd
     template< class T, class A, class Arg1, class ... Args >
     AZStd::shared_ptr< T > allocate_shared(A const& a, Arg1&& arg1, Args&& ... args)
     {
-        AZStd::shared_ptr< T > pt(static_cast<T*>(0), AZStd::Internal::sp_inplace_tag<AZStd::Internal::sp_ms_deleter< T > >(), a);
+        AZStd::shared_ptr< T > pt(static_cast<T*>(nullptr), AZStd::Internal::sp_inplace_tag<AZStd::Internal::sp_ms_deleter< T > >(), a);
 
         AZStd::Internal::sp_ms_deleter< T >* pd = AZStd::get_deleter< AZStd::Internal::sp_ms_deleter< T > >(pt);
 

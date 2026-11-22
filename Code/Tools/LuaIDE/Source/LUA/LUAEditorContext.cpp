@@ -240,8 +240,6 @@ namespace LUAEditor
             return;
         }
 
-        RefreshAllDocumentPerforceStat();
-
         // Open any files we specified in the command line.
         if (!m_filesToOpen.empty())
         {
@@ -1579,7 +1577,6 @@ namespace LUAEditor
             for (size_t i = 0; i < numSwitchValues; ++i)
             {
                 AZStd::string inputValue = commandLine->GetSwitchValue(k_luaScriptFileString, i);
-                AZStd::to_lower(const_cast<AZStd::string&>(inputValue).begin(), const_cast<AZStd::string&>(inputValue).end());
 
                 // Cache the files we want to open, we will open them when we activate the main window.
                 parameters.append(inputValue);

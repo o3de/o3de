@@ -38,7 +38,7 @@ namespace AzToolsFramework
 
     public:
 
-        explicit SliceRelationshipWidget(QWidget* parent = 0);
+        explicit SliceRelationshipWidget(QWidget* parent = nullptr);
         ~SliceRelationshipWidget();
 
         //////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,30 @@
+// Makes sure unbounded arrays are supported across all register classes t,u,s,b,
+// makes sure it's ok that the unbounded array is actually the last one of its kind.
+ShaderResourceGroupSemantic slot1
+{
+    FrequencyId = 1;
+};
+
+struct MyStruct
+{
+    float3 m_a;
+    float3 m_b;
+};
+
+ShaderResourceGroup SRG1 : slot1
+{
+    float3 m_data; // Triggers the creation of the SRG1 implicit constant buffer. 
+
+    Texture2D<float4>        m_texSRVa;        // Takes t0
+    Texture2D<float4>        m_texSRVb;        // Takes t1  
+    Texture2D<float4>        m_texSRVc[];      // Takes t2+
+    RWTexture2D<float4>      m_texUAVa;        // Takes u0
+    RWTexture2D<float4>      m_texUAVb;        // Takes u1
+    RWTexture2D<float4>      m_texUAVc[];      // Takes u2+
+    Sampler                  m_samplera;       // Takes s0
+    Sampler                  m_samplerb;       // Takes s1
+    Sampler                  m_samplerc[];     // Takes s2+
+    ConstantBuffer<MyStruct> m_structArraya;   // Takes b1 register (b0 taken by SRG1 implicit constant buffer, due to m_data).
+    ConstantBuffer<MyStruct> m_structArrayb;   // Takes b2 
+    ConstantBuffer<MyStruct> m_structArrayc[]; // Takes b3+
+};

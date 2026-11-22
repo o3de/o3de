@@ -1,0 +1,13 @@
+ShaderResourceGroupSemantic Slot1
+{
+    FrequencyId = 1;
+};
+
+ShaderResourceGroup SRG : Slot1
+{
+    Texture2D m_texture[8];
+    Sampler m_staticSamplerA {};
+    Sampler m_dynamicSampler[4];
+    Sampler m_staticSamplerB {};
+};
+

@@ -123,9 +123,18 @@ namespace RecastNavigation
         int detailedPathCount = 0;
 
         // Then the detailed path. This gives us actual specific waypoints along the path over the polygons found earlier.
-        result = lock.GetNavQuery()->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
-            detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
-            &detailedPathCount, MaxPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
+        // The nearest points on the navigation mesh are used, so the first and last waypoints lie on the navigation mesh as well.
+        result = lock.GetNavQuery()->findStraightPath(
+            nearestStartPoint.GetData(),
+            nearestEndPoint.GetData(),
+            path.data(),
+            pathLength,
+            detailedPath[0].GetData(),
+            detailedPathFlags.data(),
+            detailedPolyPathRefs.data(),
+            &detailedPathCount,
+            MaxPathLength,
+            DT_STRAIGHTPATH_ALL_CROSSINGS);
         if (dtStatusFailed(result))
         {
             return {};

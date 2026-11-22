@@ -5,12 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_LOGGINGCOMMON_H
-#define AZFRAMEWORK_LOGGINGCOMMON_H
 
 #pragma once
 
-#include <qnamespace.h>
+#include <Qt>
 
 namespace AzToolsFramework
 {
@@ -24,5 +22,3 @@ namespace AzToolsFramework
         };
     }
 }
-
-#endif

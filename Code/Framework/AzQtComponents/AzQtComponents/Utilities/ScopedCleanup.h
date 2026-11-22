@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef SCOPEDCLEANUP_H
-#define SCOPEDCLEANUP_H
+#pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 
 /**
  * RAII-style class that executes a lambda when it goes out of scope.
@@ -67,5 +66,3 @@ ScopedCleanup<F> scopedCleanup(F f)
 {
     return ScopedCleanup<F>(std::move(f));
 }
-
-#endif

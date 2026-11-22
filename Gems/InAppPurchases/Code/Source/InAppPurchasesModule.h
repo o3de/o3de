@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Module/Module.h>
-#include <IGem.h>
 
 namespace InAppPurchases
 {

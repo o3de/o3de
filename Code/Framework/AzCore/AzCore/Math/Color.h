@@ -66,6 +66,9 @@ namespace AZ
         //! Copies r,g,b components from a Vector3, specify w separately.
         static Color CreateFromVector3AndFloat(const Vector3& v, float w);
 
+        //! Color from u32 => 0xAABBGGRR.
+        static Color CreateFromU32(u32 c);
+
         //! r,g,b,a to u32 => 0xAABBGGRR (COLREF format).
         static u32 CreateU32(u8 r, u8 g, u8 b, u8 a);
 

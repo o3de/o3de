@@ -92,8 +92,8 @@ namespace AZ::Dom::Benchmark
         {
             m_tree.VisitPath(Path(), [](const Path& path, const AZStd::string& value)
             {
-                benchmark::DoNotOptimize(path);
-                benchmark::DoNotOptimize(value);
+                benchmark::DoNotOptimize(&path);
+                benchmark::DoNotOptimize(&value);
                 return true;
             });
         }
@@ -111,8 +111,8 @@ namespace AZ::Dom::Benchmark
                 Path(),
                 [](const Path& path, const AZStd::string& value)
                 {
-                    benchmark::DoNotOptimize(path);
-                    benchmark::DoNotOptimize(value);
+                    benchmark::DoNotOptimize(&path);
+                    benchmark::DoNotOptimize(&value);
                     return true;
                 }, PrefixTreeTraversalFlags::TraverseMostToLeastSpecific);
         }

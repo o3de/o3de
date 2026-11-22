@@ -196,7 +196,7 @@ void FileServer::EnsureCacheFolderExists(int connId)
         // note, the zero here after GENERIC_READ|GENERIC_WRITE indicates no share access at all!
         std::wstring winFriendly = finalPath.toStdWString();
 
-        HANDLE lockHandle = CreateFileW(winFriendly.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, 0);
+        HANDLE lockHandle = CreateFileW(winFriendly.data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
         if (lockHandle != INVALID_HANDLE_VALUE)
         {
             m_locks[connId] = lockHandle;
@@ -1019,7 +1019,7 @@ void FileServer::RecordFileOp(AZ::IO::FileIOBase* fileIO, const char* op, const 
     (void)fileHandle;
     (void)moreInfo;
 #ifdef VERBOSE_FILE_OPS
-    char filename[MAX_PATH];
+    char filename[AZ_TRAIT_OS_MAX_PATH_LEN];
     if (fileIO->GetFilename(fileHandle, filename, sizeof(filename)))
     {
         RecordFileOp(fileIO, op, filename, moreInfo);

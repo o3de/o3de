@@ -1,0 +1,9 @@
+interface IInterf
+{
+    void f();
+};
+
+class C : IInterf
+{
+    void f() override;
+};

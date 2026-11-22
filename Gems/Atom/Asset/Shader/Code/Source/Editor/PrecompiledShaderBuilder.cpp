@@ -58,6 +58,12 @@ namespace AZ
             return;
         }
 
+        // Re-run this builder when the precompiled shader binary changes, even if the manifest does not.
+        AssetBuilderSDK::SourceFileDependency shaderAssetDependency;
+        shaderAssetDependency.m_sourceFileDependencyPath =
+            RPI::AssetUtils::ResolvePathReference(fullPath, precompiledShaderAsset.m_shaderAssetFileName);
+        response.m_sourceFileDependencyList.push_back(AZStd::move(shaderAssetDependency));
+
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
         {
             AZStd::vector<AZStd::string>::iterator itPlatformIdentifier = AZStd::find(
