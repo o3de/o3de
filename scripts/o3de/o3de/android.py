@@ -552,26 +552,10 @@ def add_args(subparsers) -> None:
                                              help=f"The location to write the android project scripts to. Default: '{DEFAULT_ANDROID_BUILD_FOLDER}'",
                                              default=DEFAULT_ANDROID_BUILD_FOLDER)
 
-    # Platform SDK API Level (https://developer.android.com/tools/releases/platforms)
-    platform_sdk_api_level = android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_API.key)
-    if platform_sdk_api_level:
-        android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
-                                                help=f"Specify the platform SDK API Level. Default: {platform_sdk_api_level}",
-                                                default=platform_sdk_api_level)
-    else:
-        android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
-                                                help=f"Specify the platform SDK API Level ({android_support.SETTINGS_PLATFORM_SDK_API.key})")
-
-    # Minimum SDK API Level (minSdkVersion and the native API level)
-    platform_sdk_min_api_level = android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_MIN_API.key)
-    if platform_sdk_min_api_level:
-        android_generate_subparser.add_argument('--platform-sdk-min-api-level', type=str,
-                                                help=f"Specify the minimum Android API Level the app supports (minSdkVersion). Default: {platform_sdk_min_api_level}",
-                                                default=platform_sdk_min_api_level)
-    else:
-        android_generate_subparser.add_argument('--platform-sdk-min-api-level', type=str,
-                                                help=f"Specify the minimum Android API Level the app supports (minSdkVersion) ({android_support.SETTINGS_PLATFORM_SDK_MIN_API.key}). "
-                                                     f"Defaults to the platform SDK API Level.")
+    android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
+                                            help=f"Override the project's compile and target Android API level ({android_support.SETTINGS_PLATFORM_SDK_API.key}).")
+    android_generate_subparser.add_argument('--platform-sdk-min-api-level', type=str,
+                                            help=f"Override the project's minimum Android API level ({android_support.SETTINGS_PLATFORM_SDK_MIN_API.key}).")
 
     # Android NDK Version version (https://developer.android.com/ndk/downloads)
     ndk_version = android_config.get_value(android_support.SETTINGS_NDK_VERSION.key)

@@ -6,6 +6,7 @@
 #
 #
 
+import argparse
 import pathlib
 import os
 import pytest
@@ -693,6 +694,26 @@ def test_prompt_password_success():
         # Validation
         assert result == test_password
         assert mock_get_pass.call_count == 2
+
+
+def test_generate_android_project_loads_sdk_levels_from_selected_project(tmp_path, monkeypatch):
+    project = tmp_path / 'project'
+    project.mkdir()
+    (project / 'project.json').write_text('{"project_name": "AndroidProject"}')
+    (project / '.command_settings').write_text('[android]\nplatform.sdk.api = 35\nplatform.sdk.min.api = 24\n')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(android_support.manifest, 'get_o3de_folder', lambda: tmp_path)
+    monkeypatch.setattr(android_support.manifest, 'get_registered', lambda **kwargs: project)
+
+    parser = argparse.ArgumentParser()
+    android.add_args(parser.add_subparsers())
+    args = parser.parse_args(['android-generate', '-p', str(project)])
+    config, _ = android.get_android_config_from_args(args)
+
+    assert args.platform_sdk_api_level is None
+    assert args.platform_sdk_min_api_level is None
+    assert config.get_value(android_support.SETTINGS_PLATFORM_SDK_API.key) == '35'
+    assert config.get_value(android_support.SETTINGS_PLATFORM_SDK_MIN_API.key) == '24'
 
 
 @pytest.mark.parametrize(
