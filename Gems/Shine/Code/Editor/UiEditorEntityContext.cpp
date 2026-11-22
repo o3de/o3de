@@ -238,7 +238,7 @@ void UiEditorEntityContext::AddUiEntity(AZ::Entity* entity)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiEditorEntityContext::AddUiEntities(const AzFramework::EntityList& entities)
 {
-    for (AZ::Entity* entity : entities)
+    for ([[maybe_unused]] AZ::Entity* entity : entities)
     {
         AZ_Assert(!AzFramework::EntityIdContextQueryBus::MultiHandler::BusIsConnectedId(entity->GetId()), "Entity already in context.");
     }
