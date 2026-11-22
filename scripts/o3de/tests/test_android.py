@@ -695,7 +695,14 @@ def test_prompt_password_success():
         assert mock_get_pass.call_count == 2
 
 
-def test_generate_android_project_success(tmpdir):
+@pytest.mark.parametrize(
+    "test_platform_api_level, test_platform_min_api_level, expected_min_api_level", [
+        pytest.param('36', '31', '31', id="min_below_target"),
+        pytest.param('30', '31', '30', id="min_above_target_uses_target"),
+        pytest.param('36', None, '36', id="min_not_set_uses_target")
+    ]
+)
+def test_generate_android_project_success(tmpdir, test_platform_api_level, test_platform_min_api_level, expected_min_api_level):
 
     # Test Data
     test_project_name = "Foo"
@@ -717,7 +724,6 @@ def test_generate_android_project_success(tmpdir):
     test_store_pw = '1111'
     test_key_password = '2222'
     test_android_sdk_path = f'{os.sep}usr{os.sep}android{os.sep}sdk'
-    test_platform_api_level = '31'
     test_asset_mode = 'LOOSE'
     test_bundle_subpath = f'AssetBundling{os.sep}Bundles'
     test_ndk_version = '27.*'
@@ -733,6 +739,7 @@ def test_generate_android_project_success(tmpdir):
     setattr(test_args, 'signconfig_store_file', str(test_key_store_path))
     setattr(test_args, 'signconfig_key_alias', test_sc_key_alias)
     setattr(test_args, 'platform_sdk_api_level', test_platform_api_level)
+    setattr(test_args, 'platform_sdk_min_api_level', test_platform_min_api_level)
     setattr(test_args, 'asset_mode', test_asset_mode)
     setattr(test_args, 'ndk_version', test_ndk_version)
 
@@ -755,6 +762,8 @@ def test_generate_android_project_success(tmpdir):
                 return test_store_pw
             elif key == android_support.SETTINGS_SIGNING_KEY_PASSWORD.key:
                 return test_key_password
+            elif key == android_support.SETTINGS_PLATFORM_SDK_MIN_API.key:
+                return None
             else:
                 assert False
 
@@ -829,6 +838,7 @@ def test_generate_android_project_success(tmpdir):
                                                                    android_sdk_path=test_android_sdk_path,
                                                                    android_build_tool_version=test_sdk_build_tools_version,
                                                                    android_platform_sdk_api_level=test_platform_api_level,
+                                                                   android_platform_sdk_min_api_level=expected_min_api_level,
                                                                    android_ndk_package=mock_ndk_package,
                                                                    project_name=test_project_name,
                                                                    project_path=test_project_root,

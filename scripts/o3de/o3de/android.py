@@ -315,6 +315,25 @@ def generate_android_project(args: argparse) -> int:
                                                                        package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
         logger.info(f"Selected Android Platform API Level : {android_platform_sdk_api_level}")
 
+        # The minimum API level (minSdkVersion / native API level) defaults to the target API level if it is not set
+        android_platform_sdk_min_api_level = getattr(args, 'platform_sdk_min_api_level', None) or \
+                                             android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_MIN_API.key) or \
+                                             android_platform_sdk_api_level
+        try:
+            target_api_level = int(android_platform_sdk_api_level)
+            min_api_level = int(android_platform_sdk_min_api_level)
+        except ValueError:
+            raise android_support.AndroidToolError(f"Invalid Android API Level. The target ({android_platform_sdk_api_level}) and "
+                                                   f"minimum ({android_platform_sdk_min_api_level}) API levels must be whole numbers.")
+        if min_api_level > target_api_level:
+            logger.warning(f"The minimum Android API Level ({android_platform_sdk_min_api_level}) is greater than the target Android Platform API Level "
+                           f"({android_platform_sdk_api_level}). Using {android_platform_sdk_api_level} as the minimum API Level.")
+            android_platform_sdk_min_api_level = android_platform_sdk_api_level
+        if target_api_level < android_support.GOOGLE_PLAY_MIN_TARGET_API_LEVEL:
+            logger.warning(f"The target Android Platform API Level ({android_platform_sdk_api_level}) is below the level Google Play requires for new apps and "
+                           f"app updates ({android_support.GOOGLE_PLAY_MIN_TARGET_API_LEVEL}). See https://developer.android.com/google/play/requirements/target-sdk")
+        logger.info(f"Selected Android Minimum API Level : {android_platform_sdk_min_api_level}")
+
         # Make sure the NDK is specified and installed
         if args.ndk_version:
             android_ndk_version = args.ndk_version
@@ -416,6 +435,7 @@ def generate_android_project(args: argparse) -> int:
                                                       android_sdk_path=android_env.sdk_manager.get_android_sdk_path(),
                                                       android_build_tool_version=android_env.sdk_build_tools_version,
                                                       android_platform_sdk_api_level=android_platform_sdk_api_level,
+                                                      android_platform_sdk_min_api_level=android_platform_sdk_min_api_level,
                                                       android_ndk_package=ndk_package,
                                                       project_name=project_name,
                                                       project_path=project_path,
@@ -541,6 +561,17 @@ def add_args(subparsers) -> None:
     else:
         android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
                                                 help=f"Specify the platform SDK API Level ({android_support.SETTINGS_PLATFORM_SDK_API.key})")
+
+    # Minimum SDK API Level (minSdkVersion and the native API level)
+    platform_sdk_min_api_level = android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_MIN_API.key)
+    if platform_sdk_min_api_level:
+        android_generate_subparser.add_argument('--platform-sdk-min-api-level', type=str,
+                                                help=f"Specify the minimum Android API Level the app supports (minSdkVersion). Default: {platform_sdk_min_api_level}",
+                                                default=platform_sdk_min_api_level)
+    else:
+        android_generate_subparser.add_argument('--platform-sdk-min-api-level', type=str,
+                                                help=f"Specify the minimum Android API Level the app supports (minSdkVersion) ({android_support.SETTINGS_PLATFORM_SDK_MIN_API.key}). "
+                                                     f"Defaults to the platform SDK API Level.")
 
     # Android NDK Version version (https://developer.android.com/ndk/downloads)
     ndk_version = android_config.get_value(android_support.SETTINGS_NDK_VERSION.key)
