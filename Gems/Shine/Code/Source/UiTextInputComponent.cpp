@@ -1308,7 +1308,7 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiTextInputComponent>(QT_TRANSLATE_NOOP("Shine", "TextInput"), QT_TRANSLATE_NOOP("Shine", "An interactable component for editing a text string."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTextInput.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTextInput.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

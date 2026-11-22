@@ -96,4 +96,3 @@ float SlicerEdit::OffsetBorderValue(float borderValue) const
         return borderValue;
     }
 }
-

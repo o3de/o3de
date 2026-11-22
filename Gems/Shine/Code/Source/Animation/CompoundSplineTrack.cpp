@@ -300,7 +300,7 @@ void UiCompoundSplineTrack::SetValue(float time, const AZ::Quaternion& value, bo
         AZ::Vector3 angles = value.GetEulerDegreesXYZ();
         for (int i = 0; i < 3; i++)
         {
-            float degree = angles.GetElement(i);
+            float degree = angles[i];
             if (false == bDefault)
             {
                 // Try to prefer the shortest path of rotation.

@@ -25,4 +25,3 @@ bool UndoStack::GetIsExecuting() const
 {
     return m_isExecuting;
 }
-

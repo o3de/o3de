@@ -1266,3 +1266,4 @@ void ViewportWidget::ApplyRulerVisibility()
     int rulerBreadth = (m_rulersVisible) ? RulerWidget::GetRulerBreadth() : 0;
     m_rulerCorner->setFixedSize(rulerBreadth, rulerBreadth);
 }
+

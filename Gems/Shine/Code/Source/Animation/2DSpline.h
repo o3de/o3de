@@ -305,11 +305,11 @@ namespace UiSpline
     {
         typedef T value_type;
 
-        float time = 0;                 //!< Key time.
-        int flags = 0;                  //!< Key flags.
-        value_type value = type_zero(); //!< Key value.
-        value_type ds = type_zero();    //!< Incoming tangent.
-        value_type dd = type_zero();    //!< Outgoing tangent.
+        float time = 0;        //!< Key time.
+        int flags = 0;         //!< Key flags.
+        value_type value{ 0 }; //!< Key value.
+        value_type ds{ 0 };    //!< Incoming tangent.
+        value_type dd{ 0 };    //!< Outgoing tangent.
 
         static void Reflect(AZ::ReflectContext*) {}
     };

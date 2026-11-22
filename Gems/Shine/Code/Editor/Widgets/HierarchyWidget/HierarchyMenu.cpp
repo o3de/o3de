@@ -8,7 +8,6 @@
 
 #include "HierarchyMenu.h"
 
-#include "Helpers/ComponentHelpers.h"
 #include "Helpers/EntityHelpers.h"
 #include "Helpers/HierarchyHelpers.h"
 #include "Helpers/QtHelpers.h"
@@ -17,6 +16,7 @@
 #include "HierarchyWidget.h"
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Windows/EditorCommon.h"
+#include "Widgets/PropertiesWidget/PropertiesWidget.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 #include "Windows/EditorWindow/UiPrefabManager.h"
 
@@ -188,6 +188,27 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
         }
     }
 
+    // Duplicate element (Copy + Paste as sibling in one step).
+    {
+        action = new QAction("Duplicate", this);
+        action->setShortcut(QKeySequence("Ctrl+D"));
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                QMetaObject::invokeMethod(hierarchy, "Duplicate", Qt::QueuedConnection);
+            });
+        addAction(action);
+
+        if (!itemsAreSelected)
+        {
+            action->setEnabled(false);
+        }
+    }
+
     // Select the selected elements and everything below them.
     {
         action = new QAction(tr("Select Hierarchy"), this);
@@ -224,9 +245,14 @@ void HierarchyMenu::New_EmptyElement(
     menu->addAction(HierarchyHelpers::CreateAddElementAction(hierarchy, selectedItems, addAtRoot, optionalPos));
 }
 
-void HierarchyMenu::AddComponents(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)
+void HierarchyMenu::AddComponents(HierarchyWidget* hierarchy, [[maybe_unused]] QTreeWidgetItemRawPtrQList& selectedItems)
 {
-    addActions(ComponentHelpers::CreateAddComponentActions(hierarchy, selectedItems, this));
+    QAction* action = new QAction("Add Component...", this);
+    QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]()
+    {
+        hierarchy->GetEditorWindow()->GetProperties()->ShowComponentPalette();
+    });
+    addAction(action);
 }
 
 void HierarchyMenu::DeleteElement(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)

@@ -458,7 +458,7 @@ void UiMarkupButtonComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiMarkupButtonComponent>(QT_TRANSLATE_NOOP("Shine", "MarkupButton"), QT_TRANSLATE_NOOP("Shine", "An interactable component for enabling clicks from markup text (mouse support only)."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 // Need to request markup button component icons for LY ML
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiMarkupButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiMarkupButton.png")

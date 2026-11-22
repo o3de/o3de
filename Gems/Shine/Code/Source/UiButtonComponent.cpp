@@ -149,7 +149,7 @@ void UiButtonComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiButtonComponent>(QT_TRANSLATE_NOOP("Shine", "Button"), QT_TRANSLATE_NOOP("Shine", "An interactable component for button behavior"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiButton.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

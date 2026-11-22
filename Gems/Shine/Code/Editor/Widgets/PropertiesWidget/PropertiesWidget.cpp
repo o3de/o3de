@@ -123,6 +123,11 @@ void PropertiesWidget::SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox)
     m_propertiesContainer->SetEditorOnlyCheckbox(editorOnlyCheckbox);
 }
 
+void PropertiesWidget::ShowComponentPalette()
+{
+    m_propertiesContainer->ShowComponentPalette();
+}
+
 float PropertiesWidget::GetScrollValue()
 {
     return m_propertiesContainer->verticalScrollBar() ? m_propertiesContainer->verticalScrollBar()->value() : 0.0f;

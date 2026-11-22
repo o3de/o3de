@@ -262,6 +262,12 @@ void CAbstractUndoSequenceTransaction::RemoveSequence(bool bAquireOwnership)
 }
 
 //////////////////////////////////////////////////////////////////////////
+CUndoSequenceAdd::CUndoSequenceAdd(CUiAnimViewSequence* pNewSequence)
+    : CAbstractUndoSequenceTransaction(pNewSequence)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 void CUndoSequenceAdd::Undo(bool bUndo)
 {
     RemoveSequence(bUndo);

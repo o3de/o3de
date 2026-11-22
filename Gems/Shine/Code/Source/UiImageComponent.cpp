@@ -1003,7 +1003,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiImageComponent>(QT_TRANSLATE_NOOP("Shine", "Image"), QT_TRANSLATE_NOOP("Shine", "A visual component to draw a rectangle with an optional sprite/texture"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
@@ -2061,9 +2061,8 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
         firstHalfFixedLineEnd = firstHalfFixedLineEnd * -1.0f;
         secondHalfFixedLineEnd = secondHalfFixedLineEnd * -1.0f;
     }
-    AZ::Matrix3x3 lineRotationMatrix;
 
-    lineRotationMatrix = AZ::Matrix3x3::CreateRotationZ(startAngle - fillOffset);
+    AZ::Matrix3x3 lineRotationMatrix = AZ::Matrix3x3::CreateRotationZ(startAngle - fillOffset);
     firstHalfFixedLineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(firstHalfFixedLineEnd), 0.f) * lineRotationMatrix));
     firstHalfFixedLineEnd = lineOrigin + firstHalfFixedLineEnd;
     secondHalfFixedLineEnd = AZVec2ToLYVec2(AZ::Vector2(AZ::Vector3(LYVec2ToAZVec2(secondHalfFixedLineEnd), 0.f) * lineRotationMatrix));

@@ -147,7 +147,7 @@ namespace Shine
 #if 0
         if (m_isPlaying && gEnv && AZ::Interface<IShine>::Get() && gEnv->pRenderer)
         {
-            AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
+            AZ_Assert(AZStd::this_thread::get_id() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 
             // update the animation system
             AZ::Interface<IShine>::Get()->Update(deltaTimeInSeconds);

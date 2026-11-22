@@ -126,7 +126,7 @@ bool HierarchyClipboard::Unserialize(HierarchyWidget* widget, SerializeHelpers::
     return true;
 }
 
-void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems)
+QMimeData* HierarchyClipboard::CreateMimeDataForSelection(HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems)
 {
     // selectedItems -> EntityArray.
     Shine::EntityArray elements;
@@ -143,16 +143,25 @@ void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget, c
     // EntityArray -> XML.
     AZStd::string xml = GetXml(widget, elements, true);
 
-    // XML -> Clipboard.
-    if (!xml.empty())
+    if (xml.empty())
     {
-        QMimeData* mimeData = new QMimeData();
-        {
-            // Concatenate all the data we need into a single QByteArray.
-            QByteArray data(xml.c_str(), static_cast<int>(xml.size()));
-            mimeData->setData(UICANVASEDITOR_MIMETYPE, data);
-        }
+        return nullptr;
+    }
 
+    // XML -> mime data.
+    QMimeData* mimeData = new QMimeData();
+    // Concatenate all the data we need into a single QByteArray.
+    QByteArray data(xml.c_str(), static_cast<int>(xml.size()));
+    mimeData->setData(UICANVASEDITOR_MIMETYPE, data);
+
+    return mimeData;
+}
+
+void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget, const QTreeWidgetItemRawPtrQList& selectedItems)
+{
+    // The clipboard takes ownership of the mime data.
+    if (QMimeData* mimeData = CreateMimeDataForSelection(widget, selectedItems))
+    {
         QApplication::clipboard()->setMimeData(mimeData);
     }
 }
@@ -166,7 +175,17 @@ void HierarchyClipboard::CreateElementsFromClipboard(
         return;
     }
 
-    const QMimeData* mimeData = QApplication::clipboard()->mimeData();
+    CreateElementsFromMimeData(widget, QApplication::clipboard()->mimeData(), selectedItems, createAsChildOfSelection);
+}
+
+void HierarchyClipboard::CreateElementsFromMimeData(
+    HierarchyWidget* widget, const QMimeData* mimeData, const QTreeWidgetItemRawPtrQList& selectedItems, bool createAsChildOfSelection)
+{
+    if (!mimeData || !mimeData->hasFormat(UICANVASEDITOR_MIMETYPE))
+    {
+        // Nothing to do.
+        return;
+    }
 
     QByteArray data = mimeData->data(UICANVASEDITOR_MIMETYPE);
     char* rawData = data.data();

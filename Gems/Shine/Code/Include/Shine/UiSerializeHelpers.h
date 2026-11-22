@@ -201,7 +201,7 @@ namespace Shine
                 return false;
             }
 
-            AZ::Vector3 newColorData(oldData.GetR(), oldData.GetG(), oldData.GetB());
+            AZ::Vector3 newColorData(oldData.GetAsVector3());
             classElement.GetSubElement(newColorElementIndex).SetData(context, newColorData);
 
             float newAlphaData(oldData.GetA());

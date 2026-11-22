@@ -28,6 +28,7 @@
 
 #include <ILocalizationManager.h>
 
+#include "MathConversion.h"
 #include "UiSerialize.h"
 #include "TextMarkup.h"
 #include "UiTextComponentOffsetsSelector.h"
@@ -3086,7 +3087,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiTextComponent>(QT_TRANSLATE_NOOP("Shine", "Text"), QT_TRANSLATE_NOOP("Shine", "A visual component that draws a text string"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiText.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiText.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
@@ -3978,7 +3979,7 @@ void UiTextComponent::RenderToCache(float alpha)
     // cache to modify the alpha values of.
     if (!fontContext.IsColorOverridden())
     {
-        color.SetA(1.0f);
+        color.SetA(1.f);
         fontContext.SetColor(color);
     }
 

@@ -143,7 +143,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CUiAnimViewNode* pNode = v.value<CUiAnimViewNodePtr>();
+                CUiAnimViewNode* pNode = v.value<CUiAnimViewNode*>();
                 if (pNode && pNode->GetNodeType() == eUiAVNT_AnimNode)
                 {
                     nodes << (CUiAnimViewAnimNode*)pNode;
@@ -156,13 +156,13 @@ private:
     CUiAnimViewNodesCtrl*   m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CUiAnimViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CUiAnimViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CUiAnimViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CUiAnimViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -1362,8 +1362,8 @@ void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
     AZ::Color defaultColor(0.0f, 0.0f, 0.0f, 1.0f);
     if (pTrack->HasCustomColor())
     {
-        AZ::Color customColor = pTrack->GetCustomColor();
-        defaultColor = customColor;
+        defaultColor = pTrack->GetCustomColor();
+        defaultColor.SetA(1.f);
     }
     const AZ::Color color = AzQtComponents::ColorPicker::getColor(AzQtComponents::ColorPicker::Configuration::RGB, defaultColor, QObject::tr("Select Color"));
 

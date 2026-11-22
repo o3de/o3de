@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Matrix3x4.h>
 #include <Shine/Animation/IUiAnimation.h>
 #include "UiAnimationSystem.h"
 

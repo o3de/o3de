@@ -288,7 +288,7 @@ void UiRadioButtonComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiRadioButtonComponent>(QT_TRANSLATE_NOOP("Shine", "RadioButton"), QT_TRANSLATE_NOOP("Shine", "An interactable component for RadioButton behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiRadioButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiRadioButton.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

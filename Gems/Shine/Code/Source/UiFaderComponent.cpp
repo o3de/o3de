@@ -277,7 +277,7 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiFaderComponent>(QT_TRANSLATE_NOOP("Shine", "Fader"), QT_TRANSLATE_NOOP("Shine", "A component that can fade its element and all its child elements"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Effects")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiFader.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiFader.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

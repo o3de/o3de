@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Shine/Bus/UiCanvasBus.h>
+
 #include <QString>
 #include <QTextEdit>
-#endif
 
 class EditorWindow;
 

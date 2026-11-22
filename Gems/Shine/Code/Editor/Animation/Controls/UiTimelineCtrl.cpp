@@ -415,8 +415,8 @@ void TimelineWidget::mouseMoveEvent(QMouseEvent* event)
 
     case TRACKING_MODE_SELECTION_RANGE:
     {
-        float start = min(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
-        float end = max(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
+        const float start = min(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
+        const float end = max(ClientToTime(m_lastPoint.x()), ClientToTime(event->position().x()));
         SelectKeysInRange(start, end, !(event->modifiers() & Qt::ShiftModifier));
         m_lastPoint = event->pos();
         update();

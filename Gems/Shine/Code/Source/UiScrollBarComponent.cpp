@@ -793,7 +793,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiScrollBarComponent>(QT_TRANSLATE_NOOP("Shine", "ScrollBar"), QT_TRANSLATE_NOOP("Shine", "An interactable component for scrolling content that is larger than its viewing area."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiScrollBar.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiScrollBar.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

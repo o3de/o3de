@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Helpers/EntityHelpers.h"
 #include "HierarchyItem.h"
 #include "TreeWidgetItemList.h"
@@ -20,7 +19,6 @@
 #include <QAbstractItemView>
 #include <QStringList>
 #include <QTreeWidget>
-#endif
 
 class EditorWindow;
 class HierarchyItem;
@@ -88,6 +86,7 @@ public slots:
     void Copy();
     void PasteAsSibling();
     void PasteAsChild();
+    void Duplicate();
     void SelectHierarchy();
     void SetEditorOnlyForSelectedItems(bool editorOnly);
 

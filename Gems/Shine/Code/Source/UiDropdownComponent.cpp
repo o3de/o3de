@@ -515,7 +515,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiDropdownComponent>(QT_TRANSLATE_NOOP("Shine", "Dropdown"), QT_TRANSLATE_NOOP("Shine", "An interactable component for Dropdown behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDropdown.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDropdown.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

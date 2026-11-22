@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Helpers/SerializeHelpers.h"
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
@@ -19,7 +18,6 @@
 #include <QWidget>
 #include <QTimer>
 #include <QSize>
-#endif
 
 class PropertiesContainer;
 class EditorWindow;
@@ -60,6 +58,9 @@ public:
 
     void SetSelectedEntityDisplayNameWidget(QLineEdit* selectedEntityDisplayNameWidget);
     void SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox);
+
+    //! Show the component palette popup for adding components to selected entities
+    void ShowComponentPalette();
 
     float GetScrollValue();
     void SetScrollValue(float scrollValue);

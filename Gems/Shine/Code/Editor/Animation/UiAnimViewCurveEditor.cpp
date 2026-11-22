@@ -20,7 +20,6 @@
 
 #include <QtUtil.h>
 
-
 #define IDC_TRACKVIEWGRAPH_CURVE 1
 #define IDC_TIMELINE             2
 

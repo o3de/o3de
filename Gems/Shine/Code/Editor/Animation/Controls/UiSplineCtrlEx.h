@@ -9,7 +9,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ISplines.h>
 #include "Undo/IUndoObject.h"
 #include "Controls/WndGridHelper.h"
@@ -20,7 +19,6 @@
 #include <Util/EditorUtils.h>
 
 #include <QWidget>
-#endif
 
 // Custom styles for this control.
 #define SPLINE_STYLE_NOGRID 0x0001

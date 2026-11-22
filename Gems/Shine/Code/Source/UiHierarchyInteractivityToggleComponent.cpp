@@ -111,7 +111,7 @@ void UiHierarchyInteractivityToggleComponent::Reflect(AZ::ReflectContext* contex
                 ->Class<UiHierarchyInteractivityToggleComponent>(
                     QT_TRANSLATE_NOOP("Shine", "HierarchyInteractivityToggle"), QT_TRANSLATE_NOOP("Shine", "A grouping handler that allows interaction and rendering for the entire hierarchy of children."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->DataElement(

@@ -184,7 +184,7 @@ void UiLayoutFitterComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiLayoutFitterComponent>(QT_TRANSLATE_NOOP("Shine", "LayoutFitter"), QT_TRANSLATE_NOOP("Shine", "A component that resizes its element to its content."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutFitter.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutFitter.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
