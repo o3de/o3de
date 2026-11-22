@@ -166,38 +166,26 @@ namespace AZ
 
     void Frustum::ConstructPlanes(const ViewFrustumAttributes& viewFrustumAttributes)
     {
-        const float tanHalfFov = std::tan(viewFrustumAttributes.m_verticalFovRadians * 0.5f);
-        const float nearPlaneHalfHeight = tanHalfFov * viewFrustumAttributes.m_nearClip;
-        const float nearPlaneHalfWidth = nearPlaneHalfHeight * viewFrustumAttributes.m_aspectRatio;
+        const float tanHalfVerticalFov = std::tan(viewFrustumAttributes.m_verticalFovRadians * 0.5f);
+        const float tanHalfHorizontalFov = tanHalfVerticalFov * viewFrustumAttributes.m_aspectRatio;
 
         const Vector3 translation = viewFrustumAttributes.m_worldTransform.GetTranslation();
         const Vector3 forward = viewFrustumAttributes.m_worldTransform.GetBasisY();
         const Vector3 right = viewFrustumAttributes.m_worldTransform.GetBasisX();
         const Vector3 up = viewFrustumAttributes.m_worldTransform.GetBasisZ();
 
-        SetPlane(
-            PlaneId::Near,
-            Plane::CreateFromNormalAndPoint(forward, translation + (forward * viewFrustumAttributes.m_nearClip)));
-        SetPlane(
-            PlaneId::Far,
-            Plane::CreateFromNormalAndPoint(-forward, translation + (forward * viewFrustumAttributes.m_farClip)));
+        SetPlane(PlaneId::Near, Plane::CreateFromNormalAndPoint(forward, translation + (forward * viewFrustumAttributes.m_nearClip)));
+        SetPlane(PlaneId::Far, Plane::CreateFromNormalAndPoint(-forward, translation + (forward * viewFrustumAttributes.m_farClip)));
 
-        // If the near clip is close to zero, any attempt to calculate the slide amounts by dividing by the near clip 
-        // would result in a divide by zero.  Check if its close to zero.  If it is, we don't slide the planes at all.
-        // Note that sliding the near plane does not change the side plane normals, its just offsetting
-        // the near plane forward along the "forward" direction.
-        const bool nearClipIsZero = (AZ::IsClose(viewFrustumAttributes.m_nearClip, AZStd::numeric_limits<float>::epsilon()));
-        float nearPlaneLeftRightSlideAmount = nearClipIsZero ? 0.0f : (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip);
-        float nearPlaneUpDownSlideAmount = nearClipIsZero ? 0.0f : (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip);
-
-        const Vector3 leftNormal = (right + forward * nearPlaneLeftRightSlideAmount).GetNormalized();
-        const Vector3 rightNormal = (-right + forward * nearPlaneLeftRightSlideAmount).GetNormalized();
+        // The side planes pass through the view origin regardless of the near clip distance.
+        const Vector3 leftNormal = (right + forward * tanHalfHorizontalFov).GetNormalized();
+        const Vector3 rightNormal = (-right + forward * tanHalfHorizontalFov).GetNormalized();
 
         SetPlane(PlaneId::Left, Plane::CreateFromNormalAndPoint(leftNormal, translation));
         SetPlane(PlaneId::Right, Plane::CreateFromNormalAndPoint(rightNormal, translation));
 
-        const Vector3 topNormal = (-up + forward * nearPlaneUpDownSlideAmount).GetNormalized();
-        const Vector3 bottomNormal = (up + forward * nearPlaneUpDownSlideAmount).GetNormalized();
+        const Vector3 topNormal = (-up + forward * tanHalfVerticalFov).GetNormalized();
+        const Vector3 bottomNormal = (up + forward * tanHalfVerticalFov).GetNormalized();
 
         SetPlane(PlaneId::Top, Plane::CreateFromNormalAndPoint(topNormal, translation));
         SetPlane(PlaneId::Bottom, Plane::CreateFromNormalAndPoint(bottomNormal, translation));
