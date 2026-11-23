@@ -87,7 +87,7 @@ void upgrade_canvases(const AZ::ConsoleCommandContainer& args)
     AZ_TracePrintf("LYShineToShine", "  Upgraded (slices): %zu\n", report.m_upgradedWithSliceRefs);
     AZ_TracePrintf("LYShineToShine", "  Failed:           %zu\n", report.m_failed);
 
-    for (const auto& failure : report.m_failureDetails)
+    for ([[maybe_unused]] const auto& failure : report.m_failureDetails)
     {
         AZ_Error("LYShineToShine", false, "  FAILED: %s - %s", failure.first.c_str(), failure.second.c_str());
     }
@@ -115,7 +115,7 @@ void convert_slices(const AZ::ConsoleCommandContainer& args)
     AZ_TracePrintf("LYShineToShine", "  Skipped (non-UI): %zu\n", report.m_skippedNonUi);
     AZ_TracePrintf("LYShineToShine", "  Failed:          %zu\n", report.m_failed);
 
-    for (const auto& failure : report.m_failureDetails)
+    for ([[maybe_unused]] const auto& failure : report.m_failureDetails)
     {
         AZ_Error("LYShineToShine", false, "  FAILED: %s - %s", failure.first.c_str(), failure.second.c_str());
     }
