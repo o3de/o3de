@@ -23,7 +23,8 @@ real GetAlphaToCoverageBand(const MaterialParameters params, real alpha)
     real extraPixels = 0.0;
 #endif
 #ifndef CS_SAMPLERS
-    real alphaPerPixel = real(fwidth(alpha));
+    // fwidth is evaluated at 32-bit: SPIR-V only allows 32-bit derivatives, and real is half on mobile.
+    real alphaPerPixel = real(fwidth(float(alpha)));
 #else
     real alphaPerPixel = 0.0;
 #endif
@@ -39,9 +40,21 @@ real GetAlphaAndClip(const MaterialParameters params, float2 uvs[UvSetCount], fl
     real alpha = SampleAlpha(GetMaterialTexture(params.m_baseColorMap), GetMaterialTexture(params.m_opacityMap), baseColorUV, opacityUV, GetMaterialTextureSampler(), o_opacity_source, uvDxDy, customDerivatives);
     real opacityFactor = real(params.m_opacityFactor);
 
-#ifndef CS_SAMPLERS
+    // The coverage path only runs in passes that emit the mask through SV_Coverage (OUTPUT_COVERAGE). Every
+    // other pass that evaluates the surface, such as the shadow map pass, keeps the hard clip at the threshold,
+    // which is where the coverage band is centred.
+#if !defined(CS_SAMPLERS) && defined(OUTPUT_COVERAGE) && OUTPUT_COVERAGE
     if (o_opacity_mode == OpacityMode::Cutout && o_alphaToCoverage)
     {
+        // Compression residue is transparent, full stop. Decided before the band so a wide band
+        // cannot smear it back into coverage.
+        if (alpha <= AlphaCutoutMinThreshold)
+        {
+            s_alphaToCoverageMask = 0u;
+            clip(-1);
+            return real(0.0);
+        }
+
         // Alpha-to-coverage: instead of a hard clip at the threshold, map a band around it to per-sample
         // coverage. The depth pre-pass and the forward pass both emit this mask (OUTPUT_COVERAGE), so they
         // agree on which samples a cutout edge covers and MSAA resolves the silhouette.

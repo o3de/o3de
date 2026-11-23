@@ -795,6 +795,11 @@ namespace AZ
                         }
                         depthFound = true;
                     }
+                    else if (semantic.m_name.GetStringView() == "SV_Coverage")
+                    {
+                        // A per-sample coverage mask written by the pixel shader (alpha-to-coverage). It does not
+                        // bind an attachment, so it adds nothing to the contract.
+                    }
                     else
                     {
                         AZ_Error(
