@@ -1146,7 +1146,7 @@ namespace UnitTest
         IImageObjectPtr image = CreateWhiteMatteImage();
         SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f); // single opaque green texel
 
-        AlphaDilateImage(image, false);
+        EXPECT_TRUE(AlphaDilateImage(image, false));
 
         for (AZ::u32 y = 0; y < 4; ++y)
         {
@@ -1168,7 +1168,7 @@ namespace UnitTest
         SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
         SetTexel(image, 2, 1, 1.0f, 1.0f, 1.0f, 0.5f); // bright edge texel, well above the 16/255 floor
 
-        AlphaDilateImage(image, false);
+        EXPECT_TRUE(AlphaDilateImage(image, false));
 
         const float* edge = Texel(image, 2, 1);
         EXPECT_FLOAT_EQ(edge[0], 1.0f);
@@ -1189,7 +1189,7 @@ namespace UnitTest
         SetTexel(image, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
         SetTexel(image, 2, 1, 1.0f, 1.0f, 1.0f, 0.02f); // bright, below the floor: dilated, then darkened
 
-        AlphaDilateImage(image, true);
+        EXPECT_TRUE(AlphaDilateImage(image, true));
 
         const float* p = Texel(image, 2, 1);
         // Blended strictly between the original white and the dilated green.
@@ -1205,7 +1205,7 @@ namespace UnitTest
         IImageObjectPtr plain = CreateWhiteMatteImage();
         SetTexel(plain, 1, 1, 0.1f, 0.6f, 0.2f, 1.0f);
         SetTexel(plain, 2, 1, 1.0f, 1.0f, 1.0f, 0.02f);
-        AlphaDilateImage(plain, false);
+        EXPECT_TRUE(AlphaDilateImage(plain, false));
         EXPECT_FLOAT_EQ(Texel(plain, 2, 1)[1], 0.6f);
     }
 
@@ -1213,7 +1213,7 @@ namespace UnitTest
     {
         using namespace AlphaDilateTestHelpers;
         IImageObjectPtr transparent = CreateWhiteMatteImage();
-        AlphaDilateImage(transparent, true);
+        EXPECT_TRUE(AlphaDilateImage(transparent, true));
         EXPECT_FLOAT_EQ(Texel(transparent, 0, 0)[0], 1.0f);
         EXPECT_FLOAT_EQ(Texel(transparent, 0, 0)[3], 0.0f);
 
@@ -1225,10 +1225,26 @@ namespace UnitTest
                 SetTexel(opaque, x, y, 0.25f * x, 0.25f * y, 0.5f, 1.0f);
             }
         }
-        AlphaDilateImage(opaque, true);
+        EXPECT_TRUE(AlphaDilateImage(opaque, true));
         EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[0], 0.75f);
         EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[1], 0.5f);
         EXPECT_FLOAT_EQ(Texel(opaque, 3, 2)[3], 1.0f);
+    }
+
+    TEST_F(ImageProcessingTest, AlphaDilate_NonFloatPixelFormat_ReturnsFalseAndLeavesImageUntouched)
+    {
+        IImageObjectPtr image(IImageObject::CreateImage(4, 4, 1, ePixelFormat_R8G8B8A8));
+        AZ::u8* mem = nullptr;
+        AZ::u32 pitch = 0;
+        image->GetImagePointer(0, mem, pitch);
+        memset(mem, 0x7F, static_cast<size_t>(pitch) * 4);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_FALSE(AlphaDilateImage(image, true));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        EXPECT_EQ(mem[0], 0x7F);
+        EXPECT_EQ(mem[3], 0x7F);
     }
 
 } // UnitTest

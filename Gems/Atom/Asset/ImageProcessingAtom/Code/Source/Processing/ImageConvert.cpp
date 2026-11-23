@@ -233,7 +233,11 @@ namespace ImageProcessingAtom
                 && m_alphaContent != EAlphaContent::eAlphaContent_Absent
                 && m_alphaContent != EAlphaContent::eAlphaContent_OnlyWhite)
             {
-                AlphaDilate();
+                if (!AlphaDilate())
+                {
+                    m_isSucceed = false;
+                    m_isFinished = true;
+                }
             }
             break;
         case StepCubemapLayout:
@@ -503,17 +507,26 @@ namespace ImageProcessingAtom
         return m_image->GammaToLinearRGBA32F(m_input->m_presetSetting.m_srcColorSpace == ColorSpace::sRGB);
     }
 
-    void ImageConvertProcess::AlphaDilate()
+    bool ImageConvertProcess::AlphaDilate()
     {
-        AlphaDilateImage(m_image->Get(), m_input->m_presetSetting.m_alphaEdgeDarken);
+        return AlphaDilateImage(m_image->Get(), m_input->m_presetSetting.m_alphaEdgeDarken);
     }
 
-    void AlphaDilateImage(IImageObjectPtr image, bool edgeDarken)
+    bool AlphaDilateImage(IImageObjectPtr image, bool edgeDarken)
     {
-        if (!image || image->GetPixelFormat() != ePixelFormat_R32G32B32A32F)
+        if (!image)
         {
-            AZ_Assert(false, "%s only works with pixel format rgba32f", __FUNCTION__);
-            return;
+            AZ_Assert(false, "The %s function requires a valid image", __FUNCTION__);
+            return false;
+        }
+        // The convert pipeline reaches this step after ConvertToLinear, so the image is rgba32f.
+        // AZ_Error rather than AZ_Assert because this function is public and asserts compile out.
+        if (image->GetPixelFormat() != ePixelFormat_R32G32B32A32F)
+        {
+            AZ_Error("Image Processing", false,
+                "The %s function only works with pixel format R32G32B32A32F, got %d",
+                __FUNCTION__, static_cast<int>(image->GetPixelFormat()));
+            return false;
         }
 
         const AZ::u32 width = image->GetWidth(0);
@@ -521,9 +534,14 @@ namespace ImageProcessingAtom
         AZ::u8* mem = nullptr;
         AZ::u32 pitch = 0;
         image->GetImagePointer(0, mem, pitch);
-        if (!mem || width == 0 || height == 0)
+        if (!mem)
         {
-            return;
+            AZ_Error("Image Processing", false, "The %s function could not access the image's top mip", __FUNCTION__);
+            return false;
+        }
+        if (width == 0 || height == 0)
+        {
+            return true;
         }
 
         auto pixelAt = [mem, pitch](AZ::u32 x, AZ::u32 y) -> float*
@@ -572,7 +590,7 @@ namespace ImageProcessingAtom
 
         if (knownCount == 0 || knownCount == pixelCount)
         {
-            return; // fully transparent or fully opaque, nothing to dilate
+            return true; // fully transparent or fully opaque, nothing to dilate
         }
 
         const int neighborOffsets[8][2] = { {-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1} };
@@ -696,6 +714,7 @@ namespace ImageProcessingAtom
                 }
             }
         }
+        return true;
     }
 
     // mipmap generation

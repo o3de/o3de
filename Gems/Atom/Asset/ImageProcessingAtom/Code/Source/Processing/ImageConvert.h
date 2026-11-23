@@ -35,7 +35,8 @@ namespace ImageProcessingAtom
     //! edges do not reveal the matte color baked into the source art. Alpha is never modified.
     //! When edgeDarken is true, bright texels at or below the floor are additionally blended toward
     //! the dilated color in proportion to their transparency. Requires ePixelFormat_R32G32B32A32F.
-    void AlphaDilateImage(IImageObjectPtr image, bool edgeDarken);
+    //! Returns false, leaving the image untouched, if the image is null or in any other pixel format.
+    bool AlphaDilateImage(IImageObjectPtr image, bool edgeDarken);
 
     class ImageConvertProcess* CreateImageConvertProcess(const AZStd::string& imageFilePath,
         const AZStd::string& exportDir, const PlatformName& platformName, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts, AZ::SerializeContext* context = nullptr);
@@ -165,7 +166,7 @@ namespace ImageProcessingAtom
 
         //dilate opaque colors into transparent texels and/or un-blend a composited matte color,
         //so soft cutout edges and mipmaps don't reveal the background baked into the source art
-        void AlphaDilate();
+        bool AlphaDilate();
 
         //mipmap generation
         bool FillMipmaps();
