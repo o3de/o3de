@@ -166,34 +166,26 @@ namespace AZ
 
     void Frustum::ConstructPlanes(const ViewFrustumAttributes& viewFrustumAttributes)
     {
-        const float tanHalfFov = std::tan(viewFrustumAttributes.m_verticalFovRadians * 0.5f);
-        const float nearPlaneHalfHeight = tanHalfFov * viewFrustumAttributes.m_nearClip;
-        const float nearPlaneHalfWidth = nearPlaneHalfHeight * viewFrustumAttributes.m_aspectRatio;
+        const float tanHalfVerticalFov = std::tan(viewFrustumAttributes.m_verticalFovRadians * 0.5f);
+        const float tanHalfHorizontalFov = tanHalfVerticalFov * viewFrustumAttributes.m_aspectRatio;
 
         const Vector3 translation = viewFrustumAttributes.m_worldTransform.GetTranslation();
         const Vector3 forward = viewFrustumAttributes.m_worldTransform.GetBasisY();
         const Vector3 right = viewFrustumAttributes.m_worldTransform.GetBasisX();
         const Vector3 up = viewFrustumAttributes.m_worldTransform.GetBasisZ();
 
-        SetPlane(
-            PlaneId::Near,
-            Plane::CreateFromNormalAndPoint(forward, translation + (forward * viewFrustumAttributes.m_nearClip)));
-        SetPlane(
-            PlaneId::Far,
-            Plane::CreateFromNormalAndPoint(-forward, translation + (forward * viewFrustumAttributes.m_farClip)));
+        SetPlane(PlaneId::Near, Plane::CreateFromNormalAndPoint(forward, translation + (forward * viewFrustumAttributes.m_nearClip)));
+        SetPlane(PlaneId::Far, Plane::CreateFromNormalAndPoint(-forward, translation + (forward * viewFrustumAttributes.m_farClip)));
 
-        const Vector3 leftNormal =
-            (right + forward * (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip)).GetNormalized();
-        const Vector3 rightNormal =
-            (-right + forward * (nearPlaneHalfWidth / viewFrustumAttributes.m_nearClip)).GetNormalized();
+        // The side planes pass through the view origin regardless of the near clip distance.
+        const Vector3 leftNormal = (right + forward * tanHalfHorizontalFov).GetNormalized();
+        const Vector3 rightNormal = (-right + forward * tanHalfHorizontalFov).GetNormalized();
 
         SetPlane(PlaneId::Left, Plane::CreateFromNormalAndPoint(leftNormal, translation));
         SetPlane(PlaneId::Right, Plane::CreateFromNormalAndPoint(rightNormal, translation));
 
-        const Vector3 topNormal =
-            (-up + forward * (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip)).GetNormalized();
-        const Vector3 bottomNormal =
-            (up + forward * (nearPlaneHalfHeight / viewFrustumAttributes.m_nearClip)).GetNormalized();
+        const Vector3 topNormal = (-up + forward * tanHalfVerticalFov).GetNormalized();
+        const Vector3 bottomNormal = (up + forward * tanHalfVerticalFov).GetNormalized();
 
         SetPlane(PlaneId::Top, Plane::CreateFromNormalAndPoint(topNormal, translation));
         SetPlane(PlaneId::Bottom, Plane::CreateFromNormalAndPoint(bottomNormal, translation));
@@ -207,10 +199,8 @@ namespace AZ
         ViewFrustumAttributes viewFrustumAttributes;
 
         const Vector3 forward = Vector4(m_planes[PlaneId::Near]).GetAsVector3().GetNormalized();
-        const Vector3 right =
-            Vector4(Vec4::Sub(m_planes[PlaneId::Left], m_planes[PlaneId::Right])).GetAsVector3().GetNormalized();
-        const Vector3 up =
-            Vector4(Vec4::Sub(m_planes[PlaneId::Bottom], m_planes[PlaneId::Top])).GetAsVector3().GetNormalized();
+        const Vector3 right = Vector4(Vec4::Sub(m_planes[PlaneId::Left], m_planes[PlaneId::Right])).GetAsVector3().GetNormalized();
+        const Vector3 up = Vector4(Vec4::Sub(m_planes[PlaneId::Bottom], m_planes[PlaneId::Top])).GetAsVector3().GetNormalized();
 
         const Matrix3x3 orientation = Matrix3x3::CreateFromColumns(right, forward, up);
         const Plane bottom(m_planes[PlaneId::Bottom]);
@@ -220,27 +210,22 @@ namespace AZ
         // solve a set of simultaneous equations to find the point that is contained within all planes
         // (note: this is not a transformation, it is simply using Matrix3x3 to perform some linear algebra)
         const Vector3 origin =
-            -Matrix3x3::CreateFromRows(bottom.GetNormal(), top.GetNormal(), left.GetNormal()).GetInverseFull() *
-            Vector3(bottom.GetDistance(), top.GetDistance(), left.GetDistance());
+            -Matrix3x3::CreateFromRows(bottom.GetNormal(), top.GetNormal(), left.GetNormal()).GetInverseFull()
+            * Vector3(bottom.GetDistance(), top.GetDistance(), left.GetDistance());
 
         viewFrustumAttributes.m_worldTransform = Transform::CreateFromMatrix3x3AndTranslation(orientation, origin);
 
         const float originDotForward = origin.Dot(forward);
-        const float nearClip = -Vec4::SelectIndex3(m_planes[PlaneId::Near]) - originDotForward;
-
-        viewFrustumAttributes.m_nearClip = nearClip;
+        viewFrustumAttributes.m_nearClip = -Vec4::SelectIndex3(m_planes[PlaneId::Near]) - originDotForward;
         viewFrustumAttributes.m_farClip = Vec4::SelectIndex3(m_planes[PlaneId::Far]) - originDotForward;
 
         const float leftNormalDotForward = left.GetNormal().Dot(forward);
-        const float frustumNearHeight =
-            2.0f * nearClip * leftNormalDotForward / std::sqrt(1.0f - leftNormalDotForward * leftNormalDotForward);
+        const float tanHalfHorizontalFov = leftNormalDotForward / std::sqrt(1.0f - leftNormalDotForward * leftNormalDotForward);
         const float bottomNormalDotForward = bottom.GetNormal().Dot(forward);
-        const float tanHalfFov =
-            bottomNormalDotForward / std::sqrt(1.0f - bottomNormalDotForward * bottomNormalDotForward);
-        const float frustumNearWidth = 2.0f * nearClip * tanHalfFov;
+        const float tanHalfVerticalFov = bottomNormalDotForward / std::sqrt(1.0f - bottomNormalDotForward * bottomNormalDotForward);
 
-        viewFrustumAttributes.m_aspectRatio = frustumNearHeight / frustumNearWidth;
-        viewFrustumAttributes.m_verticalFovRadians = 2.0f * std::atan(tanHalfFov);
+        viewFrustumAttributes.m_aspectRatio = tanHalfHorizontalFov / tanHalfVerticalFov;
+        viewFrustumAttributes.m_verticalFovRadians = 2.0f * std::atan(tanHalfVerticalFov);
 
         return viewFrustumAttributes;
     }
