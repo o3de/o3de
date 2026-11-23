@@ -6,6 +6,7 @@
 #
 #
 
+import argparse
 import pathlib
 import os
 import pytest
@@ -695,7 +696,34 @@ def test_prompt_password_success():
         assert mock_get_pass.call_count == 2
 
 
-def test_generate_android_project_success(tmpdir):
+def test_generate_android_project_loads_sdk_levels_from_selected_project(tmp_path, monkeypatch):
+    project = tmp_path / 'project'
+    project.mkdir()
+    (project / 'project.json').write_text('{"project_name": "AndroidProject"}')
+    (project / '.command_settings').write_text('[android]\nplatform.sdk.api = 35\nplatform.sdk.min.api = 24\n')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(android_support.manifest, 'get_o3de_folder', lambda: tmp_path)
+    monkeypatch.setattr(android_support.manifest, 'get_registered', lambda **kwargs: project)
+
+    parser = argparse.ArgumentParser()
+    android.add_args(parser.add_subparsers())
+    args = parser.parse_args(['android-generate', '-p', str(project)])
+    config, _ = android.get_android_config_from_args(args)
+
+    assert args.platform_sdk_api_level is None
+    assert args.platform_sdk_min_api_level is None
+    assert config.get_value(android_support.SETTINGS_PLATFORM_SDK_API.key) == '35'
+    assert config.get_value(android_support.SETTINGS_PLATFORM_SDK_MIN_API.key) == '24'
+
+
+@pytest.mark.parametrize(
+    "test_platform_api_level, test_platform_min_api_level, expected_min_api_level", [
+        pytest.param('36', '31', '31', id="min_below_target"),
+        pytest.param('30', '31', '30', id="min_above_target_uses_target"),
+        pytest.param('36', None, '36', id="min_not_set_uses_target")
+    ]
+)
+def test_generate_android_project_success(tmpdir, test_platform_api_level, test_platform_min_api_level, expected_min_api_level):
 
     # Test Data
     test_project_name = "Foo"
@@ -717,7 +745,6 @@ def test_generate_android_project_success(tmpdir):
     test_store_pw = '1111'
     test_key_password = '2222'
     test_android_sdk_path = f'{os.sep}usr{os.sep}android{os.sep}sdk'
-    test_platform_api_level = '31'
     test_asset_mode = 'LOOSE'
     test_bundle_subpath = f'AssetBundling{os.sep}Bundles'
     test_ndk_version = '27.*'
@@ -733,6 +760,7 @@ def test_generate_android_project_success(tmpdir):
     setattr(test_args, 'signconfig_store_file', str(test_key_store_path))
     setattr(test_args, 'signconfig_key_alias', test_sc_key_alias)
     setattr(test_args, 'platform_sdk_api_level', test_platform_api_level)
+    setattr(test_args, 'platform_sdk_min_api_level', test_platform_min_api_level)
     setattr(test_args, 'asset_mode', test_asset_mode)
     setattr(test_args, 'ndk_version', test_ndk_version)
 
@@ -755,6 +783,8 @@ def test_generate_android_project_success(tmpdir):
                 return test_store_pw
             elif key == android_support.SETTINGS_SIGNING_KEY_PASSWORD.key:
                 return test_key_password
+            elif key == android_support.SETTINGS_PLATFORM_SDK_MIN_API.key:
+                return None
             else:
                 assert False
 
@@ -829,6 +859,7 @@ def test_generate_android_project_success(tmpdir):
                                                                    android_sdk_path=test_android_sdk_path,
                                                                    android_build_tool_version=test_sdk_build_tools_version,
                                                                    android_platform_sdk_api_level=test_platform_api_level,
+                                                                   android_platform_sdk_min_api_level=expected_min_api_level,
                                                                    android_ndk_package=mock_ndk_package,
                                                                    project_name=test_project_name,
                                                                    project_path=test_project_root,
