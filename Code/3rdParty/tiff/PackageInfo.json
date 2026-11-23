@@ -1,0 +1,12 @@
+{
+    "PackageName": "libtiff",
+    "Version": "4.7.2",
+    "URL": "https://libtiff.gitlab.io/libtiff/",
+    "License": "libtiff",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://gitlab.com/libtiff/libtiff/-/archive/v4.7.2/libtiff-v4.7.2.tar.gz",
+        "Revision": "d01a94be176f5f6a87f7ee1c0b32e65416aa2b4d",
+        "SHA256": "62b15f44c10106065211efa22a2dc77937bd97ee1f6e3afd2c9659010de112eb"
+    }
+}

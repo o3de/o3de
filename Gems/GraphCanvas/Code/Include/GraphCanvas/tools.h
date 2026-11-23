@@ -24,10 +24,6 @@ namespace AZ
     class Vector2;
 }
 
-QDebug operator<<(QDebug debug, const AZ::Entity* entity);
-QDebug operator<<(QDebug debug, const AZ::EntityId& entity);
-QDebug operator<<(QDebug debug, const AZ::Component* component);
-QDebug operator<<(QDebug debug, const AZ::Vector2& position);
 
 namespace GraphCanvas
 {

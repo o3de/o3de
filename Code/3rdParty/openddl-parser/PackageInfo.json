@@ -1,0 +1,12 @@
+{
+    "PackageName": "openddl-parser",
+    "Version": "0.5.2",
+    "URL": "https://github.com/kimkulling/openddl-parser",
+    "License": "MIT",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/kimkulling/openddl-parser/archive/d1c739ab851b57af8237945fe4ffafc682c1dd2f.tar.gz",
+        "Revision": "d1c739ab851b57af8237945fe4ffafc682c1dd2f",
+        "SHA256": "f293e507cff47ad006e68eadaca5fccc862b551762034b7c8f4a1d4eb2830d64"
+    }
+}

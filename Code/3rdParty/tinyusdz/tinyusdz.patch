@@ -1,0 +1,79 @@
+--- a/src/value-types.hh
++++ b/src/value-types.hh
+@@ -13,6 +13,7 @@
+ #include <algorithm>
+ #include <array>
+ #include <cmath>
++#include <cstdint>
+ #include <cstring>
+ #include <functional>
+ #include <iostream>
+--- a/src/lz4-compression.cc
++++ b/src/lz4-compression.cc
+@@ -53,7 +53,7 @@
+ //using namespace pxr_lz4;
+ #else
+ // TinyUSDZ : Use orignal lz4.
+-#include "lz4/lz4.h"
++#include <lz4.h>
+ #endif
+ 
+ namespace tinyusdz {
+--- a/src/usdMtlx.cc
++++ b/src/usdMtlx.cc
+@@ -8,7 +8,7 @@
+ #pragma clang diagnostic ignored "-Weverything"
+ #endif
+ 
+-#include "external/pugixml.hpp"
++#include <pugixml.hpp>
+ // #include "external/jsonhpp/nlohmann/json.hpp"
+ 
+ #ifdef __clang__
+--- a/src/image-util.cc
++++ b/src/image-util.cc
+@@ -21,6 +21,7 @@
+ #endif
+ 
+ #if !defined(TINYUSDZ_NO_STB_IMAGE_RESIZE_IMPLEMENTATION)
++#define STB_IMAGE_RESIZE_STATIC
+ #define STB_IMAGE_RESIZE_IMPLEMENTATION
+ #endif
+ 
+--- a/src/image-writer.cc
++++ b/src/image-writer.cc
+@@ -8,6 +8,7 @@
+ #endif
+ 
+ #ifndef TINYUSDZ_NO_STB_IMAGE_WRITE_IMPLEMENTATION
++#define STB_IMAGE_WRITE_STATIC
+ #define STB_IMAGE_WRITE_IMPLEMENTATION
+ #endif
+ 
+--- a/src/tydra/texture-util.cc
++++ b/src/tydra/texture-util.cc
+@@ -13,7 +13,10 @@
+ #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+ #endif
+ 
+-// stb_image_resize2 implementation define is in src/image-util.cc
++#if !defined(TINYUSDZ_NO_STB_IMAGE_RESIZE_IMPLEMENTATION)
++#define STB_IMAGE_RESIZE_STATIC
++#define STB_IMAGE_RESIZE_IMPLEMENTATION
++#endif
+ 
+ #include "external/stb_image_resize2.h"
+ 
+--- a/src/external/stb_image_resize2.h
++++ b/src/external/stb_image_resize2.h
+@@ -1450,8 +1450,8 @@
+     #include <smmintrin.h>
+     #define stbir__simdf_pack_to_8words(out,reg0,reg1) out = _mm_packus_epi32(_mm_cvttps_epi32(_mm_max_ps(_mm_min_ps(reg0,STBIR__CONSTF(STBIR_max_uint16_as_float)),_mm_setzero_ps())), _mm_cvttps_epi32(_mm_max_ps(_mm_min_ps(reg1,STBIR__CONSTF(STBIR_max_uint16_as_float)),_mm_setzero_ps())))
+   #else
+-    STBIR__SIMDI_CONST(stbir__s32_32768, 32768);
+-    STBIR__SIMDI_CONST(stbir__s16_32768, ((32768<<16)|32768));
++    static STBIR__SIMDI_CONST(stbir__s32_32768, 32768);
++    static STBIR__SIMDI_CONST(stbir__s16_32768, ((32768<<16)|32768));
+ 
+     #define stbir__simdf_pack_to_8words(out,reg0,reg1) \
+       { \

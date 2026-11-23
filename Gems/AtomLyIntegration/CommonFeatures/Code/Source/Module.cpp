@@ -18,6 +18,7 @@
 #include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
 #include <Grid/GridComponent.h>
+#include <GradientGlobalIllumination/GradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
@@ -58,6 +59,7 @@
 #include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
 #include <Grid/EditorGridComponent.h>
+#include <GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialSystemComponent.h>
@@ -105,7 +107,9 @@ namespace AZ
             AtomLyIntegrationCommonFeaturesModule()
                 : AZ::Module()
             {
-                m_descriptors.insert(m_descriptors.end(), {
+                m_descriptors.insert(
+                    m_descriptors.end(),
+                    {
                         AtomLyIntegrationCommonFeaturesSystemComponent::CreateDescriptor(),
                         AreaLightComponent::CreateDescriptor(),
                         DecalComponent::CreateDescriptor(),
@@ -119,6 +123,7 @@ namespace AZ
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
                         HDRiSkyboxComponent::CreateDescriptor(),
+                        GradientGlobalIlluminationComponent::CreateDescriptor(),
                         ImageBasedLightComponent::CreateDescriptor(),
                         MaterialComponent::CreateDescriptor(),
                         MeshComponent::CreateDescriptor(),
@@ -159,6 +164,7 @@ namespace AZ
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),
                         EditorHDRiSkyboxComponent::CreateDescriptor(),
+                        EditorGradientGlobalIlluminationComponent::CreateDescriptor(),
                         EditorImageBasedLightComponent::CreateDescriptor(),
                         EditorMaterialComponent::CreateDescriptor(),
                         EditorMaterialSystemComponent::CreateDescriptor(),

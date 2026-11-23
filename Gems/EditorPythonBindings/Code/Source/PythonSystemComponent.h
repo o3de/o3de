@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EditorPythonBindings/EditorPythonBindingsSymbols.h>
+#include <EditorPythonBindings/PythonCommon.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -71,6 +72,7 @@ namespace EditorPythonBindings
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
         int m_lockRecursiveCounter = 0;
+        PyThreadState* m_initialThreadState = nullptr;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
         PythonActionManagerHandler m_pythonActionManagerHandler;
         AzToolsFramework::EmbeddedPython::PythonLoader m_pythonLoader;

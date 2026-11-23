@@ -6,10 +6,10 @@
 #
 
 o3de_fetch_content(sqlite
-    VERSION "3.53.4"
+    VERSION "3.54.1"
     LICENSE "blessing"
-    URL "https://sqlite.org/2026/sqlite-amalgamation-3530400.zip"
-    URL_HASH "1e71ddf93849c6a6ecf58b827c0692073d2dd7ee40196158068f7b29f422e87d"
+    URL "https://sqlite.org/2026/sqlite-amalgamation-3540100.zip"
+    URL_HASH "0a9c8e34352dad46006aa82836d5383bff9dc6bc9ce5a60553c05aa30e6ad1f9"
 )
 FetchContent_MakeAvailable(sqlite)
 

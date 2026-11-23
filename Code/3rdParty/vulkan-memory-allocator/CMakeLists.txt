@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(vulkan-memory-allocator
-    VERSION "3.4.0"
+    VERSION "3.5.0"
     LICENSE "MIT"
-    URL "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.4.0.tar.gz"
-    URL_HASH "822aa850c6ce77346ae96a8a1d351d52e77e85929f35363849a0a4e638e0a2a1"
+    URL "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.5.0.tar.gz"
+    URL_HASH "c5f3db848fca9cb9726b41f256cc3007773321fa92a86d1e0902e66474e8a9e3"
     GIT "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
-    GIT_HASH "3aa921224c154a0d2c43912bc88e1c42ce1f7607"
+    GIT_HASH "0f1a757da579831283413295cc7f3b47eb521c77"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(vulkan-memory-allocator)
@@ -19,6 +19,11 @@ FetchContent_MakeAvailable(vulkan-memory-allocator)
 file(
     COPY "${vulkan-memory-allocator_SOURCE_DIR}/include/"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
+)
+
+file(
+    COPY "${vulkan-memory-allocator_SOURCE_DIR}/include/"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include/vma"
 )
 
 ly_add_target(

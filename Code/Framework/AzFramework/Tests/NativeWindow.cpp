@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Console/Console.h>
 #include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
@@ -59,6 +60,15 @@ namespace UnitTest
         bool m_wasOnWindowResizedReceived = false;
         bool m_wasOnWindowClosedReceived = false;
     };
+
+    TEST_F(NativeWindowTest, VsyncIntervalNeverReplicatesBetweenPlayers)
+    {
+        AZ::Console console;
+        console.LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+        const AZ::ConsoleFunctorBase* command = console.FindCommand("vsync_interval");
+        ASSERT_NE(command, nullptr);
+        EXPECT_NE(command->GetFlags() & AZ::ConsoleFunctorFlags::DontReplicate, AZ::ConsoleFunctorFlags::Null);
+    }
 
     // Test that a window can be created and will start in the non-active state
 #if AZ_TRAIT_DISABLE_FAILED_NATIVE_WINDOWS_TESTS

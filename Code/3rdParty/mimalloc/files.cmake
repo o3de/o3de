@@ -10,6 +10,7 @@ set(FILES
     "${mimalloc_SOURCE_DIR}/src/prim/prim.c"
     "${mimalloc_SOURCE_DIR}/src/prim/prim-tls.c"
     "${mimalloc_SOURCE_DIR}/src/util/libc.c"
+    "${mimalloc_SOURCE_DIR}/src/util/memid.c"
     "${mimalloc_SOURCE_DIR}/src/util/options.c"
     "${mimalloc_SOURCE_DIR}/src/util/random.c"
     "${mimalloc_SOURCE_DIR}/src/util/stats.c"
@@ -17,6 +18,8 @@ set(FILES
     "${mimalloc_SOURCE_DIR}/src/arena/arena.c"
     "${mimalloc_SOURCE_DIR}/src/arena/arena-alloc.c"
     "${mimalloc_SOURCE_DIR}/src/arena/arena-page.c"
+    "${mimalloc_SOURCE_DIR}/src/arena/arena-page-alloc.c"
+    "${mimalloc_SOURCE_DIR}/src/arena/arena-heap.c"
     "${mimalloc_SOURCE_DIR}/src/arena/bitmap-chunk.c"
     "${mimalloc_SOURCE_DIR}/src/arena/bitmap.c"
     "${mimalloc_SOURCE_DIR}/src/alloc/alloc.c"
@@ -26,13 +29,15 @@ set(FILES
     "${mimalloc_SOURCE_DIR}/src/alloc/page.c"
     "${mimalloc_SOURCE_DIR}/src/alloc/page-queue.c"
     "${mimalloc_SOURCE_DIR}/src/heap/heap.c"
-    "${mimalloc_SOURCE_DIR}/src/heap/init.c"
+    "${mimalloc_SOURCE_DIR}/src/heap/process.c"
     "${mimalloc_SOURCE_DIR}/src/heap/page-map.c"
     "${mimalloc_SOURCE_DIR}/src/heap/subproc.c"
     "${mimalloc_SOURCE_DIR}/src/heap/theap.c"
     "${mimalloc_SOURCE_DIR}/src/profile/sample-guarded.c"
     "${mimalloc_SOURCE_DIR}/src/profile/sample-profile.c"
     "${mimalloc_SOURCE_DIR}/src/profile/pprof.c"
+    "${mimalloc_SOURCE_DIR}/src/profile/pprof-os.c"
+    "${mimalloc_SOURCE_DIR}/src/profile/pprof-write.c"
 )
 
 set_source_files_properties(${FILES} PROPERTIES LANGUAGE CXX)

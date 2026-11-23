@@ -1,0 +1,9 @@
+--- a/src/benchmark.cc
++++ b/src/benchmark.cc
+@@ -33,3 +33,6 @@
+ #ifdef __ANDROID_NDK__
+ #include <malloc.h>
++#if __ANDROID_API__ < 26
++extern "C" __attribute__((weak)) int mallopt(int, int);
++#endif
+ #endif

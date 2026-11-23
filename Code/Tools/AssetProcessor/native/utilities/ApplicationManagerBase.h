@@ -19,7 +19,7 @@
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/UuidManager.h>
 
-#include <qwindowdefs.h>
+#include <QtGui/qwindowdefs.h>
 
 namespace AzToolsFramework
 {

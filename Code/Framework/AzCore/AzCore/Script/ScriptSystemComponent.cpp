@@ -334,14 +334,14 @@ void ScriptSystemComponent::GarbageCollect()
 //=========================================================================
 // GarbageCollectStep
 //=========================================================================
-void ScriptSystemComponent::GarbageCollectStep(int numberOfSteps)
+void ScriptSystemComponent::GarbageCollectStep(int stepSize)
 {
     for (size_t i = 0; i < m_contexts.size(); ++i)
     {
         ScriptContext* vm = m_contexts[i].m_context;
         if (vm)
         {
-            vm->GarbageCollectStep(numberOfSteps);
+            vm->GarbageCollectStep(stepSize);
         }
     }
 }

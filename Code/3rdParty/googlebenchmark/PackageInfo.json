@@ -1,0 +1,12 @@
+{
+    "PackageName": "googlebenchmark",
+    "Version": "1.10.0",
+    "URL": "https://github.com/google/benchmark",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/google/benchmark/archive/refs/tags/v1.10.0.tar.gz",
+        "Revision": "a6b4a9f00b36c19af9997d68a1cf6e0b5b3d032c",
+        "SHA256": "acc5c7c0fbed855c4aaa2d7c3c36fb82b0c15c28f4e151e3f679c2fc0aa404af"
+    }
+}

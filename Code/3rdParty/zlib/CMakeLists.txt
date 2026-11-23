@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(zlib
-    VERSION "1.3.2"
+    VERSION "1.4"
     LICENSE "Zlib"
-    URL "https://github.com/madler/zlib/archive/refs/tags/v1.3.2.tar.gz"
-    URL_HASH "b99a0b86c0ba9360ec7e78c4f1e43b1cbdf1e6936c8fa0f6835c0cd694a495a1"
+    URL "https://github.com/madler/zlib/archive/refs/tags/v1.4.tar.gz"
+    URL_HASH "4331355048e286908260fdbeaa0b8cf75ceaf2907c75855a093a6487c7032aaa"
     GIT "https://github.com/madler/zlib.git"
-    GIT_HASH "da607da739fa6047df13e66a2af6b8bec7c2a498"
+    GIT_HASH "99623ef7097352da7993ba614161fd6a311e046e"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(zlib)

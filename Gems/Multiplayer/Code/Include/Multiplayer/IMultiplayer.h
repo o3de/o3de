@@ -62,6 +62,7 @@ namespace Multiplayer
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
     using EndpointDisconnectedEvent = AZ::Event<MultiplayerAgentType>;
+    using EndpointDisconnectedEventWithReason = AZ::Event<MultiplayerAgentType, AzNetworking::DisconnectReason, AzNetworking::TerminationEndpoint>;
     using NetworkInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
@@ -133,6 +134,11 @@ namespace Multiplayer
         //! Adds a EndpointDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
         //! @param handler The EndpointDisconnectedEvent Handler to add
         virtual void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) = 0;
+
+        //! Adds a EndpointDisconnectedEventWithReason Handler which is invoked on the client when a disconnection occurs,
+        //! with why the connection ended and which end ended it.
+        //! @param handler The EndpointDisconnectedEventWithReason Handler to add
+        virtual void AddEndpointDisconnectedWithReasonHandler(EndpointDisconnectedEventWithReason::Handler& handler) = 0;
 
         //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
         //! @param handler The NotifyClientMigrationEvent Handler to add

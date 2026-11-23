@@ -5,8 +5,8 @@
     "License": "BSD-3-Clause",
     "LicenseFile": "LICENSE.txt",
     "Source": {
-        "URL": "https://github.com/o3de/mcpp/archive/c8da19d04e248b129bfd90a4fd7882585148e4e5.tar.gz",
-        "Revision": "c8da19d04e248b129bfd90a4fd7882585148e4e5",
-        "SHA256": "b5b4face7d46a0ba74f97680814c1e714d2b729db74961b89dadc59e97c3c48d"
+        "URL": "https://github.com/o3de/mcpp/archive/ea985ce7beb7d3f750f1a7a3f452568bae06b2e7.tar.gz",
+        "Revision": "ea985ce7beb7d3f750f1a7a3f452568bae06b2e7",
+        "SHA256": "1129651b911761c137f720ef574fc65d9e8b63556db056c6b40d85426f285213"
     }
 }
