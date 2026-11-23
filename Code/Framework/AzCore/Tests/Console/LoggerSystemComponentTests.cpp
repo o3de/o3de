@@ -139,6 +139,42 @@ namespace UnitTest
         EXPECT_EQ(strcmp("test debug", m_lastLogMessage.c_str()), 0);
     }
 
+    TEST_F(LoggerSystemComponentTests, TaggedLogNamesAndCurrentTagTest)
+    {
+        AZ::ILogger* testLogger = AZ::Interface<AZ::ILogger>::Get();
+        AZStd::string tagSeenByHandler;
+        AZ::ILogger::LogEvent::Handler tagHandler(
+            [&tagSeenByHandler, testLogger](AZ::LogLevel, const char*, const char*, const char*, int32_t)
+            {
+                const char* tag = testLogger->GetCurrentTag();
+                tagSeenByHandler = tag ? tag : "";
+            });
+        testLogger->BindLogHandler(tagHandler);
+
+        m_loggerComponent->RegisterTag(AZ::TypeHash32("NAMED_TAG"), "NAMED_TAG");
+        m_loggerComponent->EnableLog(AZ::ConsoleCommandContainer{ "ENABLED_TAG" });
+
+        // The handler sees the tag of a tagged message, and no tag for an untagged one.
+        AZLOG(ENABLED_TAG, "tagged");
+        EXPECT_EQ(tagSeenByHandler, "ENABLED_TAG");
+
+        AZLOG_INFO("untagged");
+        EXPECT_EQ(tagSeenByHandler, "");
+
+        // Both the registered tag and the enabled tag are listed, with their enabled state.
+        AZStd::unordered_map<AZStd::string, bool> tags;
+        testLogger->VisitTags(
+            [&tags](const char* tagName, bool enabled)
+            {
+                tags[tagName] = enabled;
+            });
+        EXPECT_EQ(tags.size(), size_t{ 2 });
+        EXPECT_FALSE(tags["NAMED_TAG"]);
+        EXPECT_TRUE(tags["ENABLED_TAG"]);
+
+        tagHandler.Disconnect();
+    }
+
     TEST_F(LoggerSystemComponentTests, TaggedLogToggleTest)
     {
         AZ::Interface<AZ::ILogger>::Get()->SetLogLevel(AZ::LogLevel::Trace);

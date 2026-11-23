@@ -13,6 +13,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace AZ
 {
@@ -48,6 +49,12 @@ namespace AZ
         bool IsTagEnabled(AZ::HashValue32 hashValue) override;
         void Flush() override;
         void LogInternalV(LogLevel level, const char* format, const char* file, const char* function, int32_t line, va_list args) override;
+        void RegisterTag(AZ::HashValue32 hashValue, const char* tagName) override;
+        void VisitTags(const AZStd::function<void(const char* tagName, bool enabled)>& visitor) override;
+        const char* GetCurrentTag() const override;
+        void LogTaggedInternalV(
+            const char* tag, LogLevel level, const char* format, const char* file, const char* function, int32_t line, va_list args)
+            override;
         //! @}
 
         //! Console commands.
@@ -79,5 +86,6 @@ namespace AZ
         AZStd::bitset<BitsetSize> m_quickHash;
         AZStd::mutex m_enabledTagsMutex;
         AZStd::vector<AZ::HashValue32> m_enabledTags;
+        AZStd::unordered_map<AZ::HashValue32, AZStd::string> m_tagNames; //!< Guarded by m_enabledTagsMutex.
     };
 }
