@@ -11,6 +11,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzCore/Math/Vector4.h>
 #include "MathTestData.h"
 
@@ -752,6 +753,22 @@ namespace UnitTest
         EXPECT_THAT(inverse.GetRow(0), IsClose(AZ::Vector4(-61.5111237f, 5.37747292e-06f, 0.0f, 0.0f)));
         EXPECT_THAT(inverse.GetRow(1), IsClose(AZ::Vector4(2.35056820e-13f, 2.68873646e-06f, 61.5111237f, 0.0f)));
         EXPECT_THAT(inverse.GetRow(2), IsClose(AZ::Vector4(5.37747292e-06f, 61.5111237f, -2.68873646e-06f, 0.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, GetInverseFullWarnsBelowMinimumScale)
+    {
+        // A uniform scale of 0.00005 gives a determinant of 1.25e-13, below the invertible limit (uniform scale 0.0001).
+        const AZ::Vector3 translation(2.3f, -5.2f, 0.7f);
+        const AZ::Matrix3x4 matrix =
+            AZ::Matrix3x4::CreateTranslation(translation) * AZ::Matrix3x4::CreateScale(AZ::Vector3(0.00005f));
+
+        ErrorHandler warningHandler("GetInverseFull could not calculate inverse");
+        const AZ::Matrix3x4 inverse = matrix.GetInverseFull();
+        EXPECT_EQ(warningHandler.GetExpectedWarningCount(), 1);
+        EXPECT_THAT(inverse.GetBasisX(), IsClose(AZ::Vector3::CreateAxisX()));
+        EXPECT_THAT(inverse.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
+        EXPECT_THAT(inverse.GetBasisZ(), IsClose(AZ::Vector3::CreateAxisZ()));
+        EXPECT_THAT(inverse.GetTranslation(), IsClose(-translation));
     }
 
     using Matrix3x4InvertFastFixture = ::testing::TestWithParam<AZ::Matrix3x4>;

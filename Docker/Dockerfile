@@ -86,7 +86,6 @@ RUN apt-get update \
             libxcb-render-util0-dev \
             libpcre2-16-0 \
             libunwind-dev \
-            libzstd-dev \
             ninja-build \
             python3-pip \
             software-properties-common \

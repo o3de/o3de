@@ -23,6 +23,7 @@ namespace Platform
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate);
     void ResizeInternal(RHIMetalView* metalView, CGSize viewSize);
     float GetRefreshRate();
+    uint32_t GetMaximumVerticalSyncInterval();
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow);
 }
 
@@ -38,6 +39,11 @@ namespace AZ
         Device& SwapChain::GetDevice() const
         {
             return static_cast<Device&>(Base::GetDevice());
+        }
+
+        uint32_t SwapChain::GetMaximumVerticalSyncInterval() const
+        {
+            return m_refreshRate > 0 ? Platform::GetMaximumVerticalSyncInterval() : 1;
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)

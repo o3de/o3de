@@ -37,7 +37,7 @@ def NodePalette_SearchText_Deletion():
     :return: None
     """
 
-    from PySide6 import QtWidgets, QtTest, QtCore
+    from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 
     from utils import TestHelper as helper
 
@@ -58,7 +58,7 @@ def NodePalette_SearchText_Deletion():
 
     # 3) Open Node Manager if not opened already
     if sc.findChild(QtWidgets.QDockWidget, "NodePalette") is None:
-        action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Palette", "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Palette", "type": QtGui.QAction})
         action.trigger()
     node_palette = sc.findChild(QtWidgets.QDockWidget, "NodePalette")
     search_frame = node_palette.findChild(QtWidgets.QFrame, "searchFrame")

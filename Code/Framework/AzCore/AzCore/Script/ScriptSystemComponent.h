@@ -59,7 +59,7 @@ namespace AZ
         ScriptContext* GetContext(ScriptContextId id = ScriptContextIds::DefaultScriptContextId) override;
 
         void GarbageCollect() override;
-        void GarbageCollectStep(int numberOfSteps) override;
+        void GarbageCollectStep(int stepSize) override;
 
         bool Load(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id) override;
         ScriptLoadResult LoadAndGetNativeContext(const Data::Asset<ScriptAsset>& asset, const char* mode, ScriptContextId id) override;

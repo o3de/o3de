@@ -19,6 +19,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -46,6 +48,10 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    //! The frustum of the view the renderer draws (the viewport's camera, orthographic or perspective),
+    //! widened by margin world units, or nullopt when nothing is rendered. Net entities inside it are blended every frame.
+    AZStd::optional<AZ::Frustum> GetRenderedViewFrustum(float margin);
+
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerSystemComponent final
         : public AZ::Component
@@ -128,6 +134,7 @@ namespace Multiplayer
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
         void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) override;
+        void AddEndpointDisconnectedWithReasonHandler(EndpointDisconnectedEventWithReason::Handler& handler) override;
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
@@ -208,6 +215,7 @@ namespace Multiplayer
         NetworkInitEvent m_networkInitEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;
+        EndpointDisconnectedEventWithReason m_endpointDisconnectedEventWithReason;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;

@@ -863,10 +863,10 @@ namespace AZ
         size_t GetMemoryUsage() const;
 
         /**
-         *  Step the garbage collector. There is no exact number that works in all cases, tune this number for optimal
-         * performance in your app.
+         * Step the garbage collector as if the specified amount of memory had been allocated.
+         * \param stepSize Nonnegative simulated allocation size in KiB. Zero requests a basic step.
          */
-        void GarbageCollectStep(int numberOfSteps = 2);
+        void GarbageCollectStep(int stepSize = 2);
 
         lua_State* NativeContext();
 

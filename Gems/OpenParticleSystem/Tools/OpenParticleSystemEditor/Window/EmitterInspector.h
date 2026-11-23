@@ -19,9 +19,9 @@
 #include <QCoreApplication>
 #include <QPoint>
 #include <QSize>
-#include <qtwidgetsglobal.h>
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <QWidget>
-#include <qwindowdefs.h>
+#include <QtGui/qwindowdefs.h>
 
 #include <Window/ParticleGraphicsScence.h>
 #include <Window/ui_EmitterInspector.h>

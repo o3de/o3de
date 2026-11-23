@@ -385,7 +385,7 @@ namespace Benchmark
         {
             for (auto& testData : m_testDataArray)
             {
-                const auto& result = testData.m1.GetRow(testData.row);
+                auto result = testData.m1.GetRow(testData.row);
                 benchmark::DoNotOptimize(result);
             }
         }
@@ -397,7 +397,7 @@ namespace Benchmark
         {
             for (auto& testData : m_testDataArray)
             {
-                const auto& result = testData.m1.GetRowAsVector3(testData.row);
+                auto result = testData.m1.GetRowAsVector3(testData.row);
                 benchmark::DoNotOptimize(result);
             }
         }

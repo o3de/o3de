@@ -42,14 +42,14 @@
 #include <AzFramework/Translation/TranslationDef.h>
 
 // this is called the first time a Python script contains "import azlmbr"
-PYBIND11_EMBEDDED_MODULE(azlmbr, m)
+PYBIND11_MODULE(azlmbr, m)
 {
     EditorPythonBindings::EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindings::EditorPythonBindingsNotificationBus::Events::OnImportModule, m.ptr());
 }
 
 namespace RedirectOutput
 {
-    using RedirectOutputFunc = AZStd::function<void(const char*)>;
+    using RedirectOutputFunc = void (*)(const char*);
 
     struct RedirectOutput
     {
@@ -89,49 +89,28 @@ namespace RedirectOutput
         {nullptr, nullptr, 0, nullptr} // sentinel
     };
 
-    PyTypeObject RedirectOutputType =
-    {
-        PyVarObject_HEAD_INIT(nullptr, 0)
-        "azlmbr_redirect.RedirectOutputType", // tp_name
-        sizeof(RedirectOutput), /* tp_basicsize */
-        0,                    /* tp_itemsize */
-        nullptr,              /* tp_dealloc */
-        0,                    /* tp_print */
-        nullptr,              /* tp_getattr */
-        nullptr,              /* tp_setattr */
-        nullptr,              /* tp_reserved */
-        nullptr,              /* tp_repr */
-        nullptr,              /* tp_as_number */
-        nullptr,              /* tp_as_sequence */
-        nullptr,              /* tp_as_mapping */
-        nullptr,              /* tp_hash  */
-        nullptr,              /* tp_call */
-        nullptr,              /* tp_str */
-        nullptr,              /* tp_getattro */
-        nullptr,              /* tp_setattro */
-        nullptr,              /* tp_as_buffer */
-        Py_TPFLAGS_DEFAULT,   /* tp_flags */
-        "azlmbr_redirect objects", /* tp_doc */
-        nullptr,              /* tp_traverse */
-        nullptr,              /* tp_clear */
-        nullptr,              /* tp_richcompare */
-        0,                    /* tp_weaklistoffset */
-        nullptr,              /* tp_iter */
-        nullptr,              /* tp_iternext */
-        RedirectMethods,      /* tp_methods */
-        nullptr,              /* tp_members */
-        nullptr,              /* tp_getset */
-        nullptr,              /* tp_base */
-        nullptr,              /* tp_dict */
-        nullptr,              /* tp_descr_get */
-        nullptr,              /* tp_descr_set */
-        0,                    /* tp_dictoffset */
-        nullptr,              /* tp_init */
-        nullptr,              /* tp_alloc */
-        nullptr               /* tp_new */
+    PyType_Slot RedirectOutputSlots[] = {
+        {Py_tp_new, reinterpret_cast<void*>(PyType_GenericNew)},
+        {Py_tp_methods, RedirectMethods},
+        {Py_tp_doc, const_cast<char*>("azlmbr_redirect objects")},
+        {0, nullptr},
     };
 
-    PyModuleDef RedirectOutputModule = { PyModuleDef_HEAD_INIT, "azlmbr_redirect", nullptr, -1, nullptr, };
+    PyType_Spec RedirectOutputSpec = {
+        "azlmbr_redirect.RedirectOutputType",
+        sizeof(RedirectOutput),
+        0,
+        Py_TPFLAGS_DEFAULT,
+        RedirectOutputSlots,
+    };
+
+    PyModuleDef RedirectOutputModule = {
+        PyModuleDef_HEAD_INIT,
+        "azlmbr_redirect",
+        nullptr,
+        -1,
+        nullptr,
+    };
 
     // Internal state
     PyObject* g_redirect_stdout = nullptr;
@@ -146,33 +125,39 @@ namespace RedirectOutput
         g_redirect_stderr = nullptr;
         g_redirect_stderr_saved = nullptr;
 
-        RedirectOutputType.tp_new = PyType_GenericNew;
-        if (PyType_Ready(&RedirectOutputType) < 0)
+        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
+        if (!redirectModule)
         {
             return nullptr;
         }
 
-        PyObject* m = PyModule_Create(&RedirectOutputModule);
-        if (m)
+        // A fresh type avoids retaining Python's method-cache state across interpreter restarts.
+        PyObject* redirectType = PyType_FromSpec(&RedirectOutputSpec);
+        if (!redirectType || PyModule_AddObject(redirectModule, "Redirect", redirectType) < 0)
         {
-            Py_INCREF(&RedirectOutputType);
-            PyModule_AddObject(m, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
+            Py_XDECREF(redirectType);
+            Py_DECREF(redirectModule);
+            return nullptr;
         }
-        return m;
+        return redirectModule;
     }
 
-    void SetRedirection(const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
+    void SetRedirection(PyObject* module, const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
     {
-        if (PyType_Ready(&RedirectOutputType) < 0)
-        {
-            AZ_Warning("python", false, "RedirectOutputType not ready!");
-            return;
-        }
-
         if (!current)
         {
+            PyObject* redirectType = PyObject_GetAttrString(module, "Redirect");
+            if (!redirectType)
+            {
+                throw pybind11::error_already_set();
+            }
+            current = PyObject_CallNoArgs(redirectType);
+            Py_DECREF(redirectType);
+            if (!current)
+            {
+                throw pybind11::error_already_set();
+            }
             saved = PySys_GetObject(funcname); // borrowed
-            current = RedirectOutputType.tp_new(&RedirectOutputType, nullptr, nullptr);
         }
 
         RedirectOutput* redirectOutput = reinterpret_cast<RedirectOutput*>(current);
@@ -196,14 +181,18 @@ namespace RedirectOutput
     {
         using namespace AzToolsFramework;
 
+        if (!module)
+        {
+            throw pybind11::error_already_set();
+        }
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg)
+        SetRedirection(module, "stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg)
         {
             EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnTraceMessage, msg);
         });
 
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, [](const char* msg)
+        SetRedirection(module, "stderr", g_redirect_stderr_saved, g_redirect_stderr, [](const char* msg)
         {
             EditorPythonConsoleNotificationBus::Broadcast(&EditorPythonConsoleNotificationBus::Events::OnErrorMessage, msg);
         });
@@ -270,8 +259,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex& m_lock;
         int& m_lockRecursiveCounter;
         bool m_locked = false;
-        AZStd::unique_ptr<pybind11::gil_scoped_release> m_releaseGIL;
-        AZStd::unique_ptr<pybind11::gil_scoped_acquire> m_acquireGIL;
+        PyGILState_STATE m_gilState = PyGILState_UNLOCKED;
     };
 
     PythonSystemComponent::PythonGILScopedLock::PythonGILScopedLock(AZStd::recursive_mutex& lock, int& lockRecursiveCounter, bool tryLock)
@@ -313,8 +301,7 @@ namespace EditorPythonBindings
         // to be locked) and therefore it's already got the GIL acquired.
         if (m_lockRecursiveCounter == 1)
         {
-            m_releaseGIL = AZStd::make_unique<pybind11::gil_scoped_release>();
-            m_acquireGIL = AZStd::make_unique<pybind11::gil_scoped_acquire>();
+            m_gilState = PyGILState_Ensure();
         }
     }
 
@@ -325,8 +312,10 @@ namespace EditorPythonBindings
             return;
         }
 
-        m_acquireGIL.reset();
-        m_releaseGIL.reset();
+        if (m_lockRecursiveCounter == 1)
+        {
+            PyGILState_Release(m_gilState);
+        }
         m_lockRecursiveCounter--;
         m_locked = false;
         m_lock.unlock();
@@ -416,6 +405,7 @@ namespace EditorPythonBindings
             ExecuteByString("import azlmbr", false);
             ExecuteBootstrapScripts(pythonPathStack);
             EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPostInitialize);
+            m_initialThreadState = PyEval_SaveThread();
             return true;
         }
         return false;
@@ -427,6 +417,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", silenceWarnings, "Python is not active!");
             return false;
+        }
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_lock);
+        if (m_initialThreadState)
+        {
+            if (!PyGILState_Check())
+            {
+                PyEval_RestoreThread(m_initialThreadState);
+            }
+            m_initialThreadState = nullptr;
         }
 
         bool result = false;
@@ -574,7 +574,12 @@ namespace EditorPythonBindings
         AZStd::wstring pyHomePath;
         AZStd::to_wstring(pyHomePath, pyBasePath);
 
-        PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
+        if (PyImport_AppendInittab("azlmbr", PyInit_azlmbr) == -1
+            || PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput) == -1)
+        {
+            AZ_Error("python", false, "Could not register the embedded Python modules.");
+            return false;
+        }
         try
         {
             // Configure and start the interpreter through the PyConfig API
@@ -674,6 +679,16 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
+        // Python retains this table across restarts, but the binding DLL can be unloaded between applications.
+        _inittab* destination = PyImport_Inittab;
+        for (const _inittab* entry = PyImport_Inittab; entry->name; ++entry)
+        {
+            if (entry->initfunc != PyInit_azlmbr && entry->initfunc != RedirectOutput::PyInit_RedirectOutput)
+            {
+                *destination++ = *entry;
+            }
+        }
+        *destination = {};
         return true;
     }
 

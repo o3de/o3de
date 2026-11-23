@@ -8,6 +8,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Locale.h>
@@ -18,6 +19,8 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/sort.h>
+#include <AzCore/std/string/wildcard.h>
 #include <cctype>
 
 namespace AZ
@@ -35,6 +38,21 @@ namespace AZ
         }
 
         return count;
+    }
+
+    //! One `?` reply line, `  name = value - help`, printed whatever the logger's level.
+    static void PrintConsoleEntry(const ConsoleFunctorBase& functor)
+    {
+        AZStd::string line = AZStd::string::format("  %s", functor.GetName());
+        if (CVarFixedString value; functor.GetValue(value) == GetValueResult::Success)
+        {
+            line = line + " = " + value.c_str();
+        }
+        if (functor.GetDesc() && functor.GetDesc()[0])
+        {
+            line = line + " - " + functor.GetDesc();
+        }
+        Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "%s\n", line.c_str());
     }
 
     Console::Console()
@@ -111,6 +129,39 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+        // `?text` (or `? text`) lists the visible commands and cvars whose name contains text, ignoring case, where `*`
+        // matches any run and `?` any one character; `?` lists all. `cvar ?` prints that cvar. A command still receives
+        // `?` as an ordinary argument.
+        if (!command.empty() && command.front() == '?')
+        {
+            const AZStd::string_view text = command.size() > 1 ? command.substr(1) : commandArgs.empty() ? AZStd::string_view() : commandArgs.front();
+            const AZStd::string pattern = AZStd::string::format("*%.*s*", AZ_STRING_ARG(text));
+            AZStd::vector<ConsoleFunctorBase*> matches;
+            VisitRegisteredFunctors([&pattern, &matches](ConsoleFunctorBase* functor)
+            {
+                if ((functor->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::Null &&
+                    AZStd::wildcard_match(pattern, functor->GetName()))
+                {
+                    matches.push_back(functor);
+                }
+            });
+            AZStd::sort(matches.begin(), matches.end(), [](auto* l, auto* r) { return azstricmp(l->GetName(), r->GetName()) < 0; });
+            Debug::Trace::Instance().Printf(Debug::Trace::GetDefaultSystemWindow(), "?%.*s: %zu matches\n", AZ_STRING_ARG(text), matches.size());
+            for (const ConsoleFunctorBase* functor : matches)
+            {
+                PrintConsoleEntry(*functor);
+            }
+            return AZ::Success();
+        }
+        if (commandArgs.size() == 1 && commandArgs.front() == "?")
+        {
+            if (const ConsoleFunctorBase* functor = FindCommand(command); functor && !functor->GetTypeId().IsNull())
+            {
+                PrintConsoleEntry(*functor);
+                return AZ::Success();
+            }
+        }
+
         if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
         {
             // If the command could not be dispatched at this time add it to the deferred commands queue

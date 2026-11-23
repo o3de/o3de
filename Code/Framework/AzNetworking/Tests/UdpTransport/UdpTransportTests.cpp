@@ -9,6 +9,9 @@
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 #include <AzNetworking/UdpTransport/UdpPacketTracker.h>
 #include <AzNetworking/UdpTransport/UdpPacketIdWindow.h>
+#include <AzNetworking/UdpTransport/UdpFragmentQueue.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
@@ -122,7 +125,54 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
         AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
+
+        PacketDispatchResult ReceiveIncompleteFragment(UdpFragmentQueue& queue, SequenceId sequence, uint8_t chunkCount)
+        {
+            CorePackets::FragmentedPacket packet;
+            packet.SetFragmentSequence(sequence);
+            packet.SetUnfragmentedSequence(SequenceId{ 42 });
+            packet.SetChunkCount(chunkCount);
+            packet.SetChunkIndex(0);
+            uint8_t buffer[64] = {};
+            NetworkInputSerializer writer(buffer, sizeof(buffer));
+            EXPECT_TRUE(packet.Serialize(writer));
+            NetworkOutputSerializer reader(buffer, writer.GetSize());
+            UdpPacketHeader header;
+            TestUdpConnectionListener listener;
+            // Each test supplies only the first of multiple chunks, so no connection is dispatched.
+            return queue.ProcessReceivedChunk(nullptr, listener, header, reader);
+        }
     };
+
+    TEST_F(UdpTransportTests, FragmentTimeoutReleasesHighSequenceBeforeReuse)
+    {
+        UdpFragmentQueue queue;
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 0 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 2), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 6000 });
+        queue.Update();
+
+        // Advance through the 16-bit sequence rollover, then reuse the expired key with new metadata.
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x5234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x9234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0xd234 }, 2), PacketDispatchResult::Success);
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1233 }, 2), PacketDispatchResult::Success);
+        EXPECT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 3), PacketDispatchResult::Success);
+    }
+
+    TEST_F(UdpTransportTests, FragmentTimeoutPreservesDifferentPendingSequence)
+    {
+        UdpFragmentQueue queue;
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 0 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x1234 }, 2), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 4000 });
+        ASSERT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x0034 }, 3), PacketDispatchResult::Success);
+        m_timeSystem->SetElapsedTimeMsDebug(AZ::TimeMs{ 6000 });
+        queue.Update();
+
+        // The later packet is still pending: inconsistent metadata must continue to be rejected.
+        EXPECT_EQ(ReceiveIncompleteFragment(queue, SequenceId{ 0x0034 }, 4), PacketDispatchResult::Failure);
+    }
 
     TEST_F(UdpTransportTests, PacketIdWrap)
     {
@@ -319,5 +369,56 @@ namespace UnitTest
         {
             EXPECT_EQ(testClient[i].m_clientNetworkInterface->GetConnectionSet().GetConnectionCount(), 1);
         }
+    }
+
+    TEST_F(UdpTransportTests, StopListeningWaitsForTheGoodbyeAck)
+    {
+        // Each end has its own reader thread, so the client can keep updating while the server waits in StopListening.
+        // They live on the heap: their receive buffers overflow the stack.
+        AZStd::unique_ptr<UdpReaderThread> serverReaderThread = AZStd::make_unique<UdpReaderThread>();
+        AZStd::unique_ptr<UdpReaderThread> clientReaderThread = AZStd::make_unique<UdpReaderThread>();
+        UdpReaderThread& serverReader = *serverReaderThread;
+        UdpReaderThread& clientReader = *clientReaderThread;
+        UdpHeartbeatThread heartbeatThread;
+        TestUdpConnectionListener serverListener;
+        TestUdpConnectionListener clientListener;
+        UdpNetworkInterface server(AZ::Name(AZStd::string_view("GoodbyeServer")), serverListener, TrustZone::ExternalClientToServer, serverReader, heartbeatThread);
+        UdpNetworkInterface client(AZ::Name(AZStd::string_view("GoodbyeClient")), clientListener, TrustZone::ExternalClientToServer, clientReader, heartbeatThread);
+        server.Listen(12346);
+        client.Connect(IpAddress(127, 0, 0, 1, 12346));
+        auto updateClient = [&clientReader, &client]() { clientReader.SwapBuffers(); client.Update(); };
+        auto clientConnected = [&client]()
+        {
+            bool connected = false;
+            client.GetConnectionSet().VisitConnections([&connected](IConnection& connection) { connected = connection.GetConnectionState() == ConnectionState::Connected; });
+            return connected;
+        };
+        for (int32_t tick = 0; tick < 200 && !(clientConnected() && server.GetConnectionSet().GetConnectionCount() == 1); ++tick)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
+            serverReader.SwapBuffers();
+            server.Update();
+            updateClient();
+        }
+        ASSERT_EQ(server.GetConnectionSet().GetConnectionCount(), 1);
+
+        AZStd::atomic_bool stop{ false };
+        AZStd::thread clientThread([&stop, &updateClient]()
+        {
+            while (!stop)
+            {
+                updateClient();
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+            }
+        });
+        server.GetConnectionSet().VisitConnections([](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByServer, TerminationEndpoint::Local); });
+        EXPECT_TRUE(server.StopListening());
+        stop = true;
+        clientThread.join();
+
+        // The server deletes its connection only once the goodbye is acked (an unacked one stays), then closes the socket
+        EXPECT_EQ(server.GetConnectionSet().GetConnectionCount(), 0);
+        EXPECT_FALSE(server.IsOpen());
+        EXPECT_EQ(client.GetConnectionSet().GetConnectionCount(), 0);
     }
 }

@@ -19,6 +19,13 @@ ly_add_target(
 @TARGET_PROPERTIES_PLACEHOLDER@
 )
 
+set(_interface_compile_options @COMPILE_OPTIONS_PLACEHOLDER@)
+if(NOT "${_interface_compile_options}" STREQUAL "")
+    string(REPLACE "$<INSTALL_PREFIX>" "${LY_ROOT_FOLDER}" _interface_compile_options "${_interface_compile_options}")
+    set_property(TARGET @NAME_PLACEHOLDER@ APPEND PROPERTY INTERFACE_COMPILE_OPTIONS "${_interface_compile_options}")
+endif()
+unset(_interface_compile_options)
+
 @TARGET_RUN_HELPER@
 
 set(configs @CMAKE_CONFIGURATION_TYPES@)

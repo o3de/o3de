@@ -37,7 +37,7 @@ def Pane_HappyPath_ResizesProperly():
     :return: None
     """
 
-    from PySide6 import QtWidgets
+    from PySide6 import QtGui, QtWidgets
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
@@ -50,7 +50,7 @@ def Pane_HappyPath_ResizesProperly():
     SCALE_INT = 10
 
     def click_menu_option(window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtGui.QAction})
         action.trigger()
 
     def find_pane(window, pane_name):

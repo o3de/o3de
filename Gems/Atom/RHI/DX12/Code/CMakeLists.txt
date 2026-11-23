@@ -105,6 +105,8 @@ ly_add_target(
             Include
             ${pal_include_dir}
     BUILD_DEPENDENCIES
+        PUBLIC
+            3rdParty::directx-headers
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Reflect
@@ -130,8 +132,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::${gem_name}.Reflect
-            3rdParty::D3D12MemoryAllocator
-            3rdParty::d3dx12
+            3rdParty::d3d12-memory-allocator
             ${AFTERMATH_BUILD_DEPENDENCY}
         PRIVATE
             Gem::OpenSSL_md5

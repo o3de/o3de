@@ -29,16 +29,24 @@ namespace {{ xml.attrib['Name'] }}
                 {{ Packet.attrib['Name'] }} packet;
                 if (!serializer.Serialize(packet, "Packet"))
                 {
+                    AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=packet_deserialize packet={{ Packet.attrib['Name'] }} type=%d id=%u consumed=%u capacity=%u",
+                        aznumeric_cast<int32_t>(packetHeader.GetPacketType()), static_cast<uint32_t>(packetHeader.GetPacketId()),
+                        serializer.GetSize(), serializer.GetCapacity());
                     return AzNetworking::PacketDispatchResult::Failure;
                 }
                 if(handler.HandleRequest(connection, packetHeader, packet))
                 {
                     return AzNetworking::PacketDispatchResult::Success;
                 }
-                break;
+                AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=packet_handler packet={{ Packet.attrib['Name'] }} type=%d id=%u consumed=%u capacity=%u",
+                    aznumeric_cast<int32_t>(packetHeader.GetPacketType()), static_cast<uint32_t>(packetHeader.GetPacketId()),
+                    serializer.GetSize(), serializer.GetCapacity());
+                return AzNetworking::PacketDispatchResult::Failure;
             }
 {%      endfor %}
         }
+        AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=unknown_packet type=%d id=%u",
+            aznumeric_cast<int32_t>(packetHeader.GetPacketType()), static_cast<uint32_t>(packetHeader.GetPacketId()));
         return AzNetworking::PacketDispatchResult::Failure;
     }
 }

@@ -14,6 +14,7 @@
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/std/algorithm.h>
 
 namespace AzNetworking
 {
@@ -32,6 +33,12 @@ namespace AzNetworking
     uint32_t UdpReliableQueue::GetQueueSize() const
     {
         return static_cast<uint32_t>(m_packetWindow.size());
+    }
+
+    bool UdpReliableQueue::IsPending(PacketType packetType) const
+    {
+        return AZStd::any_of(m_packetWindow.begin(), m_packetWindow.end(),
+            [packetType](const auto& entry) { return entry.second.m_packet->GetPacketType() == packetType; });
     }
 
     bool UdpReliableQueue::PrepareForSend(PacketId packetId, SequenceId reliableSequenceId, const IPacket& packet)
