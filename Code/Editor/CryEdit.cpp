@@ -1538,7 +1538,10 @@ bool CCryEditApp::InitInstance()
     ((CCryDocManager*)m_pDocManager)->SetDefaultTemplate(pDocTemplate);
 
     auto mainWindow = new MainWindow();
-#ifdef Q_OS_MACOS
+    // On Linux, let the window manager draw the main window's title bar and border, as on macOS.
+    // With O3DE's own title bar the X11 window asks for no decorations, so the window manager gives
+    // it no resize border to drag.
+#if defined(Q_OS_MACOS) || defined(Q_OS_LINUX)
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
 #else
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
