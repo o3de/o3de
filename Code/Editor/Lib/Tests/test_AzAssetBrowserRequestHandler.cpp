@@ -417,7 +417,7 @@ namespace UnitTest
         ctx.m_hitLocation = AZ::Vector3::CreateZero();
         QMimeData mimeData;
         QDragEnterEvent enter(
-            QPoint(0, 0), Qt::DropAction::CopyAction, &mimeData, Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier);
+            QPointF(0, 0), Qt::DropAction::CopyAction, &mimeData, Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier);
 
         // empty mime data:  No response.
         DragAndDropEventsBus::Event(EditorViewport, &DragAndDropEvents::DragEnter, &enter, ctx);

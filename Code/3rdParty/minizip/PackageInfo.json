@@ -1,0 +1,12 @@
+{
+    "PackageName": "minizip",
+    "Version": "4.2.2",
+    "URL": "https://github.com/zlib-ng/minizip-ng",
+    "License": "Zlib",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/zlib-ng/minizip-ng/archive/7b2387161c542fa9f427352dcdef76097d0d692b.tar.gz",
+        "Revision": "7b2387161c542fa9f427352dcdef76097d0d692b",
+        "SHA256": "467a189e998c7754ada577758d29324d5b3c866a7fb5d43700b8c551d72ca998"
+    }
+}

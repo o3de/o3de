@@ -1,0 +1,12 @@
+{
+    "PackageName": "vulkan-utility-libraries",
+    "Version": "1.4.363.0",
+    "URL": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/KhronosGroup/Vulkan-Utility-Libraries/archive/refs/tags/vulkan-sdk-1.4.363.0.tar.gz",
+        "Revision": "57f01541b3959f2528f769043396e882851a7e75",
+        "SHA256": "a5308b62e3bac84cf45c4d7dd5b830aabace4847fdb71f4fd7db3be034c2bebf"
+    }
+}

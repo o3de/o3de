@@ -15,7 +15,6 @@
 #include <map>
 #include <tuple>
 
-// manifold (Apache-2.0) - see 3rdParty/FindManifold.cmake
 #include <manifold/manifold.h>
 
 namespace WhiteBox

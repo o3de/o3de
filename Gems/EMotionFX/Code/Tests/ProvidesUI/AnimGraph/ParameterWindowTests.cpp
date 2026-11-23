@@ -16,7 +16,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
 #include <QApplication>
 #include <QtTest>
-#include "qtestsystem.h"
 #include <Tests/ProvidesUI/AnimGraph/SimpleAnimGraphUIFixture.h>
 
 namespace EMotionFX

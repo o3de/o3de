@@ -1,0 +1,12 @@
+{
+    "PackageName": "draco",
+    "Version": "1.5.9",
+    "URL": "https://github.com/google/draco",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/google/draco/archive/554628821c3448319d7d4ae48db170b8c63e1aaf.tar.gz",
+        "Revision": "554628821c3448319d7d4ae48db170b8c63e1aaf",
+        "SHA256": "a0805527f2c2f983e409a2b353d115606d30084177252f61241d4d5239213900"
+    }
+}

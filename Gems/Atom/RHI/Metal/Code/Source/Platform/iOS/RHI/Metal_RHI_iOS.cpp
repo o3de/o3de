@@ -38,8 +38,8 @@ namespace Platform
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval, float refreshRate)
     {
         //seconds per frame (1/refreshrate) * num frames (sync interval)
-        float presentAfterMinimumDuration = syncInterval / refreshRate;
-        if (presentAfterMinimumDuration > 0.0f)
+        float presentAfterMinimumDuration = refreshRate > 0 ? syncInterval / refreshRate : 0;
+        if (syncInterval > 1 && presentAfterMinimumDuration > 0.0f)
         {
             [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:presentAfterMinimumDuration];
         }
@@ -47,6 +47,11 @@ namespace Platform
         {
             [mtlCommandBuffer presentDrawable:drawable];
         }
+    }
+
+    uint32_t GetMaximumVerticalSyncInterval()
+    {
+        return UINT32_MAX;
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)

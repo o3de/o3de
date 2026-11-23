@@ -49,6 +49,12 @@ namespace AZ
             const WSISurface& GetSurface() const;
             const CommandQueue& GetPresentationQueue() const;
 
+            //! Core Vulkan FIFO presents every refresh; it does not implement larger sync intervals.
+            uint32_t GetMaximumVerticalSyncInterval() const override
+            {
+                return 1;
+            }
+
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
 
             bool ProcessRecreation() override;

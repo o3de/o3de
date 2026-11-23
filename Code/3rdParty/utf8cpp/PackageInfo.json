@@ -1,0 +1,12 @@
+{
+    "PackageName": "utf8cpp",
+    "Version": "4.2.1",
+    "URL": "https://github.com/nemtrif/utfcpp",
+    "License": "BSL-1.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/nemtrif/utfcpp/archive/3d1ff6dbf54e471c846dff55dda6c8ee10c0ee5c.tar.gz",
+        "Revision": "3d1ff6dbf54e471c846dff55dda6c8ee10c0ee5c",
+        "SHA256": "b118efb8f08732906e0063c2f95610ad9c1179bb8819e5aa5d46efa56368bfc3"
+    }
+}

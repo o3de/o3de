@@ -30,6 +30,8 @@ set(FILES
     Source/Decals/EditorDecalComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
+    Source/GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.h
+    Source/GradientGlobalIllumination/EditorGradientGlobalIlluminationComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp

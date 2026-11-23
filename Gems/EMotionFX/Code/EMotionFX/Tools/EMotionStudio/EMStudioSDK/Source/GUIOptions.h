@@ -12,7 +12,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/Distance.h>
-#include <qglobal.h>
+#include <QtGlobal>
 
 #include "PluginOptions.h"
 
