@@ -45,8 +45,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AzFramework
             Gem::${gem_name}.Static
+        PUBLIC
+            AZ::AzFramework # our headers use AzFramework headers.
 )
 
 ly_add_source_properties(
@@ -78,8 +79,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AzFramework
                 Gem::${gem_name}.Static
+            PUBLIC
+                AZ::AzFramework
     )
 
     # by default, activate the ab ove module in builders and tools:
