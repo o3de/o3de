@@ -14,6 +14,8 @@
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -94,7 +96,9 @@ namespace OpenParticle
         AZ::RPI::Material::ChangeId m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
         AZ::RPI::Scene* m_scene = nullptr;
         AZ::u32 m_sortId = 0;
-        AZ::u32 m_lightingChannelMask = 0;
+        //! Lighting channels the emitter's surfaces receive light from. Defaults to the same channels a Mesh component
+        //! gets (LightingChannelConfiguration's default, all of them). Zero would exclude the emitter from every light.
+        AZ::u32 m_lightingChannelMask = AZ::Render::LightingChannelConfiguration{}.GetLightingChannelMask();
         AZ::u32 m_objectId = 0;
         //! Set when an object SRG constant changed; Render pushes the constants and compiles once, then clears it.
         bool m_objSrgDirty = true;

@@ -11,7 +11,6 @@
 #include <OpenParticleSystem/ParticleEditorRequestBus.h>
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 
-#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
@@ -990,9 +989,16 @@ namespace OpenParticle
 
         if (drawKey.m_materialPipelineName != AZ::RPI::MaterialPipelineNone)
         {
-            AZ::RHI::DrawFilterTag pipelineTag = m_scene->GetDrawFilterTagRegistry()->AcquireTag(drawKey.m_materialPipelineName);
-            AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", drawKey.m_materialPipelineName.GetCStr());
-            drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
+            // FindTag is non-owning. The RenderPipeline that declares this material pipeline tag owns the
+            // reference (RenderPipeline::SetDrawFilterTags / ReleaseDrawFilterTags). Acquiring here would add
+            // one reference per draw item, per view, per frame with no matching release, which pins one of the
+            // DrawFilterTagCountMax slots for the lifetime of the process.
+            const AZ::RHI::DrawFilterTag pipelineTag =
+                m_scene->GetDrawFilterTagRegistry()->FindTag(drawKey.m_materialPipelineName);
+
+            // An unregistered tag means no active pipeline consumes this material pipeline, so the item must be
+            // filtered out everywhere; RasterPass submits only when (item mask & pipeline mask) is non-zero.
+            drawRequest.m_drawFilterMask = pipelineTag.IsValid() ? (1u << pipelineTag.GetIndex()) : 0u;
         }
 
         drawPacketBuilder.AddDrawItem(drawRequest);
@@ -1054,7 +1060,6 @@ namespace OpenParticle
             auto it = m_emitterInstances.emplace(emitter.second, EmitterInstance());
             auto& efd = it.first->second;
             efd.m_scene = m_scene;
-            efd.m_lightingChannelMask = AZ::Render::LightingChannelConfiguration{}.GetLightingChannelMask();
             if (archive.m_emitterInfos[emitter.first].m_render.first == azrtti_typeid<SimuCore::ParticleCore::MeshConfig>())
             {
                 auto& modelAsset = archive.m_emitterInfos[emitter.first].m_model;
