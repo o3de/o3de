@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(meshoptimizer
-    VERSION "v1.2"
+    VERSION "v1.3"
     LICENSE "MIT"
-    URL "https://github.com/zeux/meshoptimizer/archive/refs/tags/v1.2.tar.gz"
-    URL_HASH "e40f71b809cdf3361b9a4def85fd44534e8733ce29d4b943c145b76859e4c2b4"
+    URL "https://github.com/zeux/meshoptimizer/archive/refs/tags/v1.3.tar.gz"
+    URL_HASH "ca4f47d451201593904b9e3067fa54b65db94bc34ab5173864950862b748a145"
     GIT "https://github.com/zeux/meshoptimizer.git"
-    GIT_HASH "9d9890c73011d75920af614485296d1e03e95448"
+    GIT_HASH "9e1f07b159d3cb777f1c67ed31fc11fd117986f4"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(meshoptimizer)

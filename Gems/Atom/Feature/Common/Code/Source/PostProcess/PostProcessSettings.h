@@ -82,6 +82,11 @@ namespace AZ
             // frequency (Level, Volume, Camera) and per-setting override values. Simulate will be called on those combined settings)
             void Simulate(float deltaTime);
 
+            // Clears all owned sub-settings. Called from the PostProcessFeatureProcessor when rebuilding
+            // the aggregated level settings, so that sub-settings whose provider was removed do not
+            // linger in the blended result.
+            void Reset();
+
             // Auto-gen post process members...
 #include <Atom/Feature/ParamMacros/StartParamMembers.inl>
 #include <Atom/Feature/PostProcess/PostProcessParams.inl>

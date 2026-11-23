@@ -175,7 +175,7 @@ namespace AzToolsFramework
     inline void InstanceDataNode::CheckCast(const T* castType)
     {
         AZ_UNUSED(castType);
-#if defined(AZ_COMPILER_MSVC)
+#if defined(AZ_COMPILER_MSVC) && _MSC_VER < 1952
         AZ_Assert(castType, "Could not cast from the existing typeid %s to the actual typeid %s required.", GetClassMetadata()->m_typeId.ToString<AZStd::string>().c_str(), AZ::SerializeTypeInfo<T>::GetUuid().ToString<AZStd::string>().c_str());
 #else
         AZ_Assert(castType, "Could not cast from the existing typeid %s to the actual typeid %s required.", GetClassMetadata()->m_typeId.template ToString<AZStd::string>().c_str(), AZ::SerializeTypeInfo<T>::GetUuid().template ToString<AZStd::string>().c_str());

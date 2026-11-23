@@ -112,6 +112,11 @@ namespace AZ
             m_globalAggregateLevelSettings = AZStd::make_unique<PostProcessSettings>(this);
             for (auto& [view, settings] : m_blendedPerViewSettings)
             {
+                // Rebuild each per-view aggregate from scratch. ApplySettingsTo only touches
+                // sub-settings that exist on the source, so without resetting, sub-settings
+                // whose provider was removed (e.g. a deleted PostFX modifier component)
+                // would linger in the blended result indefinitely.
+                settings.Reset();
                 m_globalAggregateLevelSettings->ApplySettingsTo(&settings);
             }
             // Apply settings from priority sorted list of level settings

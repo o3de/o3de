@@ -56,7 +56,6 @@ ly_add_target(
             AZ::AzFramework
         PRIVATE
             3rdParty::miniaudio
-            3rdParty::miniaudio_libvorbis
 )
 
 # Here add MiniAudio target, it depends on the Private Object library and Public API interface
@@ -139,7 +138,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 ${gem_name}.Private.Object
             PRIVATE
                  3rdParty::miniaudio
-                 3rdParty::miniaudio_libvorbis
     )
 
     ly_add_target(

@@ -798,7 +798,7 @@ namespace AzQtComponents
 
     bool TitleBar::isLeftResizeArea(const QPoint& globalPos) const
     {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         if (window() != parentWidget() && !isInDockWidgetWindowGroup())
         {
             // The immediate parent of the TitleBar must be a top level
@@ -823,7 +823,7 @@ namespace AzQtComponents
 
     bool TitleBar::isRightResizeArea(const QPoint& globalPos) const
     {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         if (window() != parentWidget() && !isInDockWidgetWindowGroup())
         {
             // The immediate parent of the TitleBar must be a top level

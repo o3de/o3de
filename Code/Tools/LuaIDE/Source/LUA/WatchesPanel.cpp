@@ -830,11 +830,11 @@ bool WatchesDataModel::setData (const QModelIndex& index, const QVariant& value,
 
 const char* WatchesDataModel::SafetyType(char c) const
 {
-    if (static_cast<int>(c) <= LUA_TNONE || c > LUA_NUMTAGS)
+    if (static_cast<int>(c) < LUA_TNIL || c >= LUA_NUMTYPES)
     {
         return "<invalid>";
     }
-    static_assert(WatchesPanel::typeStringLUT.size() == LUA_NUMTAGS, "number of lua tags does not match the number of typeStringLUT");
+    static_assert(WatchesPanel::typeStringLUT.size() == LUA_NUMTYPES, "number of Lua types does not match the type lookup table");
     return WatchesPanel::typeStringLUT[aznumeric_cast<int>(c)];
 }
 

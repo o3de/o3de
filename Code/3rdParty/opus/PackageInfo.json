@@ -1,0 +1,12 @@
+{
+    "PackageName": "opus",
+    "Version": "1.6.1",
+    "URL": "https://opus-codec.org/",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz",
+        "Revision": "22244de5a79bd1d6d623c32e72bf1954b56235be",
+        "SHA256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1"
+    }
+}

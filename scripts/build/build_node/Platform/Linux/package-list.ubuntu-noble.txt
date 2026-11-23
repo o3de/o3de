@@ -27,7 +27,6 @@ libxcb-cursor0
 zlib1g-dev
 mesa-common-dev
 libunwind-dev
-libzstd-dev
 
 # Wayland Libraries
 libwayland-dev                         # For client headers (includes cursor header)

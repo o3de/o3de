@@ -28,7 +28,7 @@ if __name__ == '__main__':
         version="1.0.0",
         description='Lumberyard Python Test Tools',
         long_description=long_description,
-        packages=find_packages(where='Tools', exclude=['tests']),
+        packages=find_packages(exclude=['tests', 'tests.*']),
         install_requires=[
             'imageio',
             'numpy',

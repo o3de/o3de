@@ -64,7 +64,7 @@ namespace AZ
         /**
          *  Add a context with based on user created context, the system will not delete such context.  
          *
-         * \param garbageCollectorStep you can pass -1 to use the internal system default step, otherwise you can use any value >=1
+         * \param garbageCollectorStep Per-tick step size in KiB. Pass -1 to use the system default or a positive value to override it.
          */
         virtual ScriptContext* AddContext(ScriptContext* context, int garbageCollectorStep) = 0;
         /// Add a context with an ID, the system will handle the ownership of the context (delete it when removed and the system deactivates)
@@ -82,7 +82,7 @@ namespace AZ
         virtual void GarbageCollect() = 0;
 
         /// Step GC 
-        virtual void GarbageCollectStep(int numberOfSteps) = 0;
+        virtual void GarbageCollectStep(int stepSize) = 0;
 
         /**
          * Load script asset into the a context.

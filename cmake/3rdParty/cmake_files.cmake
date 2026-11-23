@@ -8,7 +8,6 @@
 
 set(FILES
     BuiltInPackages.cmake
-    FindGoogleBenchmark.cmake
     FindOpenGLInterface.cmake
     FindPIX.cmake
     FindVkValidation.cmake

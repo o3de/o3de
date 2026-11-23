@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <qglobal.h>
+#include <QtGlobal>
 #include <QPoint>
 
 #include <AzCore/EBus/EBus.h>

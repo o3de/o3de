@@ -135,13 +135,17 @@ namespace AzNetworking
            && reason != DisconnectReason::TransportError
            && reason != DisconnectReason::SslFailure)
         {
-            // If disconnect initiated from Local, inform the remote endpoint
-            CorePackets::TerminateConnectionPacket terminationPacket(reason);
-            SendUnreliablePacket(terminationPacket);
+            // If disconnect initiated from Local, inform the remote endpoint, reliably: StopListening waits for its ack
+            SendReliablePacket(CorePackets::TerminateConnectionPacket(reason));
         }
 
         m_networkInterface.RequestDisconnect(this, reason, endpoint);
         return true;
+    }
+
+    bool UdpConnection::IsTerminatePending() const
+    {
+        return m_reliableQueue.IsPending(aznumeric_cast<PacketType>(CorePackets::PacketType::TerminateConnectionPacket));
     }
 
     void UdpConnection::SetConnectionMtu(uint32_t connectionMtu)
@@ -280,6 +284,8 @@ namespace AzNetworking
             {
                 return PacketDispatchResult::Failure;
             }
+            // Ack the goodbye now: this connection sends nothing after it
+            SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
             Disconnect(packet.GetDisconnectReason(), TerminationEndpoint::Remote);
             return PacketDispatchResult::Success;
         }

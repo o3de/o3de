@@ -59,6 +59,11 @@ set(FILES
     Source/Grid/GridComponentConfig.cpp
     Source/Grid/GridComponentController.h
     Source/Grid/GridComponentController.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationComponent.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationComponent.h
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationComponentConfig.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationComponentController.cpp
+    Source/GradientGlobalIllumination/GradientGlobalIlluminationComponentController.h
     Source/ImageBasedLights/ImageBasedLightComponent.cpp
     Source/ImageBasedLights/ImageBasedLightComponent.h
     Source/ImageBasedLights/ImageBasedLightComponentConfig.cpp

@@ -33,7 +33,6 @@ ros-humble-tf2-ros
 ros-humble-urdfdom
 ros-humble-vision-msgs
 libunwind-dev
-libzstd-dev
 
 # Wayland Libraries
 libwayland-dev                         # For client headers (includes cursor header)

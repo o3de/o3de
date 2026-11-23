@@ -1,0 +1,12 @@
+{
+    "PackageName": "spirv-tools",
+    "Version": "2026.4",
+    "URL": "https://github.com/KhronosGroup/SPIRV-Tools",
+    "License": "Apache-2.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/v2026.4.tar.gz",
+        "Revision": "ef96ed763b43b59b33b31b362f09a02b729fa1c9",
+        "SHA256": "92df4c377603f086c3d2a1eb2bd9b8f883a73ca890fb939d78a0cecdcc01686c"
+    }
+}

@@ -17,6 +17,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
 #include <Atom/RHI/Debug.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
@@ -839,8 +840,8 @@ namespace AZ
             // Follows Microsoft's HDR sample code for determining if the connected display supports HDR.
             // Enumerates all of the detected displays and determines which one has the largest intersection with the
             // region of the window handle parameter.
-            // If the display for this region supports wide color gamut, then a wide color gamut format is added to
-            // the list of supported formats.
+            // If HDR output is enabled (r_hdrOutput) and the display for this region supports wide color gamut, then a
+            // wide color gamut format is added to the list of supported formats.
             // https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/UWP/D3D12HDR/src/D3D12HDR.cpp
 
             HWND hWnd = reinterpret_cast<HWND>(windowHandle.GetIndex());
@@ -872,7 +873,7 @@ namespace AZ
                 outputIndex++;
             }
 
-            if (bestOutput)
+            if (r_hdrOutput && bestOutput)
             {
                 Microsoft::WRL::ComPtr<IDXGIOutput6> output6;
                 [[maybe_unused]] HRESULT hr = bestOutput.As(&output6);
