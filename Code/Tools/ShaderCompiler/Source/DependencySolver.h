@@ -88,6 +88,8 @@ namespace AZ::ShaderCompiler
         unordered_set<ID> m_permMarks;
         unordered_set<ID> m_tempMarks;
         vector<ID> m_result; // L
+        // SelectUnmarked resume point; permanent marks are never cleared, so nodes behind it never need rescanning.
+        size_t m_selectCursor = 0;
     };
 }
 

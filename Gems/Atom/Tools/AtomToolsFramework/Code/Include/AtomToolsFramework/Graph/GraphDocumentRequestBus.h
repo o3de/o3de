@@ -45,6 +45,12 @@ namespace AtomToolsFramework
 
         //! Returns true if graph compilation has already been scheduled.
         virtual bool IsCompileGraphQueued() const = 0;
+
+        //! Schedule a compile that also produces full production output, without saving; edits otherwise refresh only the preview.
+        virtual void QueueApplyGraph() = 0;
+
+        //! True when the production output is behind the graph as of the last compile; false if the compiler has no separate one.
+        virtual bool IsApplyGraphNeeded() const = 0;
     };
 
     using GraphDocumentRequestBus = AZ::EBus<GraphDocumentRequests>;

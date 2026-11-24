@@ -200,6 +200,32 @@ namespace AZ::RPI
 
         int32_t materialTypeIndex{ -1 };
 
+        // Layouts match only if every descriptor agrees on name, type and offset; renames can reorder without changing size.
+        const auto layoutsDescribeTheSameBuffer =
+            [](const MaterialShaderParameterLayout& lhs, const MaterialShaderParameterLayout& rhs)
+        {
+            const auto lhsDescriptors = lhs.GetDescriptors();
+            const auto rhsDescriptors = rhs.GetDescriptors();
+            if (lhsDescriptors.size() != rhsDescriptors.size())
+            {
+                return false;
+            }
+
+            for (size_t descriptorIndex = 0; descriptorIndex < lhsDescriptors.size(); ++descriptorIndex)
+            {
+                const auto& lhsDescriptor = lhsDescriptors[descriptorIndex];
+                const auto& rhsDescriptor = rhsDescriptors[descriptorIndex];
+                if (lhsDescriptor.m_name != rhsDescriptor.m_name || lhsDescriptor.m_typeName != rhsDescriptor.m_typeName ||
+                    lhsDescriptor.m_structuredBufferBinding.m_offset != rhsDescriptor.m_structuredBufferBinding.m_offset ||
+                    lhsDescriptor.m_structuredBufferBinding.m_elementSize != rhsDescriptor.m_structuredBufferBinding.m_elementSize ||
+                    lhsDescriptor.m_structuredBufferBinding.m_elementCount != rhsDescriptor.m_structuredBufferBinding.m_elementCount)
+                {
+                    return false;
+                }
+            }
+            return true;
+        };
+
         auto materialAsset = material->GetAsset();
         auto materialTypeAsset = materialAsset->GetMaterialTypeAsset();
 
@@ -234,6 +260,16 @@ namespace AZ::RPI
         else
         {
             materialTypeIndex = materialTypeAssetIterator->second;
+
+            // An asset keeps its ID across hot reloads, so refresh the cached layout when it changes or instances write stale offsets.
+            MaterialTypeData& existingMaterialTypeData = m_materialTypeData[materialTypeIndex];
+            const auto& reloadedLayout = materialTypeAsset->GetMaterialShaderParameterLayout();
+            if (existingMaterialTypeData.m_shaderParameterLayout &&
+                !layoutsDescribeTheSameBuffer(*existingMaterialTypeData.m_shaderParameterLayout, reloadedLayout))
+            {
+                existingMaterialTypeData.m_shaderParameterLayout = AZStd::make_unique<MaterialShaderParameterLayout>(reloadedLayout);
+                existingMaterialTypeData.m_layoutGeneration++;
+            }
         }
         MaterialTypeData& materialTypeData = m_materialTypeData[materialTypeIndex];
 
@@ -243,6 +279,7 @@ namespace AZ::RPI
 
         instanceData.m_material = material.get();
         instanceData.m_compiledChangeId = Material::DEFAULT_CHANGE_ID;
+        instanceData.m_layoutGeneration = materialTypeData.m_layoutGeneration;
 
         if (!materialTypeData.m_useSceneMaterialSrg)
         {
@@ -453,6 +490,48 @@ namespace AZ::RPI
                 {
                     if (materialTypeEntry.m_useSceneMaterialSrg)
                     {
+                        // Instances from before a layout-changing rebuild can be smaller; skip them rather than read past their struct.
+                        if (!instanceData.m_shaderParameter)
+                        {
+                            instanceData.m_compiledChangeId = instanceData.m_material->GetCurrentChangeId();
+                            continue;
+                        }
+
+                        // Stale layout generation: writing would use the old offsets; skip until the owner recreates it.
+                        if (instanceData.m_layoutGeneration != materialTypeEntry.m_layoutGeneration)
+                        {
+                            // Use m_materialTypeAssetHint: m_material's asset may be mid-reload here, and formatting it crashed.
+                            AZ_Warning(
+                                "MaterialSystem",
+                                false,
+                                "Material instance %d of material type '%s' was created against parameter layout generation %u, but "
+                                "this material type is now on generation %u. Its update is being skipped until the instance is "
+                                "recreated.",
+                                instanceIndex,
+                                materialTypeEntry.m_materialTypeAssetHint.c_str(),
+                                instanceData.m_layoutGeneration,
+                                materialTypeEntry.m_layoutGeneration);
+                            instanceData.m_compiledChangeId = instanceData.m_material->GetCurrentChangeId();
+                            continue;
+                        }
+
+                        const size_t instanceParamsSize = instanceData.m_shaderParameter->GetStructuredBufferDataSize();
+                        if (instanceParamsSize != shaderParamsSize)
+                        {
+                            AZ_Warning(
+                                "MaterialSystem",
+                                false,
+                                "Material instance %d of material type '%s' has a %zu byte parameter struct where this material type's "
+                                "buffer is strided for %zu. Its update is being skipped: it was created against an earlier version of "
+                                "the material type and will correct itself once the instance is recreated.",
+                                instanceIndex,
+                                materialTypeEntry.m_materialTypeAssetHint.c_str(),
+                                instanceParamsSize,
+                                shaderParamsSize);
+                            instanceData.m_compiledChangeId = instanceData.m_material->GetCurrentChangeId();
+                            continue;
+                        }
+
                         auto shaderParamsData = instanceData.m_shaderParameter->GetStructuredBufferData();
                         materialTypeEntry.m_parameterBuffer->UpdateData(
                             shaderParamsData, shaderParamsSize, instanceIndex * shaderParamsSize);

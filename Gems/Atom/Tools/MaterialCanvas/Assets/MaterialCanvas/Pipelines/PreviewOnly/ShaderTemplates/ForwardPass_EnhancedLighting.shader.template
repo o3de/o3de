@@ -1,0 +1,72 @@
+{
+    // Preview-only engine template copy with vulkan disabled to halve the job; remove "vulkan" if the editor runs on Vulkan.
+    "DisabledRHIBackends": ["null", "vulkan"],
+
+    // Compiled in process by the viewport; skipping include dependencies avoids a racing AP rebuild (see MaterialCanvasViewportContent).
+    "SkipIncludeFileDependencies": true,
+
+    // Preview shaders don't need optimised bytecode, so use -O1 instead of DXC's -O3 default (-O0 is slower); see README.md.
+    "AddBuildArguments": {
+        "dxc": ["-O1"]
+    },
+
+    // Compile out area lights, decals, received shadows, debug views and light culling for the preview (~4,240 fewer lines for azslc).
+    "Definitions": [
+        "ENABLE_AREA_LIGHTS=0",
+        "ENABLE_DECALS=0",
+        "ENABLE_SHADOWS=0",
+        "ENABLE_SHADER_DEBUGGING=0",
+        "ENABLE_LIGHT_CULLING=0",
+
+        // Drops the 808-line Aces.azsli from TransformColor; ACEScc conversions render magenta in the preview only.
+        "ENABLE_ACESCC_COLOR_SPACE=0"
+    ],
+
+    "Source" : "",
+
+    "DepthStencilState" :
+    {
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual"
+        },
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x00",
+            "WriteMask" : "0xFF",
+            "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            }
+        }
+    },
+
+    "ProgramSettings":
+    {
+      "EntryPoints":
+      [
+        {
+          "name": "VertexShader",
+          "type": "Vertex"
+        },
+        {
+          "name": "PixelShader",
+          "type": "Fragment"
+        }
+      ]
+    },
+
+    "DrawList" : "forwardWithSubsurfaceOutput"
+}

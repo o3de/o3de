@@ -28,6 +28,7 @@ ly_add_target(
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -40,6 +41,8 @@ ly_add_target(
             Gem::CommonFeaturesAtom.Static
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
+            # AzslCompiler and ShaderBuilderUtility for the in-memory preview shader path, shared with the Shader Asset Builder.
+            Gem::AtomShader.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
 )
@@ -78,3 +81,63 @@ else()
     message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to MaterialCanvas as the target doesn't exist anymore."
         " Perhaps it has been renamed")
 endif()
+
+# Editor-hosted Material Canvas pane: a STATIC target plus a thin GEM_MODULE the Editor loads, as in Gems/LandscapeCanvas.
+
+ly_add_target(
+    NAME MaterialCanvas.Editor.Static STATIC
+    NAMESPACE Gem
+    AUTOMOC
+    AUTORCC
+    FILES_CMAKE
+        materialcanvas_editor_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/shader_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+            # MaterialCanvas_Traits_Platform.h, which says whether the in-memory preview shader path exists on this platform.
+            ${pal_source_dir}
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzToolsFramework
+            # Provides LyViewPaneNames.h (LyViewPane::CategoryTools), as Landscape Canvas does.
+            Legacy::Editor.Headers
+        PUBLIC
+            Gem::CommonFeaturesAtom.Static
+            Gem::AtomToolsFramework.Static
+            # See the note on the MaterialCanvas application target above.
+            Gem::AtomShader.Static
+)
+
+ly_add_target(
+    NAME MaterialCanvas.Editor GEM_MODULE
+    NAMESPACE Gem
+    AUTOMOC
+    FILES_CMAKE
+        materialcanvas_editor_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            Source
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::MaterialCanvas.Editor.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AtomToolsFramework.Editor
+)
+
+# Inject the gem name into the module source file so AZ_DECLARE_MODULE_CLASS resolves to Gem_MaterialCanvas.
+ly_add_source_properties(
+    SOURCES
+        Source/Editor/MaterialCanvasEditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# The Editor loads the Tools variant; the standalone app loads it too, harmlessly, since nothing is built until NotifyRegisterViews.
+ly_create_alias(NAME MaterialCanvas.Tools NAMESPACE Gem TARGETS Gem::MaterialCanvas.Editor)

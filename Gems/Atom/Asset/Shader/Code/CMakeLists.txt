@@ -59,9 +59,10 @@ ly_add_target(
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/atom_asset_shader_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             ${pal_source_dir}
         PUBLIC
+            # Both public: AzslCompiler.h (via Source/Editor) includes <Editor/ShaderBuilderUtility.h>, which needs Source on the path.
+            Source
             Source/Editor
     COMPILE_DEFINITIONS
         PRIVATE

@@ -1,0 +1,117 @@
+{
+    // Preview-only, trimmed stand-in for MainPipeline used by Material Canvas; see ShaderTemplates/README.md for what it omits.
+
+    // Built as "MaterialCanvasPreview" (file stem) but tagged "MainPipeline" so render pipelines find its shaders.
+    "materialPipelineTag": "MainPipeline",
+
+    "shaderTemplates": [
+        // Depth and shadow are cheap vertex-only shaders, kept for the shadow catcher and depth-based post processing.
+        {
+            "shader": "./ShaderTemplates/DepthPass.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/Common/DepthPass.azsli",
+            "tag": "depth"
+        },
+        {
+            "shader": "./ShaderTemplates/ShadowmapPass.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/Common/DepthPass.azsli",
+            "tag": "shadow"
+        },
+
+        // One forward shader per lighting model; the script includes exactly one, so declaring all four is free.
+        {
+            "shader": "./ShaderTemplates/ForwardPass_BaseLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/ForwardPass_BaseLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./ShaderTemplates/ForwardPass_StandardLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/ForwardPass_StandardLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./ShaderTemplates/ForwardPass_EnhancedLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/ForwardPass_EnhancedLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./ShaderTemplates/ForwardPass_SkinLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/ForwardPass_SkinLighting.azsli",
+            "tag": "forward"
+        },
+
+        // Transparency shaders: without them ShaderEnable.lua enables a missing shader and the material silently vanishes.
+        {
+            "shader": "./ShaderTemplates/Transparent_StandardLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/Transparent_StandardLighting.azsli",
+            "tag": "transparent"
+        },
+        {
+            "shader": "./ShaderTemplates/Transparent_EnhancedLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/Transparent_EnhancedLighting.azsli",
+            "tag": "transparent"
+        },
+        {
+            "shader": "./ShaderTemplates/TintedTransparent_StandardLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/Transparent_StandardLighting.azsli",
+            "tag": "tintedTransparent"
+        },
+        {
+            "shader": "./ShaderTemplates/TintedTransparent_EnhancedLighting.shader.template",
+            "azsli": "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/Transparent_EnhancedLighting.azsli",
+            "tag": "tintedTransparent"
+        }
+    ],
+
+    // Unchanged from MainPipeline; ShaderEnable.lua and DoubleSided.lua tolerate the missing shader tags.
+    "runtime": {
+        "properties": [
+            {
+                "name": "isTransparent",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "isTintedTransparent",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "castShadows",
+                "type": "Bool",
+                "defaultValue": true
+            },
+            {
+                "name": "doubleSided",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelDepth",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelClip",
+                "type": "Bool",
+                "defaultValue": false
+            }
+        ],
+        "functors":
+        [
+            {
+                "type": "Lua",
+                "args": {
+                    "file": "Materials/Pipelines/Common/ShaderEnable.lua"
+                }
+            },
+            {
+                "type": "Lua",
+                "args": {
+                    "file": "Materials/Pipelines/Common/DoubleSided.lua"
+                }
+            }
+        ]
+    },
+
+    "pipelineScript": "./PreviewPipelineScript.lua"
+}

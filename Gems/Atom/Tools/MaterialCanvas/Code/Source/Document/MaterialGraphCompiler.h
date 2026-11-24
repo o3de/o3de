@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <AtomToolsFramework/Graph/GraphTemplateFileDataCacheRequestBus.h>
+#include <Document/MaterialGraphCompilerNotificationBus.h>
 #include <GraphModel/Model/Node.h>
 
 namespace MaterialCanvas
@@ -33,8 +35,56 @@ namespace MaterialCanvas
         // AtomToolsFramework::GraphCompiler overrides...
         AZStd::string GetGraphPath() const override;
         bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath) override;
+        bool ShouldReportGeneratedFileStatus(const AZStd::string& generatedFile) const override;
+
+        //! Project-relative root for all preview output, mirroring each graph's folder; one root to ignore, bundle-exclude or delete.
+        static constexpr const char* PreviewOutputRootFolderName = "MaterialCanvasPreview";
+        static constexpr const char* PreviewOutputRootRelativePath = "Assets/MaterialCanvasPreview";
+
+        //! Whether @path is inside the preview output root: the single "is this a preview asset" predicate.
+        static bool IsPreviewOutputPath(AZStd::string_view path);
+
+        //! Whether graphs also generate a reduced preview output set; public so the viewport picks the same material.
+        static bool IsPreviewOutputEnabled();
+
+        //! Whether the viewport builds the preview material itself; if so the preview .material isn't written and its job never runs.
+        static bool IsInMemoryPreviewMaterialEnabled();
+
+        //! Whether production output is older than its graph as of the last compile; false when there is no preview to compare with.
+        bool IsProductionOutputStale() const override
+        {
+            return m_productionOutputStale;
+        }
+
+        //! Output sets per graph: Production for the engine, Preview (MaterialCanvasPreview, reduced fidelity) for the viewport only.
+        enum class OutputSet
+        {
+            Production,
+            Preview
+        };
 
     private:
+        //! Output sets this compile owes, in write order; Preview first so the viewport resolves while production shaders build.
+        AZStd::vector<OutputSet> GetOutputSetsForThisCompile() const;
+
+        //! Writes one output set for the current node. Everything before this point in the compile is set independent and is done once.
+        bool ExportOutputSetForCurrentNode(const GraphModel::ConstNodePtr& currentNode, OutputSet outputSet);
+
+        //! True while building the set the viewport displays, the only one whose property values are collected.
+        bool IsViewportOutputSet() const;
+
+        //! Creates the preview output folder if this compile writes into it; no-op for the production set.
+        bool EnsureOutputFolderExists() const;
+
+        //! Removes old preview output once preview output is off, so the Asset Processor stops building it.
+        void DeleteStalePreviewOutputForCurrentNode();
+
+        //! This graph's preview folder: the preview root with the graph's folder mirrored so same-named graphs don't collide.
+        AZStd::string GetPreviewOutputFolderForGraph() const;
+
+        //! Compares the preview and production output of the current node and records whether production has fallen behind.
+        void RecordProductionOutputStaleness();
+
         void BuildSlotValueTable();
         void BuildDependencyTables();
         void BuildTemplatePathsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
@@ -48,8 +98,22 @@ namespace MaterialCanvas
         bool BuildMaterialTypeForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         bool ExportTemplatesMatchingRegex(const AZStd::string& pattern);
 
-        // Convert the template file path into a save file path based on the document name.
+        //! True when the two fully substituted material type texts differ only in property default values.
+        static bool MaterialTypeTextsDifferOnlyByPropertyValues(
+            const AZStd::string& existingText, const AZStd::string& newText);
+
+        //! Replaces @value with a same-type placeholder; returns false (untouched) for samplers and images. Callers must exclude enums.
+        static bool ResetMaterialPropertyValueToTypeDefault(AZ::RPI::MaterialPropertyValue& value);
+
+        //! Generates the .material files for the current template node, carrying the graph's material input values as property overrides.
+        bool BuildMaterialForCurrentNode();
+        bool BuildMaterialFromTemplate(const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath);
+
+        // Convert the template file path into a save file path based on the document name, for the output set currently being written.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
+
+        // As above, for a named output set rather than the current one.
+        AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath, OutputSet outputSet) const;
 
         // Functions assisting with conversions between different vector and scalar types. Functions like these will eventually be moved out
         // of the document class so that they can be registered more flexibly and extensively.
@@ -122,12 +186,13 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
-        // properties defined in material input nodes
+        // properties defined in material input nodes.
+        // Not const: records the graph's property values and how the generated material type changed, for the rest of the compile.
         bool BuildMaterialTypeFromTemplate(
             GraphModel::ConstNodePtr templateNode,
             const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
             const AZStd::string& templateInputPath,
-            const AZStd::string& templateOutputPath) const;
+            const AZStd::string& templateOutputPath);
 
         // Returns the name that will be used to replace material graph name during any substitutions 
         AZStd::string GetUniqueGraphName() const;
@@ -150,6 +215,12 @@ namespace MaterialCanvas
         // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
         int m_templateNodeCount = 0;
 
+        // The output set being written; read by GetOutputPathFromTemplatePath and by the material type builder.
+        OutputSet m_currentOutputSet = OutputSet::Production;
+
+        // Whether production output is behind the graph; written by the compile worker and read by the UI, hence atomic.
+        AZStd::atomic_bool m_productionOutputStale = false;
+
         // Container of paths for template files that need to be evaluated and have products generated for the current node.
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode;
 
@@ -159,5 +230,17 @@ namespace MaterialCanvas
         // A container of all nodes contributing instructions to the current node
         AZStd::mutex m_instructionNodesForCurrentNodeMutex;
         AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
+
+        // True if any generated file was actually replaced; if none were, no AP jobs will be queued, so don't wait.
+        bool m_wroteAnyGeneratedFile = false;
+
+        // Generated files whose content actually changed this compile; only these are worth waiting on.
+        AZStd::set<AZStd::string> m_writtenGeneratedFiles;
+
+        // True while every change is confined to property values, which go straight to the viewport without an AP rebuild.
+        bool m_onlyMaterialPropertyValuesChanged = true;
+
+        // Every property value the graph describes, sent over MaterialGraphCompilerNotificationBus when the compile succeeds.
+        MaterialGraphCompilerNotifications::PropertyValueList m_materialPropertyValues;
     };
 } // namespace MaterialCanvas

@@ -30,7 +30,8 @@ namespace AtomToolsFramework
         bool Load(const AZStd::string& path);
 
         //! Concatenates and saves template lines to read text file at the specified, absolute path.
-        bool Save(const AZStd::string& path) const;
+        //! @param wroteFile Optional; set true only if the file was actually rewritten (identical content skips the write).
+        bool Save(const AZStd::string& path, bool* wroteFile = nullptr) const;
 
         //! Return true if the file has been modified since the last time it was loaded.
         bool IsReloadRequired() const;

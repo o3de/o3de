@@ -62,6 +62,7 @@ namespace MaterialCanvas
         void InitMainWindow();
         void InitDefaultDocument();
         void ApplyShaderBuildSettings();
+        void ApplyPreviewMaterialPipelineSettings();
 
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
