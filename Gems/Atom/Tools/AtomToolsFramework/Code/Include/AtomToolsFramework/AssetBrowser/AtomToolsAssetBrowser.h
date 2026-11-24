@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
@@ -18,6 +17,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QByteArray>
+#include <QTimer>
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
 
@@ -39,7 +39,6 @@ namespace AtomToolsFramework
     //! Extends the standard asset browser with custom filters and multiselect behavior
     class AtomToolsAssetBrowser
         : public QWidget
-        , protected AZ::SystemTickBus::Handler
     {
         Q_OBJECT
     public:
@@ -87,14 +86,15 @@ namespace AtomToolsFramework
 
         void UpdateFileTypeFilters();
 
-        // AZ::SystemTickBus::Handler
-        void OnSystemTick() override;
+        void QueuePendingSelection();
+        void TrySelectPendingEntry();
 
         QScopedPointer<Ui::AtomToolsAssetBrowser> m_ui;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel = nullptr;
 
         //! If an asset is opened with this path it will automatically be selected
         AZStd::string m_pathToSelect;
+        QTimer m_selectionTimer;
 
         QByteArray m_browserState;
 

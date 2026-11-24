@@ -7,10 +7,20 @@
  */
 
 #include <Atom/Utils/TestUtils/AssetSystemStub.h>
+#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+
+#include <QApplication>
 
 namespace UnitTest
 {
@@ -142,5 +152,89 @@ namespace UnitTest
         ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
     }
 
-    AZ_UNIT_TEST_HOOK(new AtomToolsFrameworkTestEnvironment);
+    TEST_F(AtomToolsFrameworkTest, SelectEntries_SelectsLateFileUnderCollapsedFolder)
+    {
+        using namespace AzToolsFramework::AssetBrowser;
+        namespace AssetDatabase = AzToolsFramework::AssetDatabase;
+
+        class ModelProvider : public AssetBrowserComponentRequestBus::Handler
+        {
+        public:
+            ~ModelProvider() override
+            {
+                BusDisconnect();
+                m_model.reset();
+                AssetBrowserFavoritesManager::DestroyInstance();
+                EntryCache::DestroyInstance();
+            }
+
+            AssetBrowserModel* GetAssetBrowserModel() override { return m_model.get(); }
+            bool AreEntriesReady() override { return false; }
+            void PickAssets(AssetSelectionModel&, QWidget*) override {}
+            AzQtComponents::StyledBusyLabel* GetStyledBusyLabel() override { return nullptr; }
+
+            AZStd::unique_ptr<AssetBrowserModel> m_model = AZStd::make_unique<AssetBrowserModel>();
+        };
+
+        ModelProvider provider;
+        auto root = AZStd::make_shared<RootAssetBrowserEntry>();
+        provider.m_model->SetRootEntry(root);
+        provider.BusConnect();
+
+        AssetDatabase::ScanFolderDatabaseEntry scanFolder;
+        scanFolder.m_scanFolderID = 1;
+        scanFolder.m_scanFolder = AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/projects/project1/assets");
+        root->AddScanFolder(scanFolder);
+        root->SetInitialUpdate(false);
+
+        AssetDatabase::FileDatabaseEntry file;
+        file.m_scanFolderPK = scanFolder.m_scanFolderID;
+        file.m_fileID = 1;
+        file.m_fileName = "outer/middle/inner/existing.material";
+        root->AddFile(file);
+
+        AtomToolsFramework::AtomToolsAssetBrowser browser;
+        auto* tree = browser.findChild<AssetBrowserTreeView*>();
+        ASSERT_NE(tree, nullptr);
+        tree->collapseAll();
+
+        file.m_fileID = 2;
+        file.m_fileName = "outer/middle/inner/late.material";
+        const AZStd::string path = (AZ::IO::Path(scanFolder.m_scanFolder) / file.m_fileName).LexicallyNormal().String();
+        browser.SelectEntries(path);
+        QApplication::processEvents();
+        EXPECT_TRUE(tree->GetSelectedAssets().empty());
+
+        root->AddFile(file);
+        QApplication::processEvents();
+        const auto selected = tree->GetSelectedAssets();
+        ASSERT_EQ(selected.size(), 1);
+        EXPECT_EQ(selected.front()->GetFullPath(), path);
+
+        file.m_fileID = 3;
+        file.m_fileName = "outer/middle/inner/canceled.material";
+        browser.SelectEntries((AZ::IO::Path(scanFolder.m_scanFolder) / file.m_fileName).LexicallyNormal().String());
+        QApplication::processEvents();
+        browser.SelectEntries({});
+        root->AddFile(file);
+        QApplication::processEvents();
+        const auto selectedAfterCancellation = tree->GetSelectedAssets();
+        ASSERT_EQ(selectedAfterCancellation.size(), 1);
+        EXPECT_EQ(selectedAfterCancellation.front()->GetFullPath(), path);
+
+        file.m_fileID = 4;
+        file.m_fileName = "outer/middle/inner/reset.material";
+        const AZStd::string resetPath = (AZ::IO::Path(scanFolder.m_scanFolder) / file.m_fileName).LexicallyNormal().String();
+        browser.SelectEntries(resetPath);
+        QApplication::processEvents();
+        provider.m_model->BeginReset();
+        root->AddFile(file);
+        provider.m_model->EndReset();
+        QApplication::processEvents();
+        const auto selectedAfterReset = tree->GetSelectedAssets();
+        ASSERT_EQ(selectedAfterReset.size(), 1);
+        EXPECT_EQ(selectedAfterReset.front()->GetFullPath(), resetPath);
+    }
+
+    AZ_TOOLS_UNIT_TEST_HOOK(new AtomToolsFrameworkTestEnvironment);
 } // namespace UnitTest
