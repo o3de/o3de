@@ -69,7 +69,11 @@ BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
 CMAKE_MIN_VERSION = Version('3.25.0')
 
-DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION = '8.1.0'
+DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION = '8.13.0'
+
+# The minimum target API level Google Play accepts for new apps and app updates.
+# (ref https://developer.android.com/google/play/requirements/target-sdk). Google raises this every year.
+GOOGLE_PLAY_MIN_TARGET_API_LEVEL = 36
 ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
 
 # Values to set for the android configuration handler
@@ -113,8 +117,19 @@ SETTINGS_SDK_ROOT              = register_setting(key='sdk.root',
                                                   description='The root path of the android sdk on this system.')
 
 SETTINGS_PLATFORM_SDK_API      = register_setting(key='platform.sdk.api',
-                                                  description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)',
-                                                  default='31')
+                                                  description='The android platform API level to compile and target (compileSdkVersion/targetSdkVersion). '
+                                                              'Google Play requires a recent target API level (ref https://developer.android.com/google/play/requirements/target-sdk, '
+                                                              'https://developer.android.com/tools/releases/platforms)',
+                                                  default='36',
+                                                  restricted_regex=r'^\d+$',
+                                                  restricted_regex_description='The API level must be a whole number')
+
+SETTINGS_PLATFORM_SDK_MIN_API  = register_setting(key='platform.sdk.min.api',
+                                                  description='The minimum android API level the application supports (minSdkVersion). This is also the native API level '
+                                                              'the NDK builds against. Must not be greater than platform.sdk.api.',
+                                                  default='31',
+                                                  restricted_regex=r'^\d+$',
+                                                  restricted_regex_description='The API level must be a whole number')
 
 SETTINGS_NDK_VERSION           = register_setting(key='ndk.version',
                                                   description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 27.* will search for the most update to date major version 27)',
@@ -714,12 +729,12 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(f"echo 'Y' | \"{self._android_command_line_tools_sdkmanager_path}\" --licenses",
+        result = subprocess.run(f"echo Y | \"{self._android_command_line_tools_sdkmanager_path}\" --licenses",
                                 shell=True,
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=5)
+                                timeout=60)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
@@ -1294,15 +1309,18 @@ class AndroidProjectGenerator(object):
                  android_ndk_package: str, project_name: str, project_path: Path, project_general_settings: dict, project_android_settings: dict,
                  cmake_path: Path, cmake_version: str, gradle_path: Path, gradle_version: str, gradle_custom_jvm_args: str, android_gradle_plugin_version: str,
                  ninja_path: Path, asset_mode:str, signing_config: AndroidSigningConfig or None, extra_cmake_configure_args: str, src_pak_file_path: str,
-                 strip_debug_symbols: bool = False, overwrite_existing: bool = True, oculus_project: bool = False):
+                 strip_debug_symbols: bool = False, overwrite_existing: bool = True, oculus_project: bool = False,
+                 android_platform_sdk_min_api_level: str = None):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
-        
+
         :param engine_root:                     The Path location of the Engine
-        :param android_build_dir:               The Path of the target folder where the android project will be created 
+        :param android_build_dir:               The Path of the target folder where the android project will be created
         :param android_sdk_path:                The Path to the Android SDK Root used to generate and process the android build script.
         :param android_build_tool_version:      The Android SDK build-tool version.
-        :param android_platform_sdk_api_level:  The Android Platform SDK API Level to use for the android build
+        :param android_platform_sdk_api_level:  The Android Platform SDK API Level to compile and target (compileSdkVersion/targetSdkVersion)
+        :param android_platform_sdk_min_api_level: The minimum Android API Level to support (minSdkVersion and the native API level).
+                                                   If not set, the target API level (android_platform_sdk_api_level) is used.
         :param android_ndk_package:             The Android NDK package version to use
         :param project_name:                    The name of the project the android build script is being generated for.
         :param project_path:                    The Path to the root of the project that the android build script is being generated for.
@@ -1332,6 +1350,7 @@ class AndroidProjectGenerator(object):
         self._android_sdk_build_tool_version = android_build_tool_version
         self._android_ndk = android_ndk_package
         self._android_platform_sdk_api_level = android_platform_sdk_api_level
+        self._android_platform_sdk_min_api_level = android_platform_sdk_min_api_level or android_platform_sdk_api_level
 
         # Target project properties
         self._project_name = project_name
@@ -1400,7 +1419,7 @@ class AndroidProjectGenerator(object):
         root_gradle_env = {
             'ANDROID_GRADLE_PLUGIN_VERSION': str(self._gradle_plugin_version),
             'SDK_VER': self._android_platform_sdk_api_level,
-            'MIN_SDK_VER': self._android_platform_sdk_api_level,
+            'MIN_SDK_VER': self._android_platform_sdk_min_api_level,
             'NDK_VERSION': self._android_ndk.version,
             'SDK_BUILD_TOOL_VER': self._android_sdk_build_tool_version,
             'LY_ENGINE_ROOT': self._engine_root.as_posix()
@@ -1649,7 +1668,7 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append('"-DLY_ARCHIVE_FILE_SEARCH_MODE=1"')
 
             cmake_argument_list.extend([
-                f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_api_level}"',
+                f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_min_api_level}"',
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
                 '"-DANDROID_STL=c++_shared"',
                 '"-Wno-deprecated"',

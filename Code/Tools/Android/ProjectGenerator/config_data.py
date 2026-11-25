@@ -19,7 +19,7 @@ class ConfigData:
     """
     ASSET_MODE_LOOSE = "LOOSE"
     DEFAULT_NDK_VERSION = "27*"
-    DEFAULT_API_LEVEL = "31" # The API level for Android 12.
+    DEFAULT_API_LEVEL = "36" # The API level for Android 16 (the target API level Google Play requires).
     def __init__(self):
         self.engine_path = "" # Not serialized.
         self.project_path = "" # Not serialized.

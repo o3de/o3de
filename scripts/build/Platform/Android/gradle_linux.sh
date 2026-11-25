@@ -52,10 +52,11 @@ fi
 echo "Using Gradle Build at '$GRADLE_BUILD_HOME'"
 "$O3DE_PATH/scripts/o3de.sh" android-configure --set-value gradle.home="$GRADLE_BUILD_HOME" --global
 
-# Optionally override the gradle plugin version, otherwise default to 8.1.4
-ANDROID_GRADLE_PLUGIN="${ANDROID_GRADLE_PLUGIN:-8.1.4}"
-echo "Using Android gradle plugin version $ANDROID_GRADLE_PLUGIN"
-"$O3DE_PATH/scripts/o3de.sh" android-configure --set-value android.gradle.plugin="$ANDROID_GRADLE_PLUGIN" --global
+# By default, test the same Android Gradle Plugin version as a fresh project.
+if [[ -n "${ANDROID_GRADLE_PLUGIN:-}" ]]; then
+    echo "Using Android Gradle Plugin version $ANDROID_GRADLE_PLUGIN"
+    "$O3DE_PATH/scripts/o3de.sh" android-configure --set-value android.gradle.plugin="$ANDROID_GRADLE_PLUGIN" --global
+fi
 
 # Optionally override the version of the android NDK to use, otherwise default to 27
 ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-27}"
@@ -144,8 +145,13 @@ pushd "$OUTPUT_DIRECTORY"
 echo "[ci_build] gradlew --stop"
 ./gradlew --stop || true
 
-echo "[ci_build] gradlew --info --no-daemon ${GRADLE_BUILD_CMD}${CONFIGURATION}"
-./gradlew --info --no-daemon "${GRADLE_BUILD_CMD}${CONFIGURATION}"
+if [[ "$GRADLE_BUILD_CMD" == "build" ]]; then
+    gradle_tasks=("assemble${CONFIGURATION^}" "bundle${CONFIGURATION^}")
+else
+    gradle_tasks=("${GRADLE_BUILD_CMD}${CONFIGURATION}")
+fi
+echo "[ci_build] gradlew --info --no-daemon ${gradle_tasks[*]}"
+./gradlew --info --no-daemon "${gradle_tasks[@]}"
 
 echo "[ci_build] gradlew --stop"
 ./gradlew --stop
