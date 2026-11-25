@@ -43,7 +43,9 @@ namespace AzToolsFramework::Prefab
         void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
+        void showEvent(QShowEvent* event) override;
         void Refresh();
+        QToolButton* m_focusUpButton = nullptr;
 
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;

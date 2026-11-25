@@ -26,16 +26,13 @@ namespace AZ::Render
         DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial, Name drawList);
         ~DrawableMeshEntity();
 
-        //! Returns true if this entity can be drawn, otherwise false.
-        bool CanDraw() const;
-
-        //! Draws the entity's Atom mesh.
-        void Draw();
+        //! Submits this entity's mask geometry to the originating viewport.
+        void Draw(RPI::View& view);
 
     private:
 
         //! Retrieves the levol of detail index for this entity's Atom mesh.
-        RPI::ModelLodIndex GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const;
+        RPI::ModelLodIndex GetModelLodIndex(const RPI::View& view, Data::Instance<RPI::Model> model) const;
 
         // MeshHandleStateNotificationBus overrides ...
         void OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle) override;

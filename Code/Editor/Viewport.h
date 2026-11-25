@@ -530,6 +530,6 @@ protected:
 protected:
     bool m_mouseCaptured = false;
 
-private:
+protected:
     QWidget m_renderOverlay;
 };

@@ -674,10 +674,11 @@ namespace UnitTest
     void ViewportManagerWrapper::Create()
     {
         m_viewportManager = AZStd::make_unique<ViewportUiManagerTestable>();
-        m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
-        m_mockRenderOverlay = AZStd::make_unique<QWidget>();
+        m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::EditorToolUiId);
         m_parentWidget = AZStd::make_unique<QWidget>();
-        m_viewportManager->InitializeViewportUi(m_parentWidget.get(), m_mockRenderOverlay.get());
+        m_mockRenderOverlay = AZStd::make_unique<QWidget>(m_parentWidget.get());
+        m_parentWidget->show();
+        m_viewportManager->SetViewport(m_parentWidget.get(), m_mockRenderOverlay.get(), AzToolsFramework::ViewportUi::DefaultViewportId);
     }
 
     void ViewportManagerWrapper::Destroy()

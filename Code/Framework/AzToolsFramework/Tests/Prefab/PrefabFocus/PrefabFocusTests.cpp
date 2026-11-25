@@ -10,6 +10,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <Prefab/PrefabTestFixture.h>
 
@@ -118,6 +119,38 @@ namespace UnitTest
         inline static const char* Passenger1EntityName = "Passenger1";
         inline static const char* Passenger2EntityName = "Passenger2";
     };
+
+    TEST_F(PrefabFocusTests, PerspectivePanesRetainIndependentPrefabFocus)
+    {
+        PrefabDom rootDom;
+        ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(m_rootInstance->get(), rootDom));
+        m_prefabSystemComponent->UpdatePrefabTemplate(m_rootInstance->get().GetTemplateId(), rootDom);
+
+        const auto car = m_instanceMap[CarEntityName]->GetContainerEntityId();
+        const auto sportsCar = m_instanceMap[SportsCarEntityName]->GetContainerEntityId();
+
+        m_prefabFocusInterface->ActivateViewport(0);
+        ASSERT_TRUE(m_prefabFocusPublicInterface->FocusOnOwningPrefab(car));
+        m_prefabFocusInterface->ActivateViewport(1);
+        EXPECT_FALSE(m_prefabFocusInterface->GetViewportFocusRoot(1).IsValid());
+        ASSERT_TRUE(m_prefabFocusPublicInterface->FocusOnOwningPrefab(sportsCar));
+        EXPECT_EQ(m_prefabFocusInterface->GetViewportFocusRoot(0), car);
+        EXPECT_EQ(m_prefabFocusInterface->GetViewportFocusRoot(1), sportsCar);
+
+        m_prefabFocusInterface->ActivateViewport(0);
+        EXPECT_EQ(m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(m_editorEntityContextId), car);
+        const auto carPath = m_prefabFocusInterface->GetViewportFocusPath(0);
+        const auto sportsCarPath = m_prefabFocusInterface->GetViewportFocusPath(1);
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::UndoPressed);
+        EXPECT_EQ(m_prefabFocusInterface->GetViewportFocusPath(0), carPath);
+        EXPECT_FALSE(m_prefabFocusInterface->GetViewportFocusRoot(1).IsValid());
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::RedoPressed);
+        EXPECT_EQ(m_prefabFocusInterface->GetViewportFocusPath(1), sportsCarPath);
+        m_prefabFocusInterface->RemoveViewport(1);
+        m_prefabFocusInterface->ActivateViewport(1);
+        EXPECT_FALSE(m_prefabFocusInterface->GetViewportFocusRoot(1).IsValid());
+        EXPECT_EQ(m_prefabFocusInterface->GetViewportFocusPath(0), carPath);
+    }
 
     TEST_F(PrefabFocusTests, FocusOnOwningPrefabRootContainer)
     {

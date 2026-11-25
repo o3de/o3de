@@ -61,7 +61,7 @@ namespace EMStudio
 
         m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
-        m_viewportUiManager.InitializeViewportUi(this, &m_renderOverlay);
+        m_viewportUiManager.SetViewport(this, &m_renderOverlay, GetViewportId());
         m_viewportUiManager.ConnectViewportUiBus(GetViewportId());
 
         AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderer->GetRenderSceneId());

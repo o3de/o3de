@@ -504,32 +504,32 @@ namespace AzToolsFramework
     static void DestroyCluster(const ViewportUi::ClusterId clusterId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, clusterId);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, clusterId);
     }
 
     static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, clusterId, visible);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible, clusterId, visible);
     }
 
     static void SetViewportUiSwitcherVisible(const ViewportUi::SwitcherId switcherId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, switcherId, visible);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, switcherId, visible);
     }
 
     static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
     }
 
     static ViewportUi::ButtonId RegisterClusterButton(const ViewportUi::ClusterId clusterId, const char* iconName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
+            buttonId, ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
@@ -581,7 +581,7 @@ namespace AzToolsFramework
         };
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceCluster.m_clusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceCluster.m_clusterId,
             buttonIdFromFrameFn(referenceFrame));
     }
 
@@ -3330,7 +3330,7 @@ namespace AzToolsFramework
     {
         // create the cluster for changing transform mode
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_transformModeClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            m_transformModeClusterId, ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons (strings correspond to icons even if the values appear different)
@@ -3340,13 +3340,13 @@ namespace AzToolsFramework
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
             m_translateButtonId, TransformModeClusterTranslateTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
             m_rotateButtonId, TransformModeClusterRotateTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
             m_scaleButtonId, TransformModeClusterScaleTooltip);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
@@ -3368,10 +3368,10 @@ namespace AzToolsFramework
         m_transformModeSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_transformModeClusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_transformModeClusterId,
             m_translateButtonId);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_transformModeClusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_transformModeClusterId,
             m_transformModeSelectionHandler);
     }
 
@@ -3379,14 +3379,14 @@ namespace AzToolsFramework
     {
         // create the cluster for switching spaces/reference frames
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_snappingCluster.m_clusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            m_snappingCluster.m_clusterId, ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopRight);
 
         m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_clusterId, "Grid");
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
             m_snappingCluster.m_clusterId, m_snappingCluster.m_snapToWorldButtonId, SnappingClusterSnapToWorldTooltip);
 
         const auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
@@ -3404,7 +3404,7 @@ namespace AzToolsFramework
         m_snappingCluster.m_snappingHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_snappingCluster.m_clusterId, m_snappingCluster.m_snappingHandler);
 
         // hide initially
@@ -3415,7 +3415,7 @@ namespace AzToolsFramework
     {
         // create the cluster for switching spaces/reference frames
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_spaceCluster.m_clusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            m_spaceCluster.m_clusterId, ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopRight);
 
         // create and register the buttons (strings correspond to icons even if the values appear different)
@@ -3425,13 +3425,13 @@ namespace AzToolsFramework
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
             m_spaceCluster.m_worldButtonId, SpaceClusterWorldTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
             m_spaceCluster.m_parentButtonId, SpaceClusterParentTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
             m_spaceCluster.m_localButtonId, SpaceClusterLocalTooltip);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
@@ -3473,14 +3473,14 @@ namespace AzToolsFramework
                 }
             }
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonLocked,
+                ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonLocked,
                 m_spaceCluster.m_clusterId, buttonId, m_spaceCluster.m_spaceLock.has_value());
         };
 
         m_spaceCluster.m_spaceHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
     }
 

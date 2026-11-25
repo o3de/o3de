@@ -68,7 +68,16 @@ def verify_docked_perspective_viewports():
             general.idle_wait_frames(2)
             assert (dock.window() != main_window) == floating
             assert dock.isAncestorOf(viewport)
-            general.set_active_viewport(3)
+            # Switching between top-level windows must continue delivering editor frames.
+            for index in (0, 3, 0, 3):
+                general.set_active_viewport(index)
+                general.idle_wait_frames(2)
+                assert general.get_active_viewport() == index
+            overlay = next(w for w in viewport.findChildren(QtWidgets.QMainWindow, "ViewportUiWindow")
+                           if w.isVisible() and not w.mask().isEmpty())
+            render = viewport.findChild(QtWidgets.QWidget, "renderOverlay")
+            assert not overlay.isWindow() and overlay.size() == render.size()
+            assert overlay.mapToGlobal(QtCore.QPoint()) == render.mapToGlobal(QtCore.QPoint())
             assert position() == (30.0, 5.0, 3.0)
             general.set_active_viewport(0)
             assert position() == (0.0, 5.0, 3.0)

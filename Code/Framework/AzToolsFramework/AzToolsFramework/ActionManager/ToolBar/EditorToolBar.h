@@ -116,7 +116,7 @@ namespace AzToolsFramework
             AZStd::string m_identifier;
             AZStd::string m_subMenuIdentifier;
 
-            QWidgetAction* m_widgetAction = nullptr;
+            QWidgetAction* GetWidgetAction(QToolBar* toolBar) const;
         };
 
         AZStd::string m_name;

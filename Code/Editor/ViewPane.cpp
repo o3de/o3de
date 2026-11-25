@@ -49,6 +49,8 @@ CLayoutViewPane::CLayoutViewPane(int id, QWidget* parent)
     : AzQtComponents::ToolBarArea(parent)
     , m_id(id)
 {
+    setProperty("editorViewportId", id);
+
     // Set up an optional scrollable area for our viewport.  We'll use this for times that we want a fixed-size
     // viewport independent of main window size.
     m_viewportScrollArea = new QScrollArea(this);

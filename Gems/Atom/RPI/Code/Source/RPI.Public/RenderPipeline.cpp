@@ -869,6 +869,11 @@ namespace AZ
             return m_renderMode != RenderMode::NoRender;
         }
 
+        RHI::DrawFilterMask RenderPipeline::GetInstanceDrawFilterMask() const
+        {
+            return m_drawFilterTagForPipelineInstanceName.IsValid() ? 1u << m_drawFilterTagForPipelineInstanceName.GetIndex() : 0;
+        }
+
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
         {
             return m_drawFilterMask;
@@ -879,12 +884,7 @@ namespace AZ
             m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);
             m_drawFilterTagForMaterialPipeline = tagRegistry->AcquireTag(m_materialPipelineTagName);
                         
-            m_drawFilterMask = 0;
-            
-            if (m_drawFilterTagForPipelineInstanceName.IsValid())
-            {
-                m_drawFilterMask |= 1 << m_drawFilterTagForPipelineInstanceName.GetIndex();
-            }
+            m_drawFilterMask = GetInstanceDrawFilterMask();
             if (m_drawFilterTagForMaterialPipeline.IsValid())
             {
                 m_drawFilterMask |= 1 << m_drawFilterTagForMaterialPipeline.GetIndex();

@@ -23,6 +23,6 @@ namespace AZ::Render
         void UpdatePassData(RPI::ParentPass* parentPass) override;
 
         // EditorStateBase overrides ...
-        AzToolsFramework::EntityIdList GetMaskedEntities() const override;
+        AzToolsFramework::EntityIdList GetMaskedEntities([[maybe_unused]] const RPI::RenderPipeline* pipeline) const override;
     };
 } // namespace AZ::Render

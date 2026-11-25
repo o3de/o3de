@@ -11,6 +11,7 @@
 #include "EditorDefs.h"
 
 #include "EditorViewportWidget.h"
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 
 // Qt
 #include <QBoxLayout>
@@ -191,7 +192,18 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
+    if (m_viewManager->GetSelectedViewport() == this && m_viewManager->GetEditorToolUi().BusIsConnected())
+    {
+        m_viewManager->GetEditorToolUi().SetViewport(nullptr, nullptr, AzFramework::InvalidViewportId);
+    }
     SetSelected(false);
+    if (m_renderViewport)
+    {
+        if (auto* focus = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get())
+        {
+            focus->RemoveViewport(GetViewportId());
+        }
+    }
     if (m_viewEntityId.IsValid())
     {
         PopCameraView();
@@ -779,7 +791,8 @@ void EditorViewportWidget::SetViewportId(int id)
 
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
-    m_viewportUi.ConnectViewportUiBus(GetViewportId());
+    m_viewportUi.SetViewport(this, &m_renderOverlay, id);
+    m_viewportUi.ConnectViewportUiBus(id);
     AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
     if (m_viewManager->GetSelectedViewport() == this)
@@ -1830,7 +1843,17 @@ void EditorViewportWidget::SetSelected(bool selected)
 {
     if (selected && m_renderViewport)
     {
+        auto& toolUi = m_viewManager->GetEditorToolUi();
+        toolUi.SetViewport(this, &m_renderOverlay, GetViewportId());
+        if (!toolUi.BusIsConnected())
+        {
+            toolUi.ConnectViewportUiBus(AzToolsFramework::ViewportUi::EditorToolUiId);
+        }
         AZ::RPI::ViewportContextRequests::Get()->SetDefaultViewportContext(GetViewportId());
+        if (auto* focus = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get())
+        {
+            focus->ActivateViewport(GetViewportId());
+        }
         Camera::EditorCameraRequestBus::Handler::BusConnect();
         AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Broadcast(
@@ -2019,8 +2042,9 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
     if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
     {
         auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
-        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
-            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        const auto* focus = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
+        if ((focus && focus->GetViewportFocusRoot(GetViewportId()).IsValid()) ||
+            (m_viewManager->GetSelectedViewport() == this && viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component)))
         {
             AzFramework::ViewportBorderPadding viewportBorderPadding = {};
             viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;

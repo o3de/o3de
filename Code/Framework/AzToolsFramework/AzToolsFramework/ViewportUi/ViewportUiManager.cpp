@@ -319,16 +319,14 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::InitializeViewportUi(QWidget* parent, QWidget* renderOverlay)
+    void ViewportUiManager::SetViewport(QWidget* parent, QWidget* renderOverlay, int viewportId)
     {
-        if (m_viewportUi)
+        if (!m_viewportUi)
         {
-            AZ_Warning("ViewportUi", false, "Viewport UI already initialized. Removing previous ViewportUiDisplay.");
-            m_viewportUi.reset();
+            m_viewportUi = AZStd::make_unique<Internal::ViewportUiDisplay>(parent, renderOverlay);
+            m_viewportUi->InitializeUiOverlay();
         }
-
-        m_viewportUi = AZStd::make_unique<Internal::ViewportUiDisplay>(parent, renderOverlay);
-        m_viewportUi->InitializeUiOverlay();
+        m_viewportUi->SetViewport(parent, renderOverlay, viewportId);
     }
 
     void ViewportUiManager::Update()

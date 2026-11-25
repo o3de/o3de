@@ -193,15 +193,15 @@ namespace AZ::Render
         }
     }
 
-    EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStates() const
+    EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStates(const RPI::RenderPipeline* pipeline) const
     {
         EntityMaskMap entityMaskMap;
 
         for (const auto& state : m_editorStates)
         {
-            if (state->IsEnabled())
+            if (state->IsEnabled(pipeline))
             {
-                const auto entityIds = state->GetMaskedEntities();
+                const auto entityIds = state->GetMaskedEntities(pipeline);
                 auto& mask = entityMaskMap[state->GetEntityMaskDrawList()];
                 for (const auto& entityId : entityIds)
                 {
@@ -226,14 +226,14 @@ namespace AZ::Render
         return MainPassParentTemplateName;
     }
 
-    void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
+    bool EditorStatePassSystem::ConfigureStatePassesForPipeline(RPI::RenderPipeline* renderPipeline)
     {
         RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
         RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);
 
         if (!mainPass)
         {
-            return;
+            return false;
         }
 
         auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
@@ -242,6 +242,7 @@ namespace AZ::Render
             auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
             state->AddParentPassForPipeline(renderPipeline->GetId(), statePass);
         }
+        return true;
     }
 
     void EditorStatePassSystem::RemoveStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)

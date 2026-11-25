@@ -33,14 +33,14 @@ namespace UnitTest
             m_buttonGroup = AZStd::make_shared<ButtonGroup>();
             m_buttonGroup->AddButton("");
             m_parentWidget = new QWidget();
-            m_mockRenderOverlay = new QWidget();
+            m_mockRenderOverlay = new QWidget(m_parentWidget);
+            m_parentWidget->show();
         }
 
         void TearDown() override
         {
             m_buttonGroup.reset();
             delete m_parentWidget;
-            delete m_mockRenderOverlay;
         }
 
         QWidget* m_parentWidget = nullptr;
@@ -146,6 +146,8 @@ namespace UnitTest
 
         viewportUi.Update();
 
+        EXPECT_FALSE(viewportUi.GetUiMainWindow()->isWindow());
+        EXPECT_EQ(viewportUi.GetUiMainWindow()->geometry(), geometry);
         EXPECT_EQ(viewportUi.GetUiOverlay()->height(), m_mockRenderOverlay->height());
         EXPECT_EQ(viewportUi.GetUiOverlay()->width(), m_mockRenderOverlay->width());
     }

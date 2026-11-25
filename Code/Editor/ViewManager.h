@@ -36,6 +36,7 @@ public:
     //! Will take context menus and cursor position into account as appropriate.
     AZ::Vector3 GetClickPositionInViewportSpace() const;
 
+    AzToolsFramework::ViewportUi::ViewportUiManager& GetEditorToolUi() { return m_editorToolUi; }
     void SelectViewport(CViewport* pViewport);
     CViewport* GetSelectedViewport() const { return m_pSelectedView; }
 
@@ -121,5 +122,6 @@ private:
     std::vector<CViewport*> m_viewports;
 
     CViewport* m_pSelectedView;
+    AzToolsFramework::ViewportUi::ViewportUiManager m_editorToolUi;
 
 };

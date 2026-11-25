@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Viewport/ViewportId.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -33,6 +34,17 @@ namespace AzToolsFramework::Prefab
         //! If this is not called on initialization, the Prefab Focus Mode functions will still work
         //! but won't trigger the Editor APIs to visualize focus mode on the UI.
         virtual void InitializeEditorInterfaces() = 0;
+
+        //! The selected perspective supplies the focus used by shared authoring tools.
+        virtual void ActivateViewport(AzFramework::ViewportId viewportId) = 0;
+        virtual void RemoveViewport(AzFramework::ViewportId viewportId) = 0;
+        virtual AZ::IO::Path GetViewportFocusPath(AzFramework::ViewportId viewportId) const = 0;
+        //! Returns an invalid entity id for a viewport focused on the whole level.
+        virtual AZ::EntityId GetViewportFocusRoot(AzFramework::ViewportId viewportId) const = 0;
+
+        //! Resolves helper visibility when this pane has a different focus from the authoring tools.
+        virtual bool IsEntityVisibleInViewportFocus(
+            AzFramework::ViewportId viewportId, AZ::EntityId entityId, bool visibleInActiveFocus) const = 0;
 
         //! Sets the focused instance to the owning instance of the entity id provided.
         //! If the entity id is invalid, then focus on the root prefab instance.

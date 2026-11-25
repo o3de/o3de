@@ -197,7 +197,6 @@ QtViewport::QtViewport(QWidget* parent)
     m_renderOverlay.setObjectName("renderOverlay");
     m_renderOverlay.winId(); // Force the render overlay to create a backing native window
 
-    m_viewportUi.InitializeViewportUi(this, &m_renderOverlay);
 
     setAcceptDrops(true);
 }
@@ -326,7 +325,14 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    m_viewportUi.Update();
+    if (m_viewManager->GetSelectedViewport() == this && m_viewManager->GetEditorToolUi().BusIsConnected())
+    {
+        m_viewManager->GetEditorToolUi().Update();
+    }
+    if (m_viewportUi.BusIsConnected())
+    {
+        m_viewportUi.Update();
+    }
 
     m_bAdvancedSelectMode = false;
 

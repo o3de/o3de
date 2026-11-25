@@ -227,6 +227,8 @@ namespace AZ
 
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
+            //! Filter for draws addressed to this pipeline instance exclusively.
+            RHI::DrawFilterMask GetInstanceDrawFilterMask() const;
 
             //! Get the RenderPipelineDescriptor which was used to create this RenderPipeline
             const RenderPipelineDescriptor& GetDescriptor() const;

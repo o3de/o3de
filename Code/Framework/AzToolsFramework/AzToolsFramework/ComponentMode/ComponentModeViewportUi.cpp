@@ -54,7 +54,7 @@ namespace AzToolsFramework
         void ComponentModeViewportUi::ShowActiveViewportElements()
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
+                ViewportUi::EditorToolUiId,
                 &ViewportUi::ViewportUiRequestBus::Events::SetClusterGroupVisible,
                 m_activeViewportIds, true);
         }
@@ -62,7 +62,7 @@ namespace AzToolsFramework
         void ComponentModeViewportUi::HideActiveViewportElements()
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
+                ViewportUi::EditorToolUiId,
                 &ViewportUi::ViewportUiRequestBus::Events::SetClusterGroupVisible,
                 m_activeViewportIds, false);
         }

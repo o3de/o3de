@@ -10,30 +10,21 @@
 
 #include <Pass/State/EditorStateBase.h>
 
-#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 
 namespace AZ::Render
 {
     //! Class for the Focused Entity editor state effect.
     class FocusedEntityState
         : public EditorStateBase
-        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     {
     public:
         FocusedEntityState();
-        ~FocusedEntityState();
 
-        // ViewportEditorModeNotificationsBus overrides ...
-        void OnEditorModeActivated(
-            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
-        void OnEditorModeDeactivated(
-            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
-
-        // EditorStateBase overrides ...
-        bool IsEnabled() const override;
-        AzToolsFramework::EntityIdList GetMaskedEntities() const override;
+        bool IsEnabled(const RPI::RenderPipeline* pipeline) const override;
+        AzToolsFramework::EntityIdList GetMaskedEntities(const RPI::RenderPipeline* pipeline) const override;
+        void UpdatePassDataForPipelines() override;
 
     private:
-        bool m_inFocusMode = false; //!< True if Focus Mode is active, otherwise false.
+        AZStd::unordered_map<const RPI::RenderPipeline*, AZ::EntityId> m_focusRoots;
     };
 } // namespace AZ::Render

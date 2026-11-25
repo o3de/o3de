@@ -12,7 +12,8 @@
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
-#include <QTimer>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <QHBoxLayout>
 
 namespace AzToolsFramework::Prefab
 {
@@ -30,25 +31,21 @@ namespace AzToolsFramework::Prefab
             return;
         }
 
-        // If a part of the path is clicked, focus on that instance
-        connect(
-            this,
-            &AzQtComponents::BreadCrumbs::linkClicked,
-            this,
-            [&](const QString&, int linkIndex)
-            {
-                m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
-
-                // Manually refresh path
-                QTimer::singleShot(
-                    0,
-                    [&]()
-                    {
-                        Refresh();
-                    }
-                );
-            }
-        );
+        setPushPathOnLinkActivation(false);
+        setDefaultIcon(QStringLiteral(":/Entity/prefab_edit.svg"));
+        m_focusUpButton = new QToolButton(this);
+        m_focusUpButton->setAutoRaise(true);
+        m_focusUpButton->setIcon(QIcon(QStringLiteral(":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg")));
+        m_focusUpButton->setToolTip(tr("Focus up one level"));
+        qobject_cast<QBoxLayout*>(layout())->insertWidget(0, m_focusUpButton);
+        connect(m_focusUpButton, &QToolButton::clicked, this, [this]
+        {
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
+        });
+        connect(this, &AzQtComponents::BreadCrumbs::linkClicked, this, [this](const QString&, int index)
+        {
+            m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, index);
+        });
 
         PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
         ViewportEditorModeNotificationsBus::Handler::BusConnect(m_editorEntityContextId);
@@ -95,28 +92,38 @@ namespace AzToolsFramework::Prefab
         }
     }
 
+    void PrefabFocusPathWidget::showEvent(QShowEvent* event)
+    {
+        BreadCrumbs::showEvent(event);
+        Refresh();
+    }
+
     void PrefabFocusPathWidget::Refresh()
     {
-        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-
-        AZ::EntityId levelEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
-        AZStd::size_t childCount = 0;
-
-        EditorEntityInfoRequestBus::EventResult(childCount, levelEntityId, &EditorEntityInfoRequestBus::Events::GetChildCount);
-        // Ignore the refresh if there isn't a level loaded yet
-        if (childCount == 0)
+        auto* focus = AZ::Interface<PrefabFocusInterface>::Get();
+        if (!focus || !m_prefabFocusPublicInterface)
         {
             return;
         }
-        
-        // Push new Path
-        pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
-
-        // Add icons to the widget
-        setDefaultIcon(QString(":/Entity/prefab_edit.svg"));
-
-        // Set root icon
-        setIconAt(0, QString(":/Level/level.svg"));
+        AZ::IO::Path path;
+        for (auto* owner = parentWidget(); owner; owner = owner->parentWidget())
+        {
+            if (const auto viewportId = owner->property("editorViewportId"); viewportId.isValid())
+            {
+                path = focus->GetViewportFocusPath(viewportId.toInt());
+                break;
+            }
+        }
+        if (path.empty())
+        {
+            path = m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId);
+        }
+        m_focusUpButton->setEnabled(path.HasParentPath());
+        const QString displayPath = QString::fromUtf8(path.c_str());
+        if (displayPath != currentPath())
+        {
+            setCurrentPath(displayPath);
+            setIconAt(0, QStringLiteral(":/Level/level.svg"));
+        }
     }
-
 } // namespace AzToolsFramework::Prefab

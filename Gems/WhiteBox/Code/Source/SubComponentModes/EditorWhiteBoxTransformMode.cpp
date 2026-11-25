@@ -80,7 +80,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
             clusterId,
             buttonId);
@@ -90,7 +90,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId, bool isDisabled)
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterDisableButton,
             clusterId,
             buttonId,
@@ -103,7 +103,7 @@ namespace WhiteBox
         EditorWhiteBoxTransformModeRequestBus::Handler::BusConnect(entityComponentIdPair);
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             [&](AzToolsFramework::ViewportUi::ViewportUiRequests* requests)
             {
                 auto fetchIcon = [](const char* iconName)
@@ -146,7 +146,7 @@ namespace WhiteBox
         );
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_transformClusterId,
             m_transformSelectionHandler);
@@ -157,7 +157,7 @@ namespace WhiteBox
     TransformMode::~TransformMode()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_transformClusterId);
 
@@ -584,7 +584,7 @@ namespace WhiteBox
                     [clusterId = m_transformClusterId, buttonId = m_transformTranslateButtonId]()
                     {
                             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                                AzToolsFramework::ViewportUi::DefaultViewportId,
+                                AzToolsFramework::ViewportUi::EditorToolUiId,
                                 [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
                                    AzToolsFramework::ViewportUi::ClusterId clusterId,
                                    AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -604,7 +604,7 @@ namespace WhiteBox
                     [clusterId = m_transformClusterId, buttonId = m_transformRotateButtonId]()
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            AzToolsFramework::ViewportUi::EditorToolUiId,
                             [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
                                    AzToolsFramework::ViewportUi::ClusterId clusterId,
                                    AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -624,7 +624,7 @@ namespace WhiteBox
                     [clusterId = m_transformClusterId, buttonId = m_transformScaleButtonId]()
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            AzToolsFramework::ViewportUi::EditorToolUiId,
                             [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
                                    AzToolsFramework::ViewportUi::ClusterId clusterId,
                                    AzToolsFramework::ViewportUi::ButtonId buttonId)

@@ -94,6 +94,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         //! Initializes UI main window and overlay by setting attributes such as transparency and visibility.
         void InitializeUiOverlay();
+        void SetViewport(QWidget* parent, QWidget* renderOverlay, int viewportId);
 
         void ShowViewportUiElement(ViewportUiElementId elementId);
         void HideViewportUiElement(ViewportUiElementId elementId);

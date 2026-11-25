@@ -123,12 +123,12 @@ namespace PhysX
         {
             AzToolsFramework::ViewportUi::ButtonId buttonId;
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-                buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
+                buttonId, AzToolsFramework::ViewportUi::EditorToolUiId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
                 AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
+                AzToolsFramework::ViewportUi::EditorToolUiId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, clusterId, buttonId, tooltip);
 
             return buttonId;
@@ -719,11 +719,11 @@ namespace PhysX
             if (m_activeButton.m_clusterId != m_buttonData[newMode].m_clusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    AzToolsFramework::ViewportUi::EditorToolUiId,
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_activeButton.m_clusterId);
             }
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
+                AzToolsFramework::ViewportUi::EditorToolUiId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
                 m_buttonData[newMode].m_clusterId,
                 m_buttonData[newMode].m_buttonId);
@@ -759,7 +759,7 @@ namespace PhysX
 
         //group 1 is always available so create it
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_modeSelectionClusterIds[static_cast<int>(ClusterGroups::Group1)], AzToolsFramework::ViewportUi::DefaultViewportId,
+            m_modeSelectionClusterIds[static_cast<int>(ClusterGroups::Group1)], AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         //check if groups 2 and/or 3 need to be created
@@ -778,7 +778,7 @@ namespace PhysX
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
                             m_modeSelectionClusterIds[static_cast<int>(ClusterGroups::Group2)],
-                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            AzToolsFramework::ViewportUi::EditorToolUiId,
                             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
                             AzToolsFramework::ViewportUi::Alignment::TopLeft);
                     }
@@ -791,7 +791,7 @@ namespace PhysX
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
                             m_modeSelectionClusterIds[static_cast<int>(ClusterGroups::Group3)],
-                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            AzToolsFramework::ViewportUi::EditorToolUiId,
                             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
                             AzToolsFramework::ViewportUi::Alignment::TopLeft);
                     }
@@ -978,7 +978,7 @@ namespace PhysX
             if (m_modeSelectionClusterIds[i] != AzToolsFramework::ViewportUi::InvalidClusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    AzToolsFramework::ViewportUi::EditorToolUiId,
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
                     m_modeSelectionClusterIds[i], m_modeSelectionHandlers[i]);
             }
@@ -1008,7 +1008,7 @@ namespace PhysX
             if (clusterid != AzToolsFramework::ViewportUi::InvalidClusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    AzToolsFramework::ViewportUi::EditorToolUiId,
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, clusterid);
             }
         }

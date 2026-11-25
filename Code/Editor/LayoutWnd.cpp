@@ -12,6 +12,7 @@
 
 #include "EditorDefs.h"
 #include "LayoutWnd.h"
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 
 #include "CustomAspectRatioDlg.h"
 #include "CustomResolutionDlg.h"
@@ -187,8 +188,12 @@ QDockWidget* CLayoutWnd::CreateViewportDock()
     dock->setWidget(pane);
     connect(pane, &QWidget::windowTitleChanged, dock, &QWidget::setWindowTitle);
     m_docks.append(dock);
-    connect(dock, &AzQtComponents::StyledDockWidget::aboutToClose, this, [this, dock]
+    connect(dock, &AzQtComponents::StyledDockWidget::aboutToClose, this, [this, dock, slot]
     {
+        if (auto* focus = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get())
+        {
+            focus->RemoveViewport(slot);
+        }
         m_closedDocks.insert(dock);
         UpdateDockFeatures();
     });

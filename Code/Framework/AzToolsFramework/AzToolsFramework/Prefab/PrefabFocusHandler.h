@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -54,6 +55,12 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
+        void ActivateViewport(AzFramework::ViewportId viewportId) override;
+        void RemoveViewport(AzFramework::ViewportId viewportId) override;
+        AZ::IO::Path GetViewportFocusPath(AzFramework::ViewportId viewportId) const override;
+        AZ::EntityId GetViewportFocusRoot(AzFramework::ViewportId viewportId) const override;
+        bool IsEntityVisibleInViewportFocus(
+            AzFramework::ViewportId viewportId, AZ::EntityId entityId, bool visibleInActiveFocus) const override;
 
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
@@ -87,8 +94,12 @@ namespace AzToolsFramework::Prefab
     private:
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
 
-        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
-        void RefreshInstanceFocusPath();
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, const RootAliasPath& previousPath);
+        AZ::IO::Path BuildFocusPath(const RootAliasPath& path) const;
+        InstanceOptionalReference GetViewportInstance(AzFramework::ViewportId viewportId) const;
+        InstanceOptionalReference FindFocusInstance(AZ::EntityId entityId) const;
+        AZStd::unordered_map<AzFramework::ViewportId, AZStd::shared_ptr<RootAliasPath>> m_viewportPaths;
+        AZStd::shared_ptr<RootAliasPath> m_activePath = AZStd::make_shared<RootAliasPath>();
 
         // helper function.  Finds out which prefab instance is currently focused, and creates
         // a selection command that will select the container entity.
@@ -102,8 +113,6 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
-        //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
-        RootAliasPath m_rootAliasFocusPath = RootAliasPath();
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
         AZ::IO::Path m_filenameFocusPath;
         //! The length of the current focus path. Stored to simplify internal checks.

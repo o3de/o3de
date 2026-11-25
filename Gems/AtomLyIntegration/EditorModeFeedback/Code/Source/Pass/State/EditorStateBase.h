@@ -55,7 +55,7 @@ namespace AZ::Render
         virtual ~EditorStateBase();
 
         //! Returns the entities that should be rendered to the entity mask for this editor state.
-        [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
+        [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities(const RPI::RenderPipeline* pipeline) const = 0;
 
         //! Returns the name of this editor state.
         const AZStd::string& GetStateName() const;
@@ -68,7 +68,7 @@ namespace AZ::Render
         const PassNameList& GetChildPassNameList() const;
 
         //! Returns true of this editor mode state is to be enabled, otherwise false.
-        virtual bool IsEnabled() const { return m_enabled; }
+        virtual bool IsEnabled([[maybe_unused]] const RPI::RenderPipeline* pipeline) const { return m_enabled; }
 
         //! Returns the pass template name for this editor state effect pass.
         Name GetPassTemplateName() const;
@@ -83,7 +83,7 @@ namespace AZ::Render
         void RemoveParentPassForPipeline(const Name& pipelineName);
 
         //! Calls the update method for each pipeline this editor state effect pass is part of.
-        void UpdatePassDataForPipelines();
+        virtual void UpdatePassDataForPipelines();
 
         // EditorStateRequestsBus overrides ...
         void SetEnabled(bool enabled) override;

@@ -138,7 +138,7 @@ namespace AzToolsFramework
         TransitionFromComponentMode();
         // remove the component mode viewport border
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
     }
 
     void EditorDefaultSelection::Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair)

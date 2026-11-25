@@ -104,7 +104,7 @@ namespace AzToolsFramework
         if (m_allowAsymmetricalEditing)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_clusterId);
+                ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_clusterId);
             m_clusterId = ViewportUi::InvalidClusterId;
         }
     }
@@ -118,14 +118,14 @@ namespace AzToolsFramework
     {
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_clusterId,
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopLeft);
 
         m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] =
-            RegisterClusterButton(ViewportUi::DefaultViewportId, m_clusterId, "Scale", DimensionsTooltip);
+            RegisterClusterButton(ViewportUi::EditorToolUiId, m_clusterId, "Scale", DimensionsTooltip);
         m_buttonIds[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
-            RegisterClusterButton(ViewportUi::DefaultViewportId, m_clusterId, "Move", TranslationOffsetTooltip);
+            RegisterClusterButton(ViewportUi::EditorToolUiId, m_clusterId, "Move", TranslationOffsetTooltip);
 
         const auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
@@ -141,7 +141,7 @@ namespace AzToolsFramework
 
         m_modeSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_clusterId,
             m_modeSelectionHandler);
@@ -163,10 +163,10 @@ namespace AzToolsFramework
         m_subModes[modeIndex]->AddEntityComponentIdPair(m_entityComponentIdPair);
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_clusterId);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_clusterId);
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
             m_clusterId,
             m_buttonIds[modeIndex]);
