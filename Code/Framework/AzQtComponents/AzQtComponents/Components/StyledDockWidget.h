@@ -12,6 +12,9 @@
 #include <QDockWidget>
 #include <QPoint>
 
+class QAction;
+class QToolButton;
+
 namespace AzQtComponents
 {
     class TitleBar;
@@ -23,6 +26,8 @@ namespace AzQtComponents
 
     public:
         explicit StyledDockWidget(QWidget* parent = nullptr);
+        //! Takes ownership of the action displayed beside the tab.
+        StyledDockWidget(QWidget* parent, QAction* tabAction);
         explicit StyledDockWidget(const QString& name, QWidget* parent = nullptr);
         ~StyledDockWidget();
 
@@ -30,6 +35,8 @@ namespace AzQtComponents
         void createCustomTitleBar();
         TitleBar* customTitleBar() const;
         bool isSingleFloatingChild();
+        //! Creates the optional action button displayed beside this dock's tab.
+        QToolButton* createTabButton(QWidget* parent) const;
 
     Q_SIGNALS:
         void undock();
@@ -44,6 +51,6 @@ namespace AzQtComponents
 
     private:
         void onFloatingChanged(bool floating);
-        void init();
+
     };
 } // namespace AzQtComponents

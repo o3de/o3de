@@ -8,11 +8,20 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def verify_docked_perspective_viewports():
     import azlmbr.legacy.general as general
-    from PySide6 import QtCore, QtWidgets
+    from PySide6 import QtCore, QtTest, QtWidgets
 
     def position():
         camera = general.get_current_view_position()
         return tuple(round(camera.get_property(axis), 3) for axis in ("x", "y", "z"))
+
+    def click_add_on(header):
+        buttons = [button for button in header.findChildren(QtWidgets.QToolButton)
+                   if button.isVisible() and button.defaultAction()
+                   and button.defaultAction().objectName() == "addPerspectiveViewport"]
+        assert len(buttons) == 1, "Expected one visible add button in the perspective header"
+        assert not buttons[0].icon().isNull()
+        QtTest.QTest.mouseClick(buttons[0], QtCore.Qt.MouseButton.LeftButton)
+        general.idle_wait_frames(2)
 
     original_layout = general.get_view_pane_layout()
     original_index = general.get_active_viewport()
@@ -21,6 +30,21 @@ def verify_docked_perspective_viewports():
         general.set_active_viewport(index)
         original_positions.append(position())
     try:
+        general.set_view_pane_layout(0)
+        general.idle_wait_frames(2)
+        primary = next(w for w in QtWidgets.QApplication.allWidgets() if w.objectName() == "PerspectiveViewport0")
+        click_add_on(primary.titleBarWidget())
+        assert general.get_viewport_count() == 2 and general.get_active_viewport() == 1
+        tabs = primary.parentWidget().parentWidget()
+        assert tabs.inherits("AzQtComponents::DockTabWidget")
+        click_add_on(tabs)
+        assert tabs.count() == 3 and general.get_active_viewport() == 2
+        tabs.currentWidget().close()
+        general.idle_wait_frames(2)
+        assert general.get_viewport_count() == 2
+        click_add_on(tabs)
+        assert general.get_viewport_count() == 3 and general.get_active_viewport() == 2
+
         for layout, count in ((1, 2), (7, 4)):
             general.set_view_pane_layout(layout)
             general.idle_wait_frames(2)

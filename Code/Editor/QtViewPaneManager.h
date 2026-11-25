@@ -143,6 +143,7 @@ class EDITOR_CORE_API QtViewPaneManager
 public:
     explicit QtViewPaneManager(QObject* parent = nullptr);
     ~QtViewPaneManager();
+    AzQtComponents::FancyDocking* GetDockManager() const;
     void SetMainWindow(AzQtComponents::DockMainWindow*, QSettings* settings, const QByteArray& lastMainWindowState);
     void RegisterPane(const QString &name, const QString &category, ViewPaneFactory, const AzToolsFramework::ViewPaneOptions& = {});
     void UnregisterPane(const QString& name);

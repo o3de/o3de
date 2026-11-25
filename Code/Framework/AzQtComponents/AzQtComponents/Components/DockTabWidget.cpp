@@ -13,6 +13,7 @@
 #include <QContextMenuEvent>
 #include <QDockWidget>
 #include <QStackedWidget>
+#include <QToolButton>
 #include <QString>
 
 
@@ -29,6 +30,23 @@ namespace AzQtComponents
         // Replace the default tab bar with our custom DockTabBar to override the styling and docking behaviors.
         // Setting the custom tab bar parents it to ourself, so it will get cleaned up whenever our DockTabWidget is destroyed.
         setCustomTabBar(m_tabBar);
+
+        connect(this, &QTabWidget::currentChanged, this, [this](int index)
+        {
+            // The right corner is reserved for overflow and floating-window controls.
+            QWidget* oldButton = cornerWidget(Qt::TopLeftCorner);
+            auto* dock = qobject_cast<StyledDockWidget*>(widget(index));
+            auto* button = dock ? dock->createTabButton(this) : nullptr;
+            setCornerWidget(button, Qt::TopLeftCorner);
+            if (button)
+            {
+                button->show();
+            }
+            if (oldButton)
+            {
+                oldButton->deleteLater();
+            }
+        });
 
         // Listen for selected tab changes
         QObject::connect(m_tabBar, &DockTabBar::tabBarClicked, this, &DockTabWidget::handleTabIndexPressed);

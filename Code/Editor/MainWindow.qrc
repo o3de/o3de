@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/MainWindow/toolbars">
+    <file alias="add-perspective.svg">MainWindow/add-perspective.svg</file>
     <file alias="ObjSelection.png">MainWindow/ObjSelection.png</file>
     <file alias="edit_mode_toolbar-00.png">MainWindow/edit_mode_toolbar-00.png</file>
     <file alias="edit_mode_toolbar-01.png">MainWindow/edit_mode_toolbar-01.png</file>

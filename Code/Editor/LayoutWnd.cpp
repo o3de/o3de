@@ -30,6 +30,8 @@
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <QApplication>
 #include <AzQtComponents/Components/DockTabWidget.h>
+#include <AzQtComponents/Components/FancyDocking.h>
+#include <QAction>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <QSettings>
 #include <algorithm>
@@ -169,6 +171,74 @@ QString CLayoutWnd::ViewportTypeToClassName(EViewportType type)
     return pane ? pane->m_name : QString();
 }
 
+QDockWidget* CLayoutWnd::CreateViewportDock()
+{
+    const int slot = aznumeric_cast<int>(m_docks.size());
+    auto* add = MainWindow::instance()->IsPreview() ? nullptr
+        : new QAction(QIcon(QStringLiteral(":/MainWindow/toolbars/add-perspective.svg")), tr("Add perspective viewport"));
+    auto* dock = new AzQtComponents::StyledDockWidget(this, add);
+    if (add)
+    {
+        add->setObjectName(QStringLiteral("addPerspectiveViewport"));
+        connect(add, &QAction::triggered, this, [this, dock] { AddPerspectiveTab(dock); });
+    }
+    auto* pane = new CLayoutViewPane(slot, dock);
+    dock->setObjectName(QStringLiteral("PerspectiveViewport%1").arg(slot));
+    dock->setWidget(pane);
+    connect(pane, &QWidget::windowTitleChanged, dock, &QWidget::setWindowTitle);
+    m_docks.append(dock);
+    connect(dock, &AzQtComponents::StyledDockWidget::aboutToClose, this, [this, dock]
+    {
+        m_closedDocks.insert(dock);
+        UpdateDockFeatures();
+    });
+    connect(dock, &QDockWidget::visibilityChanged, this, [this, pane, dock](bool visible)
+    {
+        if (!visible && dock->isHidden() && MainWindow::instance() && MainWindow::instance()->GetActiveView() == pane)
+        {
+            for (auto* remaining : m_docks)
+            {
+                if (remaining != dock && remaining->isVisible())
+                {
+                    MainWindow::instance()->SetActiveView(qobject_cast<CLayoutViewPane*>(remaining->widget()));
+                    break;
+                }
+            }
+        }
+    });
+    return dock;
+}
+
+void CLayoutWnd::AddPerspectiveTab(QDockWidget* source)
+{
+    if (GetIEditor()->IsInGameMode())
+    {
+        return;
+    }
+    if (m_maximizedSlot >= 0)
+    {
+        MaximizeViewport(m_maximizedSlot);
+    }
+    auto* tabGroup = AzQtComponents::DockTabWidget::ParentTabWidget(source);
+    QWidget* anchor = tabGroup ? tabGroup->parentWidget() : source;
+    auto* host = qobject_cast<QMainWindow*>(anchor->parentWidget());
+    if (!host)
+    {
+        return;
+    }
+
+    auto* dock = m_closedDocks.isEmpty() ? CreateViewportDock() : *m_closedDocks.begin();
+    m_closedDocks.remove(dock);
+    auto* pane = qobject_cast<CLayoutViewPane*>(dock->widget());
+    pane->SetViewClass(ViewportTypeToClassName(ET_ViewportCamera));
+    QtViewPaneManager::instance()->GetDockManager()->tabifyDockWidget(source, dock, host);
+    qobject_cast<CLayoutViewPane*>(source->widget())->SetFullscreen(false);
+    dock->show();
+    UpdateDockFeatures();
+    MainWindow::instance()->SetActiveView(pane);
+    pane->SetFocusToViewport();
+}
+
 void CLayoutWnd::CreateLayout(EViewLayout layout, bool bindViewports, EViewportType defaultView)
 {
     constexpr int paneCounts[] = { 1, 2, 2, 3, 3, 3, 3, 4, 4 };
@@ -189,31 +259,7 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bindViewports, EViewportT
     {
         if (slot == m_docks.size())
         {
-            auto* dock = new AzQtComponents::StyledDockWidget(this);
-            auto* pane = new CLayoutViewPane(slot, dock);
-            dock->setObjectName(QStringLiteral("PerspectiveViewport%1").arg(slot));
-            dock->setWidget(pane);
-            connect(pane, &QWidget::windowTitleChanged, dock, &QWidget::setWindowTitle);
-            m_docks.append(dock);
-            connect(dock, &AzQtComponents::StyledDockWidget::aboutToClose, this, [this, dock]
-            {
-                m_closedDocks.insert(dock);
-                UpdateDockFeatures();
-            });
-            connect(dock, &QDockWidget::visibilityChanged, this, [this, pane, dock](bool visible)
-            {
-                if (!visible && dock->isHidden() && MainWindow::instance() && MainWindow::instance()->GetActiveView() == pane)
-                {
-                    for (auto* remaining : m_docks)
-                    {
-                        if (remaining != dock && remaining->isVisible())
-                        {
-                            MainWindow::instance()->SetActiveView(qobject_cast<CLayoutViewPane*>(remaining->widget()));
-                            break;
-                        }
-                    }
-                }
-            });
+            CreateViewportDock();
         }
         auto* dock = m_docks[slot];
         if (auto* tabs = AzQtComponents::DockTabWidget::ParentTabWidget(dock))
@@ -287,9 +333,13 @@ void CLayoutWnd::SaveConfig()
     QStringList classes;
     for (int slot = 0; slot < m_docks.size(); ++slot)
     {
-        classes.append(Pane(slot)->GetViewClass());
+        classes.append(m_closedDocks.contains(m_docks[slot]) ? QString() : Pane(slot)->GetViewClass());
     }
-    settings.setValue("Viewports", classes.join(','));
+    while (!classes.isEmpty() && classes.last().isEmpty())
+    {
+        classes.removeLast();
+    }
+    settings.setValue("Viewports", classes);
 }
 
 bool CLayoutWnd::LoadConfig()
@@ -302,14 +352,31 @@ bool CLayoutWnd::LoadConfig()
         return false;
     }
     CreateLayout(static_cast<EViewLayout>(layout), false);
-    const auto classes = settings.value("Viewports").toString().split(',');
+    const QVariant savedPanes = settings.value("Viewports");
+    // Older configurations stored a comma-separated list of classes for a fixed preset.
+    const bool hasPaneSlots = savedPanes.metaType().id() == QMetaType::QStringList;
+    const QStringList classes = hasPaneSlots ? savedPanes.toStringList() : savedPanes.toString().split(',');
     for (int slot = 0; slot < m_docks.size(); ++slot)
     {
         auto name = classes.value(slot);
         Pane(slot)->SetViewClass(name.isEmpty() ? ViewportTypeToClassName(ET_ViewportCamera) : name);
     }
+    if (hasPaneSlots)
+    {
+        for (auto slot = m_docks.size(); slot < classes.size(); ++slot)
+        {
+            AddPerspectiveTab(m_docks.front());
+        }
+        for (int slot = 0; slot < m_docks.size(); ++slot)
+        {
+            if (classes.value(slot).isEmpty() && GetViewPaneCount() > 1)
+            {
+                m_docks[slot]->close();
+            }
+        }
+    }
     MaximizeViewport(settings.value("Maximized", 0).toInt() - 1);
-    MainWindow::instance()->SetActiveView(Pane(m_maximizedSlot >= 0 ? m_maximizedSlot : 0));
+    MainWindow::instance()->SetActiveView(GetViewPaneByIndex(0));
     return true;
 }
 
@@ -436,18 +503,6 @@ void CLayoutWnd::OnToolBarRegistrationHook()
 
 void CLayoutWnd::OnActionRegistrationHook()
 {
-    AzToolsFramework::ActionProperties layoutAction;
-    layoutAction.m_name = "Configure Layout...";
-    m_actionManagerInterface->RegisterAction(
-        EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.viewport.configureLayout", layoutAction,
-        []
-        {
-            if (auto* pane = MainWindow::instance()->GetActiveView())
-            {
-                pane->OnMenuLayoutConfig();
-            }
-        });
-
     // Dummy Action with Resize Icon
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.resizeIcon";
@@ -640,8 +695,6 @@ void CLayoutWnd::OnActionRegistrationHook()
 
 void CLayoutWnd::OnMenuBindingHook()
 {
-    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.viewport.configureLayout", 100);
-
     // Camera
     {
         m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);

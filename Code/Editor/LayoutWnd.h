@@ -82,6 +82,8 @@ private:
     bool CycleViewport(EViewportType from, EViewportType to);
     void SelectPaneForWidget(QWidget* widget);
     void UpdateDockFeatures();
+    QDockWidget* CreateViewportDock();
+    void AddPerspectiveTab(QDockWidget* source);
     CLayoutViewPane* Pane(int slot) const;
 
     QList<QDockWidget*> m_docks;
