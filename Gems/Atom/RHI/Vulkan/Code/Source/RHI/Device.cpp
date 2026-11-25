@@ -100,6 +100,7 @@ namespace AZ
             const auto& deviceFeatures = physicalDevice.GetPhysicalDeviceFeatures();
             m_enabledDeviceFeatures.samplerAnisotropy = deviceFeatures.samplerAnisotropy;
             m_enabledDeviceFeatures.textureCompressionETC2 = deviceFeatures.textureCompressionETC2;
+            m_enabledDeviceFeatures.textureCompressionASTC_LDR = deviceFeatures.textureCompressionASTC_LDR;
             m_enabledDeviceFeatures.textureCompressionBC = deviceFeatures.textureCompressionBC;
             m_enabledDeviceFeatures.fragmentStoresAndAtomics = deviceFeatures.fragmentStoresAndAtomics;
             m_enabledDeviceFeatures.dualSrcBlend = deviceFeatures.dualSrcBlend;

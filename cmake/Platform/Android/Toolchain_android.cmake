@@ -49,6 +49,13 @@ endif()
 
 set(ANDROID_PLATFORM android-${ANDROID_NATIVE_API_LEVEL})
 
+# Google Play requires 16 KB page size support for apps targeting Android 15+ (API 35+).
+# The NDK toolchain (r27+) honors this variable by linking every shared library, including third party
+# libraries built through FetchContent, with '-z max-page-size=16384'. NDK r28+ does this by default.
+if(NOT DEFINED ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES)
+    set(ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES ON)
+endif()
+
 # Make a backup of the CMAKE_FIND_ROOT_PATH since it will be altered by the NDK toolchain file and needs to be restored after the input
 set(BACKUP_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
 
@@ -81,6 +88,11 @@ if(${LY_TOOLCHAIN_NDK_PKG_MAJOR} VERSION_LESS ${MIN_NDK_VERSION})
     message(FATAL_ERROR "Unsupported NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}. Must be version ${MIN_NDK_VERSION} or above")
 else()
     message(STATUS "Detected NDK Version ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR}")
+endif()
+
+if(${LY_TOOLCHAIN_NDK_PKG_MAJOR} VERSION_LESS 27)
+    message(WARNING "NDK ${LY_TOOLCHAIN_NDK_PKG_MAJOR}.${LY_TOOLCHAIN_NDK_PKG_MINOR} does not support 16 KB page sizes. "
+                    "Google Play requires 16 KB page size support for apps targeting Android 15+ (API 35+). Use NDK r27 or newer.")
 endif()
 
 list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES LY_NDK_DIR)
