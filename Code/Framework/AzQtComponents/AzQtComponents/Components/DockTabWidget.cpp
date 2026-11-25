@@ -13,7 +13,6 @@
 #include <QContextMenuEvent>
 #include <QDockWidget>
 #include <QStackedWidget>
-#include <QToolButton>
 #include <QString>
 
 
@@ -30,23 +29,6 @@ namespace AzQtComponents
         // Replace the default tab bar with our custom DockTabBar to override the styling and docking behaviors.
         // Setting the custom tab bar parents it to ourself, so it will get cleaned up whenever our DockTabWidget is destroyed.
         setCustomTabBar(m_tabBar);
-
-        connect(this, &QTabWidget::currentChanged, this, [this](int index)
-        {
-            // The right corner is reserved for overflow and floating-window controls.
-            QWidget* oldButton = cornerWidget(Qt::TopLeftCorner);
-            auto* dock = qobject_cast<StyledDockWidget*>(widget(index));
-            auto* button = dock ? dock->createTabButton(this) : nullptr;
-            setCornerWidget(button, Qt::TopLeftCorner);
-            if (button)
-            {
-                button->show();
-            }
-            if (oldButton)
-            {
-                oldButton->deleteLater();
-            }
-        });
 
         // Listen for selected tab changes
         QObject::connect(m_tabBar, &DockTabBar::tabBarClicked, this, &DockTabWidget::handleTabIndexPressed);
@@ -77,6 +59,7 @@ namespace AzQtComponents
         page->setTitleBarWidget(new QWidget());
 
         int tab = TabWidget::addTab(page, page->windowTitle());
+        m_tabBar->bindCloseButton(tab, page);
 
         // If a tabbed dock widget is about to close, we need to remove it from
         // our tab widget ourselves, otherwise it won't know to recreate its
@@ -110,6 +93,7 @@ namespace AzQtComponents
         AzQtComponents::StyledDockWidget* dockWidget = qobject_cast<AzQtComponents::StyledDockWidget*>(widget(index));
         if (dockWidget)
         {
+            disconnect(dockWidget, &StyledDockWidget::aboutToClose, this, &DockTabWidget::handleTabAboutToClose);
             // Stop listening to title bar changed events
             if (m_titleBarChangedConnections.find(dockWidget) != m_titleBarChangedConnections.end())
             {
@@ -163,9 +147,20 @@ namespace AzQtComponents
         return true;
     }
 
-    /**
-     * Expose QTabBar API to reorder existing tabs
-     */
+    void DockTabWidget::updateTabAction()
+    {
+        for (int i = 0; i < count(); ++i)
+        {
+            auto* dock = qobject_cast<StyledDockWidget*>(widget(i));
+            if (dock && dock->tabAction())
+            {
+                m_tabBar->setActionDock(dock);
+                return;
+            }
+        }
+        m_tabBar->setActionDock(nullptr);
+    }
+
     void DockTabWidget::moveTab(int from, int to)
     {
         m_tabBar->moveTab(from, to);
@@ -208,6 +203,7 @@ namespace AzQtComponents
     void DockTabWidget::tabInserted(int index)
     {
         TabWidget::tabInserted(index);
+        updateTabAction();
         emit tabWidgetInserted(widget(index));
     }
 
@@ -217,6 +213,7 @@ namespace AzQtComponents
     void DockTabWidget::tabRemoved(int index)
     {
         TabWidget::tabRemoved(index);
+        updateTabAction();
         emit tabCountChanged(count());
     }
 

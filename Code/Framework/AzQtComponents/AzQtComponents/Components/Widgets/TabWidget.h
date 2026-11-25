@@ -175,7 +175,8 @@ namespace AzQtComponents
         void paintEvent(QPaintEvent* paintEvent) override;
         QSize minimumSizeHint() const override;
         QSize tabSizeHint(int index) const override;
-        void SetUseMaxWidth(bool use) { m_useMaxWidth = use; }
+        virtual int trailingWidth() const { return 0; }
+        bool m_showSelectedCloseButton = false;
 
 
     private:
@@ -189,7 +190,6 @@ namespace AzQtComponents
         };
 
         bool m_handleOverflow = true;
-        bool m_useMaxWidth = false;
         Overflow m_overflowing = OverflowUnchecked;
         int m_hoveredTab = -1;
         bool m_movingTab = false;

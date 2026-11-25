@@ -15,6 +15,8 @@
 #include "ViewPane.h"
 
 // Qt
+#include <QCloseEvent>
+#include <QDockWidget>
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QToolBar>
@@ -352,6 +354,17 @@ void CLayoutViewPane::ShowTitleMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CLayoutViewPane::closeEvent(QCloseEvent* event)
+{
+    // StyledDockWidget forwards every close request here before changing the dock or its tab group.
+    if (auto* dock = qobject_cast<QDockWidget*>(parentWidget()); dock && !dock->features().testFlag(QDockWidget::DockWidgetClosable))
+    {
+        event->ignore();
+        return;
+    }
+    ToolBarArea::closeEvent(event);
+}
+
 void CLayoutViewPane::mouseDoubleClickEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)

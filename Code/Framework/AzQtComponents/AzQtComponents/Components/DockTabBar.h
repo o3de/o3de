@@ -12,6 +12,7 @@
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
 class QAction;
+class QDockWidget;
 class QMenu;
 class QMouseEvent;
 class QToolButton;
@@ -20,6 +21,7 @@ class QStyleOptionTab;
 
 namespace AzQtComponents
 {
+    class StyledDockWidget;
     class DockBar;
 
     class AZ_QT_COMPONENTS_API DockTabBar
@@ -36,6 +38,8 @@ namespace AzQtComponents
         void contextMenuEvent(QContextMenuEvent* event) override;
         void finishDrag();
         QSize sizeHint() const override;
+        void setActionDock(StyledDockWidget* dock);
+        void bindCloseButton(int index, QDockWidget* dock);
 
         bool singleTabFillsWidth() const { return m_singleTabFillsWidth; }
         void setSingleTabFillsWidth(bool singleTabFillsWidth);
@@ -51,6 +55,7 @@ namespace AzQtComponents
     protected:
         void mousePressEvent(QMouseEvent* event) override;
         void tabLayoutChange() override;
+        void paintEvent(QPaintEvent* event) override;
         void tabInserted(int index) override;
 
     protected Q_SLOTS:
@@ -58,6 +63,9 @@ namespace AzQtComponents
         void closeTabGroup();
 
     private:
+        int trailingWidth() const override;
+        void positionTabAction();
+        QToolButton* m_tabActionButton = nullptr;
         QWidget* m_tabIndicatorUnderlay;
         QToolButton* m_leftButton;
         QToolButton* m_rightButton;

@@ -84,6 +84,7 @@ public:
 
 protected:
 
+    void closeEvent(QCloseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
     void focusInEvent(QFocusEvent* event) override;
 

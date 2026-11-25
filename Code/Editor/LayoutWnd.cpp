@@ -115,6 +115,11 @@ void CLayoutWnd::UpdateDockFeatures()
     const bool canClose = GetViewPaneCount() > 1;
     for (auto* dock : m_docks)
     {
+        // Qt still checks the closing dock's features after aboutToClose returns.
+        if (m_closedDocks.contains(dock))
+        {
+            continue;
+        }
         auto features = dock->features();
         features.setFlag(QDockWidget::DockWidgetClosable, canClose);
         dock->setFeatures(features);

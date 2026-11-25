@@ -35,6 +35,7 @@ namespace AzQtComponents
         void createCustomTitleBar();
         TitleBar* customTitleBar() const;
         bool isSingleFloatingChild();
+        QAction* tabAction() const { return m_tabAction; }
         //! Creates the optional action button displayed beside this dock's tab.
         QToolButton* createTabButton(QWidget* parent) const;
 
@@ -51,6 +52,7 @@ namespace AzQtComponents
 
     private:
         void onFloatingChanged(bool floating);
+        QAction* const m_tabAction;
 
     };
 } // namespace AzQtComponents

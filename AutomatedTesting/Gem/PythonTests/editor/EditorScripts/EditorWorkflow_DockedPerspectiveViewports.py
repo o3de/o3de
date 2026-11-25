@@ -14,13 +14,33 @@ def verify_docked_perspective_viewports():
         camera = general.get_current_view_position()
         return tuple(round(camera.get_property(axis), 3) for axis in ("x", "y", "z"))
 
-    def click_add_on(header):
+    def add_button(header):
         buttons = [button for button in header.findChildren(QtWidgets.QToolButton)
                    if button.isVisible() and button.defaultAction()
                    and button.defaultAction().objectName() == "addPerspectiveViewport"]
         assert len(buttons) == 1, "Expected one visible add button in the perspective header"
         assert not buttons[0].icon().isNull()
-        QtTest.QTest.mouseClick(buttons[0], QtCore.Qt.MouseButton.LeftButton)
+        button = buttons[0]
+        bar = next(b for b in header.findChildren(QtWidgets.QTabBar) if b.isVisible())
+        bounds = QtCore.QRect(button.mapToGlobal(QtCore.QPoint()), button.size())
+        last = bar.tabRect(bar.count() - 1)
+        expected_left = bar.mapToGlobal(last.topRight()).x() + 1
+        assert bounds.left() == expected_left, (bounds, expected_left, bar.geometry())
+        assert abs(bounds.center().y() - bar.mapToGlobal(last.center()).y()) <= 1
+        assert header.childAt(header.mapFromGlobal(bounds.center())) == button, "Add button is covered or clipped"
+        return button
+
+    def click_add_on(header):
+        QtTest.QTest.mouseClick(add_button(header), QtCore.Qt.MouseButton.LeftButton)
+        general.idle_wait_frames(2)
+
+    def click_close_on(header):
+        bar = next(b for b in header.findChildren(QtWidgets.QTabBar) if b.isVisible())
+        button = next(b for b in bar.findChildren(QtWidgets.QToolButton, "closeButton")
+                      if b.isVisible() and b.isEnabled() and bar.tabAt(b.mapTo(bar, b.rect().center())) == bar.currentIndex())
+        center = button.mapToGlobal(button.rect().center())
+        assert header.childAt(header.mapFromGlobal(center)) == button
+        QtTest.QTest.mouseClick(button, QtCore.Qt.MouseButton.LeftButton)
         general.idle_wait_frames(2)
 
     original_layout = general.get_view_pane_layout()
@@ -37,13 +57,66 @@ def verify_docked_perspective_viewports():
         assert general.get_viewport_count() == 2 and general.get_active_viewport() == 1
         tabs = primary.parentWidget().parentWidget()
         assert tabs.inherits("AzQtComponents::DockTabWidget")
+        # Adding or removing a tool tab must move the group's add button even when a tool is selected.
+        tool_tab = QtWidgets.QDockWidget()
+        tool_index = tabs.addTab(tool_tab, "Tool")
+        tabs.setCurrentIndex(tool_index)
+        general.idle_wait_frames(2)
+        add_button(tabs)
+        tabs.removeTab(tool_index)
+        tool_tab.deleteLater()
+        general.idle_wait_frames(2)
         click_add_on(tabs)
         assert tabs.count() == 3 and general.get_active_viewport() == 2
-        tabs.currentWidget().close()
+        add_button(tabs)
+        tabs.setCurrentIndex(0)
         general.idle_wait_frames(2)
+        add_button(tabs)
+        tabs.setCurrentIndex(2)
+        general.idle_wait_frames(2)
+        click_close_on(tabs)
         assert general.get_viewport_count() == 2
         click_add_on(tabs)
         assert general.get_viewport_count() == 3 and general.get_active_viewport() == 2
+
+        original_max_width = tabs.maximumWidth()
+        tabs.setMaximumWidth(240)
+        general.idle_wait_frames(3)
+        add_button(tabs)
+        tabs.setCurrentIndex(0)
+        general.idle_wait_frames(2)
+        add_button(tabs)
+        tabs.setMaximumWidth(original_max_width)
+        tabs.tabBar().moveTab(0, 1)
+        tabs.setCurrentWidget(primary)
+        general.idle_wait_frames(2)
+        add_button(tabs)
+        for remaining in (2, 1):
+            click_close_on(tabs)
+            assert tabs.count() == remaining
+            add_button(tabs)
+        assert not tabs.currentWidget().close() and not tabs.close()
+        assert tabs.count() == 1 and general.get_viewport_count() == 1
+
+        general.set_view_pane_layout(1)
+        general.idle_wait_frames(2)
+        secondary = next(w for w in QtWidgets.QApplication.allWidgets() if w.objectName() == "PerspectiveViewport1")
+        click_close_on(secondary.titleBarWidget())
+        assert general.get_viewport_count() == 1 and primary.isVisible() and not secondary.isVisible(), (
+            general.get_viewport_count(), primary.isVisible(), secondary.isVisible(), secondary.features())
+        assert not primary.close() and primary.isVisible()
+        assert not any(b.isEnabled() and b.isVisible() for b in primary.titleBarWidget().findChildren(
+            QtWidgets.QToolButton, "closeButton"))
+        assert QtCore.QMetaObject.invokeMethod(primary, "undock", QtCore.Qt.ConnectionType.DirectConnection)
+        general.idle_wait_frames(2)
+        assert primary.window() != secondary.window()
+        assert not primary.window().close() and primary.isVisible()
+        click_add_on(primary.titleBarWidget())
+        assert general.get_viewport_count() == 2
+        floating_tabs = primary.parentWidget().parentWidget()
+        add_button(floating_tabs)
+        click_close_on(floating_tabs)
+        assert not floating_tabs.window().close() and general.get_viewport_count() == 1
 
         for layout, count in ((1, 2), (7, 4)):
             general.set_view_pane_layout(layout)

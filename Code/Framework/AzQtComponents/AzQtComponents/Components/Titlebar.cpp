@@ -135,9 +135,10 @@ namespace AzQtComponents
 
         tabBarlayout->addWidget(m_tabBar);
         auto* dock = qobject_cast<StyledDockWidget*>(parent);
-        if (auto* button = dock ? dock->createTabButton(tabBarContainer) : nullptr)
+        if (dock)
         {
-            tabBarlayout->addWidget(button);
+            m_tabBar->bindCloseButton(0, dock);
+            m_tabBar->setActionDock(dock->tabAction() ? dock : nullptr);
         }
         tabBarlayout->addStretch();
 
@@ -727,6 +728,7 @@ namespace AzQtComponents
         if (dockWidgetParent)
         {
             dockMainWindow = qobject_cast<DockMainWindow*>(dockWidgetParent->parentWidget());
+            m_closeTabMenuAction->setEnabled(dockWidgetParent->features().testFlag(QDockWidget::DockWidgetClosable));
         }
         m_undockMenuAction->setEnabled(dockMainWindow && dockWidgetParent && !dockWidgetParent->isSingleFloatingChild());
 

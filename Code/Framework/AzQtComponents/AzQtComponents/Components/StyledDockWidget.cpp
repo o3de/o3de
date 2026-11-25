@@ -33,8 +33,6 @@ namespace AzQtComponents
         bool FloatingWindowsSupportMinimize();
     }
 
-    static constexpr char TabActionProperty[] = "dockTabAction";
-
     StyledDockWidget::StyledDockWidget(QWidget* parent)
         : StyledDockWidget(parent, nullptr)
     {
@@ -48,11 +46,11 @@ namespace AzQtComponents
 
     StyledDockWidget::StyledDockWidget(QWidget* parent, QAction* tabAction)
         : QDockWidget(parent)
+        , m_tabAction(tabAction)
     {
         if (tabAction)
         {
             tabAction->setParent(this);
-            setProperty(TabActionProperty, QVariant::fromValue(tabAction));
         }
         connect(this, &QDockWidget::topLevelChanged, this, &StyledDockWidget::onFloatingChanged);
         createCustomTitleBar();
@@ -60,8 +58,7 @@ namespace AzQtComponents
 
     QToolButton* StyledDockWidget::createTabButton(QWidget* parent) const
     {
-        auto* tabAction = property(TabActionProperty).value<QAction*>();
-        if (!tabAction)
+        if (!m_tabAction)
         {
             return nullptr;
         }
@@ -70,8 +67,8 @@ namespace AzQtComponents
         button->setAutoRaise(true);
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
         button->setIconSize(QSize(16, 16));
-        button->setAccessibleName(tabAction->text());
-        button->setDefaultAction(tabAction);
+        button->setAccessibleName(m_tabAction->text());
+        button->setDefaultAction(m_tabAction);
         return button;
     }
 
