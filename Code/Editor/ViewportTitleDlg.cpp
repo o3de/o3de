@@ -108,44 +108,6 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
-void CViewportTitleDlg::SetNoViewportInfo()
-{
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
-}
-
-void CViewportTitleDlg::SetNormalViewportInfo()
-{
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo);
-}
-
-void CViewportTitleDlg::SetFullViewportInfo()
-{
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::FullInfo);
-}
-
-void CViewportTitleDlg::SetCompactViewportInfo()
-{
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnToggleDisplayInfo()
-{
-    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-        state, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
-    state = aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
-        (aznumeric_cast<int>(state) + 1) % aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
-    // SetDisplayState will fire OnViewportInfoDisplayStateChanged and notify us, no need to call UpdateDisplayInfo.
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, state);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnMenuFOVCustom()
 {
     bool ok;

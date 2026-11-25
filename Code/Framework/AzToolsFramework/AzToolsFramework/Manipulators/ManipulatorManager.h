@@ -84,7 +84,8 @@ namespace AzToolsFramework
         void DeleteManipulatorBound(Picking::RegisteredBoundId boundId) override;
         void SetBoundDirty(Picking::RegisteredBoundId boundId) override;
         Picking::RegisteredBoundId UpdateBound(
-            ManipulatorId manipulatorId, Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData) override;
+            ManipulatorId manipulatorId, Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData,
+            AzFramework::ViewportId viewportId) override;
         bool Interacting() const override
         {
             return m_activeManipulator != nullptr;
@@ -93,15 +94,15 @@ namespace AzToolsFramework
         void DrawManipulators(
             AzFramework::DebugDisplayRequests& debugDisplay,
             const AzFramework::CameraState& cameraState,
-            const ViewportInteraction::MouseInteraction& mouseInteraction);
+            ViewportInteraction::MouseInteraction mouseInteraction,
+            AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
     protected:
-        //! @param rayOrigin The origin of the ray to test intersection with.
-        //! @param rayDirection The direction of the ray to test intersection with.
+        //! Intersects the input ray with bounds registered for its viewport.
         //! @param[out] rayIntersectionDistance The result intersecting point equals "rayOrigin + rayIntersectionDistance * rayDirection".
         //! @return A pointer to a manipulator that the ray intersects. Null pointer if no intersection is detected.
         AZStd::shared_ptr<BaseManipulator> PerformRaycast(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance);
+            const ViewportInteraction::MouseInteraction& interaction, float& rayIntersectionDistance);
 
         // EditorEntityInfoNotifications ...
         void OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible) override;
@@ -112,13 +113,13 @@ namespace AzToolsFramework
         using PickedManipulatorId = AZStd::tuple<ManipulatorId, float>;
 
         //! Return the picked manipulator and intersection distance if a manipulator was intersected.
-        AZStd::optional<PickedManipulator> PickManipulator(const ViewportInteraction::MousePick& mousePick);
+        AZStd::optional<PickedManipulator> PickManipulator(const ViewportInteraction::MouseInteraction& interaction);
         //! Wrapper for PickManipulator to return the ManipulatorId directly.
-        PickedManipulatorId PickManipulatorId(const ViewportInteraction::MousePick& mousePick);
+        PickedManipulatorId PickManipulatorId(const ViewportInteraction::MouseInteraction& interaction);
 
         //! Called once per frame after all manipulators have been drawn (and their
         //! bounds updated if required).
-        void RefreshMouseOverState(const ViewportInteraction::MousePick& mousePick);
+        void RefreshMouseOverState(const ViewportInteraction::MouseInteraction& interaction);
 
         ManipulatorManagerId m_manipulatorManagerId; //!< This manipulator manager's id.
         ManipulatorId m_nextManipulatorIdToGenerate; //!< Id to use for the next manipulator that is registered with this manager.
@@ -126,7 +127,12 @@ namespace AzToolsFramework
         //! Mapping from a manipulatorId to the corresponding manipulator.
         AZStd::unordered_map<ManipulatorId, AZStd::shared_ptr<BaseManipulator>> m_manipulatorIdToPtrMap;
         //! Mapping from a boundId to the corresponding manipulatorId.
-        AZStd::unordered_map<Picking::RegisteredBoundId, ManipulatorId> m_boundIdToManipulatorIdMap;
+        struct BoundOwner
+        {
+            ManipulatorId m_manipulatorId;
+            AzFramework::ViewportId m_viewportId;
+        };
+        AZStd::unordered_map<Picking::RegisteredBoundId, BoundOwner> m_boundOwners;
 
         AZStd::shared_ptr<BaseManipulator> m_activeManipulator; //!< The manipulator we are currently interacting with.
         Picking::ManipulatorBoundManager m_boundManager; //!< All active manipulator bounds that could be interacted with.

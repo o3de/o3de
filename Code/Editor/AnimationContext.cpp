@@ -64,7 +64,7 @@ protected:
             return false;
         }
 
-        CViewport* pRendView = GetIEditor()->GetViewManager()->GetViewport(ET_ViewportCamera);
+        CViewport* pRendView = GetIEditor()->GetViewManager()->GetGameViewport();
         if (pRendView)
         {
             return pRendView->IsSequenceCamera();
@@ -194,7 +194,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
     {
         if (GetIEditor() && GetIEditor()->GetViewManager())
         {
-            CViewport* pViewport = GetIEditor()->GetViewManager()->GetViewport(ET_ViewportCamera);
+            CViewport* pViewport = GetIEditor()->GetViewManager()->GetGameViewport();
             if (pViewport)
             {
                 pViewport->AddPostRenderer(new CAnimationContextPostRender(this));

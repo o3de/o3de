@@ -54,7 +54,6 @@ namespace AtomToolsFramework
 
 namespace AzToolsFramework
 {
-    class ManipulatorManager;
 }
 
 //! Viewport settings for the EditorViewportWidget
@@ -104,12 +103,6 @@ public:
     {
         return QtViewport::GetClassID<EditorViewportWidget>();
     }
-
-    static EditorViewportWidget* GetPrimaryViewport();
-
-    // Used by ViewPan in some circumstances
-    void ConnectViewportInteractionRequestBus();
-    void DisconnectViewportInteractionRequestBus();
 
     // QtViewport/IDisplayViewport/CViewport
     // These methods are made public in the derived class because they are called with an object whose static type is known to be this class
@@ -164,6 +157,7 @@ private:
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
     void SetViewportId(int id) override;
+    void SetSelected(bool selected) override;
     QPoint WorldToView(const Vec3& wp) const override;
     Vec3 WorldToView3D(const Vec3& wp, int nFlags = 0) const override;
     Vec3 ViewToWorld(
@@ -184,12 +178,12 @@ private:
     void SetViewTM(const AZ::Matrix3x4& tm) override;
     const AZ::Matrix3x4& GetViewTM() const override;
     void Update() override;
-    void UpdateContent(int flags) override;
 
     // SceneNotificationBus overrides ...
     void OnBeginPrepareRender() override;
 
     // Camera::CameraNotificationBus overrides ...
+    void OnCameraRemoved(const AZ::EntityId& cameraId) override;
     void OnActiveViewChanged(const AZ::EntityId&) override;
 
     // IEditorEventListener overrides ...
@@ -262,12 +256,11 @@ private:
     // passed to BuildMousePick.
     AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
-    bool CheckRespondToInput() const;
 
     void BuildDragDropContext(
         AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
-    void SetAsActiveViewport();
+    void PopCameraView();
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
@@ -275,6 +268,7 @@ private:
     void RestoreViewportAfterGameMode();
 
     void UpdateScene();
+    void UpdateRenderPipeline();
 
     void SetDefaultCamera();
     void SetSelectedCamera();
@@ -298,8 +292,6 @@ private:
     // Members ...
     friend class AZ::ViewportHelpers::EditorEntityNotifications;
 
-    // Singleton for the primary viewport
-    static EditorViewportWidget* m_pPrimaryViewport;
 
     // The simulation (play-game in editor) state
     PlayInEditorState m_playInEditorState = PlayInEditorState::Editor;
@@ -319,8 +311,6 @@ private:
     // Disables rendering during some periods of time, e.g. undo/redo, resize events
     uint m_disableRenderingCount = 0;
 
-    // Determines if the viewport needs updating (false when out of focus for example)
-    bool m_bUpdateViewport = false;
 
     // Avoid re-entering PostCameraSet->OnActiveViewChanged->PostCameraSet
     bool m_sendingOnActiveChanged = false;
@@ -331,8 +321,6 @@ private:
     // The name to use for the default editor camera
     const QString m_defaultViewName;
 
-    // Reentrancy guard for on paint events
-    bool m_isOnPaint = false;
 
     // Guard against calling UpdateVisibility multiple times a frame
     bool m_hasUpdatedVisibility = false;
@@ -360,9 +348,6 @@ private:
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
     // Unclear if it's still necessary.
     QSet<int> m_keyDown;
-
-    // This widget holds a reference to the manipulator manage because its responsible for drawing manipulators
-    AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 
     AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
 

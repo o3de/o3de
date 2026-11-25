@@ -11,6 +11,9 @@
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
+#include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Picking/ContextBoundAPI.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <Editor/ViewportManipulatorController.h>
@@ -125,6 +128,44 @@ namespace UnitTest
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
     };
+
+    TEST_F(ViewportManipulatorControllerFixture, PickingUsesTheBoundsDrawnForTheInputViewport)
+    {
+        using namespace AzToolsFramework;
+        class PickingManager : public ManipulatorManager
+        {
+        public:
+            using ManipulatorManager::ManipulatorManager;
+            using ManipulatorManager::PerformRaycast;
+        };
+
+        const ManipulatorManagerId managerId(AZ_CRC_CE("ViewportBoundsTest"));
+        PickingManager manager(managerId);
+        auto manipulator = LinearManipulator::MakeShared(AZ::Transform::CreateIdentity());
+        manipulator->Register(managerId);
+
+        Picking::BoundShapeSphere sphere;
+        sphere.m_radius = 1.0f;
+        sphere.m_center = AZ::Vector3(0.0f, 5.0f, 0.0f);
+        const auto first = manager.UpdateBound(manipulator->GetManipulatorId(), Picking::InvalidBoundId, sphere, 0);
+        sphere.m_center.SetX(10.0f);
+        const auto second = manager.UpdateBound(manipulator->GetManipulatorId(), Picking::InvalidBoundId, sphere, 1);
+
+        ViewportInteraction::MouseInteraction input;
+        input.m_mousePick.m_rayOrigin = AZ::Vector3::CreateZero();
+        input.m_mousePick.m_rayDirection = AZ::Vector3::CreateAxisY();
+        float distance = 0.0f;
+        input.m_interactionId.m_viewportId = 0;
+        EXPECT_EQ(manager.PerformRaycast(input, distance), manipulator);
+        input.m_interactionId.m_viewportId = 1;
+        EXPECT_EQ(manager.PerformRaycast(input, distance), nullptr);
+        input.m_mousePick.m_rayOrigin.SetX(10.0f);
+        EXPECT_EQ(manager.PerformRaycast(input, distance), manipulator);
+
+        manager.DeleteManipulatorBound(first);
+        manager.DeleteManipulatorBound(second);
+        manipulator->Unregister();
+    }
 
     TEST_F(ViewportManipulatorControllerFixture, AnEventIsNotPropagatedToTheViewportWhenAManipulatorHandlesItFirst)
     {

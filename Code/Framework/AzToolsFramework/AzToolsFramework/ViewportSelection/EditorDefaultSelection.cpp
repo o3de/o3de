@@ -352,7 +352,7 @@ namespace AzToolsFramework
         // draw the manipulators
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
         debugDisplay.DepthTestOff();
-        m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
+        m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction, viewportInfo.m_viewportId);
         debugDisplay.DepthTestOn();
 
         // Drawn after the manipulators so the marker is not hidden behind the gizmo, which sits

@@ -7,633 +7,341 @@
  */
 
 
-#include "EditorDefs.h"
+// Description : implementation file
 
+
+#include "EditorDefs.h"
 #include "LayoutWnd.h"
 
-// Qt
-#include <QMessageBox>
-#include <QToolBar>
-#include <QComboBox>
-#include <QLabel>
-#include <QLineEdit>
-#include <QTextDocumentFragment>
-
-#include <AzCore/Interface/Interface.h>
-#include <AzQtComponents/Components/Style.h>    // for AzQtComponents::Style
-
-// Editor
+#include "CustomAspectRatioDlg.h"
+#include "CustomResolutionDlg.h"
 #include "MainWindow.h"
-#include "ViewPane.h"
 #include "QtViewPaneManager.h"
-#include "ViewManager.h"
+#include "ViewPane.h"
 
-#include <AzQtComponents/Components/Style.h>
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <QApplication>
+#include <AzQtComponents/Components/DockTabWidget.h>
+#include <AzQtComponents/Components/StyledDockWidget.h>
+#include <QSettings>
+#include <algorithm>
 
-class CLayoutSplitterHandle
-    : public QSplitterHandle
+static const std::pair<int, int> ViewportRatios[] = { { 16, 9 }, { 16, 10 }, { 4, 3 }, { 5, 4 } };
+static const size_t ViewportRatiosCount = sizeof(ViewportRatios) / sizeof(ViewportRatios[0]);
+static const std::pair<int, int> ViewportResolutions[] =
+    { { 1280, 720 }, { 1920, 1080 }, { 2560, 1440 }, { 2048, 858 }, { 1998, 1080 }, { 3480, 2160 } };
+static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
+static constexpr int SortKeySpacing = 100;
+
+CLayoutWnd::CLayoutWnd(QWidget* parent)
+    : AzQtComponents::DockMainWindow(parent, Qt::Widget)
+    , m_actionManagerInterface(AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+    , m_menuManagerInterface(AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+    , m_toolBarManagerInterface(AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get())
 {
-public:
-    CLayoutSplitterHandle(Qt::Orientation orientation, CLayoutSplitter* parent)
-        : QSplitterHandle(orientation, parent)
-    {
-    }
-
-protected:
-    void paintEvent(QPaintEvent*) override
-    {
-        // draw nothing for flat look
-    }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CLayoutSplitter
-//////////////////////////////////////////////////////////////////////////
-CLayoutSplitter::CLayoutSplitter(QWidget* parent)
-    : QSplitter(parent)
-{
+    setDockOptions(GroupedDragging | AllowNestedDocks | AllowTabbedDocks);
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget*, QWidget* widget) { SelectPaneForWidget(widget); });
+    qApp->installEventFilter(this);
 }
 
-CLayoutSplitter::~CLayoutSplitter()
-{
-}
-
-QSplitterHandle* CLayoutSplitter::createHandle()
-{
-    return new CLayoutSplitterHandle(orientation(), this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutSplitter::resizeEvent(QResizeEvent* event)
-{
-    QSplitter::resizeEvent(event);
-
-    // only the top level splitter should trigger resetting the layout when being resized
-    if (qobject_cast<CLayoutSplitter*>(parentWidget()) == nullptr)
-    {
-        for (CLayoutSplitter* s : findChildren<CLayoutSplitter*>())
-        {
-            s->setSizes(QList<int>::fromVector(QVector<int>(s->count(), (s->orientation() == Qt::Horizontal ? s->width() : s->height()) / s->count())));
-        }
-        setSizes(QList<int>::fromVector(QVector<int>(count(), (orientation() == Qt::Horizontal ? width() : height()) / count())));
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutSplitter::CreateLayoutView(int row, int col, int id)
-{
-    assert(row >= 0 && row < 3);
-    assert(col >= 0 && col < 3);
-    CLayoutViewPane* viewPane = new CLayoutViewPane(this);
-    viewPane->setWindowFlags(Qt::Widget);
-    insertWidget(orientation() == Qt::Horizontal ? col : row, viewPane);
-    viewPane->SetId(id);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CLayoutWnd
-//////////////////////////////////////////////////////////////////////////
-CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
-    : AzQtComponents::ToolBarArea(parent)
-    , m_settings(settings)
-{
-    m_bMaximized = false;
-    m_maximizedView = nullptr;
-    m_layout = (EViewLayout) - 1;
-
-    m_maximizedViewId = 0;
-
-    connect(qApp, &QApplication::focusChanged, this, &CLayoutWnd::OnFocusChanged);
-
-    setContextMenuPolicy(Qt::NoContextMenu);
-}
-
-//////////////////////////////////////////////////////////////////////////
 CLayoutWnd::~CLayoutWnd()
 {
-    delete m_splitWnd;
-    delete m_splitWnd2;
-    delete m_splitWnd3;
-
-    OnDestroy();
+    qApp->removeEventFilter(this);
+    disconnect(qApp, nullptr, this, nullptr);
+    while (!m_docks.isEmpty())
+    {
+        delete m_docks.takeLast();
+    }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::UnbindViewports()
+bool CLayoutWnd::eventFilter(QObject* object, QEvent* event)
 {
-    // First unbind all views.
-    for (int i = 0; i < MAX_VIEWPORTS; i++)
+    if (event->type() == QEvent::MouseButtonPress)
     {
-        CLayoutViewPane* pViewPane = GetViewPane(i);
-        if (pViewPane)
+        SelectPaneForWidget(qobject_cast<QWidget*>(object));
+    }
+    return QMainWindow::eventFilter(object, event);
+}
+
+void CLayoutWnd::SelectPaneForWidget(QWidget* widget)
+{
+    while (widget && MainWindow::instance())
+    {
+        if (auto* pane = qobject_cast<CLayoutViewPane*>(widget))
         {
-            pViewPane->ReleaseViewport();
+            MainWindow::instance()->SetActiveView(pane);
+            return;
+        }
+        widget = widget->parentWidget();
+    }
+}
+
+CLayoutViewPane* CLayoutWnd::Pane(int slot) const
+{
+    return qobject_cast<CLayoutViewPane*>(m_docks.at(slot)->widget());
+}
+
+CLayoutViewPane* CLayoutWnd::GetViewPaneByIndex(unsigned int index) const
+{
+    for (int slot = 0; slot < m_docks.size(); ++slot)
+    {
+        if (!m_closedDocks.contains(m_docks[slot]) && (m_maximizedSlot < 0 || m_maximizedSlot == slot) && index-- == 0)
+        {
+            return Pane(slot);
         }
     }
+    return nullptr;
+}
 
-    if (m_maximizedView)
+unsigned int CLayoutWnd::GetViewPaneCount() const
+{
+    return m_maximizedSlot >= 0 ? 1 : aznumeric_cast<unsigned int>(m_docks.size() - m_closedDocks.size());
+}
+
+void CLayoutWnd::UpdateDockFeatures()
+{
+    const bool canClose = GetViewPaneCount() > 1;
+    for (auto* dock : m_docks)
     {
-        m_maximizedView->ReleaseViewport();
+        auto features = dock->features();
+        features.setFlag(QDockWidget::DockWidgetClosable, canClose);
+        dock->setFeatures(features);
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::BindViewports()
+void CLayoutWnd::MaximizeViewport(int slot)
 {
-    // First unbind all views.
-    UnbindViewports();
-
-    for (int i = 0; i < MAX_VIEWPORTS; i++)
-    {
-        CLayoutViewPane* pViewPane = GetViewPane(i);
-        if (pViewPane)
-        {
-            BindViewport(pViewPane, m_viewType[pViewPane->GetId()]);
-        }
-    }
-
-    FocusFirstLayoutViewPane(m_splitWnd);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport)
-{
-    assert(vp);
-    if (!pViewport)
-    {
-        vp->SetViewClass(viewClassName);
-    }
-    else
-    {
-        vp->AttachViewport(pViewport);
-    }
-    vp->setVisible(true);
-    m_viewType[vp->GetId()] = viewClassName;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::MaximizeViewport(int paneId)
-{
-    // Ignore with full screen layout.
-    if (m_layout == ET_Layout0 && m_bMaximized)
+    if (slot < 0 || slot >= m_docks.size() || m_docks.size() == 1)
     {
         return;
     }
-
-    QString viewClass = m_viewType[paneId];
-
-    if (!m_bMaximized)
+    auto* dock = m_docks[slot];
+    if (dock->isFloating())
     {
-        CLayoutViewPane* pViewPane = GetViewPane(paneId);
-        m_maximizedViewId = paneId;
-        m_bMaximized = true;
-
-        if (m_maximizedView)
+        if (dock->isMaximized())
         {
-            if (m_splitWnd)
-            {
-                m_splitWnd->setVisible(false);
-            }
-
-            if (pViewPane)
-            {
-                MoveViewport(pViewPane, m_maximizedView, viewClass);
-            }
-            else
-            {
-                BindViewport(m_maximizedView, viewClass);
-            }
-            m_maximizedView->setFocus();
-
-            SetMainWidget(m_maximizedView);
-            m_maximizedView->setVisible(true);
-
-            MainWindow::instance()->SetActiveView(m_maximizedView);
+            dock->showNormal();
         }
+        else
+        {
+            dock->showMaximized();
+        }
+        return;
+    }
+    if (m_maximizedSlot >= 0)
+    {
+        m_maximizedSlot = -1;
+        for (auto* hidden : m_hiddenByMaximize)
+        {
+            hidden->show();
+        }
+        m_hiddenByMaximize.clear();
     }
     else
     {
-        CLayoutViewPane* pViewPane = GetViewPane(m_maximizedViewId);
-        m_bMaximized = false;
-        m_maximizedViewId = 0;
-
-        if (pViewPane && m_maximizedView)
+        m_maximizedSlot = slot;
+        for (auto* other : m_docks)
         {
-            MoveViewport(m_maximizedView, pViewPane, viewClass);
-        }
-
-        if (m_maximizedView)
-        {
-            m_maximizedView->setVisible(false);
-        }
-
-        if (m_splitWnd)
-        {
-            m_splitWnd->setVisible(true);
-            SetMainWidget(m_splitWnd);
-            FocusFirstLayoutViewPane(m_splitWnd);
+            if (other != dock && other->isVisible())
+            {
+                m_hiddenByMaximize.push_back(other);
+                other->hide();
+            }
         }
     }
+    Pane(slot)->SetFullscreen(m_maximizedSlot >= 0);
+    UpdateDockFeatures();
+    Pane(slot)->SetFocusToViewport();
 }
 
-QString CLayoutWnd::ViewportTypeToClassName(EViewportType viewType)
+QString CLayoutWnd::ViewportTypeToClassName(EViewportType type)
 {
-    QtViewPane* pane = QtViewPaneManager::instance()->GetViewportPane(viewType);
+    auto* pane = QtViewPaneManager::instance()->GetViewportPane(type);
     return pane ? pane->m_name : QString();
 }
 
-void CLayoutWnd::CreateLayoutView(CLayoutSplitter* wndSplitter, int row, int col, int id, EViewportType viewType)
+void CLayoutWnd::CreateLayout(EViewLayout layout, bool bindViewports, EViewportType defaultView)
 {
-    QString viewClassName = ViewportTypeToClassName(viewType);
-    wndSplitter->CreateLayoutView(row, col, id);
-    m_viewType[id] = viewClassName;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewportType defaultView)
-{
-    UnbindViewports();
-
+    constexpr int paneCounts[] = { 1, 2, 2, 3, 3, 3, 3, 4, 4 };
+    if (layout < ET_Layout0 || layout > ET_Layout8)
+    {
+        return;
+    }
     m_layout = layout;
-    m_bMaximized = false;
-
-    if (m_splitWnd)
+    m_hiddenByMaximize.clear();
+    m_closedDocks.clear();
+    m_maximizedSlot = -1;
+    const int count = paneCounts[layout];
+    while (m_docks.size() > count)
     {
-        m_splitWnd->setVisible(false);
-        delete m_splitWnd;
+        delete m_docks.takeLast();
     }
-
-    delete m_splitWnd2;
-    delete m_splitWnd3;
-
-    if (m_maximizedView)
+    for (int slot = 0; slot < count; ++slot)
     {
-        m_maximizedView->setVisible(false);
-    }
-
-    QRect rcView = rect();
-
-    // Ensure we delete our old view immediately so it can relinquish its backing ViewportContext
-    if (m_maximizedView)
-    {
-        delete m_maximizedView;
-    }
-
-    m_maximizedView = new CLayoutViewPane(this);
-    m_maximizedView->SetId(0);
-    m_maximizedView->setGeometry(rcView);
-    m_maximizedView->setVisible(false);
-    m_maximizedView->SetFullscren(true);
-
-    if (!CViewManager::IsMultiViewportEnabled())
-    {
-        m_viewType[0] = ViewportTypeToClassName(defaultView);
-        if (bBindViewports)
+        if (slot == m_docks.size())
         {
-            MaximizeViewport(0);
+            auto* dock = new AzQtComponents::StyledDockWidget(this);
+            auto* pane = new CLayoutViewPane(slot, dock);
+            dock->setObjectName(QStringLiteral("PerspectiveViewport%1").arg(slot));
+            dock->setWidget(pane);
+            connect(pane, &QWidget::windowTitleChanged, dock, &QWidget::setWindowTitle);
+            m_docks.append(dock);
+            connect(dock, &AzQtComponents::StyledDockWidget::aboutToClose, this, [this, dock]
+            {
+                m_closedDocks.insert(dock);
+                UpdateDockFeatures();
+            });
+            connect(dock, &QDockWidget::visibilityChanged, this, [this, pane, dock](bool visible)
+            {
+                if (!visible && dock->isHidden() && MainWindow::instance() && MainWindow::instance()->GetActiveView() == pane)
+                {
+                    for (auto* remaining : m_docks)
+                    {
+                        if (remaining != dock && remaining->isVisible())
+                        {
+                            MainWindow::instance()->SetActiveView(qobject_cast<CLayoutViewPane*>(remaining->widget()));
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+        auto* dock = m_docks[slot];
+        if (auto* tabs = AzQtComponents::DockTabWidget::ParentTabWidget(dock))
+        {
+            tabs->removeTab(dock);
+        }
+        if (auto* host = qobject_cast<QMainWindow*>(dock->parentWidget()))
+        {
+            host->removeDockWidget(dock);
+        }
+        dock->setParent(this);
+        dock->setFloating(false);
+        Pane(slot)->SetFullscreen(count == 1);
+        if (bindViewports)
+        {
+            Pane(slot)->SetViewClass(ViewportTypeToClassName(slot == 0 ? defaultView : ET_ViewportCamera));
         }
     }
-    else
+    // Each preset starts with the left or upper pane. Split that dock again for nested rows and columns.
+    auto split = [this](int first, int second, Qt::Orientation orientation)
     {
-        switch (layout)
+        splitDockWidget(m_docks[first], m_docks[second], orientation);
+        m_docks[second]->show();
+        const int extent = orientation == Qt::Horizontal ? width() : height();
+        const int half = std::max(1, extent / 2);
+        resizeDocks({ m_docks[first], m_docks[second] }, { half, half }, orientation);
+    };
+    const bool reversed = layout == ET_Layout1 || layout == ET_Layout2 || layout == ET_Layout3 ||
+        layout == ET_Layout5 || layout == ET_Layout7 || layout == ET_Layout8;
+    const int first = reversed ? 1 : 0;
+    addDockWidget(Qt::TopDockWidgetArea, m_docks[first]);
+    m_docks[first]->show();
+    if (count >= 2)
+    {
+        const bool vertical = layout == ET_Layout2 || layout == ET_Layout5 || layout == ET_Layout6 || layout == ET_Layout8;
+        split(first, layout == ET_Layout7 ? 2 : 1 - first, vertical ? Qt::Vertical : Qt::Horizontal);
+        if (count >= 3)
         {
-        case ET_Layout0:
-            m_viewType[0] = ViewportTypeToClassName(defaultView);
-            if (bBindViewports)
+            if (layout == ET_Layout7)
             {
-                MaximizeViewport(0);
+                split(1, 3, Qt::Vertical);
+                split(2, 0, Qt::Vertical);
             }
-            break;
-
-        case ET_Layout1:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Horizontal);
-            CreateLayoutView(m_splitWnd, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd, 0, 1, 1, defaultView);
-            break;
-        case ET_Layout2:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Vertical);
-            CreateLayoutView(m_splitWnd, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd, 1, 0, 1, defaultView);
-            break;
-
-        case ET_Layout3:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Horizontal);
-            CreateLayoutView(m_splitWnd, 0, 1, 1, defaultView);
-
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd2->setOrientation(Qt::Vertical);
-            m_splitWnd->insertWidget(0, m_splitWnd2);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 1, 0, 3, ET_ViewportCamera);
-            break;
-
-        case ET_Layout4:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Horizontal);
-            CreateLayoutView(m_splitWnd, 0, 0, 1, defaultView);
-
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd2->setOrientation(Qt::Vertical);
-            m_splitWnd->insertWidget(1, m_splitWnd2);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 1, 0, 3, ET_ViewportCamera);
-            break;
-
-        case ET_Layout5:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Vertical);
-            CreateLayoutView(m_splitWnd, 1, 0, 1, defaultView);
-
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd2->setOrientation(Qt::Horizontal);
-            m_splitWnd->insertWidget(0, m_splitWnd2);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 0, 1, 3, ET_ViewportCamera);
-            break;
-
-        case ET_Layout6:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Vertical);
-            CreateLayoutView(m_splitWnd, 0, 0, 1, defaultView);
-
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd->insertWidget(1, m_splitWnd2);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 0, 1, 3, ET_ViewportCamera);
-            break;
-
-        case ET_Layout7:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Horizontal);
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd2->setOrientation(Qt::Vertical);
-            m_splitWnd3 = new CLayoutSplitter;
-            m_splitWnd3->setOrientation(Qt::Vertical);
-            m_splitWnd->addWidget(m_splitWnd2);
-            m_splitWnd->addWidget(m_splitWnd3);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd3, 0, 1, 3, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 1, 0, 4, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd3, 1, 1, 1, defaultView);
-            connect(m_splitWnd2, &QSplitter::splitterMoved, m_splitWnd3, &CLayoutSplitter::otherSplitterMoved);
-            connect(m_splitWnd3, &QSplitter::splitterMoved, m_splitWnd2, &CLayoutSplitter::otherSplitterMoved);
-            break;
-
-        case ET_Layout8:
-            m_splitWnd = new CLayoutSplitter(this);
-            m_splitWnd->setOrientation(Qt::Vertical);
-            CreateLayoutView(m_splitWnd, 1, 0, 1, defaultView);
-
-            m_splitWnd2 = new CLayoutSplitter;
-            m_splitWnd2->setOrientation(Qt::Horizontal);
-            m_splitWnd->insertWidget(0, m_splitWnd2);
-            CreateLayoutView(m_splitWnd2, 0, 0, 2, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 0, 1, 3, ET_ViewportCamera);
-            CreateLayoutView(m_splitWnd2, 0, 2, 4, ET_ViewportCamera);
-            break;
-
-        default:
-            CLogFile::FormatLine("Trying to Create Unknown Layout %d", (int)layout);
-            QMessageBox::critical(this, QString(), tr("Trying to Create Unknown Layout"));
-            break;
-        }
-        ;
-    }
-    if (m_splitWnd)
-    {
-        m_splitWnd->setGeometry(rcView);
-        m_splitWnd->setVisible(true);
-        FocusFirstLayoutViewPane(m_splitWnd);
-        SetMainWidget(m_splitWnd);
-    }
-
-    if (bBindViewports && !m_bMaximized)
-    {
-        BindViewports();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::SaveConfig()
-{
-    QSettings settings;
-    settings.beginGroup(GetConfigGroupName());
-    settings.setValue("Layout", static_cast<int>(m_layout));
-    settings.setValue("Maximized", m_maximizedViewId);
-
-    QString str;
-    for (int i = 1; i < MAX_VIEWPORTS; i++)
-    {
-        str += QString::fromLatin1("%1,").arg(m_viewType[i]);
-    }
-    settings.setValue("Viewports", str);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CLayoutWnd::LoadConfig()
-{
-    QSettings settings;
-    settings.beginGroup(GetConfigGroupName());
-    int layout = settings.value("Layout", -1).toInt();
-    int maximizedView = settings.value("Maximized", 0).toInt();
-    if (layout < 0)
-    {
-        return false;
-    }
-
-    CreateLayout((EViewLayout)layout, false);
-
-    if (m_splitWnd)
-    {
-        const QString str = settings.value("Viewports").toString();
-        int nIndex = 1;
-        for (auto resToken : str.split(","))
-        {
-            if (nIndex >= MAX_VIEWPORTS)
+            else
             {
-                break;
+                split(1, 2, vertical ? Qt::Horizontal : Qt::Vertical);
+                if (layout == ET_Layout8)
+                {
+                    split(2, 3, Qt::Horizontal);
+                    const int third = std::max(1, width() / 3);
+                    resizeDocks({ m_docks[1], m_docks[2], m_docks[3] }, { third, third, third }, Qt::Horizontal);
+                }
             }
-            if (!resToken.isEmpty())
-            {
-                m_viewType[nIndex] = resToken;
-            }
-            nIndex++;
         }
     }
-
-    BindViewports();
-
-    if (maximizedView || layout == ET_Layout0)
-    {
-        MaximizeViewport(maximizedView);
-    }
-
-    return true;
+    UpdateDockFeatures();
+    MainWindow::instance()->SetActiveView(Pane(0));
 }
 
-//////////////////////////////////////////////////////////////////////////
 const char* CLayoutWnd::GetConfigGroupName()
 {
     return "ViewportLayout";
 }
 
-unsigned int CLayoutWnd::GetViewPaneCount()
+void CLayoutWnd::SaveConfig()
 {
-    // If there's a maximized viewport, then exactly 1 is visible.
-    if (m_bMaximized)
+    QSettings settings;
+    settings.beginGroup(GetConfigGroupName());
+    settings.setValue("Layout", static_cast<int>(m_layout));
+    settings.setValue("Maximized", m_maximizedSlot + 1);
+    QStringList classes;
+    for (int slot = 0; slot < m_docks.size(); ++slot)
     {
-        return 1;
+        classes.append(Pane(slot)->GetViewClass());
     }
-
-    unsigned int numPanes = 0;
-
-    // Otherwise, go searching through and count how many are visible.
-    for (QSplitter* splitter : { m_splitWnd, m_splitWnd2, m_splitWnd3 })
-    {
-        if (splitter)
-        {
-            for (int i = 0; i < splitter->count(); ++i)
-            {
-                if (qobject_cast<CLayoutViewPane*>(splitter->widget(i)))
-                {
-                    numPanes++;
-                }
-            }
-        }
-    }
-
-    return numPanes;
+    settings.setValue("Viewports", classes.join(','));
 }
 
-CLayoutViewPane* CLayoutWnd::GetViewPaneByIndex(unsigned int index)
+bool CLayoutWnd::LoadConfig()
 {
-    // If there's a maximized viewport, return it if index 0 is requested.
-    // (All other index values are invalid in this state)
-    if (m_bMaximized)
+    QSettings settings;
+    settings.beginGroup(GetConfigGroupName());
+    const int layout = settings.value("Layout", -1).toInt();
+    if (layout < ET_Layout0 || layout > ET_Layout8)
     {
-        if (index == 0)
-        {
-            return m_maximizedView;
-        }
-        return nullptr;
+        return false;
     }
-
-    unsigned int curIndex = 0;
-
-    // Otherwise, go searching through until we've found the proper number of panes
-    // and return the one at the correct index.
-    for (QSplitter* splitter : { m_splitWnd, m_splitWnd2, m_splitWnd3 })
+    CreateLayout(static_cast<EViewLayout>(layout), false);
+    const auto classes = settings.value("Viewports").toString().split(',');
+    for (int slot = 0; slot < m_docks.size(); ++slot)
     {
-        if (splitter)
-        {
-            for (int i = 0; i < splitter->count(); ++i)
-            {
-                if (QWidget* widget = splitter->widget(i))
-                {
-                    if (CLayoutViewPane* pane = qobject_cast<CLayoutViewPane*>(widget))
-                    {
-                        if (curIndex == index)
-                        {
-                            return pane;
-                        }
-                        curIndex++;
-                    }
-                }
-            }
-        }
+        auto name = classes.value(slot);
+        Pane(slot)->SetViewClass(name.isEmpty() ? ViewportTypeToClassName(ET_ViewportCamera) : name);
     }
-
-    return nullptr;
+    MaximizeViewport(settings.value("Maximized", 0).toInt() - 1);
+    MainWindow::instance()->SetActiveView(Pane(m_maximizedSlot >= 0 ? m_maximizedSlot : 0));
+    return true;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-CLayoutViewPane* CLayoutWnd::GetViewPane(int id)
+void CLayoutWnd::ResetLayout()
 {
-    QList<QSplitter*> splitters({ m_splitWnd, m_splitWnd2, m_splitWnd3 });
-
-    for (QSplitter* splitter : splitters)
-    {
-        if (!splitter)
-        {
-            continue;
-        }
-
-        for (int i = 0; i < splitter->count(); ++i)
-        {
-            QWidget* widget = splitter->widget(i);
-            if (widget == nullptr)
-            {
-                continue;
-            }
-            if (CLayoutViewPane* pane = qobject_cast<CLayoutViewPane*>(widget))
-            {
-                if (pane && pane->GetId() == id)
-                {
-                    return pane;
-                }
-            }
-        }
-    }
-
-    return nullptr;
+    QSettings settings;
+    settings.remove(GetConfigGroupName());
+    CreateLayout(ET_Layout0);
 }
 
-//////////////////////////////////////////////////////////////////////////
-CLayoutViewPane* CLayoutWnd::FindViewByClass(const QString& viewClassName)
+CLayoutViewPane* CLayoutWnd::FindViewByClass(const QString& name)
 {
-    if (m_viewType[0] == viewClassName)
+    for (int slot = 0; slot < m_docks.size(); ++slot)
     {
-        return m_maximizedView;
-    }
-
-    // Starts from 1, 0 is the maximized view.
-    for (int i = 1; i < MAX_VIEWPORTS; i++)
-    {
-        if (m_viewType[i] == viewClassName)
+        if (Pane(slot)->GetViewClass() == name)
         {
-            return GetViewPane(i);
+            return Pane(slot);
         }
     }
     return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CLayoutWnd::CycleViewport(EViewportType from, EViewportType to)
 {
     const QString viewClassName = ViewportTypeToClassName(from);
     CLayoutViewPane* vp = FindViewByClass(viewClassName);
-    if (m_layout == ET_Layout0 && !vp)
-    {
-        if (m_maximizedView)
-        {
-            if (m_maximizedView->GetViewClass() == viewClassName)
-            {
-                vp = m_maximizedView;
-            }
-        }
-    }
     if (vp)
     {
-        BindViewport(vp, ViewportTypeToClassName(to));
+        vp->SetViewClass(ViewportTypeToClassName(to));
         return true;
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::ResetLayout()
-{
-    // reset the layout settings. Mfc doesn't have a mechanism to delete settings, that I can find, so we use Qt.
-    m_settings->beginGroup("Editor");
-    m_settings->remove(GetConfigGroupName());
-    m_settings->endGroup();
-
-    // restore the default layout
-    CreateLayout(ET_Layout0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -679,60 +387,367 @@ void CLayoutWnd::Cycle2DViewport()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutWnd::OnDestroy()
+void CLayoutWnd::OnMenuRegistrationHook()
 {
-    if (m_maximizedView)
     {
-        delete m_maximizedView;
-        m_maximizedView = nullptr;
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Camera Settings";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Debug Info";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Helpers";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Size";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeMenuIdentifier, menuProperties);
+    }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Ratio";
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeRatioMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Resolution";
+            m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeResolutionMenuIdentifier, menuProperties);
+        }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Options";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, menuProperties);
     }
 }
 
-void CLayoutWnd::FocusFirstLayoutViewPane(CLayoutSplitter* splitter)
+void CLayoutWnd::OnToolBarRegistrationHook()
 {
-    // When starting in multi-layout mode we focus the first CLayoutViewPane
-    // Note that splitter->widget(0) might be another splitter, not a CLayoutViewPane
-    if (splitter)
-    {
-        if (auto view = splitter->findChild<CLayoutViewPane*>())
+    // Register top viewport toolbar.
+    AzToolsFramework::ToolBarProperties toolBarProperties;
+    toolBarProperties.m_name = "Viewport ToolBar";
+    m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
+}
+
+void CLayoutWnd::OnActionRegistrationHook()
+{
+    AzToolsFramework::ActionProperties layoutAction;
+    layoutAction.m_name = "Configure Layout...";
+    m_actionManagerInterface->RegisterAction(
+        EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.viewport.configureLayout", layoutAction,
+        []
         {
-            view->setFocus();
-            MainWindow::instance()->SetActiveView(view);
+            if (auto* pane = MainWindow::instance()->GetActiveView())
+            {
+                pane->OnMenuLayoutConfig();
+            }
+        });
+
+    // Dummy Action with Resize Icon
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.resizeIcon";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Viewport Size";
+        actionProperties.m_iconPath = ":/Menu/resolution.svg";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+            }
+        );
+    }
+
+    // Dummy Action with Menu Icon
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.menuIcon";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Options";
+        actionProperties.m_iconPath = ":/Menu/menu.svg";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+            }
+        );
+    }
+
+    using InfoState = AZ::AtomBridge::ViewportInfoDisplayState;
+    using InfoBus = AZ::AtomBridge::AtomViewportInfoDisplayRequestBus;
+    const auto displayState = []
+    {
+        InfoState state = InfoState::NoInfo;
+        InfoBus::BroadcastResult(state, &InfoBus::Events::GetDisplayState);
+        return state;
+    };
+    const auto setDisplayState = [](InfoState state)
+    {
+        InfoBus::Broadcast(&InfoBus::Events::SetDisplayState, state);
+    };
+    const auto registerInfoAction = [this](const char* id, const char* name, const auto& trigger, const auto& checked, const char* icon = "")
+    {
+        AzToolsFramework::ActionProperties properties;
+        properties.m_name = name;
+        properties.m_iconPath = icon;
+        properties.m_category = "Viewport Debug Information";
+        m_actionManagerInterface->RegisterCheckableAction(EditorIdentifiers::MainWindowActionContextIdentifier, id, properties, trigger, checked);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ViewportDisplayInfoStateChangedUpdaterIdentifier, id);
+    };
+    registerInfoAction("o3de.action.viewport.info.toggle", "Toggle Between States",
+        [=] { setDisplayState(static_cast<InfoState>((static_cast<int>(displayState()) + 1) % static_cast<int>(InfoState::Invalid))); },
+        [=] { return displayState() != InfoState::NoInfo; }, ":/Menu/debug.svg");
+
+    struct InfoAction
+    {
+        const char* id;
+        const char* name;
+        InfoState state;
+    };
+    constexpr InfoAction infoActions[] = {
+        { "o3de.action.viewport.info.normal", "Normal", InfoState::NormalInfo },
+        { "o3de.action.viewport.info.full", "Full", InfoState::FullInfo },
+        { "o3de.action.viewport.info.compact", "Compact", InfoState::CompactInfo },
+        { "o3de.action.viewport.info.none", "None", InfoState::NoInfo }
+    };
+    for (const auto& action : infoActions)
+    {
+        registerInfoAction(action.id, action.name, [=] { setDisplayState(action.state); }, [=] { return displayState() == action.state; });
+    }
+
+    // Viewport Size
+
+    for (size_t i = 0; i < ViewportRatiosCount; ++i)
+    {
+        int width = ViewportRatios[i].first;
+        int height = ViewportRatios[i].second;
+
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.ratio[%i:%i]", width, height);
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = AZStd::string::format("%i:%i", width, height);
+        actionProperties.m_category = "Viewport Size Ratio";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [width, height]
+            {
+                if (auto* pane = MainWindow::instance()->GetActiveView())
+                {
+                    pane->SetAspectRatio(width, height);
+                }
+            }
+        );
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.size.ratio.custom";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Custom...";
+        actionProperties.m_category = "Viewport Size Ratio";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                auto* pane = MainWindow::instance()->GetActiveView();
+                if (!pane || !pane->GetViewport())
+                {
+                    return;
+                }
+                const QRect viewportRect = pane->GetViewport()->rect();
+                const unsigned int width = viewportRect.width();
+                const unsigned int height = viewportRect.height();
+
+                const int whGCD = AZ::GetGCD(width, height);
+                if (whGCD == 0)
+                {
+                    return;
+                }
+                CCustomAspectRatioDlg aspectRatioInputDialog(width / whGCD, height / whGCD, pane);
+
+                if (aspectRatioInputDialog.exec() == QDialog::Accepted)
+                {
+                    const unsigned int aspectX = aspectRatioInputDialog.GetX();
+                    const unsigned int aspectY = aspectRatioInputDialog.GetY();
+
+                    pane->SetAspectRatio(aspectX, aspectY);
+                }
+            }
+        );
+    }
+    for (size_t i = 0; i < ViewportResolutionsCount; ++i)
+    {
+        int width = ViewportResolutions[i].first;
+        int height = ViewportResolutions[i].second;
+
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.resolution[%i:%i]", width, height);
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = AZStd::string::format("%i:%i", width, height);
+        actionProperties.m_category = "Viewport Size Resolution";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [width, height]
+            {
+                if (auto* pane = MainWindow::instance()->GetActiveView())
+                {
+                    pane->ResizeViewport(width, height);
+                }
+            }
+        );
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.size.resolution.custom";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Custom...";
+        actionProperties.m_category = "Viewport Size Resolution";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                auto* pane = MainWindow::instance()->GetActiveView();
+                if (!pane || !pane->GetViewport())
+                {
+                    return;
+                }
+                const QRect rectViewport = pane->GetViewport()->rect();
+                CCustomResolutionDlg resDlg(rectViewport.width(), rectViewport.height(), pane);
+                if (resDlg.exec() == QDialog::Accepted)
+                {
+                    pane->ResizeViewport(resDlg.GetWidth(), resDlg.GetHeight());
+                }
+            }
+        );
+    }
+}
+
+void CLayoutWnd::OnMenuBindingHook()
+{
+    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.viewport.configureLayout", 100);
+
+    // Camera
+    {
+        m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.action.view.goToPosition", 200);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, 300);
+        m_menuManagerInterface->AddWidgetToMenu(
+            EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.cameraSpeedScale", 400);
+    }
+
+    // Debug Info
+    {
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.normal", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.full", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.compact", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, "o3de.action.viewport.info.none", 400);
+    }
+
+    // Helpers
+    {
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 100);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showSelectedEntityHelpers", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.hideHelpers", 500);
+    }
+
+    // Size
+    {
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportSizeMenuIdentifier, EditorIdentifiers::ViewportSizeRatioMenuIdentifier, 100);
+        {
+            for (size_t i = 0; i < ViewportRatiosCount; ++i)
+            {
+                int width = ViewportRatios[i].first;
+                int height = ViewportRatios[i].second;
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.ratio[%i:%i]", width, height);
+
+                m_menuManagerInterface->AddActionToMenu(
+                    EditorIdentifiers::ViewportSizeRatioMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
+            }
+
+            m_menuManagerInterface->AddSeparatorToMenu(
+                EditorIdentifiers::ViewportSizeRatioMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 1));
+            m_menuManagerInterface->AddActionToMenu(
+                EditorIdentifiers::ViewportSizeRatioMenuIdentifier,
+                "o3de.action.viewport.size.ratio.custom",
+                SortKeySpacing * (aznumeric_cast<int>(ViewportRatiosCount) + 2));
+        }
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportSizeMenuIdentifier, EditorIdentifiers::ViewportSizeResolutionMenuIdentifier, 200);
+        {
+            for (size_t i = 0; i < ViewportResolutionsCount; ++i)
+            {
+                int width = ViewportResolutions[i].first;
+                int height = ViewportResolutions[i].second;
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.resolution[%i:%i]", width, height);
+
+                m_menuManagerInterface->AddActionToMenu(
+                    EditorIdentifiers::ViewportSizeResolutionMenuIdentifier, actionIdentifier, SortKeySpacing * (aznumeric_cast<int>(i) + 1));
+            }
+
+            m_menuManagerInterface->AddSeparatorToMenu(
+                EditorIdentifiers::ViewportSizeResolutionMenuIdentifier, SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 1));
+            m_menuManagerInterface->AddActionToMenu(
+                EditorIdentifiers::ViewportSizeResolutionMenuIdentifier,
+                "o3de.action.viewport.size.resolution.custom",
+                SortKeySpacing * (aznumeric_cast<int>(ViewportResolutionsCount) + 2));
         }
     }
-}
 
-void CLayoutWnd::MoveViewport(CLayoutViewPane* from, CLayoutViewPane* to, const QString& viewClassName)
-{
-    // First detach from old pane, allowing the viewport to be disconnected from the event bus
-    // This must be done before re-binding the viewport and connecting to the bus with a new id
-    auto viewport = from->GetViewport();
-    from->DetachViewport();
-    BindViewport(to, viewClassName, viewport);
-}
-
-static CLayoutViewPane* layoutViewPaneForChild(QObject* child)
-{
-    CLayoutViewPane* result = nullptr;
-
-    while (child)
+    // Options
     {
-        result = qobject_cast<CLayoutViewPane*>(child);
-        if (result)
-        {
-            break;
-        }
-        child = child->parent();
-    }
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleShowingGrid", 400);
+        m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.gridSnappingSize", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 600);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 700);
+        m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.widgetAction.viewport.angleSnappingSize", 800);
 
-    return result;
-}
-
-void CLayoutWnd::OnFocusChanged(QWidget* /* oldWidget */, QWidget* newWidget)
-{
-    if (CLayoutViewPane* layoutViewPane = layoutViewPaneForChild(newWidget))
-    {
-        MainWindow::instance()->SetActiveView(layoutViewPane);
+        // Geometry snapping, after the grid and angle entries it belongs alongside. A separator
+        // first because the entries above quantise a value, while this snaps to what is in the
+        // level - related enough to share the menu, different enough not to read as one group.
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 850);
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.geometrySnapping", 875);
     }
 }
 
+void CLayoutWnd::OnToolBarBindingHook()
+{
+    m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
+    m_toolBarManagerInterface->AddWidgetToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", EditorIdentifiers::ViewportCameraMenuIdentifier, 500);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorIdentifiers::ViewportDebugInfoMenuIdentifier, 600);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier,
+        "o3de.action.edit.snap.geometrySnapping",
+        EditorIdentifiers::EditModifySnapToMenuIdentifier,
+        850);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
+}
+
+//////////////////////////////////////////////////////////////////////////

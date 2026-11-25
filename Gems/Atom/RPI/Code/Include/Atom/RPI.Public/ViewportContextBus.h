@@ -54,7 +54,7 @@ namespace AZ
             //! Gets the name of the default, primary ViewportContext, for common single-viewport scenarios.
             virtual AZ::Name GetDefaultViewportContextName() const = 0;
 
-            //! Get the ViewportConext which has default ViewportContext name
+            //! Get the context addressed by the default name.
             virtual ViewportContextPtr GetDefaultViewportContext() const = 0;
 
             //! Creates a ViewportContext and registers it by name.
@@ -93,6 +93,9 @@ namespace AZ
             //! Gets the view group currently registered to a given context, assuming the context exists.
             //! This will be null if there is no registered ViewportContext and no view groups have been pushed for this context name.
             virtual ViewGroupPtr GetCurrentViewGroup(const Name& contextName) = 0;
+
+            //! Select the context addressed by the default name. InvalidViewportId restores name-based lookup.
+            virtual void SetDefaultViewportContext(AzFramework::ViewportId id) = 0;
         };
 
         using ViewportContextRequests = AZ::Interface<ViewportContextRequestsInterface>;

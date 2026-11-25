@@ -100,16 +100,14 @@ void CLayoutConfigDialog::SetLayout(EViewLayout layout)
 //////////////////////////////////////////////////////////////////////////
 void CLayoutConfigDialog::OnOK()
 {
-    auto index = ui->m_layouts->currentIndex();
-    auto oldLayout = m_layout;
-
-    if (index.isValid())
+    const auto index = ui->m_layouts->currentIndex();
+    if (!index.isValid())
     {
-        m_layout = static_cast<EViewLayout>(index.row());
+        reject();
+        return;
     }
-
-    // If the layout has not been changed, the calling code
-    // is not supposed to do anything. So let's simply reject in that case.
-    done(m_layout == oldLayout ? QDialog::Rejected : QDialog::Accepted);
+    // Reapplying a preset also restores panes that were floated, moved or closed.
+    m_layout = static_cast<EViewLayout>(index.row());
+    accept();
 }
 

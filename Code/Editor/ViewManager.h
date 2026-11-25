@@ -18,19 +18,12 @@
 class CLayoutWnd;
 class CViewport;
 
-namespace AzToolsFramework
-{
-    class ManipulatorManager;
-}
-
 /** Manages set of viewports.
 */
 class SANDBOX_API CViewManager
     : public IEditorNotifyListener
 {
 public:
-    static bool IsMultiViewportEnabled();
-
     void ReleaseView(CViewport* pViewport);
 
     CViewport* GetViewport(EViewportType type) const;
@@ -99,8 +92,6 @@ public:
 
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
 
-    AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> GetManipulatorManager();
-
 private:
     friend class CEditorImpl;
     friend class QtViewport;
@@ -131,5 +122,4 @@ private:
 
     CViewport* m_pSelectedView;
 
-    AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 };

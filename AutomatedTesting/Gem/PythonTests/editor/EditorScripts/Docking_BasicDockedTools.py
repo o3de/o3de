@@ -82,9 +82,7 @@ def Docking_BasicDockedTools():
         entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
 
         # 1) Open the tools and dock them together in a floating tabbed widget.
-        # We drag/drop it over the viewport since it doesn't allow docking, so this will undock it
-        render_overlay = editor_window.findChild(QtWidgets.QWidget, "renderOverlay")
-        pyside_utils.drag_and_drop(entity_outliner, render_overlay)
+        QtCore.QMetaObject.invokeMethod(entity_outliner, "undock", QtCore.Qt.ConnectionType.DirectConnection)
 
         # We need to grab a new reference to the Entity Outliner QDockWidget because when it gets moved
         # to the floating window, its parent changes so the wrapped instance we had becomes invalid

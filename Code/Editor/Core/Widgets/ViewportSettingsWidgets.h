@@ -26,6 +26,7 @@ public:
     ~ViewportFieldOfViewPropertyWidget();
 
 private:
+    void showEvent(QShowEvent* event) override;
     void OnSpinBoxValueChanged(double newValue) override;
 
     // ViewportSettingsNotificationBus overrides ...

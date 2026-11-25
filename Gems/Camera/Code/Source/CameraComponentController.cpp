@@ -158,8 +158,13 @@ namespace Camera
         {
             AZ_Assert(GetView(), "Attempted to activate Atom camera before component activation");
 
-            const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-
+            auto viewport = atomViewportRequests->GetDefaultViewportContext();
+            const AZ::Name contextName = viewport ? viewport->GetName() : atomViewportRequests->GetDefaultViewportContextName();
+            if (!m_activeContextName.IsEmpty() && m_activeContextName != contextName)
+            {
+                DeactivateAtomView();
+            }
+            m_activeContextName = contextName;
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
             // Ensure the Atom camera is updated with our current transform state
@@ -179,10 +184,13 @@ namespace Camera
     {
         if (auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
-            const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            atomViewportRequests->PopViewGroup(contextName, m_atomCameraViewGroup);
-
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect(contextName);
+            if (!m_activeContextName.IsEmpty())
+            {
+                atomViewportRequests->PopViewGroup(m_activeContextName, m_atomCameraViewGroup);
+                AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+                m_activeContextName = AZ::Name();
+                m_isActiveView = false;
+            }
         }
     }
 
@@ -394,7 +402,8 @@ namespace Camera
         if (auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             m_atomCameraViewGroup && atomViewportRequests)
         {
-            return atomViewportRequests->GetDefaultViewportContext();
+            return m_activeContextName.IsEmpty() ? atomViewportRequests->GetDefaultViewportContext()
+                                                 : atomViewportRequests->GetViewportContextByName(m_activeContextName);
         }
         return nullptr;
     }
@@ -498,7 +507,8 @@ namespace Camera
 
     void CameraComponentController::MakeActiveView()
     {
-        if (IsActiveView())
+        auto* viewports = AZ::RPI::ViewportContextRequests::Get();
+        if (IsActiveView() && viewports && GetViewportContext() == viewports->GetDefaultViewportContext())
         {
             return;
         }

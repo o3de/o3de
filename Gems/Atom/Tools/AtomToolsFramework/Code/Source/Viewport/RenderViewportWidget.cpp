@@ -93,7 +93,6 @@ namespace AtomToolsFramework
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
-        AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
         m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, newId);
 
@@ -121,7 +120,14 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
-        m_viewportInteractionImpl->Disconnect();
+        if (m_viewportInteractionImpl)
+        {
+            m_viewportInteractionImpl->Disconnect();
+        }
+        if (m_viewportContext && m_defaultCameraGroup)
+        {
+            AZ::RPI::ViewportContextRequests::Get()->PopViewGroup(m_viewportContext->GetName(), m_defaultCameraGroup);
+        }
     }
 
     void RenderViewportWidget::LockRenderTargetSize(uint32_t width, uint32_t height)

@@ -39,42 +39,27 @@ class CLayoutViewPane
 {
     Q_OBJECT
 public:
-    CLayoutViewPane(QWidget* parent = nullptr);
+    CLayoutViewPane(int id, QWidget* parent);
     virtual ~CLayoutViewPane();
 
     // Operations
 public:
     // ActionManagerRegistrationNotificationBus overrides ...
-    void OnMenuRegistrationHook() override;
-    void OnToolBarRegistrationHook() override;
-    void OnActionRegistrationHook() override;
-    void OnMenuBindingHook() override;
-    void OnToolBarBindingHook() override;
+    void OnPostActionManagerRegistrationHook() override;
+    void OnMenuLayoutConfig();
 
     // Set get this pane id.
-    void SetId(int id) { m_id = id; }
-    int GetId() { return m_id; }
+    int GetId() const { return m_id; }
 
     void SetViewClass(const QString& sClass);
     QString GetViewClass() const;
 
-    //! Assign viewport to this pane.
-    void SwapViewports(CLayoutViewPane* pView);
-
-    void AttachViewport(QWidget* pViewport);
-    //! Detach viewport from this pane.
-    void DetachViewport();
-    // Releases and destroy attached viewport.
-    void ReleaseViewport();
-
-    void SetFullscren(bool f);
+    void SetFullscreen(bool f);
     bool IsFullscreen() const { return m_bFullscreen; }
 
     QWidget* GetViewport() { return m_viewport; }
 
     //////////////////////////////////////////////////////////////////////////
-    bool IsActiveView() const { return m_active; }
-
     void ShowTitleMenu();
     void ToggleMaximize();
 
@@ -98,46 +83,23 @@ public:
     void SetViewportExpansionPolicy(ViewportExpansionPolicy policy);
 
 protected:
-    void OnMenuLayoutConfig();
-    void OnMenuViewSelected(const QString& paneName);
-    void OnMenuMaximized();
 
     void mouseDoubleClickEvent(QMouseEvent* event) override;
-    void OnDestroy();
     void focusInEvent(QFocusEvent* event) override;
 
-    void DisconnectRenderViewportInteractionRequestBus();
 
 private:
     static constexpr int MIN_VIEWPORT_RES = 64;
     static constexpr int MAX_VIEWPORT_RES = 8192;
-    static constexpr int MAX_CLASSVIEWS = 100;
-    static constexpr int VIEW_BORDER = 0;
-
-    enum TitleMenuCommonCommands
-    {
-        ID_MAXIMIZED = 50000,
-        ID_LAYOUT_CONFIG,
-
-        FIRST_ID_CLASSVIEW,
-        LAST_ID_CLASSVIEW = FIRST_ID_CLASSVIEW + MAX_CLASSVIEWS - 1
-    };
-
     QString m_viewPaneClass;
-    bool m_bFullscreen;
+    bool m_bFullscreen = false;
 
-    CViewportTitleDlg* m_viewportTitleDlg;
-    int m_id;
-    int m_nBorder;
+    const int m_id;
 
-    QWidget* m_viewport;
+    QWidget* m_viewport = nullptr;
     QScrollArea* m_viewportScrollArea = nullptr;
     ViewportExpansionPolicy m_viewportPolicy = ViewportExpansionPolicy::AutoExpand;
-    bool m_active;
 
-    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
-    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
-    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 };
 
 /////////////////////////////////////////////////////////////////////////////
