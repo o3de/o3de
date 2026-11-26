@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/string/string_view.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/GraphContext.h>
@@ -94,6 +95,8 @@ namespace AtomToolsFramework
         void DestroyGraph();
 
         void BuildEditablePropertyGroups();
+        void QueueCompileGraphIfEnabled(AZStd::string_view settingPath);
+        void QueueCompileGraphForEditIfEnabled();
 
         DocumentObjectInfoVector GetObjectInfoForGraphCanvasNodes() const;
 
@@ -106,9 +109,9 @@ namespace AtomToolsFramework
 
         // This flag will be set to true if a request has been made to rebuild the document properties for the inspector.
         bool m_buildPropertiesQueued = {};
-        // This plan will be set to true if a request has been made to compile the graph data.
+        // This flag is set when graph compilation has been requested.
         bool m_compileGraphQueued = {};
-        // Next time that a cued compile can be executed
+        // Earliest time at which the queued compile can begin.
         AZStd::chrono::steady_clock::time_point m_compileGraphQueueTime = AZStd::chrono::steady_clock::now();
         // Container of file paths that were affected by the compiler.
         AZStd::vector<AZStd::string> m_generatedFiles;
