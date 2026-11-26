@@ -116,6 +116,7 @@ namespace CommandSystem
         RegisterCommand(new CommandAnimGraphCreateConnection());
         RegisterCommand(new CommandAnimGraphRemoveConnection());
         RegisterCommand(new CommandAnimGraphAdjustConnection());
+        RegisterCommand(new CommandAnimGraphAdjustPinnedWire());
         RegisterCommand(aznew CommandAnimGraphAdjustTransition());
         RegisterCommand(new CommandAnimGraphRemoveNode());
         RegisterCommand(new CommandAnimGraphCreateParameter());

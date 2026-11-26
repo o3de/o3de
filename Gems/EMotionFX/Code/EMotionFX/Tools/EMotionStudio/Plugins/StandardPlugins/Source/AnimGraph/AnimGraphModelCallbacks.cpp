@@ -560,6 +560,19 @@ namespace EMStudio
         return connection && m_animGraphModel.Edited(connection);
     }
 
+    bool AnimGraphModel::CommandDidAdjustPinnedWireCallback::Execute(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        EMotionFX::AnimGraphNode* node = static_cast<CommandSystem::CommandAnimGraphAdjustPinnedWire*>(command)->GetNode();
+        return node && m_animGraphModel.Edited(node);
+    }
+
+    bool AnimGraphModel::CommandDidAdjustPinnedWireCallback::Undo(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        // Undo restores the old pinned wires in place instead of running the command again, so the views are told here.
+        EMotionFX::AnimGraphNode* node = static_cast<CommandSystem::CommandAnimGraphAdjustPinnedWire*>(command)->GetNode();
+        return node && m_animGraphModel.Edited(node);
+    }
+
     bool AnimGraphModel::CommandDidConditionChangeCallbackHelper(AnimGraphModel& animGraphModel, MCore::Command* command)
     {
         if (EMotionFX::ParameterMixinTransitionId* transitionIdMixin = azdynamic_cast<EMotionFX::ParameterMixinTransitionId*>(command))

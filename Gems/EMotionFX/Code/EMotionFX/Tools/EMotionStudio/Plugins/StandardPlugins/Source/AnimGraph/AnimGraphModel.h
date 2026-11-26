@@ -335,6 +335,7 @@ namespace EMStudio
         ANIMGRAPHMODEL_CALLBACK(CommandDidRemoveConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustBlendTreeConnectionCallback);
+        ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustPinnedWireCallback);
 
         static bool CommandDidConditionChangeCallbackHelper(AnimGraphModel& animGraphModel, MCore::Command* command);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAddRemoveConditionCallback);

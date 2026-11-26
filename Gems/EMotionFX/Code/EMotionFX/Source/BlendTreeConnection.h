@@ -74,4 +74,30 @@ namespace EMotionFX
         bool                    m_visited;               /**< True when during updates this connection was used. */
         AZStd::vector<AZ::Vector2> m_waypoints;
     };
+
+    // Editor layout: a wire from an output that ends at a pin, which more wires can branch from.
+    // The blend tree never evaluates it, so it means the same as an unconnected output.
+    class EMFX_API BlendTreePinnedWire
+    {
+    public:
+        AZ_TYPE_INFO(BlendTreePinnedWire, "{14937EC9-A617-49BE-B1CE-50792010391C}");
+
+        BlendTreePinnedWire() = default;
+        BlendTreePinnedWire(AZ::u16 sourcePort, const AZStd::vector<AZ::Vector2>& waypoints)
+            : m_sourcePort(sourcePort)
+            , m_waypoints(waypoints)
+        {
+        }
+
+        bool operator==(const BlendTreePinnedWire& other) const
+        {
+            return m_sourcePort == other.m_sourcePort && m_waypoints == other.m_waypoints;
+        }
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::u16 m_sourcePort = 0;
+        // Bend points in graph space from the output onwards. The last one is the pin the wire ends at.
+        AZStd::vector<AZ::Vector2> m_waypoints;
+    };
 } // namespace EMotionFX

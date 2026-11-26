@@ -104,5 +104,21 @@ namespace EMotionFX
             ->Field("sourcePortNr", &BlendTreeConnection::m_sourcePort)
             ->Field("targetPortNr", &BlendTreeConnection::m_targetPort)
             ->Field("waypoints", &BlendTreeConnection::m_waypoints);
+
+        BlendTreePinnedWire::Reflect(context);
+    }
+
+    void BlendTreePinnedWire::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
+        {
+            return;
+        }
+
+        serializeContext->Class<BlendTreePinnedWire>()
+            ->Version(1)
+            ->Field("sourcePortNr", &BlendTreePinnedWire::m_sourcePort)
+            ->Field("waypoints", &BlendTreePinnedWire::m_waypoints);
     }
 } // namespace EMotionFX

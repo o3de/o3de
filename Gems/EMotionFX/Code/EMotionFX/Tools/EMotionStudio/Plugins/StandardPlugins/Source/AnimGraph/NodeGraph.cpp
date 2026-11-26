@@ -86,8 +86,6 @@ namespace EMStudio
         connect(&m_scaleTimer, &QTimer::timeout, this, &NodeGraph::UpdateAnimatedScale);
 
         m_replaceTransitionValid = false;
-        m_waypointConnection = nullptr;
-        m_waypointIndex = InvalidIndex;
 
         // Overlay
         m_font.setPixelSize(12);
@@ -105,6 +103,7 @@ namespace EMStudio
     // destructor
     NodeGraph::~NodeGraph()
     {
+        m_pinnedWires.clear();
         m_graphNodeByModelIndex.clear();
 
         delete m_fontMetrics;
@@ -663,8 +662,96 @@ namespace EMStudio
             }
         }
 
+        return FindPinnedWireWaypoint(mousePos, outWaypointIndex);
+    }
+
+    PinnedWire* NodeGraph::FindPinnedWireWaypoint(const QPoint& mousePos, size_t& outWaypointIndex)
+    {
+        SyncPinnedWires();
+        for (const AZStd::unique_ptr<PinnedWire>& pinnedWire : m_pinnedWires)
+        {
+            const size_t waypointIndex = pinnedWire->FindWaypoint(mousePos);
+            if (waypointIndex != InvalidIndex)
+            {
+                outWaypointIndex = waypointIndex;
+                return pinnedWire.get();
+            }
+        }
+
         outWaypointIndex = InvalidIndex;
         return nullptr;
+    }
+
+    const AZStd::vector<AZStd::unique_ptr<PinnedWire>>& NodeGraph::GetPinnedWires()
+    {
+        SyncPinnedWires();
+        return m_pinnedWires;
+    }
+
+    PinnedWire* NodeGraph::FindPinnedWire(const EMotionFX::AnimGraphNode* node, size_t wireIndex)
+    {
+        SyncPinnedWires();
+        for (const AZStd::unique_ptr<PinnedWire>& pinnedWire : m_pinnedWires)
+        {
+            if (pinnedWire->GetAnimGraphNode() == node && pinnedWire->GetWireIndex() == wireIndex)
+            {
+                return pinnedWire.get();
+            }
+        }
+        return nullptr;
+    }
+
+    void NodeGraph::SyncPinnedWires()
+    {
+        size_t wireCount = 0;
+        bool unchanged = true;
+        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        {
+            GraphNode* graphNode = indexAndGraphNode.second.get();
+            const EMotionFX::AnimGraphNode* animGraphNode =
+                graphNode->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+            const size_t numWires = animGraphNode ? animGraphNode->GetPinnedWires().size() : 0;
+            for (size_t i = 0; i < numWires; ++i, ++wireCount)
+            {
+                if (unchanged
+                    && (wireCount >= m_pinnedWires.size()
+                        || m_pinnedWires[wireCount]->GetSourceNode() != graphNode
+                        || m_pinnedWires[wireCount]->GetWireIndex() != i))
+                {
+                    unchanged = false;
+                }
+            }
+        }
+
+        if (unchanged && wireCount == m_pinnedWires.size())
+        {
+            return;
+        }
+
+        // Rebuilding frees the pinned wires a waypoint drag may be holding on to.
+        const bool draggingPinnedWire = AZStd::any_of(m_waypointDrags.begin(), m_waypointDrags.end(),
+            [](const RepositionedWaypoint& drag)
+            {
+                return drag.m_connection->GetType() == PinnedWire::TYPE_ID;
+            });
+        if (draggingPinnedWire)
+        {
+            StopRepositionWaypoint();
+        }
+
+        m_pinnedWires.clear();
+        m_pinnedWires.reserve(wireCount);
+        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        {
+            GraphNode* graphNode = indexAndGraphNode.second.get();
+            const EMotionFX::AnimGraphNode* animGraphNode =
+                graphNode->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+            const size_t numWires = animGraphNode ? animGraphNode->GetPinnedWires().size() : 0;
+            for (size_t i = 0; i < numWires; ++i)
+            {
+                m_pinnedWires.emplace_back(AZStd::make_unique<PinnedWire>(this, graphNode, i));
+            }
+        }
     }
 
 
@@ -806,10 +893,26 @@ namespace EMStudio
 #endif
         QPen connectionsPen;
         QBrush connectionsBrush;
+
+        // Wires that end at a pin go under the connections: a wire branched off one follows the same curve, and the
+        // connection, which can be selected or show that it is active, is the one to see.
+        SyncPinnedWires();
+        for (const AZStd::unique_ptr<PinnedWire>& pinnedWire : m_pinnedWires)
+        {
+            pinnedWire->Update(visibleRect, mousePos);
+            pinnedWire->Render(selectionModel, painter, &connectionsPen, &connectionsBrush, stepSize, scaledVisibleRect, 1.0f, false);
+        }
+
         for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
         {
             GraphNode* graphNode = indexAndGraphNode.second.get();
             graphNode->RenderConnections(selectionModel, painter, &connectionsPen, &connectionsBrush, scaledVisibleRect, stepSize);
+        }
+
+        // The pins go on top, so they stay visible and grabbable where wires branch off them.
+        for (const AZStd::unique_ptr<PinnedWire>& pinnedWire : m_pinnedWires)
+        {
+            pinnedWire->RenderPin(painter, &connectionsPen, &connectionsBrush);
         }
 #ifdef GRAPH_PERFORMANCE_INFO
         MCore::LogInfo("   Connections: %.2f ms", connectionsTimer.GetTime() * 1000);
@@ -1535,6 +1638,7 @@ namespace EMStudio
         m_conNodeIndex       = portNode->GetModelIndex();
         m_conPort            = port;
         m_conStartOffset     = startOffset;
+        m_conWaypoints.clear();
     }
 
 
@@ -1601,26 +1705,120 @@ namespace EMStudio
     }
 
 
-    void NodeGraph::StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    NodeConnection* NodeGraph::GetRepositionedWaypointConnection() const
     {
-        m_waypointConnection = connection;
-        m_waypointIndex = waypointIndex;
-        m_waypointOldValues = oldWaypoints;
+        return m_waypointDrags.empty() ? nullptr : m_waypointDrags.front().m_connection;
     }
 
+    size_t NodeGraph::GetRepositionedWaypointIndex() const
+    {
+        return m_waypointDrags.empty() ? InvalidIndex : m_waypointDrags.front().m_index;
+    }
+
+    const AZStd::vector<AZ::Vector2>& NodeGraph::GetRepositionedWaypointOldValues() const
+    {
+        static const AZStd::vector<AZ::Vector2> noWaypoints;
+        return m_waypointDrags.empty() ? noWaypoints : m_waypointDrags.front().m_oldWaypoints;
+    }
+
+    void NodeGraph::FindSharedWaypoints(
+        NodeConnection* connection, size_t waypointIndex, AZStd::vector<AZStd::pair<NodeConnection*, size_t>>& outWaypoints)
+    {
+        outWaypoints.clear();
+        const AZStd::vector<AZ::Vector2>* waypoints = connection ? connection->GetWaypoints() : nullptr;
+        if (!waypoints || waypointIndex >= waypoints->size())
+        {
+            return;
+        }
+
+        outWaypoints.emplace_back(connection, waypointIndex);
+        GraphNode* sourceNode = connection->GetSourceNode();
+        const auto leavesTheSameOutput = [connection, sourceNode](NodeConnection* other)
+        {
+            return other != connection
+                && (other->GetType() == NodeConnection::TYPE_ID || other->GetType() == PinnedWire::TYPE_ID)
+                && other->GetSourceNode() == sourceNode
+                && other->GetOutputPortNr() == connection->GetOutputPortNr();
+        };
+        if ((connection->GetType() != NodeConnection::TYPE_ID && connection->GetType() != PinnedWire::TYPE_ID) || !sourceNode)
+        {
+            return;
+        }
+
+        const AZ::Vector2 pin = (*waypoints)[waypointIndex];
+        const auto addIfShared = [&outWaypoints, &pin](NodeConnection* other)
+        {
+            const AZStd::vector<AZ::Vector2>* otherWaypoints = other->GetWaypoints();
+            if (!otherWaypoints)
+            {
+                return;
+            }
+
+            const auto shared = AZStd::find(otherWaypoints->begin(), otherWaypoints->end(), pin);
+            if (shared != otherWaypoints->end())
+            {
+                outWaypoints.emplace_back(other, static_cast<size_t>(shared - otherWaypoints->begin()));
+            }
+        };
+
+        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        {
+            GraphNode* graphNode = indexAndGraphNode.second.get();
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
+            {
+                NodeConnection* other = graphNode->GetConnection(c);
+                if (leavesTheSameOutput(other))
+                {
+                    addIfShared(other);
+                }
+            }
+        }
+
+        SyncPinnedWires();
+        for (const AZStd::unique_ptr<PinnedWire>& pinnedWire : m_pinnedWires)
+        {
+            if (leavesTheSameOutput(pinnedWire.get()))
+            {
+                addIfShared(pinnedWire.get());
+            }
+        }
+    }
+
+    void NodeGraph::StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    {
+        m_waypointDrags.clear();
+        m_waypointDrags.push_back({ connection, waypointIndex, oldWaypoints });
+
+        AZStd::vector<AZStd::pair<NodeConnection*, size_t>> shared;
+        FindSharedWaypoints(connection, waypointIndex, shared);
+        for (const auto& [sharedConnection, sharedIndex] : shared)
+        {
+            if (sharedConnection != connection)
+            {
+                m_waypointDrags.push_back({ sharedConnection, sharedIndex, *sharedConnection->GetWaypoints() });
+            }
+        }
+    }
+
+    void NodeGraph::MoveRepositionedWaypoints(const AZ::Vector2& position)
+    {
+        for (const RepositionedWaypoint& drag : m_waypointDrags)
+        {
+            drag.m_connection->SetWaypoint(drag.m_index, position);
+        }
+    }
 
     void NodeGraph::StopRepositionWaypoint()
     {
-        m_waypointConnection = nullptr;
-        m_waypointIndex = InvalidIndex;
-        m_waypointOldValues.clear();
+        m_waypointDrags.clear();
     }
 
     void NodeGraph::CancelRepositionWaypoint()
     {
-        if (m_waypointConnection)
+        for (const RepositionedWaypoint& drag : m_waypointDrags)
         {
-            m_waypointConnection->SetWaypoints(m_waypointOldValues);
+            drag.m_connection->SetWaypoints(drag.m_oldWaypoints);
         }
         StopRepositionWaypoint();
     }
@@ -1644,6 +1842,7 @@ namespace EMStudio
         m_conPort            = nullptr;
         m_targetPort         = nullptr;
         m_conIsValid         = false;
+        m_conWaypoints.clear();
     }
 
     // render the connection we're creating, if any
@@ -2018,6 +2217,9 @@ namespace EMStudio
     {
         CancelRepositionWaypoint();
 
+        // A pinned wire points at its source graph node, which may be about to go. They are rebuilt when next needed.
+        m_pinnedWires.clear();
+
         for (const QModelIndex& modelIndex : modelIndexes)
         {
             const AnimGraphModel::ModelItemType itemType = modelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
@@ -2075,7 +2277,12 @@ namespace EMStudio
 
     void NodeGraph::OnDataChanged(const QModelIndex& modelIndex, const QVector<int>& roles)
     {
-        if (m_waypointConnection && m_waypointConnection->GetModelIndex() == modelIndex)
+        const bool draggedWaypointChanged = AZStd::any_of(m_waypointDrags.begin(), m_waypointDrags.end(),
+            [&modelIndex](const RepositionedWaypoint& drag)
+            {
+                return drag.m_connection->GetModelIndex() == modelIndex;
+            });
+        if (draggedWaypointChanged)
         {
             // Keep the command's new values instead of restoring the drag preview over an undo.
             StopRepositionWaypoint();

@@ -78,6 +78,14 @@ namespace EMStudio
 
         static void RenderInterruptedTransitions(QPainter& painter, EMStudio::AnimGraphModel& animGraphModel, EMStudio::NodeGraph& nodeGraph);
 
+        // Lays the condition and action shapes along the path, round its waypoints, leaving a gap at each handle.
+        // Returns false when the path is too short to hold them all.
+        static bool LayOutConditionShapes(const QPoint* points, size_t pointCount, size_t shapeCount, AZStd::vector<AZ::Vector2>& outCenters);
+
+        static constexpr float s_conditionShapeRadius = 3.0f;
+        static constexpr float s_conditionSpacing = 7.0f;
+        static constexpr float s_conditionGap = 2.0f * (s_waypointRadius + 3);
+
     private:
         void RenderConditionsAndActions(
             EMotionFX::AnimGraphInstance* animGraphInstance,
@@ -92,6 +100,9 @@ namespace EMStudio
         void CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const;
 
         bool m_isWildcardConnection;
+
+        // Reused across frames so laying out the condition shapes does not allocate.
+        mutable AZStd::vector<AZ::Vector2> m_shapeScratch;
     };
 
 

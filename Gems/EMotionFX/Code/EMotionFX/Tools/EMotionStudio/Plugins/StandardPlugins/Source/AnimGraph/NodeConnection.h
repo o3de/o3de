@@ -19,6 +19,8 @@
 namespace EMotionFX
 {
     class AnimGraphInstance;
+    class AnimGraphNode;
+    class BlendTreePinnedWire;
 }
 
 namespace EMStudio
@@ -49,6 +51,10 @@ namespace EMStudio
         virtual bool CheckIfIsCloseTo(const QPoint& point);
 
         void UpdatePainterPath();
+        const QPainterPath& GetPainterPath() const { return m_painterPath; }
+
+        // False for a wire that stops at a pin: its curve then ends exactly on the last point, like a connection passing through it.
+        virtual bool GetEndsAtPort() const { return true; }
 
         virtual void Update(const QRect& visibleRect, const QPoint& mousePos);
         virtual uint32 GetType() const                      { return TYPE_ID; }
@@ -160,5 +166,46 @@ namespace EMStudio
 
         // Reused across frames so the render and hit-test paths stay free of per-frame allocations.
         mutable AZStd::vector<QPoint> m_pathScratch;
+    };
+
+    // Draws and edits a BlendTreePinnedWire: a wire from an output whose last waypoint is its pin.
+    // It is not a model item, so it is never selected or deleted like a connection.
+    class PinnedWire
+        : public NodeConnection
+    {
+        MCORE_MEMORYOBJECTCATEGORY(PinnedWire, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
+
+    public:
+        enum
+        {
+            TYPE_ID = 0x00000003
+        };
+
+        PinnedWire(NodeGraph* parentGraph, GraphNode* sourceNode, size_t wireIndex);
+
+        uint32 GetType() const override { return TYPE_ID; }
+
+        // Which of the source node's pinned wires this is.
+        size_t GetWireIndex() const { return m_wireIndex; }
+        EMotionFX::AnimGraphNode* GetAnimGraphNode() const;
+        const EMotionFX::BlendTreePinnedWire* GetPinnedWire() const;
+
+        const AZStd::vector<AZ::Vector2>* GetWaypoints() const override;
+        void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints) override;
+        void CalcPolyline(AZStd::vector<QPoint>& outPoints) const override;
+
+        bool GetEndsAtPort() const override { return false; }
+
+        void Update(const QRect& visibleRect, const QPoint& mousePos) override;
+        // Draws the wire and its bend points. It goes under the connections, so a wire branched off it is never doubled.
+        void Render(const QItemSelectionModel& selectionModel, QPainter& painter, QPen* pen, QBrush* brush, int32 stepSize,
+            const QRect& visibleRect, float opacity, bool alwaysColor) override;
+        // Draws the pin, over the connections so it stays visible where wires branch off it.
+        void RenderPin(QPainter& painter, QPen* pen, QBrush* brush);
+
+        static constexpr int s_pinRadius = 5;
+
+    private:
+        size_t m_wireIndex = 0;
     };
 }   // namespace EMStudio

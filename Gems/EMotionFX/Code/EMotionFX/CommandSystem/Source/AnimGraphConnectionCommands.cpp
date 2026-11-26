@@ -820,6 +820,172 @@ namespace CommandSystem
 
 
     //-------------------------------------------------------------------------------------
+    // AnimGraphAdjustPinnedWire - add, change or remove a pinned wire of a node
+    //-------------------------------------------------------------------------------------
+    const char* CommandAnimGraphAdjustPinnedWire::s_commandName = "AnimGraphAdjustPinnedWire";
+
+    CommandAnimGraphAdjustPinnedWire::CommandAnimGraphAdjustPinnedWire(MCore::Command* orgCommand)
+        : MCore::Command(s_commandName, orgCommand)
+    {
+    }
+
+    CommandAnimGraphAdjustPinnedWire::~CommandAnimGraphAdjustPinnedWire()
+    {
+    }
+
+    EMotionFX::AnimGraphNode* CommandAnimGraphAdjustPinnedWire::GetNode() const
+    {
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(m_animGraphId);
+        return animGraph ? animGraph->RecursiveFindNodeById(m_nodeId) : nullptr;
+    }
+
+    bool CommandAnimGraphAdjustPinnedWire::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    {
+        EMotionFX::AnimGraph* animGraph = CommandsGetAnimGraph(parameters, this, outResult);
+        if (!animGraph)
+        {
+            return false;
+        }
+
+        const AZStd::string nodeName = parameters.GetValue("nodeName", this);
+        EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeByName(nodeName.c_str());
+        if (!node)
+        {
+            outResult = AZStd::string::format("Cannot find node with name '%s' in anim graph '%s'.", nodeName.c_str(), animGraph->GetFileName());
+            return false;
+        }
+
+        AZStd::vector<AZ::Vector2> waypoints;
+        const AZStd::string serializedWaypoints = parameters.GetValue("waypoints", this);
+        if (!serializedWaypoints.empty() && !MCore::ReflectionSerializer::Deserialize(&waypoints, serializedWaypoints))
+        {
+            outResult = AZStd::string::format("Cannot deserialize the pinned wire waypoints of node '%s'.", nodeName.c_str());
+            return false;
+        }
+
+        AZStd::vector<EMotionFX::BlendTreePinnedWire> pinnedWires = node->GetPinnedWires();
+        const int index = parameters.GetValueAsInt("index", this);
+        if (parameters.GetValueAsBool("add", this))
+        {
+            const int sourcePort = parameters.GetValueAsInt("sourcePort", this);
+            if (sourcePort < 0 || static_cast<size_t>(sourcePort) >= node->GetOutputPorts().size())
+            {
+                outResult = AZStd::string::format("Node '%s' has no output port %d to pin a wire to.", nodeName.c_str(), sourcePort);
+                return false;
+            }
+
+            if (waypoints.empty())
+            {
+                outResult = "A pinned wire needs at least its pin.";
+                return false;
+            }
+
+            pinnedWires.emplace_back(aznumeric_cast<AZ::u16>(sourcePort), waypoints);
+        }
+        else
+        {
+            if (index < 0 || static_cast<size_t>(index) >= pinnedWires.size())
+            {
+                outResult = AZStd::string::format("Node '%s' has no pinned wire %d.", nodeName.c_str(), index);
+                return false;
+            }
+
+            if (parameters.GetValueAsBool("remove", this) || waypoints.empty())
+            {
+                pinnedWires.erase(pinnedWires.begin() + index);
+            }
+            else
+            {
+                pinnedWires[index].m_waypoints = waypoints;
+            }
+        }
+
+        m_animGraphId = animGraph->GetID();
+        m_nodeId = node->GetId();
+        m_oldPinnedWires = node->GetPinnedWires();
+        node->SetPinnedWires(pinnedWires);
+
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
+        animGraph->SetDirtyFlag(true);
+        return true;
+    }
+
+    bool CommandAnimGraphAdjustPinnedWire::Undo([[maybe_unused]] const MCore::CommandLine& parameters, AZStd::string& outResult)
+    {
+        EMotionFX::AnimGraphNode* node = GetNode();
+        if (!node)
+        {
+            outResult = AZStd::string::format("The node with id %s does not exist anymore.", m_nodeId.ToString().c_str());
+            return false;
+        }
+
+        node->SetPinnedWires(m_oldPinnedWires);
+        if (EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(m_animGraphId))
+        {
+            animGraph->SetDirtyFlag(m_oldDirtyFlag);
+        }
+        return true;
+    }
+
+    void CommandAnimGraphAdjustPinnedWire::InitSyntax()
+    {
+        GetSyntax().ReserveParameters(7);
+        GetSyntax().AddRequiredParameter("animGraphID", "The id of the anim graph to work on.", MCore::CommandSyntax::PARAMTYPE_INT);
+        GetSyntax().AddRequiredParameter("nodeName", "The name of the node whose output the wire leaves.", MCore::CommandSyntax::PARAMTYPE_STRING);
+        GetSyntax().AddParameter("add", "Add a new pinned wire instead of changing one.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "false");
+        GetSyntax().AddParameter("index", "The pinned wire to change or remove.", MCore::CommandSyntax::PARAMTYPE_INT, "0");
+        GetSyntax().AddParameter("sourcePort", "The output port a new pinned wire leaves.", MCore::CommandSyntax::PARAMTYPE_INT, "0");
+        GetSyntax().AddParameter("waypoints", "The serialized bend points, ending at the pin. Empty removes the wire.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
+        GetSyntax().AddParameter("remove", "Remove the pinned wire.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "false");
+    }
+
+    const char* CommandAnimGraphAdjustPinnedWire::GetDescription() const
+    {
+        return "This command adds, changes or removes a visual-only wire that ends at a pin.";
+    }
+
+    static void ExecutePinnedWireCommand(const EMotionFX::AnimGraphNode* node, bool add, size_t index, AZ::u16 sourcePort,
+        const AZStd::vector<AZ::Vector2>& waypoints, bool remove, MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        const AZ::Outcome<AZStd::string> serializedWaypoints = MCore::ReflectionSerializer::Serialize(&waypoints);
+        if (!serializedWaypoints.IsSuccess())
+        {
+            AZ_Error("EMotionFX", false, "Failed to serialize the pinned wire waypoints.");
+            return;
+        }
+
+        const AZStd::string command = AZStd::string::format("%s -animGraphID %i -nodeName \"%s\" -add %s -index %zu -sourcePort %u -remove %s -waypoints {%s}",
+            CommandAnimGraphAdjustPinnedWire::s_commandName,
+            node->GetAnimGraph()->GetID(),
+            node->GetName(),
+            add ? "true" : "false",
+            index,
+            static_cast<unsigned int>(sourcePort),
+            remove ? "true" : "false",
+            serializedWaypoints.GetValue().c_str());
+
+        CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
+    }
+
+    void AddPinnedWire(const EMotionFX::AnimGraphNode* node, AZ::u16 sourcePort, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        ExecutePinnedWireCommand(node, true, 0, sourcePort, waypoints, false, commandGroup, executeInsideCommand);
+    }
+
+    void AdjustPinnedWire(const EMotionFX::AnimGraphNode* node, size_t index, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        ExecutePinnedWireCommand(node, false, index, 0, waypoints, false, commandGroup, executeInsideCommand);
+    }
+
+    void RemovePinnedWire(const EMotionFX::AnimGraphNode* node, size_t index, MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        ExecutePinnedWireCommand(node, false, index, 0, {}, true, commandGroup, executeInsideCommand);
+    }
+
+
+    //-------------------------------------------------------------------------------------
     // CommandAnimGraphAdjustTransition
     //-------------------------------------------------------------------------------------
     void AdjustTransition(const EMotionFX::AnimGraphStateTransition* transition,

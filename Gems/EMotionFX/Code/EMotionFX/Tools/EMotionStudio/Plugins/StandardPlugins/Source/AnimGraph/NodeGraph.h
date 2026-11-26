@@ -33,10 +33,19 @@ namespace EMStudio
     // forward declarations
     class GraphNode;
     class NodeConnection;
+    class PinnedWire;
     class NodeGraphWidget;
     class NodePort;
     class StateConnection;
     class ZoomableLineEdit;
+
+    // One waypoint being dragged: the connection holding it, its index, and the connection's waypoints before the drag.
+    struct RepositionedWaypoint
+    {
+        NodeConnection* m_connection = nullptr;
+        size_t m_index = InvalidIndex;
+        AZStd::vector<AZ::Vector2> m_oldWaypoints;
+    };
 
     class NodeGraph
         : public QObject
@@ -86,20 +95,37 @@ namespace EMStudio
         bool GetReplaceTransitionValid() const                              { return m_replaceTransitionValid; }
         void RenderReplaceTransition(QPainter& painter);
 
-        bool GetIsRepositioningWaypoint() const { return (m_waypointConnection != nullptr); }
-        NodeConnection* GetRepositionedWaypointConnection() const { return m_waypointConnection; }
-        size_t GetRepositionedWaypointIndex() const { return m_waypointIndex; }
-        const AZStd::vector<AZ::Vector2>& GetRepositionedWaypointOldValues() const { return m_waypointOldValues; }
+        bool GetIsRepositioningWaypoint() const { return !m_waypointDrags.empty(); }
+        // The waypoint that was grabbed. Every waypoint dragged along with it is in GetRepositionedWaypoints().
+        NodeConnection* GetRepositionedWaypointConnection() const;
+        size_t GetRepositionedWaypointIndex() const;
+        const AZStd::vector<AZ::Vector2>& GetRepositionedWaypointOldValues() const;
+        const AZStd::vector<RepositionedWaypoint>& GetRepositionedWaypoints() const { return m_waypointDrags; }
 
+        // Starts dragging the given waypoint, and with it every waypoint it shares a pin with (see FindSharedWaypoints).
         void StartRepositionWaypoint(NodeConnection* connection, size_t waypointIndex, const AZStd::vector<AZ::Vector2>& oldWaypoints);
+        void MoveRepositionedWaypoints(const AZ::Vector2& position);
         void StopRepositionWaypoint();
         void CancelRepositionWaypoint();
+
+        // Collects the given waypoint, then the ones at the same spot on other blend tree wires from the same output.
+        // Together they are one pin that moves and goes away as one. Transition waypoints are never shared.
+        void FindSharedWaypoints(NodeConnection* connection, size_t waypointIndex, AZStd::vector<AZStd::pair<NodeConnection*, size_t>>& outWaypoints);
+
+        // The wires of this graph that end at a pin (see PinnedWire), brought in line with the nodes' data first.
+        const AZStd::vector<AZStd::unique_ptr<PinnedWire>>& GetPinnedWires();
+        PinnedWire* FindPinnedWire(const EMotionFX::AnimGraphNode* node, size_t wireIndex);
+        // Returns the pinned wire whose waypoint or pin is under the given point, or nullptr.
+        PinnedWire* FindPinnedWireWaypoint(const QPoint& mousePos, size_t& outWaypointIndex);
 
         GraphNode* GetCreateConnectionNode() const;
         NodeConnection* GetRelinkConnection()                  { return m_relinkConnection; }
         AZ::u16 GetCreateConnectionPortNr() const              { return m_conPortNr; }
         bool GetCreateConnectionIsInputPort() const            { return m_conIsInputPort; }
         const QPoint& GetCreateConnectionStartOffset() const   { return m_conStartOffset; }
+        // The bend points the connection being created starts with: set when it branches off a waypoint of another wire.
+        const AZStd::vector<AZ::Vector2>& GetCreateConnectionWaypoints() const { return m_conWaypoints; }
+        void SetCreateConnectionWaypoints(const AZStd::vector<AZ::Vector2>& waypoints) { m_conWaypoints = waypoints; }
         const QPoint& GetCreateConnectionEndOffset() const     { return m_conEndOffset; }
         void SetCreateConnectionEndOffset(const QPoint& offset){ m_conEndOffset = offset; }
 
@@ -222,6 +248,7 @@ namespace EMStudio
 
         // connection info
         QPoint                      m_conStartOffset;
+        AZStd::vector<AZ::Vector2>  m_conWaypoints;
         QPoint                      m_conEndOffset;
         AZ::u16                     m_conPortNr;
         bool                        m_conIsInputPort;
@@ -242,9 +269,11 @@ namespace EMStudio
         GraphNode*                  m_replaceTransitionTargetNode;
         bool                        m_replaceTransitionValid;
 
-        NodeConnection*             m_waypointConnection; // nullptr when not dragging a waypoint
-        size_t                      m_waypointIndex;
-        AZStd::vector<AZ::Vector2>  m_waypointOldValues;
+        AZStd::vector<RepositionedWaypoint> m_waypointDrags; // empty when not dragging a waypoint
+
+        // Rebuilt from the nodes' data whenever the set of pinned wires changes. They only point at their source graph node.
+        void SyncPinnedWires();
+        AZStd::vector<AZStd::unique_ptr<PinnedWire>> m_pinnedWires;
 
         static constexpr qreal      s_minSubgridPixelSpacing = 6.0; // closer sub grid lines are not drawn
         QPen                        m_subgridPen;

@@ -10,6 +10,7 @@
 #include "NodeConnection.h"
 #include "NodeGraph.h"
 #include "GraphNode.h"
+#include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/BlendTreeConnection.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <MCore/Source/FastMath.h>
@@ -74,12 +75,14 @@ namespace EMStudio
         m_painterPath = QPainterPath();
         m_painterPath.moveTo(points.front());
         const size_t lastIndex = points.size() - 1;
+        const bool endsAtPort = GetEndsAtPort();
         for (size_t i = 1; i <= lastIndex; ++i)
         {
             const QPoint from = points[i - 1];
             const QPoint to = points[i];
+            const bool intoPort = i == lastIndex && endsAtPort;
             const int fromX = i == 1 ? from.x() + 3 : from.x();
-            const int toX = i == lastIndex ? to.x() - 3 : to.x();
+            const int toX = intoPort ? to.x() - 3 : to.x();
             if (i == 1)
             {
                 m_painterPath.lineTo(fromX, from.y());
@@ -87,7 +90,7 @@ namespace EMStudio
 
             const float width = aznumeric_cast<float>(abs(toX - fromX));
             m_painterPath.cubicTo(from.x() + (width / 2), from.y(), to.x() - (width / 2), to.y(), toX, to.y());
-            if (i == lastIndex)
+            if (intoPort)
             {
                 m_painterPath.lineTo(to);
             }
@@ -308,8 +311,11 @@ namespace EMStudio
         //QPainterPath testPath;
         //testPath.addRect( rect );
 
+        // Test the drawn line, not the path's area: a wire bent at waypoints encloses a large area that covers its neighbours.
         UpdatePainterPath();
-        return m_painterPath.intersects(rect);
+        QPainterPathStroker stroker;
+        stroker.setWidth(1.0);
+        return stroker.createStroke(m_painterPath).intersects(QRectF(rect));
     }
 
 
@@ -615,5 +621,135 @@ namespace EMStudio
         }
 
         return false;
+    }
+
+    PinnedWire::PinnedWire(NodeGraph* parentGraph, GraphNode* sourceNode, size_t wireIndex)
+        : NodeConnection(parentGraph, sourceNode->GetModelIndex(), nullptr, 0, sourceNode, 0)
+        , m_wireIndex(wireIndex)
+    {
+        if (const EMotionFX::BlendTreePinnedWire* wire = GetPinnedWire())
+        {
+            m_sourcePortNr = wire->m_sourcePort;
+        }
+    }
+
+    EMotionFX::AnimGraphNode* PinnedWire::GetAnimGraphNode() const
+    {
+        return m_modelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+    }
+
+    const EMotionFX::BlendTreePinnedWire* PinnedWire::GetPinnedWire() const
+    {
+        const EMotionFX::AnimGraphNode* node = GetAnimGraphNode();
+        if (!node || m_wireIndex >= node->GetPinnedWires().size())
+        {
+            return nullptr;
+        }
+
+        return &node->GetPinnedWires()[m_wireIndex];
+    }
+
+    const AZStd::vector<AZ::Vector2>* PinnedWire::GetWaypoints() const
+    {
+        const EMotionFX::BlendTreePinnedWire* wire = GetPinnedWire();
+        return wire ? &wire->m_waypoints : nullptr;
+    }
+
+    void PinnedWire::SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints)
+    {
+        if (EMotionFX::AnimGraphNode* node = GetAnimGraphNode())
+        {
+            node->SetPinnedWireWaypoints(m_wireIndex, waypoints);
+        }
+    }
+
+    void PinnedWire::CalcPolyline(AZStd::vector<QPoint>& outPoints) const
+    {
+        outPoints.clear();
+        outPoints.push_back(GetSourceRect().center() + QPoint(0, 1));
+        if (const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints())
+        {
+            for (const AZ::Vector2& waypoint : *waypoints)
+            {
+                outPoints.push_back(QPoint(aznumeric_cast<int>(waypoint.GetX()), aznumeric_cast<int>(waypoint.GetY())));
+            }
+        }
+
+        // Always two points, so the path code can index both ends.
+        if (outPoints.size() == 1)
+        {
+            outPoints.push_back(outPoints.front());
+        }
+    }
+
+    void PinnedWire::Update(const QRect& visibleRect, [[maybe_unused]] const QPoint& mousePos)
+    {
+        m_isHighlighted = false;
+        m_isConnectedHighlighted = false;
+
+        // There is no target port, so the bounds are the output and every bend point, the pin included.
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(points);
+        const int margin = s_pinRadius * 2;
+        QRect rect(points.front(), QSize(1, 1));
+        for (const QPoint& point : points)
+        {
+            rect = rect.united(QRect(point - QPoint(margin, margin), QSize(2 * margin + 1, 2 * margin + 1)));
+        }
+
+        m_rect = rect;
+        m_finalRect = m_parentGraph->GetTransform().mapRect(rect);
+        m_isVisible = m_finalRect.intersects(visibleRect);
+    }
+
+    void PinnedWire::Render([[maybe_unused]] const QItemSelectionModel& selectionModel, QPainter& painter, QPen* pen, QBrush* brush,
+        [[maybe_unused]] int32 stepSize, [[maybe_unused]] const QRect& visibleRect, float opacity, [[maybe_unused]] bool alwaysColor)
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!m_isVisible || !waypoints || waypoints->empty() || !m_sourceNode || m_sourcePortNr >= m_sourceNode->GetNumOutputPorts())
+        {
+            return;
+        }
+
+        painter.setOpacity(opacity);
+        const QColor color = m_sourceNode->GetOutputPort(m_sourcePortNr)->GetColor();
+
+        pen->setStyle(Qt::SolidLine);
+        pen->setWidthF(1.5f);
+        pen->setColor(color);
+        painter.setPen(*pen);
+        painter.setBrush(Qt::NoBrush);
+        UpdatePainterPath();
+        painter.drawPath(m_painterPath);
+
+        RenderWaypoints(painter, *brush, *pen, color);
+        painter.setBrush(Qt::NoBrush);
+
+        painter.setOpacity(1.0f);
+        pen->setWidth(1);
+    }
+
+    void PinnedWire::RenderPin(QPainter& painter, QPen* pen, QBrush* brush)
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!m_isVisible || !waypoints || waypoints->empty() || !m_sourceNode || m_sourcePortNr >= m_sourceNode->GetNumOutputPorts())
+        {
+            return;
+        }
+
+        // The pin is a bigger dot than a bend point: more wires can be dragged out of it.
+        const QColor color = m_sourceNode->GetOutputPort(m_sourcePortNr)->GetColor();
+        const AZ::Vector2& pinPosition = waypoints->back();
+        pen->setStyle(Qt::SolidLine);
+        pen->setWidthF(1.5f);
+        pen->setColor(color.lighter(160));
+        painter.setPen(*pen);
+        brush->setStyle(Qt::SolidPattern);
+        brush->setColor(color);
+        painter.setBrush(*brush);
+        painter.drawEllipse(QPointF(pinPosition.GetX(), pinPosition.GetY()), s_pinRadius, s_pinRadius);
+
+        painter.setBrush(Qt::NoBrush);
+        pen->setWidth(1);
     }
 }   // namespace EMotionFX

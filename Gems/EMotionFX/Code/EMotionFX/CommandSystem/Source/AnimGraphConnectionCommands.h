@@ -111,6 +111,29 @@ namespace CommandSystem
         MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
 
 
+    // Add, change or remove one pinned wire of a node: a visual-only wire from an output that ends at a pin.
+    // The blend tree never evaluates pinned wires.
+    MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustPinnedWire, "Adjust pinned wire", true)
+        uint32                                      m_animGraphId = MCORE_INVALIDINDEX32;
+        EMotionFX::AnimGraphNodeId                  m_nodeId;
+        AZStd::vector<EMotionFX::BlendTreePinnedWire> m_oldPinnedWires;
+        bool                                        m_oldDirtyFlag = false;
+
+    public:
+        static const char* s_commandName;
+
+        // The node holding the pinned wires, or nullptr when it is gone.
+        EMotionFX::AnimGraphNode* GetNode() const;
+    MCORE_DEFINECOMMAND_END
+
+    void AddPinnedWire(const EMotionFX::AnimGraphNode* node, AZ::u16 sourcePort, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+    void AdjustPinnedWire(const EMotionFX::AnimGraphNode* node, size_t index, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+    void RemovePinnedWire(const EMotionFX::AnimGraphNode* node, size_t index,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+
+
     // adjust transition
     void AdjustTransition(const EMotionFX::AnimGraphStateTransition* transition,
         const AZStd::optional<bool>& isDisabled = AZStd::nullopt,

@@ -79,6 +79,9 @@ namespace EMStudio
         m_commandCallbacks.emplace_back(new CommandDidAdjustBlendTreeConnectionCallback(*this));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAnimGraphAdjustConnection::s_commandName, m_commandCallbacks.back());
 
+        m_commandCallbacks.emplace_back(new CommandDidAdjustPinnedWireCallback(*this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAnimGraphAdjustPinnedWire::s_commandName, m_commandCallbacks.back());
+
         // Transition conditions.
         m_commandCallbacks.emplace_back(new CommandDidAddRemoveConditionCallback(*this));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAddTransitionCondition::s_commandName, m_commandCallbacks.back());

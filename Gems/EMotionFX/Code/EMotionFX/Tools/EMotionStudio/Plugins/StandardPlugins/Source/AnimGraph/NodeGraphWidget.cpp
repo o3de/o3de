@@ -525,9 +525,8 @@ namespace EMStudio
             // check if we are dragging a waypoint of a transition or a blend tree connection
             if (m_activeGraph->GetIsRepositioningWaypoint())
             {
-                NodeConnection* connection = m_activeGraph->GetRepositionedWaypointConnection();
                 const QPoint snappedPos = SnapLocalToGrid(globalPos);
-                connection->SetWaypoint(m_activeGraph->GetRepositionedWaypointIndex(),
+                m_activeGraph->MoveRepositionedWaypoints(
                     AZ::Vector2(aznumeric_cast<float>(snappedPos.x()), aznumeric_cast<float>(snappedPos.y())));
             }
 
@@ -920,6 +919,28 @@ namespace EMStudio
                     m_panning = false;
                     m_rectSelecting = false;
 
+                    // Alt-dragging a blend tree waypoint starts a new wire from the same output, bent through the waypoints up
+                    // to this one, so a waypoint works as a pin to branch from. The result is an ordinary direct connection.
+                    GraphNode* branchSourceNode = waypointConnection->GetSourceNode();
+                    if (m_altPressed
+                        && actionFilter.m_createConnections
+                        && (waypointConnection->GetType() == NodeConnection::TYPE_ID
+                            || waypointConnection->GetType() == PinnedWire::TYPE_ID)
+                        && branchSourceNode)
+                    {
+                        const AZStd::vector<AZ::Vector2>& waypoints = *waypointConnection->GetWaypoints();
+                        const AZ::u16 sourcePortNr = waypointConnection->GetOutputPortNr();
+                        const QPoint pinPos(
+                            aznumeric_cast<int>(waypoints[waypointIndex].GetX()), aznumeric_cast<int>(waypoints[waypointIndex].GetY()));
+
+                        UpdateMouseCursor(mousePos, globalPos);
+                        m_activeGraph->StartCreateConnection(sourcePortNr, false, branchSourceNode,
+                            branchSourceNode->GetOutputPort(sourcePortNr), pinPos - branchSourceNode->GetRect().topLeft());
+                        m_activeGraph->SetCreateConnectionWaypoints(
+                            AZStd::vector<AZ::Vector2>(waypoints.begin(), waypoints.begin() + waypointIndex + 1));
+                        return;
+                    }
+
                     m_activeGraph->StartRepositionWaypoint(waypointConnection, waypointIndex, *waypointConnection->GetWaypoints());
                     return;
                 }
@@ -1163,6 +1184,12 @@ namespace EMStudio
                         }
                     }
                 }
+                else if (m_altPressed && actionFilter.m_createConnections && !m_activeGraph->GetCreateConnectionIsInputPort())
+                {
+                    // Alt-dropping a new wire on empty space leaves it ending at a pin, to branch more wires off later.
+                    OnCreatePinnedWire(m_activeGraph->GetCreateConnectionPortNr(), m_activeGraph->GetCreateConnectionNode(),
+                        SnapLocalToGrid(globalPos));
+                }
 
                 m_activeGraph->StopCreateConnection();
                 m_leftMousePressed = false;
@@ -1259,11 +1286,10 @@ namespace EMStudio
             // in case we dragged a waypoint
             if (m_activeGraph->GetIsRepositioningWaypoint())
             {
-                NodeConnection* connection = m_activeGraph->GetRepositionedWaypointConnection();
-                const AZStd::vector<AZ::Vector2> oldWaypoints = m_activeGraph->GetRepositionedWaypointOldValues();
+                const AZStd::vector<RepositionedWaypoint> drags = m_activeGraph->GetRepositionedWaypoints();
                 m_activeGraph->StopRepositionWaypoint();
 
-                CommitWaypoints(connection, oldWaypoints);
+                CommitWaypoints(drags);
 
                 m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
@@ -1718,10 +1744,16 @@ namespace EMStudio
         AZ_UNUSED(endOffset);
     }
 
-    void NodeGraphWidget::CommitWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    void NodeGraphWidget::CommitWaypoints(const AZStd::vector<RepositionedWaypoint>& drags)
     {
-        AZ_UNUSED(connection);
-        AZ_UNUSED(oldWaypoints);
+        AZ_UNUSED(drags);
+    }
+
+    void NodeGraphWidget::OnCreatePinnedWire(AZ::u16 sourcePortNr, GraphNode* sourceNode, const QPoint& pinPosition)
+    {
+        AZ_UNUSED(sourcePortNr);
+        AZ_UNUSED(sourceNode);
+        AZ_UNUSED(pinPosition);
     }
 
     void NodeGraphWidget::ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset,

@@ -149,4 +149,67 @@ namespace EMotionFX
         EXPECT_FLOAT_EQ(directWeight, 0.25f);
         EXPECT_FLOAT_EQ(m_blend->GetInputNumberAsFloat(m_animGraphInstance, BlendTreeBlend2Node::INPUTPORT_WEIGHT), directWeight);
     }
+
+    TEST_F(BlendTreeConnectionWaypointFixture, PinnedWiresAddChangeRemoveAndUndo)
+    {
+        CommandSystem::CommandManager commandManager;
+        AZStd::string result;
+        const AZStd::vector<AZ::Vector2> moved{ AZ::Vector2(50.0f, 60.0f) };
+
+        CommandSystem::AddPinnedWire(m_weight, 0, m_waypoints);
+        ASSERT_EQ(m_weight->GetPinnedWires().size(), size_t{ 1 });
+        EXPECT_EQ(m_weight->GetPinnedWires()[0], BlendTreePinnedWire(0, m_waypoints));
+
+        CommandSystem::AdjustPinnedWire(m_weight, 0, moved);
+        EXPECT_EQ(m_weight->GetPinnedWires()[0].m_waypoints, moved);
+
+        CommandSystem::RemovePinnedWire(m_weight, 0);
+        EXPECT_TRUE(m_weight->GetPinnedWires().empty());
+
+        ASSERT_TRUE(commandManager.Undo(result)) << result.c_str();
+        ASSERT_EQ(m_weight->GetPinnedWires().size(), size_t{ 1 });
+        EXPECT_EQ(m_weight->GetPinnedWires()[0].m_waypoints, moved);
+
+        ASSERT_TRUE(commandManager.Undo(result)) << result.c_str();
+        EXPECT_EQ(m_weight->GetPinnedWires()[0].m_waypoints, m_waypoints);
+
+        ASSERT_TRUE(commandManager.Undo(result)) << result.c_str();
+        EXPECT_TRUE(m_weight->GetPinnedWires().empty());
+
+        ASSERT_TRUE(commandManager.Redo(result)) << result.c_str();
+        EXPECT_EQ(m_weight->GetPinnedWires().size(), size_t{ 1 });
+    }
+
+    TEST_F(BlendTreeConnectionWaypointFixture, PinnedWireNeedsAnOutputAndAPin)
+    {
+        CommandSystem::CommandManager commandManager;
+        AZStd::string result;
+        const AZStd::string waypoints = MCore::ReflectionSerializer::Serialize(&m_waypoints).GetValue();
+
+        EXPECT_FALSE(commandManager.ExecuteCommand(AZStd::string::format(
+            "AnimGraphAdjustPinnedWire -animGraphID %u -nodeName Weight -add true -sourcePort 5 -waypoints {%s}",
+            m_blendTreeAnimGraph->GetID(), waypoints.c_str()), result));
+        EXPECT_FALSE(commandManager.ExecuteCommand(AZStd::string::format(
+            "AnimGraphAdjustPinnedWire -animGraphID %u -nodeName Weight -add true -sourcePort 0",
+            m_blendTreeAnimGraph->GetID()), result));
+        EXPECT_FALSE(commandManager.ExecuteCommand(AZStd::string::format(
+            "AnimGraphAdjustPinnedWire -animGraphID %u -nodeName Weight -index 0 -remove true",
+            m_blendTreeAnimGraph->GetID()), result));
+        EXPECT_TRUE(m_weight->GetPinnedWires().empty());
+    }
+
+    TEST_F(BlendTreeConnectionWaypointFixture, PinnedWiresSurviveSerializationAndAreNeverEvaluated)
+    {
+        m_weight->SetPinnedWires({ BlendTreePinnedWire(0, m_waypoints) });
+
+        const AZ::Outcome<AZStd::string> serialized = MCore::ReflectionSerializer::Serialize(m_weight);
+        ASSERT_TRUE(serialized.IsSuccess());
+        BlendTreeFloatConstantNode loaded;
+        ASSERT_TRUE(MCore::ReflectionSerializer::Deserialize(&loaded, serialized.GetValue()));
+        EXPECT_EQ(loaded.GetPinnedWires(), m_weight->GetPinnedWires());
+
+        m_weight->SetValue(0.25f);
+        GetEMotionFX().Update(1.0f / 60.0f);
+        EXPECT_FLOAT_EQ(m_blend->GetInputNumberAsFloat(m_animGraphInstance, BlendTreeBlend2Node::INPUTPORT_WEIGHT), 0.25f);
+    }
 } // namespace EMotionFX

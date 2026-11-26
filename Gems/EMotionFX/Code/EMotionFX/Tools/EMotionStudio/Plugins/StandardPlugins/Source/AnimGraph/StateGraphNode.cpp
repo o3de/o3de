@@ -236,6 +236,99 @@ namespace EMStudio
         }
     }
 
+    bool StateConnection::LayOutConditionShapes(const QPoint* points, size_t pointCount, size_t shapeCount, AZStd::vector<AZ::Vector2>& outCenters)
+    {
+        outCenters.clear();
+        if (shapeCount == 0 || pointCount < 2)
+        {
+            return false;
+        }
+
+        // Distance along the path at each point.
+        AZStd::vector<float> along;
+        along.reserve(pointCount);
+        along.push_back(0.0f);
+        for (size_t i = 1; i < pointCount; ++i)
+        {
+            along.push_back(along.back() + AZ::Vector2(
+                aznumeric_cast<float>(points[i].x() - points[i - 1].x()),
+                aznumeric_cast<float>(points[i].y() - points[i - 1].y())).GetLength());
+        }
+        const size_t lastIndex = along.size() - 1;
+        const float pathLength = along.back();
+
+        // The row is centred on the middle of the path. Every waypoint it passes costs a gap, so the centring is
+        // refined until the number of waypoints inside the row stops changing.
+        const float gapStart = s_conditionGap * 0.5f;
+        size_t gaps = 0;
+        float rowStart = 0.0f;
+        for (int pass = 0; pass < 4; ++pass)
+        {
+            const float rowLength = s_conditionSpacing * aznumeric_cast<float>(shapeCount) + s_conditionGap * aznumeric_cast<float>(gaps);
+            rowStart = (pathLength - rowLength) * 0.5f;
+            size_t gapsInRow = 0;
+            for (size_t v = 1; v < lastIndex; ++v)
+            {
+                if (along[v] > rowStart && along[v] < rowStart + rowLength)
+                {
+                    ++gapsInRow;
+                }
+            }
+
+            if (gapsInRow == gaps)
+            {
+                break;
+            }
+            gaps = gapsInRow;
+        }
+
+        // Place the shapes one after the other, jumping over the space around each waypoint they would cover.
+        float cursor = AZStd::max(rowStart, 0.0f);
+        size_t vertex = 1;
+        size_t segment = 1;
+        for (size_t shape = 0; shape < shapeCount; ++shape)
+        {
+            while (vertex < lastIndex)
+            {
+                if (along[vertex] + gapStart <= cursor)
+                {
+                    ++vertex;
+                    continue;
+                }
+
+                if (along[vertex] - gapStart < cursor + s_conditionSpacing)
+                {
+                    cursor = along[vertex] + gapStart;
+                    ++vertex;
+                    continue;
+                }
+                break;
+            }
+
+            const float center = cursor + s_conditionSpacing * 0.5f;
+            if (cursor + s_conditionSpacing > pathLength)
+            {
+                // Not enough room on this path, so show nothing rather than shapes spilling over the nodes.
+                outCenters.clear();
+                return false;
+            }
+
+            while (segment < lastIndex && along[segment] < center)
+            {
+                ++segment;
+            }
+
+            const float segmentLength = along[segment] - along[segment - 1];
+            const float t = segmentLength > MCore::Math::epsilon ? (center - along[segment - 1]) / segmentLength : 0.0f;
+            const AZ::Vector2 from(aznumeric_cast<float>(points[segment - 1].x()), aznumeric_cast<float>(points[segment - 1].y()));
+            const AZ::Vector2 to(aznumeric_cast<float>(points[segment].x()), aznumeric_cast<float>(points[segment].y()));
+            outCenters.push_back(from + (to - from) * t);
+            cursor += s_conditionSpacing;
+        }
+
+        return true;
+    }
+
     void StateConnection::RenderConditionsAndActions(
         EMotionFX::AnimGraphInstance* animGraphInstance,
         const EMotionFX::AnimGraphStateTransition* transition,
@@ -253,74 +346,58 @@ namespace EMStudio
 
         const size_t numConditions = transition->GetNumConditions();
         const size_t numActions = transition->GetTriggerActionSetup().GetNumActions();
-        const size_t sumSize = numConditions + numActions;
 
-        // precalculate some values we need for the condition rendering
-        const float             shapeDiameter = 3.0f;
-        const float             shapeStride = 4.0f;
-        const float             elementSize = shapeDiameter + shapeStride;
-
-        // The shapes are laid out in a straight line, so they go on the path segment that holds the midpoint.
-        AZ::Vector2 transitionMid = AZ::Vector2::CreateZero();
-        AZ::Vector2 transitionDir = AZ::Vector2::CreateAxisX();
-        float midSegmentLength = 0.0f;
-        const bool hasMidpoint = FindPathMidpoint(points, pointCount, transitionMid, transitionDir, midSegmentLength);
-
-        // only draw the transition conditions in case the arrow has enough space for it, avoid zero rect sized crashes as well
-        if (hasMidpoint && midSegmentLength > sumSize * elementSize)
+        // Conditions come first, then actions, in one row that follows the path round its waypoints.
+        AZStd::vector<AZ::Vector2>& centers = m_shapeScratch;
+        if (!LayOutConditionShapes(points, pointCount, numConditions + numActions, centers))
         {
-            const AZ::Vector2   conditionStart = transitionMid - transitionDir * (elementSize * 0.5f * (float)(sumSize));
-            const AZ::Vector2   actionStart = transitionMid - transitionDir * (elementSize * 0.5f * (float)sumSize) + transitionDir * aznumeric_cast<float>(elementSize) * aznumeric_cast<float>(numConditions);
+            return;
+        }
 
-            for (size_t i = 0; i < numConditions; ++i)
+        const float shapeRadius = s_conditionShapeRadius;
+        for (size_t i = 0; i < numConditions; ++i)
+        {
+            EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
+
+            // set the condition color either green if the test went okay or red if the test returned false
+            QColor conditionColor;
+            if (animGraphInstance)
             {
-                EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
-
-                // set the condition color either green if the test went okay or red if the test returned false
-                QColor conditionColor;
-                if (animGraphInstance)
-                {
-                    conditionColor = condition->TestCondition(animGraphInstance) ? Qt::green : Qt::red;
-                }
-                else
-                {
-                    conditionColor = Qt::gray;
-                }
-
-                // darken the color in case the transition is disabled
-                if (m_isDisabled)
-                {
-                    conditionColor = conditionColor.darker(185);
-                }
-
-                brush->setColor(conditionColor);
-
-                // calculate the circle middle point
-                const AZ::Vector2 circleMid = conditionStart + transitionDir * (elementSize * (float)i);
-
-                // render the circle per condition
-                painter->setBrush(*brush);
-                painter->drawEllipse(QPointF(circleMid.GetX(), circleMid.GetY()), shapeDiameter, shapeDiameter);
+                conditionColor = condition->TestCondition(animGraphInstance) ? Qt::green : Qt::red;
+            }
+            else
+            {
+                conditionColor = Qt::gray;
             }
 
-            QColor actionColor = Qt::yellow;
             // darken the color in case the transition is disabled
             if (m_isDisabled)
             {
-                actionColor = actionColor.darker(185);
+                conditionColor = conditionColor.darker(185);
             }
 
-            for (size_t i = 0; i < numActions; ++i)
-            {
-                brush->setColor(actionColor);
+            brush->setColor(conditionColor);
+            painter->setBrush(*brush);
+            painter->drawEllipse(QPointF(centers[i].GetX(), centers[i].GetY()), shapeRadius, shapeRadius);
+        }
 
-                // calculate the rect left top
-                const AZ::Vector2 recLeft = actionStart + transitionDir * (elementSize * (float)i) - AZ::Vector2(shapeDiameter, shapeDiameter);
+        QColor actionColor = Qt::yellow;
+        // darken the color in case the transition is disabled
+        if (m_isDisabled)
+        {
+            actionColor = actionColor.darker(185);
+        }
 
-                // render the rect per action
-                painter->setBrush(*brush);
-                painter->drawRect(aznumeric_cast<int>(recLeft.GetX()), aznumeric_cast<int>(recLeft.GetY()), aznumeric_cast<int>(shapeDiameter * 2), aznumeric_cast<int>(shapeDiameter * 2));
-            }
+        brush->setColor(actionColor);
+        painter->setBrush(*brush);
+        for (size_t i = 0; i < numActions; ++i)
+        {
+            const AZ::Vector2& center = centers[numConditions + i];
+            painter->drawRect(
+                aznumeric_cast<int>(center.GetX() - shapeRadius),
+                aznumeric_cast<int>(center.GetY() - shapeRadius),
+                aznumeric_cast<int>(shapeRadius * 2),
+                aznumeric_cast<int>(shapeRadius * 2));
         }
     }
 
@@ -347,37 +424,21 @@ namespace EMStudio
             points[1] = end;
         }
 
+        // Use the same layout as the rendering, actions included, so the shape under the mouse is the one that is hit.
         const size_t numConditions = transition->GetNumConditions();
-
-        // precalculate some values we need for the condition rendering
-        const float             circleDiameter  = 3.0f;
-        const float             circleStride    = 4.0f;
-        const float             elementSize     = circleDiameter + circleStride;
-
-        AZ::Vector2 transitionMid = AZ::Vector2::CreateZero();
-        AZ::Vector2 transitionDir = AZ::Vector2::CreateAxisX();
-        float midSegmentLength = 0.0f;
-        const bool hasMidpoint = FindPathMidpoint(points.data(), points.size(), transitionMid, transitionDir, midSegmentLength);
-
-        // only draw the transition conditions in case the arrow has enough space for it, avoid zero rect sized crashes as well
-        if (hasMidpoint && midSegmentLength > numConditions * elementSize)
+        const size_t numActions = transition->GetTriggerActionSetup().GetNumActions();
+        AZStd::vector<AZ::Vector2>& centers = m_shapeScratch;
+        if (!LayOutConditionShapes(points.data(), points.size(), numConditions + numActions, centers))
         {
-            const AZ::Vector2   conditionStart  = transitionMid - transitionDir * (elementSize * 0.5f * (float)numConditions);
+            return nullptr;
+        }
 
-            // iterate through the conditions and render them
-            for (size_t i = 0; i < numConditions; ++i)
+        const AZ::Vector2 mouse(aznumeric_cast<float>(mousePos.x()), aznumeric_cast<float>(mousePos.y()));
+        for (size_t i = 0; i < numConditions; ++i)
+        {
+            if (AZ::Vector2(mouse - centers[i]).GetLength() <= s_conditionShapeRadius)
             {
-                // get access to the condition
-                EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
-
-                // calculate the circle middle point
-                const AZ::Vector2 circleMid = conditionStart  + transitionDir * (elementSize * (float)i);
-
-                const float distance = AZ::Vector2(AZ::Vector2(aznumeric_cast<float>(mousePos.x()), aznumeric_cast<float>(mousePos.y())) - circleMid).GetLength();
-                if (distance <= circleDiameter)
-                {
-                    return condition;
-                }
+                return transition->GetCondition(i);
             }
         }
 

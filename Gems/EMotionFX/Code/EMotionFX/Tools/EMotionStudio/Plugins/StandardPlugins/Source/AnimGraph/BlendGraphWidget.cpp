@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/sort.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
@@ -592,6 +593,21 @@ namespace EMStudio
         }
 
         m_contextMenuEventMousePos = mousePos;
+
+        // Pinned wires are not selectable, so a right-click on one of their waypoints or pins opens their menu directly.
+        size_t pinnedWaypointIndex = InvalidIndex;
+        PinnedWire* pinnedWire = nodeGraph->FindPinnedWireWaypoint(LocalToGlobal(mousePos), pinnedWaypointIndex);
+        if (pinnedWire && actionFilter.m_editConnections && !nodeGraph->IsInReferencedGraph())
+        {
+            QMenu pinnedWireMenu(this);
+            AddPinnedWireMenuEntries(pinnedWireMenu, pinnedWire, pinnedWaypointIndex);
+            if (!pinnedWireMenu.isEmpty())
+            {
+                pinnedWireMenu.exec(globalMousePos);
+                return;
+            }
+        }
+
         const AZStd::vector<EMotionFX::AnimGraphNode*> selectedAnimGraphNodes = nodeGraph->GetSelectedAnimGraphNodes();
 
         const AZStd::vector<NodeConnection*> selectedConnections = nodeGraph->GetSelectedNodeConnections();
@@ -1063,6 +1079,17 @@ namespace EMStudio
                 startOffset.y(),
                 endOffset.x(),
                 endOffset.y());
+
+            // A wire branched off a waypoint keeps the bend points it was drawn through.
+            const AZStd::vector<AZ::Vector2>& waypoints = m_activeGraph->GetCreateConnectionWaypoints();
+            if (!waypoints.empty() && !sourceIsInputPort)
+            {
+                const AZ::Outcome<AZStd::string> serializedWaypoints = MCore::ReflectionSerializer::Serialize(&waypoints);
+                if (serializedWaypoints.IsSuccess())
+                {
+                    command += AZStd::string::format(" -waypoints {%s}", serializedWaypoints.GetValue().c_str());
+                }
+            }
         }
         else
         {
@@ -1675,6 +1702,17 @@ namespace EMStudio
     void BlendGraphWidget::AdjustWaypoints(
         NodeConnection* connection, const AZStd::vector<AZ::Vector2>& waypoints, MCore::CommandGroup* commandGroup)
     {
+        if (connection->GetType() == PinnedWire::TYPE_ID)
+        {
+            // A pinned wire that loses its last waypoint loses its pin, so it goes away.
+            const PinnedWire* pinnedWire = static_cast<PinnedWire*>(connection);
+            if (const EMotionFX::AnimGraphNode* node = pinnedWire->GetAnimGraphNode())
+            {
+                CommandSystem::AdjustPinnedWire(node, pinnedWire->GetWireIndex(), waypoints, commandGroup);
+            }
+            return;
+        }
+
         if (const EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(connection))
         {
             CommandSystem::AdjustTransitionWaypoints(transition, waypoints, commandGroup);
@@ -1742,9 +1780,53 @@ namespace EMStudio
             return;
         }
 
-        AZStd::vector<AZ::Vector2> waypoints = *connection->GetWaypoints();
-        waypoints.erase(waypoints.begin() + waypointIndex);
-        AdjustWaypoints(connection, waypoints);
+        // A pin shared by several wires goes away from all of them.
+        AZStd::vector<AZStd::pair<NodeConnection*, size_t>> shared;
+        m_activeGraph->FindSharedWaypoints(connection, waypointIndex, shared);
+
+        // A pinned wire left without waypoints is removed, which renumbers the later pinned wires of its node, so those go first.
+        const auto pinnedWireIndex = [](NodeConnection* sharedConnection)
+        {
+            return sharedConnection->GetType() == PinnedWire::TYPE_ID
+                ? static_cast<int64_t>(static_cast<PinnedWire*>(sharedConnection)->GetWireIndex())
+                : static_cast<int64_t>(-1);
+        };
+        AZStd::stable_sort(shared.begin(), shared.end(),
+            [&pinnedWireIndex](const auto& left, const auto& right)
+            {
+                return pinnedWireIndex(left.first) > pinnedWireIndex(right.first);
+            });
+
+        MCore::CommandGroup commandGroup(shared.size() == 1 ? "Remove waypoint" : "Remove shared waypoint");
+        commandGroup.SetContinueAfterError(false);
+        commandGroup.SetReturnFalseAfterError(true);
+        for (const auto& [sharedConnection, sharedIndex] : shared)
+        {
+            AZStd::vector<AZ::Vector2> waypoints = *sharedConnection->GetWaypoints();
+            waypoints.erase(waypoints.begin() + sharedIndex);
+            AdjustWaypoints(sharedConnection, waypoints, &commandGroup);
+        }
+
+        ExecuteWaypointCommands(commandGroup);
+    }
+
+    bool BlendGraphWidget::LeaveOneOutput(const AZStd::vector<NodeConnection*>& connections) const
+    {
+        if (connections.empty())
+        {
+            return false;
+        }
+
+        GraphNode* sourceNode = connections.front()->GetSourceNode();
+        const AZ::u16 sourcePort = connections.front()->GetOutputPortNr();
+        return sourceNode
+            && AZStd::all_of(connections.begin(), connections.end(),
+                [sourceNode, sourcePort](NodeConnection* connection)
+                {
+                    return connection->GetType() == NodeConnection::TYPE_ID
+                        && connection->GetSourceNode() == sourceNode
+                        && connection->GetOutputPortNr() == sourcePort;
+                });
     }
 
     void BlendGraphWidget::RemoveAllWaypoints(NodeConnection* connection)
@@ -1769,14 +1851,25 @@ namespace EMStudio
             return;
         }
 
-        // Several wires bent through one point read as a single wire that splits there.
         if (connections.size() > 1)
         {
-            QAction* addWaypointAction = menu.addAction(tr("Add shared waypoint"));
-            connect(addWaypointAction, &QAction::triggered, this,
-                [this, connections, globalPos]()
+            // Several wires leaving one output, bent through one point, read as a single wire that splits there.
+            if (LeaveOneOutput(connections))
+            {
+                QAction* addSharedWaypointAction = menu.addAction(tr("Add shared waypoint"));
+                connect(addSharedWaypointAction, &QAction::triggered, this,
+                    [this, connections, globalPos]()
+                    {
+                        InsertWaypoint(connections, SnapLocalToGrid(globalPos));
+                    });
+            }
+
+            // Any wires, transitions included, can each get a waypoint of their own halfway along.
+            QAction* addWaypointsAction = menu.addAction(tr("Add waypoint to each"));
+            connect(addWaypointsAction, &QAction::triggered, this,
+                [this, connections]()
                 {
-                    InsertWaypoint(connections, SnapLocalToGrid(globalPos));
+                    InsertWaypointsAtMidpoints(connections);
                 });
             return;
         }
@@ -1845,9 +1938,9 @@ namespace EMStudio
 
         const AZStd::vector<NodeConnection*> connections = m_activeGraph->GetSelectedNodeConnections();
 
-        // Blend tree wires selected together usually fan out of one port, so they share one bend point and
-        // read as a single wire that splits there. Transitions each get their own.
-        if (connections.size() > 1 && !CheckIfIsStateMachine())
+        // Blend tree wires fanning out of one port share one bend point and read as a single wire that splits there.
+        // Other wires, and transitions, each get their own.
+        if (connections.size() > 1 && LeaveOneOutput(connections))
         {
             QPoint midpointSum;
             for (NodeConnection* connection : connections)
@@ -1860,6 +1953,11 @@ namespace EMStudio
             return;
         }
 
+        InsertWaypointsAtMidpoints(connections);
+    }
+
+    void BlendGraphWidget::InsertWaypointsAtMidpoints(const AZStd::vector<NodeConnection*>& connections)
+    {
         MCore::CommandGroup commandGroup(connections.size() == 1 ? "Add waypoint" : "Add waypoints");
         commandGroup.SetContinueAfterError(false);
         commandGroup.SetReturnFalseAfterError(true);
@@ -1941,19 +2039,88 @@ namespace EMStudio
         ExecuteWaypointCommands(commandGroup);
     }
 
-    void BlendGraphWidget::CommitWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& oldWaypoints)
+    void BlendGraphWidget::OnCreatePinnedWire(AZ::u16 sourcePortNr, GraphNode* sourceNode, const QPoint& pinPosition)
     {
-        const AZStd::vector<AZ::Vector2>* currentWaypoints = connection->GetWaypoints();
-        if (!currentWaypoints || *currentWaypoints == oldWaypoints)
+        if (!m_activeGraph || m_activeGraph->IsInReferencedGraph() || CheckIfIsStateMachine()
+            || !sourceNode || sourcePortNr >= sourceNode->GetNumOutputPorts())
         {
             return;
         }
 
-        const AZStd::vector<AZ::Vector2> newWaypoints = *currentWaypoints;
+        const EMotionFX::AnimGraphNode* node = sourceNode->GetModelIndex().data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
+        if (!node)
+        {
+            return;
+        }
 
-        // Put the drag preview back before running the command, so undo captures the values from before the drag.
-        connection->SetWaypoints(oldWaypoints);
-        AdjustWaypoints(connection, newWaypoints);
+        // A wire branched off a pin keeps the bend points it was drawn through, and ends at a new pin where it was dropped.
+        AZStd::vector<AZ::Vector2> waypoints = m_activeGraph->GetCreateConnectionWaypoints();
+        const AZ::Vector2 pin(aznumeric_cast<float>(pinPosition.x()), aznumeric_cast<float>(pinPosition.y()));
+
+        // Dropping it back on the pin it came from, or right next to the output, would only stack a copy.
+        const QPoint portCenter = sourceNode->GetOutputPort(sourcePortNr)->GetRect().center();
+        if ((!waypoints.empty() && waypoints.back() == pin)
+            || (pinPosition - portCenter).manhattanLength() < aznumeric_cast<int>(2 * s_snapCellSize))
+        {
+            return;
+        }
+
+        waypoints.push_back(pin);
+        CommandSystem::AddPinnedWire(node, sourcePortNr, waypoints);
+    }
+
+    void BlendGraphWidget::AddPinnedWireMenuEntries(QMenu& menu, PinnedWire* pinnedWire, size_t waypointIndex)
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = pinnedWire ? pinnedWire->GetWaypoints() : nullptr;
+        if (!waypoints || waypointIndex >= waypoints->size())
+        {
+            return;
+        }
+
+        // A bend point before the pin can go on its own. Wires branched off it keep their own copy.
+        if (waypointIndex + 1 < waypoints->size())
+        {
+            QAction* removeWaypointAction = menu.addAction(tr("Remove waypoint"));
+            connect(removeWaypointAction, &QAction::triggered, this,
+                [this, pinnedWire, waypointIndex]()
+                {
+                    RemoveWaypoint(pinnedWire, waypointIndex);
+                });
+        }
+
+        // Wires branched off the pin are separate connections, so they stay.
+        QAction* removePinnedWireAction = menu.addAction(tr("Remove pinned wire"));
+        const EMotionFX::AnimGraphNode* node = pinnedWire->GetAnimGraphNode();
+        const size_t wireIndex = pinnedWire->GetWireIndex();
+        connect(removePinnedWireAction, &QAction::triggered, this,
+            [node, wireIndex]()
+            {
+                CommandSystem::RemovePinnedWire(node, wireIndex);
+            });
+    }
+
+    void BlendGraphWidget::CommitWaypoints(const AZStd::vector<RepositionedWaypoint>& drags)
+    {
+        MCore::CommandGroup commandGroup(drags.size() == 1 ? "Move waypoint" : "Move shared waypoint");
+        commandGroup.SetContinueAfterError(false);
+        commandGroup.SetReturnFalseAfterError(true);
+
+        for (const RepositionedWaypoint& drag : drags)
+        {
+            const AZStd::vector<AZ::Vector2>* currentWaypoints = drag.m_connection->GetWaypoints();
+            if (!currentWaypoints || *currentWaypoints == drag.m_oldWaypoints)
+            {
+                continue;
+            }
+
+            const AZStd::vector<AZ::Vector2> newWaypoints = *currentWaypoints;
+
+            // Put the drag preview back before running the command, so undo captures the values from before the drag.
+            drag.m_connection->SetWaypoints(drag.m_oldWaypoints);
+            AdjustWaypoints(drag.m_connection, newWaypoints, &commandGroup);
+        }
+
+        ExecuteWaypointCommands(commandGroup);
     }
 
     void BlendGraphWidget::ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset, GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode)

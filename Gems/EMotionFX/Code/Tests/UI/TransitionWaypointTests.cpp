@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFocusEvent>
 #include <QImage>
+#include <QMenu>
 #include <QPainter>
 
 namespace EMotionFX
@@ -69,6 +70,41 @@ namespace EMotionFX
         EMStudio::StateConnection* m_connection = nullptr;
         const AZStd::vector<AZ::Vector2> original{AZ::Vector2(100.0f, 100.0f)};
     };
+
+    TEST_F(WaypointDragTest, SeveralTransitionsEachGetAWaypoint)
+    {
+        AZStd::string result;
+        ASSERT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(AZStd::string::format(
+            "AnimGraphCreateConnection -animGraphID %u -sourceNode Second -targetNode First -sourcePort 0 -targetPort 0 -transitionType %s",
+            m_graph->GetID(), azrtti_typeid<AnimGraphStateTransition>().ToString<AZStd::string>().c_str()), result)) << result.c_str();
+        AnimGraphStateTransition* back = m_graph->RecursiveFindTransitionById(AnimGraphConnectionId::CreateFromString(result));
+        ASSERT_NE(back, nullptr);
+        EMStudio::StateConnection* backConnection =
+            m_nodeGraph->FindStateConnection(m_animGraphPlugin->GetAnimGraphModel().FindFirstModelIndex(back));
+        ASSERT_NE(backConnection, nullptr);
+
+        QMenu menu;
+        m_blendGraphWidget->AddWaypointMenuEntries(menu, { m_connection, backConnection }, QPoint(0, 0));
+        QAction* eachAction = nullptr;
+        for (QAction* action : menu.actions())
+        {
+            EXPECT_NE(action->text(), QString("Add shared waypoint"));
+            if (action->text() == QString("Add waypoint to each"))
+            {
+                eachAction = action;
+            }
+        }
+        ASSERT_NE(eachAction, nullptr);
+
+        eachAction->trigger();
+        EXPECT_EQ(m_transition->GetWaypoints().size(), original.size() + 1);
+        EXPECT_EQ(back->GetWaypoints().size(), size_t{ 1 });
+
+        // One undo takes both back.
+        ASSERT_TRUE(CommandSystem::GetCommandManager()->Undo(result)) << result.c_str();
+        EXPECT_EQ(m_transition->GetWaypoints(), original);
+        EXPECT_TRUE(back->GetWaypoints().empty());
+    }
 
     TEST_F(WaypointDragTest, CancelWaypointDragRestoresOriginal)
     {
@@ -173,4 +209,56 @@ TEST(TransitionWaypointRendering, FadeContinuesAcrossWaypoint)
 {
     const QImage image = RenderRoutedTransition(0.45f);
     EXPECT_GT(image.pixelColor(110, 25).alpha(), 0);
+}
+
+TEST(TransitionConditionLayout, ShapesFollowThePathAroundAWaypoint)
+{
+    // A corner at (100, 0): too little room on either leg for all the shapes, so they have to turn the corner.
+    const QPoint points[] = { QPoint(0, 0), QPoint(100, 0), QPoint(100, 100) };
+    AZStd::vector<AZ::Vector2> centers;
+    ASSERT_TRUE(EMStudio::StateConnection::LayOutConditionShapes(points, 3, 20, centers));
+    ASSERT_EQ(centers.size(), size_t{ 20 });
+
+    size_t onFirstLeg = 0;
+    size_t onSecondLeg = 0;
+    const AZ::Vector2 corner(100.0f, 0.0f);
+    for (const AZ::Vector2& center : centers)
+    {
+        const bool onFirst = AZ::IsClose(center.GetY(), 0.0f, 0.01f) && center.GetX() <= 100.0f;
+        const bool onSecond = AZ::IsClose(center.GetX(), 100.0f, 0.01f) && center.GetY() >= 0.0f;
+        EXPECT_TRUE(onFirst || onSecond) << center.GetX() << ", " << center.GetY();
+        onFirstLeg += onFirst ? 1 : 0;
+        onSecondLeg += onSecond ? 1 : 0;
+
+        // The waypoint handle keeps a clear space around it.
+        EXPECT_GE(AZ::Vector2(center - corner).GetLength(), EMStudio::StateConnection::s_conditionGap * 0.5f);
+    }
+    EXPECT_GT(onFirstLeg, size_t{ 0 });
+    EXPECT_GT(onSecondLeg, size_t{ 0 });
+
+    // They stay in order along the path.
+    for (size_t i = 1; i < centers.size(); ++i)
+    {
+        const float before = centers[i - 1].GetX() + centers[i - 1].GetY();
+        const float after = centers[i].GetX() + centers[i].GetY();
+        EXPECT_GT(after, before);
+    }
+}
+
+TEST(TransitionConditionLayout, StraightTransitionCentresTheRow)
+{
+    const QPoint points[] = { QPoint(0, 0), QPoint(200, 0) };
+    AZStd::vector<AZ::Vector2> centers;
+    ASSERT_TRUE(EMStudio::StateConnection::LayOutConditionShapes(points, 2, 3, centers));
+    ASSERT_EQ(centers.size(), size_t{ 3 });
+    EXPECT_NEAR(centers[1].GetX(), 100.0f, 0.01f);
+    EXPECT_NEAR(centers[1].GetY(), 0.0f, 0.01f);
+}
+
+TEST(TransitionConditionLayout, TooShortPathShowsNothing)
+{
+    const QPoint points[] = { QPoint(0, 0), QPoint(20, 0) };
+    AZStd::vector<AZ::Vector2> centers;
+    EXPECT_FALSE(EMStudio::StateConnection::LayOutConditionShapes(points, 2, 10, centers));
+    EXPECT_TRUE(centers.empty());
 }
