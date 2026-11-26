@@ -400,6 +400,18 @@ namespace AzNetworking
 
         const uint16_t transmittedPacketSize = packetSize;
         const uint8_t* srcData = serializer.GetUnreadData();
+        if (!m_compressor && outHeader.IsPacketFlagSet(PacketFlag::Compressed))
+        {
+            // The remote side compressed this packet but we have no compressor, so its payload cannot be read.
+            // Treating it as uncompressed would hand garbage to the packet handlers.
+            // Make sure both sides use the same net_TcpCompressor (and load the gem that provides it).
+            AZLOG_ERROR("TcpConnection - Received a compressed packet but no TCP compressor is available (net_TcpCompressor = '%s'). "
+                "Make sure the gem providing the compressor is loaded by this application.",
+                static_cast<AZ::CVarFixedString>(net_TcpCompressor).c_str());
+            // Drop the unreadable packet so we don't log this error for the same packet every update.
+            m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + transmittedPacketSize);
+            return false;
+        }
         if (m_compressor && outHeader.IsPacketFlagSet(PacketFlag::Compressed))
         {
             if (!DecompressPacket(srcData, packetSize, outBuffer))
