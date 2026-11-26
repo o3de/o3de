@@ -47,12 +47,21 @@ namespace AZ
         int error = errno;
         if (m_globalMutex == SEM_FAILED && (error == EEXIST))
         {
-            sem_unlink(fullName);
-            m_globalMutex = sem_open(fullName, O_CREAT | O_EXCL, 0600, 1);
-            error = errno;
+            if (openIfCreated)
+            {
+                m_globalMutex = sem_open(fullName, 0);
+                error = errno;
+            }
+            else
+            {
+                sem_unlink(fullName);
+                m_globalMutex = sem_open(fullName, O_CREAT | O_EXCL, 0600, 1);
+                error = errno;
+            }
         }
         if (m_globalMutex == SEM_FAILED)
         {
+            m_globalMutex = nullptr;
             AZ_TracePrintf("AZSystem", "CreateMutex failed with error %d\n", error);
             return CreateFailed;
         }
@@ -60,20 +69,32 @@ namespace AZ
         // Create the file mapping.
         ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Data");
         m_mapHandle = shm_open(fullName, O_RDWR | O_CREAT | O_EXCL, 0600);
-        error = errno;
-        if (error == EEXIST)
+        const bool createdNew = (m_mapHandle != -1);
+        error = createdNew ? 0 : errno;
+        if (!createdNew && error == EEXIST && openIfCreated)
         {
             m_mapHandle = shm_open(fullName, O_RDWR);
-            error = errno;
+            error = (m_mapHandle == -1) ? errno : EEXIST;
         }
-        if (m_mapHandle == -1 || (error == EEXIST && openIfCreated == false))
+        if (m_mapHandle == -1)
         {
             AZ_TracePrintf("AZSystem", "CreateFileMapping failed with error %d\n", error);
+            sem_close(m_globalMutex);
+            m_globalMutex = nullptr;
             return CreateFailed;
         }
-        ftruncate(m_mapHandle, size);
+        if (createdNew && ftruncate(m_mapHandle, size) == -1)
+        {
+            AZ_TracePrintf("AZSystem", "ftruncate failed with error %d\n", errno);
+            shm_unlink(fullName);
+            close(m_mapHandle);
+            m_mapHandle = -1;
+            sem_close(m_globalMutex);
+            m_globalMutex = nullptr;
+            return CreateFailed;
+        }
 
-        return (error == EEXIST) ? CreatedExisting : CreatedNew;
+        return createdNew ? CreatedNew : CreatedExisting;
     }
 
     bool SharedMemory_Mac::Open(const char* name)
@@ -83,9 +104,10 @@ namespace AZ
         ComposeName(fullName, AZ_ARRAY_SIZE(fullName), name, "Mtx");
 
         m_globalMutex = sem_open(fullName, 0);
-        AZ_Warning("AZSystem", m_globalMutex != nullptr, "Failed to open OS mutex [%s]\n", m_name);
-        if (m_globalMutex == nullptr)
+        AZ_Warning("AZSystem", m_globalMutex != SEM_FAILED && m_globalMutex != nullptr, "Failed to open OS mutex [%s]\n", m_name);
+        if (m_globalMutex == SEM_FAILED || m_globalMutex == nullptr)
         {
+            m_globalMutex = nullptr;
             AZ_TracePrintf("AZSystem", "OpenMutex %s failed with error %d\n", m_name, errno);
             return false;
         }
@@ -95,6 +117,8 @@ namespace AZ
         if (m_mapHandle == -1)
         {
             AZ_TracePrintf("AZSystem", "OpenFileMapping %s failed with error %d\n", m_name, errno);
+            sem_close(m_globalMutex);
+            m_globalMutex = nullptr;
             return false;
         }
 
@@ -108,7 +132,7 @@ namespace AZ
             AZ_TracePrintf("AZSystem", "CloseHandle failed with error %d\n", GetLastError());
         }
 
-        if (m_globalMutex != nullptr && sem_close(m_globalMutex) == -1)
+        if (m_globalMutex != nullptr && m_globalMutex != SEM_FAILED && sem_close(m_globalMutex) == -1)
         {
             AZ_TracePrintf("AZSystem", "CloseHandle failed with error %d\n", GetLastError());
         }
@@ -120,10 +144,18 @@ namespace AZ
     bool SharedMemory_Mac::Map(AccessMode mode, unsigned int size)
     {
         struct stat st;
-        fstat(m_mapHandle, &st);
+        if (fstat(m_mapHandle, &st) == -1)
+        {
+            AZ_TracePrintf("AZSystem", "fstat failed with error %d\n", GetLastError());
+            return false;
+        }
         if (size == 0)
         {
             size = static_cast<unsigned int>(st.st_size);
+        }
+        if (size == 0)
+        {
+            return false;
         }
         int dwDesiredAccess = (mode == ReadOnly ? PROT_READ : PROT_READ | PROT_WRITE);
         m_mappedBase = mmap(nullptr, size, dwDesiredAccess, MAP_SHARED, m_mapHandle, 0);
@@ -141,7 +173,7 @@ namespace AZ
             return false;
         }
 
-        m_dataSize = static_cast<unsigned int>(st.st_size);
+        m_dataSize = size;
 
         return true;
     }
@@ -153,7 +185,10 @@ namespace AZ
 
     void SharedMemory_Mac::lock()
     {
-        sem_wait(m_globalMutex);
+        if (m_globalMutex != nullptr && m_globalMutex != SEM_FAILED)
+        {
+            while (sem_wait(m_globalMutex) == -1 && errno == EINTR) {}
+        }
     }
 
     bool SharedMemory_Mac::try_lock()

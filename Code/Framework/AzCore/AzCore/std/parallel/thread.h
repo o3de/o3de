@@ -10,6 +10,7 @@
 
 #include <AzCore/std/parallel/config.h>
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/chrono/chrono.h>
 
@@ -174,7 +175,15 @@ namespace AZStd
             virtual ~thread_info() {}
             virtual void execute() = 0;
             thread_info()
-                : m_name(nullptr) {}
+                : m_nameStorage("AZStd thread")
+                , m_name(m_nameStorage.c_str())
+            {}
+            void set_name(const char* name)
+            {
+                m_nameStorage = name ? name : "AZStd thread";
+                m_name = m_nameStorage.c_str();
+            }
+            AZStd::fixed_string<128> m_nameStorage;
             const char* m_name;
         };
 

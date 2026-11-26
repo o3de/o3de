@@ -193,7 +193,7 @@ namespace AZStd
         // We need to make sure we use CriticalSection based mutex.
         timespec ts = Internal::CurrentTimeAndOffset(rel_time);
 
-        int ret = pthread_cond_timedwait(&m_cond_var, lock.mutex()->native_handle(), &ts);
+        int ret = pthread_cond_timedwait(&m_cond_var, &m_mutex, &ts);
 
         pthread_mutex_unlock(&m_mutex);
         lock.lock();

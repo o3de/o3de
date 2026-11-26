@@ -66,17 +66,26 @@ SharedMemory::Create(const char* name, unsigned int size, bool openIfCreated)
     }
 
     CreateResult result = Platform::Create(name, size, openIfCreated);
+    if (result == CreateFailed)
+    {
+        return CreateFailed;
+    }
 
     if (result != CreatedExisting)
     {
-        MemoryGuard l(*this);
-        if (Map())
+        bool mapped = false;
         {
-            Clear();
-            UnMap();
+            MemoryGuard l(*this);
+            if (Map())
+            {
+                Clear();
+                UnMap();
+                mapped = true;
+            }
         }
-        else
+        if (!mapped)
         {
+            Close();
             return CreateFailed;
         }
         return CreatedNew;

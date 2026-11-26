@@ -96,6 +96,7 @@ namespace AZ::IO
         if (compressedFileEnd == 0)
         {
             delete zlibData;
+            ReleaseDataBuffer();
             return false;
         }
 
@@ -103,10 +104,17 @@ namespace AZ::IO
         SizeType dataToRead = sizeof(CompressorZLibSeekPoint) * static_cast<SizeType>(hdr->m_numSeekPoints);
         SizeType seekPointOffset = compressedFileEnd - dataToRead;
         AZ_Assert(seekPointOffset <= compressedFileEnd, "We have an invalid archive, this is impossible!");
+        if (seekPointOffset > compressedFileEnd)
+        {
+            delete zlibData;
+            ReleaseDataBuffer();
+            return false;
+        }
         GenericStream* baseStream = stream->GetWrappedStream();
         if (baseStream->ReadAtOffset(dataToRead, zlibData->m_seekPoints.data(), seekPointOffset) != dataToRead)
         {
             delete zlibData;
+            ReleaseDataBuffer();
             return false;
         }
         for (size_t i = 0; i < zlibData->m_seekPoints.size(); ++i)
@@ -402,6 +410,7 @@ namespace AZ::IO
         unsigned int dataToCompress = 0;
         do
         {
+            dataToCompress = 0;
             compressedSize = zlibData->m_zlib.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FULL_FLUSH);
             if (compressedSize)
             {
@@ -412,7 +421,7 @@ namespace AZ::IO
                     return false; // error we wrote less than than requested!
                 }
             }
-        } while (dataToCompress != 0);
+        } while (dataToCompress != 0 || compressedSize == m_compressedDataBufferSize);
 
         CompressorZLibSeekPoint sp;
         sp.m_compressedOffset = stream->GetLength();
@@ -475,12 +484,13 @@ namespace AZ::IO
             unsigned int dataToCompress = 0;
             do
             {
+                dataToCompress = 0;
                 compressedSize = zlibData->m_zlib.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZLib::FT_FINISH);
                 if (compressedSize)
                 {
                     baseStream->Write(compressedSize, m_compressedDataBuffer);
                 }
-            } while (dataToCompress != 0);
+            } while (dataToCompress != 0 || compressedSize == m_compressedDataBufferSize);
 
             result = WriteHeaderAndData(stream);
             if (result)

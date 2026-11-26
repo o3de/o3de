@@ -413,20 +413,21 @@ namespace AZ::IO
         if (m_sourceDescriptor == -1)
         {
             // Source file descriptor isn't set.
+            m_redirectState = RedirectState::Idle;
             return;
         }
 
         // The pipe is created in an int[2] array
         int redirectPipe[2];
         int pipeCreated = PosixInternal::Pipe(redirectPipe, pipeSize, PosixInternal::OpenFlags::NonBlock);
+        if (pipeCreated == -1)
+        {
+            m_redirectState = RedirectState::Idle;
+            return;
+        }
         // copy created pipe descriptors to intptr_t[2] array
         m_pipe[0] = redirectPipe[0];
         m_pipe[1] = redirectPipe[1];
-
-        if (pipeCreated == -1)
-        {
-            return;
-        }
 
         // Duplicate the original source descriptor to restore in Stop
         m_dupSourceDescriptor = PosixInternal::Dup(m_sourceDescriptor);
@@ -443,6 +444,7 @@ namespace AZ::IO
             m_pipe[WriteEnd] = -1;
             m_pipe[ReadEnd] = -1;
             m_dupSourceDescriptor = -1;
+            m_redirectState = RedirectState::Idle;
             return;
         }
 
@@ -478,7 +480,7 @@ namespace AZ::IO
                 auto timeout = static_cast<int>(AZStd::min<decltype(waitTimeout)::rep>(waitTimeout.count(),
                     AZStd::numeric_limits<int>::max()));
 
-                if (bool waitResult = epoll_wait(static_cast<int>(m_pipeData), &event, 1, timeout);
+                if (int waitResult = epoll_wait(static_cast<int>(m_pipeData), &event, 1, timeout);
                     waitResult > 0)
                 {
                     Flush();

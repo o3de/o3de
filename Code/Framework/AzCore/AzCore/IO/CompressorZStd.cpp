@@ -74,6 +74,7 @@ namespace AZ::IO
         SizeType compressedFileEnd = stream->GetLength();
         if (compressedFileEnd == 0)
         {
+            ReleaseDataBuffer();
             return false;
         }
 
@@ -84,12 +85,14 @@ namespace AZ::IO
         if (seekPointOffset > compressedFileEnd)
         {
             AZ_Error("CompressorZStd", false, "We have an invalid archive, this is impossible.");
+            ReleaseDataBuffer();
             return false;
         }
 
         GenericStream* baseStream = stream->GetWrappedStream();
         if (baseStream->ReadAtOffset(dataToRead, zstdData->m_seekPoints.data(), seekPointOffset) != dataToRead)
         {
+            ReleaseDataBuffer();
             return false;
         }
 
@@ -187,7 +190,7 @@ namespace AZ::IO
                 {
                     // copy the usable part at the start of the buffer
                     SizeType toMove = m_lastReadStreamSize - offsetInCache;
-                    memcpy(m_compressedDataBuffer, &m_compressedDataBuffer[static_cast<size_t>(offsetInCache)], static_cast<size_t>(toMove));
+                    memmove(m_compressedDataBuffer, &m_compressedDataBuffer[static_cast<size_t>(offsetInCache)], static_cast<size_t>(toMove));
                     dataFromBuffer += toMove;
                 }
             }
@@ -279,14 +282,19 @@ namespace AZ::IO
 
                 // decompress in the cache buffer
                 u32 availDecompressedCacheSize = m_decompressionCachePerStream; // reset buffer size
-                size_t nextBlockSize;
+                size_t nextBlockSize = 0;
                 unsigned int processed = zstdData->m_zstd.Decompress(&m_compressedDataBuffer[processedCompressedData],
                                                                     static_cast<unsigned int>(compressedDataSize) - processedCompressedData,
                                                                     zstdData->m_decompressedCache,
                                                                     availDecompressedCacheSize,
                                                                     &nextBlockSize);
+                if (processed == std::numeric_limits<unsigned int>::max())
+                {
+                    zstdData->m_decompressedCacheDataSize = 0;
+                    break;
+                }
                 zstdData->m_decompressedCacheDataSize = m_decompressionCachePerStream - availDecompressedCacheSize;
-                if (processed == 0)
+                if (processed == 0 && zstdData->m_decompressedCacheDataSize == 0)
                 {
                     break; // we processed everything we could, load more compressed data.
                 }
@@ -360,6 +368,7 @@ namespace AZ::IO
         unsigned int dataToCompress = 0;
         do
         {
+            dataToCompress = 0;
             compressedSize = zstdData->m_zstd.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZStd::FT_FULL_FLUSH);
             if (compressedSize)
             {
@@ -370,7 +379,7 @@ namespace AZ::IO
                     return false; // error we wrote less than than requested!
                 }
             }
-        } while (dataToCompress != 0);
+        } while (dataToCompress != 0 || compressedSize == m_compressedDataBufferSize);
 
         CompressorZStdSeekPoint sp;
         sp.m_compressedOffset = stream->GetLength();
@@ -425,12 +434,13 @@ namespace AZ::IO
             unsigned int dataToCompress = 0;
             do
             {
+                dataToCompress = 0;
                 compressedSize = zstdData->m_zstd.Compress(nullptr, dataToCompress, m_compressedDataBuffer, m_compressedDataBufferSize, ZStd::FT_FINISH);
                 if (compressedSize)
                 {
                     baseStream->Write(compressedSize, m_compressedDataBuffer);
                 }
-            } while (dataToCompress != 0);
+            } while (dataToCompress != 0 || compressedSize == m_compressedDataBufferSize);
 
             result = WriteHeaderAndData(stream);
             if (result)
