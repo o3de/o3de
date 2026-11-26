@@ -27,16 +27,17 @@ namespace AZ
             RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount, RHI::BufferBindFlags::CopyRead);
             if (stagingBuffer)
             {
-                m_uploadPacketsLock.lock();
-                m_uploadPackets.emplace_back();
-                BufferUploadPacket& uploadRequest = m_uploadPackets.back();
-                m_uploadPacketsLock.unlock();
-
-                buffer->m_pendingResolves++;
-
+                BufferUploadPacket uploadRequest;
                 uploadRequest.m_attachmentBuffer = buffer;
                 uploadRequest.m_byteOffset = request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
+
+                {
+                    AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
+                    m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
+                }
+
+                buffer->m_pendingResolves++;
 
                 return stagingBuffer->GetMemoryView().GetCpuAddress();
             }

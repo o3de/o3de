@@ -212,7 +212,7 @@ namespace AZ
 
             // protect access to m_tileAllocator
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
+                AZStd::unique_lock<AZStd::mutex> lock(m_tileMutex);
 
                 // Check if heap memory is enough for the tiles.
                 RHI::HeapMemoryUsage& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
@@ -223,8 +223,13 @@ namespace AZ
                 if (!canAllocate && m_memoryReleaseCallback)
                 {
                     // only try to release tiles the resource need
-                    uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - totalTiles;
-                    bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
+                    const uint32_t totalTileCount = m_tileAllocator.GetTotalTileCount();
+                    const size_t maxUsedTiles = totalTileCount > totalTiles ? (totalTileCount - totalTiles) : 0;
+                    const size_t targetMemoryInBytes = maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes;
+
+                    lock.unlock();
+                    bool releaseSuccess = m_memoryReleaseCallback(targetMemoryInBytes);
+                    lock.lock();
 
                     if (!releaseSuccess)
                     {
@@ -608,7 +613,10 @@ namespace AZ
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
                 dxImage.FinalizeAsyncUpload(residentMipLevelAfter);
-                request.m_completeCallback();
+                if (request.m_completeCallback)
+                {
+                    request.m_completeCallback();
+                }
                 GetResolver()->AddImageTransitionBarrier(dxImage, residentMipLevelBefore, residentMipLevelAfter);
                 
 #if AZ_RHI_DX12_DEBUG_STREAMINGIMAGEPOOL
@@ -664,7 +672,7 @@ namespace AZ
             // If the new budget is smaller than the memory are in use, we need to release some memory
             if (newBudget < heapMemoryUsage.m_usedResidentInBytes)
             {
-                releaseSuccess = m_memoryReleaseCallback(newBudget);
+                releaseSuccess = m_memoryReleaseCallback ? m_memoryReleaseCallback(newBudget) : false;
             }
 
             size_t resident = heapMemoryUsage.m_usedResidentInBytes;

@@ -47,11 +47,10 @@ namespace AZ::RHI
 
     void Object::release() const
     {
-        [[maybe_unused]] int useCount = --m_useCount;
-        AZ_Assert(useCount >= 0, "Releasing an already released object");
+        int prevUseCount = m_useCount.fetch_sub(1, AZStd::memory_order_acq_rel);
+        AZ_Assert(prevUseCount > 0, "Releasing an already released object");
 
-        int expectedRefCount = 0;
-        if (m_useCount.compare_exchange_strong(expectedRefCount, -1))
+        if (prevUseCount == 1)
         {
             // Get a mutable pointer to shutdown the object before deleting
             Object* object = const_cast<Object*>(this);

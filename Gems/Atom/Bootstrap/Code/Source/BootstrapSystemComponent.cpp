@@ -651,7 +651,7 @@ namespace AZ
                         const AZ::RPI::ViewType viewType = (i == 0)
                             ? AZ::RPI::ViewType::XrLeft
                             : AZ::RPI::ViewType::XrRight;
-                        const AZStd::string_view xrPipelineAssetName = (viewType == AZ::RPI::ViewType::XrLeft)
+                        const AZ::CVarFixedString xrPipelineAssetName = (viewType == AZ::RPI::ViewType::XrLeft)
                             ? static_cast<AZ::CVarFixedString>(r_default_openxr_left_pipeline_name)
                             : static_cast<AZ::CVarFixedString>(r_default_openxr_right_pipeline_name);
 

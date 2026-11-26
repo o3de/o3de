@@ -170,6 +170,7 @@ namespace AZ::RHI
     void ObjectCollector<Traits>::Collect(bool forceFlush)
     {
         AZ_PROFILE_SCOPE(RHI, "ObjectCollector: Collect");
+        AZStd::vector<ObjectCollectorNotifyFunction> immediateNotifies;
         m_mutex.lock();
         if (m_pendingObjects.size())
         {
@@ -181,8 +182,8 @@ namespace AZ::RHI
             if (!m_pendingGarbage.empty())
             {
                 // find the newest garbage entry and add any pending notifies
-                Garbage& latestGarbage = m_pendingGarbage.front();
-                size_t latestGarbageAge = m_currentIteration - latestGarbage.m_collectIteration;
+                Garbage* latestGarbage = &m_pendingGarbage.front();
+                size_t latestGarbageAge = m_currentIteration - latestGarbage->m_collectIteration;
 
                 // check the rest of the entries to see if they are newer
                 for (size_t i = 1; i < m_pendingGarbage.size(); ++i)
@@ -190,25 +191,27 @@ namespace AZ::RHI
                     size_t age = m_currentIteration - m_pendingGarbage[i].m_collectIteration;
                     if (age < latestGarbageAge)
                     {
-                        latestGarbage = m_pendingGarbage[i];
+                        latestGarbage = &m_pendingGarbage[i];
                         latestGarbageAge = age;
                     }
                 }
 
-                latestGarbage.m_notifies.insert(latestGarbage.m_notifies.end(), m_pendingNotifies.begin(), m_pendingNotifies.end());
+                latestGarbage->m_notifies.insert(latestGarbage->m_notifies.end(), m_pendingNotifies.begin(), m_pendingNotifies.end());
             }
             else
             {
-                // garbage queue is empty, notify now
-                for (auto& notifyFunction : m_pendingNotifies)
-                {
-                    notifyFunction();
-                }
+                // garbage queue is empty, notify outside the lock
+                immediateNotifies = AZStd::move(m_pendingNotifies);
             }
 
             m_pendingNotifies.clear();
         }
         m_mutex.unlock();
+
+        for (auto& notifyFunction : immediateNotifies)
+        {
+            notifyFunction();
+        }
 
         size_t objectCount = 0;
         size_t i = 0;
@@ -248,12 +251,12 @@ namespace AZ::RHI
         size_t objectCount = 0;
         m_mutex.lock();
         objectCount += m_pendingObjects.size();
-        m_mutex.unlock();
 
         for (const Garbage& garbage : m_pendingGarbage)
         {
             objectCount += garbage.m_objects.size();
         }
+        m_mutex.unlock();
 
         return objectCount;
     }

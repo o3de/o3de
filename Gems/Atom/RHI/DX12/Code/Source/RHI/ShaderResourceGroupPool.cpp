@@ -179,7 +179,7 @@ namespace AZ
 
             if (m_samplersDescriptorTableSize)
             {
-                if (group.m_viewsDescriptorTable.IsValid())
+                if (group.m_samplersDescriptorTable.IsValid())
                 {
                     m_descriptorContext->ReleaseDescriptorTable(group.m_samplersDescriptorTable);
                 }
@@ -374,18 +374,20 @@ namespace AZ
         void ShaderResourceGroupPool::UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::DeviceShaderResourceGroupData& groupData)
         {
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
-            uint32_t shaderInputIndex = 0;
+            const uint32_t bufferUnboundedArrayCount = groupLayout.GetGroupSizeForBufferUnboundedArrays();
 
             bool updateBuffers = group.IsResourceTypeEnabledForCompilation(
                 static_cast<uint32_t>(RHI::DeviceShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask));
 
             if (updateBuffers)
             {
+                uint32_t bufferShaderInputIndex = 0;
                 // process buffer unbounded arrays
                 for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
                 {
-                    const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-                    uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
+                    const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(bufferShaderInputIndex);
+                    const uint32_t unboundedArraySlot = bufferShaderInputIndex;
+                    uint32_t tableIndex = unboundedArraySlot * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
                     ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
 
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex);
@@ -416,13 +418,13 @@ namespace AZ
                                 return;
                             }
 
-                            compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
+                            compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArraySlot] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
                         }
                     }
                     
                     const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(bufferViews.size()));
-                    UpdateUnboundedBuffersDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputBufferUnboundedArray.m_access);
-                    ++shaderInputIndex;
+                    UpdateUnboundedBuffersDescTable(descriptorTable, groupData, bufferShaderInputIndex, shaderInputBufferUnboundedArray.m_access);
+                    ++bufferShaderInputIndex;
                 }
             }
 
@@ -431,11 +433,13 @@ namespace AZ
 
             if (updateImages)
             {
+                uint32_t imageShaderInputIndex = 0;
                 // process image unbounded arrays
                 for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
                 {
-                    const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-                    uint32_t tableIndex = shaderInputIndex * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
+                    const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(imageShaderInputIndex);
+                    const uint32_t unboundedArraySlot = bufferUnboundedArrayCount + imageShaderInputIndex;
+                    uint32_t tableIndex = unboundedArraySlot * RHI::Limits::Device::FrameCountMax + group.m_compiledDataIndex;
                     ShaderResourceGroupCompiledData& compiledData = group.m_compiledData[group.m_compiledDataIndex];
 
                     AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex);
@@ -466,13 +470,13 @@ namespace AZ
                                 return;
                             }
 
-                            compiledData.m_gpuUnboundedArraysDescriptorHandles[shaderInputIndex] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
+                            compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArraySlot] = m_descriptorContext->GetGpuPlatformHandleForTable(group.m_unboundedDescriptorTables[tableIndex]);
                         }
                     }
 
                     const DescriptorTable descriptorTable(group.m_unboundedDescriptorTables[tableIndex].GetOffset(), static_cast<uint16_t>(imageViews.size()));
-                    UpdateUnboundedImagesDescTable(descriptorTable, groupData, shaderInputIndex, shaderInputImageUnboundedArray.m_access, shaderInputImageUnboundedArray.m_type);
-                    ++shaderInputIndex;
+                    UpdateUnboundedImagesDescTable(descriptorTable, groupData, imageShaderInputIndex, shaderInputImageUnboundedArray.m_access, shaderInputImageUnboundedArray.m_type);
+                    ++imageShaderInputIndex;
                 }
             }
         }
