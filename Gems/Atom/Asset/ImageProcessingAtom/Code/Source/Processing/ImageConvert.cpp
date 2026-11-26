@@ -1023,6 +1023,10 @@ namespace ImageProcessingAtom
             if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(ddsImage->GetPixelFormat()))
             {
                 processImage.ConvertFormat(ePixelFormat_R32G32B32A32F);
+                if (!processImage.Get())
+                {
+                    return nullptr;
+                }
             }
             if (ddsImage->HasImageFlags(EIF_SRGBRead))
             {

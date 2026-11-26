@@ -325,6 +325,10 @@ namespace ImageProcessingAtom
                 ImageToProcess imageToProcess(image);
                 imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
                 imageToSave = imageToProcess.Get();
+                if (!imageToSave)
+                {
+                    return false;
+                }
             }
 
             DdsFile::DdsFileData ddsFileData;

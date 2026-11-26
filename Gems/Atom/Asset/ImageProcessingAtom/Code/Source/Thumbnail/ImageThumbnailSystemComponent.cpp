@@ -19,7 +19,6 @@
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <ImageLoader/ImageLoaders.h>
 #include <Processing/ImageConvert.h>
-#include <Processing/ImageToProcess.h>
 #include <Thumbnail/ImageThumbnail.h>
 #include <Thumbnail/ImageThumbnailSystemComponent.h>
 #include <Processing/Utils.h>
@@ -151,7 +150,7 @@ namespace ImageProcessingAtom
         {
             auto jobRunner = [mkPreviewImage, thumbnailKey, thumbnailSize]()
             {
-                IImageObjectPtr previewImage = mkPreviewImage();
+                const IImageObjectPtr previewImage = ConvertImageForPreview(mkPreviewImage());
                 if (!previewImage)
                 {
                     AZ::SystemTickBus::QueueFunction(
@@ -163,10 +162,6 @@ namespace ImageProcessingAtom
 
                     return;
                 }
-
-                ImageToProcess imageToProcess(previewImage);
-                imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-                previewImage = imageToProcess.Get();
 
                 AZ::u8* imageBuf = nullptr;
                 AZ::u32 mip = 0;
