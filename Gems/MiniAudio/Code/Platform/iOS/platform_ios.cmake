@@ -5,18 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-find_library(AV_FOUNDATION_LIBRARY AVFoundation)
-find_library(AUDIO_TOOLBOX_GRAPHICS_LIBRARY AudioToolbox)
-find_library(CORE_AUDIO_SERVICES_LIBRARY CoreAudio)
-find_library(FOUNDATION_LIBRARY Foundation)
-
-set(LY_BUILD_DEPENDENCIES
-    PRIVATE
-        ${AV_FOUNDATION_LIBRARY}
-        ${AUDIO_TOOLBOX_GRAPHICS_LIBRARY}
-        ${CORE_AUDIO_SERVICES_LIBRARY}
-        ${FOUNDATION_LIBRARY}
-)
-
-add_compile_definitions(MA_NO_RUNTIME_LINKING=1)

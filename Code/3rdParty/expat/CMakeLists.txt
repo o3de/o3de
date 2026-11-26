@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(expat
-    VERSION "2.9.0"
+    VERSION "2.10.0"
     LICENSE "MIT"
-    URL "https://github.com/libexpat/libexpat/archive/refs/tags/R_2_9_0.tar.gz"
-    URL_HASH "6e8ce7b52ebbaa423c59becc7cf1e6875c42e49228c062ac8123c10e700cec27"
+    URL "https://github.com/libexpat/libexpat/archive/refs/tags/R_2_10_0.tar.gz"
+    URL_HASH "b3644a12f62d7762b62c444f69d169ba0234f13138d0240244bca64cbe35286f"
     GIT "https://github.com/libexpat/libexpat.git"
-    GIT_HASH "a76b1174c1ea52abb639a4c69d52b630a8a106a2"
+    GIT_HASH "a70841d9ffa64ddde29ab824ed6305035ebe4c47"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(expat)
@@ -19,7 +19,7 @@ FetchContent_MakeAvailable(expat)
 include("${expat_SOURCE_DIR}/expat/ConfigureChecks.cmake")
 
 set(PACKAGE_NAME expat)
-set(PACKAGE_VERSION 2.9.0)
+set(PACKAGE_VERSION 2.10.0)
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME "${PACKAGE_NAME}")
 set(PACKAGE_BUGREPORT "https://github.com/libexpat/libexpat/issues")

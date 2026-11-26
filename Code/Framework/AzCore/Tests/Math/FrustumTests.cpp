@@ -8,6 +8,7 @@
 
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
@@ -284,6 +285,23 @@ namespace UnitTest
         EXPECT_NEAR(viewFrustumAttributes.m_verticalFovRadians, fovRadians, 1e-3f);
         EXPECT_NEAR(viewFrustumAttributes.m_nearClip, nearClip, 1e-3f);
         EXPECT_NEAR(viewFrustumAttributes.m_farClip, farClip, 1e-3f);
+    }
+
+    TEST(MATH_Frustum, CalculateViewFrustumAttributes_ZeroNearClip)
+    {
+        const auto transform = AZ::Transform::CreateIdentity();
+        constexpr float aspectRatio = 1920.0f / 1080.0f;
+        constexpr float fovRadians = AZ::DegToRad(60.0f);
+        constexpr float farClip = 100.0f;
+
+        const AZ::Frustum frustum(AZ::ViewFrustumAttributes(transform, aspectRatio, fovRadians, 0.0f, farClip));
+        const AZ::ViewFrustumAttributes attributes = frustum.CalculateViewFrustumAttributes();
+
+        EXPECT_THAT(attributes.m_worldTransform, IsClose(transform));
+        EXPECT_NEAR(attributes.m_aspectRatio, aspectRatio, 1e-3f);
+        EXPECT_NEAR(attributes.m_verticalFovRadians, fovRadians, 1e-3f);
+        EXPECT_NEAR(attributes.m_nearClip, 0.0f, 1e-3f);
+        EXPECT_NEAR(attributes.m_farClip, farClip, 1e-3f);
     }
 
     TEST(MATH_Frustum, TestGetSetPlane)
@@ -715,6 +733,46 @@ namespace UnitTest
                 }
             }
             EXPECT_EQ(onPlaneCount, 3);
+        }
+    }
+
+    TEST(MATH_Frustum, NearClipDistance_DoesNotChangeSidePlanes)
+    {
+        // to make it extra spicy choose a transform that is not aligned with world axes and not at the origin
+        const AZ::Transform frustumTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationZ(AZ::DegToRad(30.0f)), AZ::Vector3(1.0f, 2.0f, 3.0f));
+        constexpr float aspectRatio = 1920.0f / 1080.0f;
+        constexpr float fovRadians = AZ::DegToRad(60.0f);
+        constexpr float farClip = 100.0f;
+
+        const AZ::Frustum referenceFrustum(AZ::ViewFrustumAttributes(frustumTransform, aspectRatio, fovRadians, 1.0f, farClip));
+
+        // we only do the left right top bottom, not near or far here.  (Intentionally)
+        constexpr AZStd::array sidePlanes{
+            AZ::Frustum::PlaneId::Left,
+            AZ::Frustum::PlaneId::Right,
+            AZ::Frustum::PlaneId::Top,
+            AZ::Frustum::PlaneId::Bottom,
+        };
+
+        for (const float nearClip : { 0.0f, 0.0005f })
+        {
+            SCOPED_TRACE(nearClip);
+            const AZ::Frustum frustum(AZ::ViewFrustumAttributes(frustumTransform, aspectRatio, fovRadians, nearClip, farClip));
+
+            // The coefficients should be about the same regardless of near plane distance:
+            for (const auto planeId : sidePlanes)
+            {
+                EXPECT_THAT(
+                    frustum.GetPlane(planeId).GetPlaneEquationCoefficients(),
+                    IsClose(referenceFrustum.GetPlane(planeId).GetPlaneEquationCoefficients()))
+                    << "planeId " << planeId;
+            }
+
+            // The near plane should pass the camera position at zero near clip and face forwards in the same direction as the cam
+            const AZ::Plane nearPlane = frustum.GetPlane(AZ::Frustum::PlaneId::Near);
+            EXPECT_THAT(nearPlane.GetNormal(), IsClose(frustumTransform.GetBasisY()));
+            EXPECT_NEAR(nearPlane.GetPointDist(frustumTransform.GetTranslation()), -nearClip, 1e-4f);
         }
     }
 } // namespace UnitTest
