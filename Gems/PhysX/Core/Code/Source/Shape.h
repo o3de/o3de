@@ -82,7 +82,7 @@ namespace PhysX
         void BindMaterialsWithPxShape();
         void ExtractMaterialsFromPxShape();
         physx::PxScene* GetScene() const;
-        void ReleasePxShape(physx::PxShape* shape);
+        static void ReleasePxShape(physx::PxShape* shape);
         AzPhysics::SceneQueryHit RayCastInternal(const AzPhysics::RayCastRequest& worldSpaceRequest, const physx::PxTransform& pose);
 
         using PxShapeUniquePtr = AZStd::unique_ptr<physx::PxShape, AZStd::function<void(physx::PxShape*)>>;

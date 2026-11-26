@@ -66,6 +66,10 @@ namespace PhysX
         for (physx::PxU32 i = 0; i < nbPairs; i++)
         {
             const physx::PxContactPair& contactPair = pairs[i];
+            if (contactPair.flags & (physx::PxContactPairFlag::eREMOVED_SHAPE_0 | physx::PxContactPairFlag::eREMOVED_SHAPE_1))
+            {
+                continue;
+            }
 
             if (contactPair.events & flagsToNotify)
             {
@@ -147,11 +151,17 @@ namespace PhysX
         for (physx::PxU32 i = 0; i < count; ++i)
         {
             const physx::PxTriggerPair& triggerPair = pairs[i];
+            if (triggerPair.flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+            {
+                continue;
+            }
 
             if (triggerPair.triggerActor == nullptr ||
                 triggerPair.triggerActor->userData == nullptr ||
                 triggerPair.otherActor == nullptr ||
-                triggerPair.otherActor->userData == nullptr)
+                triggerPair.otherActor->userData == nullptr ||
+                triggerPair.triggerShape == nullptr ||
+                triggerPair.otherShape == nullptr)
             {
                 continue;
             }

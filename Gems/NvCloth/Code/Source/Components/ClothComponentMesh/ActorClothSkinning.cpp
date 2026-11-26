@@ -37,7 +37,7 @@ namespace NvCloth
                 return false;
             }
 
-            if (modelAsset->GetLodCount() < meshNodeInfo.m_lodLevel)
+            if (modelAsset->GetLodCount() <= meshNodeInfo.m_lodLevel)
             {
                 return false;
             }
@@ -70,7 +70,7 @@ namespace NvCloth
             numInfluencesPerSubmesh.reserve(meshNodeInfo.m_subMeshes.size());
             for (const auto& subMeshInfo : meshNodeInfo.m_subMeshes)
             {
-                if (modelLodAsset->GetMeshes().size() < subMeshInfo.m_primitiveIndex)
+                if (modelLodAsset->GetMeshes().size() <= subMeshInfo.m_primitiveIndex)
                 {
                     AZ_Error("ActorClothSkinning", false,
                         "Unable to access submesh %d from lod asset '%s' as it only has %d submeshes.",

@@ -1484,8 +1484,11 @@ namespace Vegetation
                 // Refresh the lists of sectors to create / update / remove
                 keepProcessing = UpdateSectorWorkLists(threadData, vegTasks);
 
-                // We've finished refreshing the thread work state, so mark ourselves as synchronized.
-                threadData->m_vegetationDataSyncState = PersistentThreadData::VegetationDataSyncState::Synchronized;
+                // We've finished refreshing the thread work state, so mark ourselves as synchronized
+                // (unless the main thread concurrently marked us Dirty again while we were updating).
+                auto updatingState = PersistentThreadData::VegetationDataSyncState::Updating;
+                threadData->m_vegetationDataSyncState.compare_exchange_strong(
+                    updatingState, PersistentThreadData::VegetationDataSyncState::Synchronized);
             }
 
             if (keepProcessing)

@@ -34,7 +34,11 @@ namespace PhysX
         , m_materials(AZStd::move(shape.m_materials))
         , m_collisionLayer(AZStd::move(shape.m_collisionLayer))
         , m_collisionGroup(AZStd::move(shape.m_collisionGroup))
+        , m_shapeConfiguration(AZStd::move(shape.m_shapeConfiguration))
+        , m_tag(AZStd::move(shape.m_tag))
+        , m_attachedActor(shape.m_attachedActor)
     {
+        shape.m_attachedActor = nullptr;
         if (m_pxShape)
         {
             m_pxShape->userData = this;
@@ -43,10 +47,19 @@ namespace PhysX
 
     Shape& Shape::operator=(Shape&& shape)
     {
+        if (this == &shape)
+        {
+            return *this;
+        }
+
         m_pxShape = AZStd::move(shape.m_pxShape);
         m_materials = AZStd::move(shape.m_materials);
         m_collisionLayer = AZStd::move(shape.m_collisionLayer);
         m_collisionGroup = AZStd::move(shape.m_collisionGroup);
+        m_shapeConfiguration = AZStd::move(shape.m_shapeConfiguration);
+        m_tag = AZStd::move(shape.m_tag);
+        m_attachedActor = shape.m_attachedActor;
+        shape.m_attachedActor = nullptr;
 
         if (m_pxShape)
         {
@@ -60,7 +73,8 @@ namespace PhysX
     {
         if (shape != nullptr)
         {
-            PHYSX_SCENE_WRITE_LOCK(GetScene());
+            physx::PxActor* actor = shape->getActor();
+            PHYSX_SCENE_WRITE_LOCK(actor ? actor->getScene() : nullptr);
             shape->userData = nullptr;
             shape->release();
         }
@@ -72,7 +86,7 @@ namespace PhysX
         m_shapeConfiguration = shapeConfiguration.Clone();
         if (physx::PxShape* newShape = Utils::CreatePxShapeFromConfig(colliderConfiguration, shapeConfiguration, m_collisionGroup))
         {
-            m_pxShape = PxShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleasePxShape, this, newShape));
+            m_pxShape = PxShapeUniquePtr(newShape, &Shape::ReleasePxShape);
             m_pxShape->userData = this;
 
             ExtractMaterialsFromPxShape();
@@ -83,7 +97,7 @@ namespace PhysX
 
     Shape::Shape(physx::PxShape* nativeShape)
     {
-        m_pxShape = PxShapeUniquePtr(nativeShape, AZStd::bind(&Shape::ReleasePxShape, this, nativeShape));
+        m_pxShape = PxShapeUniquePtr(nativeShape, &Shape::ReleasePxShape);
         m_pxShape->acquireReference();
         m_pxShape->userData = this;
 

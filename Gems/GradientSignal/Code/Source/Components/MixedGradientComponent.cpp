@@ -72,6 +72,7 @@ namespace GradientSignal
         static AZStd::string entityName;
         static constexpr auto emptyName = "<empty>";
 
+        entityName.clear();
         AZ::EntityId layerEntityId = m_gradientSampler.m_gradientId;
         if (layerEntityId.IsValid())
         {
@@ -95,7 +96,7 @@ namespace GradientSignal
 
     void MixedGradientConfig::AddLayer()
     {
-        m_layers[GetNumLayers()] = MixedGradientLayer();
+        m_layers.emplace_back();
         OnLayerAdded();
     }
 

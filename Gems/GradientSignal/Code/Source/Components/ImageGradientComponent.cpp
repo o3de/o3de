@@ -392,8 +392,12 @@ namespace GradientSignal
                 // outside of this function.
                 float pixelX = pixelLookup.GetX();
                 float pixelY = pixelLookup.GetY();
-                auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
-                auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
+                const int32_t w = static_cast<int32_t>(width);
+                const int32_t h = static_cast<int32_t>(height);
+                const int32_t ix = static_cast<int32_t>(floor(pixelX));
+                const int32_t iy = static_cast<int32_t>(floor(pixelY));
+                auto x = static_cast<AZ::u32>(((ix % w) + w) % w);
+                auto y = static_cast<AZ::u32>(((iy % h) + h) % h);
 
                 // Retrieve our pixel value based on our sampling type
                 const float value = GetValueForSamplingType(samplingType, x, y, pixelX, pixelY);
@@ -509,8 +513,8 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetClampedValue(int32_t x, int32_t y) const
     {
-        const auto width = m_imageDescriptor.m_size.m_width;
-        const auto height = m_imageDescriptor.m_size.m_height;
+        const int32_t width = static_cast<int32_t>(m_imageDescriptor.m_size.m_width);
+        const int32_t height = static_cast<int32_t>(m_imageDescriptor.m_size.m_height);
 
         switch (m_gradientTransform.GetWrappingType())
         {
@@ -545,11 +549,11 @@ namespace GradientSignal
         case WrappingType::None:
         case WrappingType::Repeat:
         default:
-            x = x % width;
-            y = y % height;
+            x = ((x % width) + width) % width;
+            y = ((y % height) + height) % height;
             break;
         }
-        return InvertYAndGetPixelValue(x, y);
+        return InvertYAndGetPixelValue(static_cast<AZ::u32>(x), static_cast<AZ::u32>(y));
     }
 
     void ImageGradientComponent::Get4x4Neighborhood(uint32_t x, uint32_t y, AZStd::array<AZStd::array<float, 4>, 4>& values) const
@@ -821,8 +825,7 @@ namespace GradientSignal
             {
                 for (uint32_t x = 0; x < width; x++)
                 {
-                    float pixel = AZ::RPI::GetImageDataPixelValue<float>(
-                        m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                    float pixel = GetPixelValue(x, y);
                     m_modifiedImageData.emplace_back(pixel);
                 }
             }
@@ -1123,8 +1126,12 @@ namespace GradientSignal
             // UVs outside the 0-1 range are treated as infinitely tiling, we mod the values to bring them back into image bounds.
             float pixelX = pixelLookup.GetX();
             float pixelY = pixelLookup.GetY();
-            auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
-            auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
+            const int32_t w = static_cast<int32_t>(width);
+            const int32_t h = static_cast<int32_t>(height);
+            const int32_t ix = static_cast<int32_t>(floor(pixelX));
+            const int32_t iy = static_cast<int32_t>(floor(pixelY));
+            auto x = static_cast<AZ::u32>(((ix % w) + w) % w);
+            auto y = static_cast<AZ::u32>(((iy % h) + h) % h);
 
             // Flip the y because images are stored in reverse of our world axes
             y = (height - 1) - y;

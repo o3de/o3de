@@ -133,15 +133,21 @@ namespace LmbrCentral
         AZStd::lock_guard<AZStd::mutex> openBundleLock(m_bundleModeMutex);
         for (const auto& thisBundle : bundleList)
         {
-            for (const auto& openedBundle : m_bundleModeBundles)
-            {
-                if (openedBundle == thisBundle)
-                {
-                    continue;
-                }
-            }
             AZStd::string bundlePath;
             AZ::StringFunc::Path::Join(bundleRoot, thisBundle.c_str(), bundlePath);
+            bool alreadyOpened = false;
+            for (const auto& openedBundle : m_bundleModeBundles)
+            {
+                if (openedBundle == bundlePath || openedBundle == thisBundle)
+                {
+                    alreadyOpened = true;
+                    break;
+                }
+            }
+            if (alreadyOpened)
+            {
+                continue;
+            }
             if (archive->OpenPack(bundleRoot, thisBundle.c_str()))
             {
                 AZ_TracePrintf("BundlingSystem", "Loaded bundle %s\n",bundlePath.c_str());
@@ -157,54 +163,61 @@ namespace LmbrCentral
     void BundlingSystemComponent::BundleOpened(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const char* nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
     {
         AZ_TracePrintf("BundlingSystem", "Opening bundle %s\n",bundleName);
-        AZStd::lock_guard<AZStd::mutex> openBundleLock(m_openedBundleMutex);
-        auto bundleIter = m_openedBundles.find(bundleName);
-        if (bundleIter != m_openedBundles.end())
-        {
-            AZ_Warning("BundlingSystem", false, "Received BundleOpened message for bundle in records - %s", bundleName);
-            return;
-        }
-
-        // Not already opened, new entry
-        m_openedBundles[bundleName] = AZStd::make_unique<OpenBundleInfo>();
         AZStd::shared_ptr<AzFramework::AssetRegistry> nextCatalog; // Not all bundles will have catalogs - some are legacy.
-        if (nextBundle == nullptr)
+        AZStd::shared_ptr<AzFramework::AssetRegistry> addedCatalog;
         {
-            // Added to the end
-            m_openedBundleList.push_back(bundleName);
-        }
-        else
-        {
-            for (auto openedListIter = m_openedBundleList.rbegin(); openedListIter != m_openedBundleList.rend(); ++openedListIter)
+            AZStd::lock_guard<AZStd::mutex> openBundleLock(m_openedBundleMutex);
+            auto bundleIter = m_openedBundles.find(bundleName);
+            if (bundleIter != m_openedBundles.end())
             {
-                if (*openedListIter == nextBundle)
+                AZ_Warning("BundlingSystem", false, "Received BundleOpened message for bundle in records - %s", bundleName);
+                return;
+            }
+
+            // Not already opened, new entry
+            m_openedBundles[bundleName] = AZStd::make_unique<OpenBundleInfo>();
+            if (nextBundle == nullptr)
+            {
+                // Added to the end
+                m_openedBundleList.push_back(bundleName);
+            }
+            else
+            {
+                for (auto openedListIter = m_openedBundleList.rbegin(); openedListIter != m_openedBundleList.rend(); ++openedListIter)
                 {
-                    m_openedBundleList.insert(openedListIter.base(), bundleName);
-                    break;
+                    if (*openedListIter == nextBundle)
+                    {
+                        m_openedBundleList.insert(openedListIter.base(), bundleName);
+                        break;
+                    }
+                    auto openedBundleIter = m_openedBundles.find(*openedListIter);
+                    if (openedBundleIter == m_openedBundles.end())
+                    {
+                        AZ_Error("BundlingSystem", false, "Invalid bundle %s in openedList is not found in bundle map", openedListIter->c_str());
+                    }
+                    else if(openedBundleIter->second->m_catalog)
+                    {
+                        nextCatalog = openedBundleIter->second->m_catalog;
+                    }
                 }
-                auto openedBundleIter = m_openedBundles.find(*openedListIter);
-                if (openedBundleIter == m_openedBundles.end())
+            }
+
+            if (bundleManifest)
+            {
+                m_openedBundles[bundleName]->m_manifest = bundleManifest;
+                m_openedBundles[bundleName]->m_catalog = AZStd::move(bundleCatalog);
+                addedCatalog = m_openedBundles[bundleName]->m_catalog;
+                if (!addedCatalog)
                 {
-                    AZ_Error("BundlingSystem", false, "Invalid bundle %s in openedList is not found in bundle map", openedListIter->c_str());
-                }
-                else if(openedBundleIter->second->m_catalog)
-                {
-                    nextCatalog = openedBundleIter->second->m_catalog;
+                    AZ_Error("BundlingSystem", false, "Failed to load catalog %s from bundle %s", bundleManifest->GetCatalogName().c_str(), bundleName);
                 }
             }
         }
 
         if (bundleManifest)
         {
-            m_openedBundles[bundleName]->m_manifest = bundleManifest;
-            m_openedBundles[bundleName]->m_catalog = AZStd::move(bundleCatalog);
-            if (!m_openedBundles[bundleName]->m_catalog)
-            {
-                AZ_Error("BundlingSystem", false, "Failed to load catalog %s from bundle %s", bundleManifest->GetCatalogName().c_str(), bundleName);
-            }
-
             bool catalogAdded{ false };
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(catalogAdded, &AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, m_openedBundles[bundleName]->m_catalog, nextCatalog);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(catalogAdded, &AZ::Data::AssetCatalogRequestBus::Events::InsertDeltaCatalogBefore, addedCatalog, nextCatalog);
 
             if (bundleManifest->GetDependentBundleNames().size())
             {

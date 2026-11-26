@@ -122,12 +122,23 @@ namespace RecastNavigation
             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
 
             bool operationScheduled = false;
+            AZStd::shared_ptr<AsyncCallbackState> callbackState = m_asyncCallbackState;
+            if (!callbackState)
+            {
+                callbackState = AZStd::make_shared<AsyncCallbackState>();
+                callbackState->m_controller = this;
+                m_asyncCallbackState = callbackState;
+            }
             RecastNavigationProviderRequestBus::EventResult(operationScheduled, m_entityComponentIdPair.GetEntityId(),
                 &RecastNavigationProviderRequests::CollectGeometryAsync,
                 m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
-                [this](AZStd::shared_ptr<TileGeometry> tile)
+                [callbackState](AZStd::shared_ptr<TileGeometry> tile)
                 {
-                    OnTileProcessedEvent(tile);
+                    AZStd::lock_guard<AZStd::mutex> lock(callbackState->m_mutex);
+                    if (callbackState->m_controller)
+                    {
+                        callbackState->m_controller->OnTileProcessedEvent(tile);
+                    }
                 });
 
             if (!operationScheduled)
@@ -150,6 +161,8 @@ namespace RecastNavigation
     {
         m_entityComponentIdPair = entityComponentIdPair;
         m_context = AZStd::make_unique<rcContext>();
+        m_asyncCallbackState = AZStd::make_shared<AsyncCallbackState>();
+        m_asyncCallbackState->m_controller = this;
 
         // It is safe to create the navigation mesh object now.
         // The actual navigation data will be passed at a later time.
@@ -166,16 +179,29 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::Deactivate()
     {
-        m_tickEvent.RemoveFromQueue();
-
-        if (m_updateInProgress)
+        if (m_asyncCallbackState)
         {
-            m_shouldProcessTiles = false;
-            if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
-            {
-                // If the tasks are still in progress, wait until the task graph is finished.
-                m_taskGraphEvent->Wait();
-            }
+            AZStd::lock_guard<AZStd::mutex> lock(m_asyncCallbackState->m_mutex);
+            m_asyncCallbackState->m_controller = nullptr;
+        }
+        m_asyncCallbackState.reset();
+
+        m_tickEvent.RemoveFromQueue();
+        m_receivedAllNewTilesEvent.RemoveFromQueue();
+        m_sendNotificationEvent.RemoveFromQueue();
+
+        m_shouldProcessTiles = false;
+        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        {
+            // If the tasks are still in progress, wait until the task graph is finished.
+            m_taskGraphEvent->Wait();
+        }
+
+        m_receivedAllNewTilesEvent.RemoveFromQueue();
+        m_sendNotificationEvent.RemoveFromQueue();
+        {
+            AZStd::lock_guard lock(m_tileProcessingMutex);
+            m_tilesToBeProcessed.clear();
         }
 
         m_context.reset();
@@ -420,12 +446,14 @@ namespace RecastNavigation
             }
 
             // Create tasks for each tile and a finish task.
+            const RecastNavigationMeshConfig configCopy = config;
+            AZStd::shared_ptr<AsyncCallbackState> callbackState = m_asyncCallbackState;
             for (AZStd::shared_ptr<TileGeometry> tile : tilesToBeProcessed)
             {
                 AZ::TaskToken token = m_taskGraph.AddTask(
-                    m_taskDescriptor, [this, tile, &config]()
+                    m_taskDescriptor, [this, tile, configCopy, callbackState]()
                     {
-                        if (!m_shouldProcessTiles)
+                        if (!m_shouldProcessTiles || (callbackState && callbackState->m_controller == nullptr))
                         {
                             return;
                         }
@@ -433,7 +461,7 @@ namespace RecastNavigation
                         AZ_PROFILE_SCOPE(Navigation, "Navigation: task - computing tile");
 
                         NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
-                            config, m_context.get());
+                            configCopy, m_context.get());
 
                         {
                             NavMeshQuery::LockGuard lock(*m_navObject);
@@ -447,10 +475,7 @@ namespace RecastNavigation
                         {
                             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync - tile callback");
 
-                            if (navigationTileData.IsValid())
-                            {
-                                AttachNavigationTileToMesh(navigationTileData);
-                            }
+                            AttachNavigationTileToMesh(navigationTileData);
                         }
                     });
 
@@ -458,8 +483,16 @@ namespace RecastNavigation
             }
 
             AZ::TaskToken finishToken = m_taskGraph.AddTask(
-                m_taskDescriptor, [&sendNotificationEvent]()
+                m_taskDescriptor, [&sendNotificationEvent, callbackState]()
                 {
+                    if (callbackState)
+                    {
+                        AZStd::lock_guard<AZStd::mutex> lock(callbackState->m_mutex);
+                        if (!callbackState->m_controller)
+                        {
+                            return;
+                        }
+                    }
                     sendNotificationEvent.Enqueue(AZ::TimeMs{ 0 });
                 });
 

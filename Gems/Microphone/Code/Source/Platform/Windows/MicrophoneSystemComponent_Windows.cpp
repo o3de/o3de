@@ -84,24 +84,24 @@ namespace Audio
                     // not a full failure
                 }
 
-                PROPVARIANT endpointName;
-                PropVariantInit(&endpointName);
-                hresult = m_deviceProps->GetValue(PKEY_Device_FriendlyName, &endpointName);
-
-                if (FAILED(hresult))
-                {
-                    AZ_Warning("WindowsMicrophone", false, "Failed to get the endpoint device's friendly name!\n");
-                    // not a full failure
-                }
-                else
-                {
-                    AZ_TracePrintf("WindowsMicrophone", "Microphone Endpoint Device Initialized: %S\n", endpointName.pwszVal);
-                    m_deviceName = endpointName.pwszVal;
-                }
-
-                PropVariantClear(&endpointName);
                 if (m_deviceProps)
                 {
+                    PROPVARIANT endpointName;
+                    PropVariantInit(&endpointName);
+                    hresult = m_deviceProps->GetValue(PKEY_Device_FriendlyName, &endpointName);
+
+                    if (FAILED(hresult))
+                    {
+                        AZ_Warning("WindowsMicrophone", false, "Failed to get the endpoint device's friendly name!\n");
+                        // not a full failure
+                    }
+                    else
+                    {
+                        AZ_TracePrintf("WindowsMicrophone", "Microphone Endpoint Device Initialized: %S\n", endpointName.pwszVal);
+                        m_deviceName = endpointName.pwszVal;
+                    }
+
+                    PropVariantClear(&endpointName);
                     m_deviceProps->Release();
                     m_deviceProps = nullptr;
                 }
@@ -209,7 +209,7 @@ namespace Audio
 
             AllocateBuffersInternal();
 
-            m_bufferDuration = static_cast<double>(REFTIMES_PER_SEC) * (m_bufferFrameCount / m_streamFormat->nSamplesPerSec);
+            m_bufferDuration = static_cast<double>(REFTIMES_PER_SEC) * (static_cast<double>(m_bufferFrameCount) / static_cast<double>(m_streamFormat->nSamplesPerSec));
 
             // Start recording!
             hresult = m_audioClient->Start();
@@ -450,10 +450,11 @@ namespace Audio
                     if (shouldDeinterleave)
                     {
                         float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                        float** bufferOutputData = reinterpret_cast<float**>(m_conversionBufferOut.m_data);
+                        float* outCh0 = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
+                        float* outCh1 = outCh0 + numFrames;
                         for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                         {
-                            bufferOutputData[0][frame] = bufferOutputData[1][frame] = bufferInputData[frame];
+                            outCh0[frame] = outCh1[frame] = bufferInputData[frame];
                         }
                     }
                     else
@@ -478,13 +479,22 @@ namespace Audio
                 src_float_to_short_array(
                     reinterpret_cast<float*>(m_conversionBufferIn.m_data),
                     *reinterpret_cast<AZ::s16**>(outputData),
-                    static_cast<int>(numFrames * m_config.m_numChannels)
+                    static_cast<int>(numFrames * targetConfig.m_numChannels)
                 );
             }
             else
             {
                 // Otherwise, we're done, just memcpy the 'working' buffer to the output.
-                ::memcpy(outputData, m_conversionBufferIn.m_data, numFrames * targetConfig.m_numChannels * (targetConfig.m_bitsPerSample >> 3));
+                if (shouldDeinterleave && targetConfig.m_numChannels == 2 && outputData[0] && outputData[1])
+                {
+                    const size_t channelBytes = numFrames * (targetConfig.m_bitsPerSample >> 3);
+                    ::memcpy(outputData[0], m_conversionBufferIn.m_data, channelBytes);
+                    ::memcpy(outputData[1], m_conversionBufferIn.m_data + channelBytes, channelBytes);
+                }
+                else
+                {
+                    ::memcpy(*outputData, m_conversionBufferIn.m_data, numFrames * targetConfig.m_numChannels * (targetConfig.m_bitsPerSample >> 3));
+                }
             }
 
             return numFrames;

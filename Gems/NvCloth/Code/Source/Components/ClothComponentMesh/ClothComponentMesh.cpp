@@ -498,7 +498,7 @@ namespace NvCloth
             return;
         }
 
-        if (modelAsset->GetLodCount() < m_meshNodeInfo.m_lodLevel)
+        if (modelAsset->GetLodCount() <= m_meshNodeInfo.m_lodLevel)
         {
             AZ_Error("ClothComponentMesh", false,
                 "Unable to access lod %d from model asset '%s' as it only has %d lod levels.",
@@ -528,7 +528,7 @@ namespace NvCloth
         // For each submesh...
         for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
         {
-            if (modelLodAsset->GetMeshes().size() < subMeshInfo.m_primitiveIndex)
+            if (modelLodAsset->GetMeshes().size() <= subMeshInfo.m_primitiveIndex)
             {
                 AZ_Error("ClothComponentMesh", false,
                     "Unable to access submesh %d from lod asset '%s' as it only has %d submeshes.",

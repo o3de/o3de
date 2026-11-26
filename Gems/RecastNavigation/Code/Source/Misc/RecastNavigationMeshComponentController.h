@@ -126,5 +126,12 @@ namespace RecastNavigation
 
         //! If true, an update operation is in progress.
         AZStd::atomic<bool> m_updateInProgress{ false };
+
+        struct AsyncCallbackState
+        {
+            AZStd::mutex m_mutex;
+            RecastNavigationMeshComponentController* m_controller = nullptr;
+        };
+        AZStd::shared_ptr<AsyncCallbackState> m_asyncCallbackState;
     };
 } // namespace RecastNavigation

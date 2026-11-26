@@ -258,13 +258,24 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::RefreshSurfaceData(const SurfaceDataRegistryHandle& providerHandle, const AZ::Aabb& dirtyBounds)
     {
-        auto entryItr = m_registeredSurfaceDataProviders.find(providerHandle);
-        if (entryItr != m_registeredSurfaceDataProviders.end())
+        SurfaceTagVector providerTags;
+        bool foundProvider = false;
+        {
+            AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+            auto entryItr = m_registeredSurfaceDataProviders.find(providerHandle);
+            if (entryItr != m_registeredSurfaceDataProviders.end())
+            {
+                providerTags = entryItr->second.m_tags;
+                foundProvider = true;
+            }
+        }
+
+        if (foundProvider)
         {
             // Get the set of surface tags that can be affected by refreshing a surface data provider.
             // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
             // because the affected surface points have the potential of getting the modifier tags applied as well.
-            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(dirtyBounds, entryItr->second.m_tags);
+            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(dirtyBounds, providerTags);
 
             SurfaceDataSystemNotificationBus::Broadcast(
                 &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, AZ::EntityId(), dirtyBounds, dirtyBounds, affectedSurfaceTags);
@@ -521,6 +532,8 @@ namespace SurfaceData
     SurfaceTagSet SurfaceDataSystemComponent::GetTagsFromBounds(
         const AZ::Aabb& bounds, const SurfaceDataRegistryMap& registeredEntries) const
     {
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+
         SurfaceTagSet tags;
 
         const bool inputHasInfiniteBounds = !bounds.IsValid();

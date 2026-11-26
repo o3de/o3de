@@ -108,7 +108,11 @@ namespace MiniAudio
 
     float MiniAudioPlaybackComponentController::GetVolumePercentage() const
     {
-        return ma_sound_get_volume(m_sound.get()) * 100.f;
+        if (m_sound)
+        {
+            return ma_sound_get_volume(m_sound.get()) * 100.f;
+        }
+        return m_config.m_volume;
     }
 
     void MiniAudioPlaybackComponentController::SetVolumePercentage(float volume)
@@ -122,7 +126,11 @@ namespace MiniAudio
 
     float MiniAudioPlaybackComponentController::GetVolumeDecibels() const
     {
-        return ma_volume_linear_to_db(ma_sound_get_volume(m_sound.get()));
+        if (m_sound)
+        {
+            return ma_volume_linear_to_db(ma_sound_get_volume(m_sound.get()));
+        }
+        return ma_volume_linear_to_db(m_config.m_volume / 100.f);
     }
 
     void MiniAudioPlaybackComponentController::SetVolumeDecibels(float volumeDecibels)
@@ -262,7 +270,11 @@ namespace MiniAudio
 
     float MiniAudioPlaybackComponentController::GetDirectionalAttenuationFactor() const
     {
-        return ma_sound_get_directional_attenuation_factor(m_sound.get());
+        if (m_sound)
+        {
+            return ma_sound_get_directional_attenuation_factor(m_sound.get());
+        }
+        return m_config.m_directionalAttenuationFactor;
     }
 
     void MiniAudioPlaybackComponentController::SetDirectionalAttenuationFactor(float directionalAttenuationFactor)
@@ -273,14 +285,21 @@ namespace MiniAudio
 
     AZ::Vector3 MiniAudioPlaybackComponentController::GetDirection() const
     {
-        ma_vec3f direction = ma_sound_get_direction(m_sound.get());
-        return AZ::Vector3(direction.x, direction.y, direction.z);
+        if (m_sound)
+        {
+            ma_vec3f direction = ma_sound_get_direction(m_sound.get());
+            return AZ::Vector3(direction.x, direction.y, direction.z);
+        }
+        return m_config.m_direction;
     }
 
     void MiniAudioPlaybackComponentController::SetDirection(const AZ::Vector3& direction)
     {
         m_config.m_direction = direction;
-        ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+        if (m_sound)
+        {
+            ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+        }
     }
 
     void MiniAudioPlaybackComponentController::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -330,7 +349,12 @@ namespace MiniAudio
 
     void MiniAudioPlaybackComponentController::LoadSound()
     {
-        if (ma_engine* engine = MiniAudioInterface::Get()->GetSoundEngine())
+        auto* miniAudioInterface = MiniAudioInterface::Get();
+        if (!miniAudioInterface)
+        {
+            return;
+        }
+        if (ma_engine* engine = miniAudioInterface->GetSoundEngine())
         {
             if (GetConfiguration().m_sound.IsReady())
             {
@@ -362,6 +386,8 @@ namespace MiniAudio
                 if (result != MA_SUCCESS)
                 {
                     // An error occurred.
+                    m_sound.reset();
+                    ma_resource_manager_unregister_data(ma_engine_get_resource_manager(engine), soundName.c_str());
                     return;
                 }
 
@@ -424,7 +450,12 @@ namespace MiniAudio
 
     void MiniAudioPlaybackComponentController::UnloadSound()
     {
-        if (ma_engine* engine = MiniAudioInterface::Get()->GetSoundEngine())
+        auto* miniAudioInterface = MiniAudioInterface::Get();
+        if (!miniAudioInterface)
+        {
+            return;
+        }
+        if (ma_engine* engine = miniAudioInterface->GetSoundEngine())
         {
             if (m_sound)
             {

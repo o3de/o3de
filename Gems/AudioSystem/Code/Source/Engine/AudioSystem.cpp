@@ -41,7 +41,6 @@ namespace Audio
     {
         AZ_Assert(m_audioSystem, "Audio Thread has no Audio System to run!\n");
         g_audioThreadId = AZStd::this_thread::get_id();
-        m_running = true;
         while (m_running)
         {
             m_audioSystem->InternalUpdate();
@@ -52,6 +51,7 @@ namespace Audio
     void CAudioThread::Activate(CAudioSystem* const audioSystem)
     {
         m_audioSystem = audioSystem;
+        m_running = true;
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "Audio Thread";
@@ -64,9 +64,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioThread::Deactivate()
     {
-        if (m_running)
+        m_running = false;
+        if (m_thread.joinable())
         {
-            m_running = false;
             m_thread.join();
         }
     }

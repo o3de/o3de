@@ -36,6 +36,11 @@ namespace AZ::MeshBuilder
     // optimize weights
     void MeshBuilderSkinningInfo::OptimizeSkinningInfluences(AZStd::vector<Influence>& influences, float tolerance, size_t maxWeights)
     {
+        if (influences.empty())
+        {
+            return;
+        }
+
         const auto influenceLess = [](const Influence& left, const Influence& right) { return left.mWeight < right.mWeight; };
 
         // Move all the items greater than the tolerance to the end of the array
@@ -44,7 +49,7 @@ namespace AZ::MeshBuilder
         {
             // If this would remove all influences, keep the biggest one
             auto [_, maxElement] = AZStd::minmax_element(begin(influences), end(influences), influenceLess);
-            AZStd::swap(removePoint, maxElement);
+            AZStd::iter_swap(removePoint, maxElement);
             ++removePoint;
         }
         // remove all weights below the tolerance
@@ -62,9 +67,12 @@ namespace AZ::MeshBuilder
         const float totalWeight = AZStd::accumulate(begin(influences), end(influences), 0.0f, [](float total, const Influence& influence) { return total + influence.mWeight; });
 
         // normalize
-        for (Influence& influence : influences)
+        if (totalWeight > 0.0f)
         {
-            influence.mWeight /= totalWeight;
+            for (Influence& influence : influences)
+            {
+                influence.mWeight /= totalWeight;
+            }
         }
     }
 
