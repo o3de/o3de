@@ -98,10 +98,11 @@ namespace EMotionFX
         }
 
         serializeContext->Class<BlendTreeConnection>()
-            ->Version(2)
+            ->Version(3)
             ->Field("id", &BlendTreeConnection::m_id)
             ->Field("sourceNodeId", &BlendTreeConnection::m_sourceNodeId)
             ->Field("sourcePortNr", &BlendTreeConnection::m_sourcePort)
-            ->Field("targetPortNr", &BlendTreeConnection::m_targetPort);
+            ->Field("targetPortNr", &BlendTreeConnection::m_targetPort)
+            ->Field("waypoints", &BlendTreeConnection::m_waypoints);
     }
 } // namespace EMotionFX

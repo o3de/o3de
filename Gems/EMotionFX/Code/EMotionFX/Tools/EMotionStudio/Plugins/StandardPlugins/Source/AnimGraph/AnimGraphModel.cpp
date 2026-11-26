@@ -76,6 +76,9 @@ namespace EMStudio
         m_commandCallbacks.emplace_back(new CommandDidAdjustConnectionCallback(*this));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAnimGraphAdjustTransition::s_commandName, m_commandCallbacks.back());
 
+        m_commandCallbacks.emplace_back(new CommandDidAdjustBlendTreeConnectionCallback(*this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAnimGraphAdjustConnection::s_commandName, m_commandCallbacks.back());
+
         // Transition conditions.
         m_commandCallbacks.emplace_back(new CommandDidAddRemoveConditionCallback(*this));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAddTransitionCondition::s_commandName, m_commandCallbacks.back());
@@ -1397,6 +1400,16 @@ namespace EMStudio
         {
             GetParentIfReferencedRootStateMachine(modelIndex);
             dataChanged(modelIndex, modelIndex, roles);
+        }
+
+        return true;
+    }
+
+    bool AnimGraphModel::Edited(EMotionFX::BlendTreeConnection* blendTreeConnection)
+    {
+        for (const QModelIndex& modelIndex : FindModelIndexes(blendTreeConnection))
+        {
+            dataChanged(modelIndex, modelIndex);
         }
 
         return true;

@@ -106,6 +106,8 @@ namespace EMStudio
         bool CheckIfHasConnection(GraphNode* sourceNode, AZ::u16 outputPortNr, GraphNode* targetNode, AZ::u16 inputPortNr) const;
         NodeConnection* FindInputConnection(GraphNode* targetNode, AZ::u16 targetPortNr) const;
         NodeConnection* FindConnection(const QPoint& mousePos);
+        // Returns the connection whose waypoint handle is under the given point, or nullptr. Ports and wires are not hit.
+        NodeConnection* FindWaypoint(const QPoint& mousePos, size_t& outWaypointIndex);
 
         void SelectAllNodes();
         void UnselectAllNodes();
@@ -240,7 +242,7 @@ namespace EMStudio
         GraphNode*                  m_replaceTransitionTargetNode;
         bool                        m_replaceTransitionValid;
 
-        NodeConnection*             m_waypointConnection; // nullptr when not dragging a transition waypoint
+        NodeConnection*             m_waypointConnection; // nullptr when not dragging a waypoint
         size_t                      m_waypointIndex;
         AZStd::vector<AZ::Vector2>  m_waypointOldValues;
 

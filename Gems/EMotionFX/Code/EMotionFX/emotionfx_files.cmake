@@ -220,8 +220,6 @@ set(FILES
     Source/BlendTreeFabrikNode.h
     Source/BlendTreeFinalNode.cpp
     Source/BlendTreeFinalNode.h
-    Source/BlendTreeRerouteNode.cpp
-    Source/BlendTreeRerouteNode.h
     Source/BlendTreeFloatConditionNode.cpp
     Source/BlendTreeFloatConditionNode.h
     Source/BlendTreeFloatConstantNode.cpp

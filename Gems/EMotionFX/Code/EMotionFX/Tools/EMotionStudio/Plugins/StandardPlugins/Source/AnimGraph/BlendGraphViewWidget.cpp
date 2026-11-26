@@ -290,7 +290,7 @@ namespace EMStudio
             m_parentPlugin->GetGraphWidget()->DeleteSelectedItems();
         });
 
-        m_actions[EDIT_REROUTE] = new QAction(tr("Reroute Selected Connection"), this);
+        m_actions[EDIT_REROUTE] = new QAction(tr("Add Waypoint to Selected Connections"), this);
         m_actions[EDIT_REROUTE]->setShortcut(Qt::Key_R);
         shortcutManager->RegisterKeyboardShortcut(
             m_actions[EDIT_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
@@ -298,9 +298,9 @@ namespace EMStudio
             m_actions[EDIT_REROUTE],
             &QAction::triggered,
             m_parentPlugin->GetGraphWidget(),
-            &BlendGraphWidget::InsertRerouteOnSelectedConnections);
+            &BlendGraphWidget::InsertWaypointOnSelectedConnections);
 
-        m_actions[EDIT_REMOVE_REROUTE] = new QAction(tr("Remove Reroute From Selection"), this);
+        m_actions[EDIT_REMOVE_REROUTE] = new QAction(tr("Remove Waypoint from Selected Connections"), this);
         m_actions[EDIT_REMOVE_REROUTE]->setShortcut(0x0 | Qt::Key_R | Qt::ShiftModifier);
         shortcutManager->RegisterKeyboardShortcut(
             m_actions[EDIT_REMOVE_REROUTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
@@ -308,7 +308,7 @@ namespace EMStudio
             m_actions[EDIT_REMOVE_REROUTE],
             &QAction::triggered,
             m_parentPlugin->GetGraphWidget(),
-            &BlendGraphWidget::RemoveRerouteFromSelection);
+            &BlendGraphWidget::RemoveWaypointFromSelectedConnections);
 
         for (QAction* action : m_actions)
         {
@@ -551,9 +551,9 @@ namespace EMStudio
         SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
         // The action filter this needs depends on the graph type, so the graph widget decides it.
         SetOptionEnabled(
-            EDIT_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanInsertRerouteOnSelectedConnections());
+            EDIT_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanInsertWaypointOnSelectedConnections());
         SetOptionEnabled(
-            EDIT_REMOVE_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanRemoveRerouteFromSelection());
+            EDIT_REMOVE_REROUTE, isEditable && m_parentPlugin->GetGraphWidget()->CanRemoveWaypointFromSelectedConnections());
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)

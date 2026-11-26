@@ -640,6 +640,34 @@ namespace EMStudio
     }
 
 
+    NodeConnection* NodeGraph::FindWaypoint(const QPoint& mousePos, size_t& outWaypointIndex)
+    {
+        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        {
+            GraphNode* graphNode = indexAndGraphNode.second.get();
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
+            {
+                NodeConnection* connection = graphNode->GetConnection(c);
+                if (connection->GetIsWildcardTransition())
+                {
+                    continue;
+                }
+
+                const size_t waypointIndex = connection->FindWaypoint(mousePos);
+                if (waypointIndex != InvalidIndex)
+                {
+                    outWaypointIndex = waypointIndex;
+                    return connection;
+                }
+            }
+        }
+
+        outWaypointIndex = InvalidIndex;
+        return nullptr;
+    }
+
+
     void NodeGraph::UpdateHighlightConnectionFlags(const QPoint& mousePos)
     {
         bool highlightedConnectionFound = false;
@@ -1592,13 +1620,7 @@ namespace EMStudio
     {
         if (m_waypointConnection)
         {
-            auto* transition = m_waypointConnection->GetModelIndex()
-                .data(AnimGraphModel::ROLE_TRANSITION_POINTER)
-                .value<EMotionFX::AnimGraphStateTransition*>();
-            if (transition)
-            {
-                transition->SetWaypoints(m_waypointOldValues);
-            }
+            m_waypointConnection->SetWaypoints(m_waypointOldValues);
         }
         StopRepositionWaypoint();
     }

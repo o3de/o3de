@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
 
@@ -55,6 +57,11 @@ namespace EMotionFX
 
         AnimGraph* GetAnimGraph() const                             { return m_animGraph; }
 
+        // Visual-only bend points in graph space, ordered from the source to the target port.
+        // They are editor layout: evaluating the blend tree never reads them.
+        const AZStd::vector<AZ::Vector2>& GetWaypoints() const      { return m_waypoints; }
+        void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints) { m_waypoints = waypoints; }
+
         static void Reflect(AZ::ReflectContext* context);
 
     private:
@@ -65,5 +72,6 @@ namespace EMotionFX
         AZ::u16                 m_sourcePort;        /**< The source port number, so the output port number of the node where the connection comes from. */
         AZ::u16                 m_targetPort;        /**< The target port number, which is the input port number of the target node. */
         bool                    m_visited;               /**< True when during updates this connection was used. */
+        AZStd::vector<AZ::Vector2> m_waypoints;
     };
 } // namespace EMotionFX

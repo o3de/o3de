@@ -15,7 +15,6 @@
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
-#include <EMotionFX/Source/BlendTreeRerouteNode.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
@@ -381,23 +380,6 @@ namespace EMStudio
                         }
                     }
                 }
-            }
-
-            if (actionFilter.m_editNodes
-                && actionFilter.m_delete
-                && !inReferenceGraph
-                && CanDissolveRerouteNode(animGraphNode))
-            {
-                QAction* dissolveAction = menu->addAction(tr("Dissolve"));
-                connect(
-                    dissolveAction,
-                    &QAction::triggered,
-                    this,
-                    [this, animGraphNode]()
-                    {
-                        DissolveRerouteNode(animGraphNode);
-                    });
-                menu->addSeparator();
             }
 
             if (animGraphNode->GetIsDeletable())

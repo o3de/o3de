@@ -10,6 +10,9 @@
 #include "NodeConnection.h"
 #include "NodeGraph.h"
 #include "GraphNode.h"
+#include <EMotionFX/Source/BlendTreeConnection.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
+#include <MCore/Source/FastMath.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Vector.h>
 
@@ -63,29 +66,38 @@ namespace EMStudio
     // update the painter path
     void NodeConnection::UpdatePainterPath()
     {
-        const QRect sourceRect = GetSourceRect();
-        const QRect targetRect = GetTargetRect();
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(points);
 
-        // get the start and end coordinates for the connections
-        int32 startX    = sourceRect.center().x();
-        int32 endX      = targetRect.center().x();
-        int32 startY    = sourceRect.center().y() + 1;
-        int32 endY      = targetRect.center().y() + 1;
-
-        // draw the connection
+        // Every stretch between two points is the usual horizontal curve, so a wire bent at waypoints still
+        // leaves its output port and enters its input port sideways and passes through each waypoint level.
         m_painterPath = QPainterPath();
-        const float width = aznumeric_cast<float>(abs((endX - 3) - (startX + 3)));
-        m_painterPath.moveTo(startX, startY);
-        m_painterPath.lineTo(startX + 3, startY);
-        m_painterPath.cubicTo(startX + (width / 2), startY, endX - (width / 2), endY, endX - 3, endY);
-        m_painterPath.lineTo(endX, endY);
+        m_painterPath.moveTo(points.front());
+        const size_t lastIndex = points.size() - 1;
+        for (size_t i = 1; i <= lastIndex; ++i)
+        {
+            const QPoint from = points[i - 1];
+            const QPoint to = points[i];
+            const int fromX = i == 1 ? from.x() + 3 : from.x();
+            const int toX = i == lastIndex ? to.x() - 3 : to.x();
+            if (i == 1)
+            {
+                m_painterPath.lineTo(fromX, from.y());
+            }
+
+            const float width = aznumeric_cast<float>(abs(toX - fromX));
+            m_painterPath.cubicTo(from.x() + (width / 2), from.y(), to.x() - (width / 2), to.y(), toX, to.y());
+            if (i == lastIndex)
+            {
+                m_painterPath.lineTo(to);
+            }
+        }
     }
 
 
     // render the connection
     void NodeConnection::Render([[maybe_unused]] const QItemSelectionModel& selectionModel, QPainter& painter, QPen* pen, QBrush* brush, int32 stepSize, const QRect& visibleRect, float opacity, bool alwaysColor)
     {
-        AZ_UNUSED(brush);
         AZ_UNUSED(stepSize);
         AZ_UNUSED(visibleRect);
 
@@ -230,6 +242,13 @@ namespace EMStudio
         UpdatePainterPath();
         painter.drawPath(m_painterPath);
 
+        // The waypoint handles take the wire's colour, so they read as part of it.
+        if (GetNumWaypoints() > 0)
+        {
+            RenderWaypoints(painter, *brush, *pen, penColor);
+            painter.setBrush(Qt::NoBrush);
+        }
+
         // restore opacity and width
         painter.setOpacity(1.0f);
         pen->setWidth(1);
@@ -346,7 +365,22 @@ namespace EMStudio
     {
         QRect sourceRect = GetSourceRect();
         QRect targetRect = GetTargetRect();
-        return sourceRect.united(targetRect);
+        QRect rect = sourceRect.united(targetRect);
+
+        // The path bends through the waypoints, so they have to be inside for culling and hit testing.
+        if (const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints())
+        {
+            for (const AZ::Vector2& waypoint : *waypoints)
+            {
+                rect = rect.united(QRect(
+                    aznumeric_cast<int>(waypoint.GetX()) - s_waypointRadius,
+                    aznumeric_cast<int>(waypoint.GetY()) - s_waypointRadius,
+                    2 * s_waypointRadius + 1,
+                    2 * s_waypointRadius + 1));
+            }
+        }
+
+        return rect;
     }
 
 
@@ -370,5 +404,216 @@ namespace EMStudio
     bool NodeConnection::GetIsSelected() const
     {
         return m_parentGraph->GetAnimGraphModel().GetSelectionModel().isSelected(m_modelIndex);
+    }
+
+    const AZStd::vector<AZ::Vector2>* NodeConnection::GetWaypoints() const
+    {
+        const EMotionFX::BlendTreeConnection* connection =
+            m_modelIndex.data(AnimGraphModel::ROLE_CONNECTION_POINTER).value<EMotionFX::BlendTreeConnection*>();
+        return connection ? &connection->GetWaypoints() : nullptr;
+    }
+
+    void NodeConnection::SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints)
+    {
+        EMotionFX::BlendTreeConnection* connection =
+            m_modelIndex.data(AnimGraphModel::ROLE_CONNECTION_POINTER).value<EMotionFX::BlendTreeConnection*>();
+        if (connection)
+        {
+            connection->SetWaypoints(waypoints);
+        }
+    }
+
+    void NodeConnection::SetWaypoint(size_t index, const AZ::Vector2& position)
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!waypoints || index >= waypoints->size())
+        {
+            return;
+        }
+
+        AZStd::vector<AZ::Vector2> newWaypoints = *waypoints;
+        newWaypoints[index] = position;
+        SetWaypoints(newWaypoints);
+    }
+
+    size_t NodeConnection::GetNumWaypoints() const
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        return waypoints ? waypoints->size() : 0;
+    }
+
+    void NodeConnection::CalcPolyline(AZStd::vector<QPoint>& outPoints) const
+    {
+        outPoints.clear();
+
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        outPoints.reserve((waypoints ? waypoints->size() : 0) + 2);
+
+        // The wire runs one pixel below the port centres, as it always has.
+        outPoints.push_back(GetSourceRect().center() + QPoint(0, 1));
+        if (waypoints)
+        {
+            for (const AZ::Vector2& waypoint : *waypoints)
+            {
+                outPoints.push_back(QPoint(aznumeric_cast<int>(waypoint.GetX()), aznumeric_cast<int>(waypoint.GetY())));
+            }
+        }
+        outPoints.push_back(GetTargetRect().center() + QPoint(0, 1));
+    }
+
+    QPoint NodeConnection::CalcPathMidpoint() const
+    {
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(points);
+
+        AZ::Vector2 mid = AZ::Vector2::CreateZero();
+        AZ::Vector2 dir = AZ::Vector2::CreateAxisX();
+        float segmentLength = 0.0f;
+        if (!FindPathMidpoint(points.data(), points.size(), mid, dir, segmentLength))
+        {
+            return points.front();
+        }
+
+        return QPoint(aznumeric_cast<int>(mid.GetX()), aznumeric_cast<int>(mid.GetY()));
+    }
+
+    size_t NodeConnection::FindWaypoint(const QPoint& point) const
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!waypoints)
+        {
+            return InvalidIndex;
+        }
+
+        const AZ::Vector2 pickPoint(aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
+        const float pickRadius = aznumeric_cast<float>(s_waypointRadius) + 2.0f;
+        for (size_t i = 0; i < waypoints->size(); ++i)
+        {
+            if (AZ::Vector2((*waypoints)[i] - pickPoint).GetLength() <= pickRadius)
+            {
+                return i;
+            }
+        }
+
+        return InvalidIndex;
+    }
+
+    size_t NodeConnection::FindClosestWaypoint(const QPoint& point) const
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!waypoints || waypoints->empty())
+        {
+            return InvalidIndex;
+        }
+
+        const AZ::Vector2 pickPoint(aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
+        size_t closestIndex = 0;
+        float closestDistance = -1.0f;
+        for (size_t i = 0; i < waypoints->size(); ++i)
+        {
+            const float distance = AZ::Vector2((*waypoints)[i] - pickPoint).GetLength();
+            if (closestDistance < 0.0f || distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestIndex = i;
+            }
+        }
+
+        return closestIndex;
+    }
+
+    size_t NodeConnection::CalcWaypointInsertIndex(const QPoint& point) const
+    {
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(points);
+
+        // Segment i runs from points[i] to points[i + 1], so splitting it means inserting a waypoint at index i.
+        size_t closestSegment = 0;
+        float closestDistance = -1.0f;
+        for (size_t i = 1; i < points.size(); ++i)
+        {
+            const float distance = NodeGraph::DistanceToLine(
+                aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()),
+                aznumeric_cast<float>(points[i].x()), aznumeric_cast<float>(points[i].y()),
+                aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
+
+            if (closestDistance < 0.0f || distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestSegment = i - 1;
+            }
+        }
+
+        return closestSegment;
+    }
+
+    void NodeConnection::RenderWaypoints(QPainter& painter, QBrush& brush, QPen& pen, const QColor& color) const
+    {
+        const AZStd::vector<AZ::Vector2>* waypoints = GetWaypoints();
+        if (!waypoints || waypoints->empty())
+        {
+            return;
+        }
+
+        pen.setStyle(Qt::SolidLine);
+        pen.setWidthF(1.0f);
+        pen.setColor(color.lighter(160));
+        brush.setStyle(Qt::SolidPattern);
+        brush.setColor(color);
+        painter.setPen(pen);
+        painter.setBrush(brush);
+
+        const qreal radius = aznumeric_cast<qreal>(s_waypointRadius);
+        for (const AZ::Vector2& waypoint : *waypoints)
+        {
+            painter.drawEllipse(QPointF(waypoint.GetX(), waypoint.GetY()), radius, radius);
+        }
+    }
+
+    bool NodeConnection::FindPathMidpoint(const QPoint* points, size_t pointCount, AZ::Vector2& outMid, AZ::Vector2& outDir, float& outSegmentLength)
+    {
+        if (pointCount < 2)
+        {
+            return false;
+        }
+
+        float totalLength = 0.0f;
+        for (size_t i = 1; i < pointCount; ++i)
+        {
+            totalLength += AZ::Vector2(
+                aznumeric_cast<float>(points[i].x() - points[i - 1].x()),
+                aznumeric_cast<float>(points[i].y() - points[i - 1].y())).GetLength();
+        }
+
+        if (totalLength < MCore::Math::epsilon)
+        {
+            return false;
+        }
+
+        const float halfLength = totalLength * 0.5f;
+        float distanceBefore = 0.0f;
+        for (size_t i = 1; i < pointCount; ++i)
+        {
+            const AZ::Vector2 segmentStart(aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()));
+            const AZ::Vector2 segment(aznumeric_cast<float>(points[i].x()) - segmentStart.GetX(),
+                aznumeric_cast<float>(points[i].y()) - segmentStart.GetY());
+            const float segmentLength = segment.GetLength();
+            if (segmentLength < MCore::Math::epsilon)
+            {
+                continue;
+            }
+
+            if (distanceBefore + segmentLength >= halfLength)
+            {
+                outDir = segment.GetNormalized();
+                outMid = segmentStart + outDir * (halfLength - distanceBefore);
+                outSegmentLength = segmentLength;
+                return true;
+            }
+
+            distanceBefore += segmentLength;
+        }
+
+        return false;
     }
 }   // namespace EMotionFX

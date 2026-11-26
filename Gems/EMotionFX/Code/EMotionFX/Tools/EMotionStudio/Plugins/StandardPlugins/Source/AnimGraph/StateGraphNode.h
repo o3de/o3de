@@ -55,23 +55,10 @@ namespace EMStudio
         bool CheckIfIsCloseToTail(const QPoint& point) const override;
 
         // Builds the routed path in graph space, from the clipped source point through every waypoint to the clipped target point.
-        void CalcPolyline(AZStd::vector<QPoint>& outPoints) const;
+        void CalcPolyline(AZStd::vector<QPoint>& outPoints) const override;
 
-        // Returns the point halfway along the routed path, which is where a new waypoint goes by default.
-        QPoint CalcPathMidpoint() const;
-
-        // Returns the index of the waypoint handle under the given point, or InvalidIndex when none is hit.
-        size_t FindWaypoint(const QPoint& point) const;
-
-        // Returns the index of the waypoint nearest the given point regardless of distance, or InvalidIndex when there are none.
-        size_t FindClosestWaypoint(const QPoint& point) const;
-
-        // Returns the index at which a new waypoint has to be inserted so it splits the path segment closest to the given point.
-        size_t CalcWaypointInsertIndex(const QPoint& point) const;
-
-        void RenderWaypoints(QPainter& painter, QBrush& brush, QPen& pen, const QColor& color) const;
-
-        static constexpr int s_waypointRadius = 4;
+        const AZStd::vector<AZ::Vector2>* GetWaypoints() const override;
+        void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints) override;
 
         uint32 GetType() const override                     { return TYPE_ID; }
 
@@ -105,9 +92,6 @@ namespace EMStudio
         void CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const;
 
         bool m_isWildcardConnection;
-
-        // Reused across frames so the render and hit-test paths stay free of per-frame allocations.
-        mutable AZStd::vector<QPoint> m_pathScratch;
     };
 
 

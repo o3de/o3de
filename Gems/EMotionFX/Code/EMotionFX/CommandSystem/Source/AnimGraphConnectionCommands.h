@@ -74,6 +74,7 @@ namespace CommandSystem
         size_t                              m_targetPort;
         bool                                m_oldDirtyFlag;
         AZStd::string                       m_oldContents;
+        AZStd::string                       m_oldWaypoints;
 
     public:
         EMotionFX::AnimGraphNodeId GetTargetNodeID() const      { return m_targetNodeId; }
@@ -87,6 +88,27 @@ namespace CommandSystem
         int32 GetEndOffsetY() const                             { return m_endOffsetY; }
         EMotionFX::AnimGraphConnectionId GetConnectionId() const{ return m_connectionId; }
     MCORE_DEFINECOMMAND_END
+
+
+    // Replace the visual bend points of a blend tree connection. The waypoints are purely visual, the blend tree ignores them.
+    MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustConnection, "Adjust blend tree connection", true)
+        uint32                              m_animGraphId = MCORE_INVALIDINDEX32;
+        EMotionFX::AnimGraphNodeId          m_targetNodeId;
+        EMotionFX::AnimGraphConnectionId    m_connectionId;
+        AZStd::vector<AZ::Vector2>          m_oldWaypoints;
+        bool                                m_oldDirtyFlag = false;
+
+    public:
+        static const char* s_commandName;
+
+        // The node holding the connection (its target) and the connection this command worked on, or nullptr when they are gone.
+        EMotionFX::AnimGraphNode* GetTargetNode() const;
+        EMotionFX::BlendTreeConnection* GetConnection() const;
+    MCORE_DEFINECOMMAND_END
+
+    void AdjustConnectionWaypoints(const EMotionFX::AnimGraphNode* targetNode, const EMotionFX::BlendTreeConnection* connection,
+        const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
 
 
     // adjust transition

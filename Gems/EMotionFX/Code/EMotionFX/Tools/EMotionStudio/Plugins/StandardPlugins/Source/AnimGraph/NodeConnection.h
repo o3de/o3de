@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <QItemSelectionModel>
 #include <QModelIndex>
@@ -105,6 +107,35 @@ namespace EMStudio
 
         void SetTargetPort(AZ::u16 portIndex)                       { m_portNr = portIndex; }
 
+        // Visual-only bend points in graph space, ordered from the source to the target, or nullptr when the connection
+        // has no data behind it. A blend tree connection keeps them on its BlendTreeConnection, a transition on the transition.
+        virtual const AZStd::vector<AZ::Vector2>* GetWaypoints() const;
+        virtual void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints);
+        void SetWaypoint(size_t index, const AZ::Vector2& position);
+        size_t GetNumWaypoints() const;
+
+        // Builds the routed path in graph space: the start point, every waypoint, then the end point.
+        virtual void CalcPolyline(AZStd::vector<QPoint>& outPoints) const;
+
+        // Returns the point halfway along the routed path, which is where a new waypoint goes by default.
+        QPoint CalcPathMidpoint() const;
+
+        // Returns the index of the waypoint handle under the given point, or InvalidIndex when none is hit.
+        size_t FindWaypoint(const QPoint& point) const;
+
+        // Returns the index of the waypoint nearest the given point regardless of distance, or InvalidIndex when there are none.
+        size_t FindClosestWaypoint(const QPoint& point) const;
+
+        // Returns the index at which a new waypoint has to be inserted so it splits the path segment closest to the given point.
+        size_t CalcWaypointInsertIndex(const QPoint& point) const;
+
+        void RenderWaypoints(QPainter& painter, QBrush& brush, QPen& pen, const QColor& color) const;
+
+        // Finds the point halfway along a polyline, plus the direction and length of the segment it falls on.
+        static bool FindPathMidpoint(const QPoint* points, size_t pointCount, AZ::Vector2& outMid, AZ::Vector2& outDir, float& outSegmentLength);
+
+        static constexpr int s_waypointRadius = 4;
+
 
     protected:
         NodeGraph*          m_parentGraph = nullptr;
@@ -126,5 +157,8 @@ namespace EMStudio
         bool                m_isTailHighlighted;
         bool                m_isConnectedHighlighted;
         bool                m_isSynced;
+
+        // Reused across frames so the render and hit-test paths stay free of per-frame allocations.
+        mutable AZStd::vector<QPoint> m_pathScratch;
     };
 }   // namespace EMStudio

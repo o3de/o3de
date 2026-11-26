@@ -196,6 +196,21 @@ namespace CommandSystem
                 m_connectionId = connection->GetId();
             }
 
+            // Restores the visual bend points, for example when undoing the removal of a connection.
+            if (parameters.CheckIfHasParameter("waypoints"))
+            {
+                AZStd::vector<AZ::Vector2> waypoints;
+                const AZStd::string serializedWaypoints = parameters.GetValue("waypoints", this);
+                if (!serializedWaypoints.empty() && !MCore::ReflectionSerializer::Deserialize(&waypoints, serializedWaypoints))
+                {
+                    targetNode->RemoveConnection(connection);
+                    outResult = AZStd::string::format("Cannot deserialize the waypoints of the connection to node '%s'.", targetNode->GetName());
+                    return false;
+                }
+
+                connection->SetWaypoints(waypoints);
+            }
+
             connection->Reinit();
 
             if (azrtti_istypeof<EMotionFX::BlendTreeBlendNNode>(targetNode))
@@ -377,9 +392,10 @@ namespace CommandSystem
     // init the syntax of the command
     void CommandAnimGraphCreateConnection::InitSyntax()
     {
-        GetSyntax().ReserveParameters(14);
+        GetSyntax().ReserveParameters(15);
         GetSyntax().AddRequiredParameter("sourceNode", "The name of the source node, where the connection starts (output port).", MCore::CommandSyntax::PARAMTYPE_STRING);
         GetSyntax().AddRequiredParameter("targetNode", "The name of the target node to connect to (input port).", MCore::CommandSyntax::PARAMTYPE_STRING);
+        GetSyntax().AddParameter("waypoints", "The serialized visual bend points of a blend tree connection.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
         GetSyntax().AddParameter("animGraphID", "The id of the anim graph to work on.", MCore::CommandSyntax::PARAMTYPE_INT, "-1");
         GetSyntax().AddParameter("sourcePort", "The source port number where the connection starts inside the source node.", MCore::CommandSyntax::PARAMTYPE_INT, "-1");
         GetSyntax().AddParameter("targetPort", "The target port number where the connection connects into, in the target node.", MCore::CommandSyntax::PARAMTYPE_INT, "-1");
@@ -518,9 +534,14 @@ namespace CommandSystem
 
             // get the connection ID and store it
             EMotionFX::BlendTreeConnection* connection = targetNode->FindConnection(sourceNode, static_cast<uint16>(m_sourcePort), static_cast<uint16>(m_targetPort));
+            m_oldWaypoints.clear();
             if (connection)
             {
                 m_connectionId = connection->GetId();
+                if (!connection->GetWaypoints().empty())
+                {
+                    m_oldWaypoints = MCore::ReflectionSerializer::Serialize(&connection->GetWaypoints()).GetValue();
+                }
             }
 
             // create the connection
@@ -621,6 +642,11 @@ namespace CommandSystem
             commandString += AZStd::string::format(" -contents {%s}", m_oldContents.c_str());
         }
 
+        if (!m_oldWaypoints.empty())
+        {
+            commandString += AZStd::string::format(" -waypoints {%s}", m_oldWaypoints.c_str());
+        }
+
         if (!GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult))
         {
             if (!outResult.empty())
@@ -668,6 +694,129 @@ namespace CommandSystem
         return "This command removes a connection between two anim graph nodes.";
     }
 
+
+
+    //-------------------------------------------------------------------------------------
+    // AnimGraphAdjustConnection - change the visual bend points of a blend tree connection
+    //-------------------------------------------------------------------------------------
+    const char* CommandAnimGraphAdjustConnection::s_commandName = "AnimGraphAdjustConnection";
+
+    CommandAnimGraphAdjustConnection::CommandAnimGraphAdjustConnection(MCore::Command* orgCommand)
+        : MCore::Command(s_commandName, orgCommand)
+    {
+    }
+
+    CommandAnimGraphAdjustConnection::~CommandAnimGraphAdjustConnection()
+    {
+    }
+
+    EMotionFX::AnimGraphNode* CommandAnimGraphAdjustConnection::GetTargetNode() const
+    {
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(m_animGraphId);
+        return animGraph ? animGraph->RecursiveFindNodeById(m_targetNodeId) : nullptr;
+    }
+
+    EMotionFX::BlendTreeConnection* CommandAnimGraphAdjustConnection::GetConnection() const
+    {
+        EMotionFX::AnimGraphNode* targetNode = GetTargetNode();
+        return targetNode ? targetNode->FindConnectionById(m_connectionId) : nullptr;
+    }
+
+    bool CommandAnimGraphAdjustConnection::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    {
+        EMotionFX::AnimGraph* animGraph = CommandsGetAnimGraph(parameters, this, outResult);
+        if (!animGraph)
+        {
+            return false;
+        }
+
+        const AZStd::string targetNodeName = parameters.GetValue("targetNode", this);
+        EMotionFX::AnimGraphNode* targetNode = animGraph->RecursiveFindNodeByName(targetNodeName.c_str());
+        if (!targetNode)
+        {
+            outResult = AZStd::string::format("Cannot find target node with name '%s' in anim graph '%s'.", targetNodeName.c_str(), animGraph->GetFileName());
+            return false;
+        }
+
+        const EMotionFX::AnimGraphConnectionId connectionId = EMotionFX::AnimGraphConnectionId::CreateFromString(parameters.GetValue("id", this));
+        EMotionFX::BlendTreeConnection* connection = targetNode->FindConnectionById(connectionId);
+        if (!connection)
+        {
+            outResult = AZStd::string::format("Node '%s' has no connection with id %s.", targetNode->GetName(), connectionId.ToString().c_str());
+            return false;
+        }
+
+        // An empty string clears the waypoints.
+        AZStd::vector<AZ::Vector2> newWaypoints;
+        const AZStd::string serializedWaypoints = parameters.GetValue("waypoints", this);
+        if (!serializedWaypoints.empty() && !MCore::ReflectionSerializer::Deserialize(&newWaypoints, serializedWaypoints))
+        {
+            outResult = AZStd::string::format("Cannot deserialize the waypoints of the connection to node '%s'.", targetNode->GetName());
+            return false;
+        }
+
+        m_animGraphId = animGraph->GetID();
+        m_targetNodeId = targetNode->GetId();
+        m_connectionId = connectionId;
+        m_oldWaypoints = connection->GetWaypoints();
+        connection->SetWaypoints(newWaypoints);
+
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
+        animGraph->SetDirtyFlag(true);
+        return true;
+    }
+
+    bool CommandAnimGraphAdjustConnection::Undo([[maybe_unused]] const MCore::CommandLine& parameters, AZStd::string& outResult)
+    {
+        EMotionFX::BlendTreeConnection* connection = GetConnection();
+        if (!connection)
+        {
+            outResult = AZStd::string::format("The connection with id %s does not exist anymore.", m_connectionId.ToString().c_str());
+            return false;
+        }
+
+        connection->SetWaypoints(m_oldWaypoints);
+        if (EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(m_animGraphId))
+        {
+            animGraph->SetDirtyFlag(m_oldDirtyFlag);
+        }
+        return true;
+    }
+
+    void CommandAnimGraphAdjustConnection::InitSyntax()
+    {
+        GetSyntax().ReserveParameters(4);
+        GetSyntax().AddRequiredParameter("animGraphID", "The id of the anim graph to work on.", MCore::CommandSyntax::PARAMTYPE_INT);
+        GetSyntax().AddRequiredParameter("targetNode", "The name of the node the connection plugs into (it holds the connection).", MCore::CommandSyntax::PARAMTYPE_STRING);
+        GetSyntax().AddRequiredParameter("id", "The id of the connection.", MCore::CommandSyntax::PARAMTYPE_STRING);
+        GetSyntax().AddParameter("waypoints", "The serialized visual bend points of the connection. Empty clears them.", MCore::CommandSyntax::PARAMTYPE_STRING, "");
+    }
+
+    const char* CommandAnimGraphAdjustConnection::GetDescription() const
+    {
+        return "This command changes the visual bend points of a blend tree connection.";
+    }
+
+    void AdjustConnectionWaypoints(const EMotionFX::AnimGraphNode* targetNode, const EMotionFX::BlendTreeConnection* connection,
+        const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup, bool executeInsideCommand)
+    {
+        const AZ::Outcome<AZStd::string> serializedWaypoints = MCore::ReflectionSerializer::Serialize(&waypoints);
+        if (!serializedWaypoints.IsSuccess())
+        {
+            AZ_Error("EMotionFX", false, "Failed to serialize the connection waypoints.");
+            return;
+        }
+
+        const AZStd::string command = AZStd::string::format("%s -animGraphID %i -targetNode \"%s\" -id %s -waypoints {%s}",
+            CommandAnimGraphAdjustConnection::s_commandName,
+            targetNode->GetAnimGraph()->GetID(),
+            targetNode->GetName(),
+            connection->GetId().ToString().c_str(),
+            serializedWaypoints.GetValue().c_str());
+
+        CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
+    }
 
 
     //-------------------------------------------------------------------------------------

@@ -46,52 +46,6 @@ namespace EMStudio
                 aznumeric_cast<float>(points[index].x() - points[index - 1].x()),
                 aznumeric_cast<float>(points[index].y() - points[index - 1].y())).GetLength();
         }
-
-        // Finds the point halfway along the path, plus the direction and length of the segment it falls on.
-        bool FindPathMidpoint(const QPoint* points, size_t pointCount, AZ::Vector2& outMid, AZ::Vector2& outDir, float& outSegmentLength)
-        {
-            if (pointCount < 2)
-            {
-                return false;
-            }
-
-            float totalLength = 0.0f;
-            for (size_t i = 1; i < pointCount; ++i)
-            {
-                totalLength += SegmentLength(points, i);
-            }
-
-            if (totalLength < MCore::Math::epsilon)
-            {
-                return false;
-            }
-
-            const float halfLength = totalLength * 0.5f;
-            float distanceBefore = 0.0f;
-            for (size_t i = 1; i < pointCount; ++i)
-            {
-                const AZ::Vector2 segmentStart(aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()));
-                const AZ::Vector2 segment(aznumeric_cast<float>(points[i].x()) - segmentStart.GetX(),
-                    aznumeric_cast<float>(points[i].y()) - segmentStart.GetY());
-                const float segmentLength = segment.GetLength();
-                if (segmentLength < MCore::Math::epsilon)
-                {
-                    continue;
-                }
-
-                if (distanceBefore + segmentLength >= halfLength)
-                {
-                    outDir = segment.GetNormalized();
-                    outMid = segmentStart + outDir * (halfLength - distanceBefore);
-                    outSegmentLength = segmentLength;
-                    return true;
-                }
-
-                distanceBefore += segmentLength;
-            }
-
-            return false;
-        }
     }
 
     StateConnection::StateConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* sourceNode, GraphNode* targetNode, bool isWildcardConnection)
@@ -585,116 +539,19 @@ namespace EMStudio
         }
     }
 
-    QPoint StateConnection::CalcPathMidpoint() const
-    {
-        AZStd::vector<QPoint>& points = m_pathScratch;
-        CalcPolyline(GetTransition(), points);
-
-        AZ::Vector2 mid = AZ::Vector2::CreateZero();
-        AZ::Vector2 dir = AZ::Vector2::CreateAxisX();
-        float segmentLength = 0.0f;
-        if (!FindPathMidpoint(points.data(), points.size(), mid, dir, segmentLength))
-        {
-            return points.front();
-        }
-
-        return QPoint(aznumeric_cast<int>(mid.GetX()), aznumeric_cast<int>(mid.GetY()));
-    }
-
-    size_t StateConnection::FindWaypoint(const QPoint& point) const
-    {
-        const EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
-        if (!transition)
-        {
-            return InvalidIndex;
-        }
-
-        const AZ::Vector2 pickPoint(aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
-        const float pickRadius = aznumeric_cast<float>(s_waypointRadius) + 2.0f;
-
-        const AZStd::vector<AZ::Vector2>& waypoints = transition->GetWaypoints();
-        for (size_t i = 0; i < waypoints.size(); ++i)
-        {
-            if (AZ::Vector2(waypoints[i] - pickPoint).GetLength() <= pickRadius)
-            {
-                return i;
-            }
-        }
-
-        return InvalidIndex;
-    }
-
-    size_t StateConnection::FindClosestWaypoint(const QPoint& point) const
+    const AZStd::vector<AZ::Vector2>* StateConnection::GetWaypoints() const
     {
         const EMotionFX::AnimGraphStateTransition* transition = GetTransition();
-        if (!transition || transition->GetWaypoints().empty())
-        {
-            return InvalidIndex;
-        }
-
-        const AZ::Vector2 pickPoint(aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
-        const AZStd::vector<AZ::Vector2>& waypoints = transition->GetWaypoints();
-
-        size_t closestIndex = 0;
-        float closestDistance = -1.0f;
-        for (size_t i = 0; i < waypoints.size(); ++i)
-        {
-            const float distance = AZ::Vector2(waypoints[i] - pickPoint).GetLength();
-            if (closestDistance < 0.0f || distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestIndex = i;
-            }
-        }
-
-        return closestIndex;
+        return transition ? &transition->GetWaypoints() : nullptr;
     }
 
-    size_t StateConnection::CalcWaypointInsertIndex(const QPoint& point) const
+    void StateConnection::SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints)
     {
-        AZStd::vector<QPoint>& points = m_pathScratch;
-        CalcPolyline(GetTransition(), points);
-
-        // Segment i runs from points[i] to points[i + 1], so splitting it means inserting a waypoint at index i.
-        size_t closestSegment = 0;
-        float closestDistance = -1.0f;
-        for (size_t i = 1; i < points.size(); ++i)
+        EMotionFX::AnimGraphStateTransition* transition =
+            m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+        if (transition)
         {
-            const float distance = NodeGraph::DistanceToLine(
-                aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()),
-                aznumeric_cast<float>(points[i].x()), aznumeric_cast<float>(points[i].y()),
-                aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y()));
-
-            if (closestDistance < 0.0f || distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestSegment = i - 1;
-            }
-        }
-
-        return closestSegment;
-    }
-
-    void StateConnection::RenderWaypoints(QPainter& painter, QBrush& brush, QPen& pen, const QColor& color) const
-    {
-        const EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
-        if (!transition || transition->GetWaypoints().empty())
-        {
-            return;
-        }
-
-        pen.setStyle(Qt::SolidLine);
-        pen.setWidthF(1.0f);
-        pen.setColor(color.lighter(160));
-        brush.setStyle(Qt::SolidPattern);
-        brush.setColor(color);
-        painter.setPen(pen);
-        painter.setBrush(brush);
-
-        const qreal radius = aznumeric_cast<qreal>(s_waypointRadius);
-        for (const AZ::Vector2& waypoint : transition->GetWaypoints())
-        {
-            painter.drawEllipse(QPointF(waypoint.GetX(), waypoint.GetY()), radius, radius);
+            transition->SetWaypoints(waypoints);
         }
     }
 

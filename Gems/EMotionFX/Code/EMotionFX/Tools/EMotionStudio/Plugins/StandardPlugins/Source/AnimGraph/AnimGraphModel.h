@@ -334,6 +334,7 @@ namespace EMStudio
         ANIMGRAPHMODEL_CALLBACK(CommandWillRemoveConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidRemoveConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustConnectionCallback);
+        ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustBlendTreeConnectionCallback);
 
         static bool CommandDidConditionChangeCallbackHelper(AnimGraphModel& animGraphModel, MCore::Command* command);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAddRemoveConditionCallback);
@@ -378,6 +379,7 @@ namespace EMStudio
         bool TransitionAdded(EMotionFX::AnimGraphStateTransition* animGraphTransition);
         void RemoveIndices(const QModelIndexList& modelIndexList);
         bool Edited(EMotionFX::AnimGraphObject* animGraphObject, const QVector<int>& roles = QVector<int>());
+        bool Edited(EMotionFX::BlendTreeConnection* blendTreeConnection);
         bool ParameterEdited(EMotionFX::AnimGraph* animGraph);
         bool MotionEdited();
 
