@@ -165,24 +165,14 @@ namespace SaveData
         AZStd::thread_desc saveThreadDesc;
         saveThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         saveThreadDesc.m_name = "SaveDataBufferToFileSystem";
-        ThreadCompletionPair* threadCompletionPair = nullptr;
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_activeThreadsMutex);
-            m_activeThreads.emplace_back();
-            threadCompletionPair = &m_activeThreads.back();
-        }
 
-        // This is safe access outside the lock guard because we only remove elements from the list
-        // after the thread completion flag has been set to true (see also JoinAllCompletedThreads).
-        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>(saveThreadDesc,
-                                                                           [&threadCompleteFlag = threadCompletionPair->m_threadComplete,
-                                                                           dataBuffer = AZStd::move(saveDataBufferParams.dataBuffer),
-                                                                           dataBufferSize = saveDataBufferParams.dataBufferSize,
-                                                                           dataBufferName = saveDataBufferParams.dataBufferName,
-                                                                           onSavedCallback = saveDataBufferParams.callback,
-                                                                           localUserId = saveDataBufferParams.localUserId,
-                                                                           absoluteFilePath,
-                                                                           useTemporaryFile]()
+        auto saveTask = [dataBuffer = AZStd::move(saveDataBufferParams.dataBuffer),
+                         dataBufferSize = saveDataBufferParams.dataBufferSize,
+                         dataBufferName = saveDataBufferParams.dataBufferName,
+                         onSavedCallback = saveDataBufferParams.callback,
+                         localUserId = saveDataBufferParams.localUserId,
+                         absoluteFilePath,
+                         useTemporaryFile]()
         {
             SaveDataNotifications::Result result = SaveDataNotifications::Result::ErrorUnspecified;
 
@@ -234,17 +224,25 @@ namespace SaveData
 
             // Invoke the callback and broadcast the OnDataBufferSaved notification from the main thread.
             OnSaveDataBufferComplete(dataBufferName, localUserId, onSavedCallback, result);
-
-            // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
-            threadCompleteFlag = true;
-        });
+        };
 
         if (waitForCompletion)
         {
-            // The thread completion flag will be set in join, and the thread completion
-            // pair removed from m_activeThreads when JoinAllCompletedThreads is called.
-            threadCompletionPair->m_thread->join();
-            threadCompletionPair->m_thread.reset();
+            AZStd::thread saveThread(saveThreadDesc, AZStd::move(saveTask));
+            saveThread.join();
+        }
+        else
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_activeThreadsMutex);
+            m_activeThreads.emplace_back();
+            ThreadCompletionPair& threadCompletionPair = m_activeThreads.back();
+            threadCompletionPair.m_thread = AZStd::make_unique<AZStd::thread>(saveThreadDesc,
+                [&threadCompleteFlag = threadCompletionPair.m_threadComplete, task = AZStd::move(saveTask)]() mutable
+                {
+                    task();
+                    // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
+                    threadCompleteFlag = true;
+                });
         }
     }
 
@@ -295,19 +293,9 @@ namespace SaveData
         AZStd::thread_desc loadThreadDesc;
         loadThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         loadThreadDesc.m_name = "LoadDataBufferFromFileSystem";
-        ThreadCompletionPair* threadCompletionPair = nullptr;
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_activeThreadsMutex);
-            m_activeThreads.emplace_back();
-            threadCompletionPair = &m_activeThreads.back();
-        }
 
-        // This is safe access outside the lock guard because we only remove elements from the list
-        // after the thread completion flag has been set to true (see also JoinAllCompletedThreads).
-        threadCompletionPair->m_thread = AZStd::make_unique<AZStd::thread>(loadThreadDesc,
-                                                                           [&threadCompleteFlag = threadCompletionPair->m_threadComplete,
-                                                                           loadDataBufferParams,
-                                                                           absoluteFilePath]()
+        auto loadTask = [loadDataBufferParams,
+                         absoluteFilePath]()
         {
             SaveDataNotifications::DataBuffer dataBuffer = nullptr;
             AZ::u64 dataBufferSize = 0;
@@ -353,17 +341,25 @@ namespace SaveData
                                      loadDataBufferParams.localUserId,
                                      loadDataBufferParams.callback,
                                      result);
-
-            // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
-            threadCompleteFlag = true;
-        });
+        };
 
         if (waitForCompletion)
         {
-            // The thread completion flag will be set in join, and the thread completion
-            // pair removed from m_activeThreads when JoinAllCompletedThreads is called.
-            threadCompletionPair->m_thread->join();
-            threadCompletionPair->m_thread.reset();
+            AZStd::thread loadThread(loadThreadDesc, AZStd::move(loadTask));
+            loadThread.join();
+        }
+        else
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_activeThreadsMutex);
+            m_activeThreads.emplace_back();
+            ThreadCompletionPair& threadCompletionPair = m_activeThreads.back();
+            threadCompletionPair.m_thread = AZStd::make_unique<AZStd::thread>(loadThreadDesc,
+                [&threadCompleteFlag = threadCompletionPair.m_threadComplete, task = AZStd::move(loadTask)]()
+                {
+                    task();
+                    // Set the thread completion flag so it will be joined in JoinAllCompletedThreads.
+                    threadCompleteFlag = true;
+                });
         }
     }
 

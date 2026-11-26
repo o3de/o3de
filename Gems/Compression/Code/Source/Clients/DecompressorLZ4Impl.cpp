@@ -8,6 +8,7 @@
 
 #include "DecompressorLZ4Impl.h"
 
+#include <AzCore/std/limits.h>
 #include <Compression/CompressionLZ4API.h>
 
 #include <lz4.h>
@@ -37,9 +38,19 @@ namespace CompressionLZ4
         {
             resultData.m_decompressionOutcome.m_resultString = Compression::DecompressionResultString(
                 "Decompression buffer is empty, uncompressed content cannot be stored in it\n");
-            // Do not return, but hold on to result string in case an error occurs in decompression
+            resultData.m_decompressionOutcome.m_result = Compression::DecompressionResult::Failed;
+            return resultData;
         }
 
+        if (compressedData.size() > static_cast<size_t>(AZStd::numeric_limits<int>::max())
+            || decompressionBuffer.size() > static_cast<size_t>(AZStd::numeric_limits<int>::max()))
+        {
+            resultData.m_decompressionOutcome.m_resultString = Compression::DecompressionResultString::format(
+                "LZ4_decompress_safe buffer sizes exceed INT_MAX. Dest buffer capacity: %zu, source stream size: %zu",
+                decompressionBuffer.size(), compressedData.size());
+            resultData.m_decompressionOutcome.m_result = Compression::DecompressionResult::Failed;
+            return resultData;
+        }
 
         // Note that this returns a non-negative int so we are narrowing into a size_t here
         int decompressedSize = LZ4_decompress_safe(

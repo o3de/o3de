@@ -182,6 +182,7 @@ namespace Streamer
                 }
             }
         }
+        ImGui::End();
 #endif // #if defined(IMGUI_ENABLED)
     }
 
@@ -321,13 +322,16 @@ namespace Streamer
 #if defined(IMGUI_ENABLED)
         if (!m_stackConfigurationAvailable)
         {
-            AZ::IO::FileRequestPtr request = streamer.Report(m_stackConfiguration, AZ::IO::IStreamerTypes::ReportType::Config);
-            auto callback = [this](AZ::IO::FileRequestHandle)
+            if (!m_stackConfigurationRequested.exchange(true))
             {
-                m_stackConfigurationAvailable = true;
-            };
-            streamer.SetRequestCompleteCallback(request, AZStd::move(callback));
-            streamer.QueueRequest(request);
+                AZ::IO::FileRequestPtr request = streamer.Report(m_stackConfiguration, AZ::IO::IStreamerTypes::ReportType::Config);
+                auto callback = [this](AZ::IO::FileRequestHandle)
+                {
+                    m_stackConfigurationAvailable = true;
+                };
+                streamer.SetRequestCompleteCallback(request, AZStd::move(callback));
+                streamer.QueueRequest(request);
+            }
         }
         else
         {

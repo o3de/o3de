@@ -252,9 +252,10 @@ namespace Multiplayer
             {
                 for (auto remoteEntityId : m_removeList)
                 {
-                    if (remoteEntityId == remoteEntityId)
+                    if (remoteEntityId == exitingId)
                     {
                         safeToExit = false;
+                        break;
                     }
                 }
             }
@@ -323,29 +324,32 @@ namespace Multiplayer
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
         AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
-        for (NetworkEntityTracker::const_iterator it = m_networkEntityTracker.begin(); it != m_networkEntityTracker.end(); ++it)
+        if (debugDisplay != nullptr)
         {
-            AZ::Entity* entity = it->second;
-            NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            for (NetworkEntityTracker::const_iterator it = m_networkEntityTracker.begin(); it != m_networkEntityTracker.end(); ++it)
+            {
+                AZ::Entity* entity = it->second;
+                NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
 
-            AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
-            if (!entityBounds.IsValid())
-            {
-                continue;
-            }
+                AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+                if (!entityBounds.IsValid())
+                {
+                    continue;
+                }
 
-            entityBounds.Expand(AZ::Vector3(0.01f));
-            if ((netBindComponent != nullptr) && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
-            {
-                debugDisplay->SetColor(AZ::Colors::Black);
-                debugDisplay->SetAlpha(0.5f);
+                entityBounds.Expand(AZ::Vector3(0.01f));
+                if ((netBindComponent != nullptr) && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
+                {
+                    debugDisplay->SetColor(AZ::Colors::Black);
+                    debugDisplay->SetAlpha(0.5f);
+                }
+                else
+                {
+                    debugDisplay->SetColor(AZ::Colors::DeepSkyBlue);
+                    debugDisplay->SetAlpha(0.25f);
+                }
+                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
             }
-            else
-            {
-                debugDisplay->SetColor(AZ::Colors::DeepSkyBlue);
-                debugDisplay->SetAlpha(0.25f);
-            }
-            debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
         }
 
         if (m_entityDomain != nullptr)
@@ -470,9 +474,9 @@ namespace Multiplayer
             // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
             auto cloneNetBindComponent = clone->FindComponent<NetBindComponent>();
             auto cloneTransformComponent = clone->FindComponent<AzFramework::TransformComponent>();
-            AZ::EntityId parentId = cloneTransformComponent->GetParentId();
+            AZ::EntityId parentId = cloneTransformComponent ? cloneTransformComponent->GetParentId() : AZ::EntityId();
             bool removeParent = false;
-            if (parentId.IsValid())
+            if (cloneTransformComponent && parentId.IsValid())
             {
                 auto it = originalToCloneIdMap.find(parentId);
                 if (it != originalToCloneIdMap.end())
@@ -503,7 +507,7 @@ namespace Multiplayer
             cloneNetBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
 
             // Set the transform if we're a root entity (have no parent); otherwise, keep the local transform
-            if (!parentId.IsValid() || removeParent)
+            if (cloneTransformComponent && (!parentId.IsValid() || removeParent))
             {
                 cloneTransformComponent->SetWorldTM(transform);
             }
@@ -516,7 +520,7 @@ namespace Multiplayer
             AzFramework::GameEntityContextRequestBus::Broadcast(
                 &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
 
-            if (removeParent)
+            if (cloneTransformComponent && removeParent)
             {
                 cloneTransformComponent->SetParent(AZ::EntityId());
             }
@@ -646,12 +650,13 @@ namespace Multiplayer
 
                 if (shouldUpdateTransform)
                 {
-                    AzFramework::TransformComponent* netEntityTransform =
-                        netEntity->FindComponent<AzFramework::TransformComponent>();
-
-                    AZ::Transform worldTm = netEntityTransform->GetWorldTM();
-                    worldTm = rootTransform * worldTm;
-                    netEntityTransform->SetWorldTM(worldTm);
+                    if (AzFramework::TransformComponent* netEntityTransform =
+                        netEntity->FindComponent<AzFramework::TransformComponent>())
+                    {
+                        AZ::Transform worldTm = netEntityTransform->GetWorldTM();
+                        worldTm = rootTransform * worldTm;
+                        netEntityTransform->SetWorldTM(worldTm);
+                    }
                 }
 
                 PrefabEntityId prefabEntityId;

@@ -631,9 +631,12 @@ namespace Multiplayer
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = GetMultiplayer()->GetStats();
-        stats.RecordRpcSent(GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str(),
-            entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
+        if (const AZ::Entity* entity = GetEntityHandle().GetEntity())
+        {
+            MultiplayerStats& stats = GetMultiplayer()->GetStats();
+            stats.RecordRpcSent(entity->GetId(), entity->GetName().c_str(),
+                entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
+        }
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
     }
@@ -806,12 +809,7 @@ namespace Multiplayer
 
     bool EntityReplicator::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage)
     {
-        // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = GetMultiplayer()->GetStats();
-        stats.RecordRpcReceived(GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str(),
-            entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
-
-        if (!m_netBindComponent)
+        if (!m_netBindComponent || !GetEntityHandle().GetEntity())
         {
             AZLOG_WARN
             (
@@ -848,6 +846,15 @@ namespace Multiplayer
 
         // First validate the message with local & remote roles
         RpcValidationResult result = ValidateRpcMessage(entityRpcMessage);
+        if (result == RpcValidationResult::DropRpcAndDisconnect)
+        {
+            return false;
+        }
+
+        // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
+        MultiplayerStats& stats = GetMultiplayer()->GetStats();
+        stats.RecordRpcReceived(GetEntityHandle().GetEntity()->GetId(), GetEntityHandle().GetEntity()->GetName().c_str(),
+            entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         switch (result)
         {

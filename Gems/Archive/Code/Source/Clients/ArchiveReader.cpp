@@ -60,6 +60,14 @@ namespace Archive
             m_settings.m_errorCallback({ ArchiveReaderErrorCode::ErrorReadingHeader, ArchiveReaderErrorString::format(
                 "Archive header should have size %zu, but only %llu bytes were read from the beginning of the archive",
                 sizeof(archiveHeader), bytesRead) });
+            return false;
+        }
+        else if (auto archiveValidationResult = ValidateHeader(archiveHeader);
+            !archiveValidationResult)
+        {
+            m_settings.m_errorCallback({ ArchiveReaderErrorCode::ErrorReadingHeader,
+                archiveValidationResult.m_errorMessage });
+            return false;
         }
 
         return true;
@@ -90,27 +98,29 @@ namespace Archive
             AZ::IO::GenericStream& m_stream;
         };
 
-        if (archiveHeader.m_tocOffset > archiveStream.GetLength())
-        {
-            // The TOC offset is invalid since it is after the end of the stream
-            m_settings.m_errorCallback({ ArchiveReaderErrorCode::ErrorReadingTableOfContents,
-                    ArchiveReaderErrorString::format("TOC offset is invalid. It is pass the end of the stream."
-                        " Offset value %llu, archive stream size %llu",
-                        static_cast<AZ::u64>(archiveHeader.m_tocOffset), archiveStream.GetLength()) });
-            return false;
-        }
-
         // Buffer which stores the raw table of contents data from the archive file
         AZStd::vector<AZStd::byte> tocBuffer;
 
         // Seek to the location of the Table of Contents
         {
             AZStd::scoped_lock archiveLock(m_archiveStreamMutex);
+            const AZ::IO::SizeType streamLength = archiveStream.GetLength();
+            const AZ::u64 tocStoredSize = archiveHeader.GetTocStoredSize();
+            if (archiveHeader.m_tocOffset > streamLength
+                || tocStoredSize > (streamLength - archiveHeader.m_tocOffset))
+            {
+                // The TOC offset or stored size is invalid since it extends past the end of the stream
+                m_settings.m_errorCallback({ ArchiveReaderErrorCode::ErrorReadingTableOfContents,
+                        ArchiveReaderErrorString::format("TOC offset/size is invalid. It is past the end of the stream."
+                            " Offset value %llu, TOC size %llu, archive stream size %llu",
+                            static_cast<AZ::u64>(archiveHeader.m_tocOffset), tocStoredSize, streamLength) });
+                return false;
+            }
             // Make sure the archive offset is reset to 0 on return
             SeekStreamToBeginRAII seekToBeginScope{ archiveStream };
             archiveStream.Seek(archiveHeader.m_tocOffset, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
-            tocBuffer.resize_no_construct(archiveHeader.GetTocStoredSize());
+            tocBuffer.resize_no_construct(tocStoredSize);
             AZ::IO::SizeType bytesRead = archiveStream.Read(tocBuffer.size(), tocBuffer.data());
             if (bytesRead != tocBuffer.size())
             {
@@ -173,6 +183,12 @@ namespace Archive
                     return false;
                 }
             }
+            else
+            {
+                m_settings.m_errorCallback({ ArchiveReaderErrorCode::ErrorReadingTableOfContents,
+                    decompressionResultData.m_decompressionOutcome.m_resultString });
+                return false;
+            }
         }
 
         // Wrap the table of contents in an reader structure that encapsulates the raw tocBuffer data on disk
@@ -197,13 +213,15 @@ namespace Archive
         m_pathMap.clear();
 
         // Build a map of file path view to within the FilePathIndex array of the TOC View
-        auto BuildViewOfFilePaths = [this, filePathBlobTable = &tocView.m_filePathBlob, filePathIndex = 0]
-        (AZ::u64 filePathBlobOffset, AZ::u16 filePathSize) mutable
+        for (size_t filePathIndex = 0; filePathIndex < tocView.m_filePathIndexTable.size(); ++filePathIndex)
         {
-            AZ::IO::PathView contentPathView(filePathBlobTable->substr(filePathBlobOffset, filePathSize));
-            m_pathMap.emplace(contentPathView, filePathIndex++);
-        };
-        EnumerateFilePathIndexOffsets(BuildViewOfFilePaths, tocView);
+            const auto& filePathIndexEntry = tocView.m_filePathIndexTable[filePathIndex];
+            if (filePathIndexEntry.m_size > 0)
+            {
+                AZ::IO::PathView contentPathView(tocView.m_filePathBlob.substr(filePathIndexEntry.m_offset, filePathIndexEntry.m_size));
+                m_pathMap.emplace(contentPathView, filePathIndex);
+            }
+        }
 
         return true;
     }
@@ -570,6 +588,7 @@ namespace Archive
             // Slide the compressed block remaining span view ahead by the 2 MiB that is being used for the read span
             compressedBlockRemainingSpan = compressedBlockRemainingSpan.subspan(availableBytesInCompressedBlock);
             const AZ::u64 absoluteSeekOffset = extractFileResult.m_offset + fileRelativeSeekOffset;
+            AZStd::scoped_lock archiveReadLock(m_archiveStreamMutex);
             if (AZ::IO::SizeType bytesRead = m_archiveStream->ReadAtOffset(blockCompressedSize,
                 compressedBlockToReadInto.data(), absoluteSeekOffset);
                 bytesRead != blockCompressedSize)
@@ -678,7 +697,7 @@ namespace Archive
 
     ArchiveListFileResult ArchiveReader::ListFileInArchive(ArchiveFileToken archiveFileToken) const
     {
-        if (static_cast<AZ::u64>(archiveFileToken) > m_archiveToc.m_tocView.m_filePathIndexTable.size())
+        if (static_cast<AZ::u64>(archiveFileToken) >= m_archiveToc.m_tocView.m_filePathIndexTable.size())
         {
             ArchiveListFileResult errorResult;
             errorResult.m_filePathToken = archiveFileToken;
@@ -777,51 +796,55 @@ namespace Archive
     EnumerateArchiveResult ArchiveReader::EnumerateFilesInArchive(ListFileCallback listFileCallback) const
     {
         ResultOutcome fileResultOutcome;
-        // Lambda is marked mutable to allow the filePathIndex variable to be incremented each call
-        auto EnumerateAllFiles = [&listFileCallback, &fileResultOutcome, this, filePathIndex = 0]
-        (AZ::u64 filePathBlobOffset, AZ::u16 filePathSize) mutable
+        for (size_t filePathIndex = 0; filePathIndex < m_archiveToc.m_tocView.m_filePathIndexTable.size(); ++filePathIndex)
+        {
+            const auto& filePathIndexEntry = m_archiveToc.m_tocView.m_filePathIndexTable[filePathIndex];
+            if (filePathIndexEntry.m_size == 0)
             {
-                // Invoke callback on each file with a non-empty path
-                if (AZ::IO::PathView contentPathView(m_archiveToc.m_tocView.m_filePathBlob.substr(filePathBlobOffset, filePathSize));
-                    !contentPathView.empty())
+                continue;
+            }
+            // Invoke callback on each file with a non-empty path
+            if (AZ::IO::PathView contentPathView(m_archiveToc.m_tocView.m_filePathBlob.substr(filePathIndexEntry.m_offset, filePathIndexEntry.m_size));
+                !contentPathView.empty())
+            {
+                ArchiveListFileResult listResult;
+                listResult.m_relativeFilePath = contentPathView;
+                listResult.m_filePathToken = static_cast<ArchiveFileToken>(filePathIndex);
+
+                // Gather the file metadata
+                const ArchiveTocFileMetadata& fileMetadata = m_archiveToc.m_tocView.m_fileMetadataTable[filePathIndex];
+
+                // Use the compression algorithm index to lookup the compression algorithm ID
+                if (fileMetadata.m_compressionAlgoIndex < m_archiveHeader.m_compressionAlgorithmsIds.size())
                 {
-                    ArchiveListFileResult listResult;
-                    listResult.m_relativeFilePath = contentPathView;
-                    listResult.m_filePathToken = static_cast<ArchiveFileToken>(filePathIndex);
-
-                    // Gather the file metadata
-                    const ArchiveTocFileMetadata& fileMetadata = m_archiveToc.m_tocView.m_fileMetadataTable[filePathIndex];
-
-                    // Use the compression algorithm index to lookup the compression algorithm ID
-                    if (fileMetadata.m_compressionAlgoIndex < m_archiveHeader.m_compressionAlgorithmsIds.size())
-                    {
-                        listResult.m_compressionAlgorithm = m_archiveHeader.m_compressionAlgorithmsIds[
-                            fileMetadata.m_compressionAlgoIndex];
-                    }
-
-                    listResult.m_uncompressedSize = fileMetadata.m_uncompressedSize;
-                    if (auto rawFileSizeResult = GetRawFileSize(fileMetadata, m_archiveToc.m_tocView.m_blockOffsetTable);
-                        !rawFileSizeResult)
-                    {
-                        fileResultOutcome = AZStd::unexpected(AZStd::move(rawFileSizeResult.error()));
-                        return;
-                    }
-                    else
-                    {
-                        listResult.m_compressedSize = rawFileSizeResult.value();
-                    }
-                    listResult.m_offset = fileMetadata.m_offset;
-                    listResult.m_crc32 = fileMetadata.m_crc32;
-
-                    listFileCallback(AZStd::move(listResult));
+                    listResult.m_compressionAlgorithm = m_archiveHeader.m_compressionAlgorithmsIds[
+                        fileMetadata.m_compressionAlgoIndex];
                 }
-                ++filePathIndex;
-            };
-        EnumerateFilePathIndexOffsets(EnumerateAllFiles, m_archiveToc.m_tocView);
 
-        // There are currently no error messages that enumerate file path sets
-        // So a default constructed instance which converts to boolean true is returned
-        return {};
+                listResult.m_uncompressedSize = fileMetadata.m_uncompressedSize;
+                if (auto rawFileSizeResult = GetRawFileSize(fileMetadata, m_archiveToc.m_tocView.m_blockOffsetTable);
+                    !rawFileSizeResult)
+                {
+                    fileResultOutcome = AZStd::unexpected(AZStd::move(rawFileSizeResult.error()));
+                    break;
+                }
+                else
+                {
+                    listResult.m_compressedSize = rawFileSizeResult.value();
+                }
+                listResult.m_offset = fileMetadata.m_offset;
+                listResult.m_crc32 = fileMetadata.m_crc32;
+
+                if (!listFileCallback(AZStd::move(listResult)))
+                {
+                    break;
+                }
+            }
+        }
+
+        EnumerateArchiveResult enumerateResult;
+        enumerateResult.m_resultOutcome = AZStd::move(fileResultOutcome);
+        return enumerateResult;
     }
 
     bool ArchiveReader::DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,

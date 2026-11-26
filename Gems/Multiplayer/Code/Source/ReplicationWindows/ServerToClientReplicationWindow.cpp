@@ -59,8 +59,7 @@ namespace Multiplayer
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
-        m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
-        AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
+        AZ_Assert(entity && entity->GetTransform(), "Controlled player entity must have a transform");
     }
 
     bool ServerToClientReplicationWindow::ReplicationSetUpdateReady()
@@ -109,7 +108,12 @@ namespace Multiplayer
 
         EvaluateConnection();
 
-        AZ::TransformInterface* transformInterface = m_controlledEntity.GetEntity()->GetTransform();
+        AZ::Entity* controlledEntity = m_controlledEntity.GetEntity();
+        AZ::TransformInterface* transformInterface = controlledEntity ? controlledEntity->GetTransform() : nullptr;
+        if (!transformInterface)
+        {
+            return;
+        }
         const AZ::Vector3 controlledEntityPosition = transformInterface->GetWorldTranslation();
 
         AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
@@ -259,10 +263,12 @@ namespace Multiplayer
             }
         }
 
-        AZ::TransformInterface* transformInterface = entity->GetTransform();
-        if (transformInterface != nullptr)
+        AZ::Entity* controlledEntity = m_controlledEntity.GetEntity();
+        AZ::TransformInterface* controlledEntityTransform = controlledEntity ? controlledEntity->GetTransform() : nullptr;
+        AZ::TransformInterface* transformInterface = entity ? entity->GetTransform() : nullptr;
+        if (transformInterface != nullptr && controlledEntityTransform != nullptr)
         {
-            const AZ::Vector3 clientPosition = m_controlledEntityTransform->GetWorldTranslation();
+            const AZ::Vector3 clientPosition = controlledEntityTransform->GetWorldTranslation();
             float distSq = clientPosition.GetDistanceSq(transformInterface->GetWorldTranslation());
             float awarenessSq = sv_ClientAwarenessRadius * sv_ClientAwarenessRadius;
             // Make sure we would be in the awareness radius

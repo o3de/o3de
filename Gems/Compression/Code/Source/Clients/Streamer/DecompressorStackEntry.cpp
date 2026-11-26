@@ -533,7 +533,7 @@ namespace Compression
                 m_memoryUsage += bufferSize;
 
                 AZ::IO::FileRequest* archiveReadRequest = m_context->GetNewInternalRequest();
-                archiveReadRequest->CreateRead(compressedReadRequest, m_readBuffers[i] + offsetAdjustment, bufferSize, info.m_archiveFilename,
+                archiveReadRequest->CreateRead(compressedReadRequest, m_readBuffers[i] + offsetAdjustment, bufferSize - offsetAdjustment, info.m_archiveFilename,
                     info.m_offset, info.m_compressedSize, info.m_isSharedPak);
 
                 auto ArchiveReadCommandComplete = [this, readSlot = i](AZ::IO::FileRequest& request)
@@ -645,46 +645,39 @@ namespace Compression
                 info.m_compressedData = m_readBuffers[readSlot]; // Transfer ownership of the pointer.
                 m_readBuffers[readSlot] = nullptr;
 
-                if (m_taskGraphEvent == nullptr || m_taskGraphEvent->IsSignaled())
+                auto data = AZStd::get_if<AZ::IO::Requests::CompressedReadData>(&compressedRequest->GetCommand());
+                AZ_Assert(data, "Compressed request in DecompressorRegistrarEntry that's starting decompression didn't contain compression read data.");
+                AZ_Assert(data->m_compressionInfo.m_decompressor, "DecompressorRegistrarEntry is queuing a decompression job but couldn't find a decompressor.");
+
+                info.m_alignmentOffset = aznumeric_caster(data->m_compressionInfo.m_offset -
+                    AZ_SIZE_ALIGN_DOWN(data->m_compressionInfo.m_offset, aznumeric_cast<size_t>(m_alignment)));
+
+                AZ::TaskDescriptor taskDescriptor{ "Decompress file", "Compression" };
+                if (data->m_readOffset == 0 && data->m_readSize == data->m_compressionInfo.m_uncompressedSize)
                 {
-                    m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("Decompressor Registrar Wait");
-
-                    auto data = AZStd::get_if<AZ::IO::Requests::CompressedReadData>(&compressedRequest->GetCommand());
-                    AZ_Assert(data, "Compressed request in DecompressorRegistrarEntry that's starting decompression didn't contain compression read data.");
-                    AZ_Assert(data->m_compressionInfo.m_decompressor, "DecompressorRegistrarEntry is queuing a decompression job but couldn't find a decompressor.");
-
-                    info.m_alignmentOffset = aznumeric_caster(data->m_compressionInfo.m_offset -
-                        AZ_SIZE_ALIGN_DOWN(data->m_compressionInfo.m_offset, aznumeric_cast<size_t>(m_alignment)));
-
-                    AZ::TaskDescriptor taskDescriptor{ "Decompress file", "Compression" };
-                    if (data->m_readOffset == 0 && data->m_readSize == data->m_compressionInfo.m_uncompressedSize)
+                    auto decompressTask = [this, &info]()
                     {
-                        auto decompressTask = [this, &info]()
-                        {
-                            FullDecompression(m_context, info);
-                        };
-                        AZ::TaskToken token = taskGraph.AddTask(taskDescriptor, AZStd::move(decompressTask));
-                        token.Precedes(finishToken);
-                    }
-                    else
+                        FullDecompression(m_context, info);
+                    };
+                    AZ::TaskToken token = taskGraph.AddTask(taskDescriptor, AZStd::move(decompressTask));
+                    token.Precedes(finishToken);
+                }
+                else
+                {
+                    m_memoryUsage += data->m_compressionInfo.m_uncompressedSize;
+                    auto decompressTask = [this, &info]()
                     {
-                        m_memoryUsage += data->m_compressionInfo.m_uncompressedSize;
-                        auto decompressTask = [this, &info]()
-                        {
-                            PartialDecompression(m_context, info);
-                        };
+                        PartialDecompression(m_context, info);
+                    };
 
-                        AZ::TaskToken token = taskGraph.AddTask(taskDescriptor, AZStd::move(decompressTask));
-                        token.Precedes(finishToken);
-                    }
-
-                    --m_numPendingDecompression;
-                    ++m_numRunningTasks;
+                    AZ::TaskToken token = taskGraph.AddTask(taskDescriptor, AZStd::move(decompressTask));
+                    token.Precedes(finishToken);
                 }
 
-                AZ_Assert(m_taskGraphEvent->IsSignaled() == false, "Decompression has been started on another thread"
-                    " while executing this function");
-                taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+                --m_numPendingDecompression;
+                ++m_numRunningTasks;
+
+                taskGraph.SubmitOnExecutor(m_taskExecutor, nullptr);
 
                 m_readRequests[readSlot] = nullptr;
                 m_readBufferStatus[readSlot] = ReadBufferStatus::Unused;
@@ -775,9 +768,17 @@ namespace Compression
         auto decompressionBuffer = AZStd::make_unique<AZStd::byte[]>(compressionInfo.m_uncompressedSize);
         bool success = compressionInfo.m_decompressor(compressionInfo, info.m_compressedData + info.m_alignmentOffset,
             compressionInfo.m_compressedSize, decompressionBuffer.get(), compressionInfo.m_uncompressedSize);
+        if (success
+            && request->m_readOffset <= compressionInfo.m_uncompressedSize
+            && request->m_readSize <= (compressionInfo.m_uncompressedSize - request->m_readOffset))
+        {
+            memcpy(request->m_output, decompressionBuffer.get() + request->m_readOffset, request->m_readSize);
+        }
+        else
+        {
+            success = false;
+        }
         info.m_waitRequest->SetStatus(success ? AZ::IO::IStreamerTypes::RequestStatus::Completed : AZ::IO::IStreamerTypes::RequestStatus::Failed);
-
-        memcpy(request->m_output, decompressionBuffer.get() + request->m_readOffset, request->m_readSize);
 
         context->MarkRequestAsCompleted(info.m_waitRequest);
         context->WakeUpSchedulingThread();

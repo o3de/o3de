@@ -70,7 +70,6 @@ namespace Multiplayer
         ReplicationSet m_replicationSet;
 
         NetworkEntityHandle m_controlledEntity;
-        AZ::TransformInterface* m_controlledEntityTransform = nullptr;
 
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;

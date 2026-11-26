@@ -45,11 +45,13 @@ namespace CertificateManager
         if (fileSize == 0)
         {
             AZ_Error("FileDataSource",false,"Given empty file(%s) as certificate file.\n",certificatePath.c_str());
+            fileBase->Close(fileHandle);
             return false;
         }
 
         outBuffer.resize(fileSize + 1);
         fileResult = fileBase->Read(fileHandle,outBuffer.data(),fileSize);
+        fileBase->Close(fileHandle);
 
         if (!fileResult)
         {
@@ -57,6 +59,7 @@ namespace CertificateManager
             return false;
         }
 
+        outBuffer[fileSize] = '\0';
         return true;
     }
 

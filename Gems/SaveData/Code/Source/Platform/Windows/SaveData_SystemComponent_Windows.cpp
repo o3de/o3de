@@ -86,7 +86,10 @@ namespace SaveData
 
         // Convert it from UTF-16 to UTF-8
         AZStd::string defaultWindowsUserSaveDataPathUTF8;
-        AZStd::to_string(defaultWindowsUserSaveDataPathUTF8, AZStd::wstring(knownFolderPathUTF16));
+        if (SUCCEEDED(result) && knownFolderPathUTF16 != nullptr)
+        {
+            AZStd::to_string(defaultWindowsUserSaveDataPathUTF8, AZStd::wstring(knownFolderPathUTF16));
+        }
 
         // Free the memory allocated by SHGetKnownFolderPath
         CoTaskMemFree(knownFolderPathUTF16);

@@ -64,12 +64,14 @@ namespace Archive
             m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingHeader, ArchiveWriterErrorString::format(
                 "Archive header should have size %zu, but only %llu bytes were read from the beginning of the archive",
                 sizeof(archiveHeader), bytesRead) });
+            return false;
         }
         else if (auto archiveValidationResult = ValidateHeader(archiveHeader);
-            archiveValidationResult)
+            !archiveValidationResult)
         {
             m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingHeader,
                 archiveValidationResult.m_errorMessage });
+            return false;
         }
 
         return true;
@@ -89,27 +91,29 @@ namespace Archive
             AZ::IO::GenericStream& m_stream;
         };
 
-        if (archiveHeader.m_tocOffset > archiveStream.GetLength())
-        {
-            // The TOC offset is invalid since it is after the end of the stream
-            m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
-                    ArchiveWriterErrorString::format("TOC offset is invalid. It is pass the end of the stream."
-                        " Offset value %llu, archive stream size %llu",
-                        static_cast<AZ::u64>(archiveHeader.m_tocOffset), archiveStream.GetLength()) });
-            return false;
-        }
-
         // Buffer which stores the raw table of contents data from the archive file
         AZStd::vector<AZStd::byte> tocBuffer;
 
         // Seek to the location of the Table of Contents
         {
             AZStd::scoped_lock archiveLock(m_archiveStreamMutex);
+            const AZ::IO::SizeType streamLength = archiveStream.GetLength();
+            const AZ::u64 tocStoredSize = archiveHeader.GetTocStoredSize();
+            if (archiveHeader.m_tocOffset > streamLength
+                || tocStoredSize > (streamLength - archiveHeader.m_tocOffset))
+            {
+                // The TOC offset or stored size is invalid since it extends past the end of the stream
+                m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
+                        ArchiveWriterErrorString::format("TOC offset/size is invalid. It is past the end of the stream."
+                            " Offset value %llu, TOC size %llu, archive stream size %llu",
+                            static_cast<AZ::u64>(archiveHeader.m_tocOffset), tocStoredSize, streamLength) });
+                return false;
+            }
             // Make sure the archive offset is reset to 0 on return
             SeekStreamToBeginRAII seekToBeginScope{ archiveStream };
             archiveStream.Seek(archiveHeader.m_tocOffset, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
-            tocBuffer.resize_no_construct(archiveHeader.GetTocStoredSize());
+            tocBuffer.resize_no_construct(tocStoredSize);
             AZ::IO::SizeType bytesRead = archiveStream.Read(tocBuffer.size(), tocBuffer.data());
             if (bytesRead != tocBuffer.size())
             {
@@ -172,6 +176,12 @@ namespace Archive
                     return false;
                 }
             }
+            else
+            {
+                m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
+                    decompressionResultData.m_decompressionOutcome.m_resultString });
+                return false;
+            }
         }
 
         // Map the Table of Contents to a structure that makes it easier to maintain
@@ -205,10 +215,24 @@ namespace Archive
     {
         // Build the deleted block map using the the first deleted block offset
         // in the Archive Header
+        AZStd::scoped_lock archiveLock(m_archiveStreamMutex);
+        const AZ::IO::SizeType streamLength = archiveStream.GetLength();
+        AZStd::set<AZ::u64> visitedOffsets;
         AZ::u64 nextBlock{ DeletedBlockOffsetSentinel };
         for (AZ::u64 deletedBlockOffset = archiveHeader.m_firstDeletedBlockOffset;
             deletedBlockOffset != DeletedBlockOffsetSentinel; deletedBlockOffset = nextBlock)
         {
+            // Prevent cycles or out-of-bounds offsets in corrupted archives
+            if (deletedBlockOffset < ContentDataOffsetStart
+                || deletedBlockOffset > streamLength
+                || (streamLength - deletedBlockOffset) < (sizeof(nextBlock) + sizeof(AZ::u64))
+                || !visitedOffsets.insert(deletedBlockOffset).second)
+            {
+                break;
+            }
+
+            archiveStream.Seek(deletedBlockOffset, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
             // initialize the next block value to the deleted block offset sentinel value
             // of 0xffff'ffff'ffff'ffff
 
@@ -262,7 +286,7 @@ namespace Archive
                 {
                     // Check if the block range entry for the previous block
                     // ends at the beginning of the current block
-                    if (auto previousBlockRangeIt = --nextBlockRangeIt;
+                    if (auto previousBlockRangeIt = AZStd::prev(nextBlockRangeIt);
                         previousBlockRangeIt->second == deletedBlockOffset)
                     {
                         updateBlockRangeIter = previousBlockRangeIt;
@@ -276,7 +300,7 @@ namespace Archive
                 // if the iterator is before the end it represents the next block offset range to check
                 // the condition is if it's begin offset is at end of the current deleted block
                 if (nextBlockRangeIt != deletedBlockOffsetRangeMap.end()
-                    && nextBlockRangeIt->first == deletedBlockSize + deletedBlockSize)
+                    && nextBlockRangeIt->first == deletedBlockOffset + deletedBlockSize)
                 {
                     // Extract the next entry out of the block offset range map
                     nextBlockRangeNodeHandle = deletedBlockOffsetRangeMap.extract(nextBlockRangeIt);
@@ -362,7 +386,10 @@ namespace Archive
         // Build a map of file path to the index offset within the Archive TOC
         for (size_t filePathIndex{}; filePathIndex < archiveToc.m_filePaths.size(); ++filePathIndex)
         {
-            m_pathMap.emplace(archiveToc.m_filePaths[filePathIndex], filePathIndex);
+            if (!archiveToc.m_filePaths[filePathIndex].empty())
+            {
+                m_pathMap.emplace(archiveToc.m_filePaths[filePathIndex], filePathIndex);
+            }
         }
 
         return true;
@@ -687,7 +714,7 @@ namespace Archive
         // The m_fileMetadataTable and m_filePaths should have the same size
         for (size_t fileIndex = 0; fileIndex < m_archiveToc.m_filePaths.size(); ++fileIndex)
         {
-            if (!m_archiveToc.m_filePaths.empty())
+            if (!m_archiveToc.m_filePaths[fileIndex].empty())
             {
                 const ArchiveTocFileMetadata& fileMetadata = m_archiveToc.m_fileMetadataTable[fileIndex];
                 tocOutputStream.Write(sizeof(fileMetadata), &fileMetadata);
@@ -699,7 +726,7 @@ namespace Archive
         AZ::u64 filePathOffset{};
         for (size_t fileIndex = 0; fileIndex < m_archiveToc.m_filePaths.size(); ++fileIndex)
         {
-            if (!m_archiveToc.m_filePaths.empty())
+            if (!m_archiveToc.m_filePaths[fileIndex].empty())
             {
                 ArchiveTocFilePathIndex filePathIndex;
                 filePathIndex.m_size = m_archiveToc.m_filePaths[fileIndex].Native().size();
@@ -714,7 +741,7 @@ namespace Archive
         // Consecutive paths are not separated by null terminating characters
         for (size_t fileIndex = 0; fileIndex < m_archiveToc.m_filePaths.size(); ++fileIndex)
         {
-            if (!m_archiveToc.m_filePaths.empty())
+            if (!m_archiveToc.m_filePaths[fileIndex].empty())
             {
                 // Write path from the AZ::IO::Path
                 tocOutputStream.Write(m_archiveToc.m_filePaths[fileIndex].Native().size(),
@@ -962,6 +989,7 @@ namespace Archive
         size_t compressedBlockSizeForAllBlocks{};
         // allocated slots for each blocks CompressionResultData
         AZStd::vector<Compression::CompressionResultData> compressedBlockResults(maxCompressTasks);
+        size_t processedBlockCount{};
         while (compressedBlockCount > 0)
         {
             const AZ::u32 compressionThresholdInBytes = m_archiveHeader.m_compressionThreshold;
@@ -978,7 +1006,7 @@ namespace Archive
                 for (size_t compressedTaskSlot = 0; compressedTaskSlot < iterationTaskCount; ++compressedTaskSlot)
                 {
                     AZStd::span compressBlocksSpan(compressBlocksBuffer);
-                    const size_t blockStartOffset = compressedTaskSlot * ArchiveBlockSizeForCompression;
+                    const size_t blockStartOffset = (processedBlockCount + compressedTaskSlot) * ArchiveBlockSizeForCompression;
 
                     // Cap the input block span size to the minimum of the ArchiveBlockSizeForCompression(2 MiB) and the remaining size
                     // left in the input buffer via subspan
@@ -1060,6 +1088,7 @@ namespace Archive
                 contentFileBlocks.m_blockOffsetSizePairs.push_back({ compressedBlockStartOffset,
                     compressedBlockResult.GetCompressedByteCount() });
             }
+            processedBlockCount += iterationTaskCount;
         }
 
         // Set the compression algorithm index once compression has completed successfully for all blocks of the file
@@ -1184,7 +1213,7 @@ namespace Archive
                     // have been calculated
                     // NOTE: The `blockLine1` is not safe to use later on, as further emplace_back calls could invalidate
                     // the reference via reallocation, so index into the vector is being used
-                    blockLineWithJumpIndex = m_archiveToc.m_blockOffsetTable.size();
+                    blockLineWithJumpIndex = m_archiveToc.m_blockOffsetTable.size() - 1;
 
                     // Set the first block as used
                     blockLine1.m_blockLineWithJump.m_blockUsed = 1;

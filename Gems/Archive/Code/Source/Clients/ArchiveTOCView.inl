@@ -39,21 +39,78 @@ namespace Archive
             MagicBytesOffset + sizeof(ArchiveTocMagicBytes),
             sizeof(ArchiveTocFileMetadata));
 
+        const size_t expectedMetadataBytes = static_cast<size_t>(archiveHeader.m_fileCount) * sizeof(ArchiveTocFileMetadata);
+        if (FileMetadataTableOffset > tocBuffer.size()
+            || archiveHeader.m_tocFileMetadataTableUncompressedSize > tocBuffer.size() - FileMetadataTableOffset
+            || expectedMetadataBytes != archiveHeader.m_tocFileMetadataTableUncompressedSize)
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::FileMetadataTableSizeMismatch;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC File Metadata table (offset %zu, size %u, expected %zu) exceeds TOC buffer size %zu",
+                FileMetadataTableOffset,
+                archiveHeader.m_tocFileMetadataTableUncompressedSize,
+                expectedMetadataBytes,
+                tocBuffer.size());
+            return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+        }
+
         // The file path metadata entries is 32 bytes aligned
         // so round up to the nearest multiple of alignment before reading the file path index entries
         const size_t FilePathIndexTableOffset = AZ_SIZE_ALIGN_UP(
             FileMetadataTableOffset + archiveHeader.m_tocFileMetadataTableUncompressedSize,
             sizeof(ArchiveTocFileMetadata));
+        const size_t expectedPathIndexBytes = static_cast<size_t>(archiveHeader.m_fileCount) * sizeof(ArchiveTocFilePathIndex);
+        if (FilePathIndexTableOffset > tocBuffer.size()
+            || archiveHeader.m_tocPathIndexTableUncompressedSize > tocBuffer.size() - FilePathIndexTableOffset
+            || expectedPathIndexBytes != archiveHeader.m_tocPathIndexTableUncompressedSize)
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::FileIndexTableSizeMismatch;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC File Path Index table (offset %zu, size %u, expected %zu) exceeds TOC buffer size %zu",
+                FilePathIndexTableOffset,
+                archiveHeader.m_tocPathIndexTableUncompressedSize,
+                expectedPathIndexBytes,
+                tocBuffer.size());
+            return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+        }
+
         // The file path index entries are 8 bytes aligned
         // so round up to the nearest multiple of alignment before reading the file path blob
         const size_t FilePathBlobOffset = AZ_SIZE_ALIGN_UP(
             FilePathIndexTableOffset + archiveHeader.m_tocPathIndexTableUncompressedSize,
             sizeof(ArchiveTocFilePathIndex));
+        if (FilePathBlobOffset > tocBuffer.size()
+            || archiveHeader.m_tocPathBlobUncompressedSize > tocBuffer.size() - FilePathBlobOffset)
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::FileIndexTableSizeMismatch;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC File Path Blob (offset %zu, size %u) exceeds TOC buffer size %zu",
+                FilePathBlobOffset,
+                archiveHeader.m_tocPathBlobUncompressedSize,
+                tocBuffer.size());
+            return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+        }
 
         // The block offset table starts on an address aligned at a multiple of 8 bytes
         const size_t BlockOffsetTableOffset = AZ_SIZE_ALIGN_UP(
             FilePathBlobOffset + archiveHeader.m_tocPathBlobUncompressedSize,
             sizeof(ArchiveBlockLineUnion));
+        if (BlockOffsetTableOffset > tocBuffer.size()
+            || archiveHeader.m_tocBlockOffsetTableUncompressedSize > tocBuffer.size() - BlockOffsetTableOffset
+            || (archiveHeader.m_tocBlockOffsetTableUncompressedSize % sizeof(ArchiveBlockLineUnion)) != 0)
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::BlockOffsetTableCountMismatch;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC Block Offset table (offset %zu, size %u) exceeds TOC buffer size %zu or is not aligned",
+                BlockOffsetTableOffset,
+                archiveHeader.m_tocBlockOffsetTableUncompressedSize,
+                tocBuffer.size());
+            return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+        }
 
         // Cast the first 8 of the TOC buffer
         tocView.m_magicBytes = *reinterpret_cast<decltype(tocView.m_magicBytes)*>(tocBuffer.data() + MagicBytesOffset);
@@ -71,6 +128,23 @@ namespace Archive
         tocView.m_filePathBlob = AZStd::string_view(
             reinterpret_cast<const char*>(tocBuffer.data() + FilePathBlobOffset),
             archiveHeader.m_tocPathBlobUncompressedSize);
+
+        for (const auto& filePathIndexEntry : tocView.m_filePathIndexTable)
+        {
+            if (filePathIndexEntry.m_size > 0
+                && (filePathIndexEntry.m_offset > tocView.m_filePathBlob.size()
+                    || filePathIndexEntry.m_size > tocView.m_filePathBlob.size() - filePathIndexEntry.m_offset))
+            {
+                ArchiveTocValidationResult tocValidationResult;
+                tocValidationResult.m_errorCode = ArchiveTocErrorCode::FileIndexTableSizeMismatch;
+                tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                    "The Archive TOC File Path Index entry (offset %llu, size %llu) exceeds File Path Blob size %zu",
+                    static_cast<AZ::u64>(filePathIndexEntry.m_offset),
+                    static_cast<AZ::u64>(filePathIndexEntry.m_size),
+                    tocView.m_filePathBlob.size());
+                return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+            }
+        }
 
         // create a span to the block offset entries
         const auto blockOffsetTableBegin = reinterpret_cast<const ArchiveBlockLineUnion*>(tocBuffer.data() + BlockOffsetTableOffset);
@@ -150,7 +224,7 @@ namespace Archive
                 expectedBlockLineCount += GetBlockLineCountIfCompressed(archiveFileMetadata.m_uncompressedSize);
             }
 
-            if (expectedBlockLineCount == tocView.m_blockOffsetTable.size())
+            if (expectedBlockLineCount != tocView.m_blockOffsetTable.size())
             {
                 ArchiveTocValidationResult tocValidationResult;
                 tocValidationResult.m_errorCode = ArchiveTocErrorCode::BlockOffsetTableCountMismatch;
@@ -203,7 +277,7 @@ namespace Archive
         // Determine the number of blocks lines a file uses based on the uncompressed size
         const AZ::u64 fileBlockLineCount = GetBlockLineCountIfCompressed(uncompressedSize);
         if (blockLineFirstIndex >= tocView.m_blockOffsetTable.size()
-            && (blockLineFirstIndex + fileBlockLineCount) >= tocView.m_blockOffsetTable.size())
+            || fileBlockLineCount > (tocView.m_blockOffsetTable.size() - blockLineFirstIndex))
         {
             return AZStd::unexpected(ResultString::format("Either the first block index for the file with value %llu"
                 "is incorrect or the uncompressed size (%llu) for the file is incorrect", blockLineFirstIndex,
@@ -279,7 +353,7 @@ namespace Archive
         const AZ::u64 blockLineFirstIndex = fileMetadata.m_blockLineTableFirstIndex;
         const AZ::u64 fileBlockLineCount = GetBlockLineCountIfCompressed(uncompressedSize);
         if (blockLineFirstIndex >= tocBlockOffsetTable.size()
-            && (blockLineFirstIndex + fileBlockLineCount) >= tocBlockOffsetTable.size())
+            || fileBlockLineCount > (tocBlockOffsetTable.size() - blockLineFirstIndex))
         {
             return AZStd::unexpected(ResultString::format("The first block offset entry for the file with value %llu"
                 "is incorrect or the uncompressed size (%llu) is incorrect", blockLineFirstIndex,
@@ -301,7 +375,7 @@ namespace Archive
             {
                 const ArchiveBlockLineJump& blockLineWithJump = fileBlockLineSpan[blockLineIndex].m_blockLineWithJump;
                 // A jump entry contains the aligned compressed size for the next 8 blocks
-                compressedSize = blockLineWithJump.m_blockJump * ArchiveDefaultBlockAlignment;
+                compressedSize += blockLineWithJump.m_blockJump * ArchiveDefaultBlockAlignment;
                 blockLineIndex += BlockLinesToSkipWithJumpEntry;
                 blockIndex += BlocksToSkipWithJumpEntry;
             }
@@ -328,7 +402,7 @@ namespace Archive
                     compressedSize += blockLine.m_block1;
                     break;
                 }
-                compressedSize += AZ_SIZE_ALIGN_UP(blockLine.m_block2, ArchiveDefaultBlockAlignment);
+                compressedSize += AZ_SIZE_ALIGN_UP(blockLine.m_block1, ArchiveDefaultBlockAlignment);
                 if (bool isLastBlock = ++blockIndex == blockCount;
                     isLastBlock)
                 {

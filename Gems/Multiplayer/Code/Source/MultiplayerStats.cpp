@@ -50,7 +50,7 @@ namespace Multiplayer
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
-        if (m_componentStats[netComponentIndex].m_propertyUpdatesSent.size() > propertyIndex)
+        if (netComponentIndex < m_componentStats.size() && m_componentStats[netComponentIndex].m_propertyUpdatesSent.size() > propertyIndex)
         {
             m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalCalls++;
             m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalBytes += totalBytes;
@@ -70,7 +70,7 @@ namespace Multiplayer
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
-        if (m_componentStats[netComponentIndex].m_propertyUpdatesRecv.size() > propertyIndex)
+        if (netComponentIndex < m_componentStats.size() && m_componentStats[netComponentIndex].m_propertyUpdatesRecv.size() > propertyIndex)
         {
             m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalCalls++;
             m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalBytes += totalBytes;
@@ -91,7 +91,7 @@ namespace Multiplayer
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
 
-        if (m_componentStats[netComponentIndex].m_rpcsSent.size() > rpcIndex)
+        if (netComponentIndex < m_componentStats.size() && m_componentStats[netComponentIndex].m_rpcsSent.size() > rpcIndex)
         {
             m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalCalls++;
             m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalBytes += totalBytes;
@@ -111,7 +111,7 @@ namespace Multiplayer
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
-        if (m_componentStats[netComponentIndex].m_rpcsRecv.size() > rpcIndex)
+        if (netComponentIndex < m_componentStats.size() && m_componentStats[netComponentIndex].m_rpcsRecv.size() > rpcIndex)
         {
             m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalCalls++;
             m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalBytes += totalBytes;
@@ -183,25 +183,25 @@ namespace Multiplayer
     MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateSentMetrics(NetComponentId netComponentId) const
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
-        return SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesSent);
+        return netComponentIndex < m_componentStats.size() ? SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesSent) : Metric{};
     }
 
     MultiplayerStats::Metric MultiplayerStats::CalculateComponentPropertyUpdateRecvMetrics(NetComponentId netComponentId) const
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
-        return SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesRecv);
+        return netComponentIndex < m_componentStats.size() ? SumMetricVector(m_componentStats[netComponentIndex].m_propertyUpdatesRecv) : Metric{};
     }
 
     MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsSentMetrics(NetComponentId netComponentId) const
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
-        return SumMetricVector(m_componentStats[netComponentIndex].m_rpcsSent);
+        return netComponentIndex < m_componentStats.size() ? SumMetricVector(m_componentStats[netComponentIndex].m_rpcsSent) : Metric{};
     }
 
     MultiplayerStats::Metric MultiplayerStats::CalculateComponentRpcsRecvMetrics(NetComponentId netComponentId) const
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
-        return SumMetricVector(m_componentStats[netComponentIndex].m_rpcsRecv);
+        return netComponentIndex < m_componentStats.size() ? SumMetricVector(m_componentStats[netComponentIndex].m_rpcsRecv) : Metric{};
     }
 
     MultiplayerStats::Metric MultiplayerStats::CalculateTotalPropertyUpdateSentMetrics() const

@@ -135,7 +135,6 @@ namespace Compression
 #endif
         // Task executor for decompressor
         AZ::TaskExecutor m_taskExecutor;
-        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
 
         AZStd::unique_ptr<Buffer[]> m_readBuffers;
         // Nullptr if not reading, the read request if reading the file and the wait request for decompression when waiting on decompression.

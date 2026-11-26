@@ -8,6 +8,7 @@
 
 #include "LZ4Compressor.h"
 
+#include <AzCore/std/limits.h>
 #include <lz4.h>
 #include <lz4hc.h>
 
@@ -20,7 +21,11 @@ namespace MultiplayerCompression
 
     size_t LZ4Compressor::GetMaxCompressedBufferSize(size_t uncompSize) const
     {
-        return LZ4_compressBound(static_cast<int>(uncompSize));
+        if (uncompSize > static_cast<size_t>(LZ4_MAX_INPUT_SIZE))
+        {
+            return 0;
+        }
+        return static_cast<size_t>(LZ4_compressBound(static_cast<int>(uncompSize)));
     }
 
     AzNetworking::CompressorError LZ4Compressor::Compress
@@ -46,6 +51,13 @@ namespace MultiplayerCompression
             return AzNetworking::CompressorError::Uninitialized;
         }
 
+        if (uncompSize > static_cast<size_t>(LZ4_MAX_INPUT_SIZE)
+            || compDataSize > static_cast<size_t>(AZStd::numeric_limits<int>::max()))
+        {
+            AZ_Warning("Multiplayer Compressor", false, "Input size (%lu) passed to Compress() is greater than max allowed (%lu)", uncompSize, LZ4_MAX_INPUT_SIZE);
+            return AzNetworking::CompressorError::InsufficientBuffer;
+        }
+
         const int compWorstCaseSize = LZ4_compressBound(static_cast<int>(uncompSize));
         if (compWorstCaseSize == 0)
         {
@@ -53,7 +65,7 @@ namespace MultiplayerCompression
             return AzNetworking::CompressorError::InsufficientBuffer;
         }
 
-        AZ_Warning("Multiplayer Compressor", compDataSize >= compWorstCaseSize, "Outbuffer size (%lu B) passed to Compress() is less than estimated worst case (%lu B)", compDataSize, compWorstCaseSize);
+        AZ_Warning("Multiplayer Compressor", compDataSize >= static_cast<size_t>(compWorstCaseSize), "Outbuffer size (%lu B) passed to Compress() is less than estimated worst case (%d B)", compDataSize, compWorstCaseSize);
 
         // Note that this returns a non-negative int so we are narrowing into a size_t here
         compSize = LZ4_compress_HC(
@@ -87,6 +99,13 @@ namespace MultiplayerCompression
             // LZ4 actually never checks for this
             AZ_Warning("Multiplayer Compressor", false, "Output buffer is uninitialized");
             return AzNetworking::CompressorError::Uninitialized;
+        }
+
+        if (compDataSize > static_cast<size_t>(AZStd::numeric_limits<int>::max())
+            || uncompDataSize > static_cast<size_t>(AZStd::numeric_limits<int>::max()))
+        {
+            AZ_Warning("Multiplayer Compressor", false, "Buffer sizes exceed INT_MAX in Decompress(): compDataSize=%lu uncompDataSize=%lu", compDataSize, uncompDataSize);
+            return AzNetworking::CompressorError::InsufficientBuffer;
         }
 
         const int uncompSize = LZ4_decompress_safe(reinterpret_cast<const char*>(compData), reinterpret_cast<char*>(uncompData), static_cast<int>(compDataSize), static_cast<int>(uncompDataSize));

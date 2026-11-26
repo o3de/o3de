@@ -31,14 +31,14 @@ namespace RemoteTools
 
     struct RemoteToolsRegistryEntry
     {
-        bool m_isHost;
+        bool m_isHost = false;
         AZ::Name m_name;
         AzNetworking::IpAddress m_ip;
 
         AzFramework::RemoteToolsEndpointContainer m_availableTargets;
         AzFramework::RemoteToolsEndpointInfo m_lastTarget;
         AZStd::vector<AZStd::byte> m_tmpInboundBuffer;
-        uint32_t m_tmpInboundBufferPos;
+        uint32_t m_tmpInboundBufferPos = 0;
 
         AzFramework::RemoteToolsEndpointStatusEvent m_endpointJoinedEvent;
         AzFramework::RemoteToolsEndpointStatusEvent m_endpointLeftEvent;
@@ -150,9 +150,11 @@ namespace RemoteTools
         AZStd::unique_ptr<RemoteToolsJoinThread> m_joinThread;
 
         AZStd::unordered_map<AZ::Crc32, RemoteToolsRegistryEntry> m_entryRegistry;
+        mutable AZStd::recursive_mutex m_entryRegistryMutex;
+        AZStd::atomic_bool m_restartJoinThread{ false };
 
         AZStd::unordered_map<AZ::Crc32, AzFramework::ReceivedRemoteToolsMessages> m_inbox;
-        AZStd::mutex m_inboxMutex;
+        mutable AZStd::mutex m_inboxMutex;
 
         AZStd::set<AZ::Crc32> m_messageTypesToClearForNextTick;
 
