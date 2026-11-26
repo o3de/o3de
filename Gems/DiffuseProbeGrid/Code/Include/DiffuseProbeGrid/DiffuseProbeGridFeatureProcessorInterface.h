@@ -27,7 +27,7 @@ namespace AZ
             RealTime,
             Baked,
             AutoSelect,
-            RealTimeSoftware, //!< Retained for existing assets; the quality setting controls the active mode.
+            RealTimeSoftware,
             RealTimeHardware
         };
 
@@ -154,6 +154,7 @@ namespace AZ
             virtual void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) = 0;
 
             virtual bool CanBakeTextures() = 0;
+            virtual bool CanBakeTextures(const DiffuseProbeGridHandle& probeGrid) { return probeGrid && CanBakeTextures(); }
             virtual void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,

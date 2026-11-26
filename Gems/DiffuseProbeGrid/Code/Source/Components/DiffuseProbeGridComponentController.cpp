@@ -8,7 +8,6 @@
 
 #include <Components/DiffuseProbeGridComponentController.h>
 #include <Components/DiffuseProbeGridComponentConstants.h>
-#include <Render/DiffuseProbeGridTracing.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -178,10 +177,13 @@ namespace AZ
                 m_configuration.m_bakedDistanceTextureAsset.QueueLoad();
                 m_configuration.m_bakedProbeDataTextureAsset.QueueLoad();
             }
-            else if (GetDiffuseProbeGridMode() == DiffuseProbeGridMode::Baked)
+            else if (m_configuration.m_runtimeMode == DiffuseProbeGridMode::Baked ||
+                     m_configuration.m_runtimeMode == DiffuseProbeGridMode::AutoSelect ||
+                     m_configuration.m_editorMode == DiffuseProbeGridMode::Baked ||
+                     m_configuration.m_editorMode == DiffuseProbeGridMode::AutoSelect)
             {
                 AZ_Warning("DiffuseProbeGrid", false,
-                    "Baked GI is selected, but this grid has no baked textures. It will be skipped until textures are baked.");
+                    "This grid uses Baked or Auto Select and has no baked textures. Bake the grid to use baked lighting.");
             }
 
             m_featureProcessor->SetMode(m_handle, m_configuration.m_runtimeMode);
@@ -427,24 +429,15 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)
         {
-            if (!m_featureProcessor)
-            {
-                return;
-            }
-
-            // update the configuration and change the DiffuseProbeGrid mode
             m_configuration.m_editorMode = editorMode;
-            m_featureProcessor->SetMode(m_handle, m_configuration.m_editorMode);
+            if (m_featureProcessor && m_handle)
+            {
+                m_featureProcessor->SetMode(m_handle, editorMode);
+            }
         }
 
         void DiffuseProbeGridComponentController::SetRuntimeMode(DiffuseProbeGridMode runtimeMode)
         {
-            if (!m_featureProcessor)
-            {
-                return;
-            }
-
-            // only update the configuration
             m_configuration.m_runtimeMode = runtimeMode;
         }
 
@@ -483,7 +476,7 @@ namespace AZ
 
         bool DiffuseProbeGridComponentController::CanBakeTextures()
         {
-        return m_featureProcessor && m_featureProcessor->CanBakeTextures();
+            return m_featureProcessor && m_featureProcessor->CanBakeTextures(m_handle);
         }
 
         void DiffuseProbeGridComponentController::BakeTextures(DiffuseProbeGridBakeTexturesCallback callback)

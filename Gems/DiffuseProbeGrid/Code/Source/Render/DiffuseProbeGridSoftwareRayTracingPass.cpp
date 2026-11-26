@@ -28,9 +28,6 @@
 #include <AzCore/std/limits.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 
-AZ_CVAR(AZ::CVarFixedString, r_diffuseGI_mode, "Hardware", nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Project-wide diffuse GI mode: Hardware, Software, Baked, or Auto. Set through the quality registry.");
-
 AZ_CVAR(bool, r_diffuseGI_updateOffscreenSkinnedMeshes, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Update off-screen character poses and lowest-LOD skinning for hardware GI. Software tracing enables these updates automatically.");
 
@@ -75,39 +72,11 @@ namespace AZ::Render
             {
                 if (const auto* software = azrtti_cast<const DiffuseProbeGridSoftwareRayTracingPass*>(child.get()))
                 {
-                    return software->IsReadyToTrace();
+                    return child->IsEnabled() && software->IsReadyToTrace();
                 }
             }
         }
         return false;
-    }
-
-    DiffuseProbeGridMode GetDiffuseProbeGridMode()
-    {
-        const auto mode = static_cast<AZ::CVarFixedString>(r_diffuseGI_mode);
-        if (mode == "Software")
-        {
-            return DiffuseProbeGridMode::RealTimeSoftware;
-        }
-        if (mode == "Baked")
-        {
-            return DiffuseProbeGridMode::Baked;
-        }
-        if (mode == "Auto")
-        {
-            return DiffuseProbeGridMode::AutoSelect;
-        }
-        AZ_WarningOnce("DiffuseProbeGrid", mode == "Hardware",
-            "Invalid r_diffuseGI_mode; expected Hardware, Software, Baked, or Auto. Using Hardware.");
-        return DiffuseProbeGridMode::RealTimeHardware;
-    }
-
-    bool IsDiffuseProbeGridSoftwareTracing()
-    {
-        const auto mode = GetDiffuseProbeGridMode();
-        return mode == DiffuseProbeGridMode::RealTimeSoftware ||
-            (mode == DiffuseProbeGridMode::AutoSelect &&
-                RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices);
     }
 
     RPI::Ptr<DiffuseProbeGridSoftwareRayTracingPass> DiffuseProbeGridSoftwareRayTracingPass::Create(const RPI::PassDescriptor& descriptor)
@@ -127,12 +96,12 @@ namespace AZ::Render
 
     bool DiffuseProbeGridSoftwareRayTracingPass::IsEnabled() const
     {
-        if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED || !RenderPass::IsEnabled() || !IsDiffuseProbeGridSoftwareTracing() || !m_pipeline->GetScene())
+        if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED || !RenderPass::IsEnabled() || !m_pipeline->GetScene())
         {
             return false;
         }
         auto* grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-        return grids && !grids->GetVisibleRealTimeProbeGrids().empty();
+        return grids && !grids->GetVisibleSoftwareProbeGrids().empty();
     }
 
     void DiffuseProbeGridSoftwareRayTracingPass::ReleaseResources()
@@ -269,7 +238,7 @@ namespace AZ::Render
         }
         if (relocationRequired)
         {
-            for (auto& grid : scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids())
+            for (auto& grid : scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids())
             {
                 grid->ResetRemainingRelocationIterations();
             }
@@ -395,7 +364,7 @@ namespace AZ::Render
 
     bool DiffuseProbeGridSoftwareRayTracingPass::PrepareGridScratch()
     {
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         m_gridScratch.resize(grids.size());
         if (m_traceSrgs.size() > grids.size())
         {
@@ -470,7 +439,7 @@ namespace AZ::Render
 
     void DiffuseProbeGridSoftwareRayTracingPass::SetupFeedbackStage(RHI::FrameGraphInterface frameGraph, uint32_t stage)
     {
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(grids.size()));
         if (IsTimestampQueryEnabled() && m_feedbackTimestampQueries[stage])
         {
@@ -523,7 +492,7 @@ namespace AZ::Render
 
     void DiffuseProbeGridSoftwareRayTracingPass::CompileFeedbackStage(uint32_t stage)
     {
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         for (size_t index = 0; index < grids.size(); ++index)
         {
             const auto& grid = grids[index];
@@ -534,7 +503,8 @@ namespace AZ::Render
                 srg->SetBufferView(srg->FindShaderInputBufferIndex(Name("m_irradianceQueries")), scratch.m_buffers[HitQueries]->GetBufferView());
                 srg->SetBufferView(srg->FindShaderInputBufferIndex(Name("m_output")), scratch.m_buffers[Indirect]->GetBufferView());
                 // Pass-private bindings avoid competing with standalone queries or another render pipeline.
-                grid->UpdateQuerySrgBindings(scratch.m_queryObjectSrg);
+                // Feedback uses physical irradiance. The grid's display multiplier belongs to the final lighting query.
+                grid->UpdateQuerySrgBindings(scratch.m_queryObjectSrg, 1.0f);
                 scratch.m_queryObjectSrg->Compile();
             }
             else
@@ -550,7 +520,7 @@ namespace AZ::Render
 
     void DiffuseProbeGridSoftwareRayTracingPass::ExecuteFeedbackStage(const RHI::FrameGraphExecuteContext& context, uint32_t stage)
     {
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         const auto& query = m_feedbackTimestampQueries[stage];
         if (IsTimestampQueryEnabled() && query && context.GetSubmitRange().m_startIndex == 0)
         {
@@ -657,7 +627,7 @@ namespace AZ::Render
         {
             m_fullPassTimestampQuery->AddToFrameGraph(frameGraph);
         }
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(grids.size()));
         for (size_t gridIndex = 0; gridIndex < grids.size(); ++gridIndex)
         {
@@ -696,7 +666,7 @@ namespace AZ::Render
         {
             return;
         }
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         for (size_t index = 0; index < grids.size(); ++index)
         {
             if (index == m_traceSrgs.size())
@@ -717,7 +687,6 @@ namespace AZ::Render
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_tlasPrimitiveBase")), m_gpuData.m_tlasPrimitiveBase);
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_frameUpdateCount")), grid->GetFrameUpdateCount());
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_frameUpdateIndex")), grid->GetFrameUpdateIndex());
-            srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_ambientMultiplier")), grid->GetAmbientMultiplier());
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_emissiveMultiplier")), grid->GetEmissiveMultiplier());
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_frameNumber")), m_frameNumber);
             srg->SetConstant(srg->FindShaderInputConstantIndex(Name("m_transparencyMode")), uint32_t(grid->GetTransparencyMode()));
@@ -733,7 +702,7 @@ namespace AZ::Render
         {
             return;
         }
-        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleRealTimeProbeGrids();
+        const auto& grids = m_pipeline->GetScene()->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>()->GetVisibleSoftwareProbeGrids();
         if (IsTimestampQueryEnabled() && m_fullPassTimestampQuery && context.GetSubmitRange().m_startIndex == 0)
         {
             m_fullPassTimestampQuery->BeginQuery(context);

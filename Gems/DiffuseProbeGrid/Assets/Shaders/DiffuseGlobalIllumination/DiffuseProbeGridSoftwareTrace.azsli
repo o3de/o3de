@@ -15,6 +15,7 @@ struct SoftwareTraceHit
     uint instanceIndex;
     uint triangleIndex;
     bool found;
+    bool backFace;
 };
 
 bool SoftwareIntersectBounds(float3 origin, float3 direction, SoftwareBvhBounds bounds, float minimum, float maximum)
@@ -92,6 +93,8 @@ bool SoftwareIntersectTriangle(float3 origin, float3 direction, float3 a, float3
     }
     hit.distance = distance;
     hit.barycentrics = float2(v, w) / determinant;
+    // Match hardware hit kinds in object space, including instances with a reflected transform.
+    hit.backFace = determinant < 0.0f;
     hit.found = true;
     return true;
 }

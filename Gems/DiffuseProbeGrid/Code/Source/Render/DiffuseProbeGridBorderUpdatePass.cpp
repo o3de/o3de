@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
@@ -17,7 +16,6 @@
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridBorderUpdatePass.h>
-#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -97,27 +95,8 @@ namespace AZ
                 return false;
             }
 
-            if (IsDiffuseProbeGridSoftwareTracing() && !IsDiffuseProbeGridSoftwareTracingReady(*this))
-            {
-                return false;
-            }
-
-            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            if (!IsDiffuseProbeGridSoftwareTracing() &&
-                (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount()))
-            {
-                // empty scene
-                return false;
-            }
-
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return false;
-            }
-
-            return true;
+            return diffuseProbeGridFeatureProcessor && !diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).empty();
         }
 
         void DiffuseProbeGridBorderUpdatePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -128,11 +107,11 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             // there are 4 submits per grid
-            uint32_t totalSubmits = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size() * 4);
+            uint32_t totalSubmits = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).size() * 4);
             frameGraph.SetEstimatedItemCount(totalSubmits);
             m_submitItems.reserve(totalSubmits);
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // probe irradiance image
                 {
@@ -161,7 +140,7 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)

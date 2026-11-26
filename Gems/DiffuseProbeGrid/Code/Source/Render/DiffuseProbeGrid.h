@@ -200,7 +200,7 @@ namespace AZ
             void SetUseDiffuseIbl(bool useDiffuseIbl) { m_useDiffuseIbl = useDiffuseIbl; }
 
             DiffuseProbeGridMode GetMode() const { return m_mode; }
-            DiffuseProbeGridMode GetRequestedMode() const { return m_requestedMode; }
+            bool UsesSoftwareTracing() const { return m_usesSoftwareTracing; }
             void SetMode(DiffuseProbeGridMode mode);
 
             bool GetScrolling() const { return m_scrolling; }
@@ -271,7 +271,7 @@ namespace AZ
             void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::ImageView* outputImageView);
             void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
-            void UpdateQuerySrgBindings(const Data::Instance<RPI::ShaderResourceGroup>& srg);
+            void UpdateQuerySrgBindings(const Data::Instance<RPI::ShaderResourceGroup>& srg, float ambientMultiplier);
 
             // textures
             const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
@@ -396,7 +396,7 @@ namespace AZ
 
             // grid mode (RealTime or Baked)
             DiffuseProbeGridMode m_mode = DiffuseProbeGridMode::RealTime;
-            DiffuseProbeGridMode m_requestedMode = DiffuseProbeGridMode::RealTime;
+            bool m_usesSoftwareTracing = false;
 
             // grid data buffer
             RHI::Ptr<RHI::Buffer> m_gridDataBuffer;

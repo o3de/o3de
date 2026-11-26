@@ -52,7 +52,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_tlasPrimitiveBase;
     uint m_frameUpdateCount;
     uint m_frameUpdateIndex;
-    float m_ambientMultiplier;
     float m_emissiveMultiplier;
     uint m_giShadows;
     uint m_transparencyMode;
@@ -81,7 +80,8 @@ uint SoftwareHash(uint value)
 
 SoftwareTraceHit SoftwareTraceTransport(float3 origin, float3 direction, float maximum, uint seed)
 {
-    float minimum = 0.0001f;
+    // Hardware primary rays include hits at the probe origin. Excluding them misclassifies probes on a surface.
+    float minimum = 0.0f;
     bool first = true;
     while (true)
     {
@@ -178,14 +178,12 @@ float3 SoftwareProbeDirection(uint rayIndex, uint count, float4 rotation)
     return normalize(direction);
 }
 
-float SoftwareVisibility(float3 position, float3 normal, float3 direction, float distance)
+float SoftwareVisibility(float3 origin, float3 direction, float maximum)
 {
     if (PassSrg::m_giShadows == 0)
     {
         return 1.0f;
     }
-    float3 origin = position + normal * 0.001f;
-    float maximum = max(0.0001f, distance - 0.002f);
     if (PassSrg::m_transparencyMode == 2)
     {
         return SoftwareTrace(origin, direction, 0.0001f, maximum, true).found ? 0.0f : 1.0f;
@@ -212,7 +210,7 @@ float SoftwareVisibility(float3 position, float3 normal, float3 direction, float
     return 0.0f;
 }
 
-float3 SoftwareLocalLight(float3 position, float3 normal, float3 geometricNormal, float3 lightPosition,
+float3 SoftwareLocalLight(float3 position, float3 normal, float3 shadowOrigin, float viewBias, float3 lightPosition,
     float3 intensity, float inverseRadiusSquared, float minimumDistanceSquared)
 {
     float3 toLight = lightPosition - position;
@@ -226,7 +224,7 @@ float3 SoftwareLocalLight(float3 position, float3 normal, float3 geometricNormal
         return 0.0f;
     }
     return intensity * (attenuation * attenuation * cosine / max(max(distanceSquared, minimumDistanceSquared), 1e-6f)) *
-        SoftwareVisibility(position, geometricNormal, direction, distance);
+        SoftwareVisibility(shadowOrigin, direction, distance - viewBias);
 }
 
 float3 SoftwareCosineEdge(float3 a, float3 b)
@@ -318,13 +316,14 @@ float3 SoftwareCapsuleIrradiance(float3 position, float3 normal, CapsuleLight li
     float distanceA = max(length(a), 0.001f);
     float distanceB = max(length(b), 0.001f);
     float cosine = max(0.0f, dot(normal, a) / distanceA + dot(normal, b) / distanceB);
-    return light.m_rgbIntensityCandelas * cosine * ratio * falloff * falloff /
+    return light.m_rgbIntensityCandelas * (0.31830988618f * cosine * ratio) * falloff * falloff /
         max(distanceA * distanceB + dot(a, b), max(light.m_radius * light.m_radius, 1e-6f));
 }
 
-float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNormal, uint channels)
+float3 SoftwareDirectLighting(float3 position, float3 normal, SoftwareProbeGrid grid, uint channels)
 {
     float3 irradiance = 0.0f;
+    float3 shadowOrigin = position + normal * grid.normalBias;
     for (uint i = 0; i < SceneSrg::m_directionalLightCount; ++i)
     {
         DirectionalLight light = SceneSrg::m_directionalLights[i];
@@ -335,7 +334,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
             if (cosine > 0.0f)
             {
                 irradiance += light.m_rgbIntensityLux * light.m_affectsGIFactor * cosine *
-                    SoftwareVisibility(position, geometricNormal, direction, 1e20f);
+                    SoftwareVisibility(shadowOrigin, direction, grid.maxDistance);
             }
         }
     }
@@ -345,7 +344,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
         SimplePointLight light = ViewSrg::m_simplePointLights[i];
         if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
         {
-            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+            irradiance += SoftwareLocalLight(position, normal, shadowOrigin, grid.viewBias, light.m_position,
                 light.m_rgbIntensityCandelas * light.m_affectsGIFactor, light.m_invAttenuationRadiusSquared, 0.0f);
         }
     }
@@ -354,7 +353,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
         PointLight light = ViewSrg::m_pointLights[i];
         if (light.m_affectsGI && (light.m_lightingChannelMask & channels))
         {
-            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+            irradiance += SoftwareLocalLight(position, normal, shadowOrigin, grid.viewBias, light.m_position,
                 light.m_rgbIntensityCandelas * light.m_affectsGIFactor, light.m_invAttenuationRadiusSquared, light.m_bulbRadius * light.m_bulbRadius);
         }
     }
@@ -367,7 +366,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
             float cone = saturate((cosine - light.m_cosOuterConeAngle) / max(1e-6f, light.m_cosInnerConeAngle - light.m_cosOuterConeAngle));
             float gobo = light.m_goboTexIndex < ViewSrg::MaxGoboTextureCount ?
                 SampleGoboTexture(int(light.m_goboTexIndex), PassSrg::MaterialSampler, light.m_viewProjectionMatrix, position) : 1.0f;
-            irradiance += SoftwareLocalLight(position, normal, geometricNormal, light.m_position,
+            irradiance += SoftwareLocalLight(position, normal, shadowOrigin, grid.viewBias, light.m_position,
                 light.m_rgbIntensityCandelas * (cone * cone * (3.0f - 2.0f * cone) * light.m_affectsGIFactor) * gobo,
                 light.m_invAttenuationRadiusSquared, 0.0f);
         }
@@ -409,7 +408,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
             if (intensity > 0.0f)
             {
                 irradiance += light.m_rgbIntensityCandelas * light.m_affectsGIFactor * intensity *
-                    SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+                    SoftwareVisibility(shadowOrigin, toLight / distance, distance - grid.viewBias);
             }
         }
     }
@@ -423,7 +422,7 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
             float3 toLight = center - position;
             float distance = max(length(toLight), 0.001f);
             irradiance += SoftwareCapsuleIrradiance(position, normal, light) * light.m_affectsGIFactor *
-                SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+                SoftwareVisibility(shadowOrigin, toLight / distance, distance - grid.viewBias);
         }
     }
     for (uint i = 0; i < ViewSrg::m_quadLightCount; ++i)
@@ -437,22 +436,27 @@ float3 SoftwareDirectLighting(float3 position, float3 normal, float3 geometricNo
                 float3 toLight = light.m_position - position;
                 float distance = max(length(toLight), 0.001f);
                 irradiance += light.m_rgbIntensityNits * light.m_affectsGIFactor * cosineIntegral *
-                    SoftwareVisibility(position, geometricNormal, toLight / distance, distance);
+                    SoftwareVisibility(shadowOrigin, toLight / distance, distance - grid.viewBias);
             }
         }
     }
     return irradiance;
 }
 
-float3 SoftwareEnvironment(float3 direction)
+float3 SoftwareEnvironment(float3 origin, float3 direction)
 {
     if (PassSrg::m_useDiffuseIbl == 0)
     {
         return 0.0f;
     }
+    // A probe ray can reach its distance limit inside a building. Match the hardware miss shader's sky visibility ray.
+    if (SoftwareTrace(origin, direction, 0.0f, 1e27f, true).found)
+    {
+        return 0.0f;
+    }
     float3 rotated = MultiplyVectorQuaternion(direction, SceneSrg::m_iblOrientation);
     return SceneSrg::m_diffuseEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(rotated), 0).rgb *
-        exp2(SceneSrg::m_iblExposure) * PassSrg::m_ambientMultiplier;
+        exp2(SceneSrg::m_iblExposure);
 }
 
 [numthreads(8, 8, 1)]
@@ -489,7 +493,6 @@ void MainCS(uint3 id : SV_DispatchThreadID)
     bool inactive = ((grid.packed4 >> 20) & 1) && PassSrg::m_probeData.Load(int3(tile, 0)).w != 0.0f;
     if (inactive && id.x >= 32)
     {
-        PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, 1e27f);
         return;
     }
     float3 origin = SoftwareProbePosition(coords, grid);
@@ -499,19 +502,10 @@ void MainCS(uint3 id : SV_DispatchThreadID)
     SoftwareTraceHit hit = SoftwareTraceTransport(origin, direction, grid.maxDistance, seed);
     if (!hit.found)
     {
-        PassSrg::m_output[output] = float4(SoftwareEnvironment(direction), 1e27f);
+        PassSrg::m_output[output] = float4(SoftwareEnvironment(origin, direction), 1e27f);
         return;
     }
-    SoftwareBvhInstance instance = PassSrg::m_instances[hit.instanceIndex];
-    MeshInfo mesh = (MeshInfo)0;
-    GetMeshInfoEntry(int(instance.meshInfoIndex), mesh);
-    uint3 indices = LoadIndex(mesh, hit.triangleIndex);
-    float4x4 transform = SceneSrg::GetObjectToWorldMatrix(mesh.m_objectIdForTransform);
-    float3 a = mul(transform, float4(LoadPosition(mesh, indices.x), 1.0f)).xyz;
-    float3 b = mul(transform, float4(LoadPosition(mesh, indices.y), 1.0f)).xyz;
-    float3 c = mul(transform, float4(LoadPosition(mesh, indices.z), 1.0f)).xyz;
-    float3 geometricNormal = normalize(cross(b - a, c - a));
-    if (dot(geometricNormal, direction) > 0.0f)
+    if (hit.backFace)
     {
         PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, -0.2f * hit.distance);
         return;
@@ -521,24 +515,28 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, hit.distance);
         return;
     }
+    SoftwareBvhInstance instance = PassSrg::m_instances[hit.instanceIndex];
+    MeshInfo mesh = (MeshInfo)0;
+    GetMeshInfoEntry(int(instance.meshInfoIndex), mesh);
+    uint3 indices = LoadIndex(mesh, hit.triangleIndex);
     float3 barycentrics = float3(1.0f - hit.barycentrics.x - hit.barycentrics.y, hit.barycentrics);
     float3 localNormal = LoadNormal(mesh, indices.x) * barycentrics.x + LoadNormal(mesh, indices.y) * barycentrics.y + LoadNormal(mesh, indices.z) * barycentrics.z;
-    float3 normal = mul(SceneSrg::GetObjectToWorldInverseTransposeMatrix(mesh.m_objectIdForTransform), localNormal);
-    normal = dot(normal, normal) > 1e-12f ? normalize(normal) : geometricNormal;
-    if (dot(normal, geometricNormal) < 0.0f)
+    if (dot(localNormal, localNormal) < 1e-12f)
     {
-        normal = -normal;
+        float3 a = LoadPosition(mesh, indices.x);
+        localNormal = cross(LoadPosition(mesh, indices.y) - a, LoadPosition(mesh, indices.z) - a);
     }
+    float3 normal = normalize(mul(SceneSrg::GetObjectToWorldInverseTransposeMatrix(mesh.m_objectIdForTransform), localNormal));
     float2 uv = LoadUv0(mesh, indices.x) * barycentrics.x + LoadUv0(mesh, indices.y) * barycentrics.y + LoadUv0(mesh, indices.z) * barycentrics.z;
     float3 position = origin + direction * hit.distance;
     MaterialInfo material = SceneSrg::m_fallbackPBRMaterial[instance.meshInfoIndex];
     TextureData textureData = GetFallbackPBRMaterialTextureData(material, PassSrg::MaterialSampler, uv);
     // Atom has already applied the selected manual/tint/average-texture GI color and irradiance factor.
     // Multiplying the base-color texture here would tint that established contract twice.
-    float3 albedo = material.m_irradianceColor.rgb;
-    albedo = max(albedo, 0.0f) * (1.0f - textureData.m_metallic);
-    float3 irradiance = SoftwareDirectLighting(position, normal, geometricNormal, mesh.m_lightingChannels);
-    query.position = position;
+    float3 albedo = max(material.m_irradianceColor.rgb, 0.0f);
+    float3 irradiance = SoftwareDirectLighting(position, normal, grid, mesh.m_lightingChannels);
+    // The retained query applies the normal bias. Supply the view bias along the incoming probe ray.
+    query.position = position - direction * grid.viewBias;
     query.direction = normal;
     PassSrg::m_hitQueries[queryIndex] = query;
     // The integral remains in Atom's query shader. Keep only reflectance and the destination ray row here.

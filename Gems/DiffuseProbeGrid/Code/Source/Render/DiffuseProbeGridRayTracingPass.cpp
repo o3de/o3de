@@ -24,7 +24,6 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
-#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -107,7 +106,7 @@ namespace AZ
 
         bool DiffuseProbeGridRayTracingPass::IsEnabled() const
         {
-            if (!RenderPass::IsEnabled() || IsDiffuseProbeGridSoftwareTracing())
+            if (!RenderPass::IsEnabled())
             {
                 return false;
             }
@@ -125,7 +124,7 @@ namespace AZ
             }
 
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids().empty())
             {
                 // no diffuse probe grids
                 return false;
@@ -136,7 +135,7 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::BuildInternal()
         {
-            if (!IsDiffuseProbeGridSoftwareTracing() && RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
             {
                 CreateRayTracingPipelineState();
             }
@@ -176,10 +175,10 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids().size()));
 
             // TLAS
-            if (!diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids().empty())
             {
                 AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                 const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
@@ -202,7 +201,7 @@ namespace AZ
                 }
             }
 
-            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids())
             {
                 // grid data
                 {
@@ -280,7 +279,7 @@ namespace AZ
 
             if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() && rayTracingFeatureProcessor->GetSubMeshCount())
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids())
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
@@ -332,7 +331,7 @@ namespace AZ
                 // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
-                    AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+                    AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids()[index];
 
                     const RHI::DeviceShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),

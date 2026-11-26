@@ -32,8 +32,8 @@ void MainCS(uint3 id : SV_DispatchThreadID)
     }
     uint2 ray = uint2(id.x % PassSrg::m_rayCount, uint(surface.w) - 1);
     float4 radianceAndDistance = PassSrg::m_output[ray];
-    // The retained query returns irradiance and a separate volume support weight, as used by DiffuseComposite.
-    float4 indirect = PassSrg::m_indirect[id.x];
-    radianceAndDistance.rgb += surface.rgb * indirect.rgb * saturate(indirect.a) * 0.31830988618f;
+    // The query RGB already includes the volume weight. Match the hardware bounce's reflectance cap and 1/(2*pi) scale.
+    float3 irradiance = PassSrg::m_indirect[id.x].rgb;
+    radianceAndDistance.rgb += min(surface.rgb, 0.9f) * irradiance * 0.15915494309f;
     PassSrg::m_output[ray] = radianceAndDistance;
 }

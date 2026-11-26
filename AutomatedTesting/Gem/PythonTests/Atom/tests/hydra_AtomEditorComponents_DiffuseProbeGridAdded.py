@@ -94,7 +94,7 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
     Expected Behavior:
     The component can be added, used in game mode, hidden/shown, deleted, and has accurate required components.
     Creation and deletion undo/redo should also work.
-    We are intentionally not changing Editor/Runtime Mode since that requires a probe bake.
+    Exercise independent hardware and software selections. Baked and Auto Select require baked textures.
     We are not baking probes for gated AR because this requires file I/O that can be unreliable in batch/parallel tests.
 
     Test Steps:
@@ -192,6 +192,18 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
                 general.undo()
                 TestHelper.wait_for_condition(lambda: not diffuse_probe_grid_entity.has_component(shape), 1.0)
                 Report.result(Tests.diffuse_probe_grid_disabled, not diffuse_probe_grid_component.is_enabled())
+
+        # Selecting Software for authoring must preserve the runtime choice, and vice versa.
+        editor_mode = "Grid mode|Editor Mode"
+        runtime_mode = "Grid mode|Runtime Mode"
+        hardware, software = 0, 3
+        for selected, other in ((editor_mode, runtime_mode), (runtime_mode, editor_mode)):
+            diffuse_probe_grid_component.set_component_property_value(selected, software)
+            Report.result(
+                (f"Software selected independently for {selected}", f"Failed to select Software independently for {selected}"),
+                diffuse_probe_grid_component.get_component_property_value(selected) == software
+                and diffuse_probe_grid_component.get_component_property_value(other) == hardware)
+            diffuse_probe_grid_component.set_component_property_value(selected, hardware)
 
         # 8. Toggle 'Scrolling'
         diffuse_probe_grid_component.set_component_property_value(

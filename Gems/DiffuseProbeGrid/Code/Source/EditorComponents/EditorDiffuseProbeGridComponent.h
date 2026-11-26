@@ -83,7 +83,6 @@ namespace AZ
             // Button handler
             AZ::u32 BakeDiffuseProbeGrid();
             AZ::u32 GetBakeDiffuseProbeGridVisibilitySetting();
-            AZStd::string GetQualityModeLabel() const;
 
             // properties
             float m_probeSpacingX = DefaultDiffuseProbeGridSpacing;
@@ -98,7 +97,6 @@ namespace AZ
             uint32_t m_frameUpdateCount = 1;
             DiffuseProbeGridTransparencyMode m_transparencyMode = DefaultDiffuseProbeGridTransparencyMode;
             float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
-            DiffuseProbeGridMode m_qualityMode = DiffuseProbeGridMode::RealTimeHardware;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
             bool m_showVisualization = false;

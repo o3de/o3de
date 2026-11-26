@@ -13,7 +13,6 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridRenderPass.h>
-#include <Render/DiffuseProbeGridTracing.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 
 namespace AZ
@@ -93,10 +92,11 @@ namespace AZ
 
             Base::FrameBeginInternal(params);
 
-            // Process attachment readback for RealTime grids with an available tracing backend.
-            if (IsDiffuseProbeGridSoftwareTracing() || RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
+            // Bakes read from the grid's selected producer.
+            const bool supportsHardware = RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+                if (diffuseProbeGrid->UsesSoftwareTracing() || supportsHardware)
                 {
                     diffuseProbeGrid->GetTextureReadback().FrameBegin(params);
                 }
@@ -128,9 +128,8 @@ namespace AZ
                 // probe irradiance image
                 {
                     RHI::AttachmentId attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
-                        // import the irradiance image now, since it is baked and therefore was not imported during the raytracing pass
                         [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetIrradianceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeIrradianceImage");
                     }
@@ -146,9 +145,8 @@ namespace AZ
                 // probe distance image
                 {
                     RHI::AttachmentId attachmentId = diffuseProbeGrid->GetDistanceImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
-                        // import the distance image now, since it is baked and therefore was not imported during the raytracing pass
                         [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetDistanceImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeDistanceImage");
                     }
@@ -164,9 +162,8 @@ namespace AZ
                 // probe data image
                 {
                     RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
-                    if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked && !frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
+                    if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                     {
-                        // import the probe data image now, since it is baked and therefore was not imported during the raytracing pass
                         [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ProbeDataImage");
                     }
@@ -225,7 +222,7 @@ namespace AZ
             }
 
             // Check for RealTime mode without an available tracing backend.
-            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime && !IsDiffuseProbeGridSoftwareTracing() &&
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime && !diffuseProbeGrid->UsesSoftwareTracing() &&
                 (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices))
             {
                 return false;

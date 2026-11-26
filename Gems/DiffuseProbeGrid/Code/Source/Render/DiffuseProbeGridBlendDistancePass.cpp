@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
@@ -16,7 +15,6 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridBlendDistancePass.h>
-#include <Render/DiffuseProbeGridTracing.h>
 
 namespace AZ
 {
@@ -89,27 +87,8 @@ namespace AZ
                 return false;
             }
 
-            if (IsDiffuseProbeGridSoftwareTracing() && !IsDiffuseProbeGridSoftwareTracingReady(*this))
-            {
-                return false;
-            }
-
-            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            if (!IsDiffuseProbeGridSoftwareTracing() &&
-                (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount()))
-            {
-                // empty scene
-                return false;
-            }
-
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return false;
-            }
-
-            return true;
+            return diffuseProbeGridFeatureProcessor && !diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).empty();
         }
 
         void DiffuseProbeGridBlendDistancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -119,9 +98,9 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).size()));
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // grid data
                 {
@@ -170,7 +149,7 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
@@ -190,9 +169,10 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             // submit the DispatchItems for each DiffuseProbeGrid in this range
+            const auto& grids = diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this);
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
-                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = grids[index];
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
 
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBlendDistanceSrg()->GetRHIShaderResourceGroup();

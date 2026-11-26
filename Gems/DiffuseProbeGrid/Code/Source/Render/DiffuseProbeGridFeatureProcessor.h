@@ -63,6 +63,7 @@ namespace AZ
             void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) override;
 
             bool CanBakeTextures() override;
+            bool CanBakeTextures(const DiffuseProbeGridHandle& probeGrid) override;
             void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,
@@ -96,7 +97,10 @@ namespace AZ
             DiffuseProbeGridVector& GetVisibleProbeGrids() { return m_visibleDiffuseProbeGrids; }
 
             // retrieve the side list of probe grids that are real-time (raytraced) and visible (on screen)
-            DiffuseProbeGridVector& GetVisibleRealTimeProbeGrids() { return m_visibleRealTimeDiffuseProbeGrids; }
+            const DiffuseProbeGridVector& GetVisibleHardwareProbeGrids() const { return m_visibleHardwareProbeGrids; }
+            const DiffuseProbeGridVector& GetVisibleSoftwareProbeGrids() const { return m_visibleSoftwareProbeGrids; }
+            //! Visible grids with a ray-data producer ready in this pipeline.
+            const DiffuseProbeGridVector& GetProbeGridsForUpdate(const RPI::Pass& consumer) const;
 
             // returns the RayTracingBufferPool used for the DiffuseProbeGrid visualization
             RHI::RayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
@@ -173,6 +177,8 @@ namespace AZ
 
             // side list of diffuse probe grids that are in real-time mode and visible (subset of m_realTimeDiffuseProbeGrids)
             DiffuseProbeGridVector m_visibleRealTimeDiffuseProbeGrids;
+            DiffuseProbeGridVector m_visibleHardwareProbeGrids;
+            DiffuseProbeGridVector m_visibleSoftwareProbeGrids;
 
             // position structure for the box vertices
             struct Position
@@ -237,7 +243,6 @@ namespace AZ
 
             // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
             SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
-            DiffuseProbeGridMode m_qualityMode = DiffuseProbeGridMode::RealTimeHardware;
             bool m_softwareResourcesActive = false;
             bool m_lowestLodSkinningEnabled = false;
             bool m_ssrRayTracingEnabled = false;
