@@ -81,7 +81,7 @@ namespace EMotionFX
 
         // verify if we actually are dealing with a valid actor file
         FileFormat::Actor_Header  header;
-        if (f->Read(&header, sizeof(FileFormat::Actor_Header)) == 0)
+        if (f->Read(&header, sizeof(FileFormat::Actor_Header)) != sizeof(FileFormat::Actor_Header))
         {
             MCore::LogError("Failed to read the actor file header!");
             return false;
@@ -120,7 +120,7 @@ namespace EMotionFX
 
         // verify if we actually are dealing with a valid actor file
         FileFormat::Motion_Header  header;
-        if (f->Read(&header, sizeof(FileFormat::Motion_Header)) == 0)
+        if (f->Read(&header, sizeof(FileFormat::Motion_Header)) != sizeof(FileFormat::Motion_Header))
         {
             MCore::LogError("Failed to read the motion file header!");
             return false;
@@ -157,7 +157,7 @@ namespace EMotionFX
 
         // verify if we actually are dealing with a valid actor file
         FileFormat::NodeMap_Header  header;
-        if (f->Read(&header, sizeof(FileFormat::NodeMap_Header)) == 0)
+        if (f->Read(&header, sizeof(FileFormat::NodeMap_Header)) != sizeof(FileFormat::NodeMap_Header))
         {
             MCore::LogError("Failed to read the node map file header!");
             return false;
@@ -670,10 +670,11 @@ namespace EMotionFX
 
         // load the file header
         FileFormat::NodeMap_Header fileHeader;
-        f->Read(&fileHeader, sizeof(FileFormat::NodeMap_Header));
-        if (fileHeader.m_fourCc[0] != 'N' || fileHeader.m_fourCc[1] != 'O' || fileHeader.m_fourCc[2] != 'M' || fileHeader.m_fourCc[3] != 'P')
+        if (f->Read(&fileHeader, sizeof(FileFormat::NodeMap_Header)) != sizeof(FileFormat::NodeMap_Header) ||
+            fileHeader.m_fourCc[0] != 'N' || fileHeader.m_fourCc[1] != 'O' || fileHeader.m_fourCc[2] != 'M' || fileHeader.m_fourCc[3] != 'P')
         {
             MCore::LogError("The node map file is not a valid node map file.");
+            ResetSharedData(sharedData);
             f->Close();
             return nullptr;
         }
@@ -849,7 +850,7 @@ namespace EMotionFX
 
         // try to read the chunk header
         FileFormat::FileChunk chunk;
-        if (!file->Read(&chunk, sizeof(FileFormat::FileChunk)))
+        if (file->Read(&chunk, sizeof(FileFormat::FileChunk)) != sizeof(FileFormat::FileChunk))
         {
             return false; // failed reading chunk
         }
@@ -869,9 +870,7 @@ namespace EMotionFX
             {
                 MCore::LogError("Importer::ProcessChunk() - Unknown chunk (ID=%d  Size=%d bytes Version=%d), skipping...", chunk.m_chunkId, chunk.m_sizeInBytes, chunk.m_version);
             }
-            file->Forward(chunk.m_sizeInBytes);
-
-            return true;
+            return file->Forward(chunk.m_sizeInBytes);
         }
 
         // get some shortcuts
@@ -920,8 +919,7 @@ namespace EMotionFX
         // if we want to skip this chunk
         if (mustSkip)
         {
-            file->Forward(chunk.m_sizeInBytes);
-            return true;
+            return file->Forward(chunk.m_sizeInBytes);
         }
 
         // try to process the chunk
@@ -1069,9 +1067,17 @@ namespace EMotionFX
 
         // as we seeked to the end of the header and we know the second chunk always is the time stamp, we can read this now
         FileFormat::FileChunk fileChunk;
-        file.Read(&fileChunk, sizeof(FileFormat::FileChunk));
+        if (file.Read(&fileChunk, sizeof(FileFormat::FileChunk)) != sizeof(FileFormat::FileChunk))
+        {
+            file.Close();
+            return false;
+        }
         FileFormat::FileTime timeChunk;
-        file.Read(&timeChunk, sizeof(FileFormat::FileTime));
+        if (file.Read(&timeChunk, sizeof(FileFormat::FileTime)) != sizeof(FileFormat::FileTime))
+        {
+            file.Close();
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileChunk.m_chunkId, endianType);
@@ -1102,9 +1108,17 @@ namespace EMotionFX
 
         // as we seeked to the end of the header and we know the second chunk always is the time stamp, we can read this now
         FileFormat::FileChunk fileChunk;
-        file.Read(&fileChunk, sizeof(FileFormat::FileChunk));
+        if (file.Read(&fileChunk, sizeof(FileFormat::FileChunk)) != sizeof(FileFormat::FileChunk))
+        {
+            file.Close();
+            return false;
+        }
         FileFormat::FileTime timeChunk;
-        file.Read(&timeChunk, sizeof(FileFormat::FileTime));
+        if (file.Read(&timeChunk, sizeof(FileFormat::FileTime)) != sizeof(FileFormat::FileTime))
+        {
+            file.Close();
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileChunk.m_chunkId, endianType);

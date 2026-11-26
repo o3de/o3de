@@ -535,7 +535,7 @@ namespace MCore
                             hadError = true;
                             break;
                         }
-                        if (relativeIndex == 0)
+                        if (relativeIndex <= 0)
                         {
                             MCore::LogError("Execution of command '%s' failed, command trying to access its own result", commandString.c_str());
                             hadError = true;
@@ -769,7 +769,7 @@ namespace MCore
     bool CommandManager::Undo(AZStd::string& outCommandResult)
     {
         // check if we can undo
-        if (m_commandHistory.empty() && m_historyIndex >= 0)
+        if (m_commandHistory.empty() || m_historyIndex < 0)
         {
             outCommandResult = "Cannot undo command. The command history is empty";
             return false;
@@ -867,6 +867,12 @@ namespace MCore
     // redo the last undoed command
     bool CommandManager::Redo(AZStd::string& outCommandResult)
     {
+        if (m_commandHistory.empty() || m_historyIndex + 1 >= static_cast<ptrdiff_t>(m_commandHistory.size()))
+        {
+            outCommandResult = "Cannot redo command. Already at the top of the command history";
+            return false;
+        }
+
         // get the last called command from the command history
         const CommandHistoryEntry& lastEntry = m_commandHistory[m_historyIndex + 1];
 
@@ -1132,7 +1138,9 @@ namespace MCore
         // print the command history entries
         for (size_t i = 0; i < numHistoryEntries; ++i)
         {
-            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%zu", i, m_commandHistory[i].m_executedCommand->GetName(), m_commandHistory[i].m_parameters.GetNumParameters());
+            const CommandHistoryEntry& entry = m_commandHistory[i];
+            const char* entryName = entry.m_executedCommand ? entry.m_executedCommand->GetName() : (entry.m_commandGroup ? entry.m_commandGroup->GetGroupName() : entry.ToString().c_str());
+            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%zu", i, entryName, entry.m_parameters.GetNumParameters());
             if (i == static_cast<size_t>(m_historyIndex))
             {
                 LogDetailedInfo("-> %s", text.c_str());

@@ -288,21 +288,49 @@ namespace EMotionFX
         // find the helper data
         SharedData* data                = Importer::FindSharedData(sharedData, SharedHelperData::TYPE_ID);
         SharedHelperData* helperData    = static_cast<SharedHelperData*>(data);
+        if (!helperData)
+        {
+            return "";
+        }
 
         // get the size of the string (number of characters)
-        uint32 numCharacters;
-        file->Read(&numCharacters, sizeof(uint32));
+        uint32 numCharacters = 0;
+        if (file->Read(&numCharacters, sizeof(uint32)) != sizeof(uint32))
+        {
+            if (helperData->m_stringStorage && helperData->m_stringStorageSize > 0)
+            {
+                helperData->m_stringStorage[0] = '\0';
+                return helperData->m_stringStorage;
+            }
+            return "";
+        }
         MCore::Endian::ConvertUnsignedInt32(&numCharacters, endianType);
 
-        // if we need to enlarge the buffer
-        if (helperData->m_stringStorageSize < numCharacters + 1)
+        if (numCharacters == UINT32_MAX)
         {
-            helperData->m_stringStorageSize = numCharacters + 1;
+            if (helperData->m_stringStorage && helperData->m_stringStorageSize > 0)
+            {
+                helperData->m_stringStorage[0] = '\0';
+                return helperData->m_stringStorage;
+            }
+            return "";
+        }
+
+        // if we need to enlarge the buffer
+        const size_t requiredSize = static_cast<size_t>(numCharacters) + 1;
+        if (helperData->m_stringStorageSize < requiredSize)
+        {
+            helperData->m_stringStorageSize = requiredSize;
             helperData->m_stringStorage = (char*)MCore::Realloc(helperData->m_stringStorage, helperData->m_stringStorageSize, EMFX_MEMCATEGORY_IMPORTER);
         }
 
         // receive the actual string
-        file->Read(helperData->m_stringStorage, numCharacters * sizeof(uint8));
+        const size_t bytesRead = file->Read(helperData->m_stringStorage, numCharacters * sizeof(uint8));
+        if (bytesRead != numCharacters)
+        {
+            helperData->m_stringStorage[bytesRead < requiredSize ? bytesRead : 0] = '\0';
+            return helperData->m_stringStorage;
+        }
         helperData->m_stringStorage[numCharacters] = '\0';
 
         return helperData->m_stringStorage;
@@ -361,7 +389,10 @@ namespace EMotionFX
         Skeleton* skeleton = actor->GetSkeleton();
 
         FileFormat::Actor_Nodes2 nodesHeader;
-        file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes2));
+        if (file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes2)) != sizeof(FileFormat::Actor_Nodes2))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&nodesHeader.m_numNodes, endianType);
@@ -386,7 +417,10 @@ namespace EMotionFX
         {
             // read the node header
             FileFormat::Actor_Node2 nodeChunk;
-            file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node2));
+            if (file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node2)) != sizeof(FileFormat::Actor_Node2))
+            {
+                return false;
+            }
 
             // read the node name
             const char* nodeName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
@@ -400,7 +434,7 @@ namespace EMotionFX
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("   + Node name = '%s'", nodeName);
-                MCore::LogDetailedInfo("     - Parent = '%s'", (nodeChunk.m_parentIndex != MCORE_INVALIDINDEX32) ? skeleton->GetNode(nodeChunk.m_parentIndex)->GetName() : "");
+                MCore::LogDetailedInfo("     - Parent = '%s'", (nodeChunk.m_parentIndex != MCORE_INVALIDINDEX32 && nodeChunk.m_parentIndex < n) ? skeleton->GetNode(nodeChunk.m_parentIndex)->GetName() : "");
                 MCore::LogDetailedInfo("     - NumChild Nodes = %d", nodeChunk.m_numChilds);
             }
 
@@ -505,7 +539,10 @@ namespace EMotionFX
 
         // read the header
         FileFormat::Motion_SubMotions subMotionsHeader;
-        file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_SubMotions));
+        if (file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_SubMotions)) != sizeof(FileFormat::Motion_SubMotions))
+        {
+            return false;
+        }
         MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.m_numSubMotions, endianType);
 
         // Create a uniform motion data.
@@ -517,7 +554,10 @@ namespace EMotionFX
         for (uint32 s = 0; s < subMotionsHeader.m_numSubMotions; ++s)
         {
             FileFormat::Motion_SkeletalSubMotion fileSubMotion;
-            file->Read(&fileSubMotion, sizeof(FileFormat::Motion_SkeletalSubMotion));
+            if (file->Read(&fileSubMotion, sizeof(FileFormat::Motion_SkeletalSubMotion)) != sizeof(FileFormat::Motion_SkeletalSubMotion))
+            {
+                return false;
+            }
 
             // convert endian
             MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.m_numPosKeys, endianType);
@@ -600,7 +640,10 @@ namespace EMotionFX
                 for (i = 0; i < fileSubMotion.m_numPosKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
-                    file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
+                    if (file->Read(&key, sizeof(FileFormat::Motion_Vector3Key)) != sizeof(FileFormat::Motion_Vector3Key))
+                    {
+                        return false;
+                    }
 
                     MCore::Endian::ConvertFloat(&key.m_time, endianType);
                     AZ::Vector3 pos(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z);
@@ -617,7 +660,10 @@ namespace EMotionFX
                 for (i = 0; i < fileSubMotion.m_numRotKeys; ++i)
                 {
                     FileFormat::Motion_16BitQuaternionKey key;
-                    file->Read(&key, sizeof(FileFormat::Motion_16BitQuaternionKey));
+                    if (file->Read(&key, sizeof(FileFormat::Motion_16BitQuaternionKey)) != sizeof(FileFormat::Motion_16BitQuaternionKey))
+                    {
+                        return false;
+                    }
 
                     MCore::Endian::ConvertFloat(&key.m_time, endianType);
                     MCore::Compressed16BitQuaternion rot(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z, key.m_value.m_w);
@@ -636,7 +682,10 @@ namespace EMotionFX
                 for (i = 0; i < fileSubMotion.m_numScaleKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
-                    file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
+                    if (file->Read(&key, sizeof(FileFormat::Motion_Vector3Key)) != sizeof(FileFormat::Motion_Vector3Key))
+                    {
+                        return false;
+                    }
 
                     MCore::Endian::ConvertFloat(&key.m_time, endianType);
                     AZ::Vector3 scale(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z);
@@ -652,7 +701,10 @@ namespace EMotionFX
                 for (i = 0; i < fileSubMotion.m_numScaleKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
-                    file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
+                    if (file->Read(&key, sizeof(FileFormat::Motion_Vector3Key)) != sizeof(FileFormat::Motion_Vector3Key))
+                    {
+                        return false;
+                    }
                 }
             }
     #endif
@@ -674,7 +726,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Motion_Info fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Motion_Info));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Motion_Info)) != sizeof(FileFormat::Motion_Info))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionMask, endianType);
@@ -713,7 +768,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Motion_Info2 fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Motion_Info2));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Motion_Info2)) != sizeof(FileFormat::Motion_Info2))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionFlags, endianType);
@@ -747,7 +805,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Motion_Info3 fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Motion_Info3));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Motion_Info3)) != sizeof(FileFormat::Motion_Info3))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionFlags, endianType);
@@ -780,13 +841,19 @@ namespace EMotionFX
         const MCore::Endian::EEndianType endianType = importParams.m_endianType;
         Actor* actor = importParams.m_actor;
 
-        AZ::u32 bufferSize;
-        file->Read(&bufferSize, sizeof(AZ::u32));
+        AZ::u32 bufferSize = 0;
+        if (file->Read(&bufferSize, sizeof(AZ::u32)) != sizeof(AZ::u32))
+        {
+            return false;
+        }
         MCore::Endian::ConvertUnsignedInt32(&bufferSize, endianType);
 
         AZStd::vector<AZ::u8> buffer;
         buffer.resize(bufferSize);
-        file->Read(&buffer[0], bufferSize);
+        if (bufferSize > 0 && file->Read(buffer.data(), bufferSize) != bufferSize)
+        {
+            return false;
+        }
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -818,13 +885,19 @@ namespace EMotionFX
         const MCore::Endian::EEndianType endianType = importParams.m_endianType;
         Actor* actor = importParams.m_actor;
 
-        AZ::u32 bufferSize;
-        file->Read(&bufferSize, sizeof(AZ::u32));
+        AZ::u32 bufferSize = 0;
+        if (file->Read(&bufferSize, sizeof(AZ::u32)) != sizeof(AZ::u32))
+        {
+            return false;
+        }
         MCore::Endian::ConvertUnsignedInt32(&bufferSize, endianType);
 
         AZStd::vector<AZ::u8> buffer;
         buffer.resize(bufferSize);
-        file->Read(&buffer[0], bufferSize);
+        if (bufferSize > 0 && file->Read(buffer.data(), bufferSize) != bufferSize)
+        {
+            return false;
+        }
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -853,7 +926,10 @@ namespace EMotionFX
         AZ_Assert(actor, "Actor needs to be valid.");
 
         EMotionFX::FileFormat::Actor_MeshAsset meshAssetChunk;
-        file->Read(&meshAssetChunk, sizeof(FileFormat::Actor_MeshAsset));
+        if (file->Read(&meshAssetChunk, sizeof(FileFormat::Actor_MeshAsset)) != sizeof(FileFormat::Actor_MeshAsset))
+        {
+            return false;
+        }
         const char* meshAssetIdString = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
         const AZ::Data::AssetId meshAssetId = AZ::Data::AssetId::CreateString(meshAssetIdString);
         if (meshAssetId.IsValid())
@@ -881,7 +957,10 @@ namespace EMotionFX
 
         // read the motion event table header
         FileFormat::FileMotionEventTable fileEventTable;
-        file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTable));
+        if (file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTable)) != sizeof(FileFormat::FileMotionEventTable))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_numTracks, endianType);
@@ -905,7 +984,10 @@ namespace EMotionFX
         {
             // read the motion event table header
             FileFormat::FileMotionEventTrack fileTrack;
-            file->Read(&fileTrack, sizeof(FileFormat::FileMotionEventTrack));
+            if (file->Read(&fileTrack, sizeof(FileFormat::FileMotionEventTrack)) != sizeof(FileFormat::FileMotionEventTrack))
+            {
+                return false;
+            }
 
             // read the track name
             trackName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
@@ -989,7 +1071,10 @@ namespace EMotionFX
             {
                 // read the event header
                 FileFormat::FileMotionEvent fileEvent;
-                file->Read(&fileEvent, sizeof(FileFormat::FileMotionEvent));
+                if (file->Read(&fileEvent, sizeof(FileFormat::FileMotionEvent)) != sizeof(FileFormat::FileMotionEvent))
+                {
+                    return false;
+                }
 
                 // convert endian
                 MCore::Endian::ConvertUnsignedInt32(&fileEvent.m_eventTypeIndex, endianType);
@@ -998,10 +1083,11 @@ namespace EMotionFX
                 MCore::Endian::ConvertFloat(&fileEvent.m_startTime, endianType);
                 MCore::Endian::ConvertFloat(&fileEvent.m_endTime, endianType);
 
-                // print motion event information
-                if (GetLogging())
+                if ((fileEvent.m_eventTypeIndex != MCORE_INVALIDINDEX32 && fileEvent.m_eventTypeIndex >= typeStrings.size()) ||
+                    fileEvent.m_paramIndex >= paramStrings.size() ||
+                    (fileEvent.m_mirrorTypeIndex != MCORE_INVALIDINDEX32 && fileEvent.m_mirrorTypeIndex >= mirrorTypeStrings.size()))
                 {
-                    MCore::LogDetailedInfo("     [%d] StartTime = %f  -  EndTime = %f  -  Type = '%s'  -  Param = '%s'  -  Mirror = '%s'", i, fileEvent.m_startTime, fileEvent.m_endTime, typeStrings[fileEvent.m_eventTypeIndex].c_str(), paramStrings[fileEvent.m_paramIndex].c_str(), mirrorTypeStrings[fileEvent.m_mirrorTypeIndex].c_str());
+                    return false;
                 }
 
                 const AZStd::string eventTypeName = fileEvent.m_eventTypeIndex != MCORE_INVALIDINDEX32 ?
@@ -1009,6 +1095,12 @@ namespace EMotionFX
                 const AZStd::string mirrorTypeName = fileEvent.m_mirrorTypeIndex != MCORE_INVALIDINDEX32 ?
                     mirrorTypeStrings[fileEvent.m_mirrorTypeIndex] : "";
                 const AZStd::string params = paramStrings[fileEvent.m_paramIndex];
+
+                // print motion event information
+                if (GetLogging())
+                {
+                    MCore::LogDetailedInfo("     [%d] StartTime = %f  -  EndTime = %f  -  Type = '%s'  -  Param = '%s'  -  Mirror = '%s'", i, fileEvent.m_startTime, fileEvent.m_endTime, eventTypeName.c_str(), params.c_str(), mirrorTypeName.c_str());
+                }
 
                 // add the event
                 track->AddEvent(
@@ -1039,7 +1131,11 @@ namespace EMotionFX
 
         // read the motion event table header
         FileFormat::FileMotionEventTableSerialized fileEventTable;
-        file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTableSerialized));
+        if (file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTableSerialized)) != sizeof(FileFormat::FileMotionEventTableSerialized))
+        {
+            return false;
+        }
+        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_size, importParams.m_endianType);
 
         if (GetLogging())
         {
@@ -1048,9 +1144,12 @@ namespace EMotionFX
         }
 
         AZStd::vector<char> buffer(fileEventTable.m_size);
-        file->Read(&buffer[0], fileEventTable.m_size);
+        if (fileEventTable.m_size > 0 && file->Read(buffer.data(), fileEventTable.m_size) != fileEventTable.m_size)
+        {
+            return false;
+        }
 
-        auto motionEventTable = AZStd::unique_ptr<MotionEventTable>(AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(&buffer[0], buffer.size(), context));
+        auto motionEventTable = AZStd::unique_ptr<MotionEventTable>(AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(buffer.data(), buffer.size(), context));
         if (motionEventTable)
         {
             motion->SetEventTable(AZStd::move(motionEventTable));
@@ -1069,7 +1168,11 @@ namespace EMotionFX
         MCORE_ASSERT(motion);
 
         FileFormat::FileMotionEventTableSerialized fileEventTable;
-        file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTableSerialized));
+        if (file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTableSerialized)) != sizeof(FileFormat::FileMotionEventTableSerialized))
+        {
+            return false;
+        }
+        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_size, importParams.m_endianType);
 
         if (GetLogging())
         {
@@ -1078,8 +1181,11 @@ namespace EMotionFX
         }
 
         AZStd::vector<char> buffer(fileEventTable.m_size);
-        file->Read(&buffer[0], fileEventTable.m_size);
-        AZStd::string_view bufferStringView(&buffer[0], buffer.size());
+        if (fileEventTable.m_size > 0 && file->Read(buffer.data(), fileEventTable.m_size) != fileEventTable.m_size)
+        {
+            return false;
+        }
+        AZStd::string_view bufferStringView(buffer.data(), buffer.size());
 
         auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(bufferStringView);
         AZStd::string errorMsg;
@@ -1123,7 +1229,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Actor_Info fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Actor_Info));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Actor_Info)) != sizeof(FileFormat::Actor_Info))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
@@ -1178,7 +1287,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Actor_Info2 fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Actor_Info2));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Actor_Info2)) != sizeof(FileFormat::Actor_Info2))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
@@ -1231,7 +1343,10 @@ namespace EMotionFX
 
         // read the chunk
         FileFormat::Actor_Info3 fileInformation;
-        file->Read(&fileInformation, sizeof(FileFormat::Actor_Info3));
+        if (file->Read(&fileInformation, sizeof(FileFormat::Actor_Info3)) != sizeof(FileFormat::Actor_Info3))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
@@ -1289,7 +1404,10 @@ namespace EMotionFX
 
         // read the expression part from disk
         FileFormat::Actor_MorphTarget morphTargetChunk;
-        file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
+        if (file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget)) != sizeof(FileFormat::Actor_MorphTarget))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
@@ -1343,7 +1461,10 @@ namespace EMotionFX
         {
             // read the facial transformation from disk
             FileFormat::Actor_MorphTargetTransform transformChunk;
-            file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
+            if (file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform)) != sizeof(FileFormat::Actor_MorphTargetTransform))
+            {
+                return false;
+            }
 
             // create Core objects from the data
             AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
@@ -1357,6 +1478,11 @@ namespace EMotionFX
             ConvertQuaternion(&rot, endianType);
             ConvertQuaternion(&scaleRot, endianType);
             MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
+
+            if (transformChunk.m_nodeIndex >= skeleton->GetNumNodes())
+            {
+                return false;
+            }
 
             // create our transformation
             MorphTargetStandard::Transformation transform;
@@ -1407,8 +1533,11 @@ namespace EMotionFX
         MCORE_ASSERT(actor);
 
         // read the number of groups to follow
-        uint16 numGroups;
-        file->Read(&numGroups, sizeof(uint16));
+        uint16 numGroups = 0;
+        if (file->Read(&numGroups, sizeof(uint16)) != sizeof(uint16))
+        {
+            return false;
+        }
         MCore::Endian::ConvertUnsignedInt16(&numGroups, endianType);
 
         if (GetLogging())
@@ -1421,7 +1550,10 @@ namespace EMotionFX
         {
             // read the group header
             FileFormat::Actor_NodeGroup fileGroup;
-            file->Read(&fileGroup, sizeof(FileFormat::Actor_NodeGroup));
+            if (file->Read(&fileGroup, sizeof(FileFormat::Actor_NodeGroup)) != sizeof(FileFormat::Actor_NodeGroup))
+            {
+                return false;
+            }
             MCore::Endian::ConvertUnsignedInt16(&fileGroup.m_numNodes, endianType);
 
             // read the group name
@@ -1439,10 +1571,14 @@ namespace EMotionFX
             NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.m_numNodes, fileGroup.m_disabledOnDefault ? false : true);
 
             // read the node numbers
-            uint16 nodeIndex;
+            uint16 nodeIndex = 0;
             for (uint16 n = 0; n < fileGroup.m_numNodes; ++n)
             {
-                file->Read(&nodeIndex, sizeof(uint16));
+                if (file->Read(&nodeIndex, sizeof(uint16)) != sizeof(uint16))
+                {
+                    delete newGroup;
+                    return false;
+                }
                 MCore::Endian::ConvertUnsignedInt16(&nodeIndex, endianType);
                 newGroup->SetNode(n, nodeIndex);
             }
@@ -1468,7 +1604,10 @@ namespace EMotionFX
         AZ_Assert(motionData, "Expected motion data to be of non-uniform motion data type.");
 
         FileFormat::Motion_MorphSubMotions subMotionsHeader;
-        file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_MorphSubMotions));
+        if (file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_MorphSubMotions)) != sizeof(FileFormat::Motion_MorphSubMotions))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.m_numSubMotions, endianType);
@@ -1482,7 +1621,10 @@ namespace EMotionFX
         {
             // get the  morph motion part
             FileFormat::Motion_MorphSubMotion morphSubMotionChunk;
-            file->Read(&morphSubMotionChunk, sizeof(FileFormat::Motion_MorphSubMotion));
+            if (file->Read(&morphSubMotionChunk, sizeof(FileFormat::Motion_MorphSubMotion)) != sizeof(FileFormat::Motion_MorphSubMotion))
+            {
+                return false;
+            }
 
             // convert endian
             MCore::Endian::ConvertUnsignedInt32(&morphSubMotionChunk.m_numKeys, endianType);
@@ -1513,7 +1655,10 @@ namespace EMotionFX
             {
                 FileFormat::Motion_UnsignedShortKey keyframeChunk;
 
-                file->Read(&keyframeChunk, sizeof(FileFormat::Motion_UnsignedShortKey));
+                if (file->Read(&keyframeChunk, sizeof(FileFormat::Motion_UnsignedShortKey)) != sizeof(FileFormat::Motion_UnsignedShortKey))
+                {
+                    return false;
+                }
                 MCore::Endian::ConvertFloat(&keyframeChunk.m_time, endianType);
                 MCore::Endian::ConvertUnsignedInt16(&keyframeChunk.m_value, endianType);
 
@@ -1540,7 +1685,10 @@ namespace EMotionFX
 
         // read the header
         FileFormat::Actor_MorphTargets morphTargetsHeader;
-        file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets));
+        if (file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets)) != sizeof(FileFormat::Actor_MorphTargets))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_numMorphTargets, endianType);
@@ -1570,7 +1718,10 @@ namespace EMotionFX
         {
             // read the expression part from disk
             FileFormat::Actor_MorphTarget morphTargetChunk;
-            file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
+            if (file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget)) != sizeof(FileFormat::Actor_MorphTarget))
+            {
+                return false;
+            }
 
             // convert endian
             MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
@@ -1581,6 +1732,10 @@ namespace EMotionFX
 
             // make sure they match
             MCORE_ASSERT(morphTargetChunk.m_lod == morphTargetsHeader.m_lod);
+            if (morphTargetChunk.m_lod != morphTargetsHeader.m_lod)
+            {
+                return false;
+            }
 
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
@@ -1617,7 +1772,10 @@ namespace EMotionFX
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;
-                file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
+                if (file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform)) != sizeof(FileFormat::Actor_MorphTargetTransform))
+                {
+                    return false;
+                }
 
                 // create Core objects from the data
                 AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
@@ -1631,6 +1789,11 @@ namespace EMotionFX
                 ConvertQuaternion(&rot, endianType);
                 ConvertQuaternion(&scaleRot, endianType);
                 MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
+
+                if (transformChunk.m_nodeIndex >= skeleton->GetNumNodes())
+                {
+                    return false;
+                }
 
                 // create our transformation
                 MorphTargetStandard::Transformation transform;
@@ -1684,7 +1847,10 @@ namespace EMotionFX
 
         // read the header
         FileFormat::Actor_MorphTargets morphTargetsHeader;
-        file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets));
+        if (file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets)) != sizeof(FileFormat::Actor_MorphTargets))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_numMorphTargets, endianType);
@@ -1714,7 +1880,10 @@ namespace EMotionFX
         {
             // read the expression part from disk
             FileFormat::Actor_MorphTarget morphTargetChunk;
-            file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
+            if (file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget)) != sizeof(FileFormat::Actor_MorphTarget))
+            {
+                return false;
+            }
 
             // convert endian
             MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
@@ -1725,6 +1894,10 @@ namespace EMotionFX
 
             // make sure they match
             MCORE_ASSERT(morphTargetChunk.m_lod == morphTargetsHeader.m_lod);
+            if (morphTargetChunk.m_lod != morphTargetsHeader.m_lod)
+            {
+                return false;
+            }
 
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
@@ -1761,7 +1934,10 @@ namespace EMotionFX
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;
-                file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
+                if (file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform)) != sizeof(FileFormat::Actor_MorphTargetTransform))
+                {
+                    return false;
+                }
 
                 // create Core objects from the data
                 AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
@@ -1775,6 +1951,11 @@ namespace EMotionFX
                 ConvertQuaternion(&rot, endianType);
                 ConvertQuaternion(&scaleRot, endianType);
                 MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
+
+                if (transformChunk.m_nodeIndex >= skeleton->GetNumNodes())
+                {
+                    return false;
+                }
 
                 // create our transformation
                 MorphTargetStandard::Transformation transform;
@@ -1830,7 +2011,10 @@ namespace EMotionFX
 
         // read the file data
         FileFormat::Actor_NodeMotionSources2 nodeMotionSourcesChunk;
-        file->Read(&nodeMotionSourcesChunk, sizeof(FileFormat::Actor_NodeMotionSources2));
+        if (file->Read(&nodeMotionSourcesChunk, sizeof(FileFormat::Actor_NodeMotionSources2)) != sizeof(FileFormat::Actor_NodeMotionSources2))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&nodeMotionSourcesChunk.m_numNodes, endianType);
@@ -1843,30 +2027,47 @@ namespace EMotionFX
         // allocate the node motion sources array and recheck the number of nodes with the
         // information given in this chunk
         MCORE_ASSERT(actor->GetNumNodes() == numNodes);
+        if (actor->GetNumNodes() != numNodes)
+        {
+            return false;
+        }
         actor->AllocateNodeMirrorInfos();
 
         // read all node motion sources and convert endian
         for (i = 0; i < numNodes; ++i)
         {
-            uint16 sourceNode;
-            file->Read(&sourceNode, sizeof(uint16));
+            uint16 sourceNode = 0;
+            if (file->Read(&sourceNode, sizeof(uint16)) != sizeof(uint16))
+            {
+                return false;
+            }
             MCore::Endian::ConvertUnsignedInt16(&sourceNode, endianType);
+            if (sourceNode != MCORE_INVALIDINDEX16 && sourceNode >= numNodes)
+            {
+                return false;
+            }
             actor->GetNodeMirrorInfo(i).m_sourceNode = sourceNode;
         }
 
         // read all axes
         for (i = 0; i < numNodes; ++i)
         {
-            uint8 axis;
-            file->Read(&axis, sizeof(uint8));
+            uint8 axis = 0;
+            if (file->Read(&axis, sizeof(uint8)) != sizeof(uint8))
+            {
+                return false;
+            }
             actor->GetNodeMirrorInfo(i).m_axis = axis;
         }
 
         // read all flags
         for (i = 0; i < numNodes; ++i)
         {
-            uint8 flags;
-            file->Read(&flags, sizeof(uint8));
+            uint8 flags = 0;
+            if (file->Read(&flags, sizeof(uint8)) != sizeof(uint8))
+            {
+                return false;
+            }
             actor->GetNodeMirrorInfo(i).m_flags = flags;
         }
 
@@ -1899,7 +2100,10 @@ namespace EMotionFX
 
         // read the file data
         FileFormat::Actor_AttachmentNodes attachmentNodesChunk;
-        file->Read(&attachmentNodesChunk, sizeof(FileFormat::Actor_AttachmentNodes));
+        if (file->Read(&attachmentNodesChunk, sizeof(FileFormat::Actor_AttachmentNodes)) != sizeof(FileFormat::Actor_AttachmentNodes))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&attachmentNodesChunk.m_numNodes, endianType);
@@ -1909,12 +2113,19 @@ namespace EMotionFX
         for (uint32 i = 0; i < numAttachmentNodes; ++i)
         {
             // get the attachment node index and endian convert it
-            uint16 nodeNr;
-            file->Read(&nodeNr, sizeof(uint16));
+            uint16 nodeNr = 0;
+            if (file->Read(&nodeNr, sizeof(uint16)) != sizeof(uint16))
+            {
+                return false;
+            }
             MCore::Endian::ConvertUnsignedInt16(&nodeNr, endianType);
 
             // get the attachment node from the actor
             MCORE_ASSERT(nodeNr < actor->GetNumNodes());
+            if (nodeNr >= actor->GetNumNodes())
+            {
+                return false;
+            }
             Node* node = skeleton->GetNode(nodeNr);
 
             // enable the attachment node flag
@@ -1954,7 +2165,10 @@ namespace EMotionFX
 
         // read the header
         FileFormat::NodeMapChunk nodeMapChunk;
-        file->Read(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk));
+        if (file->Read(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk)) != sizeof(FileFormat::NodeMapChunk))
+        {
+            return false;
+        }
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&nodeMapChunk.m_numEntries, endianType);
@@ -2002,7 +2216,7 @@ namespace EMotionFX
     {
         // Read the header.
         FileFormat::Motion_MotionData dataHeader;
-        if (file->Read(&dataHeader, sizeof(FileFormat::Motion_MotionData)) == 0)
+        if (file->Read(&dataHeader, sizeof(FileFormat::Motion_MotionData)) != sizeof(FileFormat::Motion_MotionData))
         {
             return false;
         }
@@ -2035,6 +2249,7 @@ namespace EMotionFX
         if (!motionData->Read(file, readSettings))
         {
             AZ_Error("EMotionFX", false, "Failed to load motion data of type '%s'", className.c_str());
+            delete motionData;
             motionData = aznew UniformMotionData(); // Create an empty dummy motion data, so we don't break things.
             importParams.m_motion->SetMotionData(motionData);
             return false;
@@ -2057,13 +2272,19 @@ namespace EMotionFX
             return false;
         }
 
-        AZ::u32 bufferSize;
-        file->Read(&bufferSize, sizeof(bufferSize));
+        AZ::u32 bufferSize = 0;
+        if (file->Read(&bufferSize, sizeof(bufferSize)) != sizeof(bufferSize))
+        {
+            return false;
+        }
         MCore::Endian::ConvertUnsignedInt32(&bufferSize, importParams.m_endianType);
 
         AZStd::vector<AZ::u8> buffer;
         buffer.resize(bufferSize);
-        file->Read(&buffer[0], bufferSize);
+        if (bufferSize > 0 && file->Read(buffer.data(), bufferSize) != bufferSize)
+        {
+            return false;
+        }
 
         // Read root motion extraction
         AZ::ObjectStream::FilterDescriptor loadFilter(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);

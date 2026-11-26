@@ -91,7 +91,7 @@ namespace Maestro
             }
             if (AZStd::abs(key.m_speed - 1.0f) > AZ::Constants::Tolerance)
             {
-                AZStd::clamp(key.m_speed, AZ::IAssetBlendKey::s_minSpeed, AZ::IAssetBlendKey::s_maxSpeed);
+                key.m_speed = AZStd::clamp(key.m_speed, AZ::IAssetBlendKey::s_minSpeed, AZ::IAssetBlendKey::s_maxSpeed);
                 keyNode->setAttr("speed", key.m_speed);
             }
             if (key.m_bLoop)
@@ -312,7 +312,7 @@ namespace Maestro
         {
             AZ_WarningOnce("AssetBlendTrack", false, "SetKeysAtTime(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+            time = AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
         }
 
         ClearKeys();

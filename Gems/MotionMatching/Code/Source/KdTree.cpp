@@ -116,6 +116,11 @@ namespace EMotionFX::MotionMatching
         size_t currentColumn = 0;
         for (const Feature* feature : features)
         {
+            if (feature->GetId().IsNull())
+            {
+                continue;
+            }
+
             const size_t numDimensions = feature->GetNumDimensions();
             const size_t featureColumnOffset = feature->GetColumnOffset();
             for (size_t i = 0; i < numDimensions; ++i)
@@ -179,7 +184,7 @@ namespace EMotionFX::MotionMatching
         bool leftSide)
     {
         node->m_parent = parent;
-        node->m_dimension = dimension;
+        node->m_dimension = dimension % m_numDimensions;
         m_nodes.emplace_back(node);
 
         // Fill the frames array and calculate the median.
@@ -223,14 +228,17 @@ namespace EMotionFX::MotionMatching
     {
         Node* parent = node->m_parent;
 
-        if (parent->m_leftNode == node)
+        if (parent)
         {
-            parent->m_leftNode = nullptr;
-        }
+            if (parent->m_leftNode == node)
+            {
+                parent->m_leftNode = nullptr;
+            }
 
-        if (parent->m_rightNode == node)
-        {
-            parent->m_rightNode = nullptr;
+            if (parent->m_rightNode == node)
+            {
+                parent->m_rightNode = nullptr;
+            }
         }
 
         // Remove it from the node vector.
@@ -303,26 +311,24 @@ namespace EMotionFX::MotionMatching
         {
             // Assume half of the parent frames are in this node.
             const size_t numExpectedFrames = (parent->m_frames.size() / 2) + 1;
-            frameFeatureValues.reserve(numExpectedFrames);
             node->m_frames.reserve(numExpectedFrames);
 
             // Add parent frames to this node, but only ones that should be on this side.
             for (const size_t frameIndex : parent->m_frames)
             {
                 // Remap local to the KD-tree feature column to the feature schema global column and read the value directly from the feature matrix.
-                const float featureValue = featureMatrix(frameIndex, localToSchemaFeatureColumns[parent->m_dimension]);
-                frameFeatureValues.push_back(featureValue);
+                const float parentFeatureValue = featureMatrix(frameIndex, localToSchemaFeatureColumns[parent->m_dimension]);
 
                 if (leftSide)
                 {
-                    if (featureValue <= parent->m_median)
+                    if (parentFeatureValue <= parent->m_median)
                     {
                         node->m_frames.emplace_back(frameIndex);
                     }
                 }
                 else
                 {
-                    if (featureValue > parent->m_median)
+                    if (parentFeatureValue > parent->m_median)
                     {
                         node->m_frames.emplace_back(frameIndex);
                     }
@@ -336,11 +342,15 @@ namespace EMotionFX::MotionMatching
             {
                 const size_t frameIndex = frame.GetFrameIndex();
                 node->m_frames.emplace_back(frameIndex);
-
-                // Remap local to the KD-tree feature column to the feature schema global column and read the value directly from the feature matrix.
-                const float featureValue = featureMatrix(frameIndex, localToSchemaFeatureColumns[node->m_dimension]);
-                frameFeatureValues.push_back(featureValue);
             }
+        }
+
+        frameFeatureValues.reserve(node->m_frames.size());
+        const size_t nodeFeatureColumn = localToSchemaFeatureColumns[node->m_dimension % m_numDimensions];
+        for (const size_t frameIndex : node->m_frames)
+        {
+            const float featureValue = featureMatrix(frameIndex, nodeFeatureColumn);
+            frameFeatureValues.push_back(featureValue);
         }
 
         // Calculate the median in O(n).
@@ -424,7 +434,7 @@ namespace EMotionFX::MotionMatching
         }
         AZ_TracePrintf("Motion Matching", "    Frames = (%s)", framesString.c_str());
 
-        const size_t avgFrames = (leftNumFrames + rightNumFrames) / numLeafNodes;
+        const size_t avgFrames = numLeafNodes > 0 ? (leftNumFrames + rightNumFrames) / numLeafNodes : 0;
         AZ_TracePrintf("Motion Matching", "    KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
 #endif
     }
@@ -439,12 +449,13 @@ namespace EMotionFX::MotionMatching
         const size_t numDimensions = frameFloats.size();
         for (size_t d = 0; d < numDimensions; ++d)
         {
-            AZ_Assert(curNode->m_dimension == d, "Dimension mismatch");
+            const size_t dim = curNode->m_dimension;
+            AZ_Assert(dim < numDimensions, "Dimension mismatch");
 
             // We have children in both directions.
             if (curNode->m_leftNode && curNode->m_rightNode)
             {
-                curNode = (frameFloats[d] <= curNode->m_median) ? curNode->m_leftNode : curNode->m_rightNode;
+                curNode = (frameFloats[dim] <= curNode->m_median) ? curNode->m_leftNode : curNode->m_rightNode;
             }
             else if (!curNode->m_leftNode && !curNode->m_rightNode) // we have a leaf node
             {
@@ -455,7 +466,7 @@ namespace EMotionFX::MotionMatching
                 // We have either a left and right node, so we're not at a leaf yet.
                 if (curNode->m_leftNode)
                 {
-                    if (frameFloats[d] <= curNode->m_median)
+                    if (frameFloats[dim] <= curNode->m_median)
                     {
                         curNode = curNode->m_leftNode;
                     }
@@ -466,7 +477,7 @@ namespace EMotionFX::MotionMatching
                 }
                 else // We have a right node.
                 {
-                    if (frameFloats[d] > curNode->m_median)
+                    if (frameFloats[dim] > curNode->m_median)
                     {
                         curNode = curNode->m_rightNode;
                     }

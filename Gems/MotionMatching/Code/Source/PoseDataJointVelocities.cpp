@@ -45,7 +45,7 @@ namespace EMotionFX::MotionMatching
 
     void PoseDataJointVelocities::SetRelativeToJointIndex(size_t relativeToJointIndex)
     {
-        if (relativeToJointIndex == InvalidIndex)
+        if (relativeToJointIndex == InvalidIndex || relativeToJointIndex == InvalidIndex32 || relativeToJointIndex >= m_velocities.size())
         {
             m_relativeToJointIndex = 0;
         }
@@ -182,7 +182,7 @@ namespace EMotionFX::MotionMatching
             sampleSettings.m_sampleTime = sampleTime;
             motion->SamplePose(&currentPose->GetPose(), sampleSettings);
 
-            const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+            const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(m_relativeToJointIndex).Inversed();
 
             for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {

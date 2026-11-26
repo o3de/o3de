@@ -1058,12 +1058,25 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
     float fps = 60.0f;
 
-    AZStd::vector<IAnimSequence*> stopSequences;
-
-    const size_t numPlayingSequences = m_playingSequences.size();
-    for (size_t i = 0; i < numPlayingSequences; ++i)
+    AZStd::vector<AZStd::intrusive_ptr<IAnimSequence>> stopSequences;
+    AZStd::vector<AZStd::intrusive_ptr<IAnimSequence>> activeSequences;
+    activeSequences.reserve(m_playingSequences.size());
+    for (const PlayingSequence& ps : m_playingSequences)
     {
-        PlayingSequence& playingSequence = m_playingSequences[i];
+        if (ps.sequence)
+        {
+            activeSequences.push_back(ps.sequence);
+        }
+    }
+
+    for (const AZStd::intrusive_ptr<IAnimSequence>& sequence : activeSequences)
+    {
+        PlayingSequences::iterator psIt;
+        if (!FindSequence(sequence.get(), psIt))
+        {
+            continue;
+        }
+        PlayingSequence& playingSequence = *psIt;
 
         if (playingSequence.sequence->IsPaused())
         {
@@ -1089,15 +1102,17 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
         if ((nSeqFlags& IAnimSequence::eSeqFlags_CutScene) && m_mov_NoCutscenes != 0)
         {
             // Don't play cut-scene if no cut scenes console variable set.
-            stopSequences.push_back(playingSequence.sequence.get());
+            stopSequences.push_back(sequence);
             continue;
         }
 
         animContext.time = playingSequence.currentTime;
-        animContext.sequence = playingSequence.sequence.get();
+        animContext.sequence = sequence.get();
         animContext.dt = scaledTimeDelta;
         animContext.fps = fps;
         animContext.startTime = playingSequence.startTime;
+        animContext.singleFrame = playingSequence.bSingleFrame;
+        playingSequence.bSingleFrame = false;
 
         // Check time out of range, setting up playingSequence for the next Update
         bool wasLooped = false;
@@ -1118,7 +1133,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
                 // Queue sequence for stopping.
                 if (playingSequence.trackedSequence == false)
                 {
-                    stopSequences.push_back(playingSequence.sequence.get());
+                    stopSequences.push_back(sequence);
                 }
                 continue;
             }
@@ -1134,19 +1149,20 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
         }
         else
         {
-            NotifyListeners(playingSequence.sequence.get(), IMovieListener::eMovieEvent_Updated);
+            NotifyListeners(sequence.get(), IMovieListener::eMovieEvent_Updated);
+            if (!FindSequence(sequence.get(), psIt))
+            {
+                continue;
+            }
         }
 
-        animContext.singleFrame = playingSequence.bSingleFrame;
-        playingSequence.bSingleFrame = false;
-
         // Animate sequence. (Can invalidate iterator)
-        playingSequence.sequence->Animate(animContext);
+        sequence->Animate(animContext);
 
         // we call OnLoop() *after* Animate() to reset sounds (for CAnimSceneNodes), for the next update (the looped update)
-        if (wasLooped)
+        if (wasLooped && FindSequence(sequence.get(), psIt))
         {
-            playingSequence.sequence->OnLoop();
+            sequence->OnLoop();
         }
     }
 
@@ -1158,9 +1174,9 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 #endif //#if !defined(_RELEASE)
 
     // Stop queued sequences.
-    for (int i = 0; i < (int)stopSequences.size(); i++)
+    for (const AZStd::intrusive_ptr<IAnimSequence>& sequenceToStop : stopSequences)
     {
-        StopSequence(stopSequences[i]);
+        StopSequence(sequenceToStop.get());
     }
 }
 

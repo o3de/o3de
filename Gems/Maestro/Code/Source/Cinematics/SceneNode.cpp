@@ -621,21 +621,18 @@ namespace Maestro
         }
 
         // In Play Game mode the active camera parameters are to be stored and then changed.
-        auto activeCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(lastCameraEntityId));
+        AnimSceneNodeHelper::CComponentEntitySceneCamera activeCameraHelper(lastCameraEntityId);
         m_overriddenCameraProperties.szSelection = "StoredCamera";
         m_overriddenCameraProperties.cameraAzEntityId = lastCameraEntityId;
-        m_overriddenCameraProperties.m_position = activeCameraHelper->GetWorldPosition(); // stash Transform
-        m_overriddenCameraProperties.m_rotation = activeCameraHelper->GetWorldRotation();
-        m_overriddenCameraProperties.m_FoV = activeCameraHelper->GetFoV(); // stash FoV from the first camera entity
-        m_overriddenCameraProperties.m_nearZ = activeCameraHelper->GetNearZ(); // stash nearZ
+        m_overriddenCameraProperties.m_position = activeCameraHelper.GetWorldPosition(); // stash Transform
+        m_overriddenCameraProperties.m_rotation = activeCameraHelper.GetWorldRotation();
+        m_overriddenCameraProperties.m_FoV = activeCameraHelper.GetFoV(); // stash FoV from the first camera entity
+        m_overriddenCameraProperties.m_nearZ = activeCameraHelper.GetNearZ(); // stash nearZ
 
-        auto overrideCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(m_OverrideCamId));
-        activeCameraHelper->SetWorldPosition(overrideCameraHelper->GetWorldPosition());
-        activeCameraHelper->SetWorldRotation(overrideCameraHelper->GetWorldRotation());
-        activeCameraHelper->SetFovAndNearZ(overrideCameraHelper->GetFoV(), overrideCameraHelper->GetNearZ());
-        delete overrideCameraHelper;
-
-        delete activeCameraHelper;
+        AnimSceneNodeHelper::CComponentEntitySceneCamera overrideCameraHelper(m_OverrideCamId);
+        activeCameraHelper.SetWorldPosition(overrideCameraHelper.GetWorldPosition());
+        activeCameraHelper.SetWorldRotation(overrideCameraHelper.GetWorldRotation());
+        activeCameraHelper.SetFovAndNearZ(overrideCameraHelper.GetFoV(), overrideCameraHelper.GetNearZ());
         return true;
     }
 
@@ -647,11 +644,11 @@ namespace Maestro
         {
             return false;
         }
-        auto overridenCameraHelper = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(m_OverrideCamId));
-        overridenCameraHelper->SetWorldPosition(m_overriddenCameraProperties.m_position);
-        overridenCameraHelper->SetWorldRotation(m_overriddenCameraProperties.m_rotation);
-        overridenCameraHelper->SetFovAndNearZ(m_overriddenCameraProperties.m_FoV, m_overriddenCameraProperties.m_nearZ);
-        delete overridenCameraHelper;
+        AnimSceneNodeHelper::CComponentEntitySceneCamera overridenCameraHelper(m_overriddenCameraProperties.cameraAzEntityId);
+        overridenCameraHelper.SetWorldPosition(m_overriddenCameraProperties.m_position);
+        overridenCameraHelper.SetWorldRotation(m_overriddenCameraProperties.m_rotation);
+        overridenCameraHelper.SetFovAndNearZ(m_overriddenCameraProperties.m_FoV, m_overriddenCameraProperties.m_nearZ);
+        m_overriddenCameraProperties.Reset();
         return true;
     }
 
@@ -737,18 +734,17 @@ namespace Maestro
             return false;
         }
 
-        ISceneCamera* currCamera =static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
-        const auto degreesFoV = currCamera->GetFoV();
-        const auto nearZ = currCamera->GetNearZ();
+        AnimSceneNodeHelper::CComponentEntitySceneCamera currCamera(key.cameraAzEntityId);
+        const auto degreesFoV = currCamera.GetFoV();
+        const auto nearZ = currCamera.GetNearZ();
         if (degreesFoV < 1.0f || nearZ <= AZ::Constants::Tolerance)
         {
             return false; // Invalid camera properties
         }
         key.m_FoV = degreesFoV;
         key.m_nearZ = nearZ;
-        key.m_position = currCamera->GetWorldPosition();
-        key.m_rotation = currCamera->GetWorldRotation();
-        delete currCamera;
+        key.m_position = currCamera.GetWorldPosition();
+        key.m_rotation = currCamera.GetWorldRotation();
 
         return true;
     }
@@ -760,11 +756,10 @@ namespace Maestro
             return;
         }
 
-        ISceneCamera* currCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(key.cameraAzEntityId));
-        currCamera->SetFovAndNearZ(key.m_FoV, key.m_nearZ);
-        currCamera->SetWorldPosition(key.m_position);
-        currCamera->SetWorldRotation(key.m_rotation);
-        delete currCamera;
+        AnimSceneNodeHelper::CComponentEntitySceneCamera currCamera(key.cameraAzEntityId);
+        currCamera.SetFovAndNearZ(key.m_FoV, key.m_nearZ);
+        currCamera.SetWorldPosition(key.m_position);
+        currCamera.SetWorldRotation(key.m_rotation);
     }
 
     void CAnimSceneNode::OnStart()
@@ -905,7 +900,7 @@ namespace Maestro
         // Interpolate and apply camera properties always, unchanged values will not actually be transferred. 
         {
             // A valid Scene Camera (Camera Component Camera) helper is needed to apply camera properties.
-            auto activeCamera = static_cast<ISceneCamera*>(new AnimSceneNodeHelper::CComponentEntitySceneCamera(activeCameraId));
+            AnimSceneNodeHelper::CComponentEntitySceneCamera activeCamera(activeCameraId);
 
             // time interpolation parameter
             float t = (currKey.fBlendTime < AZ::Constants::Tolerance)
@@ -917,15 +912,12 @@ namespace Maestro
             // Interpolate and update camera's FOV (in degrees) and Near Clip Distance
             const float interpolatedFoV = currKey.m_FoV + (secondKey.m_FoV - currKey.m_FoV) * t;
             const float interpolatedNearZ = currKey.m_nearZ + (secondKey.m_nearZ - currKey.m_nearZ) * t;
-            activeCamera->SetFovAndNearZ(interpolatedFoV, interpolatedNearZ);
+            activeCamera.SetFovAndNearZ(interpolatedFoV, interpolatedNearZ);
             // Interpolate and update camera's Position linearly
             const AZ::Vector3& firstKeyPos = currKey.m_position;
-            activeCamera->SetWorldPosition(firstKeyPos + (secondKey.m_position - firstKeyPos) * t);
+            activeCamera.SetWorldPosition(firstKeyPos + (secondKey.m_position - firstKeyPos) * t);
             // Interpolate and update camera's Rotation linearly-spherically
-            activeCamera->SetWorldRotation(currKey.m_rotation.Slerp(secondKey.m_rotation, t).GetNormalized());
-
-            // clean-up
-            delete activeCamera;
+            activeCamera.SetWorldRotation(currKey.m_rotation.Slerp(secondKey.m_rotation, t).GetNormalized());
         }
     }
 

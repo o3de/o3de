@@ -108,54 +108,61 @@ namespace EMotionFX
     // execute the schedule
     void MultiThreadScheduler::Execute(float timePassedInSeconds)
     {
-        MCore::LockGuardRecursive guard(m_mutex);
-
-        size_t numSteps = m_steps.size();
-        if (numSteps == 0)
+        AZStd::vector<AZStd::vector<ActorInstance*>> stepsToExecute;
         {
-            return;
-        }
+            MCore::LockGuardRecursive guard(m_mutex);
 
-        // check if we need to cleanup the schedule
-        m_cleanTimer += timePassedInSeconds;
-        if (m_cleanTimer >= 1.0f)
-        {
-            m_cleanTimer = 0.0f;
-            RemoveEmptySteps();
-            numSteps = m_steps.size();
-        }
-
-        //-----------------------------------------------------------
-
-        // propagate root actor instance visibility to their attachments
-        const ActorManager& actorManager = GetActorManager();
-        const size_t numRootActorInstances = actorManager.GetNumRootActorInstances();
-        for (size_t i = 0; i < numRootActorInstances; ++i)
-        {
-            ActorInstance* rootInstance = actorManager.GetRootActorInstance(i);
-            if (rootInstance->GetIsEnabled() == false)
+            size_t numSteps = m_steps.size();
+            if (numSteps == 0)
             {
-                continue;
+                return;
             }
 
-            rootInstance->RecursiveSetIsVisible(rootInstance->GetIsVisible());
-        }
-
-        // reset stats
-        m_numUpdated.SetValue(0);
-        m_numVisible.SetValue(0);
-        m_numSampled.SetValue(0);
-
-        for (const ScheduleStep& currentStep : m_steps)
-        {
-            if (currentStep.m_actorInstances.empty())
+            // check if we need to cleanup the schedule
+            m_cleanTimer += timePassedInSeconds;
+            if (m_cleanTimer >= 1.0f)
             {
-                continue;
+                m_cleanTimer = 0.0f;
+                RemoveEmptySteps();
+                numSteps = m_steps.size();
             }
 
+            //-----------------------------------------------------------
+
+            // propagate root actor instance visibility to their attachments
+            const ActorManager& actorManager = GetActorManager();
+            const size_t numRootActorInstances = actorManager.GetNumRootActorInstances();
+            for (size_t i = 0; i < numRootActorInstances; ++i)
+            {
+                ActorInstance* rootInstance = actorManager.GetRootActorInstance(i);
+                if (rootInstance->GetIsEnabled() == false)
+                {
+                    continue;
+                }
+
+                rootInstance->RecursiveSetIsVisible(rootInstance->GetIsVisible());
+            }
+
+            // reset stats
+            m_numUpdated.SetValue(0);
+            m_numVisible.SetValue(0);
+            m_numSampled.SetValue(0);
+
+            stepsToExecute.reserve(m_steps.size());
+            for (const ScheduleStep& currentStep : m_steps)
+            {
+                if (!currentStep.m_actorInstances.empty())
+                {
+                    stepsToExecute.push_back(currentStep.m_actorInstances);
+                }
+            }
+        }
+
+        for (const AZStd::vector<ActorInstance*>& stepActorInstances : stepsToExecute)
+        {
             // process the actor instances in the current step in parallel
             AZ::JobCompletion jobCompletion;
-            for (ActorInstance* actorInstance : currentStep.m_actorInstances)
+            for (ActorInstance* actorInstance : stepActorInstances)
             {
                 if (actorInstance->GetIsEnabled() == false)
                 {

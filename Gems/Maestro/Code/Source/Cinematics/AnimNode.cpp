@@ -610,7 +610,7 @@ namespace Maestro
                     }
                 }
 
-                if (!trackRemoved && gEnv->IsEditor())
+                if (pTrack && !trackRemoved && gEnv->IsEditor())
                 {
                     InitializeTrackDefaultValue(pTrack, paramType);
                 }

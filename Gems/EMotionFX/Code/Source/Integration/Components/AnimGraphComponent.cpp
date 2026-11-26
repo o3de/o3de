@@ -70,7 +70,7 @@ namespace EMotionFX
 
             void OnAnimGraphRotationParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, const AZ::Quaternion& beforeValue, const AZ::Quaternion& afterValue) override
             {
-                Call(FN_OnAnimGraphVector3ParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
+                Call(FN_OnAnimGraphRotationParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
         };
 
@@ -153,7 +153,7 @@ namespace EMotionFX
                     ->Event("SetParameterVector2", &AnimGraphComponentRequestBus::Events::SetParameterVector2)
                     ->Event("SetParameterVector3", &AnimGraphComponentRequestBus::Events::SetParameterVector3)
                     ->Event("SetParameterRotationEuler", &AnimGraphComponentRequestBus::Events::SetParameterRotationEuler)
-                    ->Event("SetParameterRotation", &AnimGraphComponentRequestBus::Events::SetNamedParameterRotation)
+                    ->Event("SetParameterRotation", &AnimGraphComponentRequestBus::Events::SetParameterRotation)
                     ->Event("SetNamedParameterFloat", &AnimGraphComponentRequestBus::Events::SetNamedParameterFloat)
                     ->Event("SetNamedParameterBool", &AnimGraphComponentRequestBus::Events::SetNamedParameterBool)
                     ->Event("SetNamedParameterString", &AnimGraphComponentRequestBus::Events::SetNamedParameterString)
@@ -169,7 +169,7 @@ namespace EMotionFX
                     ->Event("GetParameterVector2", &AnimGraphComponentRequestBus::Events::GetParameterVector2)
                     ->Event("GetParameterVector3", &AnimGraphComponentRequestBus::Events::GetParameterVector3)
                     ->Event("GetParameterRotationEuler", &AnimGraphComponentRequestBus::Events::GetParameterRotationEuler)
-                    ->Event("GetParameterRotation", &AnimGraphComponentRequestBus::Events::GetNamedParameterRotation)
+                    ->Event("GetParameterRotation", &AnimGraphComponentRequestBus::Events::GetParameterRotation)
                     ->Event("GetNamedParameterFloat", &AnimGraphComponentRequestBus::Events::GetNamedParameterFloat)
                     ->Event("GetNamedParameterBool", &AnimGraphComponentRequestBus::Events::GetNamedParameterBool)
                     ->Event("GetNamedParameterString", &AnimGraphComponentRequestBus::Events::GetNamedParameterString)
@@ -256,8 +256,8 @@ namespace EMotionFX
             ActorComponentNotificationBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
-            m_actorInstance.reset();
             DestroyAnimGraphInstance();
+            m_actorInstance.reset();
             m_configuration.m_animGraphAsset.Release();
         }
 
@@ -387,9 +387,9 @@ namespace EMotionFX
                 const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
                 if (snapshot)
                 {
-                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
                     return snapshot->GetActiveNodes();
                 }
+                AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
             }
 
             return s_emptyNodeIndexContainer;
@@ -403,9 +403,9 @@ namespace EMotionFX
                 const AZStd::shared_ptr<AnimGraphSnapshot> snapshot = m_animGraphInstance->GetSnapshot();
                 if (snapshot)
                 {
-                    AZ_Warning("EMotionFX", false, "Call GetActiveStates function but no snapshot is created for this instance.");
                     return snapshot->GetMotionNodePlaytimes();
                 }
+                AZ_Warning("EMotionFX", false, "Call GetMotionPlaytimes function but no snapshot is created for this instance.");
             }
 
             return s_emptyMotionNodePlaytimeContainer;
@@ -462,9 +462,9 @@ namespace EMotionFX
             {
                 DestroyAnimGraphInstance();
 
-                EMotionFX::MotionSet* rootMotionSet = cfg.m_motionSetAsset.Get()->m_emfxMotionSet.get();
+                EMotionFX::MotionSet* rootMotionSet = cfg.m_motionSetAsset.Get() ? cfg.m_motionSetAsset.Get()->m_emfxMotionSet.get() : nullptr;
                 EMotionFX::MotionSet* motionSet = rootMotionSet;
-                if (!cfg.m_activeMotionSetName.empty())
+                if (rootMotionSet && !cfg.m_activeMotionSetName.empty())
                 {
                     motionSet = rootMotionSet->RecursiveFindMotionSetByName(cfg.m_activeMotionSetName, true);
                     if (!motionSet)
@@ -589,7 +589,8 @@ namespace EMotionFX
             {
                 return "";
             }
-            return m_animGraphInstance->GetAnimGraph()->FindParameter(parameterIndex)->GetName().c_str();
+            const Parameter* param = m_animGraphInstance->GetAnimGraph()->FindParameter(parameterIndex);
+            return param ? param->GetName().c_str() : "";
         }
 
 
@@ -605,6 +606,11 @@ namespace EMotionFX
             if (m_animGraphInstance)
             {
                 MCore::Attribute* param = m_animGraphInstance->GetParameterValue(parameterIndex);
+                if (!param)
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
+                    return;
+                }
                 float previousValue;
 
                 switch (param->GetType())
@@ -660,6 +666,11 @@ namespace EMotionFX
             if (m_animGraphInstance)
             {
                 MCore::Attribute* param = m_animGraphInstance->GetParameterValue(parameterIndex);
+                if (!param)
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
+                    return;
+                }
                 bool previousValue;
 
                 switch (param->GetType())
@@ -818,6 +829,11 @@ namespace EMotionFX
             if (m_animGraphInstance)
             {
                 MCore::Attribute* param = m_animGraphInstance->GetParameterValue(parameterIndex);
+                if (!param)
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
+                    return;
+                }
                 AZ::Quaternion previousValue;
 
                 switch (param->GetType())
@@ -857,6 +873,11 @@ namespace EMotionFX
             if (m_animGraphInstance)
             {
                 MCore::Attribute* param = m_animGraphInstance->GetParameterValue(parameterIndex);
+                if (!param)
+                {
+                    AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
+                    return;
+                }
                 AZ::Quaternion previousValue;
 
                 switch (param->GetType())
