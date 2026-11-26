@@ -10,6 +10,9 @@
 
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // OpenSSL forward declarations
 typedef struct ssl_st SSL;
@@ -83,6 +86,8 @@ namespace AzNetworking
         //! @return pointer to the decoded data
         const uint8_t* DecodePacket(UdpConnection& connection, const uint8_t* encryptedData, int32_t encryptedSize, uint8_t* outDecodedData, int32_t& outDecodedSize);
 
+        const AZStd::shared_ptr<bool>& GetAliveToken() const { return m_aliveToken; }
+
     private:
 
         //! Performs internal common dtls endpoint setup.
@@ -101,6 +106,8 @@ namespace AzNetworking
         SSL* m_sslSocket;
         BIO* m_readBio;
         BIO* m_writeBio;
+        mutable AZStd::recursive_mutex m_mutex;
+        AZStd::shared_ptr<bool> m_aliveToken = AZStd::make_shared<bool>(true);
     };
 
     const char* GetEnumString(DtlsEndpoint::HandshakeState value);

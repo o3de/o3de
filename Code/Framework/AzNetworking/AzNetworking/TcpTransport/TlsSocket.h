@@ -53,6 +53,8 @@ namespace AzNetworking
 
     protected:
 
+        TlsSocket(SocketFd socketFd, TrustZone trustZone, SSL_CTX* sslContext, SSL* sslSocket);
+
         int32_t SendInternal(const uint8_t* data, uint32_t size) const override;
         int32_t ReceiveInternal(uint8_t* outData, uint32_t size) const override;
 

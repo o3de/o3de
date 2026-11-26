@@ -8,6 +8,7 @@
 
 #include <AzNetworking/UdpTransport/UdpHeartbeatThread.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
+#include <AzNetworking/UdpTransport/UdpConnection.h>
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 
 
@@ -51,9 +52,12 @@ namespace AzNetworking
                 // Main-thread is blocked; send a heartbeat from this thread.
                 auto sendNetworkUpdates = [](AzNetworking::IConnection& connection)
                 {
-                    if (connection.GetConnectionRole() == ConnectionRole::Connector)
+                    UdpConnection& udpConnection = static_cast<UdpConnection&>(connection);
+                    if (udpConnection.GetConnectionRole() == ConnectionRole::Connector
+                        && udpConnection.GetConnectionState() == ConnectionState::Connected
+                        && !udpConnection.GetDtlsEndpoint().IsConnecting())
                     {
-                        connection.SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
+                        udpConnection.SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
                     }
                 };
 
@@ -77,18 +81,24 @@ namespace AzNetworking
 
     void UdpHeartbeatThread::UnregisterNetworkInterface(UdpNetworkInterface* udpNetworkInterface)
     {
-        AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
-
-        auto it = AZStd::find(m_udpNetworkInterfaces.begin(), m_udpNetworkInterfaces.end(), udpNetworkInterface);
-
-        if (it != m_udpNetworkInterfaces.end())
+        bool shouldStop = false;
         {
-            m_udpNetworkInterfaces.erase(it);
+            AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
+
+            auto it = AZStd::find(m_udpNetworkInterfaces.begin(), m_udpNetworkInterfaces.end(), udpNetworkInterface);
+
+            if (it != m_udpNetworkInterfaces.end())
+            {
+                m_udpNetworkInterfaces.erase(it);
+            }
+
+            shouldStop = IsRunning() && m_udpNetworkInterfaces.empty();
         }
 
-        if (IsRunning() && m_udpNetworkInterfaces.empty())
+        if (shouldStop)
         {
             Stop();
+            Join();
         }
     }
 } // namespace AzNetworking

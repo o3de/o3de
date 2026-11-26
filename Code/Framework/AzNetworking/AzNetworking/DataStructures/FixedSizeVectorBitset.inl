@@ -36,7 +36,7 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline void FixedSizeVectorBitset<CAPACITY, ElementType>::SetBit(uint32_t index, bool value)
     {
-        if (index > m_count)
+        if (index >= m_count)
         {
             return;
         }
@@ -46,7 +46,7 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline bool FixedSizeVectorBitset<CAPACITY, ElementType>::GetBit(uint32_t index) const
     {
-        if (index > m_count)
+        if (index >= m_count)
         {
             return false;
         }
@@ -118,6 +118,10 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline bool FixedSizeVectorBitset<CAPACITY, ElementType>::AddBits(uint32_t count)
     {
+        if (count > CAPACITY || m_count > CAPACITY - count)
+        {
+            return false;
+        }
         return Resize(m_count + count);
     }
 
@@ -131,6 +135,10 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline bool FixedSizeVectorBitset<CAPACITY, ElementType>::GetBack() const
     {
+        if (m_count == 0)
+        {
+            return false;
+        }
         return m_bitset.GetBit(m_count - 1); // Asserts internally if out of range
     }
 
@@ -164,9 +172,9 @@ namespace AzNetworking
         static constexpr uint32_t NumBytesRequiredForSize = AZ::RequiredBytesForValue<CAPACITY>();
         using SizeType = typename AZ::SizeType<NumBytesRequiredForSize, false>::Type;
 
-        // m_count is always less than CAPACITY, so should fit safely in SizeType
+        // m_count is always less than or equal to CAPACITY, so should fit safely in SizeType
         SizeType count = static_cast<SizeType>(m_count);
-        if (!serializer.Serialize(count, "Count"))
+        if (!serializer.Serialize(count, "Count", static_cast<SizeType>(0), static_cast<SizeType>(CAPACITY)) || count > CAPACITY)
         {
             return false;
         }
@@ -189,9 +197,19 @@ namespace AzNetworking
     inline void FixedSizeVectorBitset<CAPACITY, ElementType>::ClearUnusedBits()
     {
         uint32_t usedElementSize = (GetSize() + BitsetType::ElementTypeBits - 1) / BitsetType::ElementTypeBits;
-        for (uint32_t i = usedElementSize + 1; i < BitsetType::ElementCount; ++i)
+        for (uint32_t i = usedElementSize; i < BitsetType::ElementCount; ++i)
         {
             m_bitset.GetContainer()[i] = 0;
+        }
+        if (usedElementSize > 0)
+        {
+            const uint32_t lastUsedBits = GetSize() % BitsetType::ElementTypeBits;
+            if (lastUsedBits != 0)
+            {
+                constexpr ElementType AllOnes = static_cast<ElementType>(~ElementType(0));
+                const ElementType clearBitMask = AllOnes >> (BitsetType::ElementTypeBits - lastUsedBits);
+                m_bitset.GetContainer()[usedElementSize - 1] &= clearBitMask;
+            }
         }
         m_bitset.ClearUnusedBits();
     }

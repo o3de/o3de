@@ -90,7 +90,7 @@ namespace AzNetworking
             ByteBuffer<MaxUdpReceiveBufferSize> m_receiveBuffer;
         };
 
-        AZStd::recursive_mutex m_mutex;
+        mutable AZStd::recursive_mutex m_mutex;
         int32_t m_backIndex = 0;
         AZStd::array<ReaderBuffer, 2> m_readerBuffers;
         AZStd::vector<UdpSocket*> m_pendingAdds;

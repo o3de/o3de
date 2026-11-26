@@ -32,12 +32,15 @@ namespace AzNetworking
 
     bool UdpReaderThread::RegisterSocket(UdpSocket* socket)
     {
-        if (SocketExists(socket))
         {
-            AZLOG_ERROR("Attempting to add a duplicate socket to the UdpReaderThread");
-            return false;
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
+            if (SocketExists(socket))
+            {
+                AZLOG_ERROR("Attempting to add a duplicate socket to the UdpReaderThread");
+                return false;
+            }
+            m_pendingAdds.push_back(socket);
         }
-        m_pendingAdds.push_back(socket);
         if (!IsRunning())
         {
             Start();
@@ -50,6 +53,7 @@ namespace AzNetworking
         // We need to null out the socket immediately in both the front and back
         // buffers so that the reader thread doesn't try and use a deleted socket
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
+        m_pendingAdds.erase(AZStd::remove(m_pendingAdds.begin(), m_pendingAdds.end(), socket), m_pendingAdds.end());
         {
             const int32_t frontIndex = 1 - m_backIndex;
             ReaderBuffer& front = m_readerBuffers[frontIndex];
@@ -108,8 +112,12 @@ namespace AzNetworking
                 back.m_entries.emplace_back(SocketEntry{ socket, ReceivedPackets() });
             }
             m_pendingAdds.clear();
-            AZStd::remove_if(front.m_entries.begin(), front.m_entries.end(), [](auto& socketEntry) { return socketEntry.m_socket == nullptr; });
-            AZStd::remove_if(back.m_entries.begin(), back.m_entries.end(), [](auto& socketEntry) { return socketEntry.m_socket == nullptr; });
+            front.m_entries.erase(
+                AZStd::remove_if(front.m_entries.begin(), front.m_entries.end(), [](auto& socketEntry) { return socketEntry.m_socket == nullptr; }),
+                front.m_entries.end());
+            back.m_entries.erase(
+                AZStd::remove_if(back.m_entries.begin(), back.m_entries.end(), [](auto& socketEntry) { return socketEntry.m_socket == nullptr; }),
+                back.m_entries.end());
             m_backIndex = 1 - m_backIndex;
             m_readerBuffers[m_backIndex].m_receiveBuffer.Resize(0);
         }
@@ -129,6 +137,11 @@ namespace AzNetworking
 
     bool UdpReaderThread::SocketExists(UdpSocket* socket) const
     {
+        AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
+        if (AZStd::find(m_pendingAdds.begin(), m_pendingAdds.end(), socket) != m_pendingAdds.end())
+        {
+            return true;
+        }
         const int32_t frontIndex = 1 - m_backIndex;
         const ReaderBuffer& front = m_readerBuffers[frontIndex];
         for (auto& socketEntry : front.m_entries)

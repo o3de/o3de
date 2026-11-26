@@ -19,6 +19,10 @@ namespace AzNetworking
 
     void TimedThread::Start()
     {
+        if (m_joinable)
+        {
+            Join();
+        }
         m_running = true;
         m_joinable = true;
         m_thread = AZStd::thread(

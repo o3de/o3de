@@ -143,12 +143,14 @@ namespace AzNetworking
                 : m_address(address)
                 , m_encrypt(encrypt)
                 , m_dtlsEndpoint(&dtlsEndpoint)
+                , m_endpointAlive(dtlsEndpoint.GetAliveToken())
             {
                 m_dataBuffer.CopyValues(data, size);
             }
 
             bool m_encrypt;
             DtlsEndpoint* m_dtlsEndpoint = nullptr;
+            AZStd::shared_ptr<bool> m_endpointAlive;
             AZ::ScheduledEvent* m_owningEvent = nullptr;
             IpAddress m_address;
             // Deferred UDP packets should have gone through UDP Fragmentation already so ChunkBuffer is sufficient size
@@ -158,6 +160,7 @@ namespace AzNetworking
         int32_t SendInternalDeferred(const DeferredData& data) const;
 
         mutable AZ::SimpleLcgRandom m_random;
+        AZStd::shared_ptr<bool> m_aliveToken = AZStd::make_shared<bool>(true);
 #endif
     };
 }

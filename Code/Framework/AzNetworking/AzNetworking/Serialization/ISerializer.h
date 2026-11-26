@@ -155,7 +155,7 @@ namespace AzNetworking
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(float& value, const char* name, float minValue = AZStd::numeric_limits<float>::min(), float maxValue = AZStd::numeric_limits<float>::max()) = 0;
+        virtual bool Serialize(float& value, const char* name, float minValue = AZStd::numeric_limits<float>::lowest(), float maxValue = AZStd::numeric_limits<float>::max()) = 0;
 
         //! Serialize a 64-bit floating point number.
         //! @param value    64-bit floating point input value to serialize
@@ -163,7 +163,7 @@ namespace AzNetworking
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(double& value, const char* name, double minValue = AZStd::numeric_limits<double>::min(), double maxValue = AZStd::numeric_limits<double>::max()) = 0;
+        virtual bool Serialize(double& value, const char* name, double minValue = AZStd::numeric_limits<double>::lowest(), double maxValue = AZStd::numeric_limits<double>::max()) = 0;
 
         //! Serialize a raw set of bytes.
         //! @param buffer         buffer to serialize

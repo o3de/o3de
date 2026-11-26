@@ -12,7 +12,11 @@
 
 namespace AbstractValue
 {
-    class BaseValue {};
+    class BaseValue
+    {
+    public:
+        virtual ~BaseValue() = default;
+    };
 
     template <typename T>
     class ValueT

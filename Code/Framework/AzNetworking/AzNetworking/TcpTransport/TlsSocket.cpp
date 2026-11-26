@@ -55,10 +55,18 @@ namespace AzNetworking
         }
     }
 
+    TlsSocket::TlsSocket(SocketFd socketFd, TrustZone trustZone, SSL_CTX* sslContext, SSL* sslSocket)
+        : TcpSocket(socketFd)
+        , m_sslContext(sslContext)
+        , m_sslSocket(sslSocket)
+        , m_trustZone(trustZone)
+    {
+    }
+
     TlsSocket::~TlsSocket()
     {
-        FreeSslContext(m_sslContext);
         AzNetworking::Close(m_sslSocket);
+        FreeSslContext(m_sslContext);
     }
 
     bool TlsSocket::IsEncrypted() const
@@ -68,9 +76,7 @@ namespace AzNetworking
 
     TcpSocket* TlsSocket::CloneAndTakeOwnership()
     {
-        TlsSocket* result = new TlsSocket(m_socketFd, m_trustZone);
-        result->m_sslContext = m_sslContext;
-        result->m_sslSocket = m_sslSocket;
+        TlsSocket* result = new TlsSocket(m_socketFd, m_trustZone, m_sslContext, m_sslSocket);
 
         m_socketFd = InvalidSocketFd;
         m_sslContext = nullptr;
@@ -167,8 +173,8 @@ namespace AzNetworking
 
     void TlsSocket::Close()
     {
-        FreeSslContext(m_sslContext);
         AzNetworking::Close(m_sslSocket);
+        FreeSslContext(m_sslContext);
         TcpSocket::Close();
     }
 

@@ -157,6 +157,13 @@ namespace AzNetworking
                 return PacketDispatchResult::Failure;
             }
         }
+        if (connection->GetDtlsEndpoint().IsConnecting()
+            && header.GetPacketType() != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket)
+            && header.GetPacketType() != aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket))
+        {
+            AZLOG_WARN("Rejecting non-handshake fragmented packet while DTLS handshake is still in progress");
+            return PacketDispatchResult::Failure;
+        }
         connection->GetPacketTracker().ProcessReceived(connection, header);
         PacketDispatchResult handledPacket;
         if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))

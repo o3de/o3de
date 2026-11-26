@@ -169,7 +169,56 @@ namespace AzNetworking
 
     bool DeltaSerializerCreate::SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name)
     {
-        return SerializeHelper(buffer, bufferCapacity, isString, outSize, name);
+        typedef AbstractValue::ValueT<AZStd::vector<uint8_t>> ValueType;
+
+        uint32_t objectPos = m_objectCounter;
+        AbstractValue::BaseValue* baseValue = m_records.size() > m_objectCounter ? m_records[m_objectCounter] : nullptr;
+        ++m_objectCounter;
+
+        const uint32_t clampedSize = (buffer != nullptr && outSize <= bufferCapacity) ? outSize : 0;
+        const AZStd::vector<uint8_t> byteCopy(buffer, buffer + clampedSize);
+
+        if (m_gatheringRecords)
+        {
+            AZ_Assert(baseValue == nullptr, "Expected to create a new record but found a pre-existing one at index %d", m_objectCounter - 1);
+            baseValue = new ValueType(byteCopy);
+            m_records.push_back(baseValue);
+        }
+        else
+        {
+            bool different = false;
+            if (baseValue)
+            {
+                ValueType* typedValue = static_cast<ValueType*>(baseValue);
+                different = typedValue->GetValue() != byteCopy;
+            }
+            else
+            {
+                different = true;
+            }
+
+            if (!m_delta.InsertDirtyBit(different))
+            {
+                AZ_Assert(false, "Ran out of bits in DeltaSerializerCreate. You are probably trying to serialize an object with too many fields. Consider resizing the bitset in DeltaSerializerCreate");
+                return false;
+            }
+
+            if (different)
+            {
+                if (!SerializeHelperImpl(buffer, bufferCapacity, isString, outSize, name))
+                {
+                    return false;
+                }
+            }
+
+            delete static_cast<ValueType*>(baseValue);
+            if (objectPos < m_records.size())
+            {
+                m_records[objectPos] = nullptr;
+            }
+        }
+
+        return true;
     }
 
     bool DeltaSerializerCreate::BeginObject([[maybe_unused]] const char* name)
@@ -258,7 +307,10 @@ namespace AzNetworking
 
             // once we get here, we don't need the record anymore, so discard it while we know what the type is.
             delete static_cast<ValueType*>(baseValue);
-            m_records[objectPos] = nullptr;
+            if (objectPos < m_records.size())
+            {
+                m_records[objectPos] = nullptr;
+            }
         }
 
         return true;
