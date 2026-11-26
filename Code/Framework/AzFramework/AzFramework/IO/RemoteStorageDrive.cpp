@@ -330,6 +330,7 @@ namespace AzFramework
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
+                return;
             }
             if (currentOffset != data->m_offset)
             {
@@ -341,6 +342,7 @@ namespace AzFramework
                     m_readSizeAverage.PushEntry(0);
                     request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                     m_context->MarkRequestAsCompleted(request);
+                    return;
                 }
             }
             if (!m_fileIO.Read(file, data->m_output, data->m_size, true))
@@ -350,6 +352,7 @@ namespace AzFramework
                 m_readSizeAverage.PushEntry(0);
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
                 m_context->MarkRequestAsCompleted(request);
+                return;
             }
         }
         m_readSizeAverage.PushEntry(data->m_size);
@@ -398,6 +401,7 @@ namespace AzFramework
         if (cacheIndex != InvalidFileIndex)
         {
             fileExists.m_found = true;
+            request->SetStatus(IStreamerTypes::RequestStatus::Completed);
             m_context->MarkRequestAsCompleted(request);
         }
         else
@@ -439,7 +443,7 @@ namespace AzFramework
         else
         {
             // The file is not open yet, so try to get the file size by name.
-            m_fileIO.Size(command.m_path.GetAbsolutePathCStr(), fileSize);
+            found = static_cast<bool>(m_fileIO.Size(command.m_path.GetAbsolutePathCStr(), fileSize));
         }
 
         if (found)
@@ -463,10 +467,10 @@ namespace AzFramework
         if (cacheIndex != InvalidFileIndex)
         {
             m_recentlyUsed.Flush(cacheIndex);
-            m_filePaths[cacheIndex].Clear();
             AZ_Assert(
                 m_fileHandles[cacheIndex] != AZ::IO::InvalidHandle, "File path '%s' doesn't have an associated file handle.",
                 m_filePaths[cacheIndex].GetRelativePathCStr());
+            m_filePaths[cacheIndex].Clear();
             m_fileIO.Close(m_fileHandles[cacheIndex]);
             m_fileHandles[cacheIndex] = InvalidHandle;
         }

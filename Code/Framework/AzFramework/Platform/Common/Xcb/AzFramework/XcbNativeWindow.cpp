@@ -380,30 +380,28 @@ namespace AzFramework
                 0,
                 0
                 );
-            xcb_translate_coordinates_reply_t* translateReply = xcb_translate_coordinates_reply(
+            XcbStdFreePtr<xcb_translate_coordinates_reply_t> translateReply{ xcb_translate_coordinates_reply(
                 m_xcbConnection,
                 translateCookie,
                 &error
-                );
+                ) };
 
             if (error || translateReply == nullptr)
             {
                 AZ_Warning(XcbErrorWindow, error != nullptr, "Failed to translate window coordinates.");
                 free(error);
-                free(translateReply);
                 return defaultRefreshRate;
             }
 
             positionX = translateReply->dst_x;
             positionY = translateReply->dst_y;
-            free(translateReply);
         }
 
         xcb_randr_get_screen_resources_current_cookie_t resCookie = xcb_randr_get_screen_resources_current(m_xcbConnection, screen->root);
-        xcb_randr_get_screen_resources_current_reply_t* resReply = xcb_randr_get_screen_resources_current_reply(
+        XcbStdFreePtr<xcb_randr_get_screen_resources_current_reply_t> resReply{ xcb_randr_get_screen_resources_current_reply(
             m_xcbConnection,
             resCookie,
-            &error);
+            &error) };
 
         if (error || resReply == nullptr)
         {
@@ -412,19 +410,20 @@ namespace AzFramework
             return defaultRefreshRate;
         }
 
-        xcb_randr_crtc_t* crtcs = xcb_randr_get_screen_resources_current_crtcs(resReply);
-        int crtcLength = xcb_randr_get_screen_resources_current_crtcs_length(resReply);
+        xcb_randr_crtc_t* crtcs = xcb_randr_get_screen_resources_current_crtcs(resReply.get());
+        int crtcLength = xcb_randr_get_screen_resources_current_crtcs_length(resReply.get());
 
         uint32_t refreshRate = 0;
 
         for (int i = 0; i < crtcLength; i++)
         {
             xcb_randr_get_crtc_info_cookie_t crtcInfoCookie = xcb_randr_get_crtc_info(m_xcbConnection, crtcs[i], XCB_TIME_CURRENT_TIME);
-            xcb_randr_get_crtc_info_reply_t* crtcInfoReply = xcb_randr_get_crtc_info_reply(m_xcbConnection, crtcInfoCookie, &error);
+            XcbStdFreePtr<xcb_randr_get_crtc_info_reply_t> crtcInfoReply{ xcb_randr_get_crtc_info_reply(m_xcbConnection, crtcInfoCookie, &error) };
 
             if (error || crtcInfoReply == nullptr)
             {
                 free(error);
+                error = nullptr;
                 continue;
             }
 
@@ -438,8 +437,8 @@ namespace AzFramework
             {
                 const uint32_t modeId = crtcInfoReply->mode;
 
-                xcb_randr_mode_info_t* modes = xcb_randr_get_screen_resources_current_modes(resReply);
-                int modesLength = xcb_randr_get_screen_resources_current_modes_length(resReply);
+                xcb_randr_mode_info_t* modes = xcb_randr_get_screen_resources_current_modes(resReply.get());
+                int modesLength = xcb_randr_get_screen_resources_current_modes_length(resReply.get());
 
                 for (int mi = 0; mi < modesLength; mi++)
                 {
@@ -460,21 +459,16 @@ namespace AzFramework
                     refreshRate = static_cast<uint32_t>(ceil(refreshRatePrecise));
                 }
 
-                free(crtcInfoReply);
                 break;
             }
-
-            free(crtcInfoReply);
         }
 
         if (refreshRate == 0)
         {
             AZ_Warning(XcbErrorWindow, refreshRate == 0, "Failed to get CRTC refresh rate for window.");
-            free(resReply);
             return defaultRefreshRate;
         }
 
-        free(resReply);
         return refreshRate;
     }
 
@@ -507,8 +501,8 @@ namespace AzFramework
         AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set _NET_WM_STATE_FULLSCREEN");
 
         // Also try to disable/enable the compositor if possible. Might help in some cases.
-        const long _NET_WM_BYPASS_COMPOSITOR_HINT_ON = m_fullscreenState ? 1 : 0;
-        SetAtom(m_xcbWindow, _NET_WM_BYPASS_COMPOSITOR, XCB_ATOM_CARDINAL, 32, (char*)&_NET_WM_BYPASS_COMPOSITOR_HINT_ON);
+        uint32_t bypassHint = fullScreenState ? 1 : 0;
+        SetAtom(m_xcbWindow, _NET_WM_BYPASS_COMPOSITOR, XCB_ATOM_CARDINAL, 1, &bypassHint);
 
         if (!fullScreenState)
         {
@@ -521,10 +515,10 @@ namespace AzFramework
                 event.window = m_xcbWindow;
                 event.format = 32;
                 event.sequence = 0;
-                event.data.data32[0] = _NET_WM_STATE_MAXIMIZED_VERT;
-                event.data.data32[1] = _NET_WM_STATE_MAXIMIZED_HORZ;
-                event.data.data32[2] = 0;
-                event.data.data32[3] = 0;
+                event.data.data32[0] = _NET_WM_STATE_REMOVE;
+                event.data.data32[1] = _NET_WM_STATE_MAXIMIZED_VERT;
+                event.data.data32[2] = _NET_WM_STATE_MAXIMIZED_HORZ;
+                event.data.data32[3] = 1;
                 event.data.data32[4] = 0;
                 [[maybe_unused]] xcb_void_cookie_t xcbCheckResult = xcb_send_event(
                     m_xcbConnection, 1, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
@@ -542,7 +536,7 @@ namespace AzFramework
     bool XcbNativeWindow::ValidateXcbResult(xcb_void_cookie_t cookie)
     {
         bool result = true;
-        if ([[maybe_unused]]xcb_generic_error_t* error = xcb_request_check(m_xcbConnection, cookie))
+        if ([[maybe_unused]] XcbStdFreePtr<xcb_generic_error_t> error{ xcb_request_check(m_xcbConnection, cookie) })
         {
             AZ_TracePrintf("Error", "Error code %d", error->error_code);
             result = false;

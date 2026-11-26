@@ -282,12 +282,11 @@ namespace AzFramework
             const AZStd::string& token = commandTokens[i];
             commandAndArgs[i] = new char[token.size() + 1];
             commandAndArgs[i][0] = '\0';
-            azstrcat(commandAndArgs[i], token.size(), token.c_str());
+            azstrcpy(commandAndArgs[i], token.size() + 1, token.c_str());
         }
         commandAndArgs[commandTokens.size()] = nullptr;
         
-        constexpr int MaxEnvVariables = 256;
-        using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
+        using EnvironmentVariableContainer = AZStd::vector<char*>;
         EnvironmentVariableContainer environmentVariables;
         for (char **env = ::environ; *env; env++)
         {

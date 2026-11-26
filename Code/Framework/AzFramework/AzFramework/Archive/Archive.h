@@ -21,6 +21,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/thread.h>
@@ -69,7 +70,7 @@ namespace AZ::IO
 
         uint32_t GetFileDataOffset();
 
-        void* m_pFileData;
+        AZStd::atomic<void*> m_pFileData{ nullptr };
 
         // the zip file in which this file is opened
         ZipDir::CachePtr m_pZip;

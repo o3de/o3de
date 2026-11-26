@@ -192,6 +192,7 @@ namespace AzFramework
 
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
 
         m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
@@ -208,6 +209,7 @@ namespace AzFramework
 
         m_registryChangeHandler.Disconnect();
 
+        AZ::SystemTickBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
 

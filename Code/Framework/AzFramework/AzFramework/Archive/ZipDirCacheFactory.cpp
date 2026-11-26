@@ -506,13 +506,24 @@ namespace AZ::IO::ZipDir
             const uint8_t* pExtraEnd = pExtraField + pFile->nExtraFieldLength;
             while (pExtraField < pExtraEnd)
             {
+                if (static_cast<size_t>(pExtraEnd - pExtraField) < sizeof(ZipFile::ExtraFieldHeader))
+                {
+                    break;
+                }
                 const uint8_t* pAttrData = pExtraField + sizeof(ZipFile::ExtraFieldHeader);
                 ZipFile::ExtraFieldHeader& hdr = *(ZipFile::ExtraFieldHeader*)pExtraField;
+                if (hdr.dataSize > static_cast<size_t>(pExtraEnd - pAttrData))
+                {
+                    break;
+                }
                 switch (hdr.headerID)
                 {
                 case ZipFile::EXTRA_NTFS:
                 {
-                    memcpy(&extra.nLastModifyTime, pAttrData + sizeof(ZipFile::ExtraNTFSHeader), sizeof(extra.nLastModifyTime));
+                    if (hdr.dataSize >= sizeof(ZipFile::ExtraNTFSHeader) + sizeof(extra.nLastModifyTime))
+                    {
+                        memcpy(&extra.nLastModifyTime, pAttrData + sizeof(ZipFile::ExtraNTFSHeader), sizeof(extra.nLastModifyTime));
+                    }
                 }
                 break;
                 }
@@ -638,12 +649,17 @@ namespace AZ::IO::ZipDir
                 }
 
                 // Read extra data
-                uint32_t extraDataLen = localFileHeader->nFileNameLength + localFileHeader->nExtraFieldLength;
-                buffer.resize_no_construct(buffer.size() + extraDataLen);
-                Read(buffer.data() + buffer.size(), extraDataLen);
+                const size_t headerSize = buffer.size();
+                const uint16_t fileNameLen = localFileHeader->nFileNameLength;
+                const uint32_t extraDataLen = fileNameLen + localFileHeader->nExtraFieldLength;
+                if (extraDataLen > 0)
+                {
+                    buffer.resize_no_construct(headerSize + extraDataLen);
+                    Read(buffer.data() + headerSize, extraDataLen);
+                }
 
                 // Compare local file name with the CDR file name, they should match
-                AZStd::string_view zipFileName{ buffer.data() + sizeof(ZipFile::LocalFileHeader), localFileHeader->nFileNameLength };
+                AZStd::string_view zipFileName{ buffer.data() + headerSize, fileNameLen };
                 AZStd::string_view cdrFileName{ reinterpret_cast<const char*>(pFileHeader + 1), pFileHeader->nFileNameLength };
                 if (zipFileName != cdrFileName)
                 {

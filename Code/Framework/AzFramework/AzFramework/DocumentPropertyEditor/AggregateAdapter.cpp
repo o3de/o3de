@@ -170,8 +170,9 @@ namespace AZ::DocumentPropertyEditor
             });
         AZ_Assert(mapEntryIter != parentsMap.end(), "child must be present in parent's map!");
         // remove entry from map and shift any later siblings' indices down by one
+        const size_t entryIndex = mapEntryIter->first;
         parentsMap.erase(mapEntryIter);
-        m_parent->ShiftChildIndices(adapterIndex, mapEntryIter->first, -1);
+        m_parent->ShiftChildIndices(adapterIndex, entryIndex, -1);
 
         bool nodeWasDestroyed = false;
         m_pathEntries[adapterIndex] = InvalidEntry;
@@ -345,13 +346,14 @@ namespace AZ::DocumentPropertyEditor
                     else
                     {
                         // replacing a row with a non-row. Remove the existing row, then update the parent
+                        auto* parentNode = rowNode->m_parent;
                         ProcessRemoval(rowNode, adapterIndex, &outgoingPatch);
 
                         // replace operation is now just an add, since the removal part has been handled. Change the
                         // patchOperation accordingly
                         auto addOperation =
                             Dom::PatchOperation::AddOperation(patchOperation.GetDestinationPath(), patchOperation.GetValue());
-                        UpdateAndPatchNode(rowNode->m_parent, adapterIndex, addOperation, leftoverPath, outgoingPatch);
+                        UpdateAndPatchNode(parentNode, adapterIndex, addOperation, leftoverPath, outgoingPatch);
                     }
                 }
             }
@@ -840,20 +842,24 @@ namespace AZ::DocumentPropertyEditor
                             auto adapterRow = adapter->GetContents()[rowPath];
                             AddChildRow(adapterIndex, parentNode, adapterRow, rowPath.Back().GetIndex(), &outgoingPatch);
                             matchingSiblingFound = true;
+                            break;
                         }
                     }
                 }
             }
-            const bool nodeIsExampleRow =
-                (!m_generateDiffRows || rowNode->m_allEntriesMatch) && (rowNode->GetComparisonAdapterIndex() == adapterIndex);
-            if (!matchingSiblingFound && nodeWasComplete && nodeIsExampleRow)
+            if (!matchingSiblingFound && nodeWasComplete)
             {
-                // there's only one entry for this node and it was the shown "example" node,
-                // add the existing patch operation mapped to the correct path
-                auto operationPath = GetPathForNode(rowNode);
-                if (!operationPath.IsEmpty())
+                const bool nodeIsExampleRow =
+                    (!m_generateDiffRows || rowNode->m_allEntriesMatch) && (rowNode->GetComparisonAdapterIndex() == adapterIndex);
+                if (nodeIsExampleRow)
                 {
-                    AddMappedPatchOperation();
+                    // there's only one entry for this node and it was the shown "example" node,
+                    // add the existing patch operation mapped to the correct path
+                    auto operationPath = GetPathForNode(rowNode);
+                    if (!operationPath.IsEmpty())
+                    {
+                        AddMappedPatchOperation();
+                    }
                 }
             }
         }
@@ -861,7 +867,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::RemoveChildRows(Dom::Value& rowValue)
     {
-        for (auto valueIter = rowValue.MutableArrayBegin(), endIter = rowValue.MutableArrayEnd(); valueIter != endIter; /*in loop*/)
+        for (auto valueIter = rowValue.MutableArrayBegin(); valueIter != rowValue.MutableArrayEnd(); /*in loop*/)
         {
             if (IsRow(*valueIter))
             {

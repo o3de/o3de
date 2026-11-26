@@ -70,14 +70,14 @@ namespace AzFramework
 
         if (status.shouldReadOutput)
         {
-            bytesRead = ReadOutput(readBuffer, s_readBufferSize);
+            bytesRead = AZStd::min(ReadOutput(readBuffer, s_readBufferSize), s_readBufferSize);
             readBuffer[bytesRead] = 0;
             processOutput.outputResult.append(readBuffer, bytesRead);
         }
 
         if (status.shouldReadErrors)
         {
-            bytesRead = ReadError(readBuffer, s_readBufferSize);
+            bytesRead = AZStd::min(ReadError(readBuffer, s_readBufferSize), s_readBufferSize);
             readBuffer[bytesRead] = 0;
             processOutput.errorResult.append(readBuffer, bytesRead);
         }

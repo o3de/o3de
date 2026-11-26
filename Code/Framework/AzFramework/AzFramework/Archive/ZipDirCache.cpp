@@ -96,7 +96,8 @@ namespace AZ::IO::ZipDir
             m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath.Native());
             if (m_pFileEntry && az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%s")", pathIt.first->c_str(), pCache->GetFilePath());
+                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%.*s")",
+                    pathIt.first->c_str(), AZ_STRING_ARG(pCache->GetFilePath().Native()));
             }
         }
         ~FileEntryTransactionAdd()
@@ -187,9 +188,9 @@ namespace AZ::IO::ZipDir
         size_t sizeLeft = size;
         size_t sizeToWrite;
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(maxChunk);
-        if (memoryBlock)
+        if (!memoryBlock || !memoryBlock->m_address)
         {
-            return ZD_ERROR_IO_FAILED;
+            return false;
         }
 
         memset(memoryBlock->m_address.get(), 0, sizeof(char) * maxChunk);
@@ -585,8 +586,8 @@ namespace AZ::IO::ZipDir
 
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%s")",
-                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
+                AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%.*s")",
+                    AZ_STRING_ARG(szRelativePath.Native()), AZ_STRING_ARG(GetFilePath().Native()));
             }
         }
         return e;
@@ -626,8 +627,8 @@ namespace AZ::IO::ZipDir
 
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(Directory "%.*s" has been remove from archive at root "%s")",
-                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
+                AZ_TracePrintf("Archive", R"(Directory "%.*s" has been remove from archive at root "%.*s")",
+                    AZ_STRING_ARG(szRelativePath.Native()), AZ_STRING_ARG(GetFilePath().Native()));
             }
         }
         return e;
@@ -666,11 +667,6 @@ namespace AZ::IO::ZipDir
             return nError;
         }
 
-        if (!AZ::IO::FileIOBase::GetDirectInstance()->Seek(m_fileHandle, pFileEntry->nFileDataOffset, AZ::IO::SeekType::SeekFromStart))
-        {
-            return ZD_ERROR_IO_FAILED;
-        }
-
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock;
 
         void* pBuffer = pCompressed; // the buffer where the compressed data will go
@@ -693,9 +689,17 @@ namespace AZ::IO::ZipDir
             pBuffer = memoryBlock->m_address.get();
         }
 
-        if (!AZ::IO::FileIOBase::GetDirectInstance()->Read(m_fileHandle, pBuffer, pFileEntry->desc.lSizeCompressed, true))
         {
-            return ZD_ERROR_IO_FAILED;
+            AZStd::scoped_lock lock(m_cacheMutex);
+            if (!AZ::IO::FileIOBase::GetDirectInstance()->Seek(m_fileHandle, pFileEntry->nFileDataOffset, AZ::IO::SeekType::SeekFromStart))
+            {
+                return ZD_ERROR_IO_FAILED;
+            }
+
+            if (!AZ::IO::FileIOBase::GetDirectInstance()->Read(m_fileHandle, pBuffer, pFileEntry->desc.lSizeCompressed, true))
+            {
+                return ZD_ERROR_IO_FAILED;
+            }
         }
 
         // if there's a buffer for uncompressed data, uncompress it to that buffer
@@ -728,6 +732,44 @@ namespace AZ::IO::ZipDir
         return ZD_ERROR_SUCCESS;
     }
 
+    ErrorEnum Cache::ReadFileSection(FileEntry* pFileEntry, void* pOutData, uint64_t nDataOffset, uint64_t nDataSize)
+    {
+        if (!pFileEntry || !pOutData || pFileEntry->nMethod != ZipFile::METHOD_STORE)
+        {
+            return ZD_ERROR_INVALID_CALL;
+        }
+
+        if (nDataSize == 0)
+        {
+            return ZD_ERROR_SUCCESS;
+        }
+
+        if (nDataOffset > pFileEntry->desc.lSizeUncompressed || nDataSize > pFileEntry->desc.lSizeUncompressed - nDataOffset)
+        {
+            return ZD_ERROR_INVALID_CALL;
+        }
+
+        ErrorEnum nError = Refresh(pFileEntry);
+        if (nError != ZD_ERROR_SUCCESS)
+        {
+            return nError;
+        }
+
+        AZStd::scoped_lock lock(m_cacheMutex);
+        if (!AZ::IO::FileIOBase::GetDirectInstance()->Seek(
+                m_fileHandle, pFileEntry->nFileDataOffset + nDataOffset, AZ::IO::SeekType::SeekFromStart))
+        {
+            return ZD_ERROR_IO_FAILED;
+        }
+
+        if (!AZ::IO::FileIOBase::GetDirectInstance()->Read(m_fileHandle, pOutData, nDataSize, true))
+        {
+            return ZD_ERROR_IO_FAILED;
+        }
+
+        return ZD_ERROR_SUCCESS;
+    }
+
 
     //////////////////////////////////////////////////////////////////////////
     // finds the file by exact path
@@ -741,7 +783,8 @@ namespace AZ::IO::ZipDir
         {
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", "FindExact failed to find file %.*s at root %s", AZ_STRING_ARG(szPath.Native()), GetFilePath());
+                AZ_TracePrintf("Archive", "FindExact failed to find file %.*s at root %.*s",
+                    AZ_STRING_ARG(szPath.Native()), AZ_STRING_ARG(GetFilePath().Native()));
             }
             return {};
         }
@@ -759,6 +802,11 @@ namespace AZ::IO::ZipDir
         if (pFileEntry->nFileDataOffset != FileEntryBase::INVALID_DATA_OFFSET)
         {
             return ZD_ERROR_SUCCESS; // the data offset has been successfully read..
+        }
+        AZStd::scoped_lock lock(m_cacheMutex);
+        if (pFileEntry->nFileDataOffset != FileEntryBase::INVALID_DATA_OFFSET)
+        {
+            return ZD_ERROR_SUCCESS;
         }
         CZipFile tmp;
         tmp.m_fileHandle = m_fileHandle;

@@ -339,7 +339,11 @@ namespace AzFramework
 
             //set join on all the other threads so they can exit asap
             m_recvThread.m_join = true;
-            m_sendThread.m_join = true;
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_sendQueueMutex);
+                m_sendThread.m_join = true;
+            }
+            m_sendEventNotEmpty.notify_all();
             m_listenThread.m_join = true;
             m_connectThread.m_join = true;
 
@@ -390,6 +394,7 @@ namespace AzFramework
 
             // clear the send queue so there is no stale data!
             {
+                AZStd::lock_guard<AZStd::mutex> lock(m_sendQueueMutex);
                 SendQueueType emptyQueue;
                 m_sendQueue.swap(emptyQueue);
             }
@@ -612,7 +617,15 @@ namespace AzFramework
             if (thread.m_thread.joinable())
             {
                 // Signal the thread that it's join time
-                thread.m_join = true;
+                if (&thread == &m_sendThread)
+                {
+                    AZStd::lock_guard<AZStd::mutex> sendLock(m_sendQueueMutex);
+                    thread.m_join = true;
+                }
+                else
+                {
+                    thread.m_join = true;
+                }
                 if (wakeUpCondition)
                 {
                     wakeUpCondition->notify_all(); // this will wake up the thread and it should exit immediately
@@ -749,6 +762,7 @@ namespace AzFramework
             if (m_listenThread.m_join)
             {
                 DebugMessage("AssetProcessorConnection::ListenThread - Join");
+                AZ::AzSock::CloseSocket(connectionSocket);
                 return;
             }
 
@@ -756,6 +770,7 @@ namespace AzFramework
             if (result)
             {
                 DebugMessage("AssetProcessorConnection::ConnectThread - EnableTCPNoDelay returned an error %s", AZ::AzSock::GetStringForError(result));
+                AZ::AzSock::CloseSocket(connectionSocket);
                 if (m_listenThread.m_join)
                 {
                     return;
@@ -1101,7 +1116,7 @@ namespace AzFramework
             // If we should queue up the remove, put it in another list to be taken care of when done invoking type callbacks
             if (m_shouldQueueHandlerChanges)
             {
-                m_messageHandlersToRemove.push_back(callbackHandle);
+                m_messageHandlersToRemove.push_back(AZStd::make_pair(typeId, callbackHandle));
                 return;
             }
             else
@@ -1148,11 +1163,11 @@ namespace AzFramework
             // Remove callbacks that may have been removed
             for (auto removedCallbackHandleIterator = m_messageHandlersToRemove.begin(); removedCallbackHandleIterator != m_messageHandlersToRemove.end(); /*No increment, erase will do it for us*/)
             {
-                // Get the range of callbacks that match this typeId
-                auto callbacksRange = m_messageHandlers.equal_range(typeId);
+                // Get the range of callbacks that match the handler's own typeId
+                auto callbacksRange = m_messageHandlers.equal_range(removedCallbackHandleIterator->first);
                 for (auto callbackIterator = callbacksRange.first; callbackIterator != callbacksRange.second; ++callbackIterator)
                 {
-                    if (callbackIterator->second.first == *removedCallbackHandleIterator)
+                    if (callbackIterator->second.first == removedCallbackHandleIterator->second)
                     {
                         m_messageHandlers.erase(callbackIterator);
                         break;

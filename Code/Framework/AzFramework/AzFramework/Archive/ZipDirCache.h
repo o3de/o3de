@@ -19,6 +19,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzFramework/Archive/Codec.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
@@ -82,6 +84,7 @@ namespace AZ::IO::ZipDir
         FileEntry* FindFile(AZStd::string_view szPath, bool bFullInfo = false);
 
         ErrorEnum ReadFile(FileEntry* pFileEntry, void* pCompressed, void* pUncompressed);
+        ErrorEnum ReadFileSection(FileEntry* pFileEntry, void* pOutData, uint64_t nDataOffset, uint64_t nDataSize);
 
         void Free(void* ptr)
         {
@@ -133,6 +136,7 @@ namespace AZ::IO::ZipDir
         friend class FileEntryTransactionAdd;
         FileEntryTree m_treeDir;
         AZ::IO::HandleType m_fileHandle = AZ::IO::InvalidHandle;
+        AZStd::recursive_mutex m_cacheMutex;
         AZ::IO::Path m_strFilePath;
 
         // String Pool for persistently storing paths as long as they reside in the cache

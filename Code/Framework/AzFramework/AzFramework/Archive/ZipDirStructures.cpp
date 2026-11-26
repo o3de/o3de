@@ -368,7 +368,7 @@ namespace AZ::IO::ZipDir
 
         if (m_pReadTarget)
         {
-            _aligned_free(m_pReadTarget);
+            AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(m_pReadTarget);
             m_pReadTarget = nullptr;
         }
 #endif
@@ -643,9 +643,9 @@ namespace AZ::IO::ZipDir
             DirEntry* pEnd = pBegin + this->numDirs;
             DirEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
-            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
-            if (pEntry != pEnd && searchPath == entryPath)
+            if (pEntry != pEnd &&
+                AZ::IO::PathView(szName, AZ::IO::WindowsPathSeparator) ==
+                    AZ::IO::PathView(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator))
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -669,9 +669,9 @@ namespace AZ::IO::ZipDir
             FileEntry* pEnd = pBegin + this->numFiles;
             FileEntry* pEntry = AZStd::lower_bound(pBegin, pEnd, szName, pred);
 #if AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM
-            AZ::IO::PathView searchPath(szName, AZ::IO::WindowsPathSeparator);
-            AZ::IO::PathView entryPath(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator);
-            if (pEntry != pEnd && searchPath == entryPath)
+            if (pEntry != pEnd &&
+                AZ::IO::PathView(szName, AZ::IO::WindowsPathSeparator) ==
+                    AZ::IO::PathView(pEntry->GetName(pNamePool), AZ::IO::WindowsPathSeparator))
 #else
             if (pEntry != pEnd && szName == pEntry->GetName(pNamePool))
 #endif
@@ -878,6 +878,15 @@ namespace AZ::IO::ZipDir
             return Year % 4 == 0 && (Year % 100 != 0 || Year % 400 == 0) ? 1 : 0;
         };
 
+        // Ensure month is at least 1 before 0-based indexing
+        if (month < 1)
+        {
+            month = 1;
+        }
+        if (day < 1)
+        {
+            day = 1;
+        }
         // Add seconds overflow above a minute to the minute value
         minute += second / 60;
         second = second % 60;
@@ -887,15 +896,20 @@ namespace AZ::IO::ZipDir
         // Add hour overflow above a day to the day value
         day += hour / 24;
         hour = hour % 24;
+        // Normalize month to [1, 12] before day overflow loop
+        year += (month - 1) / 12;
+        month = ((month - 1) % 12) + 1;
         // Add days overflow above the length of the current month to a new month 
-        while (day > MonthLengths[IsLeapYear(year)][(month % 12) - 1])
+        while (day > MonthLengths[IsLeapYear(year)][(month - 1) % 12])
         {
-            day -= MonthLengths[IsLeapYear(year)][(month % 12) - 1];
+            day -= MonthLengths[IsLeapYear(year)][(month - 1) % 12];
             ++month;
+            if (month > 12)
+            {
+                month = 1;
+                ++year;
+            }
         }
-        // Add months overflow above the a year to the year value
-        year += month / 12;
-        month = month % 12;
 
         uint64_t filetime{};
         constexpr int EpochYear = 1601;
@@ -915,7 +929,7 @@ namespace AZ::IO::ZipDir
         AZStd::chrono::seconds filetimeSeconds(filetime);
 
         // Returns time in units of second * 10^-7
-        using ModTimeUnits = AZStd::chrono::duration<AZStd::sys_time_t, AZStd::ratio<10000000>>;
+        using ModTimeUnits = AZStd::chrono::duration<AZStd::sys_time_t, AZStd::ratio<1, 10000000>>;
         return AZStd::chrono::duration_cast<ModTimeUnits>(filetimeSeconds).count();
     }
 

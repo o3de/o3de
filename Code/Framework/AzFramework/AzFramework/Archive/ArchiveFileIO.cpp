@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/functional.h> // for function<> in the find files callback.
 #include <AzFramework/Archive/ArchiveFileIO.h>
@@ -377,11 +378,12 @@ namespace AZ::IO
             return IO::ResultCode::Error;
         }
 
+        AZStd::array<char, ArchiveFileIoMaxBuffersize> copyBuffer;
         while (bytesRemaining > 0)
         {
             size_t bytesThisTime = AZStd::GetMin<size_t>(bytesRemaining, ArchiveFileIoMaxBuffersize);
 
-            if (!Read(sourceFile, m_copyBuffer.data(), bytesThisTime, true))
+            if (!Read(sourceFile, copyBuffer.data(), bytesThisTime, true))
             {
                 failureEncountered = true;
                 break;
@@ -389,7 +391,7 @@ namespace AZ::IO
 
             AZ::u64 actualBytesWritten = 0;
 
-            if ((!Write(destinationFile, m_copyBuffer.data(), bytesThisTime, &actualBytesWritten)) || (actualBytesWritten == 0))
+            if ((!Write(destinationFile, copyBuffer.data(), bytesThisTime, &actualBytesWritten)) || (actualBytesWritten == 0))
             {
                 failureEncountered = true;
                 break;
@@ -543,7 +545,7 @@ namespace AZ::IO
         {
             return;
         }
-        realUnderlyingFileIO->GetAlias(alias);
+        realUnderlyingFileIO->ClearAlias(alias);
     }
 
     void ArchiveFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
