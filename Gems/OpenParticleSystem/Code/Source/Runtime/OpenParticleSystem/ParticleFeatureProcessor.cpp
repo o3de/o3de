@@ -16,6 +16,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <AzFramework/Components/CameraBus.h>
 
 #include <OpenParticleSystem/ParticleFeatureProcessor.h>
 #include <particle/core/ParticleDriver.h>
@@ -151,11 +152,11 @@ namespace OpenParticle
         AZ_Error("ParticleDataInstance", false, "Failed to load asset %s.", asset.GetHint().c_str());
     }
 
-    void ParticleDataInstance::Simulate(float delta)
+    void ParticleDataInstance::Simulate(float delta, const AZ::Transform& activeCameraTransform)
     {
         if (m_particleInstance)
         {
-            m_particleInstance->Tick(delta);
+            m_particleInstance->Tick(delta, activeCameraTransform);
         }
     }
 
@@ -284,7 +285,7 @@ namespace OpenParticle
                     {
                         continue;
                     }
-                    iter->Simulate(deltaTime);
+                    iter->Simulate(deltaTime, m_activeCameraTransform);
                 }
             };
             AZ::Job* executeGroupJob = aznew AZ::JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
@@ -412,6 +413,10 @@ namespace OpenParticle
     void ParticleFeatureProcessor::OnTick(float deltaTime, AZ::ScriptTimePoint scriptTime)
     {
         m_timeToSim = deltaTime;
+        // Cache active camera transform for Simulate during which Camera Bus cannot be queried.
+        Camera::ActiveCameraRequestBus::BroadcastResult(
+            m_activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+
         AZ_UNUSED(scriptTime);
     }
 

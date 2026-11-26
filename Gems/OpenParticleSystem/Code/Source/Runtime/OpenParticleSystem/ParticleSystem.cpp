@@ -28,7 +28,6 @@
 #include <particle/core/ParticleHelper.h>
 
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
-#include <AzFramework/Components/CameraBus.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -161,7 +160,7 @@ namespace OpenParticle
         return true;
     }
 
-    void ParticleSystem::Tick(float delta)
+    void ParticleSystem::Tick(float delta, const AZ::Transform& activeCameraTransform)
     {
         if (!m_particleSystem || m_particleSystem->GetAllEmitters().size() == 0)
         {
@@ -171,8 +170,7 @@ namespace OpenParticle
         OpenParticleSystem::CameraTransform cameraTransform;
         if (!m_rtConfig.m_inParticleEditor)
         {
-            Camera::ActiveCameraRequestBus::BroadcastResult(
-                    cameraTransform.m_transform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+            cameraTransform.m_transform = activeCameraTransform;
 
             if (m_rtConfig.m_followActiveCamera)
             {
