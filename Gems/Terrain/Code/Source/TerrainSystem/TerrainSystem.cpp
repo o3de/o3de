@@ -151,6 +151,8 @@ void TerrainSystem::SetTerrainHeightBounds(const AzFramework::Terrain::FloatRang
 
 bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     for (const auto& area : m_registeredAreas)
     {
         if (area.second.m_areaBounds.Overlaps(bounds))
@@ -253,7 +255,7 @@ void TerrainSystem::InterpolateHeights(const AZStd::array<float,4>& heights, con
         { 0, 1, 3, 3 }, // T    T    F    T     lerp(lerp(x0y0, x1y0), x1y1)
         { 2, 3, 2, 3 }, // F    F    T    T     lerp(x0y1, x1y1)
         { 0, 0, 2, 3 }, // T    F    T    T     lerp(x0y0, lerp(x0y1, x1y1))
-        { 1, 1, 2, 2 }, // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
+        { 1, 1, 2, 3 }, // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
         { 0, 1, 2, 3 }, // T    T    T    T     lerp(lerp(x0y0, x1y0), lerp(x0y1, x1y1))
     };
 
@@ -381,9 +383,23 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
     BulkQueriesCallback queryCallback) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    MakeBulkQueriesUnlocked(inPositions, outPositions, outTerrainExists, outSurfaceWeights, AZStd::move(queryCallback));
+}
+
+void TerrainSystem::MakeBulkQueriesUnlocked(
+    const AZStd::span<const AZ::Vector3> inPositions,
+    AZStd::span<AZ::Vector3> outPositions,
+    AZStd::span<bool> outTerrainExists,
+    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
+    BulkQueriesCallback queryCallback) const
+{
     TERRAIN_PROFILE_FUNCTION_VERBOSE
 
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    if (inPositions.empty())
+    {
+        return;
+    }
 
     AZ::Aabb bounds;
 
@@ -393,14 +409,14 @@ void TerrainSystem::MakeBulkQueries(
     // This may be sub optimal if the points are randomly distributed in the list as opposed
     // to points in the same area id being close to each other.
     size_t windowStart = 0;
-    AZ::EntityId windowAreaId = FindBestAreaEntityAtPosition(inPositions[0], bounds);
+    AZ::EntityId windowAreaId = FindBestAreaEntityAtPositionUnlocked(inPositions[0], bounds);
     const size_t inPositionSize = inPositions.size();
 
     for (size_t windowEnd = 0; windowEnd < inPositionSize; windowEnd++)
     {
         size_t nextWindowEnd = windowEnd + 1;
         AZ::EntityId areaId = (nextWindowEnd < inPositionSize)
-            ? FindBestAreaEntityAtPosition(inPositions[nextWindowEnd], bounds)
+            ? FindBestAreaEntityAtPositionUnlocked(inPositions[nextWindowEnd], bounds)
             : AZ::EntityId();
 
         if (areaId != windowAreaId)
@@ -412,9 +428,15 @@ void TerrainSystem::MakeBulkQueries(
                 size_t spanLength = (windowEnd - windowStart) + 1;
                 queryCallback(
                     AZStd::span(inPositions.data() + windowStart, spanLength),
-                    AZStd::span(outPositions.data() + windowStart, spanLength),
-                    AZStd::span(outTerrainExists.data() + windowStart, spanLength),
-                    AZStd::span(outSurfaceWeights.data() + windowStart, spanLength),
+                    outPositions.size() >= (windowStart + spanLength)
+                        ? AZStd::span(outPositions.data() + windowStart, spanLength)
+                        : AZStd::span<AZ::Vector3>(),
+                    outTerrainExists.size() >= (windowStart + spanLength)
+                        ? AZStd::span(outTerrainExists.data() + windowStart, spanLength)
+                        : AZStd::span<bool>(),
+                    outSurfaceWeights.size() >= (windowStart + spanLength)
+                        ? AZStd::span(outSurfaceWeights.data() + windowStart, spanLength)
+                        : AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>(),
                     windowAreaId);
             }
 
@@ -429,9 +451,14 @@ void TerrainSystem::MakeBulkQueries(
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
-    TERRAIN_PROFILE_FUNCTION_VERBOSE
-
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    GetHeightsSynchronousUnlocked(inPositions, sampler, heights, terrainExists);
+}
+
+void TerrainSystem::GetHeightsSynchronousUnlocked(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
+    AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
+{
+    TERRAIN_PROFILE_FUNCTION_VERBOSE
 
     AZStd::vector<AZ::Vector3> outPositions;
     AZStd::vector<bool> outTerrainExists;
@@ -481,7 +508,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
     // This will be unused for heights. It's fine if it's empty.
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights;
-    MakeBulkQueries(outPositions, outPositions, outTerrainExists, outSurfaceWeights, callback);
+    MakeBulkQueriesUnlocked(outPositions, outPositions, outTerrainExists, outSurfaceWeights, callback);
 
     // Compute/store the final result
     for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
@@ -522,9 +549,13 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    bool terrainExists = false;
-
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    return GetHeightSynchronousUnlocked(x, y, sampler, terrainExistsPtr);
+}
+
+float TerrainSystem::GetHeightSynchronousUnlocked(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
+{
+    bool terrainExists = false;
 
     float height = m_currentSettings.m_heightRange.m_min;
     const float queryResolution = m_currentSettings.m_heightQueryResolution;
@@ -543,10 +574,10 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             const AZ::Vector2 pos1 = pos0 + AZ::Vector2(queryResolution);
 
             AZStd::array<bool,4> exists = { false, false, false, false };
-            const AZStd::array<float, 4> queriedHeights = { GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), exists[0]),
-                                                            GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), exists[1]),
-                                                            GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), exists[2]),
-                                                            GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), exists[3]) };
+            const AZStd::array<float, 4> queriedHeights = { GetTerrainAreaHeightUnlocked(pos0.GetX(), pos0.GetY(), exists[0]),
+                                                            GetTerrainAreaHeightUnlocked(pos1.GetX(), pos0.GetY(), exists[1]),
+                                                            GetTerrainAreaHeightUnlocked(pos0.GetX(), pos1.GetY(), exists[2]),
+                                                            GetTerrainAreaHeightUnlocked(pos1.GetX(), pos1.GetY(), exists[3]) };
 
             InterpolateHeights(queriedHeights, exists, normalizedDelta.GetX(), normalizedDelta.GetY(), height, terrainExists);
         }
@@ -558,7 +589,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             AZ::Vector2 clampedPosition;
             RoundPosition(x, y, queryResolution, clampedPosition);
 
-            height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
+            height = GetTerrainAreaHeightUnlocked(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
         }
         break;
 
@@ -566,7 +597,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
         [[fallthrough]];
     default:
-        height = GetTerrainAreaHeight(x, y, terrainExists);
+        height = GetTerrainAreaHeightUnlocked(x, y, terrainExists);
         break;
     }
 
@@ -582,12 +613,16 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
 
 float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    return GetTerrainAreaHeightUnlocked(x, y, terrainExists);
+}
+
+float TerrainSystem::GetTerrainAreaHeightUnlocked(float x, float y, bool& terrainExists) const
+{
     const float worldMin = m_currentSettings.m_heightRange.m_min;
     AZ::Vector3 inPosition(x, y, worldMin);
     float height = worldMin;
     terrainExists = false;
-
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     for (auto& [areaId, areaData] : m_registeredAreas)
     {
@@ -1246,6 +1281,12 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const
 {
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    return FindBestAreaEntityAtPositionUnlocked(position, bounds);
+}
+
+AZ::EntityId TerrainSystem::FindBestAreaEntityAtPositionUnlocked(const AZ::Vector3& position, AZ::Aabb& bounds) const
+{
     // Find the highest priority layer that encompasses this position
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
@@ -1269,10 +1310,12 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
 {
     TERRAIN_PROFILE_FUNCTION_VERBOSE
 
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
     if (terrainExists.size() == outSurfaceWeightsList.size())
     {
         AZStd::vector<float> heights(inPositions.size());
-        GetHeightsSynchronous(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
+        GetHeightsSynchronousUnlocked(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
     }
 
     // queryPositions contains the modified positions based on our sampler type. For surface queries, we don't currently perform bilinear
@@ -1305,7 +1348,7 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
 
     // This will be unused for surface weights. It's fine if it's empty.
     AZStd::vector<AZ::Vector3> outPositions;
-    MakeBulkQueries(queryPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
+    MakeBulkQueriesUnlocked(queryPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
 }
 
 void TerrainSystem::GetOrderedSurfaceWeights(
@@ -1316,10 +1359,19 @@ void TerrainSystem::GetOrderedSurfaceWeights(
     bool* terrainExistsPtr) const
 {
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    GetOrderedSurfaceWeightsUnlocked(x, y, sampler, outSurfaceWeights, terrainExistsPtr);
+}
 
+void TerrainSystem::GetOrderedSurfaceWeightsUnlocked(
+    const float x,
+    const float y,
+    Sampler sampler,
+    AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+    bool* terrainExistsPtr) const
+{
     if (terrainExistsPtr)
     {
-        GetHeightFromFloats(x, y, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, terrainExistsPtr);
+        GetHeightSynchronousUnlocked(x, y, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, terrainExistsPtr);
     }
 
     outSurfaceWeights.clear();
@@ -1351,7 +1403,7 @@ void TerrainSystem::GetOrderedSurfaceWeights(
     }
 
     AZ::Aabb bounds;
-    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(inPosition, bounds);
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPositionUnlocked(inPosition, bounds);
 
     if (!bestAreaId.IsValid())
     {
@@ -1783,7 +1835,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
         // This needs to happen before the "system active" check below, because activating the system will cause the various
         // terrain layer areas to request the current world bounds.
-        if (m_requestedSettings.m_heightRange != m_requestedSettings.m_heightRange)
+        if (m_requestedSettings.m_heightRange != m_currentSettings.m_heightRange)
         {
             m_terrainDirtyMask |= AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
                 AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData;

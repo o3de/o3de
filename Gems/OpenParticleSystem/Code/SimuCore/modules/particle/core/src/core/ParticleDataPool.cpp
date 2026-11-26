@@ -98,6 +98,10 @@ namespace SimuCore::ParticleCore
 
     void ParticleDataPool::Clone(ParticleDataPool& pool) const
     {
+        if (&pool == this) {
+            return;
+        }
+        pool.Reset();
         for (const auto& set : sets) {
             pool.sets.emplace(set.first, new ParticleDataSet(*set.second));
         }
@@ -114,7 +118,10 @@ namespace SimuCore::ParticleCore
     void ParticleDataPool::EmplaceData(AZ::u32 stride, const AZ::u8* data, AZ::u32 dataSize)
     {
         AZ::u32 alignSize = AlignUp(stride, ALIGNMENT);
-        DataMap::const_iterator iter = sets.emplace(alignSize, new ParticleDataSet(alignSize)).first;
+        auto iter = sets.find(alignSize);
+        if (iter == sets.end()) {
+            iter = sets.emplace(alignSize, new ParticleDataSet(alignSize)).first;
+        }
         iter->second->SetData(data, dataSize);
     }
 

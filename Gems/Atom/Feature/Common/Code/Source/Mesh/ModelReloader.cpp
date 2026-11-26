@@ -57,9 +57,13 @@ namespace AZ
             // Find the index of the asset that was reloaded
             const auto matchesId = [reloadedAssetId](const Data::Asset<Data::AssetData>& asset){ return asset.GetId() == reloadedAssetId;};
             const auto& iter = AZStd::find_if(AZStd::begin(pendingDependencies), AZStd::end(pendingDependencies), matchesId);
-            AZ_Assert(
-                iter != AZStd::end(pendingDependencies),
-                "ModelReloader - handling an AssetReloaded event for an asset that is not part of the dependency list.");
+            if (iter == AZStd::end(pendingDependencies))
+            {
+                AZ_Assert(
+                    false,
+                    "ModelReloader - handling an AssetReloaded event for an asset that is not part of the dependency list.");
+                return;
+            }
             size_t currentIndex = AZStd::distance(AZStd::begin(pendingDependencies), iter);
 
             // Keep a reference to the newly reloaded asset to prevent it from being immediately released
@@ -108,6 +112,7 @@ namespace AZ
             {
                 // If the original model asset failed to load, it won't have any dependencies to reload
                 AdvanceToNextLevelOfHierarchy();
+                return;
             }
             AZ_Assert(
                 dependencies.size() <= m_pendingDependencyListStatus.size(),

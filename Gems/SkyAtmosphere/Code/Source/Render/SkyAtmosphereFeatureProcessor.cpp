@@ -124,20 +124,25 @@ namespace SkyAtmosphere
         m_renderPipelineToSkyAtmosphereParentPass[renderPipeline] = nullptr;
 
         AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("SkyAtmosphereParentTemplate"), renderPipeline);
+        AZStd::vector<AZ::RPI::Pass*> passesToRemove;
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(
             passFilter,
-            [](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+            [&passesToRemove](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
-                AZ::RPI::PassSystemInterface::Get()->RemovePassFromLibrary(pass);
+                passesToRemove.push_back(pass);
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
+        for (AZ::RPI::Pass* pass : passesToRemove)
+        {
+            AZ::RPI::PassSystemInterface::Get()->RemovePassFromLibrary(pass);
+        }
 
         const char* passRequestAssetFilePath = "Passes/SkyAtmospherePassRequest.azasset";
         AZ::Data::Asset<AZ::RPI::AnyAsset> passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
 
         const AZ::RPI::PassRequest *passRequest = nullptr;
-        if (passRequestAsset->IsReady())
+        if (passRequestAsset.IsReady())
         {
             passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
         }
@@ -156,6 +161,7 @@ namespace SkyAtmosphere
         {
             AZ_Error("SkyAtmosphere", false, "Add the SkyAtmosphere parent pass to render pipeline [%s] failed",
                 renderPipeline->GetId().GetCStr());
+            return;
         }
         m_renderPipelineToSkyAtmosphereParentPass[renderPipeline] = static_cast<SkyAtmosphereParentPass*>(parentPass.get());
 

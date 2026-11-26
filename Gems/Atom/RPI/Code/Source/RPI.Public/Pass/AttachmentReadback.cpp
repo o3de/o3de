@@ -94,9 +94,8 @@ namespace AZ
 
         AttachmentReadback::~AttachmentReadback()
         {
+            m_fence.reset();
             Reset();
-            m_fence = nullptr;
-                
         }
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageSubresourceRange* mipsRange)
@@ -401,7 +400,17 @@ namespace AZ
                             m_callback(GetReadbackResult());
                         }
 
-                        Reset();
+                        m_attachmentId = RHI::AttachmentId{};
+                        m_readbackItems.clear();
+                        m_state = ReadbackState::Idle;
+                        m_readbackName = AZ::Name{};
+                        m_copyAttachmentId = RHI::AttachmentId{};
+                        m_decomposeScopeProducer = nullptr;
+                        if (m_decomposeSrg)
+                        {
+                            m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, nullptr);
+                            m_decomposeSrg->SetImageView(m_decomposeOutputImageIndex, nullptr);
+                        }
                     });
         }
 

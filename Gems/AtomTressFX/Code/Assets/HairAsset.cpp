@@ -31,7 +31,7 @@ namespace AZ
                 }
                 else
                 {
-                    assetData->m_tressFXAsset.release();
+                    assetData->m_tressFXAsset.reset();
                 }
                 return Data::AssetHandler::LoadResult::Error;
             }
