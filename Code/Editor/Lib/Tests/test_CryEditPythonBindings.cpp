@@ -58,6 +58,10 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("open_level_no_prompt") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("create_level") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("create_level_no_prompt") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("create_level_at_path") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("is_level_document_ready") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("is_level_document_modified") != behaviorContext->m_methods.end());
+        EXPECT_TRUE(behaviorContext->m_methods.find("get_level_document_path") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_game_folder") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_level_name") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_current_level_path") != behaviorContext->m_methods.end());

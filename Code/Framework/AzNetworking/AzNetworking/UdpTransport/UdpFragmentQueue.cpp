@@ -22,7 +22,7 @@ namespace AzNetworking
     {
         m_timeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item)
         {
-            const SequenceId fragmentSequence = static_cast<SequenceId>(item.m_userData & 0xFF);
+            const SequenceId fragmentSequence{ static_cast<uint16_t>(item.m_userData) };
             AZLOG(NET_FragmentQueue, "Timing out unreliable fragmented packet %u", static_cast<uint32_t>(fragmentSequence));
             m_packetFragments.erase(fragmentSequence);
             return TimeoutResult::Delete;
@@ -94,7 +94,8 @@ namespace AzNetworking
         if ((chunkCount != packetFragments.size()) || (chunkIndex >= chunkCount))
         {
             // Either we disagree on the number of chunks, or chunkIndex is bigger than the expected size, bail and disconnect
-            AZLOG(NET_FragmentQueue, "Malformed chunk metadata in fragmented packet, chunkIndex %u, chunkCount %u, reservedSize %u", chunkIndex, chunkCount, static_cast<uint32_t>(packetFragments.size()));
+            AZLOG_NOTICE("NETWORK_RECEIVE_FAILURE stage=fragment_metadata sequence=%u chunk_index=%u chunk_count=%u retained_count=%u",
+                static_cast<uint32_t>(fragmentSequence), chunkIndex, chunkCount, static_cast<uint32_t>(packetFragments.size()));
             return PacketDispatchResult::Failure;
         }
 

@@ -189,7 +189,8 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Private.Static
             Gem::Atom_RHI.Public
-            ${VULKAN_VALIDATION_LAYER}
+    RUNTIME_DEPENDENCIES
+        ${VULKAN_VALIDATION_LAYER}
 )
 
 # Inject the gem name into the Module source file

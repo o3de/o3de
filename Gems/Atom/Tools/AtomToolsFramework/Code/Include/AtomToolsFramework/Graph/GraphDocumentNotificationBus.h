@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
@@ -22,6 +24,11 @@ namespace AtomToolsFramework
 
         // This notification is sent whenever graph compilation has started.
         virtual void OnCompileGraphStarted([[maybe_unused]] const AZ::Uuid& documentId){};
+
+        // This notification is sent when graph compilation modifies generated files.
+        virtual void OnCompileGraphGeneratedFilesChanged(
+            [[maybe_unused]] const AZ::Uuid& documentId,
+            [[maybe_unused]] const AZStd::vector<AZStd::string>& modifiedGeneratedFiles){};
 
         // This notification is sent whenever graph compilation has completed.
         virtual void OnCompileGraphCompleted([[maybe_unused]] const AZ::Uuid& documentId){};

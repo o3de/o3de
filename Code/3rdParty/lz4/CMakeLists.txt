@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(lz4
-    VERSION "1.9.4"
+    VERSION "1.11.1"
     LICENSE "BSD-2-Clause"
-    URL "https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz"
-    URL_HASH "0b0e3aa07c8c063ddf40b082bdf7e37a1562bda40a0ff5272957f3e987e0e54b"
+    URL "https://github.com/lz4/lz4/archive/refs/tags/v1.11.1.tar.gz"
+    URL_HASH "683fed08a844ad012196381e40badf80c0bbe4962959761416d41c9e67d77ec7"
     GIT "https://github.com/lz4/lz4.git"
-    GIT_HASH "5ff839680134437dbf4678f3d0c7b371d84f4964"
+    GIT_HASH "aa4647fad575d01a874aaaadcdbe8e6a40e072f5"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(lz4)

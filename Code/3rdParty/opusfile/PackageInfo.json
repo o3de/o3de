@@ -1,0 +1,12 @@
+{
+    "PackageName": "opusfile",
+    "Version": "0.12",
+    "URL": "https://github.com/xiph/opusfile",
+    "License": "BSD-3-Clause",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://downloads.xiph.org/releases/opus/opusfile-0.12.tar.gz",
+        "Revision": "a55c164e9891a9326188b7d4d216ec9a88373739",
+        "SHA256": "118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b"
+    }
+}

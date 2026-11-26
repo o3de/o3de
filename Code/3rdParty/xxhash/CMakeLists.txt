@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(xxhash
-    VERSION "0.8.3"
+    VERSION "0.8.4"
     LICENSE "BSD-2-Clause"
-    URL "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.3.tar.gz"
-    URL_HASH "aae608dfe8213dfd05d909a57718ef82f30722c392344583d3f39050c7f29a80"
+    URL "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.4.tar.gz"
+    URL_HASH "5738270935e7c3d38a79b3adf7c9692566ce7895a25f67de43ad52ab504acd32"
     GIT "https://github.com/Cyan4973/xxHash.git"
-    GIT_HASH "e626a72bc2321cd320e953a0ccf1584cad60f363"
+    GIT_HASH "c87183a77d67f7d37e3d2d1b7eaac5e7c695e4f0"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(xxhash)

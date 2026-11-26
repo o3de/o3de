@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(astc-encoder
-    VERSION "3.2"
+    VERSION "5.7.1"
     LICENSE "Apache-2.0"
-    URL "https://github.com/ARM-software/astc-encoder/archive/refs/tags/3.2.tar.gz"
-    URL_HASH "ed24d600b3b18178df3c6375e2ba8f256ccfc1f20e57863f2f21a1c9e39f820e"
+    URL "https://github.com/ARM-software/astc-encoder/archive/refs/tags/5.7.1.tar.gz"
+    URL_HASH "37ff3928c4c156fb3ac0d1adb5df144ff9c5cdbc8a8e1ffeb20229cc7f35c767"
     GIT "https://github.com/ARM-software/astc-encoder.git"
-    GIT_HASH "f32d8d4dd9e06f8986cd5e10f12e199fc023f150"
+    GIT_HASH "0affb51aaf0e0de3a8b038fa32487d59754a1eed"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(astc-encoder)
@@ -20,10 +20,6 @@ file(COPY
     "${astc-encoder_SOURCE_DIR}/Source/astcenc.h"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Include"
 )
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "x64")
-    set(astc_encoder_compile_definitions ASTCENC_SSE=41 ASTCENC_POPCNT=1)
-endif()
 
 o3de_disable_warnings()
 
@@ -36,8 +32,13 @@ ly_add_target(
         PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Include"
     COMPILE_DEFINITIONS
         PRIVATE
-            ${astc_encoder_compile_definitions}
             $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+)
+
+target_compile_options(astc-encoder PRIVATE
+    ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH}
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>>:-Xclang>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-ffp-contract=off>
 )
 
 set_target_properties(astc-encoder PROPERTIES

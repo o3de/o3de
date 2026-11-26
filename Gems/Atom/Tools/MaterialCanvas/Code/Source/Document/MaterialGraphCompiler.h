@@ -121,13 +121,13 @@ namespace MaterialCanvas
         // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
         AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
-        // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
-        // properties defined in material input nodes
+        // Generates the material type and writes it only when its contents change.
         bool BuildMaterialTypeFromTemplate(
             GraphModel::ConstNodePtr templateNode,
             const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes,
             const AZStd::string& templateInputPath,
-            const AZStd::string& templateOutputPath) const;
+            const AZStd::string& templateOutputPath,
+            bool& wroteFile) const;
 
         // Returns the name that will be used to replace material graph name during any substitutions 
         AZStd::string GetUniqueGraphName() const;
@@ -147,6 +147,8 @@ namespace MaterialCanvas
         // match types and sizes of values on related slots.
         AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
 
+        AZStd::vector<GraphModel::ConstNodePtr> m_nodesInExecutionOrder;
+
         // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
         int m_templateNodeCount = 0;
 
@@ -159,5 +161,7 @@ namespace MaterialCanvas
         // A container of all nodes contributing instructions to the current node
         AZStd::mutex m_instructionNodesForCurrentNodeMutex;
         AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
+
+        bool m_upstreamOutputChanged = false;
     };
 } // namespace MaterialCanvas
