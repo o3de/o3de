@@ -408,8 +408,7 @@ namespace AzNetworking
             AZLOG_ERROR("TcpConnection - Received a compressed packet but no TCP compressor is available (net_TcpCompressor = '%s'). "
                 "Make sure the gem providing the compressor is loaded by this application.",
                 static_cast<AZ::CVarFixedString>(net_TcpCompressor).c_str());
-            // Drop the unreadable packet so we don't log this error for the same packet every update.
-            m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + transmittedPacketSize);
+            Disconnect(DisconnectReason::StreamError, TerminationEndpoint::Local);
             return false;
         }
         if (m_compressor && outHeader.IsPacketFlagSet(PacketFlag::Compressed))
