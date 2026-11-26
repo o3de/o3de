@@ -59,10 +59,7 @@ namespace ScriptCanvas
         {
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
-            rangeOut.inputs = activationData.storage.data();
-
-            AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
-                "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");
+            rangeOut.inputs = activationData.storage.EnsureCapacity(rangeOut.totalCount);
 
             // nodeables - until the optimization is required, every instance gets their own copy
             {

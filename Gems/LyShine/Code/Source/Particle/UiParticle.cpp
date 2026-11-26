@@ -126,7 +126,7 @@ bool UiParticle::FillVertices(LyShine::UiPrimitiveVertex* outputVertices, const 
     }
 
     int currentIndex = m_spriteCellIndex;
-    if (renderParameters.spritesheetCellIndexAnimated)
+    if (renderParameters.spritesheetCellIndexAnimated && renderParameters.spritesheetFrameDelay > 0.0f)
     {
         int unwrappedIndex = m_spriteCellIndex + static_cast<int>(m_particleAge / renderParameters.spritesheetFrameDelay);
         int clampedIndex = unwrappedIndex - renderParameters.spritesheetStartFrame;

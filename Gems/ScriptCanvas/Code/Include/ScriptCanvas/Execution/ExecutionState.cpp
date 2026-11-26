@@ -16,12 +16,23 @@ namespace ExecutionStateCpp
 {
     using namespace ScriptCanvas;
 
-    AZ::Data::Asset<RuntimeAsset> GetSubgraphAssetForDebug(const AZ::Data::AssetId& id)
+    const RuntimeAsset* FindSubgraphAssetRecursive(const RuntimeData& runtimeData, const AZ::Data::AssetId& id)
     {
-        // #functions2 this may have to be made recursive
-        auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(id, AZ::Data::AssetLoadBehavior::PreLoad);
-        asset.BlockUntilLoadComplete();
-        return asset;
+        for (const auto& requiredAsset : runtimeData.m_requiredAssets)
+        {
+            if (requiredAsset.GetId() == id && requiredAsset.Get())
+            {
+                return requiredAsset.Get();
+            }
+            if (requiredAsset.Get())
+            {
+                if (const RuntimeAsset* found = FindSubgraphAssetRecursive(requiredAsset.Get()->m_runtimeData, id))
+                {
+                    return found;
+                }
+            }
+        }
+        return nullptr;
     }
 }
 
@@ -39,6 +50,15 @@ namespace ScriptCanvas
         , m_userData(AZStd::move(config.userData))
     {}
 
+    const RuntimeAsset* ExecutionState::FindSubgraphAsset(const AZ::Data::AssetId& id) const
+    {
+        if (m_overrides.m_runtimeAsset.GetId() == id && m_overrides.m_runtimeAsset.Get())
+        {
+            return m_overrides.m_runtimeAsset.Get();
+        }
+        return ExecutionStateCpp::FindSubgraphAssetRecursive(m_runtimeData, id);
+    }
+
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
         return m_overrides.m_runtimeAsset.GetId();
@@ -53,9 +73,9 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const
     {
-        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_ins.size()
-            ? &(asset.Get()->m_runtimeData.m_debugMap.m_ins[index])
+        const RuntimeAsset* asset = FindSubgraphAsset(id);
+        return asset && index < asset->m_runtimeData.m_debugMap.m_ins.size()
+            ? &(asset->m_runtimeData.m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -68,9 +88,9 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const
     {
-        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_outs.size()
-            ? &(asset.Get()->m_runtimeData.m_debugMap.m_outs[index])
+        const RuntimeAsset* asset = FindSubgraphAsset(id);
+        return asset && index < asset->m_runtimeData.m_debugMap.m_outs.size()
+            ? &(asset->m_runtimeData.m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -83,9 +103,9 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionState::GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const
     {
-        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_returns.size()
-            ? &(asset.Get()->m_runtimeData.m_debugMap.m_returns[index])
+        const RuntimeAsset* asset = FindSubgraphAsset(id);
+        return asset && index < asset->m_runtimeData.m_debugMap.m_returns.size()
+            ? &(asset->m_runtimeData.m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -98,9 +118,9 @@ namespace ScriptCanvas
 
     const Grammar::DebugDataSource* ExecutionState::GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const
     {
-        auto asset = ExecutionStateCpp::GetSubgraphAssetForDebug(id);
-        return asset && asset.Get() && index < asset.Get()->m_runtimeData.m_debugMap.m_variables.size()
-            ? &(asset.Get()->m_runtimeData.m_debugMap.m_variables[index])
+        const RuntimeAsset* asset = FindSubgraphAsset(id);
+        return asset && index < asset->m_runtimeData.m_debugMap.m_variables.size()
+            ? &(asset->m_runtimeData.m_debugMap.m_variables[index])
             : nullptr;
     }
 

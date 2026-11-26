@@ -332,8 +332,11 @@ namespace GraphModelIntegration
         {
             GraphModel::NodePtr node = m_graph->GetNode(pair.first);
             GraphModel::NodePtr wrapperNode = m_graph->GetNode(pair.second.first);
-            AZ::u32 layoutOrder = pair.second.second;
-            WrapNodeUi(wrapperNode, node, layoutOrder);
+            if (node && wrapperNode)
+            {
+                AZ::u32 layoutOrder = pair.second.second;
+                WrapNodeUi(wrapperNode, node, layoutOrder);
+            }
         }
 
         // Create UI for all the Connections
@@ -996,12 +999,15 @@ namespace GraphModelIntegration
             if (const auto it = nodeWrappings.find(node->GetId()); it != nodeWrappings.end())
             {
                 GraphModel::NodePtr wrapperNode = m_graph->GetNode(it->second.first);
-                AZ::u32 layoutOrder = it->second.second;
+                if (wrapperNode)
+                {
+                    AZ::u32 layoutOrder = it->second.second;
 
-                AZ::EntityId wrapperNodeUiId = m_elementMap.Find(wrapperNode);
-                AZ_Assert(wrapperNodeUiId.IsValid(), "Invalid wrapper node reference for node [%d]", wrapperNode->GetId());
+                    AZ::EntityId wrapperNodeUiId = m_elementMap.Find(wrapperNode);
+                    AZ_Assert(wrapperNodeUiId.IsValid(), "Invalid wrapper node reference for node [%d]", wrapperNode->GetId());
 
-                serialization.m_serializedNodeWrappings[nodeUiId] = AZStd::make_pair(wrapperNodeUiId, layoutOrder);
+                    serialization.m_serializedNodeWrappings[nodeUiId] = AZStd::make_pair(wrapperNodeUiId, layoutOrder);
+                }
             }
         }
 

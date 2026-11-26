@@ -5,6 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <cmath>
+#include <limits>
+
 #include <AzCore/Math/MathUtils.h>
 
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
@@ -195,9 +198,9 @@ namespace ExpressionEvaluation
         double lhsValue = Utils::GetAnyValue<double>(leftValue);
         double rhsValue = Utils::GetAnyValue<double>(rightValue);
 
-        if (!AZ::IsClose(rhsValue, 0.0, std::numeric_limits<double>().epsilon()))
+        if (!AZ::IsClose(rhsValue, 0.0, std::numeric_limits<double>::epsilon()))
         {
-            return ExpressionResult(aznumeric_cast<double>(aznumeric_cast<int>(lhsValue) % aznumeric_cast<int>(rhsValue)));
+            return ExpressionResult(std::fmod(lhsValue, rhsValue));
         }
 
         return ExpressionResult();

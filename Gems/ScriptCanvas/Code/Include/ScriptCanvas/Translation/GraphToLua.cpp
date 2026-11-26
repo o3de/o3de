@@ -431,9 +431,8 @@ namespace ScriptCanvas
                 }
                 if (dependency.size() == 1)
                 {
-                    m_dotLua.WriteLine("local %s%s = require'%s%s'"
+                    m_dotLua.WriteLine("local %s = require'%s'"
                         , GraphToLuaCpp::ToDependencyTableName(*dependency.begin()).data()
-                        , Grammar::k_executionStateVariableName
                         , dependency.begin()->data());
                 }
                 else

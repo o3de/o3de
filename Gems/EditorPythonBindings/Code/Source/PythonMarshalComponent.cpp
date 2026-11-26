@@ -879,14 +879,9 @@ namespace EditorPythonBindings
 
                     if (!cleanUpList->empty())
                     {
-                        AZStd::weak_ptr<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>> cleanUp(cleanUpList);
-                        result.second = [cleanUp]()
+                        result.second = [cleanUpList]()
                         {
-                            auto cleanupList = cleanUp.lock();
-                            if (cleanupList)
-                            {
-                                AZStd::for_each(cleanupList->begin(), cleanupList->end(), [](auto& deleteMe) { deleteMe(); });
-                            }
+                            AZStd::for_each(cleanUpList->begin(), cleanUpList->end(), [](auto& deleteMe) { deleteMe(); });
                         };
                     }
 
@@ -1123,14 +1118,9 @@ namespace EditorPythonBindings
 
                     if (!deleterList->empty())
                     {
-                        AZStd::weak_ptr<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>> cleanUp(deleterList);
-                        result.second = [cleanUp]()
+                        result.second = [deleterList]()
                         {
-                            auto cleanupList = cleanUp.lock();
-                            if (cleanupList)
-                            {
-                                AZStd::for_each(cleanupList->begin(), cleanupList->end(), [](auto& deleteMe) { deleteMe(); });
-                            }
+                            AZStd::for_each(deleterList->begin(), deleterList->end(), [](auto& deleteMe) { deleteMe(); });
                         };
                     }
 
@@ -1351,14 +1341,9 @@ namespace EditorPythonBindings
 
                     if (!deleterList->empty())
                     {
-                        AZStd::weak_ptr<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>> cleanUp(deleterList);
-                        result.second = [cleanUp]()
+                        result.second = [deleterList]()
                         {
-                            auto cleanupList = cleanUp.lock();
-                            if (cleanupList)
-                            {
-                                AZStd::for_each(cleanupList->begin(), cleanupList->end(), [](auto& deleteMe) { deleteMe(); });
-                            }
+                            AZStd::for_each(deleterList->begin(), deleterList->end(), [](auto& deleteMe) { deleteMe(); });
                         };
                     }
 

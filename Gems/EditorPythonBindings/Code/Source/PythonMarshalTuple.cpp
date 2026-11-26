@@ -322,14 +322,9 @@ namespace EditorPythonBindings
 
         if (!cleanUpList->empty())
         {
-            AZStd::weak_ptr<AZStd::vector<PythonMarshalTypeRequests::DeallocateFunction>> cleanUp(cleanUpList);
-            result.second = [cleanUp]()
+            result.second = [cleanUpList]()
             {
-                auto cleanupList = cleanUp.lock();
-                if (cleanupList)
-                {
-                    AZStd::for_each(cleanupList->begin(), cleanupList->end(), [](auto& deleteMe) { deleteMe(); });
-                }
+                AZStd::for_each(cleanUpList->begin(), cleanUpList->end(), [](auto& deleteMe) { deleteMe(); });
             };
         }
 

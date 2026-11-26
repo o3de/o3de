@@ -186,23 +186,38 @@ namespace TextureAtlasBuilder
     // Supports a custom parser format
     AtlasBuilderInput AtlasBuilderInput::ReadFromFile(const AZStd::string& path, const AZStd::string& directory, bool& valid)
     {
+        // Prepare the output
+        AtlasBuilderInput data;
+
         // Open the file
         AZ::IO::FileIOBase* input = AZ::IO::FileIOBase::GetInstance();
-        AZ::IO::HandleType handle;
-        input->Open(path.c_str(), AZ::IO::OpenMode::ModeRead, handle);
+        AZ::IO::HandleType handle = AZ::IO::InvalidHandle;
+        if (!input || !input->Open(path.c_str(), AZ::IO::OpenMode::ModeRead, handle))
+        {
+            valid = false;
+            return data;
+        }
 
         // Read the file
-        AZ::u64 size;
-        input->Size(handle, size);
+        AZ::u64 size = 0;
+        if (!input->Size(handle, size))
+        {
+            input->Close(handle);
+            valid = false;
+            return data;
+        }
         char* buffer = new char[size + 1];
-        input->Read(handle, buffer, size);
+        if (!input->Read(handle, buffer, size))
+        {
+            delete[] buffer;
+            input->Close(handle);
+            valid = false;
+            return data;
+        }
         buffer[size] = 0;
 
         // Close the file
         input->Close(handle);
-
-        // Prepare the output
-        AtlasBuilderInput data;
 
         // Parse the input into lines
         AZStd::vector<AZStd::string> lines;
@@ -223,10 +238,11 @@ namespace TextureAtlasBuilder
                 AZStd::vector<AZStd::string> args;
                 AzFramework::StringFunc::Tokenize(line.c_str(), args, '=', true, true);
 
-                if (args.size() > 2)
+                if (args.size() != 2)
                 {
                     AZ_Error("AtlasBuilder", false, AZStd::string::format("Atlas Builder unable to parse line: Excessive '=' symbols were found: \"%s\"", line.c_str()).c_str());
                     valid = false;
+                    continue;
                 }
 
                 // Trim whitespace
@@ -281,7 +297,7 @@ namespace TextureAtlasBuilder
                 }
                 else if (args[0] == "unusedcolor")
                 {
-                    accepted = args[1].at(0) == '#' && args[1].length() == 9;
+                    accepted = args[1].length() == 9 && args[1].at(0) == '#';
                     if (accepted)
                     {
                         AZStd::string color = AZStd::string::format("%s%s%s%s", args[1].substr(7).c_str(), args[1].substr(5, 2).c_str(),
@@ -798,6 +814,27 @@ namespace TextureAtlasBuilder
             // Check if we were able to load the image
             if (inputImage)
             {
+                if (inputImage->GetPixelFormat() != ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8)
+                {
+                    ImageProcessingAtom::IImageObjectPtr convertedImage;
+                    ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(
+                        convertedImage,
+                        &ImageProcessingAtom::ImageBuilderRequests::ConvertImageObject,
+                        inputImage,
+                        "ImageConvert",
+                        "R8G8B8A8",
+                        "",
+                        request.m_platformInfo.m_identifier);
+                    if (convertedImage && convertedImage->GetPixelFormat() == ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8)
+                    {
+                        inputImage = convertedImage;
+                    }
+                    else
+                    {
+                        AZ_Error("AtlasBuilder", false, "Atlas Builder requires R8G8B8A8 pixel format for file: %s", input.m_filePaths[i].c_str());
+                        return;
+                    }
+                }
                 images.push_back(inputImage);
                 totalArea += inputImage->GetWidth(0) * inputImage->GetHeight(0);
             }
@@ -1155,11 +1192,11 @@ namespace TextureAtlasBuilder
                     }
 
                     open.erase(open.begin() + j, open.begin() + j + 1);
-                    if (bigCoords.GetHeight() > 0 && bigCoords.GetHeight() > 0)
+                    if (bigCoords.GetWidth() > 0 && bigCoords.GetHeight() > 0)
                     {
                         InsertInOrder(open, bigCoords);
                     }
-                    if (smallCoords.GetHeight() > 0 && smallCoords.GetHeight() > 0)
+                    if (smallCoords.GetWidth() > 0 && smallCoords.GetHeight() > 0)
                     {
                         InsertInOrder(open, smallCoords);
                     }

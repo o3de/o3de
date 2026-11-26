@@ -345,7 +345,7 @@ namespace ScriptCanvas
 
                     DebugExecution debugOut;
                     debugOut.m_namedEndpoint = execution->GetId().m_node->CreateNamedEndpoint(child.m_slot ? child.m_slot->GetId() : SlotId());
-                    debugOut.m_data.resize(child.m_output.size());
+                    debugOut.m_data.reserve(child.m_output.size());
 
                     for (auto output : child.m_output)
                     {
@@ -480,7 +480,7 @@ namespace ScriptCanvas
                 {
                     const auto& returnValueVariable = root->GetReturnValue(returnValueIndex).second->m_source;
                     out.outputs.push_back
-                    ({ GetOriginalVariableName(returnValueVariable, *uniqueNodelingsOut.begin())
+                    ({ GetOriginalVariableName(returnValueVariable, uniqueNodelingsOut.empty() ? nullptr : *uniqueNodelingsOut.begin())
                     , returnValueVariable->m_name
                     , returnValueVariable->m_datum.GetType()
                     , returnValueVariable->m_sourceVariableId });
@@ -1139,7 +1139,7 @@ namespace ScriptCanvas
             // get/set methods
             if (IsVariableSet(execution) && !IsPropertyExtractionSlot(execution, &outputSlot))
             {
-                if (!out.m_output.size() == 1)
+                if (out.m_output.size() != 1)
                 {
                     AddError(execution->GetId().m_node->GetEntityId(), nullptr, ScriptCanvas::ParseErrors::GetOrSetVariableOutputNotSupplied);
                     return nullptr;

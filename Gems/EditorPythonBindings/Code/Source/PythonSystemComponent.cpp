@@ -430,6 +430,7 @@ namespace EditorPythonBindings
         }
 
         bool result = false;
+        m_pythonActionManagerHandler.Reset();
         EditorPythonBindingsNotificationBus::Broadcast(&EditorPythonBindingsNotificationBus::Events::OnPreFinalize);
 
         result = StopPythonInterpreter();

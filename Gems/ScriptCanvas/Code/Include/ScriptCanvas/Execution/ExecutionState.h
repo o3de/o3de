@@ -105,6 +105,8 @@ namespace ScriptCanvas
         ExecutionStateWeakConstPtr WeakFromThisConst() const;
 
     private:
+        const RuntimeAsset* FindSubgraphAsset(const AZ::Data::AssetId& id) const;
+
         const RuntimeData& m_runtimeData;
         const RuntimeDataOverrides& m_overrides;
         ExecutionUserData m_userData;

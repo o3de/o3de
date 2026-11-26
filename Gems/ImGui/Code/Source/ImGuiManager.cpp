@@ -243,12 +243,6 @@ void ImGuiManager::Shutdown()
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "gEnv Invalid -- Skipping ImGui Shutdown.");
         return;
     }
-#if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
-    if (m_imgSharedLib->IsLoaded())
-    {
-        m_imgSharedLib->Unload();
-    }
-#endif
 
     // Unregister from Buses
     ImGuiManagerBus::Handler::BusDisconnect();
@@ -256,8 +250,19 @@ void ImGuiManager::Shutdown()
     InputTextEventListener::Disconnect();
     AzFramework::WindowNotificationBus::Handler::BusDisconnect();
 
-    // Finally, destroy the ImGui Context.
-    ImGui::DestroyContext(m_imguiContext);
+    // Destroy the ImGui Context before unloading the dynamic library.
+    if (m_imguiContext)
+    {
+        ImGui::DestroyContext(m_imguiContext);
+        m_imguiContext = nullptr;
+    }
+
+#if defined(LOAD_IMGUI_LIB_DYNAMICALLY) && !defined(AZ_MONOLITHIC_BUILD)
+    if (m_imgSharedLib->IsLoaded())
+    {
+        m_imgSharedLib->Unload();
+    }
+#endif
 }
 
 void ImGui::ImGuiManager::OverrideRenderWindowSize(uint32_t width, uint32_t height)
