@@ -79,25 +79,9 @@ namespace ScriptCanvas::Nodes::Core
         return m_mode;
     }
 
-    AZ::Outcome<DependencyReport, void> Reroute::GetDependencies() const
-    {
-        return AZ::Success(DependencyReport{});
-    }
-
     bool Reroute::IsConnectionTransparentForTranslation() const
     {
         return true;
-    }
-
-    bool Reroute::IsNoOp() const
-    {
-        return true;
-    }
-
-    ConstSlotsOutcome Reroute::GetSlotsInExecutionThreadByTypeImpl(
-        const Slot&, CombinedSlotType targetSlotType, const Slot*) const
-    {
-        return AZ::Success(GetSlotsByType(targetSlotType));
     }
 
     void Reroute::OnInit()

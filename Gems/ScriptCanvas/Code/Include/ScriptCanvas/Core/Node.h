@@ -686,7 +686,7 @@ namespace ScriptCanvas
 
         EndpointsResolved GetConnectedNodes(const Slot& slot) const;
 
-        //! Resolves connections while bypassing nodes that are transparent to translation.
+        //! Resolves connections through reroutes, giving what translation sees (editor display and contract checks use this).
         EndpointsResolved GetConnectedNodesForTranslation(const Slot& slot) const;
 
         //! Resolves a slot through reroutes, including disabled nodes whose connection contracts still apply.
@@ -771,7 +771,7 @@ namespace ScriptCanvas
 
         virtual bool IsNoOp() const { return false; }
 
-        //! Translation traversals cross this node without emitting it into the abstract code model.
+        //! Editor layout only (a reroute): translation splices the node out of the graph before parsing (see Grammar::ScopedRerouteFreeGraph).
         virtual bool IsConnectionTransparentForTranslation() const { return false; }
 
         virtual bool IsNodeableNode() const { return false; }

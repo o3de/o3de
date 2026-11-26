@@ -32,13 +32,10 @@ namespace ScriptCanvas::Nodes::Core
         void ConfigureMode(Mode mode);
         Mode GetMode() const;
 
-        AZ::Outcome<DependencyReport, void> GetDependencies() const override;
+        //! Marks the node as editor layout only: translation splices it out of the graph before parsing.
         bool IsConnectionTransparentForTranslation() const override;
-        bool IsNoOp() const override;
 
     protected:
-        ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(
-            const Slot&, CombinedSlotType targetSlotType, const Slot*) const override;
         void OnInit() override;
 
     private:

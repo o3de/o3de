@@ -91,6 +91,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp
+    Include/ScriptCanvas/Grammar/RerouteFreeGraph.cpp
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.cpp
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.cpp

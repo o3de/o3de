@@ -3963,9 +3963,8 @@ namespace ScriptCanvasEditor
                 if (finalNode.m_graphCanvasId.IsValid())
                 {
                     GraphCanvas::ConnectionSpliceConfig spliceConfig;
-                    // An AzEvent handler pairs its Connect execution slot with a restricted event-data
-                    // connection. A reroute belongs only on the selected wire; opportunistic splicing
-                    // would also try to route the paired data connection through this execution node.
+                    // Splice a reroute into the selected wire only: an AzEvent handler's Connect slot has a paired
+                    // event-data connection that opportunistic splicing would also route through this execution node.
                     spliceConfig.m_allowOpportunisticConnections = !isRerouteNode;
 
                     if (!GraphCanvas::GraphUtils::SpliceNodeOntoConnection(finalNode.m_graphCanvasId, connectionId, spliceConfig))
