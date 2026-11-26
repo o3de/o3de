@@ -32,11 +32,16 @@ namespace AZ
     OrderedEventHandler<Params...>::OrderedEventHandler(const OrderedEventHandler& rhs)
         : m_callback(rhs.m_callback)
         , m_priority(rhs.m_priority)
+        , m_event(rhs.m_event)
     {
         // Copy the callback function, then perform a Connect with the new event
-        if (rhs.m_event)
+        if (m_callback && m_event)
         {
-            rhs.m_event->Connect(*this);
+            m_event->Connect(*this);
+        }
+        else
+        {
+            m_event = nullptr;
         }
     }
 
@@ -73,9 +78,14 @@ namespace AZ
             Disconnect();
             m_callback = rhs.m_callback;
             m_priority = rhs.m_priority;
-            if (rhs.m_event)
+            m_event = rhs.m_event;
+            if (m_callback && m_event)
             {
-                rhs.m_event->Connect(*this);
+                m_event->Connect(*this);
+            }
+            else
+            {
+                m_event = nullptr;
             }
         }
 
@@ -233,9 +243,11 @@ namespace AZ
         // Clear any handlers still pending registration
         for (OrderedEventHandler<Params...>* handler : m_addList)
         {
-            AZ_Assert(handler, "NULL handler encountered in Event addList");
-            AZ_Assert(handler->m_event == this, "Entry event does not match");
-            handler->Disconnect();
+            if (handler)
+            {
+                AZ_Assert(handler->m_event == this, "Entry event does not match");
+                handler->Disconnect();
+            }
         }
     }
 
@@ -259,7 +271,10 @@ namespace AZ
         {
             for (OrderedEventHandler<Params...>* handler : m_addList)
             {
-                InsertHandler((*handler));
+                if (handler)
+                {
+                    InsertHandler((*handler));
+                }
             }
             //fixup indexes as something was added
             UpdateHandlerIndexes(0);
@@ -285,10 +300,12 @@ namespace AZ
 
         for (OrderedEventHandler<Params...>* handler : m_addList)
         {
-            // This should have happened as part of a move so none of the pointers should refer to this event (they should also all refer to the same event)
-            AZ_Assert(handler, "NULL handler encountered in Event addList");
-            AZ_Assert(handler->m_event != this, "Should not refer to this");
-            handler->m_event = this;
+            if (handler)
+            {
+                // This should have happened as part of a move so none of the pointers should refer to this event (they should also all refer to the same event)
+                AZ_Assert(handler->m_event != this, "Should not refer to this");
+                handler->m_event = this;
+            }
         }
     }
 
@@ -334,16 +351,15 @@ namespace AZ
     template <typename... Params>
     int32_t OrderedEvent<Params...>::InsertHandler(OrderedEventHandler<Params...>& handler) const
     {
-        //find the sorted location to insert.
-        auto insertLocation = AZStd::upper_bound(m_handlers.begin(), m_handlers.end(), handler.m_priority,
-            [](int32_t newHandlerPriority, OrderedEventHandler<Params...>* handler)
+        //find the sorted location to insert (scanning linearly because m_handlers may contain nullptr tombstones).
+        auto insertLocation = m_handlers.begin();
+        for (; insertLocation != m_handlers.end(); ++insertLocation)
+        {
+            if (*insertLocation != nullptr && handler.m_priority > (*insertLocation)->m_priority)
             {
-                if (handler != nullptr)
-                {
-                    return newHandlerPriority > handler->m_priority;
-                }
-                return false; //if the handler in the list is null, skip it
-            });
+                break;
+            }
+        }
 
         //if not inserting at the beginning AND the previous index is null, just replace the null with the new handler.
         if (insertLocation != m_handlers.begin() && *(AZStd::prev(insertLocation)) == nullptr)

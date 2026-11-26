@@ -665,7 +665,7 @@ namespace AZ
 
     void Entity::SetState(State state)
     {
-        State oldState = state;
+        State oldState = m_state;
         m_state = state;
         m_stateEvent.Signal(oldState, m_state);
     }

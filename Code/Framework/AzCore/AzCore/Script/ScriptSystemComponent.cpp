@@ -118,13 +118,15 @@ void ScriptSystemComponent::Deactivate()
 
     for (auto& context : m_contexts)
     {
-        if (context.m_isOwner)
         {
             // Lock access to the loaded scripts map
             AZStd::lock_guard<AZStd::recursive_mutex> lock(context.m_loadedScriptsMutex);
 
             // Clear loaded scripts, they need the context to still be around on unload
             context.m_loadedScripts.clear();
+        }
+        if (context.m_isOwner)
+        {
             delete context.m_context;
         }
     }
@@ -277,7 +279,14 @@ bool ScriptSystemComponent::RemoveContextWithId(ScriptContextId id)
     ContextContainer* container = AZStd::find_if(m_contexts.begin(), m_contexts.end(), [&id](const ContextContainer& ctxContainer) { return ctxContainer.m_context->GetId() == id; });
     if (container != m_contexts.end())
     {
-        delete container->m_context;
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);
+            container->m_loadedScripts.clear();
+        }
+        if (container->m_isOwner)
+        {
+            delete container->m_context;
+        }
         m_contexts.erase(container);
         return true;
     }

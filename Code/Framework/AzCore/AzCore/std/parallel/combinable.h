@@ -53,9 +53,12 @@ namespace AZStd
 
         combinable& operator=(const combinable& other)
         {
-            clear();
-            m_initFunc = other.m_initFunc;
-            Copy(other);
+            if (this != &other)
+            {
+                clear();
+                m_initFunc = other.m_initFunc;
+                Copy(other);
+            }
             return *this;
         }
 
@@ -67,6 +70,7 @@ namespace AZStd
                 while (node)
                 {
                     Node* next = node->m_next;
+                    AZStd::destroy_at(&node->m_value);
                     m_allocator.deallocate(node, sizeof(Node), alignment_of_v<Node>);
                     node = next;
                 }
@@ -189,7 +193,7 @@ namespace AZStd
                 {
                     Node* newNode = static_cast<Node*>(m_allocator.allocate(sizeof(Node), alignment_of_v<Node>));
                     newNode->m_threadId = otherNode->m_threadId;
-                    newNode->m_value = otherNode->m_value;
+                    AZStd::construct_at(&newNode->m_value, otherNode->m_value);
                     newNode->m_next = m_buckets[i].load(memory_order_acquire);
                     m_buckets[i].store(newNode, memory_order_release);
 
@@ -219,7 +223,7 @@ namespace AZStd
 
             Node* newNode = static_cast<Node*>(m_allocator.allocate(sizeof(Node), alignment_of_v<Node>));
             newNode->m_threadId = threadId;
-            newNode->m_value = m_initFunc();
+            AZStd::construct_at(&newNode->m_value, m_initFunc());
 
             Node* oldHead = m_buckets[bucketIndex].load(memory_order_acquire);
             newNode->m_next = oldHead;

@@ -45,7 +45,7 @@ namespace AZ::UuidInternal
     constexpr AZStd::byte GetValue(char c)
     {
         // Use a direct lookup table to convert from a valid ascii char to a 0-15 hex value
-        return CharToHexDigit[c];
+        return CharToHexDigit[static_cast<unsigned char>(c)];
     }
 }
 
@@ -98,13 +98,31 @@ namespace AZ
         }
 
         const char* current = uuidString.data();
+        const char* end = uuidString.data() + uuidString.size();
+        auto nextChar = [&current, end](char& out) -> bool
+        {
+            if (current >= end)
+            {
+                return false;
+            }
+            out = *current++;
+            return true;
+        };
 
         // check open brace
-        char c = *current++;
+        char c = '\0';
+        if (!nextChar(c))
+        {
+            return {};
+        }
         [[maybe_unused]] bool hasOpenBrace = false;
         if (c == '{')
         {
-            c = *current++;
+            if (!nextChar(c))
+            {
+                AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(uuidString));
+                return Uuid::CreateNull();
+            }
             hasOpenBrace = true;
         }
         bool hasDashes = false;
@@ -114,9 +132,10 @@ namespace AZ
             if (i == 4)
             {
                 hasDashes = (c == '-');
-                if (hasDashes)
+                if (hasDashes && !nextChar(c))
                 {
-                    c = *current++;
+                    AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(uuidString));
+                    return Uuid::CreateNull();
                 }
             }
 
@@ -126,7 +145,11 @@ namespace AZ
                 {
                     if (c == '-')
                     {
-                        c = *current++;
+                        if (!nextChar(c))
+                        {
+                            AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(uuidString));
+                            return Uuid::CreateNull();
+                        }
                     }
                     else
                     {
@@ -138,12 +161,27 @@ namespace AZ
 
             id.m_data[i] = UuidInternal::GetValue(c);
 
-            c = *current++;
+            if (!nextChar(c))
+            {
+                AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(uuidString));
+                return Uuid::CreateNull();
+            }
 
             id.m_data[i] <<= 4;
             id.m_data[i] |= UuidInternal::GetValue(c);
 
-            c = *current++;
+            if (i < 15)
+            {
+                if (!nextChar(c))
+                {
+                    AZ_Warning("Math", skipWarnings, InvalidFormatFormat, AZ_STRING_ARG(uuidString));
+                    return Uuid::CreateNull();
+                }
+            }
+            else
+            {
+                c = (current < end) ? *current++ : '\0';
+            }
         }
 
         // check close brace

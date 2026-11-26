@@ -150,7 +150,7 @@ namespace AZ
         frustum.SetPlane(PlaneId::Left,   Plane::CreateFromVectorCoefficients(matrix.GetRow(3) + matrix.GetRow(0)));
         frustum.SetPlane(PlaneId::Right,  Plane::CreateFromVectorCoefficients(matrix.GetRow(3) - matrix.GetRow(0)));
         frustum.SetPlane(PlaneId::Top,    Plane::CreateFromVectorCoefficients(matrix.GetRow(3) - matrix.GetRow(1)));
-        frustum.SetPlane(PlaneId::Bottom, Plane::CreateFromVectorCoefficients(matrix.GetRow(3) - matrix.GetRow(1)));
+        frustum.SetPlane(PlaneId::Bottom, Plane::CreateFromVectorCoefficients(matrix.GetRow(3) + matrix.GetRow(1)));
         return frustum;
     }
 
