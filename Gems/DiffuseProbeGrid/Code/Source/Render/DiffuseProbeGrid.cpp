@@ -177,7 +177,7 @@ namespace AZ
             m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
             // probes need to be relocated since the grid position changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+            ResetRemainingRelocationIterations();
 
             m_updateRenderObjectSrg = true;
         }
@@ -233,7 +233,7 @@ namespace AZ
             m_scrolling = scrolling;
 
             // probes need to be relocated since the scrolling mode changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+            ResetRemainingRelocationIterations();
 
             m_gridDataInitialized = false;
         }
@@ -427,8 +427,9 @@ namespace AZ
                     initImage(request);
                 }
 
-                // probes need to be relocated since the textures changed
-                m_remainingRelocationIterations = DefaultNumRelocationIterations;
+                // New textures have no prior probe offsets. Start with a full contact sweep.
+                m_relocationFrame = 0;
+                ResetRemainingRelocationIterations();
             }
 
             m_updateTextures = false;
@@ -674,25 +675,64 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGrid::SetFrameUpdateCount(uint32_t frameUpdateCount)
+        {
+            if (m_frameUpdateCount != frameUpdateCount)
+            {
+                m_frameUpdateCount = frameUpdateCount;
+                m_relocationFrame = 0;
+                ResetRemainingRelocationIterations();
+            }
+        }
+
+        void DiffuseProbeGrid::ResetRemainingRelocationIterations()
+        {
+            if (m_remainingRelocationIterations == 0)
+            {
+                m_relocationFrame = 0;
+            }
+            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+        }
+
+        void DiffuseProbeGrid::AdvanceRelocation()
+        {
+            if (m_remainingRelocationIterations == 0)
+            {
+                return;
+            }
+            if (!IsContactRelocation())
+            {
+                --m_remainingRelocationIterations;
+            }
+            // Continuous scene revisions can keep relocation active. Keep normal iterations
+            // progressing and revisit contacts after each full relocation interval.
+            if (++m_relocationFrame >= m_frameUpdateCount + DefaultNumRelocationIterations)
+            {
+                m_relocationFrame = 0;
+            }
+        }
+
         void DiffuseProbeGrid::UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
-            if (!m_relocationSrg)
+            auto& inputs = IsContactRelocation() ? m_renderData->m_contactRelocationInputs : m_renderData->m_relocationInputs;
+            auto& srg = IsContactRelocation() ? m_contactRelocationSrg : m_relocationSrg;
+            if (!srg)
             {
-                m_relocationSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
-                AZ_Error("DiffuseProbeGrid", m_relocationSrg.get(), "Failed to create Relocation shader resource group");
+                srg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", srg.get(), "Failed to create Relocation shader resource group");
             }
 
-            m_relocationSrg->SetBufferView(
-                m_renderData->m_relocationSrgGridDataNameIndex,
+            srg->SetBufferView(
+                inputs.m_gridData,
                 m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_relocationSrg->SetImageView(
-                m_renderData->m_relocationSrgProbeRayTraceNameIndex,
+            srg->SetImageView(
+                inputs.m_probeRayTrace,
                 m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_relocationSrg->SetImageView(
-                m_renderData->m_relocationSrgProbeDataNameIndex,
+            srg->SetImageView(
+                inputs.m_probeData,
                 m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-            m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
-            m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
+            srg->SetConstant(inputs.m_frameUpdateCount, m_frameUpdateCount);
+            srg->SetConstant(inputs.m_frameUpdateIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)

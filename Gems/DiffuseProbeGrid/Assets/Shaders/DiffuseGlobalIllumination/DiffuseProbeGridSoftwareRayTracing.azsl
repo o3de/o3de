@@ -16,17 +16,7 @@
 #include <Atom/Features/GoboTexture.azsli>
 #include "DiffuseProbeGridSoftwareBvh.azsli"
 
-// RTXGI 1.2 packed volume contract, also used by the existing precompiled Atom probe solver.
-struct SoftwareProbeGrid
-{
-    float3 origin; float historyWeight;
-    float4 rotation;
-    float4 rayRotation;
-    float maxDistance; float normalBias; float viewBias; float distanceExponent;
-    float3 spacing; uint packed0;
-    float encodingGamma; float irradianceThreshold; float brightnessThreshold; uint packed1;
-    float minFrontfaceDistance; uint packed2; uint packed3; uint packed4;
-};
+#include "DiffuseProbeGridSampling.azsli"
 
 // Matches the existing DiffuseProbeGridQuery input: two aligned float3 values, 32 bytes per record.
 struct SoftwareIrradianceQuery
@@ -41,7 +31,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     StructuredBuffer<SoftwareBvhBounds> m_bounds;
     StructuredBuffer<uint> m_primitiveIndices;
     StructuredBuffer<SoftwareBvhInstance> m_instances;
-    StructuredBuffer<SoftwareProbeGrid> m_gridData;
+    StructuredBuffer<DDGIProbeGrid> m_gridData;
     Texture2D<float4> m_probeData;
     RWTexture2D<float4> m_output;
     RWStructuredBuffer<SoftwareIrradianceQuery> m_hitQueries;
@@ -80,7 +70,7 @@ uint SoftwareHash(uint value)
 
 SoftwareTraceHit SoftwareTraceTransport(float3 origin, float3 direction, float maximum, uint seed)
 {
-    // Hardware primary rays include hits at the probe origin. Excluding them misclassifies probes on a surface.
+    // Hardware can report near-origin hits rounded to zero. Relocation needs those hits to resolve surface contacts.
     float minimum = 0.0f;
     bool first = true;
     while (true)
@@ -104,78 +94,21 @@ SoftwareTraceHit SoftwareTraceTransport(float3 origin, float3 direction, float m
     }
 }
 
-float3 SoftwareRotate(float3 value, float4 quaternion)
+float3 SoftwareProbePosition(uint3 coords, DDGIProbeGrid grid)
 {
-    return value + 2.0f * cross(quaternion.xyz, cross(quaternion.xyz, value) + quaternion.w * value);
-}
-
-uint3 SoftwareProbeCounts(SoftwareProbeGrid grid)
-{
-    return uint3(grid.packed0 & 255, (grid.packed0 >> 8) & 255, (grid.packed0 >> 16) & 255);
-}
-
-int3 SoftwareScroll(SoftwareProbeGrid grid)
-{
-    int3 result = int3(grid.packed3 & 32767, (grid.packed3 >> 16) & 32767, grid.packed4 & 32767);
-    result.x *= (grid.packed3 & 32768) ? -1 : 1;
-    result.y *= (grid.packed3 & 0x80000000) ? -1 : 1;
-    result.z *= (grid.packed4 & 32768) ? -1 : 1;
-    return result;
-}
-
-uint3 SoftwareProbeCoords(uint index, uint3 counts)
-{
-    return uint3((index / counts.y) % counts.x, index % counts.y, index / (counts.x * counts.y));
-}
-
-uint SoftwareProbeIndex(uint3 coords, uint3 counts)
-{
-    return coords.z * counts.x * counts.y + coords.x * counts.y + coords.y;
-}
-
-uint3 SoftwarePhysicalCoords(uint3 coords, SoftwareProbeGrid grid)
-{
-    int3 counts = int3(SoftwareProbeCounts(grid));
-    return uint3(((int3(coords) + SoftwareScroll(grid)) % counts + counts) % counts);
-}
-
-uint2 SoftwareProbeTile(uint3 physicalCoords, uint3 counts)
-{
-    return uint2(physicalCoords.y + physicalCoords.z * counts.y, physicalCoords.x);
-}
-
-float3 SoftwareProbePosition(uint3 coords, SoftwareProbeGrid grid)
-{
-    uint3 counts = SoftwareProbeCounts(grid);
+    uint3 counts = DDGIProbeCounts(grid);
     float3 position = (float3(coords) - (float3(counts) - 1.0f) * 0.5f) * grid.spacing;
     if (((grid.packed4 >> 16) & 1) == 0)
     {
-        position = SoftwareRotate(position, grid.rotation);
+        position = DDGIRotate(position, grid.rotation);
     }
-    position += grid.origin + float3(SoftwareScroll(grid)) * grid.spacing;
+    position += grid.origin + float3(DDGIScroll(grid)) * grid.spacing;
     if ((grid.packed4 >> 19) & 1)
     {
-        uint2 tile = SoftwareProbeTile(SoftwarePhysicalCoords(coords, grid), counts);
+        uint2 tile = DDGIProbeTile(DDGIPhysicalCoords(coords, grid), counts);
         position += PassSrg::m_probeData.Load(int3(tile, 0)).xyz * grid.spacing;
     }
     return position;
-}
-
-float3 SoftwareProbeDirection(uint rayIndex, uint count, float4 rotation)
-{
-    bool fixedRay = rayIndex < 32;
-    uint sampleIndex = fixedRay ? rayIndex : rayIndex - 32;
-    uint samples = fixedRay ? 32 : count - 32;
-    float z = 1.0f - (2.0f * sampleIndex + 1.0f) / samples;
-    float angle = 6.28318530718f * frac(sampleIndex * 0.61803398875f);
-    float radius = sqrt(max(0.0f, 1.0f - z * z));
-    float3 direction = float3(radius * cos(angle), radius * sin(angle), z);
-    if (!fixedRay)
-    {
-        rotation.xyz = -rotation.xyz;
-        direction = SoftwareRotate(direction, rotation);
-    }
-    return normalize(direction);
 }
 
 float SoftwareVisibility(float3 origin, float3 direction, float maximum)
@@ -320,7 +253,7 @@ float3 SoftwareCapsuleIrradiance(float3 position, float3 normal, CapsuleLight li
         max(distanceA * distanceB + dot(a, b), max(light.m_radius * light.m_radius, 1e-6f));
 }
 
-float3 SoftwareDirectLighting(float3 position, float3 normal, SoftwareProbeGrid grid, uint channels)
+float3 SoftwareDirectLighting(float3 position, float3 normal, DDGIProbeGrid grid, uint channels)
 {
     float3 irradiance = 0.0f;
     float3 shadowOrigin = position + normal * grid.normalBias;
@@ -462,8 +395,8 @@ float3 SoftwareEnvironment(float3 origin, float3 direction)
 [numthreads(8, 8, 1)]
 void MainCS(uint3 id : SV_DispatchThreadID)
 {
-    SoftwareProbeGrid grid = PassSrg::m_gridData[0];
-    uint3 counts = SoftwareProbeCounts(grid);
+    DDGIProbeGrid grid = PassSrg::m_gridData[0];
+    uint3 counts = DDGIProbeCounts(grid);
     uint rayCount = grid.packed2 & 65535;
     uint queryCount;
     uint queryStride;
@@ -485,20 +418,20 @@ void MainCS(uint3 id : SV_DispatchThreadID)
     {
         return;
     }
-    uint3 coords = SoftwareProbeCoords(probeIndex, counts);
-    uint3 physicalCoords = SoftwarePhysicalCoords(coords, grid);
-    uint physicalIndex = SoftwareProbeIndex(physicalCoords, counts);
+    uint3 coords = DDGIProbeCoords(probeIndex, counts);
+    uint3 physicalCoords = DDGIPhysicalCoords(coords, grid);
+    uint physicalIndex = DDGIProbeIndex(physicalCoords, counts);
     uint2 output = uint2(id.x, physicalIndex);
-    uint2 tile = SoftwareProbeTile(physicalCoords, counts);
+    uint2 tile = DDGIProbeTile(physicalCoords, counts);
     bool inactive = ((grid.packed4 >> 20) & 1) && PassSrg::m_probeData.Load(int3(tile, 0)).w != 0.0f;
-    if (inactive && id.x >= 32)
+    if (inactive && id.x >= DDGIFixedRayCount)
     {
         return;
     }
     float3 origin = SoftwareProbePosition(coords, grid);
-    float3 direction = SoftwareProbeDirection(id.x, rayCount, grid.rayRotation);
+    float3 direction = DDGIProbeDirection(id.x, rayCount, grid.rayRotation);
     // Keep fixed relocation/classification rays deterministic; only radiance rays vary alpha samples over time.
-    uint seed = SoftwareHash(probeIndex * rayCount + id.x) ^ (id.x < 32 ? 0 : SoftwareHash(PassSrg::m_frameNumber));
+    uint seed = SoftwareHash(probeIndex * rayCount + id.x) ^ (id.x < DDGIFixedRayCount ? 0 : SoftwareHash(PassSrg::m_frameNumber));
     SoftwareTraceHit hit = SoftwareTraceTransport(origin, direction, grid.maxDistance, seed);
     if (!hit.found)
     {
@@ -510,7 +443,7 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, -0.2f * hit.distance);
         return;
     }
-    if (id.x < 32)
+    if (id.x < DDGIFixedRayCount)
     {
         PassSrg::m_output[output] = float4(0.0f, 0.0f, 0.0f, hit.distance);
         return;

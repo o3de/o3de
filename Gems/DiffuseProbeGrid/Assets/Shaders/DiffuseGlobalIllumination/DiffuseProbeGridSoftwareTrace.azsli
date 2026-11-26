@@ -91,7 +91,8 @@ bool SoftwareIntersectTriangle(float3 origin, float3 direction, float3 a, float3
     {
         return false;
     }
-    hit.distance = distance;
+    // The sign bit in the ray atlas encodes facing, including hits rounded to zero.
+    hit.distance = abs(distance);
     hit.barycentrics = float2(v, w) / determinant;
     // Match hardware hit kinds in object space, including instances with a reflected transform.
     hit.backFace = determinant < 0.0f;

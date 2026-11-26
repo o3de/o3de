@@ -39,7 +39,14 @@ namespace AZ
         private:
             DiffuseProbeGridRelocationPass(const RPI::PassDescriptor& descriptor);
 
-            void LoadShader();
+            struct RelocationShader
+            {
+                Data::Instance<RPI::Shader> m_shader;
+                const RHI::PipelineState* m_pipelineState = nullptr;
+                RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
+                RHI::DispatchDirect m_dispatchArgs;
+            };
+            void LoadShader(RelocationShader& shader, const char* path);
 
             // Pass overrides
             bool IsEnabled() const override;
@@ -49,11 +56,8 @@ namespace AZ
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
             void FrameEndInternal() override;
 
-            // shader
-            Data::Instance<RPI::Shader> m_shader;
-            const RHI::PipelineState* m_pipelineState = nullptr;
-            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
-            RHI::DispatchDirect m_dispatchArgs;
+            RelocationShader m_relocation;
+            RelocationShader m_contactRelocation;
 
             // revision number of the ray tracing data when the shader table was built
             uint32_t m_rayTracingDataRevision = 0;

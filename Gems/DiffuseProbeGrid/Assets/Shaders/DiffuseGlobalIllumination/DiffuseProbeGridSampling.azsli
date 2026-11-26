@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// RTXGI 1.2 packed volume contract, also used by the existing precompiled Atom probe solver.
+struct DDGIProbeGrid
+{
+    float3 origin; float historyWeight;
+    float4 rotation;
+    float4 rayRotation;
+    float maxDistance; float normalBias; float viewBias; float distanceExponent;
+    float3 spacing; uint packed0;
+    float encodingGamma; float irradianceThreshold; float brightnessThreshold; uint packed1;
+    float minFrontfaceDistance; uint packed2; uint packed3; uint packed4;
+};
+
+float3 DDGIRotate(float3 value, float4 quaternion)
+{
+    return value + 2.0f * cross(quaternion.xyz, cross(quaternion.xyz, value) + quaternion.w * value);
+}
+
+uint3 DDGIProbeCounts(DDGIProbeGrid grid)
+{
+    return uint3(grid.packed0 & 255, (grid.packed0 >> 8) & 255, (grid.packed0 >> 16) & 255);
+}
+
+int3 DDGIScroll(DDGIProbeGrid grid)
+{
+    int3 result = int3(grid.packed3 & 32767, (grid.packed3 >> 16) & 32767, grid.packed4 & 32767);
+    result.x *= (grid.packed3 & 32768) ? -1 : 1;
+    result.y *= (grid.packed3 & 0x80000000) ? -1 : 1;
+    result.z *= (grid.packed4 & 32768) ? -1 : 1;
+    return result;
+}
+
+uint3 DDGIProbeCoords(uint index, uint3 counts)
+{
+    return uint3((index / counts.y) % counts.x, index % counts.y, index / (counts.x * counts.y));
+}
+
+uint DDGIProbeIndex(uint3 coords, uint3 counts)
+{
+    return coords.z * counts.x * counts.y + coords.x * counts.y + coords.y;
+}
+
+uint3 DDGIPhysicalCoords(uint3 coords, DDGIProbeGrid grid)
+{
+    int3 counts = int3(DDGIProbeCounts(grid));
+    return uint3(((int3(coords) + DDGIScroll(grid)) % counts + counts) % counts);
+}
+
+uint2 DDGIProbeTile(uint3 physicalCoords, uint3 counts)
+{
+    return uint2(physicalCoords.y + physicalCoords.z * counts.y, physicalCoords.x);
+}
+
+static const uint DDGIFixedRayCount = 32;
+
+float3 DDGIProbeDirection(uint rayIndex, uint count, float4 rotation)
+{
+    bool fixedRay = rayIndex < DDGIFixedRayCount;
+    uint sampleIndex = fixedRay ? rayIndex : rayIndex - DDGIFixedRayCount;
+    uint samples = fixedRay ? DDGIFixedRayCount : count - DDGIFixedRayCount;
+    float z = 1.0f - (2.0f * sampleIndex + 1.0f) / samples;
+    float angle = 6.28318530718f * frac(sampleIndex * 0.61803398875f);
+    float radius = sqrt(max(0.0f, 1.0f - z * z));
+    float3 direction = float3(radius * cos(angle), radius * sin(angle), z);
+    if (!fixedRay)
+    {
+        rotation.xyz = -rotation.xyz;
+        direction = DDGIRotate(direction, rotation);
+    }
+    return normalize(direction);
+}
