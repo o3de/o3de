@@ -277,10 +277,11 @@ namespace AZ
 
                 //note the response could be ANY size, could be less so be careful
                 AZ::u64 responseDataSize = response.m_data.size();
-                if (responseDataSize <= remainingBytesToRead == false)
+                if (responseDataSize > remainingBytesToRead)
                 {
                     AZ_TracePrintf(NetworkFileIOChannel, "NetworkFileIO::Read(filehandle=%i, size=%u) responseDataSize too large!!! responseDataSize=%u <= remainingBytesToRead=%u", fileHandle, size, responseDataSize, remainingBytesToRead);
                     REMOTEFILE_LOG_APPEND(AZStd::string::format("NetworkFileIO::Read(filehandle=%i, size=%u) responseDataSize too large!!! responseDataSize=%u <= remainingBytesToRead=%u", fileHandle, size, responseDataSize, remainingBytesToRead).c_str());
+                    return ResultCode::Error;
                 }
 
                 ResultCode returnValue = static_cast<ResultCode>(response.m_resultCode);
@@ -1249,6 +1250,10 @@ namespace AZ
                     cache.m_cacheLookaheadBuffer.resize(actualRead);
                     cache.OffsetFilePosition(actualRead);
                     cache.m_cacheLookaheadPos = 0;
+                }
+                else
+                {
+                    cache.Invalidate();
                 }
 
                 if (returnValue == ResultCode::Error)

@@ -107,7 +107,17 @@ namespace AzFramework
         }
 
         // Remove the entry from our current node, since it is no longer contained
-        Remove(octreeScene, entry);
+        const uint32_t removeIndex = entry->m_internalNodeIndex;
+        m_entries[removeIndex]->m_internalNode = nullptr;
+        m_entries[removeIndex]->m_internalNodeIndex = 0;
+        if (removeIndex < (m_entries.size() - 1))
+        {
+            AZStd::swap(m_entries[removeIndex], m_entries.back());
+            m_entries[removeIndex]->m_internalNodeIndex = removeIndex;
+        }
+        m_entries.pop_back();
+
+        OctreeNode* oldParent = m_parent;
 
         // Traverse up our ancestor nodes to find the first node that fully contains the entry
         // This strategy assumes an entry will typically move a small distance relative to the total world
@@ -117,9 +127,15 @@ namespace AzFramework
             if (AZ::ShapeIntersection::Contains(insertCheck->m_bounds, boundingVolume) || !insertCheck->m_parent)
             {
                 // Insert here if the entry is fully contained or if we've reached the root node
-                return insertCheck->Insert(octreeScene, entry);
+                insertCheck->Insert(octreeScene, entry);
+                break;
             }
             insertCheck = insertCheck->m_parent;
+        }
+
+        if (oldParent != nullptr)
+        {
+            oldParent->TryMerge(octreeScene);
         }
     }
 
@@ -315,7 +331,11 @@ namespace AzFramework
 
         // Set child split planes and bounding volumes
         {
-            const AZ::Vector3 childExtent = (m_bounds.GetMax() - m_bounds.GetMin()) * 0.5f;
+            AZ::Vector3 childExtent = (m_bounds.GetMax() - m_bounds.GetMin()) * 0.5f;
+            if (bg_octreeUseQuadtree)
+            {
+                childExtent.SetZ(m_bounds.GetMax().GetZ() - m_bounds.GetMin().GetZ());
+            }
             const AZ::Aabb childBound = AZ::Aabb::CreateFromMinMax(m_bounds.GetMin(), m_bounds.GetMin() + childExtent);
             const uint32_t childCount = GetChildNodeCount();
 

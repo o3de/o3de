@@ -91,18 +91,21 @@ namespace AzFramework
         }
 
         ssize_t bytesRead = 0;
-        bytesRead = read(handle->GetHandle(), readBuffer, bufferSize);
+        do
+        {
+            bytesRead = read(handle->GetHandle(), readBuffer, bufferSize);
+        } while (bytesRead < 0 && errno == EINTR);
         if (bytesRead < 0)
         {
             AZ_Assert(errno != EIO, "ReadFile performed unexpected async io");
             if (errno == EBADF || errno == EINVAL)
             {
-                // Child process exited, we may have read something, so return amount
+                // Child process exited
                 handle->Break();
-                return static_cast<AZ::u32>(bytesRead);
+                return 0;
             }
             AZ_Assert(false, "Unexpected error from ReadFile %d", errno);
-            return static_cast<AZ::u32>(bytesRead);
+            return 0;
         }
 
         //EOF
@@ -122,15 +125,19 @@ namespace AzFramework
             return 0;
         }
 
-        const ssize_t bytesWritten = write(handle->GetHandle(), writeBuffer, bytesToWrite);
+        ssize_t bytesWritten = 0;
+        do
+        {
+            bytesWritten = write(handle->GetHandle(), writeBuffer, bytesToWrite);
+        } while (bytesWritten < 0 && errno == EINTR);
         if (bytesWritten < 0)
         {
             AZ_Assert(errno != EIO, "Parent performed unexpected async io when trying to write to child process.");
             if (errno == EPIPE)
             {
-                // Child process exited, may have written something, so return amount
+                // Child process exited
                 handle->Break();
-                return static_cast<AZ::u32>(bytesWritten);
+                return 0;
             }
             AZ_Assert(false, "Unexpected error trying to write to child process. errno = %d", errno);
             return 0;

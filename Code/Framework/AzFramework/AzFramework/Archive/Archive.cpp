@@ -695,7 +695,7 @@ namespace AZ::IO
         AZ::IO::FixedMaxPath resolvedPath;
         if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedPath, szPath))
         {
-            AZ_Error("Archive", false, "Path %s cannot be converted to @alias@ form. It is longer than MaxPathLength %zu", aznumeric_cast<int>(szPath.size()),
+            AZ_Error("Archive", false, "Path %.*s cannot be converted to @alias@ form. It is longer than MaxPathLength %zu", aznumeric_cast<int>(szPath.size()),
                 szPath.data(), AZ::IO::MaxPathLength);
             return nullptr;
         }
@@ -1419,7 +1419,9 @@ namespace AZ::IO
             AZStd::scoped_lock lock(m_pFileEntry->m_readLock);
             if (!m_pFileData)
             {
-                if (ZipDir::ZD_ERROR_SUCCESS != m_pZip->ReadFile(m_pFileEntry, nullptr, pFileData))
+                void* pCompressed = bDecompress ? nullptr : pFileData;
+                void* pUncompressed = bDecompress ? pFileData : nullptr;
+                if (ZipDir::ZD_ERROR_SUCCESS != m_pZip->ReadFile(m_pFileEntry, pCompressed, pUncompressed))
                 {
                     return false;
                 }
@@ -1461,7 +1463,9 @@ namespace AZ::IO
                 uint32_t nTempBufferSize = (allocateForDecompressed) ? m_pFileEntry->desc.lSizeUncompressed : m_pFileEntry->desc.lSizeCompressed;
                 void* fileData = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(nTempBufferSize, 1, 0, "CCachedFileData::GetData");
 
-                ZipDir::ErrorEnum result = m_pZip->ReadFile(m_pFileEntry, nullptr, fileData);
+                void* pCompressed = allocateForDecompressed ? nullptr : fileData;
+                void* pUncompressed = allocateForDecompressed ? fileData : nullptr;
+                ZipDir::ErrorEnum result = m_pZip->ReadFile(m_pFileEntry, pCompressed, pUncompressed);
 
                 if (result != ZipDir::ZD_ERROR_SUCCESS)
                 {
@@ -1486,6 +1490,10 @@ namespace AZ::IO
         }
 
         int64_t nFileSize = m_pFileEntry->desc.lSizeUncompressed;
+        if (nFileOffset < 0 || nFileOffset > nFileSize)
+        {
+            return -1;
+        }
         if (nFileOffset + nReadSize > nFileSize)
         {
             nReadSize = nFileSize - nFileOffset;
@@ -1503,8 +1511,9 @@ namespace AZ::IO
         if (m_pFileEntry->nMethod == ZipFile::METHOD_STORE) //Can't use this technique for METHOD_STORE_AND_STREAMCIPHER_KEYTABLE as seeking with encryption performs poorly
         {
             AZStd::scoped_lock lock(m_pFileEntry->m_readLock);
-            // Uncompressed read.
-            if (ZipDir::ZD_ERROR_SUCCESS != m_pZip->ReadFile(m_pFileEntry, nullptr, pBuffer))
+            // Uncompressed ranged read.
+            if (ZipDir::ZD_ERROR_SUCCESS != m_pZip->ReadFileSection(
+                    m_pFileEntry, pBuffer, static_cast<uint64_t>(nFileOffset), static_cast<uint64_t>(nReadSize)))
             {
                 return -1;
             }

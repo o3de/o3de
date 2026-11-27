@@ -167,7 +167,7 @@ namespace AzFramework
             // RecvThread
             bool m_shouldQueueHandlerChanges;
             TMessageCallbacks m_messageHandlers;
-            AZStd::vector<SocketConnection::TMessageCallbackHandle, AZ::OSStdAllocator> m_messageHandlersToRemove;
+            AZStd::vector<AZStd::pair<AZ::u32, SocketConnection::TMessageCallbackHandle>, AZ::OSStdAllocator> m_messageHandlersToRemove;
             AZStd::vector<AZStd::pair<AZ::u32, AZStd::pair<SocketConnection::TMessageCallbackHandle, SocketConnection::TMessageCallback> >, AZ::OSStdAllocator> m_messageHandlersToAdd;
             TResponseCallbacks m_responseHandlers; // typed/nonced callbacks
             AZStd::vector<AZStd::pair<AZStd::pair<AZ::u32, AZ::u32>, SocketConnection::TMessageCallback>, AZ::OSStdAllocator> m_responseHandlersToAdd;

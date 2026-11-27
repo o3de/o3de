@@ -287,6 +287,9 @@ namespace AzFramework
             entityIdsToBeDeleted.insert(entityIdsToBeDeleted.begin(), entityId);
         }
 
+        AZStd::vector<AZ::EntityId> nonSpawnableEntityIdsToBeDeleted;
+        nonSpawnableEntityIdsToBeDeleted.reserve(entityIdsToBeDeleted.size());
+
         for (AZStd::vector<AZ::EntityId>::reverse_iterator entityIdIter = entityIdsToBeDeleted.rbegin();
             entityIdIter != entityIdsToBeDeleted.rend(); ++entityIdIter)
         {
@@ -298,17 +301,20 @@ namespace AzFramework
                 {
                     SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
                     AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
+                    const AZ::EntityId currentEntityId = currentEntity->GetId();
                     spawnableEntitiesInterface->RetrieveTicket(
                         currentEntity->GetEntitySpawnTicketId(),
-                        [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket&& entitySpawnTicket)
+                        [spawnableEntitiesInterface, currentEntityId](EntitySpawnTicket&& entitySpawnTicket)
                         {
                             if (entitySpawnTicket.IsValid())
                             {
-                                spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
+                                spawnableEntitiesInterface->DespawnEntity(currentEntityId, entitySpawnTicket);
                             }
                         });
                     continue;
                 }
+
+                nonSpawnableEntityIdsToBeDeleted.push_back(*entityIdIter);
 
                 currentEntity->SetEntityActive(false);
                 // note that the above call makes the entity know that it has been explicitly deactivated,
@@ -327,18 +333,20 @@ namespace AzFramework
             }
         }
 
-        // Queue the entity destruction on the tick bus for safety, this guarantees that we will not attempt to destroy
-        // an entity during activation.
-        AZStd::function<void()> destroyEntity = [this,entityIdsToBeDeleted]() mutable
+        if (!nonSpawnableEntityIdsToBeDeleted.empty())
         {
-            for (AZStd::vector<AZ::EntityId>::reverse_iterator entityIdIter = entityIdsToBeDeleted.rbegin();
-                 entityIdIter != entityIdsToBeDeleted.rend(); ++entityIdIter)
+            // Queue the entity destruction on the tick bus for safety, this guarantees that we will not attempt to destroy
+            // an entity during activation.
+            AZStd::function<void()> destroyEntity = [this, nonSpawnableEntityIdsToBeDeleted = AZStd::move(nonSpawnableEntityIdsToBeDeleted)]() mutable
             {
-                EntityContext::DestroyEntityById(*entityIdIter);
-            }
-        };
+                for (const AZ::EntityId& idToDelete : nonSpawnableEntityIdsToBeDeleted)
+                {
+                    EntityContext::DestroyEntityById(idToDelete);
+                }
+            };
 
-        AZ::TickBus::QueueFunction(destroyEntity);
+            AZ::TickBus::QueueFunction(destroyEntity);
+        }
     }
 
     //=========================================================================
@@ -393,10 +401,15 @@ namespace AzFramework
                 {
                 case AZ::Entity::State::Activating:
                     // Queue deactivate to trigger next frame
-                    AZ::TickBus::QueueFunction([entity]()
+                    AZ::TickBus::QueueFunction([entityId]()
                     {
-                        entity->SetEntityActive(false);
-                        entity->ApplyEffectiveActiveState();
+                        AZ::Entity* queuedEntity = nullptr;
+                        AZ::ComponentApplicationBus::BroadcastResult(queuedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+                        if (queuedEntity)
+                        {
+                            queuedEntity->SetEntityActive(false);
+                            queuedEntity->ApplyEffectiveActiveState();
+                        }
                     });
                     break;
 

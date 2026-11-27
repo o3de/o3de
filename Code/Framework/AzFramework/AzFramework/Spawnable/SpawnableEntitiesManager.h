@@ -121,7 +121,7 @@ namespace AzFramework
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<uint32_t> m_spawnedEntityIndices;
             AZ::Data::Asset<Spawnable> m_spawnable;
-            uint32_t m_nextRequestId{ 0 }; //!< Next id to be handed out to command that's using this ticket..
+            AZStd::atomic_uint32_t m_nextRequestId{ 0 }; //!< Next id to be handed out to command that's using this ticket..
             uint32_t m_currentRequestId { 0 }; //!< The id for the command that should be executed.
             uint32_t m_ticketId{ 0 }; //!< The unique id that identifies this ticket.
             bool m_loadAll{ true };

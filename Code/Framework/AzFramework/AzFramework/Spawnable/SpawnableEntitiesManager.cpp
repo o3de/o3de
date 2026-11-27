@@ -513,9 +513,9 @@ namespace AzFramework
                                 AZ::Entity* clone = CloneSingleAliasedEntity(
                                     *entitiesToSpawn[i], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                     *request.m_serializeContext);
-                                previousEntity = clone;
                                 if (clone)
                                 {
+                                    previousEntity = clone;
                                     spawnedEntities.emplace_back(clone);
                                     spawnedEntityIndices.push_back(i);
                                 }
@@ -646,9 +646,9 @@ namespace AzFramework
                                     AZ::Entity* clone = CloneSingleAliasedEntity(
                                         *entitiesToSpawn[index], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                         *request.m_serializeContext);
-                                    previousEntity = clone;
                                     if (clone)
                                     {
+                                        previousEntity = clone;
                                         spawnedEntities.emplace_back(clone);
                                         spawnedEntityIndices.push_back(index);
                                     }
@@ -732,6 +732,7 @@ namespace AzFramework
         if (request.m_requestId == ticket.m_currentRequestId)
         {
             AZStd::vector<AZ::Entity*>& spawnedEntities = request.m_ticket->m_spawnedEntities;
+            AZStd::vector<uint32_t>& spawnedEntityIndices = request.m_ticket->m_spawnedEntityIndices;
             for (auto entityIterator = spawnedEntities.begin(); entityIterator != spawnedEntities.end(); ++entityIterator)
             {
                 if (*entityIterator != nullptr && (*entityIterator)->GetId() == request.m_entityId)
@@ -740,8 +741,14 @@ namespace AzFramework
                     (*entityIterator)->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, (*entityIterator)->GetId());
+                    const size_t entityIndex = static_cast<size_t>(AZStd::distance(spawnedEntities.begin(), entityIterator));
                     AZStd::iter_swap(entityIterator, spawnedEntities.rbegin());
                     spawnedEntities.pop_back();
+                    if (!spawnedEntityIndices.empty() && entityIndex < spawnedEntityIndices.size())
+                    {
+                        AZStd::iter_swap(spawnedEntityIndices.begin() + entityIndex, spawnedEntityIndices.rbegin());
+                        spawnedEntityIndices.pop_back();
+                    }
                     break;
                 }
             }
@@ -989,25 +996,26 @@ namespace AzFramework
             }
         }
 
-        if (entitySpawnTicketIterator->second->m_referenceCount > 0)
+        int64_t expectedRefCount = entitySpawnTicketIterator->second->m_referenceCount.load();
+        while (expectedRefCount > 0)
         {
-            // About to make a copy so increase the reference count.
-            entitySpawnTicketIterator->second->m_referenceCount++;
-            request.m_callback(InternalToExternalTicket(entitySpawnTicketIterator->second, this));
+            if (entitySpawnTicketIterator->second->m_referenceCount.compare_exchange_weak(expectedRefCount, expectedRefCount + 1))
+            {
+                request.m_callback(InternalToExternalTicket(entitySpawnTicketIterator->second, this));
+                return CommandResult::Executed;
+            }
         }
-        else
-        {
-            // Attempting to retrieve a ticket that no longer has any references but hasn't technically
-            // been deleted yet will call the callback with an invalid ticket.
-            // For example, this can occur in the following situation:
-            // - An entity with a ticket deactivates and destroys its reference, causing DestroyTicket to get queued,
-            //   with the ticket currently having a reference count of 0.
-            // - One of the entities from that ticket then deactivates and tries to queue a RetrieveTicket so that it
-            //   can queue a DespawnEntity command for itself.
-            // If we "reanimated" the ticket here, bumped its reference count, and called the callback, the callback could end up
-            // holding onto an invalid pointer once the DestroyTicket got processed.
-            request.m_callback(InternalToExternalTicket(nullptr, this));
-        }
+
+        // Attempting to retrieve a ticket that no longer has any references but hasn't technically
+        // been deleted yet will call the callback with an invalid ticket.
+        // For example, this can occur in the following situation:
+        // - An entity with a ticket deactivates and destroys its reference, causing DestroyTicket to get queued,
+        //   with the ticket currently having a reference count of 0.
+        // - One of the entities from that ticket then deactivates and tries to queue a RetrieveTicket so that it
+        //   can queue a DespawnEntity command for itself.
+        // If we "reanimated" the ticket here, bumped its reference count, and called the callback, the callback could end up
+        // holding onto an invalid pointer once the DestroyTicket got processed.
+        request.m_callback(InternalToExternalTicket(nullptr, this));
 
         return CommandResult::Executed;
     }
