@@ -333,7 +333,7 @@ namespace ScriptCanvasEditor
                     {
                         const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
  
-                        auto elementIter = m_scriptEventElementTreeItems.find(assetId.m_guid);
+                        auto elementIter = m_scriptEventElementTreeItems.find(assetId);
                         if (elementIter == m_scriptEventElementTreeItems.end())
                         {
                             RequestAssetLoad(assetId, productEntry->GetAssetType());
@@ -362,7 +362,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
-            auto scriptEventIter = m_scriptEventElementTreeItems.find(assetId.m_guid);
+            // Generated interfaces can share a source with other product sub-IDs.
+            auto scriptEventIter = m_scriptEventElementTreeItems.find(assetId);
             if (scriptEventIter != m_scriptEventElementTreeItems.end())
             {
                 RequestAssetLoad(assetId, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
