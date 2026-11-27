@@ -147,8 +147,7 @@ namespace ExecutionInterpretedAPICpp
                 if (classIter != multipleResults.second->m_typeToClassMap.end() && classIter->second)
                 {
                     AZ::BehaviorClass* bcClass = classIter->second;
-                    bcClass->Destruct(multipleResults.first);
-                    bcClass->Deallocate(multipleResults.first);
+                    bcClass->Destroy(AZ::BehaviorObject(multipleResults.first, typeId));
                 }
             }
         }

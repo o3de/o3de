@@ -122,7 +122,6 @@ namespace EditorPythonBindings
             PythonFunctionObject(const PythonFunctionObject& obj);
             PythonFunctionObject(PythonFunctionObject&& obj);
             PythonFunctionObject& operator=(const PythonFunctionObject& obj);
-            PythonFunctionObject& operator=(PythonFunctionObject&&) = delete;
             virtual ~PythonFunctionObject();
 
         private:

@@ -23,6 +23,7 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+    class RuntimeAsset;
     class RuntimeComponent;
 
     struct RuntimeData;

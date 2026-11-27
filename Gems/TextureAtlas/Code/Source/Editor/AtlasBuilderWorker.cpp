@@ -816,24 +816,8 @@ namespace TextureAtlasBuilder
             {
                 if (inputImage->GetPixelFormat() != ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8)
                 {
-                    ImageProcessingAtom::IImageObjectPtr convertedImage;
-                    ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(
-                        convertedImage,
-                        &ImageProcessingAtom::ImageBuilderRequests::ConvertImageObject,
-                        inputImage,
-                        "ImageConvert",
-                        "R8G8B8A8",
-                        "",
-                        request.m_platformInfo.m_identifier);
-                    if (convertedImage && convertedImage->GetPixelFormat() == ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8)
-                    {
-                        inputImage = convertedImage;
-                    }
-                    else
-                    {
-                        AZ_Error("AtlasBuilder", false, "Atlas Builder requires R8G8B8A8 pixel format for file: %s", input.m_filePaths[i].c_str());
-                        return;
-                    }
+                    AZ_Error("AtlasBuilder", false, "Atlas Builder requires R8G8B8A8 pixel format for file: %s", input.m_filePaths[i].c_str());
+                    return;
                 }
                 images.push_back(inputImage);
                 totalArea += inputImage->GetWidth(0) * inputImage->GetHeight(0);
