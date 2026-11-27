@@ -2529,6 +2529,14 @@ namespace EMotionFX
     }
 
 
+    void AnimGraphNode::SetPinnedWireWaypoints(size_t index, const AZStd::vector<AZ::Vector2>& waypoints)
+    {
+        if (index < m_pinnedWires.size())
+        {
+            m_pinnedWires[index].m_waypoints = waypoints;
+        }
+    }
+
     void AnimGraphNode::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -2550,6 +2558,7 @@ namespace EMotionFX
             ->Field("isVisEnabled", &AnimGraphNode::m_visEnabled)
             ->Field("childNodes", &AnimGraphNode::m_childNodes)
             ->Field("connections", &AnimGraphNode::m_connections)
+            ->Field("pinnedWires", &AnimGraphNode::m_pinnedWires)
             ->Field("actionSetup", &AnimGraphNode::m_actionSetup);
             ;
 

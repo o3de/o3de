@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/optional.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -73,6 +74,7 @@ namespace CommandSystem
         size_t                              m_targetPort;
         bool                                m_oldDirtyFlag;
         AZStd::string                       m_oldContents;
+        AZStd::string                       m_oldWaypoints;
 
     public:
         EMotionFX::AnimGraphNodeId GetTargetNodeID() const      { return m_targetNodeId; }
@@ -88,6 +90,50 @@ namespace CommandSystem
     MCORE_DEFINECOMMAND_END
 
 
+    // Replace the visual bend points of a blend tree connection. The waypoints are purely visual, the blend tree ignores them.
+    MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustConnection, "Adjust blend tree connection", true)
+        uint32                              m_animGraphId = MCORE_INVALIDINDEX32;
+        EMotionFX::AnimGraphNodeId          m_targetNodeId;
+        EMotionFX::AnimGraphConnectionId    m_connectionId;
+        AZStd::vector<AZ::Vector2>          m_oldWaypoints;
+        bool                                m_oldDirtyFlag = false;
+
+    public:
+        static const char* s_commandName;
+
+        // The node holding the connection (its target) and the connection this command worked on, or nullptr when they are gone.
+        EMotionFX::AnimGraphNode* GetTargetNode() const;
+        EMotionFX::BlendTreeConnection* GetConnection() const;
+    MCORE_DEFINECOMMAND_END
+
+    void AdjustConnectionWaypoints(const EMotionFX::AnimGraphNode* targetNode, const EMotionFX::BlendTreeConnection* connection,
+        const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+
+
+    // Add, change or remove one pinned wire of a node: a visual-only wire from an output that ends at a pin.
+    // The blend tree never evaluates pinned wires.
+    MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustPinnedWire, "Adjust pinned wire", true)
+        uint32                                      m_animGraphId = MCORE_INVALIDINDEX32;
+        EMotionFX::AnimGraphNodeId                  m_nodeId;
+        AZStd::vector<EMotionFX::BlendTreePinnedWire> m_oldPinnedWires;
+        bool                                        m_oldDirtyFlag = false;
+
+    public:
+        static const char* s_commandName;
+
+        // The node holding the pinned wires, or nullptr when it is gone.
+        EMotionFX::AnimGraphNode* GetNode() const;
+    MCORE_DEFINECOMMAND_END
+
+    void AddPinnedWire(const EMotionFX::AnimGraphNode* node, AZ::u16 sourcePort, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+    void AdjustPinnedWire(const EMotionFX::AnimGraphNode* node, size_t index, const AZStd::vector<AZ::Vector2>& waypoints,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+    void RemovePinnedWire(const EMotionFX::AnimGraphNode* node, size_t index,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+
+
     // adjust transition
     void AdjustTransition(const EMotionFX::AnimGraphStateTransition* transition,
         const AZStd::optional<bool>& isDisabled = AZStd::nullopt,
@@ -95,6 +141,11 @@ namespace CommandSystem
         const AZStd::optional<AZ::s32>& startOffsetX = AZStd::nullopt, const AZStd::optional<AZ::s32>& startOffsetY = AZStd::nullopt,
         const AZStd::optional<AZ::s32>& endOffsetX = AZStd::nullopt, const AZStd::optional<AZ::s32>& endOffsetY = AZStd::nullopt,
         const AZStd::optional<AZStd::string>& attributesString = AZStd::nullopt, const AZStd::optional<AZStd::string>& serializedMembers = AZStd::nullopt,
+        MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+
+    // Replace the visual bend points of a transition. The waypoints are purely visual, the state machine ignores them.
+    void AdjustTransitionWaypoints(const EMotionFX::AnimGraphStateTransition* transition,
+        const AZStd::vector<AZ::Vector2>& waypoints,
         MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
 
     class CommandAnimGraphAdjustTransition

@@ -101,6 +101,8 @@ namespace EMStudio
         void OnVisualizeToggle(GraphNode* node, bool visualizeEnabled) override;
         void OnEnabledToggle(GraphNode* node, bool enabled) override;
         void OnSetupVisualizeOptions(GraphNode* node) override;
+        void CommitWaypoints(const AZStd::vector<RepositionedWaypoint>& drags) override;
+        void OnCreatePinnedWire(AZ::u16 sourcePortNr, GraphNode* sourceNode, const QPoint& pinPosition) override;
         void ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset, GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode) override;
 
         void OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset) override;
@@ -127,6 +129,18 @@ namespace EMStudio
         void ProcessFrame(bool redraw);
 
         void SetVirtualFinalNode(const QModelIndex& nodeModelIndex);
+
+        // Waypoints are visual-only bend points on transitions and blend tree connections, the editor's reroutes.
+        bool CanInsertWaypointOnSelectedConnections();
+        void InsertWaypointOnSelectedConnections();
+
+        bool CanRemoveWaypointFromSelectedConnections();
+        void RemoveWaypointFromSelectedConnections();
+
+        // Adds the waypoint entries for the given connections (the selection) to a context menu, at the clicked position.
+        void AddWaypointMenuEntries(QMenu& menu, const AZStd::vector<NodeConnection*>& connections, const QPoint& globalPos);
+        // Adds the entries for a right-click on a pinned wire's waypoint or pin.
+        void AddPinnedWireMenuEntries(QMenu& menu, PinnedWire* pinnedWire, size_t waypointIndex);
 
     protected:
         void dropEvent(QDropEvent* event) override;
@@ -167,6 +181,17 @@ namespace EMStudio
 
         EMotionFX::AnimGraphStateTransition* FindTransitionForConnection(NodeConnection* connection) const;
         EMotionFX::BlendTreeConnection* FindBlendTreeConnection(NodeConnection* connection) const;
+
+        bool CanHoldWaypoints(NodeConnection* connection) const;
+        void AdjustWaypoints(NodeConnection* connection, const AZStd::vector<AZ::Vector2>& waypoints, MCore::CommandGroup* commandGroup = nullptr);
+        void AddInsertWaypointCommand(NodeConnection* connection, const QPoint& position, MCore::CommandGroup& commandGroup);
+        void ExecuteWaypointCommands(MCore::CommandGroup& commandGroup);
+        void InsertWaypoint(const AZStd::vector<NodeConnection*>& connections, const QPoint& position);
+        // Gives each connection its own waypoint halfway along its path, in one undo step.
+        void InsertWaypointsAtMidpoints(const AZStd::vector<NodeConnection*>& connections);
+        void RemoveWaypoint(NodeConnection* connection, size_t waypointIndex);
+        void RemoveAllWaypoints(NodeConnection* connection);
+        bool LeaveOneOutput(const AZStd::vector<NodeConnection*>& connections) const;
 
         void AssignNodesToGroup(
             EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNode*>& nodes, EMotionFX::AnimGraphNodeGroup* group);

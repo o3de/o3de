@@ -101,6 +101,16 @@ namespace GraphCanvas
 
         setOpacity(m_style.GetAttribute(Styling::Attribute::Opacity, 1.0f));
 
+        // General nodes size from their layouts; only clamp an axis whose style explicitly sets a maximum.
+        if (m_style.HasAttribute(Styling::Attribute::MaxWidth))
+        {
+            setMaximumWidth(m_style.GetAttribute(Styling::Attribute::MaxWidth, QWIDGETSIZE_MAX));
+        }
+        if (m_style.HasAttribute(Styling::Attribute::MaxHeight))
+        {
+            setMaximumHeight(m_style.GetAttribute(Styling::Attribute::MaxHeight, QWIDGETSIZE_MAX));
+        }
+
         OnRefreshStyle();
         update();
     }

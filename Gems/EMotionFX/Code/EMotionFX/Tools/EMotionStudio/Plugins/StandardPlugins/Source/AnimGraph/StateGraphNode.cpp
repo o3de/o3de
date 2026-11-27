@@ -25,6 +25,29 @@ namespace EMStudio
     const QColor StateMachineColors::s_interruptionCandidateColor = QColor(63, 140, 62);
     const QColor StateMachineColors::s_selectedColor = QColor(255, 128, 0);
 
+    namespace
+    {
+        // Qt's polyline path costs more than a single line, so the common unbent transition keeps drawLine.
+        void DrawPath(QPainter& painter, const QPoint* points, size_t pointCount)
+        {
+            if (pointCount == 2)
+            {
+                painter.drawLine(points[0], points[1]);
+            }
+            else
+            {
+                painter.drawPolyline(points, aznumeric_cast<int>(pointCount));
+            }
+        }
+
+        float SegmentLength(const QPoint* points, size_t index)
+        {
+            return AZ::Vector2(
+                aznumeric_cast<float>(points[index].x() - points[index - 1].x()),
+                aznumeric_cast<float>(points[index].y() - points[index - 1].y())).GetLength();
+        }
+    }
+
     StateConnection::StateConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* sourceNode, GraphNode* targetNode, bool isWildcardConnection)
         : NodeConnection(parentGraph, modelIndex, targetNode, 0, sourceNode, 0)
     {
@@ -45,21 +68,23 @@ namespace EMStudio
         MCORE_UNUSED(opacity);
         MCORE_UNUSED(alwaysColor);
 
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
-
-        // Adjust the start and end points in case this is a wildcard transition.
-        if (m_isWildcardConnection)
-        {
-            start = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
-            end += QPoint(3, 3);
-        }
-
-        const EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+        const EMotionFX::AnimGraphStateTransition* transition = GetTransition();
         if (!transition)
         {
             AZ_Error("EMotionFX", false, "Cannot render transition, model index is invalid.");
             return;
+        }
+
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(transition, points);
+
+        // A wildcard transition has no source state, so it is drawn as a short stub and never carries waypoints.
+        if (m_isWildcardConnection)
+        {
+            const QPoint end = points.back() + QPoint(3, 3);
+            points.resize(2);
+            points[0] = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
+            points[1] = end;
         }
 
         const EMotionFX::AnimGraphNode* targetState = transition->GetTargetNode();
@@ -184,7 +209,7 @@ namespace EMStudio
             ((!gotInterrupted && isLatestTransition && numActiveTransitions == 1) || isLastInterruptedTransition);
 
         RenderTransition(painter, *brush, *pen,
-            start, end,
+            points.data(), points.size(),
             color, activeColor,
             isSelected, /*isDashed=*/m_isDisabled,
             showBlendState, blendWeight,
@@ -201,89 +226,178 @@ namespace EMStudio
 
         if (!isActive)
         {
-            RenderConditionsAndActions(animGraphInstance, &painter, pen, brush, start, end);
+            RenderConditionsAndActions(animGraphInstance, transition, &painter, pen, brush, points.data(), points.size());
+        }
+
+        // Only show the grab handles while the transition is under the mouse or selected, to keep the graph readable.
+        if (!m_isWildcardConnection && (GetIsSelected() || m_isHighlighted))
+        {
+            RenderWaypoints(painter, *brush, *pen, color);
         }
     }
 
-    void StateConnection::RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end)
+    bool StateConnection::LayOutConditionShapes(const QPoint* points, size_t pointCount, size_t shapeCount, AZStd::vector<AZ::Vector2>& outCenters)
+    {
+        outCenters.clear();
+        if (shapeCount == 0 || pointCount < 2)
+        {
+            return false;
+        }
+
+        // Distance along the path at each point.
+        AZStd::vector<float> along;
+        along.reserve(pointCount);
+        along.push_back(0.0f);
+        for (size_t i = 1; i < pointCount; ++i)
+        {
+            along.push_back(along.back() + AZ::Vector2(
+                aznumeric_cast<float>(points[i].x() - points[i - 1].x()),
+                aznumeric_cast<float>(points[i].y() - points[i - 1].y())).GetLength());
+        }
+        const size_t lastIndex = along.size() - 1;
+        const float pathLength = along.back();
+
+        // The row is centred on the middle of the path. Every waypoint it passes costs a gap, so the centring is
+        // refined until the number of waypoints inside the row stops changing.
+        const float gapStart = s_conditionGap * 0.5f;
+        size_t gaps = 0;
+        float rowStart = 0.0f;
+        for (int pass = 0; pass < 4; ++pass)
+        {
+            const float rowLength = s_conditionSpacing * aznumeric_cast<float>(shapeCount) + s_conditionGap * aznumeric_cast<float>(gaps);
+            rowStart = (pathLength - rowLength) * 0.5f;
+            size_t gapsInRow = 0;
+            for (size_t v = 1; v < lastIndex; ++v)
+            {
+                if (along[v] > rowStart && along[v] < rowStart + rowLength)
+                {
+                    ++gapsInRow;
+                }
+            }
+
+            if (gapsInRow == gaps)
+            {
+                break;
+            }
+            gaps = gapsInRow;
+        }
+
+        // Place the shapes one after the other, jumping over the space around each waypoint they would cover.
+        float cursor = AZStd::max(rowStart, 0.0f);
+        size_t vertex = 1;
+        size_t segment = 1;
+        for (size_t shape = 0; shape < shapeCount; ++shape)
+        {
+            while (vertex < lastIndex)
+            {
+                if (along[vertex] + gapStart <= cursor)
+                {
+                    ++vertex;
+                    continue;
+                }
+
+                if (along[vertex] - gapStart < cursor + s_conditionSpacing)
+                {
+                    cursor = along[vertex] + gapStart;
+                    ++vertex;
+                    continue;
+                }
+                break;
+            }
+
+            const float center = cursor + s_conditionSpacing * 0.5f;
+            if (cursor + s_conditionSpacing > pathLength)
+            {
+                // Not enough room on this path, so show nothing rather than shapes spilling over the nodes.
+                outCenters.clear();
+                return false;
+            }
+
+            while (segment < lastIndex && along[segment] < center)
+            {
+                ++segment;
+            }
+
+            const float segmentLength = along[segment] - along[segment - 1];
+            const float t = segmentLength > MCore::Math::epsilon ? (center - along[segment - 1]) / segmentLength : 0.0f;
+            const AZ::Vector2 from(aznumeric_cast<float>(points[segment - 1].x()), aznumeric_cast<float>(points[segment - 1].y()));
+            const AZ::Vector2 to(aznumeric_cast<float>(points[segment].x()), aznumeric_cast<float>(points[segment].y()));
+            outCenters.push_back(from + (to - from) * t);
+            cursor += s_conditionSpacing;
+        }
+
+        return true;
+    }
+
+    void StateConnection::RenderConditionsAndActions(
+        EMotionFX::AnimGraphInstance* animGraphInstance,
+        const EMotionFX::AnimGraphStateTransition* transition,
+        QPainter* painter,
+        QPen* pen,
+        QBrush* brush,
+        const QPoint* points,
+        size_t pointCount)
     {
         // disable the dash pattern in case the transition is disabled
         pen->setStyle(Qt::SolidLine);
         painter->setPen(*pen);
 
-        const AZ::Vector2   transitionStart(aznumeric_cast<float>(start.rx()), aznumeric_cast<float>(start.ry()));
-        const AZ::Vector2   transitionEnd(aznumeric_cast<float>(end.rx()), aznumeric_cast<float>(end.ry()));
-
-        EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
         AZ_Assert(transition, "Expected non-null transition");
 
         const size_t numConditions = transition->GetNumConditions();
         const size_t numActions = transition->GetTriggerActionSetup().GetNumActions();
-        const size_t sumSize = numConditions + numActions;
 
-        // precalculate some values we need for the condition rendering
-        const float             shapeDiameter = 3.0f;
-        const float             shapeStride = 4.0f;
-        const float             elementSize = shapeDiameter + shapeStride;
-        const AZ::Vector2       localEnd = transitionEnd - transitionStart;
-
-        // only draw the transition conditions in case the arrow has enough space for it, avoid zero rect sized crashes as well
-        if (localEnd.GetLength() > sumSize * elementSize)
+        // Conditions come first, then actions, in one row that follows the path round its waypoints.
+        AZStd::vector<AZ::Vector2>& centers = m_shapeScratch;
+        if (!LayOutConditionShapes(points, pointCount, numConditions + numActions, centers))
         {
-            const AZ::Vector2   transitionMid = transitionStart + localEnd * 0.5;
-            const AZ::Vector2   transitionDir = localEnd.GetNormalized();
-            const AZ::Vector2   conditionStart = transitionMid - transitionDir * (elementSize * 0.5f * (float)(sumSize));
-            const AZ::Vector2   actionStart = transitionMid - transitionDir * (elementSize * 0.5f * (float)sumSize) + transitionDir * aznumeric_cast<float>(elementSize) * aznumeric_cast<float>(numConditions);
+            return;
+        }
 
-            for (size_t i = 0; i < numConditions; ++i)
+        const float shapeRadius = s_conditionShapeRadius;
+        for (size_t i = 0; i < numConditions; ++i)
+        {
+            EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
+
+            // set the condition color either green if the test went okay or red if the test returned false
+            QColor conditionColor;
+            if (animGraphInstance)
             {
-                EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
-
-                // set the condition color either green if the test went okay or red if the test returned false
-                QColor conditionColor;
-                if (animGraphInstance)
-                {
-                    conditionColor = condition->TestCondition(animGraphInstance) ? Qt::green : Qt::red;
-                }
-                else
-                {
-                    conditionColor = Qt::gray;
-                }
-
-                // darken the color in case the transition is disabled
-                if (m_isDisabled)
-                {
-                    conditionColor = conditionColor.darker(185);
-                }
-
-                brush->setColor(conditionColor);
-
-                // calculate the circle middle point
-                const AZ::Vector2 circleMid = conditionStart + transitionDir * (elementSize * (float)i);
-
-                // render the circle per condition
-                painter->setBrush(*brush);
-                painter->drawEllipse(QPointF(circleMid.GetX(), circleMid.GetY()), shapeDiameter, shapeDiameter);
+                conditionColor = condition->TestCondition(animGraphInstance) ? Qt::green : Qt::red;
+            }
+            else
+            {
+                conditionColor = Qt::gray;
             }
 
-            QColor actionColor = Qt::yellow;
             // darken the color in case the transition is disabled
             if (m_isDisabled)
             {
-                actionColor = actionColor.darker(185);
+                conditionColor = conditionColor.darker(185);
             }
 
-            for (size_t i = 0; i < numActions; ++i)
-            {
-                brush->setColor(actionColor);
+            brush->setColor(conditionColor);
+            painter->setBrush(*brush);
+            painter->drawEllipse(QPointF(centers[i].GetX(), centers[i].GetY()), shapeRadius, shapeRadius);
+        }
 
-                // calculate the rect left top
-                const AZ::Vector2 recLeft = actionStart + transitionDir * (elementSize * (float)i) - AZ::Vector2(shapeDiameter, shapeDiameter);
+        QColor actionColor = Qt::yellow;
+        // darken the color in case the transition is disabled
+        if (m_isDisabled)
+        {
+            actionColor = actionColor.darker(185);
+        }
 
-                // render the rect per action
-                painter->setBrush(*brush);
-                painter->drawRect(aznumeric_cast<int>(recLeft.GetX()), aznumeric_cast<int>(recLeft.GetY()), aznumeric_cast<int>(shapeDiameter * 2), aznumeric_cast<int>(shapeDiameter * 2));
-            }
+        brush->setColor(actionColor);
+        painter->setBrush(*brush);
+        for (size_t i = 0; i < numActions; ++i)
+        {
+            const AZ::Vector2& center = centers[numConditions + i];
+            painter->drawRect(
+                aznumeric_cast<int>(center.GetX() - shapeRadius),
+                aznumeric_cast<int>(center.GetY() - shapeRadius),
+                aznumeric_cast<int>(shapeRadius * 2),
+                aznumeric_cast<int>(shapeRadius * 2));
         }
     }
 
@@ -295,51 +409,36 @@ namespace EMStudio
             return nullptr;
         }
 
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
+        EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+        AZ_Assert(transition, "Expected non-null transition");
+
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(transition, points);
 
         // check if we are dealing with a wildcard transition
         if (m_isWildcardConnection)
         {
-            start = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
-            end += QPoint(3, 3);
+            const QPoint end = points.back() + QPoint(3, 3);
+            points.resize(2);
+            points[0] = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
+            points[1] = end;
         }
 
-        const AZ::Vector2   transitionStart(aznumeric_cast<float>(start.rx()), aznumeric_cast<float>(start.ry()));
-        const AZ::Vector2   transitionEnd(aznumeric_cast<float>(end.rx()), aznumeric_cast<float>(end.ry()));
-
-        EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
-        AZ_Assert(transition, "Expected non-null transition");
-
+        // Use the same layout as the rendering, actions included, so the shape under the mouse is the one that is hit.
         const size_t numConditions = transition->GetNumConditions();
-
-        // precalculate some values we need for the condition rendering
-        const float             circleDiameter  = 3.0f;
-        const float             circleStride    = 4.0f;
-        const float             elementSize     = circleDiameter + circleStride;
-        const AZ::Vector2   localEnd        = transitionEnd - transitionStart;
-
-        // only draw the transition conditions in case the arrow has enough space for it, avoid zero rect sized crashes as well
-        if (localEnd.GetLength() > numConditions * elementSize)
+        const size_t numActions = transition->GetTriggerActionSetup().GetNumActions();
+        AZStd::vector<AZ::Vector2>& centers = m_shapeScratch;
+        if (!LayOutConditionShapes(points.data(), points.size(), numConditions + numActions, centers))
         {
-            const AZ::Vector2   transitionMid   = transitionStart + localEnd * 0.5f;
-            const AZ::Vector2   transitionDir   = localEnd.GetNormalized();
-            const AZ::Vector2   conditionStart  = transitionMid - transitionDir * (elementSize * 0.5f * (float)numConditions);
+            return nullptr;
+        }
 
-            // iterate through the conditions and render them
-            for (size_t i = 0; i < numConditions; ++i)
+        const AZ::Vector2 mouse(aznumeric_cast<float>(mousePos.x()), aznumeric_cast<float>(mousePos.y()));
+        for (size_t i = 0; i < numConditions; ++i)
+        {
+            if (AZ::Vector2(mouse - centers[i]).GetLength() <= s_conditionShapeRadius)
             {
-                // get access to the condition
-                EMotionFX::AnimGraphTransitionCondition* condition = transition->GetCondition(i);
-
-                // calculate the circle middle point
-                const AZ::Vector2 circleMid = conditionStart  + transitionDir * (elementSize * (float)i);
-
-                const float distance = AZ::Vector2(AZ::Vector2(aznumeric_cast<float>(mousePos.x()), aznumeric_cast<float>(mousePos.y())) - circleMid).GetLength();
-                if (distance <= circleDiameter)
-                {
-                    return condition;
-                }
+                return transition->GetCondition(i);
             }
         }
 
@@ -348,27 +447,51 @@ namespace EMStudio
 
     bool StateConnection::Intersects(const QRect& rect)
     {
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
-        return NodeGraph::LineIntersectsRect(rect, aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y()), aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y()));
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(GetTransition(), points);
+
+        for (size_t i = 1; i < points.size(); ++i)
+        {
+            if (NodeGraph::LineIntersectsRect(rect,
+                aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()),
+                aznumeric_cast<float>(points[i].x()), aznumeric_cast<float>(points[i].y())))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool StateConnection::CheckIfIsCloseTo(const QPoint& point)
     {
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
-        return (NodeGraph::DistanceToLine(aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y()), aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y()), aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y())) <= 5.0f);
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(GetTransition(), points);
 
-        //QRect testRect(point.x() - 1, point.y() - 1, 2, 2);
-        //return Intersects(testRect);
+        for (size_t i = 1; i < points.size(); ++i)
+        {
+            if (NodeGraph::DistanceToLine(
+                aznumeric_cast<float>(points[i - 1].x()), aznumeric_cast<float>(points[i - 1].y()),
+                aznumeric_cast<float>(points[i].x()), aznumeric_cast<float>(points[i].y()),
+                aznumeric_cast<float>(point.x()), aznumeric_cast<float>(point.y())) <= 5.0f)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool StateConnection::CheckIfIsCloseToHead(const QPoint& point) const
     {
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(GetTransition(), points);
 
-        AZ::Vector2 dir = AZ::Vector2(aznumeric_cast<float>(end.x() - start.x()), aznumeric_cast<float>(end.y() - start.y()));
+        // The arrow head sits on the last segment of the routed path.
+        const QPoint& end = points.back();
+        const QPoint& previous = points[points.size() - 2];
+
+        AZ::Vector2 dir = AZ::Vector2(aznumeric_cast<float>(end.x() - previous.x()), aznumeric_cast<float>(end.y() - previous.y()));
         dir.Normalize();
         AZ::Vector2 newStart = AZ::Vector2(aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y())) - dir * 5.0f;
 
@@ -377,10 +500,14 @@ namespace EMStudio
 
     bool StateConnection::CheckIfIsCloseToTail(const QPoint& point) const
     {
-        QPoint start, end;
-        CalcStartAndEndPoints(start, end);
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(GetTransition(), points);
 
-        AZ::Vector2 dir = AZ::Vector2(aznumeric_cast<float>(end.x() - start.x()), aznumeric_cast<float>(end.y() - start.y()));
+        // The tail sits on the first segment of the routed path.
+        const QPoint& start = points.front();
+        const QPoint& next = points[1];
+
+        AZ::Vector2 dir = AZ::Vector2(aznumeric_cast<float>(next.x() - start.x()), aznumeric_cast<float>(next.y() - start.y()));
         dir.Normalize();
         AZ::Vector2 newStart = AZ::Vector2(aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y())) + dir * 6.0f;
 
@@ -389,12 +516,41 @@ namespace EMStudio
 
     void StateConnection::CalcStartAndEndPoints(QPoint& outStart, QPoint& outEnd) const
     {
-        EMotionFX::AnimGraphStateTransition* transition = m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+        AZStd::vector<QPoint>& points = m_pathScratch;
+        CalcPolyline(GetTransition(), points);
+
+        outStart = points.front();
+        outEnd = points.back();
+    }
+
+    const EMotionFX::AnimGraphStateTransition* StateConnection::GetTransition() const
+    {
+        return m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+    }
+
+    void StateConnection::CalcPolyline(AZStd::vector<QPoint>& outPoints) const
+    {
+        CalcPolyline(GetTransition(), outPoints);
+    }
+
+    void StateConnection::CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const
+    {
+        outPoints.clear();
+
+        // Always emit two points so every caller can index the ends without checking.
+        if (!transition)
+        {
+            const QPoint fallback = m_targetNode ? m_targetNode->GetRect().topLeft() : QPoint(0, 0);
+            outPoints.push_back(fallback);
+            outPoints.push_back(fallback);
+            return;
+        }
+
         const QPoint startOffset = QPoint(transition->GetVisualStartOffsetX(), transition->GetVisualStartOffsetY());
         const QPoint endOffset = QPoint(transition->GetVisualEndOffsetX(), transition->GetVisualEndOffsetY());
 
         QPoint start = startOffset;
-        QPoint end = m_targetNode->GetRect().topLeft() + endOffset;
+        const QPoint end = m_targetNode->GetRect().topLeft() + endOffset;
         if (m_sourceNode)
         {
             start += m_sourceNode->GetRect().topLeft();
@@ -403,6 +559,14 @@ namespace EMStudio
         {
             start = end - QPoint(WILDCARDTRANSITION_SIZE, WILDCARDTRANSITION_SIZE);
         }
+
+        outPoints.reserve(transition->GetNumWaypoints() + 2);
+        outPoints.push_back(start);
+        for (const AZ::Vector2& waypoint : transition->GetWaypoints())
+        {
+            outPoints.push_back(QPoint(aznumeric_cast<int>(waypoint.GetX()), aznumeric_cast<int>(waypoint.GetY())));
+        }
+        outPoints.push_back(end);
 
         QRect sourceRect;
         if (m_sourceNode)
@@ -413,23 +577,43 @@ namespace EMStudio
         QRect targetRect = m_targetNode->GetRect();
         targetRect.adjust(-2, -2, 2, 2);
 
-        // calc the real start point
+        // Clip the outer segments against the state rects so the path starts and ends on the node borders.
         double realX, realY;
-        if (NodeGraph::LineIntersectsRect(sourceRect, aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y()), aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y()), &realX, &realY))
+        const QPoint firstFar = outPoints[1];
+        if (NodeGraph::LineIntersectsRect(
+            sourceRect,
+            aznumeric_cast<float>(outPoints.front().x()), aznumeric_cast<float>(outPoints.front().y()),
+            aznumeric_cast<float>(firstFar.x()), aznumeric_cast<float>(firstFar.y()),
+            &realX, &realY))
         {
-            start.setX(aznumeric_cast<int>(realX));
-            start.setY(aznumeric_cast<int>(realY));
+            outPoints.front() = QPoint(aznumeric_cast<int>(realX), aznumeric_cast<int>(realY));
         }
 
-        // calc the real end point
-        if (NodeGraph::LineIntersectsRect(targetRect, aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y()), aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y()), &realX, &realY))
+        const QPoint lastNear = outPoints[outPoints.size() - 2];
+        if (NodeGraph::LineIntersectsRect(
+            targetRect,
+            aznumeric_cast<float>(lastNear.x()), aznumeric_cast<float>(lastNear.y()),
+            aznumeric_cast<float>(outPoints.back().x()), aznumeric_cast<float>(outPoints.back().y()),
+            &realX, &realY))
         {
-            end.setX(aznumeric_cast<int>(realX));
-            end.setY(aznumeric_cast<int>(realY));
+            outPoints.back() = QPoint(aznumeric_cast<int>(realX), aznumeric_cast<int>(realY));
         }
+    }
 
-        outStart    = start;
-        outEnd      = end;
+    const AZStd::vector<AZ::Vector2>* StateConnection::GetWaypoints() const
+    {
+        const EMotionFX::AnimGraphStateTransition* transition = GetTransition();
+        return transition ? &transition->GetWaypoints() : nullptr;
+    }
+
+    void StateConnection::SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints)
+    {
+        EMotionFX::AnimGraphStateTransition* transition =
+            m_modelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
+        if (transition)
+        {
+            transition->SetWaypoints(waypoints);
+        }
     }
 
     void StateConnection::RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
@@ -437,26 +621,51 @@ namespace EMStudio
         const QColor& color, const QColor& activeColor,
         bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator)
     {
-        const AZ::Vector2 azStart = AZ::Vector2(aznumeric_cast<float>(start.x()), aznumeric_cast<float>(start.y()));
-        const AZ::Vector2 azEnd = AZ::Vector2(aznumeric_cast<float>(end.x()), aznumeric_cast<float>(end.y()));
-        AZ::Vector2 azStartEnd = azEnd - azStart;
+        const QPoint points[2] = { start, end };
+        RenderTransition(painter, brush, pen, points, 2, color, activeColor, isSelected, isDashed, isActive, weight, highlightHead, gradientActiveIndicator);
+    }
 
-        // Skip degenerated transitions (in case nodes are moved close or over each other).
-        if (MCore::Compare<float>::CheckIfIsClose(azStartEnd.GetX(), 0.0f, MCore::Math::epsilon) &&
-            MCore::Compare<float>::CheckIfIsClose(azStartEnd.GetY(), 0.0f, MCore::Math::epsilon))
+    void StateConnection::RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
+        const QPoint* points, size_t pointCount,
+        const QColor& color, const QColor& activeColor,
+        bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator)
+    {
+        if (pointCount < 2)
         {
             return;
         }
 
-        const float length = azStartEnd.GetLength();
-        AZ::Vector2 lineDir = azStartEnd;
+        // The segment lengths place the arrow head and spread the blend weight over the whole routed path.
+        float totalLength = 0.0f;
+        size_t headSegment = 0;
+        for (size_t i = 1; i < pointCount; ++i)
+        {
+            const float segmentLength = SegmentLength(points, i);
+            totalLength += segmentLength;
+
+            // Keep the last segment that is not degenerated, so a waypoint on a node border does not flip the head.
+            if (segmentLength >= MCore::Math::epsilon)
+            {
+                headSegment = i - 1;
+            }
+        }
+
+        // Skip degenerated transitions (in case nodes are moved close or over each other).
+        if (MCore::Compare<float>::CheckIfIsClose(totalLength, 0.0f, MCore::Math::epsilon))
+        {
+            return;
+        }
+
+        const QPoint& end = points[pointCount - 1];
+        AZ::Vector2 lineDir(aznumeric_cast<float>(points[headSegment + 1].x() - points[headSegment].x()),
+            aznumeric_cast<float>(points[headSegment + 1].y() - points[headSegment].y()));
         lineDir.Normalize();
 
         QPointF direction;
         direction.setX(lineDir.GetX() * 8.0f);
         direction.setY(lineDir.GetY() * 8.0f);
 
-        QPointF normalOffset((end.y() - start.y()) / length, (start.x() - end.x()) / length);
+        QPointF normalOffset(lineDir.GetY(), -lineDir.GetX());
 
         QPointF headPoints[3];
         headPoints[0] = end;
@@ -494,7 +703,7 @@ namespace EMStudio
         pen.setColor(color);
         pen.setBrush(color);
         painter.setPen(pen);
-        painter.drawLine(start, end);
+        DrawPath(painter, points, pointCount);
 
         if (highlightHead)
         {
@@ -518,13 +727,12 @@ namespace EMStudio
         {
             pen.setWidthF(3.0f);
 
-            QLinearGradient gradient(start, end);
-
             if (MCore::Compare<float>::CheckIfIsClose(weight, 1.0f, MCore::Math::epsilon))
             {
                 painter.setBrush(activeColor);
                 pen.setBrush(activeColor);
                 painter.setPen(pen);
+                DrawPath(painter, points, pointCount);
             }
             else
             {
@@ -535,17 +743,41 @@ namespace EMStudio
                 }
 
                 const QColor transparent(0, 0, 0, 0);
-                gradient.setColorAt(0.0, activeColor);
-                gradient.setColorAt(MCore::Clamp(weight, 0.0f, 1.0f), activeColor);
-                gradient.setColorAt(MCore::Clamp(weight + gradientLength, 0.0f, 1.0f), transparent);
-                gradient.setColorAt(1.0, transparent);
+                const float weightDistance = MCore::Clamp(weight, 0.0f, 1.0f) * totalLength;
+                const float fadeDistance = gradientLength * totalLength;
 
-                painter.setBrush(gradient);
-                pen.setBrush(gradient);
-                painter.setPen(pen);
+                float distanceBefore = 0.0f;
+                for (size_t i = 1; i < pointCount; ++i)
+                {
+                    const float segmentLength = SegmentLength(points, i);
+                    if (segmentLength < MCore::Math::epsilon)
+                    {
+                        continue;
+                    }
+
+                    if (distanceBefore >= weightDistance + fadeDistance)
+                    {
+                        break;
+                    }
+
+                    const QPointF start(points[i - 1]);
+                    const QPointF segmentDirection = (QPointF(points[i]) - start) / segmentLength;
+
+                    // Padded gradient ends keep completed segments solid and carry the fade across bends.
+                    QLinearGradient gradient(
+                        start + segmentDirection * (weightDistance - distanceBefore),
+                        start + segmentDirection * (weightDistance + fadeDistance - distanceBefore));
+                    gradient.setColorAt(0.0, activeColor);
+                    gradient.setColorAt(1.0, transparent);
+
+                    painter.setBrush(gradient);
+                    pen.setBrush(gradient);
+                    painter.setPen(pen);
+                    painter.drawLine(points[i - 1], points[i]);
+
+                    distanceBefore += segmentLength;
+                }
             }
-
-            painter.drawLine(start, end);
 
             pen.setWidthF(1.0f);
             painter.setPen(pen);

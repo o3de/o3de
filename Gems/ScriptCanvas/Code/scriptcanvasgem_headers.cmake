@@ -116,6 +116,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/Primitives.h
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.h
     Include/ScriptCanvas/Grammar/PrimitivesExecution.h
+    Include/ScriptCanvas/Grammar/RerouteFreeGraph.h
     Include/ScriptCanvas/Grammar/SymbolNames.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.ScriptCanvasNodeable.xml
@@ -191,6 +192,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Nodeling.h
     Include/ScriptCanvas/Libraries/Core/Nodeling.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h
+    Include/ScriptCanvas/Libraries/Core/Reroute.h
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.h
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.ScriptCanvasGrammar.xml

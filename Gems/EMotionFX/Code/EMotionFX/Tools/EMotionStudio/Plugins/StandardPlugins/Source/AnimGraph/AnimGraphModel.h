@@ -163,6 +163,9 @@ namespace EMStudio
         // Method to control the anim graph instance stored in the model. These methods are called during activation
         void SetAnimGraphInstance(EMotionFX::AnimGraph* currentAnimGraph, EMotionFX::AnimGraphInstance* currentAnimGraphInstance, EMotionFX::AnimGraphInstance* newAnimGraphInstance);
 
+        // Removes the anim graph's items from the model. Does nothing if the anim graph is not in the model.
+        void Remove(EMotionFX::AnimGraph* animGraph);
+
     signals:
         // Emitted when focus has changed. Index is the element we are focusing on. IndexContainer is the index of a potential
         // parent. UIs use the indexContainer to dive into that node/graph. Is possible that index is the same as indexContainer
@@ -181,7 +184,6 @@ namespace EMStudio
         // cases we are going to populate the model with a null AnimGraphInstance. If the graph is activated
         // (which creates an instance) then we remove the graph and add the with the AnimGraphInstance.
         QModelIndex Add(EMotionFX::AnimGraph* animGraph);
-        void Remove(EMotionFX::AnimGraph* animGraph);
 
         // AnimGraphNotificationBus
         void OnSyncVisualObject(EMotionFX::AnimGraphObject* object) override;
@@ -332,6 +334,8 @@ namespace EMStudio
         ANIMGRAPHMODEL_CALLBACK(CommandWillRemoveConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidRemoveConnectionCallback);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustConnectionCallback);
+        ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustBlendTreeConnectionCallback);
+        ANIMGRAPHMODEL_CALLBACK(CommandDidAdjustPinnedWireCallback);
 
         static bool CommandDidConditionChangeCallbackHelper(AnimGraphModel& animGraphModel, MCore::Command* command);
         ANIMGRAPHMODEL_CALLBACK(CommandDidAddRemoveConditionCallback);
@@ -376,6 +380,7 @@ namespace EMStudio
         bool TransitionAdded(EMotionFX::AnimGraphStateTransition* animGraphTransition);
         void RemoveIndices(const QModelIndexList& modelIndexList);
         bool Edited(EMotionFX::AnimGraphObject* animGraphObject, const QVector<int>& roles = QVector<int>());
+        bool Edited(EMotionFX::BlendTreeConnection* blendTreeConnection);
         bool ParameterEdited(EMotionFX::AnimGraph* animGraph);
         bool MotionEdited();
 

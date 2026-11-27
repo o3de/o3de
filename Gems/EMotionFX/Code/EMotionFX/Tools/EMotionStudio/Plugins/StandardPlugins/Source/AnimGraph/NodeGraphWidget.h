@@ -29,6 +29,7 @@ namespace EMStudio
     class GraphNode;
     class NodePort;
     class NodeConnection;
+    struct RepositionedWaypoint;
     class AnimGraphPlugin;
 
     class NodeGraphWidget
@@ -85,6 +86,9 @@ namespace EMStudio
         virtual void OnEnabledToggle(GraphNode* node, bool enabled)                     { MCORE_UNUSED(node); MCORE_UNUSED(enabled); }
         virtual void OnSetupVisualizeOptions(GraphNode* node)                           { MCORE_UNUSED(node); }
 
+        virtual void CommitWaypoints(const AZStd::vector<RepositionedWaypoint>& drags);
+        // A new wire from an output was dropped on empty space with Alt held: it should end at a pin there.
+        virtual void OnCreatePinnedWire(AZ::u16 sourcePortNr, GraphNode* sourceNode, const QPoint& pinPosition);
         virtual void ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset,
             GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode);
 

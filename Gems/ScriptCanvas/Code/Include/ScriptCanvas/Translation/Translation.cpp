@@ -18,6 +18,7 @@
 
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
+#include <ScriptCanvas/Grammar/RerouteFreeGraph.h>
 #include <ScriptCanvas/Translation/GraphToLua.h>
 #include <ScriptCanvas/Core/Graph.h>
 
@@ -60,6 +61,9 @@ namespace ScriptCanvas
     {
         AZ::Outcome<Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(const Grammar::Request& request)
         {
+            // Reroutes are editor layout only: the parser works on the graph with them spliced out.
+            Grammar::ScopedRerouteFreeGraph rerouteFreeGraph(request.graph);
+
             AZ::Outcome<Grammar::Source, AZStd::string> sourceOutcome = Grammar::Source::Construct(request);
 
             if (!sourceOutcome.IsSuccess())
@@ -73,6 +77,9 @@ namespace ScriptCanvas
 
         Result ParseAndTranslateGraph(const Grammar::Request& request)
         {
+            // Keep reroutes spliced out until translation is done too.
+            Grammar::ScopedRerouteFreeGraph rerouteFreeGraph(request.graph);
+
             auto parseOutcome = ParseGraph(request);
             if (!parseOutcome.IsSuccess())
             {

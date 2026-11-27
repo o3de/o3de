@@ -686,6 +686,12 @@ namespace ScriptCanvas
 
         EndpointsResolved GetConnectedNodes(const Slot& slot) const;
 
+        //! Resolves connections through reroutes, giving what translation sees (editor display and contract checks use this).
+        EndpointsResolved GetConnectedNodesForTranslation(const Slot& slot) const;
+
+        //! Resolves a slot through reroutes, including disabled nodes whose connection contracts still apply.
+        EndpointsResolved GetNonTransparentEndpoints(const Slot& slot) const;
+
         AZStd::vector<const Slot*> GetEventSlots() const;
 
         bool ValidateNode(ValidationResults& validationResults);
@@ -764,6 +770,9 @@ namespace ScriptCanvas
         virtual bool IsLogicalOR() const { return false; }
 
         virtual bool IsNoOp() const { return false; }
+
+        //! Editor layout only (a reroute): translation splices the node out of the graph before parsing (see Grammar::ScopedRerouteFreeGraph).
+        virtual bool IsConnectionTransparentForTranslation() const { return false; }
 
         virtual bool IsNodeableNode() const { return false; }
 

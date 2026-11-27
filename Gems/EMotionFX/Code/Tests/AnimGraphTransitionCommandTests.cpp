@@ -241,4 +241,27 @@ namespace EMotionFX
         ASSERT_EQ(m_rootStateMachine->GetNumTransitions(), numTransitions + 1)
             << "The wildcard transition doesn't seem to be added on Redo.";
     }
+
+    TEST_F(AnimGraphTransitionCommandsFixture, WaypointsUndoRedoAndClear)
+    {
+        CommandSystem::CommandManager commandManager;
+        AZStd::string result;
+        const AZStd::vector<AZ::Vector2> waypoints{AZ::Vector2(10.0f, 20.0f), AZ::Vector2(30.0f, 40.0f)};
+
+        CommandSystem::AdjustTransitionWaypoints(m_transitionLeft, waypoints);
+        ASSERT_EQ(m_transitionLeft->GetWaypoints(), waypoints);
+        const AZStd::string serialized = MCore::ReflectionSerializer::Serialize(m_motionNodeAnimGraph.get()).GetValue();
+
+        ASSERT_TRUE(commandManager.Undo(result)) << result.c_str();
+        EXPECT_TRUE(m_transitionLeft->GetWaypoints().empty());
+
+        ASSERT_TRUE(commandManager.Redo(result)) << result.c_str();
+        EXPECT_EQ(MCore::ReflectionSerializer::Serialize(m_motionNodeAnimGraph.get()).GetValue(), serialized);
+
+        CommandSystem::AdjustTransitionWaypoints(m_transitionLeft, {});
+        EXPECT_TRUE(m_transitionLeft->GetWaypoints().empty());
+
+        ASSERT_TRUE(commandManager.Undo(result)) << result.c_str();
+        EXPECT_EQ(m_transitionLeft->GetWaypoints(), waypoints);
+    }
 } // namespace EMotionFX

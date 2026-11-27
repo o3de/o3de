@@ -54,6 +54,12 @@ namespace EMStudio
         bool CheckIfIsCloseToHead(const QPoint& point) const override;
         bool CheckIfIsCloseToTail(const QPoint& point) const override;
 
+        // Builds the routed path in graph space, from the clipped source point through every waypoint to the clipped target point.
+        void CalcPolyline(AZStd::vector<QPoint>& outPoints) const override;
+
+        const AZStd::vector<AZ::Vector2>* GetWaypoints() const override;
+        void SetWaypoints(const AZStd::vector<AZ::Vector2>& waypoints) override;
+
         uint32 GetType() const override                     { return TYPE_ID; }
 
         EMotionFX::AnimGraphTransitionCondition* FindCondition(const QPoint& mousePos);
@@ -65,12 +71,38 @@ namespace EMStudio
             const QColor& color, const QColor& activeColor,
             bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator);
 
+        static void RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
+            const QPoint* points, size_t pointCount,
+            const QColor& color, const QColor& activeColor,
+            bool isSelected, bool isDashed, bool isActive, float weight, bool highlightHead, bool gradientActiveIndicator);
+
         static void RenderInterruptedTransitions(QPainter& painter, EMStudio::AnimGraphModel& animGraphModel, EMStudio::NodeGraph& nodeGraph);
 
+        // Lays the condition and action shapes along the path, round its waypoints, leaving a gap at each handle.
+        // Returns false when the path is too short to hold them all.
+        static bool LayOutConditionShapes(const QPoint* points, size_t pointCount, size_t shapeCount, AZStd::vector<AZ::Vector2>& outCenters);
+
+        static constexpr float s_conditionShapeRadius = 3.0f;
+        static constexpr float s_conditionSpacing = 7.0f;
+        static constexpr float s_conditionGap = 2.0f * (s_waypointRadius + 3);
+
     private:
-        void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end);
+        void RenderConditionsAndActions(
+            EMotionFX::AnimGraphInstance* animGraphInstance,
+            const EMotionFX::AnimGraphStateTransition* transition,
+            QPainter* painter,
+            QPen* pen,
+            QBrush* brush,
+            const QPoint* points,
+            size_t pointCount);
+
+        const EMotionFX::AnimGraphStateTransition* GetTransition() const;
+        void CalcPolyline(const EMotionFX::AnimGraphStateTransition* transition, AZStd::vector<QPoint>& outPoints) const;
 
         bool m_isWildcardConnection;
+
+        // Reused across frames so laying out the condition shapes does not allocate.
+        mutable AZStd::vector<AZ::Vector2> m_shapeScratch;
     };
 
 

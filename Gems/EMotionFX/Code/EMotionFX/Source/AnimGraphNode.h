@@ -822,6 +822,11 @@ namespace EMotionFX
         MCORE_INLINE BlendTreeConnection* GetConnection(size_t index) const         { return m_connections[index]; }
         const AZStd::vector<BlendTreeConnection*>& GetConnections() const           { return m_connections; }
 
+        // Editor layout: wires from this node's outputs that end at a pin rather than an input. Never evaluated.
+        const AZStd::vector<BlendTreePinnedWire>& GetPinnedWires() const            { return m_pinnedWires; }
+        void SetPinnedWires(const AZStd::vector<BlendTreePinnedWire>& pinnedWires)  { m_pinnedWires = pinnedWires; }
+        void SetPinnedWireWaypoints(size_t index, const AZStd::vector<AZ::Vector2>& waypoints);
+
         AZ_FORCE_INLINE AnimGraphNode* GetParentNode() const                        { return m_parentNode; }
         AZ_FORCE_INLINE void SetParentNode(AnimGraphNode* node)                     { m_parentNode = node; }
 
@@ -987,6 +992,7 @@ namespace EMotionFX
         size_t                                      m_nodeIndex;
         AZ::u64                                     m_id;
         AZStd::vector<BlendTreeConnection*>         m_connections;
+        AZStd::vector<BlendTreePinnedWire>          m_pinnedWires;
         AZStd::vector<Port>                         m_inputPorts;
         AZStd::vector<Port>                         m_outputPorts;
         AZStd::vector<AnimGraphNode*>               m_childNodes;

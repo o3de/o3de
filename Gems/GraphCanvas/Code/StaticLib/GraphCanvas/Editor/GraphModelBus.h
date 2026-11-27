@@ -81,6 +81,9 @@ namespace GraphCanvas
         //! This is sent to confirm whether or not a connection can take place.
         virtual bool IsValidConnection(const Endpoint& sourcePoint, const Endpoint& targetPoint) const = 0;
 
+        //! Whether a slot has a data source, allowing models to resolve through routing nodes.
+        virtual bool IsSlotConnected(const Endpoint& endpoint) const;
+
         //! This will return the structure needed to display why a connection could not be created between the specified endpoints.
         virtual ConnectionValidationTooltip GetConnectionValidityTooltip(const Endpoint& sourcePoint, const Endpoint& targetPoint) const
         {

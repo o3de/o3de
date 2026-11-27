@@ -12,6 +12,8 @@ set(FILES
     Source/LandscapeCanvasSystemComponent.h
     Source/Editor/MainWindow.cpp
     Source/Editor/MainWindow.h
+    Source/Editor/Core/ConnectionReconciliation.cpp
+    Source/Editor/Core/ConnectionReconciliation.h
     Source/Editor/Core/Core.h
     Source/Editor/Core/DataTypes.h
     Source/Editor/Core/GraphContext.cpp
@@ -24,6 +26,8 @@ set(FILES
     Source/Editor/Menus/SceneContextMenuActions.h
     Source/Editor/Nodes/BaseNode.cpp
     Source/Editor/Nodes/BaseNode.h
+    Source/Editor/Nodes/RerouteNode.cpp
+    Source/Editor/Nodes/RerouteNode.h
     Source/Editor/Nodes/Areas/AreaBlenderNode.cpp
     Source/Editor/Nodes/Areas/AreaBlenderNode.h
     Source/Editor/Nodes/Areas/BaseAreaNode.cpp

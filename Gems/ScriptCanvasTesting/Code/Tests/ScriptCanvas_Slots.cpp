@@ -61,6 +61,13 @@ TEST_F(ScriptCanvasTestFixture, SlotDescriptors_General)
     EXPECT_FALSE(executionIn != executionIn);
     EXPECT_TRUE(executionIn != executionOut);
 
+    const SlotDescriptor unknown;
+    EXPECT_TRUE(unknown.CanConnectTo(unknown));
+    EXPECT_FALSE(unknown.CanConnectTo(dataIn));
+    EXPECT_FALSE(dataIn.CanConnectTo(unknown));
+    EXPECT_TRUE(SlotDescriptor(ConnectionType::Unknown, SlotTypeDescriptor::Data).CanConnectTo(dataIn));
+    EXPECT_FALSE(dataIn.CanConnectTo(SlotDescriptor(ConnectionType::Unknown, SlotTypeDescriptor::Data)));
+
     // Test connectability between all of the different descriptors.
     for (SlotDescriptor baseDescriptor : { dataIn, dataOut, executionIn, executionOut })
     {
