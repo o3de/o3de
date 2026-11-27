@@ -117,8 +117,8 @@ namespace AZ
 
             // retrieve the reflection attachment
             RPI::PassAttachment* reflectionImageAttachment = GetInputOutputBinding(0).GetAttachment().get();
-            m_imageSize = reflectionImageAttachment->m_descriptor.m_image.m_size;
-            m_mipLevels = aznumeric_cast<uint32_t>(reflectionImageAttachment->m_descriptor.m_image.m_mipLevels);
+            m_imageSize = reflectionImageAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            m_mipLevels = aznumeric_cast<uint32_t>(reflectionImageAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_mipLevels);
 
             // create transient attachments, one for each blur mip level
             AZStd::vector<RPI::PassAttachment*> transientPassAttachments;
@@ -190,7 +190,7 @@ namespace AZ
             RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
 
-            RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size size = inputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
             if (m_imageSize != size)
             {
                 m_imageSize = size;
@@ -199,7 +199,7 @@ namespace AZ
                 for (auto& ownedAttachment : m_ownedAttachments)
                 {
                     RHI::Size mipSize = m_imageSize.GetReducedMip(mip);
-                    ownedAttachment->m_descriptor.m_image.m_size = mipSize;
+                    ownedAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size = mipSize;
                     mip++;
                 }
             }
