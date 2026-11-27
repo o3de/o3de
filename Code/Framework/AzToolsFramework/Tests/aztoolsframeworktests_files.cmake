@@ -65,6 +65,7 @@ set(FILES
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
     LogLines.cpp
+    TraceLoggerTests.cpp
     ManipulatorBoundsTests.cpp
     ManipulatorCoreTests.cpp
     ManipulatorViewTests.cpp

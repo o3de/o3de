@@ -1318,13 +1318,15 @@ def simulated_log_run(tmp_path, monkeypatch):
     invocation = 0
 
     def run(launcher_class, batched, *, return_code=0, timeout=False, write_log=True,
-            report=False, write_crash=False, fail_copy=False):
+            report=False, write_crash=False, fail_copy=False, write_extra=False, fail_destination=False):
         nonlocal invocation
         invocation += 1
         manager = ArtifactManager(str(tmp_path / f"artifacts_{invocation}"))
         workspace.artifact_manager = manager
         if fail_copy:
             monkeypatch.setattr(manager, "save_artifact", mock.Mock(side_effect=PermissionError("copy denied")))
+        if fail_destination:
+            monkeypatch.setattr(manager, "set_dest_path", mock.Mock(side_effect=PermissionError("destination denied")))
 
         is_editor = launcher_class in (LinuxEditor, WinEditor)
         executable = launcher_class(workspace, []) if is_editor else launcher_class(workspace, "MaterialEditor", [])
@@ -1344,6 +1346,8 @@ def simulated_log_run(tmp_path, monkeypatch):
             if write_crash:
                 (directory / "error.log").write_text("CURRENT CRASH", encoding="utf-8")
                 (directory / "error.dmp").write_bytes(b"CURRENT DUMP")
+            if write_extra:
+                (directory / "extra.log").write_text("EXTRA DIAGNOSTIC", encoding="utf-8")
 
         executable.start = mock.Mock(side_effect=start)
         executable.wait = mock.Mock(side_effect=(
@@ -1444,3 +1448,17 @@ def test_parallel_log_directory_allocation(tmp_path):
     directories = {Path(context.directory) for context in contexts}
     assert len(directories) == len(contexts)
     assert all(directory.is_dir() for directory in directories)
+
+@pytest.mark.parametrize("batched", [False, True])
+def test_successful_run_archives_extra_diagnostics_before_cleanup(simulated_log_run, batched):
+    result, path, artifacts = simulated_log_run(LinuxEditor, batched, write_extra=True)
+    assert isinstance(result, multi_test_framework.Result.Pass)
+    assert not path.parent.exists()
+    assert (artifacts / "(1)logs" / "extra.log").read_text(encoding="utf-8") == "EXTRA DIAGNOSTIC"
+
+
+def test_artifact_destination_error_does_not_mask_single_test_failure(simulated_log_run):
+    result, path, _ = simulated_log_run(
+        LinuxEditor, False, return_code=15, report=True, fail_destination=True)
+    assert isinstance(result, multi_test_framework.Result.Fail)
+    assert path.read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"

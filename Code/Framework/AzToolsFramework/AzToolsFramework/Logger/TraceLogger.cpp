@@ -57,14 +57,21 @@ namespace AzToolsFramework
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "FileIO should be running at this point");
 
-        // There is no log system online so we have to create your own log file.
-        char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
-        fileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
-
-        // Note: @log@ hasn't been set at this point
+        // Preserve the project log path configured by the application, including
+        // per-launch overrides used by automated tests. Older callers may not
+        // have set @log@ yet, so retain the default fallback in that case.
         AZStd::string logDirectory;
-        StringFunc::Path::Join(resolveBuffer, "log", logDirectory);
-        fileIO->SetAlias("@log@", logDirectory.c_str());
+        if (const char* logAlias = fileIO->GetAlias("@log@"); logAlias && logAlias[0] != '\0')
+        {
+            logDirectory = logAlias;
+        }
+        else
+        {
+            char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
+            fileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
+            StringFunc::Path::Join(resolveBuffer, "log", logDirectory);
+            fileIO->SetAlias("@log@", logDirectory.c_str());
+        }
 
         fileIO->CreatePath("@products@");
         fileIO->CreatePath("@user@");

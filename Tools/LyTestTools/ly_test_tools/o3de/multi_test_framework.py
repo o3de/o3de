@@ -337,6 +337,7 @@ class _RunLogContext:
         self.is_atom_tools = type(executable) in (WinAtomToolsLauncher, LinuxAtomToolsLauncher)
         self.owns_directory = self.is_editor or self.is_atom_tools
         self.artifacts_saved = True
+        self.artifact_destination_ready = True
         if self.is_atom_tools:
             self.directory = editor_utils.atom_tools_log_path(self.log_run_id, workspace)
             self._read_log = editor_utils.retrieve_non_editor_log_content
@@ -361,7 +362,17 @@ class _RunLogContext:
     def read(self):
         return self._read_log(self.log_run_id, self.log_name, self.workspace)
 
+    def set_artifact_destination(self, test_name):
+        try:
+            self.workspace.artifact_manager.set_dest_path(test_name)
+        except OSError as exc:
+            self.artifacts_saved = False
+            self.artifact_destination_ready = False
+            logger.warning("Could not prepare test artifact destination: %s", exc)
+
     def save_file(self, path, artifact_name=None):
+        if not self.artifact_destination_ready:
+            return
         try:
             if artifact_name is None:
                 saved_path = self.workspace.artifact_manager.save_artifact(path)
@@ -399,13 +410,21 @@ class _RunLogContext:
         # Retain failed runs and any run for which artifact collection was
         # incomplete. Successful runs with saved diagnostics need no duplicate
         # project-side directory.
-        if not self.artifacts_saved or not all(isinstance(result, Result.Pass) for result in results.values()):
+        if (not self.artifacts_saved or not results
+                or not all(isinstance(result, Result.Pass) for result in results.values())):
             logger.info("Retaining test log directory: %s", self.directory)
             return
         try:
-            shutil.rmtree(self.directory)
+            # The engine may write additional diagnostics alongside the main
+            # log. Preserve those files before removing the owned directory.
+            if any(name != self.log_name for name in os.listdir(self.directory)):
+                self.save_file(self.directory, f"({self.run_id})logs")
+            if self.artifacts_saved:
+                shutil.rmtree(self.directory)
+            else:
+                logger.info("Retaining test log directory: %s", self.directory)
         except OSError as exc:
-            logger.warning("Could not remove test log directory %s: %s", self.directory, exc)
+            logger.warning("Could not archive or remove test log directory %s: %s", self.directory, exc)
 
 
 class MultiTestSuite(object):
@@ -978,13 +997,17 @@ class MultiTestSuite(object):
         # Capture output after the process has exited or been stopped.
         output = executable.get_output()
         executable_log_content = logs.read()
-        workspace.artifact_manager.set_dest_path(request.node.originalname)
+        logs.set_artifact_destination(request.node.originalname)
         logs.save_application_log()
 
         for name in ("Server.log", "Game.log"):
             path = os.path.join(workspace.paths.project_log(), name)
-            if os.path.exists(path) and os.path.getsize(path):
-                logs.save_file(path)
+            try:
+                if os.path.exists(path) and os.path.getsize(path):
+                    logs.save_file(path)
+            except OSError as exc:
+                logs.artifacts_saved = False
+                logger.warning("Could not inspect test artifact %s: %s", path, exc)
 
         if timed_out:
             logs.save_crash_artifacts()
@@ -1333,9 +1356,9 @@ class MultiTestSuite(object):
                 # Cut the log output so it only has the log contents for this run
                 if "log_match" in json_result:
                     m = json_result["log_match"]
-                    end = m.end() if test_spec != test_spec_list[-1] else -1
+                    end = m.end() if test_spec != test_spec_list[-1] else len(log_output)
                 else:
-                    end = -1
+                    end = len(log_output)
                 cur_log = log_output[log_start: end]
                 log_start = end
 
