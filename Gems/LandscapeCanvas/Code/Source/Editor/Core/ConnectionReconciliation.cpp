@@ -63,8 +63,10 @@ namespace LandscapeCanvasEditor
         ConnectionsList& expectedConnections)
     {
         GraphModel::Graph::ConnectionList obsolete;
-        for (const auto& [slotId, slot] : node->GetSlots())
+        for (const auto& slotEntry : node->GetSlots())
         {
+            // A plain reference: clang before 16 cannot capture structured bindings in lambdas.
+            const auto& slot = slotEntry.second;
             if (!slot->Is(GraphModel::SlotDirection::Input, GraphModel::SlotType::Data))
             {
                 continue;
