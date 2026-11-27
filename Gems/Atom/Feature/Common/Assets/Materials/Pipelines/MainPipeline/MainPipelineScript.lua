@@ -26,18 +26,22 @@ function MaterialTypeSetup(context)
     buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
     buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
     buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
-    buildVertexShaders = opacityMode == "Dynamic" or context:GetBuildSetting("positionOffset", "Disconnected") == "Connected"
 
-    if(buildVertexShaders) then
+    -- The forward shader only lights what the depth prepass has already drawn, and only the shadowmap shader casts a shadow, so
+    -- an opaque surface needs all three whether or not it moves its vertices. Base and Skin build nothing but their forward
+    -- shader, so they always need them. Motion vectors follow the object's transform too, so every opacity mode builds them.
+    buildDepthAndShadowShaders = buildOpaqueShader or (lightingModel ~= "Standard" and lightingModel ~= "Enhanced")
+
+    if(buildDepthAndShadowShaders) then
         context:IncludeShader("DepthPass")
         context:IncludeShader("ShadowmapPass")
-        context:IncludeShader("MeshMotionVector")
     end
+    context:IncludeShader("MeshMotionVector")
 
     -- The Base and Skin lighting models have no transparent shader in this pipeline, so there is no opaque/transparent split to make.
     -- A "Blended" declaration on one of them would leave the material type with nothing that draws, so it is reported and ignored.
     if(lightingModel == "Base") then
-        if(buildBlendedShaders or buildTintedTransparentShaders) then
+        if(opacityMode == "Blended" or opacityMode == "TintedTransparent") then
             Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
         end
         context:IncludeShader("ForwardPass_BaseLighting")
@@ -89,7 +93,7 @@ function MaterialTypeSetup(context)
     end
 
     if(lightingModel == "Skin") then
-        if(buildBlendedShaders or buildTintedTransparentShaders) then
+        if(opacityMode == "Blended" or opacityMode == "TintedTransparent") then
             Warning('The Skin lighting model has no transparent shader. Building its forward shader instead.')
         end
         context:IncludeShader("ForwardPass_SkinLighting")

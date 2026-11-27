@@ -26,15 +26,19 @@ function MaterialTypeSetup(context)
     buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
     buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
     buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
-    buildVertexShaders = opacityMode == "Dynamic" or context:GetBuildSetting("positionOffset", "Disconnected") == "Connected"
 
-    if(buildVertexShaders) then
+    -- The forward shader only lights what the depth prepass has already drawn, and only the shadowmap shader casts a shadow, so
+    -- an opaque surface needs all three whether or not it moves its vertices. Base and Skin build nothing but their forward
+    -- shader, so they always need them.
+    buildDepthAndShadowShaders = buildOpaqueShader or (lightingModel ~= "Standard" and lightingModel ~= "Enhanced")
+
+    if(buildDepthAndShadowShaders) then
         context:IncludeShader("DepthPass")
         context:IncludeShader("ShadowmapPass")
     end
 
     if(lightingModel == "Base") then
-        if(buildBlendedShaders or buildTintedTransparentShaders) then
+        if(opacityMode == "Blended" or opacityMode == "TintedTransparent") then
             Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
         end
         context:IncludeShader("ForwardPass_BaseLighting")

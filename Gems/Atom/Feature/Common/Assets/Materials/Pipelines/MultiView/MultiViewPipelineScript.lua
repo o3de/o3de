@@ -27,14 +27,11 @@ function MaterialTypeSetup(context)
     buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
     buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
 
-    -- This pipeline declares no depth or shadow shader, so there is nothing for a "positionOffset" build setting to
-    -- gate here. The other pipelines read it to decide whether to build their vertex-only passes.
-    
-    -- The Base lighting model has no transparent shader in this pipeline, so there is no opaque/transparent split to
-    -- make. A "Blended" declaration on it would leave the material type with nothing that draws, so it is reported and
-    -- ignored.
+    -- This pipeline has no depth or shadow shader to build alongside the forward shader.
+
+    -- Base has no transparent shader here, so a "Blended" declaration is reported and ignored.
     if(lightingModel == "Base") then
-        if(buildBlendedShaders or buildTintedTransparentShaders) then
+        if(opacityMode == "Blended" or opacityMode == "TintedTransparent") then
             Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
         end
         context:IncludeShader("ForwardPass_BaseLighting")

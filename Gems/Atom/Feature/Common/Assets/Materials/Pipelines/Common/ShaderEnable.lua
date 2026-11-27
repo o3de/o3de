@@ -73,10 +73,12 @@ function Process(context)
     enableShadowPass = not isTransparent and not isTintedTransparent and castShadows
 
     local mainPassResolved = false
+    local depthPassResolved = false
+    local shadowPassResolved = false
 
     if hasPerPixelDepth or hasPerPixelClip then
-        TrySetShaderEnabledWithFallback(context, "depth_customZ", "depth", enableDepthPass)
-        TrySetShaderEnabledWithFallback(context, "shadow_customZ", "shadow", enableShadowPass)
+        depthPassResolved = TrySetShaderEnabledWithFallback(context, "depth_customZ", "depth", enableDepthPass)
+        shadowPassResolved = TrySetShaderEnabledWithFallback(context, "shadow_customZ", "shadow", enableShadowPass)
         
         -- The main pass could have different names in different pipelines
         -- Assigned first and combined after: or between the two calls would skip the second.
@@ -84,8 +86,8 @@ function Process(context)
         local resolvedMainCustomZ = TrySetShaderEnabledWithFallback(context, "main_customZ", "main", enableMainPass)
         mainPassResolved = resolvedForwardCustomZ or resolvedMainCustomZ
     else
-        TrySetShaderEnabled(context, "depth", enableDepthPass)
-        TrySetShaderEnabled(context, "shadow", enableShadowPass)
+        depthPassResolved = TrySetShaderEnabled(context, "depth", enableDepthPass)
+        shadowPassResolved = TrySetShaderEnabled(context, "shadow", enableShadowPass)
         TrySetShaderEnabled(context, "depth_customZ", false)
         TrySetShaderEnabled(context, "shadow_customZ", false)
         
@@ -111,13 +113,8 @@ function Process(context)
         TrySetShaderEnabled(context, "depthPassTransparentMax", isTransparent or isTintedTransparent)
     end
 
-    -- A material type can be built for only some of the opacity modes -- see the "opacityMode" build setting -- and a
-    -- shader that was not built is simply absent here. The Try functions above are silent about that by design: a tag
-    -- one pipeline uses and another does not is normal, and warning on every such tag would bury anything real.
-    --
-    -- It is not normal when this material is asking for that exact shader. Nothing gets enabled, the material draws
-    -- nothing, and the property that caused it looks as though it were ignored. Naming the build setting here is what
-    -- connects the two, since it is several steps away from the symptom.
+    -- The Try functions stay silent about absent tags, which is normal across pipelines, but a shader this material needs
+    -- may have been left out by the "opacityMode" build setting, and then nothing draws.
     if(isTransparent and not context:HasShaderWithTag("transparent")) then
         Warning('Material sets "isTransparent", but no transparent shader was built for this material pipeline. Nothing will be drawn.')
     end
@@ -128,6 +125,18 @@ function Process(context)
 
     if(enableMainPass and not mainPassResolved) then
         Warning('Material is opaque, but no forward or main shader was built for this material pipeline. Nothing will be drawn.')
+    end
+
+    -- Not every pipeline has a depth prepass or a shadow pass, so a missing one is only reported when this pipeline built
+    -- that pass for some other opacity mode. Without it the material is missing from the depth buffer, or casts no shadow.
+    local pipelineHasDepthPass = context:HasShaderWithTag("depth") or context:HasShaderWithTag("depth_customZ")
+    if(enableDepthPass and pipelineHasDepthPass and not depthPassResolved) then
+        Warning('Material is opaque, but no depth shader for its opacity was built for this material pipeline. It will be missing from the depth prepass.')
+    end
+
+    local pipelineHasShadowPass = context:HasShaderWithTag("shadow") or context:HasShaderWithTag("shadow_customZ")
+    if(enableShadowPass and pipelineHasShadowPass and not shadowPassResolved) then
+        Warning('Material casts shadows, but no shadow shader for its opacity was built for this material pipeline. It will cast no shadow.')
     end
 
 end
