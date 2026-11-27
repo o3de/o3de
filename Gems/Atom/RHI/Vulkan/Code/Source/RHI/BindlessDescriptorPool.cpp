@@ -303,6 +303,7 @@ namespace AZ::Vulkan
 
     void BindlessDescriptorPool::GarbageCollect()
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         for (size_t i = 0; i != static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();

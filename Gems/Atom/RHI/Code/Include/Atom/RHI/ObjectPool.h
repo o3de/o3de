@@ -157,6 +157,7 @@ namespace AZ::RHI
             collectorDesc.m_collectLatency = descriptor.m_collectLatency;
             collectorDesc.m_collectFunction = [this](ObjectType& object)
             {
+                AZStd::lock_guard<MutexType> lock(m_mutex);
                 if (m_isInitialized && m_factory.CollectObject(object))
                 {
                     m_freeList.push(&object);
@@ -177,6 +178,8 @@ namespace AZ::RHI
         {
             m_isInitialized = false;
             m_collector.Shutdown();
+
+            AZStd::lock_guard<MutexType> lock(m_mutex);
             while (!m_freeList.empty())
             {
                 m_freeList.pop();
@@ -251,13 +254,14 @@ namespace AZ::RHI
         void CollectForce()
         {
             m_factory.BeginCollect();
-            m_collector.CollectForce();
+            m_collector.Collect(true);
             m_factory.EndCollect();
         }
 
         //! Returns the total number of objects in the pool.
         size_t GetObjectCount() const
         {
+            AZStd::lock_guard<MutexType> lock(m_mutex);
             return m_objects.size();
         }
 
@@ -271,7 +275,7 @@ namespace AZ::RHI
         ObjectCollector<Traits> m_collector;
         AZStd::unordered_set<Ptr<ObjectType>> m_objects;
         AZStd::queue<ObjectType*> m_freeList;
-        MutexType m_mutex;
+        mutable MutexType m_mutex;
         bool m_isInitialized = false;
     };
 }

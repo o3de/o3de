@@ -173,10 +173,12 @@ namespace AZ
             size_t pageItemIndex = m_firstAvailablePage->Reserve();
             if (pageItemIndex != Page::InvalidPage)
             {
-                // Found a better page, move the data to it.
-                *m_firstAvailablePage->GetItem(pageItemIndex) = AZStd::move(*handle);
+                // Found a better page, move-construct the data into the uninitialized slot and destroy the old instance.
+                T* newItem = m_firstAvailablePage->GetItem(pageItemIndex);
+                AZStd::construct_at(newItem, AZStd::move(*handle));
+                handle.m_data->~T();
                 reinterpret_cast<Page*>(handle.m_page)->Free(handle.m_data);
-                handle.m_data = m_firstAvailablePage->GetItem(pageItemIndex);
+                handle.m_data = newItem;
                 handle.m_page = m_firstAvailablePage;
                 break;
             }

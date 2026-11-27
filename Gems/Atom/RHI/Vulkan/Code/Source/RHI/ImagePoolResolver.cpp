@@ -38,16 +38,17 @@ namespace AZ
                 return RHI::ResultCode::OutOfMemory;
             }
 
-            m_uploadPacketsLock.lock();
-            m_uploadPackets.emplace_back();
-            ImageUploadPacket& uploadRequest = m_uploadPackets.back();
-            m_uploadPacketsLock.unlock();
-
+            ImageUploadPacket uploadRequest;
             uploadRequest.m_destinationImage = image;
             uploadRequest.m_subresourceLayout = request.m_sourceSubresourceLayout;
             uploadRequest.m_stagingBuffer = stagingBuffer;
             uploadRequest.m_subresource = request.m_imageSubresource;
             uploadRequest.m_offset = request.m_imageSubresourcePixelOffset;
+
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
+                m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
+            }
 
             const uint8_t* subresourceDataStart = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             uint8_t* stagingDataStart = reinterpret_cast<uint8_t*>(stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write));

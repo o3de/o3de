@@ -55,7 +55,13 @@ namespace AZ
 
         void AsyncUploadQueue::Shutdown()
         {
+            if (m_queue)
+            {
+                m_queue->FlushCommands();
+                m_queue = nullptr;
+            }
             m_asyncWaitQueue.ShutDown();
+            m_framePackets.clear();
             m_callbackList.clear();
         }
 
@@ -113,13 +119,14 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
+                const size_t destBaseOffset = request.m_byteOffset;
                 FramePacket* framePacket = nullptr;
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
 
                 // Insert a barrier to wait for anybody using this buffer range.
                 // We need to create a command list to insert the barrier.
                 BeginFramePacket(vulkanQueue);
-                EmmitPrologueMemoryBarrier(*buffer, 0, pendingByteCount);
+                EmmitPrologueMemoryBarrier(*buffer, destBaseOffset, pendingByteCount);
                 EndFramePacket(vulkanQueue);
 
                 while (pendingByteCount > 0)
@@ -128,7 +135,7 @@ namespace AZ
 
                     framePacket = BeginFramePacket(vulkanQueue);
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
-                    EmmitPrologueMemoryBarrier(*buffer, pendingByteOffset, bytesToCopy);
+                    EmmitPrologueMemoryBarrier(*buffer, destBaseOffset + pendingByteOffset, bytesToCopy);
 
                     void* mapped = framePacket->m_stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
                     memcpy(mapped, sourceData + pendingByteOffset, bytesToCopy);
@@ -138,7 +145,7 @@ namespace AZ
                     copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                     copyDescriptor.m_sourceOffset = 0;
                     copyDescriptor.m_destinationBuffer = buffer;
-                    copyDescriptor.m_destinationOffset = static_cast<uint32_t>(pendingByteOffset);
+                    copyDescriptor.m_destinationOffset = static_cast<uint32_t>(destBaseOffset + pendingByteOffset);
                     copyDescriptor.m_size = static_cast<uint32_t>(bytesToCopy);
 
                     m_commandList->Submit(RHI::DeviceCopyItem(copyDescriptor));
@@ -162,7 +169,7 @@ namespace AZ
                     waitStage,
                     fencesToSignal,
                     *buffer,
-                    0,
+                    destBaseOffset,
                     byteCount);
             };
 
@@ -400,8 +407,8 @@ namespace AZ
             };
 
             RHI::ImageSubresourceRange range;
-            range.m_mipSliceMin = startMip;
-            range.m_mipSliceMax = endMip;
+            range.m_mipSliceMin = endMip;
+            range.m_mipSliceMax = startMip;
             range.m_arraySliceMin = 0;
             range.m_arraySliceMax = aznumeric_caster(image->GetDescriptor().m_arraySize - 1);
 
@@ -462,12 +469,130 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
 
-            VkBindSparseInfo bindInfoCache = bindInfo;
+            struct OwnedBindSparseInfo
+            {
+                VkBindSparseInfo m_bindInfo{};
+                AZStd::vector<VkSemaphore> m_waitSemaphores;
+                AZStd::vector<VkSemaphore> m_signalSemaphores;
+                AZStd::vector<VkSparseBufferMemoryBindInfo> m_bufferBinds;
+                AZStd::vector<AZStd::vector<VkSparseMemoryBind>> m_bufferMemoryBinds;
+                AZStd::vector<VkSparseImageOpaqueMemoryBindInfo> m_imageOpaqueBinds;
+                AZStd::vector<AZStd::vector<VkSparseMemoryBind>> m_imageOpaqueMemoryBinds;
+                AZStd::vector<VkSparseImageMemoryBindInfo> m_imageBinds;
+                AZStd::vector<AZStd::vector<VkSparseImageMemoryBind>> m_imageMemoryBinds;
+            };
 
-            CommandQueue::Command command = [=, &device](void* queue)
+            auto owned = AZStd::make_shared<OwnedBindSparseInfo>();
+            owned->m_bindInfo = bindInfo;
+            owned->m_bindInfo.pNext = nullptr;
+
+            if (bindInfo.waitSemaphoreCount > 0 && bindInfo.pWaitSemaphores)
+            {
+                owned->m_waitSemaphores.assign(bindInfo.pWaitSemaphores, bindInfo.pWaitSemaphores + bindInfo.waitSemaphoreCount);
+                owned->m_bindInfo.pWaitSemaphores = owned->m_waitSemaphores.data();
+            }
+            else
+            {
+                owned->m_bindInfo.waitSemaphoreCount = 0;
+                owned->m_bindInfo.pWaitSemaphores = nullptr;
+            }
+
+            if (bindInfo.signalSemaphoreCount > 0 && bindInfo.pSignalSemaphores)
+            {
+                owned->m_signalSemaphores.assign(bindInfo.pSignalSemaphores, bindInfo.pSignalSemaphores + bindInfo.signalSemaphoreCount);
+                owned->m_bindInfo.pSignalSemaphores = owned->m_signalSemaphores.data();
+            }
+            else
+            {
+                owned->m_bindInfo.signalSemaphoreCount = 0;
+                owned->m_bindInfo.pSignalSemaphores = nullptr;
+            }
+
+            if (bindInfo.bufferBindCount > 0 && bindInfo.pBufferBinds)
+            {
+                owned->m_bufferBinds.assign(bindInfo.pBufferBinds, bindInfo.pBufferBinds + bindInfo.bufferBindCount);
+                owned->m_bufferMemoryBinds.resize(bindInfo.bufferBindCount);
+                for (uint32_t i = 0; i < bindInfo.bufferBindCount; ++i)
+                {
+                    if (owned->m_bufferBinds[i].bindCount > 0 && owned->m_bufferBinds[i].pBinds)
+                    {
+                        owned->m_bufferMemoryBinds[i].assign(
+                            owned->m_bufferBinds[i].pBinds,
+                            owned->m_bufferBinds[i].pBinds + owned->m_bufferBinds[i].bindCount);
+                        owned->m_bufferBinds[i].pBinds = owned->m_bufferMemoryBinds[i].data();
+                    }
+                    else
+                    {
+                        owned->m_bufferBinds[i].bindCount = 0;
+                        owned->m_bufferBinds[i].pBinds = nullptr;
+                    }
+                }
+                owned->m_bindInfo.pBufferBinds = owned->m_bufferBinds.data();
+            }
+            else
+            {
+                owned->m_bindInfo.bufferBindCount = 0;
+                owned->m_bindInfo.pBufferBinds = nullptr;
+            }
+
+            if (bindInfo.imageOpaqueBindCount > 0 && bindInfo.pImageOpaqueBinds)
+            {
+                owned->m_imageOpaqueBinds.assign(bindInfo.pImageOpaqueBinds, bindInfo.pImageOpaqueBinds + bindInfo.imageOpaqueBindCount);
+                owned->m_imageOpaqueMemoryBinds.resize(bindInfo.imageOpaqueBindCount);
+                for (uint32_t i = 0; i < bindInfo.imageOpaqueBindCount; ++i)
+                {
+                    if (owned->m_imageOpaqueBinds[i].bindCount > 0 && owned->m_imageOpaqueBinds[i].pBinds)
+                    {
+                        owned->m_imageOpaqueMemoryBinds[i].assign(
+                            owned->m_imageOpaqueBinds[i].pBinds,
+                            owned->m_imageOpaqueBinds[i].pBinds + owned->m_imageOpaqueBinds[i].bindCount);
+                        owned->m_imageOpaqueBinds[i].pBinds = owned->m_imageOpaqueMemoryBinds[i].data();
+                    }
+                    else
+                    {
+                        owned->m_imageOpaqueBinds[i].bindCount = 0;
+                        owned->m_imageOpaqueBinds[i].pBinds = nullptr;
+                    }
+                }
+                owned->m_bindInfo.pImageOpaqueBinds = owned->m_imageOpaqueBinds.data();
+            }
+            else
+            {
+                owned->m_bindInfo.imageOpaqueBindCount = 0;
+                owned->m_bindInfo.pImageOpaqueBinds = nullptr;
+            }
+
+            if (bindInfo.imageBindCount > 0 && bindInfo.pImageBinds)
+            {
+                owned->m_imageBinds.assign(bindInfo.pImageBinds, bindInfo.pImageBinds + bindInfo.imageBindCount);
+                owned->m_imageMemoryBinds.resize(bindInfo.imageBindCount);
+                for (uint32_t i = 0; i < bindInfo.imageBindCount; ++i)
+                {
+                    if (owned->m_imageBinds[i].bindCount > 0 && owned->m_imageBinds[i].pBinds)
+                    {
+                        owned->m_imageMemoryBinds[i].assign(
+                            owned->m_imageBinds[i].pBinds,
+                            owned->m_imageBinds[i].pBinds + owned->m_imageBinds[i].bindCount);
+                        owned->m_imageBinds[i].pBinds = owned->m_imageMemoryBinds[i].data();
+                    }
+                    else
+                    {
+                        owned->m_imageBinds[i].bindCount = 0;
+                        owned->m_imageBinds[i].pBinds = nullptr;
+                    }
+                }
+                owned->m_bindInfo.pImageBinds = owned->m_imageBinds.data();
+            }
+            else
+            {
+                owned->m_bindInfo.imageBindCount = 0;
+                owned->m_bindInfo.pImageBinds = nullptr;
+            }
+
+            CommandQueue::Command command = [owned, &device](void* queue)
             {            
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
-                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, VK_NULL_HANDLE);
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &owned->m_bindInfo, VK_NULL_HANDLE);
             };
             
             m_queue->QueueCommand(AZStd::move(command));

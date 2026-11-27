@@ -40,6 +40,7 @@ namespace AZ::Metal
             //Create an Argument buffer per resource type that has an unbounded array
             m_bindlessTextureArgBuffer = ArgumentBuffer::Create();
             m_bindlessRWTextureArgBuffer = ArgumentBuffer::Create();
+            m_bindlessCubeTextureArgBuffer = ArgumentBuffer::Create();
             m_bindlessBufferArgBuffer = ArgumentBuffer::Create();
             m_bindlessRWBufferArgBuffer = ArgumentBuffer::Create();
 
@@ -90,7 +91,7 @@ namespace AZ::Metal
             argDescriptor.dataType = MTLDataTypePointer;
             argDescriptor.index = 0;
             argDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
-            argDescriptor.arrayLength = static_cast<uint32_t>(RHI::BindlessResourceType::Count) - 1;
+            argDescriptor.arrayLength = static_cast<uint32_t>(RHI::BindlessResourceType::Count);
             argBufferDescriptors[0] = argDescriptor;
             m_rootArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRoot");
             [argDescriptor release] ;
@@ -392,11 +393,13 @@ namespace AZ::Metal
             {
                 untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessCubeTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
 
                 untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessCubeTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
                 untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             }
@@ -404,6 +407,7 @@ namespace AZ::Metal
             {
                 untrackedResourceComputeRead.insert(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourceComputeRead.insert(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
+                untrackedResourceComputeRead.insert(m_bindlessCubeTextureArgBuffer->GetArgEncoderBuffer());
                 untrackedResourceComputeRead.insert(m_bindlessBufferArgBuffer->GetArgEncoderBuffer());
                 untrackedResourceComputeRead.insert(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             }
@@ -412,6 +416,7 @@ namespace AZ::Metal
 
     void BindlessArgumentBuffer::GarbageCollect()
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
         for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();

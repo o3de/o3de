@@ -66,7 +66,11 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            m_isQuitting = true;
+            {
+                AZStd::lock_guard<AZStd::mutex> workLock(m_workQueueMutex);
+                AZStd::lock_guard<AZStd::mutex> flushLock(m_flushCommandsMutex);
+                m_isQuitting = true;
+            }
             m_workQueueCondition.notify_all();
             m_flushCommandsCondition.notify_all();
             if (m_thread.joinable())
@@ -93,8 +97,11 @@ namespace AZ::RHI
 
         AZStd::lock_guard<AZStd::mutex> lock(m_workQueueMutex);
         m_workQueue.emplace(command);
+        {
+            AZStd::lock_guard<AZStd::mutex> flushLock(m_flushCommandsMutex);
+            m_isWorkQueueEmpty = false;
+        }
         m_workQueueCondition.notify_all();
-        m_isWorkQueueEmpty = false;
     }
 
     void CommandQueue::FlushCommands()

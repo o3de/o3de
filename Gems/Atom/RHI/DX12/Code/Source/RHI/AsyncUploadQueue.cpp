@@ -288,7 +288,7 @@ namespace AZ
                         if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
                         {
                             AZ_Error("StreamingImage", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
-                            return 0;
+                            break;
                         }
 
                         // The final staging size for each CopyTextureRegion command

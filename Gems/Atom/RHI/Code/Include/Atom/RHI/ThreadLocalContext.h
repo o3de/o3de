@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/threadbus.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -71,7 +72,7 @@ namespace AZ::RHI
         void OnThreadExit(const AZStd::thread_id& id) override;
         ///////////////////////////////////////////////////////////////////////
 
-        uint32_t m_id = 0;
+        AZStd::atomic_uint m_id{ 0 };
         InitFunction m_initFunction;
         mutable AZStd::shared_mutex m_sharedMutex;
         AZStd::vector<AZStd::thread_id> m_threadIdList;
@@ -95,6 +96,7 @@ namespace AZ::RHI
     template <typename Storage>
     void ThreadLocalContext<Storage>::SetInitFunction(InitFunction initFunction)
     {
+        AZStd::unique_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_initFunction = initFunction;
     }
 
@@ -187,12 +189,8 @@ namespace AZ::RHI
     template <typename Storage>
     uint32_t ThreadLocalContext<Storage>::MakeId()
     {
-        static EnvironmentVariable<AZStd::atomic_uint> counter = nullptr; // this counter is per-process
-
-        if (!counter)
-        {
-            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("ThreadContextMapIdMonotonicCounter"), 1);
-        }
+        static EnvironmentVariable<AZStd::atomic_uint> counter =
+            Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("ThreadContextMapIdMonotonicCounter"), 1); // this counter is per-process
 
         return counter->fetch_add(1);
     }

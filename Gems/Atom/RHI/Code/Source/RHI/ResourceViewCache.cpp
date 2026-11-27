@@ -58,35 +58,27 @@
         else
         {
             // We've found a matching ResourceViewType in the cache, but another thread may be releasing the last intrusive_ptr while
-            // we are in this function, dropping the refcount to 0 (and forcing it to -1 for good measure) then deleting it.
+            // we are in this function, dropping the refcount to 0 and then deleting it.
             //
-            //  There are 2 scenarios:
-            //
-            // m_useCount is -1. The other thread is already on the path to deleting it. We need to make a new one here
-            // and replace the old one.
-            //
-            // m_useCount is >=0. We cannot guarantee another thread won't drop the refcount to 0 after we check the value here
-            // so before we create a new intrusive_ptr, we need to use fetch_add to increment the refcount as we check the value to
-            // prevent a race
-            int useCount = it->second->m_useCount.fetch_add(2);
-            if (useCount == -1)
+            // Use a CAS loop requiring useCount > 0 to safely resurrect the cached view only if it is still alive.
+            int useCount = it->second->m_useCount.load();
+            while (useCount > 0 && !it->second->m_useCount.compare_exchange_weak(useCount, useCount + 1))
             {
-                // The useCount was -1 before we incremented.
-                // Another thread is going to come along and delete the one we just found.
-                // Go ahead and erase it and insert a new one instead
+            }
+
+            if (useCount <= 0)
+            {
+                // The useCount has already reached 0 on another thread which will delete the old view.
+                // Erase the stale cache entry and insert a new one instead.
                 m_resourceViewCache.erase(it);
 
                 return InsertNewView(resource, hash, viewDescriptor);
             }
             else
             {
-                // Create the new Ptr, increasing the refcount
+                // Create the new Ptr (which increments m_useCount) and then remove the temporary reference acquired by the CAS loop.
                 Ptr<typename ResourceTypeHelper<ResourceType>::template ViewType<DescriptorType>> result = static_cast<typename ResourceTypeHelper<ResourceType>::template ViewType<DescriptorType>*>(it->second);
-
-                // Before we checked the value we artificially incremented the refcount to prevent another
-                // thread from letting it go to 0 again. Get rid of that artificial increase now that we have
-                // our new Ptr to hold on to the refcount
-                it->second->m_useCount.fetch_sub(2);
+                it->second->m_useCount.fetch_sub(1, AZStd::memory_order_acq_rel);
                 return result;
             }
         }       
@@ -129,6 +121,7 @@
     bool ResourceViewCache<ResourceType>::IsInResourceCache(const DescriptorType& viewDescriptor)
     {
         const HashValue64 hash = viewDescriptor.GetHash();
+        AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
         auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
         return it != m_resourceViewCache.end();
     }

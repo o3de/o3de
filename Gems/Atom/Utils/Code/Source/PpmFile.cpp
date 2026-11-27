@@ -8,6 +8,7 @@
 
 #include <Atom/Utils/PpmFile.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -18,21 +19,42 @@ namespace AZ
         const uint32_t pixelHeight = size.m_height;
         const uint32_t pixelWidth = size.m_width;
 
-        constexpr int rbgByteSize = 3;
-        constexpr int rbgaByteSize = 4;
+        constexpr size_t rbgByteSize = 3;
+        constexpr size_t rbgaByteSize = 4;
+
+        const uint64_t pixelCount64 = static_cast<uint64_t>(pixelWidth) * static_cast<uint64_t>(pixelHeight);
+        if (pixelCount64 > AZStd::numeric_limits<size_t>::max() / rbgaByteSize)
+        {
+            AZ_Error("PpmFile", false, "Image dimensions overflow size_t (%u x %u)", pixelWidth, pixelHeight);
+            return {};
+        }
+
+        const size_t pixelCount = static_cast<size_t>(pixelCount64);
+        const size_t requiredInputBytes = pixelCount * rbgaByteSize;
+        if (buffer.size() < requiredInputBytes)
+        {
+            AZ_Error("PpmFile", false, "Input image buffer size (%zu bytes) is smaller than required (%zu bytes)", buffer.size(), requiredInputBytes);
+            return {};
+        }
 
         // Header for binary .ppm format, RGB, 8 bit per color component
-        const auto header = AZStd::string::format("P6\n%d %d\n255\n", pixelWidth, pixelHeight);
+        const auto header = AZStd::string::format("P6\n%u %u\n255\n", pixelWidth, pixelHeight);
+        const size_t payloadBytes = pixelCount * rbgByteSize;
+        if (header.size() > AZStd::numeric_limits<size_t>::max() - payloadBytes)
+        {
+            AZ_Error("PpmFile", false, "Output PPM size overflows size_t");
+            return {};
+        }
 
         AZStd::vector<uint8_t> outBuffer; // write this buffer out once at the end
-        outBuffer.resize(header.size() + pixelWidth * pixelHeight * rbgByteSize);
+        outBuffer.resize(header.size() + payloadBytes);
 
         ::memcpy(outBuffer.data(), header.data(), header.size());
 
         // throwing away alpha channel, since .ppm doesn't support it
         const uint8_t* inData = buffer.data();
         uint8_t* outData = outBuffer.data() + header.size();
-        for (uint32_t i = 0; i < pixelHeight * pixelWidth; ++i)
+        for (size_t i = 0; i < pixelCount; ++i)
         {
             ::memcpy(outData, inData, rbgByteSize);
             if (format == RHI::Format::B8G8R8A8_UNORM)
@@ -93,16 +115,29 @@ namespace AZ
             }
         };
 
-        auto readInt = [&]()
+        auto readInt = [&]() -> uint32_t
         {
             eatWhitepaceAndComments();
 
-            const char* startOfInt = reinterpret_cast<const char*>(&ppmData[pos]);
-            char* endOfInt = nullptr;
-            uint32_t value = static_cast<uint32_t>(strtoul(startOfInt, &endOfInt, 10));
-            pos += endOfInt - startOfInt;
+            uint64_t value = 0;
+            bool hasDigits = false;
+            while (pos < ppmData.size())
+            {
+                const uint8_t byte = ppmData[pos];
+                if (byte < '0' || byte > '9')
+                {
+                    break;
+                }
+                hasDigits = true;
+                value = value * 10 + (byte - '0');
+                if (value > AZStd::numeric_limits<uint32_t>::max())
+                {
+                    return 0;
+                }
+                ++pos;
+            }
 
-            return value;
+            return hasDigits ? static_cast<uint32_t>(value) : 0;
         };
 
 
@@ -128,12 +163,24 @@ namespace AZ
             return false;
         }
 
+        if (pos >= ppmData.size() || !isWhitespace(static_cast<char>(ppmData[pos])))
+        {
+            AZ_Error("PpmFile", false, "Invalid PPM header terminator");
+            return false;
+        }
         ++pos; // Consume final header character, usually \n
 
-        constexpr int rbgByteSize = 3;
-        constexpr int rbgaByteSize = 4;
+        constexpr size_t rbgByteSize = 3;
+        constexpr size_t rbgaByteSize = 4;
 
-        const size_t pixelCount = size.m_width * size.m_height;
+        const uint64_t pixelCount64 = static_cast<uint64_t>(size.m_width) * static_cast<uint64_t>(size.m_height);
+        if (pixelCount64 > AZStd::numeric_limits<size_t>::max() / rbgaByteSize)
+        {
+            AZ_Error("PpmFile", false, "Image dimensions overflow size_t (%u x %u)", size.m_width, size.m_height);
+            return false;
+        }
+
+        const size_t pixelCount = static_cast<size_t>(pixelCount64);
         const size_t expectedBytes = pixelCount * rbgByteSize;
         const size_t remainingBytes = ppmData.size() - pos;
         if (remainingBytes != expectedBytes)
@@ -149,7 +196,7 @@ namespace AZ
         const uint8_t* inData = ppmData.data() + pos;
         uint8_t* outData = buffer.data();
 
-        for (uint32_t i = 0; i < pixelCount; ++i)
+        for (size_t i = 0; i < pixelCount; ++i)
         {
             ::memcpy(outData, inData, rbgByteSize);
 

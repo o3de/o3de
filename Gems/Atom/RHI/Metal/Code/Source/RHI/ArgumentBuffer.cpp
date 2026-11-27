@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI.Reflect/SamplerState.h>
+#include <AzCore/std/containers/small_vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/BufferView.h>
@@ -197,13 +198,14 @@ namespace AZ
 
         void ArgumentBuffer::BindNullSamplers(uint32_t registerId, uint32_t samplerCount)
         {
-            AZStd::array<id<MTLSamplerState>, MaxEntriesInArgTable> mtlSamplers;
+            if (samplerCount == 0)
+            {
+                return;
+            }
+
             NullDescriptorManager& nullDescriptorManager = m_device->GetNullDescriptorManager();
             id<MTLSamplerState> nullMtlSampler = nullDescriptorManager.GetNullSampler();
-            for(int i = 0; i < samplerCount; i++)
-            {
-                mtlSamplers[i] = nullMtlSampler;
-            }
+            AZStd::small_vector<id<MTLSamplerState>, MaxEntriesInArgTable> mtlSamplers(samplerCount, nullMtlSampler);
 
             NSRange range = {registerId, samplerCount};
             [m_argumentEncoder setSamplerStates : mtlSamplers.data()
@@ -219,8 +221,9 @@ namespace AZ
                 return;
             }
 
-            int imageArrayLen = 0;
-            AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
+            size_t imageArrayLen = 0;
+            AZStd::small_vector<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
+            mtlTextures.resize(imageViews.size());
 
             m_resourceBindings[shaderInputImage.m_name].clear();
             for (const RHI::ConstPtr<RHI::DeviceImageView>& imageViewBase : imageViews)
@@ -259,8 +262,9 @@ namespace AZ
         void ArgumentBuffer::UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
                                             const AZStd::span<const RHI::SamplerState>& samplerStates)
         {
-            int samplerArrayLen = 0;
-            AZStd::array<id<MTLSamplerState>, MaxEntriesInArgTable> mtlSamplers;
+            size_t samplerArrayLen = 0;
+            AZStd::small_vector<id<MTLSamplerState>, MaxEntriesInArgTable> mtlSamplers;
+            mtlSamplers.resize(samplerStates.size());
             for (const RHI::SamplerState& samplerState : samplerStates)
             {
                 MTLSamplerDescriptor* samplerDesc = [[[MTLSamplerDescriptor alloc] init] autorelease];
@@ -286,10 +290,19 @@ namespace AZ
         void ArgumentBuffer::UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
                                                const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
         {
-            int bufferArrayLen = 0;
-            AZStd::array<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
-            AZStd::array<NSUInteger, MaxEntriesInArgTable> mtlBufferOffsets;
-            AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
+            size_t bufferArrayLen = 0;
+            AZStd::small_vector<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
+            AZStd::small_vector<NSUInteger, MaxEntriesInArgTable> mtlBufferOffsets;
+            AZStd::small_vector<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
+            if (shaderInputBuffer.m_type == RHI::ShaderInputBufferType::Typed)
+            {
+                mtlTextures.resize(bufferViews.size());
+            }
+            else
+            {
+                mtlBuffers.resize(bufferViews.size());
+                mtlBufferOffsets.resize(bufferViews.size());
+            }
 
             m_resourceBindings[shaderInputBuffer.m_name].clear();
             for (const RHI::ConstPtr<RHI::DeviceBufferView>& bufferViewBase : bufferViews)
@@ -427,7 +440,7 @@ namespace AZ
             id<MTLSamplerState> mtlSamplerState = [samplerCache objectForKey:samplerDesc];
             if(mtlSamplerState == nil)
             {
-                mtlSamplerState = [m_device->GetMtlDevice() newSamplerStateWithDescriptor:samplerDesc];
+                mtlSamplerState = [[m_device->GetMtlDevice() newSamplerStateWithDescriptor:samplerDesc] autorelease];
                 [samplerCache setObject:mtlSamplerState forKey:samplerDesc];
             }
 

@@ -27,6 +27,7 @@ namespace AZ::RHI
         m_isQuitting = false;
         m_workItemIndex = 0;
         m_lastCompletedWorkItem = AsyncWorkHandle::Null;
+        m_cancelledWorkItems.clear();
         AZStd::thread_desc threadDesc{ "AsyncWorkQueue" };
         m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
         m_isInitialized = true;
@@ -39,8 +40,13 @@ namespace AZ::RHI
             return;
         }
 
-        m_isQuitting = true;
+        {
+            AZStd::lock_guard<AZStd::mutex> workLock(m_workQueueMutex);
+            AZStd::lock_guard<AZStd::mutex> waitLock(m_waitWorkItemMutex);
+            m_isQuitting = true;
+        }
         m_workQueueCondition.notify_all();
+        m_waitWorkItemCondition.notify_all();
         if (m_thread.joinable())
         {
             m_thread.join();
@@ -77,6 +83,11 @@ namespace AZ::RHI
             if (findIter != m_workQueue.end())
             {
                 m_workQueue.erase(findIter);
+                {
+                    AZStd::lock_guard<AZStd::mutex> waitLock(m_waitWorkItemMutex);
+                    m_cancelledWorkItems.insert(workHandle);
+                }
+                m_waitWorkItemCondition.notify_all();
                 return;
             }
         }
@@ -122,7 +133,8 @@ namespace AZ::RHI
     {
         // Since the work items have a non monotonic index and we don't reorder the work item
         // queue, we can just compare the index of the last completed work item.
-        return !m_lastCompletedWorkItem.IsNull() && workHandle <= m_lastCompletedWorkItem;
+        return (!m_lastCompletedWorkItem.IsNull() && workHandle <= m_lastCompletedWorkItem) ||
+            (m_cancelledWorkItems.find(workHandle) != m_cancelledWorkItems.end());
     }
 
     void AsyncWorkQueue::WaitToFinish(const AsyncWorkHandle workHandle) const
@@ -135,6 +147,6 @@ namespace AZ::RHI
         AZ_PROFILE_SCOPE(RHI, "AsyncWorkQueue: WaitToFinish");
 
         AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
-        m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });
+        m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle) || m_isQuitting; });
     }
 }

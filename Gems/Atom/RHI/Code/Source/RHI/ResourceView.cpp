@@ -15,7 +15,7 @@
 {
     void ResourceView::Shutdown()
         {
-            if(m_resource->IsInitialized())
+            if (m_resource && m_resource->IsInitialized())
             {
                 m_resource->EraseResourceView(static_cast<ResourceView*>(this));
                 m_resource = nullptr;
@@ -32,6 +32,11 @@
         {
             // As this can be called concurrently and the cache is potentially manipulated, need to lock this scope
             AZStd::lock_guard lock(m_resourceViewMutex);
+
+            if (!m_resource)
+            {
+                return nullptr;
+            }
 
             // As the view keeps the device resources alive (by keeping the views alive in the cache),
             // we need to check if they are still required by the resource, otherwise delete the corresponding views from the cache

@@ -16,6 +16,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::RHI
 {
@@ -75,6 +76,7 @@ namespace AZ::RHI
         bool m_isInitialized = false;
 
         AsyncWorkHandle m_lastCompletedWorkItem;
+        AZStd::unordered_set<AsyncWorkHandle> m_cancelledWorkItems;
         mutable AZStd::mutex m_waitWorkItemMutex;
         mutable AZStd::condition_variable m_waitWorkItemCondition;
     };
