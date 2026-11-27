@@ -7,34 +7,23 @@
  */
 
 #include <AzTest/AzTest.h>
-#include "XRTest.h"
+#include <XR/XRUtils.h>
+#include <cmath>
 
-void XRTest::SetUp()
+TEST(XRProjection, AsymmetricFrustumProjectsToClipBounds)
 {
-    SetupInternal();
+    constexpr float left = -0.6f;
+    constexpr float right = 0.4f;
+    constexpr float bottom = -0.5f;
+    constexpr float top = 0.7f;
+    constexpr float nearDistance = 0.1f;
+    constexpr float farDistance = 100.0f;
+    const auto projection = XR::CreateStereoscopicProjection(left, right, bottom, top, nearDistance, farDistance, false);
+
+    const auto lowerLeft = projection * AZ::Vector4(std::tan(left) * nearDistance, std::tan(bottom) * nearDistance, -nearDistance, 1.0f);
+    const auto upperRight = projection * AZ::Vector4(std::tan(right) * nearDistance, std::tan(top) * nearDistance, -nearDistance, 1.0f);
+    EXPECT_TRUE((lowerLeft / lowerLeft.GetW()).IsClose(AZ::Vector4(-1.0f, -1.0f, -1.0f, 1.0f)));
+    EXPECT_TRUE((upperRight / upperRight.GetW()).IsClose(AZ::Vector4(1.0f, 1.0f, -1.0f, 1.0f)));
 }
-
-void XRTest::TearDown()
-{
-    TearDownInternal();
-}
-
-#ifndef O3DE_TRAIT_DISABLE_ALL_XR_TESTS
-
-TEST_F(XRTest, PassThisTest)
-{
-    EXPECT_TRUE(true);
-}
-
-#ifdef O3DE_TRAIT_DISABLE_FAILED_XR_TESTS
-TEST_F(XRTest, DISABLED_ExpectTrue)
-#else
-TEST_F(XRTest, ExpectTrue)
-#endif // defined O3DE_TRAIT_DISABLE_FAILED_XR_TESTS
-{
-    EXPECT_TRUE(false);
-}
-
-#endif // !O3DE_TRAIT_DISABLE_ALL_XR_TESTS
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

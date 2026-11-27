@@ -7,6 +7,5 @@
 #
 
 set(FILES
-    Tests/XRTest.h
     Tests/XRTest.cpp
 )

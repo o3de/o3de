@@ -8,5 +8,4 @@
 
 set(FILES
     Tests/OpenXRVkTests.cpp
-    Tests/OpenXRVkTests.h
 )

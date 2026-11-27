@@ -7,34 +7,34 @@
  */
 
 #include <AzTest/AzTest.h>
-#include "OpenXRVkTests.h"
+#include <OpenXRVk/OpenXRVkAssetsValidator.h>
 
-void OpenXRVkTest::SetUp()
+TEST(OpenXRVkLoader, ResolvesGlobalEntryPointWithoutRuntime)
 {
-    SetupInternal();
+    PFN_xrVoidFunction createInstance = nullptr;
+    ASSERT_EQ(xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrCreateInstance", &createInstance), XR_SUCCESS);
+    EXPECT_NE(createInstance, nullptr);
 }
 
-void OpenXRVkTest::TearDown()
+TEST(OpenXRVkAssetValidation, AcceptsValidProfileAndRejectsDuplicatePath)
 {
-    TearDownInternal();
+    OpenXRVk::OpenXRInteractionProfilesAsset profiles;
+    auto& profile = profiles.m_interactionProfileDescriptors.emplace_back();
+    profile.m_name = "Khronos Simple";
+    profile.m_path = "/interaction_profiles/khr/simple_controller";
+    auto& userPath = profile.m_userPathDescriptors.emplace_back();
+    userPath.m_name = "Left hand";
+    userPath.m_path = "/user/hand/left";
+    auto& componentPath = profile.m_commonComponentPathDescriptors.emplace_back();
+    componentPath.m_name = "Select";
+    componentPath.m_path = "/input/select/click";
+    componentPath.m_actionTypeStr = OpenXRVk::OpenXRInteractionComponentPathDescriptor::s_TypeBoolStr;
+
+    ASSERT_TRUE(OpenXRVkAssetsValidator::ValidateInteractionProfilesAsset(profiles).IsSuccess());
+    auto duplicate = profile;
+    duplicate.m_name = "Duplicate profile";
+    profiles.m_interactionProfileDescriptors.push_back(AZStd::move(duplicate));
+    EXPECT_FALSE(OpenXRVkAssetsValidator::ValidateInteractionProfilesAsset(profiles).IsSuccess());
 }
-
-#ifndef O3DE_TRAIT_DISABLE_ALL_OPENXRVK_TESTS
-
-TEST_F(OpenXRVkTest, PassThisTest)
-{
-    EXPECT_TRUE(true);
-}
-
-#ifdef O3DE_TRAIT_DISABLE_FAILED_OPENXRVK_TESTS
-TEST_F(OpenXRVkTest, DISABLED_ExpectTrue)
-#else
-TEST_F(OpenXRVkTest, ExpectTrue)
-#endif // O3DE_TRAIT_DISABLE_FAILED_OPENXRVK_TESTS
-{
-    EXPECT_TRUE(false);
-}
-
-#endif // !O3DE_TRAIT_DISABLE_ALL_OPENXRVK_TESTS
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
