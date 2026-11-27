@@ -57,18 +57,22 @@ void ZStd::StartCompressor(unsigned int compressionLevel)
     ZSTD_customMem customAlloc;
     customAlloc.customAlloc = reinterpret_cast<ZSTD_allocFunction>(&AllocateMem);
     customAlloc.customFree = &FreeMem;
-    customAlloc.opaque = nullptr;
+    customAlloc.opaque = m_workMemoryAllocator;
 
-    AZ_UNUSED(compressionLevel);
-    m_streamCompression = (ZSTD_createCStream_advanced(customAlloc));
-    AZ_Assert(m_streamCompression , "ZStandard internal error - failed to create compression stream\n");
+    m_streamCompression = ZSTD_createCStream_advanced(customAlloc);
+    AZ_Assert(m_streamCompression, "ZStandard internal error - failed to create compression stream\n");
+    if (m_streamCompression)
+    {
+        [[maybe_unused]] size_t r = ZSTD_initCStream(m_streamCompression, static_cast<int>(compressionLevel));
+        AZ_Assert(!ZSTD_isError(r), "ZStandard internal error - failed to initialize compression stream: %s", ZSTD_getErrorName(r));
+    }
 }
 
 void ZStd::StopCompressor()
 {
     AZ_Assert(m_streamCompression, "Compressor not started!");
-    ZSTD_endStream(m_streamCompression, nullptr);
-    FreeMem(m_workMemoryAllocator, m_streamCompression);
+    [[maybe_unused]] size_t result = ZSTD_freeCStream(m_streamCompression);
+    AZ_Assert(!ZSTD_isError(result), "ZStandard internal error: %s", ZSTD_getErrorName(result));
     m_streamCompression = nullptr;
 }
 
@@ -88,12 +92,68 @@ void ZStd::ResetCompressor()
 
 unsigned int ZStd::Compress(const void* data, unsigned int& dataSize, void* compressedData, unsigned int compressedDataSize, FlushType flushType)
 {
-    AZ_UNUSED(data);
-    AZ_UNUSED(dataSize);
-    AZ_UNUSED(compressedData);
-    AZ_UNUSED(compressedDataSize);
-    AZ_UNUSED(flushType);
-    return 0;
+    AZ_Assert(m_streamCompression, "Compressor not started!");
+    m_inBuffer.src = data;
+    m_inBuffer.size = data ? dataSize : 0;
+    m_inBuffer.pos = 0;
+
+    m_outBuffer.dst = compressedData;
+    m_outBuffer.size = compressedDataSize;
+    m_outBuffer.pos = 0;
+
+    size_t remaining = 0;
+    if (flushType == FT_FINISH)
+    {
+        if (m_inBuffer.size > 0)
+        {
+            remaining = ZSTD_compressStream(m_streamCompression, &m_outBuffer, &m_inBuffer);
+            if (!ZSTD_isError(remaining) && m_inBuffer.pos == m_inBuffer.size)
+            {
+                remaining = ZSTD_endStream(m_streamCompression, &m_outBuffer);
+            }
+        }
+        else
+        {
+            remaining = ZSTD_endStream(m_streamCompression, &m_outBuffer);
+        }
+    }
+    else if (flushType == FT_FULL_FLUSH || flushType == FT_SYNC_FLUSH || flushType == FT_PARTIAL_FLUSH)
+    {
+        if (m_inBuffer.size > 0)
+        {
+            remaining = ZSTD_compressStream(m_streamCompression, &m_outBuffer, &m_inBuffer);
+            if (!ZSTD_isError(remaining) && m_inBuffer.pos == m_inBuffer.size)
+            {
+                remaining = ZSTD_flushStream(m_streamCompression, &m_outBuffer);
+            }
+        }
+        else
+        {
+            remaining = ZSTD_flushStream(m_streamCompression, &m_outBuffer);
+        }
+    }
+    else
+    {
+        remaining = ZSTD_compressStream(m_streamCompression, &m_outBuffer, &m_inBuffer);
+    }
+
+    if (ZSTD_isError(remaining))
+    {
+        AZ_Assert(false, "ZStd compression error: %s", ZSTD_getErrorName(remaining));
+        dataSize = 0;
+        return 0;
+    }
+
+    if (data != nullptr)
+    {
+        dataSize = azlossy_cast<unsigned int>(m_inBuffer.size - m_inBuffer.pos);
+    }
+    else
+    {
+        dataSize = azlossy_cast<unsigned int>(remaining);
+    }
+
+    return azlossy_cast<unsigned int>(m_outBuffer.pos);
 }
 
 unsigned int ZStd::GetMinCompressedBufferSize(unsigned int sourceDataSize)
@@ -132,6 +192,13 @@ void ZStd::StopDecompressor()
 void ZStd::ResetDecompressor(Header* header)
 {
     AZ_UNUSED(header);
+    AZ_Assert(m_streamDecompression, "Decompressor not started!");
+#if ZSTD_VERSION_NUMBER >= 10308
+    m_nextBlockSize = ZSTD_DCtx_reset(m_streamDecompression, ZSTD_reset_session_only);
+#else
+    m_nextBlockSize = ZSTD_resetDStream(m_streamDecompression);
+#endif
+    m_compressedBufferIndex = 0;
 }
 
 void ZStd::SetupDecompressHeader(Header header)
@@ -139,13 +206,11 @@ void ZStd::SetupDecompressHeader(Header header)
     AZ_UNUSED(header);
 }
 
-unsigned int ZStd::Decompress(const void* compressedData, unsigned int compressedDataSize, void* outputData, unsigned int outputDataSize, size_t* sizeOfNextBlock)
+unsigned int ZStd::Decompress(const void* compressedData, unsigned int compressedDataSize, void* outputData, unsigned int& outputDataSize, size_t* sizeOfNextBlock)
 {
     AZ_Assert(m_streamDecompression, "Decompressor not started!");
-    AZ_UNUSED(compressedDataSize);
-    const char* data = reinterpret_cast<const char*>(compressedData);
-    m_inBuffer.src = reinterpret_cast<const void*>(&data[m_compressedBufferIndex]);
-    m_inBuffer.size = m_nextBlockSize;
+    m_inBuffer.src = compressedData;
+    m_inBuffer.size = (m_nextBlockSize > 0 && m_nextBlockSize < compressedDataSize) ? m_nextBlockSize : compressedDataSize;
     m_inBuffer.pos = 0;
 
     m_outBuffer.dst = outputData;
@@ -170,11 +235,15 @@ unsigned int ZStd::Decompress(const void* compressedData, unsigned int compresse
 #endif
     }
 
+    outputDataSize = azlossy_cast<unsigned int>(m_outBuffer.size - m_outBuffer.pos);
     m_compressedBufferIndex += azlossy_cast<unsigned int>(m_inBuffer.pos);
 
-    *sizeOfNextBlock = m_nextBlockSize;
+    if (sizeOfNextBlock)
+    {
+        *sizeOfNextBlock = m_nextBlockSize;
+    }
 
-    return azlossy_cast<unsigned int>(m_outBuffer.pos); //return number of bytes decompressed
+    return azlossy_cast<unsigned int>(m_inBuffer.pos);
 }
 
 bool ZStd::IsCompressorStarted() const

@@ -337,32 +337,38 @@ namespace AZ
 
     void SettingsRegistryImpl::SignalNotifier(AZStd::string_view jsonPath, SettingsType type)
     {
+        AZ::IO::FixedMaxPath mergeFilePath = "<in-memory>";
+        {
+            AZStd::scoped_lock lock(LockForReading());
+            if (!m_mergeFilePathStack.empty())
+            {
+                mergeFilePath = m_mergeFilePathStack.top();
+            }
+        }
+
         // Move the Notifier AZ::Event to a local AZ::Event in order to allow
         // the notifier handlers to be signaled outside of the notifier mutex
         // This allows other threads to register notifiers while this thread
         // is invoking the handlers
         decltype(m_notifiers) localNotifierEvent;
-        {
-            AZStd::scoped_lock lock(m_notifierMutex);
-            localNotifierEvent = AZStd::move(m_notifiers);
-        }
-
-        // Signal the NotifyEvent for each queued argument
         decltype(m_signalNotifierQueue) localNotifierQueue;
         {
             AZStd::scoped_lock signalLock(m_signalMutex);
             m_signalNotifierQueue.push_back({
                 FixedValueString{jsonPath},
                 type,
-                !m_mergeFilePathStack.empty() ? m_mergeFilePathStack.top() : "<in-memory>"});
-            // If the signal count was 0, then a dispatch is in progress
-            if (m_signalCount++ == 0)
+                AZStd::move(mergeFilePath)});
+            // If the signal count was non-zero, then a dispatch is already in progress
+            if (m_signalCount++ != 0)
             {
-                AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+                return;
             }
+            AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+            AZStd::scoped_lock lock(m_notifierMutex);
+            localNotifierEvent = AZStd::move(m_notifiers);
         }
 
-        while (!localNotifierQueue.empty())
+        for (;;)
         {
             for (const SignalNotifierArgs& notifierArgs : localNotifierQueue)
             {
@@ -372,23 +378,20 @@ namespace AZ
             localNotifierQueue = {};
             {
                 AZStd::scoped_lock signalLock(m_signalMutex);
+                if (m_signalNotifierQueue.empty())
+                {
+                    // Swap the local handlers with the current m_notifiers which
+                    // will contain any handlers added during the signaling of the
+                    // local event
+                    AZStd::scoped_lock lock(m_notifierMutex);
+                    AZStd::swap(m_notifiers, localNotifierEvent);
+                    // Append any added handlers to the m_notifier structure
+                    m_notifiers.ClaimHandlers(AZStd::move(localNotifierEvent));
+                    m_signalCount = 0;
+                    break;
+                }
                 AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
             }
-        }
-
-        {
-            AZStd::scoped_lock signalLock(m_signalMutex);
-            --m_signalCount;
-        }
-
-        {
-            // Swap the local handlers with the current m_notifiers which
-            // will contain any handlers added during the signaling of the
-            // local event
-            AZStd::scoped_lock lock(m_notifierMutex);
-            AZStd::swap(m_notifiers, localNotifierEvent);
-            // Append any added handlers to the m_notifier structure
-            m_notifiers.ClaimHandlers(AZStd::move(localNotifierEvent));
         }
     }
 
@@ -564,21 +567,22 @@ namespace AZ
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
-            rapidjson::Value store;
-            JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(),
-                value, nullptr, valueTypeID, m_serializationSettings);
-            if (jsonResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+            SettingsType anchorType;
             {
-                SettingsType anchorType;
+                AZStd::scoped_lock lock(LockForWriting());
+                rapidjson::Value store;
+                JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(),
+                    value, nullptr, valueTypeID, m_serializationSettings);
+                if (jsonResult.GetProcessing() == JsonSerializationResult::Processing::Halted)
                 {
-                    AZStd::scoped_lock lock(LockForWriting());
-                    rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
-                    setting = AZStd::move(store);
-                    anchorType = GetTypeNoLock(path);
+                    return false;
                 }
-                SignalNotifier(path, anchorType);
-                return true;
+                rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
+                setting = AZStd::move(store);
+                anchorType = GetTypeNoLock(path);
             }
+            SignalNotifier(path, anchorType);
+            return true;
         }
         return false;
     }
@@ -727,24 +731,17 @@ namespace AZ
 
         MergeSettingsResult result;
         result.m_returnCode = MergeSettingsReturnCode::Success;
-        if (path[path.length()] == 0)
+        if (AZ::IO::MaxPathLength < path.size())
         {
-            result = MergeSettingsFileInternal(path.data(), format, rootKey);
-        }
-        else
-        {
-            if (AZ::IO::MaxPathLength < path.size())
-            {
-                result.m_returnCode = MergeSettingsReturnCode::Failure;
-                result.m_operationMessages += AZStd::string::format(
-                    R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
-                    AZ_STRING_ARG(path));
+            result.m_returnCode = MergeSettingsReturnCode::Failure;
+            result.m_operationMessages += AZStd::string::format(
+                R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
+                AZ_STRING_ARG(path));
 
-                return result;
-            }
-            AZ::IO::FixedMaxPathString filePath(path);
-            result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey);
+            return result;
         }
+        AZ::IO::FixedMaxPathString filePath(path);
+        result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey);
 
         return result;
     }
@@ -1413,22 +1410,22 @@ namespace AZ
         // Use the supplied file path as the path for for the current JSON document @jsonPatch
         importSettings.m_loadedJsonPath = filePath;
 
-        rapidjson::Value jsonPatchPostImport;
-        if (AZ::JsonSerializationResult::ResultCode result = AZ::JsonImportResolver::ResolveImportsInOrder(jsonPatchPostImport,
-            m_settings.GetAllocator(), jsonPatch,
-            importPathStack, importSettings, importedFieldKey);
-            result.GetProcessing() != JsonSerializationResult::Processing::Completed)
-        {
-            // Mark merge operation as having failed, if the JSON Importer has not completed
-            mergeResult.Combine(MergeSettingsReturnCode::Failure);
-        }
-
         // Create a scoped merge event to trigger the PreMerge notification on construction
         // and PostMerge event on destruction
         ScopedMergeEvent scopedMergeEvent(*this, { filePath.Native(), anchorKey });
         SettingsType anchorType;
         {
             AZStd::scoped_lock lock(LockForWriting());
+
+            rapidjson::Value jsonPatchPostImport;
+            if (AZ::JsonSerializationResult::ResultCode result = AZ::JsonImportResolver::ResolveImportsInOrder(jsonPatchPostImport,
+                m_settings.GetAllocator(), jsonPatch,
+                importPathStack, importSettings, importedFieldKey);
+                result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+            {
+                // Mark merge operation as having failed, if the JSON Importer has not completed
+                mergeResult.Combine(MergeSettingsReturnCode::Failure);
+            }
 
             rapidjson::Value& anchorRoot = anchorPath.IsValid() ? anchorPath.Create(m_settings, m_settings.GetAllocator())
                 : m_settings;

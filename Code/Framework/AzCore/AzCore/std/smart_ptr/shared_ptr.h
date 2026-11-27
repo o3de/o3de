@@ -178,10 +178,14 @@ namespace AZStd
         //  generated copy constructor, destructor are fine
         template<class Y>
         explicit shared_ptr(weak_ptr<Y> const& r)
-            : pn(r.pn)                                       // may throw
+            : px(nullptr)
+            , pn(r.pn)                                       // may throw
         {
-            // it is now safe to copy r.px, as pn(r.pn) did not throw
-            px = r.px;
+            if (!pn.empty())
+            {
+                // it is now safe to copy r.px, as pn(r.pn) did not throw
+                px = r.px;
+            }
         }
         template<class Y>
         shared_ptr(weak_ptr<Y> const& r, AZStd::Internal::sp_nothrow_tag)

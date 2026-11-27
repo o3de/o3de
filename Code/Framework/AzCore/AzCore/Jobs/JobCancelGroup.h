@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -42,6 +44,8 @@ namespace AZ
          */
         JobCancelGroup(JobCancelGroup* parentGroup);
 
+        ~JobCancelGroup();
+
         /**
          * Cancels all jobs in this group, and recursively cancels all child groups.
          */
@@ -59,8 +63,10 @@ namespace AZ
         JobCancelGroup(const JobCancelGroup&);
         JobCancelGroup& operator=(const JobCancelGroup&);
 
+        JobCancelGroup* m_parentGroup = nullptr;
         JobCancelGroup* m_firstChildGroup;
         JobCancelGroup* m_siblingGroup;
+        mutable AZStd::recursive_mutex m_mutex;
 #ifdef AZCORE_JOBS_IMPL_SYNCHRONOUS
         bool m_isCancelled;
 #else
@@ -73,23 +79,43 @@ namespace AZ
     //=============================================================================================================
 
     inline JobCancelGroup::JobCancelGroup()
-        : m_firstChildGroup(nullptr)
+        : m_parentGroup(nullptr)
+        , m_firstChildGroup(nullptr)
         , m_siblingGroup(nullptr)
         , m_isCancelled(false)
     {
     }
 
     inline JobCancelGroup::JobCancelGroup(JobCancelGroup* parentGroup)
-        : m_firstChildGroup(nullptr)
+        : m_parentGroup(parentGroup)
+        , m_firstChildGroup(nullptr)
+        , m_siblingGroup(nullptr)
         , m_isCancelled(false)
     {
         if (parentGroup)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(parentGroup->m_mutex);
             m_siblingGroup = parentGroup->m_firstChildGroup;
             parentGroup->m_firstChildGroup = this;
         }
-        else
+    }
+
+    inline JobCancelGroup::~JobCancelGroup()
+    {
+        if (m_parentGroup)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_parentGroup->m_mutex);
+            JobCancelGroup** prev = &m_parentGroup->m_firstChildGroup;
+            while (*prev)
+            {
+                if (*prev == this)
+                {
+                    *prev = m_siblingGroup;
+                    break;
+                }
+                prev = &((*prev)->m_siblingGroup);
+            }
+            m_parentGroup = nullptr;
             m_siblingGroup = nullptr;
         }
     }
@@ -103,6 +129,7 @@ namespace AZ
 #endif
 
         //cancel child groups
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         JobCancelGroup* child = m_firstChildGroup;
         while (child)
         {

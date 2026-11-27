@@ -55,9 +55,15 @@ namespace AZStd
                 stackSize = desc->m_stackSize;
             }
 
+            if (desc && desc->m_name && ti)
+            {
+                ti->set_name(desc->m_name);
+            }
+
             hThread = Platform::CreateThread(stackSize, &thread_run_function, ti, id);
             if (hThread == nullptr)
             {
+                destroy_thread_info(ti);
                 return hThread;
             }
 

@@ -14,7 +14,7 @@ namespace AZ::IO
         , m_indicesNext(AZStd::make_unique<T[]>(size))
         , m_size(size)
     {
-        AZ_Assert(size > 2, "At least 2 entries are needed in order to have a separate front and back.");
+        AZ_Assert(size >= 1, "At least 1 entry is needed.");
         AZ_Assert(size < AZStd::numeric_limits<T>::max() - 1, "Size too large for Recently Used Index with the provided type.");
 
         FlushAll();
@@ -76,6 +76,10 @@ namespace AZ::IO
     T RecentlyUsedIndex<T>::TouchLeastRecentlyUsed()
     {
         AZ_Assert(m_size > 0, "Least recently used index is begin touched in Recently Used Index before being initialized with a size.");
+        if (m_size <= 1)
+        {
+            return m_front;
+        }
 
         // Very similar to Touch and Flush, but some work and checks can be avoided as it's known that it's the front being moved to the back.
         T next = m_indicesNext[m_front];

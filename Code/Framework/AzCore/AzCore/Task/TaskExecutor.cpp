@@ -440,6 +440,8 @@ namespace AZ
         // to increment the graphs remaining member
         ++m_graphsRemaining;
 
+        const bool isRetained = graph.IsRetained();
+
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : compiledTasks)
         {
@@ -447,6 +449,12 @@ namespace AZ
             {
                 Submit(task);
             }
+        }
+
+        // Release the +1 submission ref-pin placed in TaskGraph::SubmitOnExecutor
+        if (graph.Release(m_eventTracker) == (isRetained ? 1u : 0u))
+        {
+            ReleaseGraph();
         }
     }
 

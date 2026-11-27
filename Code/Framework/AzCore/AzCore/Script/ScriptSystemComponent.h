@@ -153,6 +153,7 @@ namespace AZ
                     AZStd::lock_guard<AZStd::recursive_mutex> rhsLock(rhs.m_loadedScriptsMutex);
 
                     m_loadedScripts.swap(rhs.m_loadedScripts);
+                    m_trackedScripts.swap(rhs.m_trackedScripts);
                 }
                 return *this;
             }

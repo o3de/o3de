@@ -949,7 +949,19 @@ namespace AZ
                     if (!storageElement.m_classContainer && *reinterpret_cast<void**>(storageElement.m_reserveAddress))
                     {
                         // Tip: If you crash here, it might be a pointer that isn't initialized to null
-                        classFactory->Destroy(*reinterpret_cast<void**>(storageElement.m_reserveAddress));
+                        void* existingPtr = *reinterpret_cast<void**>(storageElement.m_reserveAddress);
+                        SerializeContext::IObjectFactory* destroyFactory = classFactory;
+                        if (classElement->m_azRtti)
+                        {
+                            const AZ::Uuid& actualClassId = classElement->m_azRtti->GetActualUuid(existingPtr);
+                            existingPtr = classElement->m_azRtti->Cast(existingPtr, actualClassId);
+                            if (const SerializeContext::ClassData* actualClassData = m_sc->FindClassData(actualClassId);
+                                actualClassData && actualClassData->m_factory)
+                            {
+                                destroyFactory = actualClassData->m_factory;
+                            }
+                        }
+                        destroyFactory->Destroy(existingPtr);
                     }
 
                     void* newDataAddress = classFactory->Create(dataElementClassData->m_name);

@@ -125,6 +125,14 @@ namespace AZStd
 
                 AZStd::swap(m_startBucket, rhs.m_startBucket);
                 AZStd::swap(m_buckets, rhs.m_buckets);
+                if (m_buckets == &rhs.m_startBucket)
+                {
+                    m_buckets = &m_startBucket;
+                }
+                if (rhs.m_buckets == &m_startBucket)
+                {
+                    rhs.m_buckets = &rhs.m_startBucket;
+                }
 
                 size_type tempNumBuckets = m_numBuckets.load(memory_order_acquire);
                 m_numBuckets.store(rhs.m_numBuckets.load(memory_order_acquire), memory_order_release);
@@ -392,8 +400,16 @@ namespace AZStd
                     return;
                 }
 
-                acquire_all();
-                rhs.acquire_all();
+                if (this < &rhs)
+                {
+                    acquire_all();
+                    rhs.acquire_all();
+                }
+                else
+                {
+                    rhs.acquire_all();
+                    acquire_all();
+                }
 
                 m_storage.swap(rhs.m_storage);
 
@@ -467,8 +483,21 @@ namespace AZStd
 
             void copy(const this_type& rhs)
             {
-                acquire_all();
-                rhs.acquire_all();
+                if (this == &rhs)
+                {
+                    return;
+                }
+
+                if (this < &rhs)
+                {
+                    acquire_all();
+                    rhs.acquire_all();
+                }
+                else
+                {
+                    rhs.acquire_all();
+                    acquire_all();
+                }
 
                 m_storage.pre_copy(rhs.m_storage);
 

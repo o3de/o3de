@@ -10,7 +10,9 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ
 {

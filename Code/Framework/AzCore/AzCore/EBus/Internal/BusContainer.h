@@ -594,7 +594,12 @@ namespace AZ
                         auto addressesEnd = addresses.end();
                         while (addressIt != addressesEnd)
                         {
-                            if (!context->m_buses.EnumerateHandlersImpl(context, *addressIt++, AZStd::forward<Callback>(callback)))
+                            HandlerHolder& holder = *addressIt;
+                            holder.add_ref();
+                            const bool shouldContinue = context->m_buses.EnumerateHandlersImpl(context, holder, AZStd::forward<Callback>(callback));
+                            ++addressIt;
+                            holder.release();
+                            if (!shouldContinue)
                             {
                                 break;
                             }
@@ -612,7 +617,10 @@ namespace AZ
                         auto addressIt = addresses.find(id);
                         if (addressIt != addresses.end())
                         {
-                            context->m_buses.EnumerateHandlersImpl(context, *addressIt, AZStd::forward<Callback>(callback));
+                            HandlerHolder& holder = *addressIt;
+                            holder.add_ref();
+                            context->m_buses.EnumerateHandlersImpl(context, holder, AZStd::forward<Callback>(callback));
+                            holder.release();
                         }
                     }
                 }

@@ -50,6 +50,11 @@ namespace AZ
         if (m_globalMutex == nullptr || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
             AZ_TracePrintf("AZSystem", "CreateMutex failed with error %d\n", error);
+            if (m_globalMutex != nullptr)
+            {
+                CloseHandle(m_globalMutex);
+                m_globalMutex = nullptr;
+            }
             return CreateFailed;
         }
 
@@ -60,6 +65,13 @@ namespace AZ
         if (m_mapHandle == nullptr || (error == ERROR_ALREADY_EXISTS && openIfCreated == false))
         {
             AZ_TracePrintf("AZSystem", "CreateFileMapping failed with error %d\n", error);
+            if (m_mapHandle != nullptr)
+            {
+                CloseHandle(m_mapHandle);
+                m_mapHandle = nullptr;
+            }
+            CloseHandle(m_globalMutex);
+            m_globalMutex = nullptr;
             return CreateFailed;
         }
 
@@ -85,6 +97,8 @@ namespace AZ
         if (m_mapHandle == nullptr)
         {
             AZ_TracePrintf("AZSystem", "OpenFileMapping %s failed with error %d\n", m_name, GetLastError());
+            CloseHandle(m_globalMutex);
+            m_globalMutex = nullptr;
             return false;
         }
 
@@ -122,6 +136,8 @@ namespace AZ
         if (!VirtualQuery(m_mappedBase, &info, sizeof(info)))
         {
             AZ_TracePrintf("AZSystem", "VirtualQuery failed\n");
+            UnmapViewOfFile(m_mappedBase);
+            m_mappedBase = nullptr;
             return false;
         }
         m_dataSize = static_cast<unsigned int>(info.RegionSize);

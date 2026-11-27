@@ -66,7 +66,7 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // Decompressor
-        unsigned int Decompress(const void* compressedData, unsigned int compressedDataSize, void* outputData, unsigned int outputDataSize, size_t* sizeOfNextBlock);
+        unsigned int Decompress(const void* compressedData, unsigned int compressedDataSize, void* outputData, unsigned int& outputDataSize, size_t* sizeOfNextBlock);
         //////////////////////////////////////////////////////////////////////////
     private:
         static void* AllocateMem(void* userData, size_t size);

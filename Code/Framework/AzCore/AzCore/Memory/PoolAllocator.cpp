@@ -436,7 +436,7 @@ namespace AZ
         m_maxAllocationSize = AZ::GetMax(maxAllocationSize, minAllocationSize);
 
         m_minAllocationShift = 0;
-        for (size_t i = 1; i < sizeof(unsigned int) * 8; i++)
+        for (size_t i = 1; i < sizeof(size_t) * 8; i++)
         {
             if (m_minAllocationSize >> i == 0)
             {
@@ -600,10 +600,10 @@ namespace AZ
                     m_allocator->PushFreePage(page);
                 }
             }
-            else if (frontPage->m_next != nullptr)
+            else if (bucket.m_pages.size() > 1)
             {
                 // if the next page has free slots free the current page
-                if (frontPage->m_next->m_freeList.size() < maxElementsPerBucket)
+                if (!frontPage->m_next->m_freeList.empty())
                 {
                     bucket.m_pages.erase(*page);
                     m_allocator->PushFreePage(page);
@@ -640,15 +640,19 @@ namespace AZ
             for (auto& bucket : AZStd::span(m_buckets, m_buckets + m_numBuckets))
             {
                 auto& pages = bucket.m_pages;
-                pages.remove_if([this](PageType& page)
+                for (auto it = pages.begin(); it != pages.end();)
                 {
+                    PageType& page = *it;
                     if (page.m_freeList.size() == page.m_maxNumElements)
                     {
+                        it = pages.erase(it);
                         m_allocator->FreePage(&page);
-                        return true;
-                    };
-                    return false;
-                });
+                    }
+                    else
+                    {
+                        ++it;
+                    }
+                }
             }
 
             const bool allBucketsEmpty = AZStd::all_of(m_buckets, m_buckets + m_numBuckets, [](const BucketType& bucket)
@@ -1208,18 +1212,16 @@ namespace AZ
     //=========================================================================
     void ThreadPoolSchemaImpl::GarbageCollect()
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-        for (ThreadPoolData* threadData : m_threads)
+        if (ThreadPoolData* threadData = m_threadPoolGetter(); threadData != nullptr)
         {
-            if (threadData)
+            for (auto fakeLFNode = threadData->m_freedElements.pop(); fakeLFNode; fakeLFNode = threadData->m_freedElements.pop())
             {
-                for (auto fakeLFNode = threadData->m_freedElements.pop(); fakeLFNode; fakeLFNode = threadData->m_freedElements.pop())
-                {
-                    threadData->m_allocator.DeAllocate(fakeLFNode);
-                }
-                threadData->m_allocator.GarbageCollect();
+                threadData->m_allocator.DeAllocate(fakeLFNode);
             }
+            threadData->m_allocator.GarbageCollect();
         }
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         while (!m_freePages.empty())
         {
             Page* page = &m_freePages.front();

@@ -67,23 +67,31 @@ namespace AZStd
                 {
                     name = desc->m_name;
                 }
-                ti->m_name = name;
                 cpuId = desc->m_cpuId;
 
                 pthread_attr_setdetachstate(&attr, desc->m_isJoinable ? PTHREAD_CREATE_JOINABLE : PTHREAD_CREATE_DETACHED);
 
                 Platform::PreCreateSetThreadAffinity(cpuId, attr);
             }
+            if (ti)
+            {
+                ti->set_name(name);
+            }
 
             pthread_attr_setstacksize(&attr, stackSize);
 
             Platform::SetThreadPriority(priority, attr);
 
-            pthread_t tId;
+            pthread_t tId = native_thread_invalid_id;
             int res = pthread_create(&tId, &attr, &thread_run_function, ti);
             (void)res;
             AZ_Assert(res == 0, "pthread failed with code %d: %s", res, strerror(res));
             pthread_attr_destroy(&attr);
+            if (res != 0)
+            {
+                destroy_thread_info(ti);
+                return native_thread_invalid_id;
+            }
 
             // Platform specific post thread creation action (setting thread name on some, affinity on others)
             Platform::PostCreateThread(tId, name, cpuId);

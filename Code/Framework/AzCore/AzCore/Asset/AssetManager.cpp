@@ -1788,16 +1788,27 @@ namespace AZ::Data
             {
                 AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
                     loadingAsset.GetHint().c_str());
+                bool abandonLoad = false;
                 {
                     AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
                     AssetData* data = loadingAsset.Get();
                     if (data->GetStatus() != AssetData::AssetStatus::Queued)
                     {
                         AZ_Warning("AssetManager", false, "Asset %s no longer in Queued state, abandoning load", loadingAsset.GetId().ToString<AZStd::string>().c_str());
-                        return;
+                        abandonLoad = true;
                     }
-                    data->m_status = AssetData::AssetStatus::StreamReady;
-                    UpdateDebugStatus(loadingAsset);
+                    else
+                    {
+                        data->m_status = AssetData::AssetStatus::StreamReady;
+                        UpdateDebugStatus(loadingAsset);
+                    }
+                }
+                if (abandonLoad)
+                {
+                    RemoveActiveStreamerRequest(assetId);
+                    weakAsset = {};
+                    loadingAsset.Reset();
+                    return;
                 }
 
                 // The callback from AZ Streamer blocks the streaming thread until this function completes. To minimize the overhead,

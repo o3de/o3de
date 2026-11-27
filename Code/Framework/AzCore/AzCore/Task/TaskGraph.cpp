@@ -128,22 +128,33 @@ namespace AZ
     void TaskGraph::SubmitOnExecutor(TaskExecutor& executor, TaskGraphEvent* waitEvent)
     {
         Internal::CompiledTaskGraphTracker& eventTracker = executor.GetEventTracker();
+        if (IsEmpty() && !m_compiledTaskGraph)
+        {
+            if (waitEvent)
+            {
+                waitEvent->IncWaitCount();
+                eventTracker.WriteEventInfo(nullptr, Internal::CTGEvent::Signalled, "TaskGraph::SubmitOnExecutor empty graph");
+                waitEvent->Signal();
+            }
+            return;
+        }
+
         if (!m_compiledTaskGraph)
         {
             m_compiledTaskGraph = aznew CompiledTaskGraph(AZStd::move(m_tasks), m_links, m_linkCount, m_retained ? this : nullptr, m_label);
             eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Allocated, "SubmitOnExecutor");
         }
 
-        m_compiledTaskGraph->m_waitEvent = waitEvent;
-        uint32_t taskCount = aznumeric_cast<uint32_t>(m_compiledTaskGraph->m_tasks.size());
-        m_compiledTaskGraph->m_remaining = taskCount + (m_retained ? 1 : 0);
+        CompiledTaskGraph* ctg = m_compiledTaskGraph;
+        ctg->m_waitEvent = waitEvent;
+        uint32_t taskCount = aznumeric_cast<uint32_t>(ctg->m_tasks.size());
+        // Add +1 submission ref-pin so worker completion cannot free or signal the graph
+        // while TaskExecutor::Submit is still iterating compiledTasks to enqueue root tasks.
+        ctg->m_remaining = taskCount + 1 + (m_retained ? 1 : 0);
         for (uint32_t i = 0; i != taskCount; ++i)
         {
-            m_compiledTaskGraph->m_tasks[i].Init();
+            ctg->m_tasks[i].Init();
         }
-
-        eventTracker.WriteEventInfo(m_compiledTaskGraph, Internal::CTGEvent::Submitted, "SubmitOnExecutor");
-        executor.Submit(*m_compiledTaskGraph, waitEvent);
 
         if (m_retained)
         {
@@ -154,5 +165,8 @@ namespace AZ
             m_compiledTaskGraph = nullptr;
             Reset();
         }
+
+        eventTracker.WriteEventInfo(ctg, Internal::CTGEvent::Submitted, "SubmitOnExecutor");
+        executor.Submit(*ctg, waitEvent);
     }
 }

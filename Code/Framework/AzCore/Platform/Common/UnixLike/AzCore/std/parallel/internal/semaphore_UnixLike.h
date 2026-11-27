@@ -8,6 +8,7 @@
 #pragma once
 
 #include "time_UnixLike.h"
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/chrono/chrono.h>
 
 /**
@@ -23,7 +24,8 @@ namespace AZStd
         (void)result;
         AZ_Assert(result == 0, "sem_init error %s\n", strerror(errno));
 
-        result = sem_init(&m_maxCountSemaphore, 0, maximumCount);
+        const unsigned int availCount = maximumCount - AZStd::min(initialCount, maximumCount);
+        result = sem_init(&m_maxCountSemaphore, 0, availCount);
         AZ_Assert(result == 0, "sem_init error for max count semaphore %s\n", strerror(errno));
     }
 
@@ -36,7 +38,8 @@ namespace AZStd
         (void)result;
         AZ_Assert(result == 0, "sem_init error %s\n", strerror(errno));
 
-        result = sem_init(&m_maxCountSemaphore, 0, maximumCount);
+        const unsigned int availCount = maximumCount - AZStd::min(initialCount, maximumCount);
+        result = sem_init(&m_maxCountSemaphore, 0, availCount);
         AZ_Assert(result == 0, "sem_init error for max count semaphore %s\n", strerror(errno));
     }
 
@@ -52,14 +55,16 @@ namespace AZStd
 
     inline void semaphore::acquire()
     {
-        int result = sem_post(&m_maxCountSemaphore);
-        AZ_Assert(result == 0, "post error for max count semaphore:%s\n", strerror(errno));
-
-        result = sem_wait(&m_semaphore);
+        int result = 0;
+        while ((result = sem_wait(&m_semaphore)) == -1 && errno == EINTR)
+        {
+            continue;
+        }
         (void)result;
-        // note that we could return 0, or we could return EINTR, and its okay to be 'interrupted'
-        // by a system call.  Therefore, the only real error we care about is EINVAL.
-        AZ_Assert(result != EINVAL && result != EINTR, "sem_wait error %s\n", strerror(errno));
+        AZ_Assert(result == 0, "sem_wait error %s\n", strerror(errno));
+
+        result = sem_post(&m_maxCountSemaphore);
+        AZ_Assert(result == 0, "post error for max count semaphore:%s\n", strerror(errno));
     }
 
     template <class Rep, class Period>
@@ -74,7 +79,14 @@ namespace AZStd
 
         // as above, EINVAL is the only "unexpected" code
         AZ_Assert(result != EINVAL && result != EINTR, "sem_timedwait error %s\n", strerror(errno));
-        return result == 0;
+        if (result == 0)
+        {
+            int postResult = sem_post(&m_maxCountSemaphore);
+            (void)postResult;
+            AZ_Assert(postResult == 0, "post error for max count semaphore:%s\n", strerror(errno));
+            return true;
+        }
+        return false;
     }
 
     template <class Clock, class Duration>
@@ -92,11 +104,19 @@ namespace AZStd
 
     AZ_FORCE_INLINE void semaphore::release(unsigned int releaseCount)
     {
-        int result = sem_wait(&m_maxCountSemaphore);
-        AZ_Assert(result == 0, "sem_wait error for max count semaphore: %s\n", strerror(errno));
-
+        int result = 0;
         while (releaseCount)
         {
+            while ((result = sem_wait(&m_maxCountSemaphore)) == -1 && errno == EINTR)
+            {
+                continue;
+            }
+            AZ_Assert(result == 0, "sem_wait error for max count semaphore: %s\n", strerror(errno));
+            if (result != 0)
+            {
+                break;
+            }
+
             result = sem_post(&m_semaphore);
             AZ_Assert(result == 0, "sem_post error: %s\n", strerror(errno));
 

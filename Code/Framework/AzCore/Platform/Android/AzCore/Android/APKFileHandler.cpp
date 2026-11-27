@@ -58,6 +58,7 @@ namespace AZ
                 return false;
             }
 
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             for (const AZStd::string& fileName : m_memFileNames)
             {
                 if (strstr(filePath, fileName.c_str()))
@@ -71,6 +72,7 @@ namespace AZ
 
         MemoryBuffer* APKFileHandler::GetInMemoryFileBuffer(void* asset)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             for (auto it = m_memFileBuffers.begin(); it != m_memFileBuffers.end(); it++)
             {
                 if (it->m_asset == asset)
@@ -84,6 +86,7 @@ namespace AZ
 
         void APKFileHandler::RemoveInMemoryFileBuffer(void* asset)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             for (auto it = m_memFileBuffers.begin(); it != m_memFileBuffers.end(); it++)
             {
                 if (it->m_asset == asset)
@@ -122,6 +125,7 @@ namespace AZ
                         buf.m_asset = asset;
                         if (buf.m_buffer)
                         {
+                            AZStd::lock_guard<AZStd::recursive_mutex> lock(Get().m_mutex);
                             Get().m_memFileBuffers.push_back(buf);
                         }
                         else
@@ -147,19 +151,38 @@ namespace AZ
             ANDROID_IO_PROFILE_SECTION_ARGS("APK Read");
 
             APKFileHandler& apkHandler = Get();
-
-            if (apkHandler.m_numBytesToRead < size && apkHandler.m_numBytesToRead > 0)
             {
-                size = apkHandler.m_numBytesToRead;
-            }
-            apkHandler.m_numBytesToRead -= size;
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
+                if (apkHandler.m_numBytesToRead < static_cast<size_t>(size) && apkHandler.m_numBytesToRead > 0)
+                {
+                    size = static_cast<int>(apkHandler.m_numBytesToRead);
+                }
+                if (apkHandler.m_numBytesToRead >= static_cast<size_t>(size))
+                {
+                    apkHandler.m_numBytesToRead -= static_cast<size_t>(size);
+                }
+                else
+                {
+                    apkHandler.m_numBytesToRead = 0;
+                }
 
-            MemoryBuffer* buf = apkHandler.GetInMemoryFileBuffer(asset);
-            if (buf)
-            {
-                const char* tempBuf = buf->m_buffer + buf->m_offset;
-                memcpy(buffer, tempBuf, size);
-                return size;
+                MemoryBuffer* buf = apkHandler.GetInMemoryFileBuffer(asset);
+                if (buf)
+                {
+                    if (size <= 0 || buf->m_offset >= buf->m_totalSize)
+                    {
+                        return 0;
+                    }
+                    const int remainingBytes = buf->m_totalSize - buf->m_offset;
+                    if (size > remainingBytes)
+                    {
+                        size = remainingBytes;
+                    }
+                    const char* tempBuf = buf->m_buffer + buf->m_offset;
+                    memcpy(buffer, tempBuf, static_cast<size_t>(size));
+                    buf->m_offset += size;
+                    return size;
+                }
             }
 
             return AAsset_read(static_cast<AAsset*>(asset), buffer, static_cast<size_t>(size));
@@ -167,38 +190,46 @@ namespace AZ
 
         int APKFileHandler::Write(void* asset, const char* buffer, int size)
         {
-            return EACCES;
+            AZ_UNUSED(asset);
+            AZ_UNUSED(buffer);
+            AZ_UNUSED(size);
+            errno = EACCES;
+            return -1;
         }
 
         fpos_t APKFileHandler::Seek(void* asset, fpos_t offset, int origin)
         {
             ANDROID_IO_PROFILE_SECTION_ARGS("APK Seek");
-            MemoryBuffer* buf = Get().GetInMemoryFileBuffer(asset);
-            if (buf)
+            APKFileHandler& apkHandler = Get();
             {
-                if (origin == SEEK_SET)
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
+                MemoryBuffer* buf = apkHandler.GetInMemoryFileBuffer(asset);
+                if (buf)
                 {
-                    buf->m_offset = offset;
-                }
-                else if (origin == SEEK_CUR)
-                {
-                    buf->m_offset += offset;
-                }
-                else if (origin == SEEK_END)
-                {
-                    buf->m_offset = buf->m_totalSize - offset;
-                }
+                    if (origin == SEEK_SET)
+                    {
+                        buf->m_offset = offset;
+                    }
+                    else if (origin == SEEK_CUR)
+                    {
+                        buf->m_offset += offset;
+                    }
+                    else if (origin == SEEK_END)
+                    {
+                        buf->m_offset = buf->m_totalSize + offset;
+                    }
 
-                if (buf->m_offset > buf->m_totalSize)
-                {
-                    buf->m_offset = buf->m_totalSize;
-                }
-                if (buf->m_offset < 0)
-                {
-                    buf->m_offset = 0;
-                }
+                    if (buf->m_offset > buf->m_totalSize)
+                    {
+                        buf->m_offset = buf->m_totalSize;
+                    }
+                    if (buf->m_offset < 0)
+                    {
+                        buf->m_offset = 0;
+                    }
 
-                return buf->m_offset;
+                    return buf->m_offset;
+                }
             }
 
             return AAsset_seek(static_cast<AAsset*>(asset), offset, origin);
@@ -229,6 +260,7 @@ namespace AZ
             FILE_IO_LOG("********* About to search for file in [%s] ******* ", path);
 
             APKFileHandler& apkHandler = Get();
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
 
             DirectoryCache::const_iterator it = apkHandler.m_cachedDirectories.find(path);
             if (it == apkHandler.m_cachedDirectories.end())
@@ -265,7 +297,7 @@ namespace AZ
                     jniEnv->DeleteLocalRef(str);
                 }
 
-                jniEnv->DeleteGlobalRef(javaFileListObject);
+                jniEnv->DeleteLocalRef(javaFileListObject);
             }
             else
             {
@@ -290,6 +322,7 @@ namespace AZ
             ANDROID_IO_PROFILE_SECTION_ARGS("APK IsDir");
 
             APKFileHandler& apkHandler = Get();
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
 
             DirectoryCache::const_iterator it = apkHandler.m_cachedDirectories.find(path);
             if (it == apkHandler.m_cachedDirectories.end())
@@ -349,6 +382,7 @@ namespace AZ
         {
             // WARNING: This isn't a thread safe way of handling this problem, LY-65478 will fix it
             APKFileHandler& apkHandler = Get();
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
             apkHandler.m_numBytesToRead = numBytesToRead;
         }
 
@@ -358,6 +392,7 @@ namespace AZ
             size_t pos = 0;
             bool stringProcessed = false;
             APKFileHandler& apkHandler = Get();
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(apkHandler.m_mutex);
 
             while (!stringProcessed)
             {

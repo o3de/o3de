@@ -103,7 +103,11 @@ namespace AZ
                         meminfo.m_workingSet = size;
                     }
 
-                    if (parseSize("VmPeak:", line, size))
+                    if (parseSize("VmHWM:", line, size))
+                    {
+                        meminfo.m_peakWorkingSet = size;
+                    }
+                    else if (parseSize("VmPeak:", line, size) && meminfo.m_peakWorkingSet == 0)
                     {
                         meminfo.m_peakWorkingSet = size;
                     }
@@ -111,12 +115,17 @@ namespace AZ
 
                 // Read up to MaxReadSize bytes
                 // Any partial lines are taken out of the read count
-                size_t partialLineSize = MaxReadSize - frontOffset;
+                size_t partialLineSize = readSize - frontOffset;
                 if (partialLineSize > 0)
                 {
                     memmove(buffer, buffer + frontOffset, partialLineSize);
                 }
-                readSize = file.Read(partialLineSize, buffer);
+                const AZ::IO::SystemFile::SizeType newReadSize = file.Read(MaxReadSize - partialLineSize, buffer + partialLineSize);
+                if (newReadSize == 0)
+                {
+                    break;
+                }
+                readSize = partialLineSize + newReadSize;
             }
 
             file.Close();
