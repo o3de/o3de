@@ -130,7 +130,7 @@ namespace ImGui
                 ImGui::Combo("View Type", reinterpret_cast<int*>(&m_viewType), s_viewTypeToStringLambda, this, static_cast<int>(ViewType::COUNT));
                 ImGui::Checkbox("Show Overlays", &m_dispalyOverlays);
                 ImGui::Checkbox("Show Most Recent Value (requires overlays)", &m_drawMostRecentValueText);
-                ImGui::DragInt("History Size", &m_maxSize, 1, 1, 1000, "%f");
+                ImGui::DragInt("History Size", &m_maxSize, 1, 1, 1000, "%d");
                 ImGui::DragFloat("Max Scale", &m_maxScale, 0.0001f, -100.0f, 100.0f);
                 ImGui::DragFloat("Min Scale", &m_minScale, 0.0001f, -100.0f, 100.0f);
 

@@ -348,7 +348,8 @@ namespace EditorPythonBindings
                             result->m_value = m_resultParam.GetValueAddress();
                             if ((traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                             {
-                                result->m_value = &result->m_value;
+                                m_resultPtr = m_resultParam.GetValueAddress();
+                                result->m_value = &m_resultPtr;
                             }
                         }
                     }
@@ -365,6 +366,7 @@ namespace EditorPythonBindings
             AZStd::unordered_map<AZStd::string, pybind11::function> m_callbackMap;
             Convert::StackVariableAllocator m_stackVariableAllocator;
             AZ::BehaviorArgument m_resultParam;
+            void* m_resultPtr = nullptr;
         };
     }
 

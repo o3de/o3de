@@ -353,7 +353,7 @@ namespace DatumHelpers
             case Data::eType::OBB:
                 return ConvertImplicitlyCheckedGeneric<Data::OBBType>(sourceType, source, targetType, target, targetClass);
             case Data::eType::Plane:
-                return ConvertImplicitlyCheckedGeneric<Data::AABBType>(sourceType, source, targetType, target, targetClass);
+                return ConvertImplicitlyCheckedGeneric<Data::PlaneType>(sourceType, source, targetType, target, targetClass);
             case Data::eType::Transform:
                 return ConvertImplicitlyCheckedGeneric<Data::TransformType>(sourceType, source, targetType, target, targetClass);
             case Data::eType::Quaternion:

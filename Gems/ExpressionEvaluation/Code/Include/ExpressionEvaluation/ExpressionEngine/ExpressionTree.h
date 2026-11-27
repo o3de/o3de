@@ -55,6 +55,7 @@ namespace ExpressionEvaluation
         {
             m_tokens.clear();
             m_variables.clear();
+            m_orderedVariables.clear();
         }
 
         void PushElement(ExpressionToken&& expressionToken)

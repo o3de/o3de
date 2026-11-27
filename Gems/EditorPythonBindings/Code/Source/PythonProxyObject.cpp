@@ -252,7 +252,8 @@ namespace EditorPythonBindings
         if (methodEntry != m_methods.end())
         {
             AZ::BehaviorMethod* method = methodEntry->second;
-            return pybind11::cpp_function([this, method](pybind11::args pythonArgs)
+            pybind11::object self = pybind11::cast(this);
+            return pybind11::cpp_function([this, self, method](pybind11::args pythonArgs)
             {
                 return EditorPythonBindings::Call::ClassMethod(method, m_wrappedObject, pythonArgs);
             });
@@ -557,7 +558,7 @@ namespace EditorPythonBindings
     pybind11::ssize_t PythonProxyObject::GetWrappedObjectHash()
     {
         pybind11::object result = GetWrappedObjectRepr();
-        return pybind11::hash(result.release());
+        return pybind11::hash(result);
     }
 
     void PythonProxyObject::ReleaseWrappedObject()
@@ -634,11 +635,7 @@ namespace EditorPythonBindings
             return pybind11::cast<pybind11::none>(Py_None);
         }
 
-        jsonString.erase(AZStd::remove(jsonString.begin(), jsonString.end(), '\n'), jsonString.end());
-        auto pythonCode = AZStd::string::format(
-            R"PYTHON(exec("import json") or json.loads("""%s"""))PYTHON", jsonString.c_str());
-
-        return pybind11::eval(pythonCode.c_str());
+        return pybind11::module_::import("json").attr("loads")(pybind11::str(jsonString.c_str()));
     }
 
     bool PythonProxyObject::DoComparisonEvaluation(pybind11::object pythonOther, Comparison comparison)
@@ -655,7 +652,14 @@ namespace EditorPythonBindings
         }
         else if (comparison == Comparison::GreaterThan)
         {
-            namedKey = AZ::Crc32{ Operator::s_lessThan };
+            if (m_methods.find(AZ::Crc32{ Operator::s_lessThanOrEqual }) != m_methods.end())
+            {
+                namedKey = AZ::Crc32{ Operator::s_lessThanOrEqual };
+            }
+            else
+            {
+                namedKey = AZ::Crc32{ Operator::s_lessThan };
+            }
             invertLogic = true;
         }
         else if (comparison == Comparison::GreaterThanOrEquals)
@@ -679,16 +683,15 @@ namespace EditorPythonBindings
             }
             else if (invertLogic)
             {
-                const bool greaterThanResult = !result.cast<bool>();
+                const bool invertedResult = !result.cast<bool>();
 
-                // an additional check for "GreaterThanOrEquals" if the result of "LessThan" failed since the invert
-                // of '3 <= 3' would fail since the 'or equals' would return true and be inverted to false
-                if (comparison == Comparison::GreaterThanOrEquals && greaterThanResult == false)
+                // If GreaterThan fell back to inverting s_lessThan, exclude equality: (a > b) == !(a < b) && !(a == b)
+                if (comparison == Comparison::GreaterThan && namedKey == AZ::Crc32{ Operator::s_lessThan } && invertedResult)
                 {
-                    return DoEqualityEvaluation(pythonOther);
+                    return !DoEqualityEvaluation(pythonOther);
                 }
 
-                return greaterThanResult;
+                return invertedResult;
             }
             return result.cast<bool>();
         }

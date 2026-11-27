@@ -283,6 +283,7 @@ IUiAnimNode* CUiAnimSequence::CreateNode(XmlNodeRef node)
 void CUiAnimSequence::RemoveNode(IUiAnimNode* node)
 {
     assert(node != nullptr);
+    AZStd::intrusive_ptr<IUiAnimNode> nodeHolder(node);
 
     static_cast<CUiAnimNode*>(node)->Activate(false);
     static_cast<CUiAnimNode*>(node)->OnReset();

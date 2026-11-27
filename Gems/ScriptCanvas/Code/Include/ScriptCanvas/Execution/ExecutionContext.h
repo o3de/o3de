@@ -19,7 +19,39 @@ namespace ScriptCanvas
 
     namespace Execution
     {
-        using ActivationInputArray = AZStd::array<AZ::BehaviorArgument, 128>;
+        struct ActivationInputArray
+        {
+            static constexpr size_t k_inlineCapacity = 128;
+
+            AZ::BehaviorArgument* data()
+            {
+                return m_dynamicStorage.empty() ? m_inlineStorage.data() : m_dynamicStorage.data();
+            }
+
+            const AZ::BehaviorArgument* data() const
+            {
+                return m_dynamicStorage.empty() ? m_inlineStorage.data() : m_dynamicStorage.data();
+            }
+
+            size_t size() const
+            {
+                return m_dynamicStorage.empty() ? m_inlineStorage.size() : m_dynamicStorage.size();
+            }
+
+            AZ::BehaviorArgument* EnsureCapacity(size_t requiredCount)
+            {
+                if (requiredCount > k_inlineCapacity)
+                {
+                    m_dynamicStorage.resize(requiredCount);
+                    return m_dynamicStorage.data();
+                }
+                return m_inlineStorage.data();
+            }
+
+        private:
+            AZStd::array<AZ::BehaviorArgument, k_inlineCapacity> m_inlineStorage;
+            AZStd::vector<AZ::BehaviorArgument> m_dynamicStorage;
+        };
 
         struct ActivationData
         {

@@ -64,7 +64,7 @@ namespace ExpressionEvaluation
     ///////////////////////////
 
     BooleanPrimitiveParser::BooleanPrimitiveParser()
-        : m_regex(R"((true|false))", AZStd::regex::ECMAScript | AZStd::regex::icase)
+        : m_regex(R"(^(true|false))", AZStd::regex::ECMAScript | AZStd::regex::icase)
     {
     }
 

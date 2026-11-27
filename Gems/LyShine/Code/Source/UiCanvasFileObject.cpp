@@ -275,6 +275,12 @@ UiCanvasFileObject* UiCanvasFileObject::LoadCanvasEntitiesFromOldFormatFile(cons
     // up using that.
     const char* lastOpenAngleInBuffer = strrchr(buffer, '<');
     const char* lastOpenAngleInSuffixToRemove = strrchr(suffixToRemove, '<');
+    if (!lastOpenAngleInBuffer || !lastOpenAngleInSuffixToRemove ||
+        (lastOpenAngleInBuffer - buffer) < (lastOpenAngleInSuffixToRemove - suffixToRemove))
+    {
+        AZ_Warning("UI", false, "Error converting canvas file. File appears to be truncated at the end.");
+        return nullptr;
+    }
     const char* suffixToRemoveStart = lastOpenAngleInBuffer - (lastOpenAngleInSuffixToRemove - suffixToRemove);
 
     // sanity check to check that the suffix matches
@@ -286,6 +292,11 @@ UiCanvasFileObject* UiCanvasFileObject::LoadCanvasEntitiesFromOldFormatFile(cons
 
     // Compute the start and length of the part we want to copy from the old buffer to the new buffer
     const char* oldBufferCoreStart = buffer + prefixToRemoveLen;
+    if (suffixToRemoveStart < oldBufferCoreStart)
+    {
+        AZ_Warning("UI", false, "Error converting canvas file. File appears to be truncated at the end.");
+        return nullptr;
+    }
     const size_t oldBufferCoreLen = suffixToRemoveStart - oldBufferCoreStart;
 
     // allocate the new buffer

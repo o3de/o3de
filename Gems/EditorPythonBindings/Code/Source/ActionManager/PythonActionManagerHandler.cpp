@@ -38,10 +38,14 @@ namespace EditorPythonBindings
         {
             ToolBarManagerRequestBus::Handler::BusConnect();
         }
+
+        EditorPythonBindingsNotificationBus::Handler::BusConnect();
     }
 
     PythonActionManagerHandler::~PythonActionManagerHandler()
     {
+        EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
+
         if (m_actionManagerInterface)
         {
             ActionManagerRequestBus::Handler::BusDisconnect();
@@ -57,6 +61,17 @@ namespace EditorPythonBindings
         {
             ToolBarManagerRequestBus::Handler::BusDisconnect();
         }
+    }
+
+    void PythonActionManagerHandler::Reset()
+    {
+        m_actionHandlerMap.clear();
+        m_actionUpdateCallbackMap.clear();
+    }
+
+    void PythonActionManagerHandler::OnPreFinalize()
+    {
+        Reset();
     }
     
     void PythonActionManagerHandler::Reflect(AZ::ReflectContext* context)
@@ -137,20 +152,36 @@ namespace EditorPythonBindings
         const AzToolsFramework::ActionProperties& properties,
         PythonEditorAction handler)
     {
+        PyObject* handlerObject = handler.GetPyObject();
+
         auto outcome = m_actionManagerInterface->RegisterAction(
             contextIdentifier,
             actionIdentifier,
             properties,
             [h = AZStd::move(handler)]() mutable
             {
-                PyObject_CallObject(h.GetPyObject(), nullptr);
+                if (!Py_IsInitialized() || !h.GetPyObject())
+                {
+                    return;
+                }
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                if (PyObject* result = PyObject_CallObject(h.GetPyObject(), nullptr))
+                {
+                    Py_DECREF(result);
+                }
+                else if (PyErr_Occurred())
+                {
+                    PyErr_Print();
+                    PyErr_Clear();
+                }
+                PyGILState_Release(gstate);
             }
         );
 
         if (outcome.IsSuccess())
         {
             // Store the callable to handle reference counting correctly.
-            m_actionHandlerMap.insert({ actionIdentifier, PythonFunctionObject(handler.GetPyObject()) });
+            m_actionHandlerMap.insert_or_assign(actionIdentifier, PythonFunctionObject(handlerObject));
         }
 
         return outcome;
@@ -172,19 +203,50 @@ namespace EditorPythonBindings
             properties,
             [h = AZStd::move(handler)]() mutable
             {
-                PyObject_CallObject(h.GetPyObject(), nullptr);
+                if (!Py_IsInitialized() || !h.GetPyObject())
+                {
+                    return;
+                }
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                if (PyObject* result = PyObject_CallObject(h.GetPyObject(), nullptr))
+                {
+                    Py_DECREF(result);
+                }
+                else if (PyErr_Occurred())
+                {
+                    PyErr_Print();
+                    PyErr_Clear();
+                }
+                PyGILState_Release(gstate);
             },
             [u = AZStd::move(updateCallback)]() mutable -> bool
             {
-                return PyObject_IsTrue(PyObject_CallObject(u.GetPyObject(), nullptr));
+                if (!Py_IsInitialized() || !u.GetPyObject())
+                {
+                    return false;
+                }
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                bool isTrue = false;
+                if (PyObject* result = PyObject_CallObject(u.GetPyObject(), nullptr))
+                {
+                    isTrue = PyObject_IsTrue(result) == 1;
+                    Py_DECREF(result);
+                }
+                if (PyErr_Occurred())
+                {
+                    PyErr_Print();
+                    PyErr_Clear();
+                }
+                PyGILState_Release(gstate);
+                return isTrue;
             }
         );
 
         if (outcome.IsSuccess())
         {
             // Store the callable to handle reference counting correctly.
-            m_actionHandlerMap.insert({ actionIdentifier, PythonFunctionObject(handlerObject) });
-            m_actionUpdateCallbackMap.insert({ actionIdentifier, PythonFunctionObject(updateCallbackObject) });
+            m_actionHandlerMap.insert_or_assign(actionIdentifier, PythonFunctionObject(handlerObject));
+            m_actionUpdateCallbackMap.insert_or_assign(actionIdentifier, PythonFunctionObject(updateCallbackObject));
         }
 
         return outcome;
@@ -385,16 +447,27 @@ namespace EditorPythonBindings
     PythonActionManagerHandler::PythonFunctionObject& PythonActionManagerHandler::PythonFunctionObject::operator=(
         const PythonFunctionObject& obj)
     {
+        if (this == &obj)
+        {
+            return *this;
+        }
+
         if (m_functionObject)
         {
-            Py_DECREF(m_functionObject);
+            if (Py_IsInitialized())
+            {
+                Py_DECREF(m_functionObject);
+            }
         }
 
         m_functionObject = obj.m_functionObject;
 
         if (m_functionObject)
         {
-            Py_INCREF(m_functionObject);
+            if (Py_IsInitialized())
+            {
+                Py_INCREF(m_functionObject);
+            }
         }
 
         return *this;
@@ -404,7 +477,10 @@ namespace EditorPythonBindings
     {
         if (m_functionObject)
         {
-            Py_DECREF(m_functionObject);
+            if (Py_IsInitialized())
+            {
+                Py_DECREF(m_functionObject);
+            }
             // Clear the pointer in case the destructor is called multiple times.
             m_functionObject = nullptr;
         }

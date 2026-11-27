@@ -3316,7 +3316,7 @@ namespace WhiteBox
 
         void TranslatePolygon(WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle, const float distance)
         {
-            WHITEBOX_LOG("White Box", "TranslatePolygon ph(%s) %d", ToString(polygonHandle).c_str(), distance)
+            WHITEBOX_LOG("White Box", "TranslatePolygon ph(%s) %f", ToString(polygonHandle).c_str(), distance)
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexHandles = PolygonVertexHandles(whiteBox, polygonHandle);

@@ -7,6 +7,7 @@
  */
 
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
+#include <EditorPythonBindings/EditorPythonBindingsBus.h>
 #include <Source/ActionManager/ActionManagerBus.h>
 #include <Source/ActionManager/MenuManagerBus.h>
 #include <Source/ActionManager/ToolBarManagerBus.h>
@@ -28,6 +29,7 @@ namespace EditorPythonBindings
         , public MenuManagerRequestBus::Handler
         , public ToolBarManagerRequestBus::Handler
         , private EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
+        , private EditorPythonBindings::EditorPythonBindingsNotificationBus::Handler
     {
     public:
         using Handle = EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle;
@@ -36,6 +38,8 @@ namespace EditorPythonBindings
 
         PythonActionManagerHandler();
         ~PythonActionManagerHandler();
+
+        void Reset();
         
         static void Reflect(AZ::ReflectContext* context);
 
@@ -107,6 +111,9 @@ namespace EditorPythonBindings
         AZStd::optional<ValueHandle> BehaviorToPython(const AZ::BehaviorArgument& behaviorValue, PyObject*& outPyObj) override;
         bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
         void CleanUpValue(ValueHandle handle) override;
+
+        // EditorPythonBindingsNotificationBus overrides ...
+        void OnPreFinalize() override;
 
         class PythonFunctionObject
         {

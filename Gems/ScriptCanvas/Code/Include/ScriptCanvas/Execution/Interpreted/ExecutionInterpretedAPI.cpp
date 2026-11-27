@@ -141,6 +141,16 @@ namespace ExecutionInterpretedAPICpp
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
+            if (multipleResults.first && multipleResults.second)
+            {
+                const auto classIter = multipleResults.second->m_typeToClassMap.find(typeId);
+                if (classIter != multipleResults.second->m_typeToClassMap.end() && classIter->second)
+                {
+                    AZ::BehaviorClass* bcClass = classIter->second;
+                    bcClass->Destruct(multipleResults.first);
+                    bcClass->Deallocate(multipleResults.first);
+                }
+            }
         }
         else
         {
@@ -161,7 +171,7 @@ namespace ExecutionInterpretedAPICpp
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::CRC()).data(), &TypeSafeEBusResultFromBehaviorContextObjectThatIsValueType<Data::CRCType>);
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::EntityID()).data(), &TypeSafeEBusResultFromEntityId);
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::Matrix3x3()).data(), &TypeSafeEBusResultFromBehaviorContextObjectThatIsValueType<Data::Matrix3x3Type>);
-        lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::Matrix4x4()).data(), &TypeSafeEBusResultFromBehaviorContextObjectThatIsValueType<Data::Matrix3x3Type>);
+        lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::Matrix4x4()).data(), &TypeSafeEBusResultFromBehaviorContextObjectThatIsValueType<Data::Matrix4x4Type>);
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::NamedEntityID()).data(), &TypeSafeEBusResultFromNamedEntityId);
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::Number()).data(), &TypeSafeEBusResultNumber);
         lua_register(lua, Grammar::ToTypeSafeEBusResultName(Data::Type::OBB()).data(), &TypeSafeEBusResultFromBehaviorContextObjectThatIsValueType<Data::OBBType>);

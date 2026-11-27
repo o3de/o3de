@@ -430,6 +430,10 @@ namespace ExpressionEvaluation
 
                                     expressionTree.PushElement(AZStd::move(tempToken));
                                 }
+                                else
+                                {
+                                    break;
+                                }
                             }
 
                             operatorStack.emplace_back(AZStd::move(expressionToken));

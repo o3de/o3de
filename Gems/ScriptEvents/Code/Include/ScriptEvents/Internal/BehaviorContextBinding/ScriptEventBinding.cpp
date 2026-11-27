@@ -18,7 +18,7 @@ namespace ScriptEvents
     {
         void Call(const AZ::BehaviorEBusHandler::BusForwarderEvent& forwarderEvent, int functionIndex, const Internal::BindingRequest::BindingParameters& parameter)
         {
-            const AZ::u32 referenceTypes = AZ::BehaviorParameter::TR_POINTER & AZ::BehaviorParameter::TR_REFERENCE;
+            const AZ::u32 referenceTypes = AZ::BehaviorParameter::TR_POINTER | AZ::BehaviorParameter::TR_REFERENCE;
 
             if (parameter.m_returnValue && !(parameter.m_returnValue->m_traits & referenceTypes))
             {
@@ -106,22 +106,24 @@ namespace ScriptEvents
         // If an address is not provided, this script event will be broadcast
         if (!parameter.m_address || parameter.m_address->m_typeId.IsNull())
         {
-                for (ScriptEventsHandler* eventHandler : m_broadcasts)
+            EventSet broadcasts = m_broadcasts;
+            for (ScriptEventsHandler* eventHandler : broadcasts)
+            {
+                int functionIndex = eventHandler->GetFunctionIndex(parameter.m_eventName.data());
+                if (functionIndex >= 0 && functionIndex < eventHandler->GetEvents().size())
                 {
-                    int functionIndex = eventHandler->GetFunctionIndex(parameter.m_eventName.data());
-                    if (functionIndex >= 0 && functionIndex < eventHandler->GetEvents().size())
+                    const AZ::BehaviorEBusHandler::BusForwarderEvent& forwarderEvent = eventHandler->GetEvents()[functionIndex];
+                    if (forwarderEvent.m_function)
                     {
-                        const AZ::BehaviorEBusHandler::BusForwarderEvent& forwarderEvent = eventHandler->GetEvents()[functionIndex];
-                        if (forwarderEvent.m_function)
-                        {
-                            // A handler function is installed, we will call it
-                            Call(forwarderEvent, functionIndex, parameter);
-                        }
+                        // A handler function is installed, we will call it
+                        Call(forwarderEvent, functionIndex, parameter);
                     }
                 }
+            }
 
             // Broadcast event to all
-            for (EventBindingEntry& handlerEntry : m_events)
+            EventMap events = m_events;
+            for (EventBindingEntry& handlerEntry : events)
             {
                 for (ScriptEventsHandler* eventHandler : handlerEntry.second)
                 {
@@ -232,7 +234,7 @@ namespace ScriptEvents
 
     void ScriptEventBinding::Disconnect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler)
     {
-        if (address->m_value)
+        if (address && address->m_value)
         {
             size_t addressHash = GetAddressHash(address);
 

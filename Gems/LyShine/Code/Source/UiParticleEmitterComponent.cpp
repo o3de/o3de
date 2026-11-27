@@ -49,6 +49,15 @@ UiParticleEmitterComponent::UiParticleEmitterComponent()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiParticleEmitterComponent::~UiParticleEmitterComponent()
 {
+    if (m_sprite)
+    {
+        m_sprite->Release();
+        m_sprite = nullptr;
+    }
+    delete[] m_cachedPrimitive.m_vertices;
+    m_cachedPrimitive.m_vertices = nullptr;
+    delete[] m_cachedPrimitive.m_indices;
+    m_cachedPrimitive.m_indices = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

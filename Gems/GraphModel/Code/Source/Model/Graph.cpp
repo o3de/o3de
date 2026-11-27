@@ -188,10 +188,14 @@ namespace GraphModel
         });
 
         // Also, remove any node wrapping stored for this node
-        UnwrapNode(node);
+        const NodeId nodeId = node->GetId();
+        AZStd::erase_if(m_nodeWrappings, [nodeId](const auto& pair)
+        {
+            return pair.first == nodeId || pair.second.first == nodeId;
+        });
 
         ClearCachedData();
-        return m_nodes.erase(node->GetId()) > 0;
+        return m_nodes.erase(nodeId) > 0;
     }
 
 
