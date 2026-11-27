@@ -10,62 +10,14 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AZ::Render
 {
-    // Gets the view for the specified scene
-    static const RPI::ViewPtr GetViewFromScene(const RPI::Scene* scene)
-    {
-        const auto viewportContextRequests = RPI::ViewportContextRequests::Get();
-        const auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
-        const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
-        return viewPtr;
-    }
-
-    // Utility class for common drawable data
-    class DrawableMetaData
-    {
-    public:
-        DrawableMetaData(EntityId entityId);
-        RPI::Scene* GetScene() const;
-        const RPI::ViewPtr GetView() const;
-        const MeshFeatureProcessorInterface* GetFeatureProcessor() const;
-
-    private:
-        RPI::Scene* m_scene = nullptr;
-        RPI::ViewPtr m_view = nullptr;
-        MeshFeatureProcessorInterface* m_featureProcessor = nullptr;
-    };
-
-    DrawableMetaData::DrawableMetaData(EntityId entityId)
-    {
-        m_scene = RPI::Scene::GetSceneForEntityId(entityId);
-        m_view = GetViewFromScene(m_scene);
-        m_featureProcessor = m_scene->GetFeatureProcessor<MeshFeatureProcessorInterface>();
-    }
-
-    RPI::Scene* DrawableMetaData::GetScene() const
-    {
-        return m_scene;
-    }
-
-    const RPI::ViewPtr DrawableMetaData::GetView() const
-    {
-        return m_view;
-    }
-
-    const MeshFeatureProcessorInterface* DrawableMetaData::GetFeatureProcessor() const
-    {
-        return m_featureProcessor;
-    }
-
     DrawableMeshEntity::DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial, Name drawList)
         : m_entityId(entityId)
         , m_maskMaterial(maskMaterial)
@@ -85,78 +37,45 @@ namespace AZ::Render
         m_meshDrawPackets.clear();
     }
 
-    bool DrawableMeshEntity::CanDraw() const
+    void DrawableMeshEntity::Draw(RPI::View& view)
     {
-        return !m_meshDrawPackets.empty();
-    }
-
-    void DrawableMeshEntity::Draw()
-    {
-        if (!CanDraw())
-        {
-            AZ_Warning(
-                "EditorModeFeedbackSystemComponent",
-                false,
-                "Attempted to draw entity '%s' but entity has no draw data!",
-                m_entityId.ToString().c_str());
-
-            return;
-        }
-
-        const DrawableMetaData drawabaleMetaData(m_entityId);
-
-        // If the mesh level of detail index has changed, rebuild the mesh draw packets with the new index
         if (!m_meshHandle || !m_meshHandle->IsValid())
         {
             return;
         }
-
-        const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
-
+        auto* scene = RPI::Scene::GetSceneForEntityId(m_entityId);
+        auto* meshes = scene->GetFeatureProcessor<MeshFeatureProcessorInterface>();
+        const auto model = meshes->GetModel(*m_meshHandle);
         if (!model)
         {
             return;
         }
-
-        if (const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
-            m_modelLodIndex != modelLodIndex)
+        if (const auto lod = GetModelLodIndex(view, model); lod != m_modelLodIndex)
         {
-            CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
+            CreateOrUpdateMeshDrawPackets(meshes, lod, model);
         }
 
-        AZ::RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw();
         for (auto& drawPacket : m_meshDrawPackets)
         {
-            drawPacket.Update(*drawabaleMetaData.GetScene());
+            drawPacket.Update(*scene);
             if (auto* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
                 rhiDrawPacket != nullptr)
             {
-                dynamicDraw->AddDrawPacket(drawabaleMetaData.GetScene(), rhiDrawPacket);
+                view.AddDrawPacket(rhiDrawPacket);
             }
         }
     }
 
-    RPI::ModelLodIndex DrawableMeshEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
+    RPI::ModelLodIndex DrawableMeshEntity::GetModelLodIndex(const RPI::View& view, Data::Instance<RPI::Model> model) const
     {
         const auto worldTM = AzToolsFramework::GetWorldTransform(m_entityId);
-        return RPI::ModelLodUtils::SelectLod(view.get(), worldTM, *model);
+        return RPI::ModelLodUtils::SelectLod(&view, worldTM, *model);
     }
 
     void DrawableMeshEntity::OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
     {
         m_meshHandle = meshHandle;
-        if (!m_meshHandle || !m_meshHandle->IsValid())
-        {
-            ClearDrawData();
-            return;
-        }
-
-        const DrawableMetaData drawabaleMetaData(m_entityId);
-        if (const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle))
-        {
-            const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
-            CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
-        }
+        ClearDrawData();
     }
 
     void DrawableMeshEntity::CreateOrUpdateMeshDrawPackets(
@@ -164,17 +83,9 @@ namespace AZ::Render
     {
         ClearDrawData();
 
-        if (!m_meshHandle || !m_meshHandle->IsValid())
-        {
-            return;
-        }
-
-        if (m_meshHandle->IsValid())
-        {
-            const auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(featureProcessor);
-            m_modelLodIndex = modelLodIndex;
-            BuildMeshDrawPackets(model->GetModelAsset(), maskMeshObjectSrg);
-        }
+        const auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(featureProcessor);
+        m_modelLodIndex = modelLodIndex;
+        BuildMeshDrawPackets(model->GetModelAsset(), maskMeshObjectSrg);
     }
 
     void DrawableMeshEntity::BuildMeshDrawPackets(

@@ -37,6 +37,7 @@ namespace AZ
             ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const override;
             void RenameViewportContext(ViewportContextPtr viewportContext, const Name& newContextName) override;
             void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) override;
+            void SetDefaultViewportContext(AzFramework::ViewportId id) override;
             AZ::Name GetDefaultViewportContextName() const override;
             void PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
             bool PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
@@ -44,9 +45,6 @@ namespace AZ
             ViewportContextPtr GetDefaultViewportContext() const override;
             ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
 
-            ViewPtr GetCurrentView(const Name& context);
-            ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType);
-            
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);
             void UnregisterViewportContext(AzFramework::ViewportId id);
@@ -71,6 +69,20 @@ namespace AZ
             mutable AZStd::recursive_mutex m_containerMutex;
             AZStd::atomic<AzFramework::ViewportId> m_currentViewportId = StartingViewportId;
 
+            AZ::Name ResolveContextName(const Name& name) const;
+
+            template<typename Event, typename... Args>
+            void NotifyViewport(const ViewportContext& context, Event event, const Args&... args)
+            {
+                ViewportContextIdNotificationBus::Event(context.GetId(), event, args...);
+                ViewportContextNotificationBus::Event(context.GetName(), event, args...);
+                if (context.GetId() == m_defaultViewportId && context.GetName() != m_defaultViewportContextName)
+                {
+                    ViewportContextNotificationBus::Event(m_defaultViewportContextName, event, args...);
+                }
+            }
+
+            AzFramework::ViewportId m_defaultViewportId = AzFramework::InvalidViewportId;
             AZ::Name m_defaultViewportContextName;
 
             friend class RPISystem;

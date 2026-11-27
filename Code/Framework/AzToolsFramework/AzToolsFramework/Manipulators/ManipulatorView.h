@@ -62,7 +62,8 @@ namespace AzToolsFramework
         ManipulatorView& operator=(ManipulatorView&&) = default;
 
         void SetBoundDirty(ManipulatorManagerId managerId);
-        void RefreshBound(ManipulatorManagerId managerId, ManipulatorId manipulatorId, const Picking::BoundRequestShapeBase& bound);
+        void RefreshBound(ManipulatorManagerId managerId, ManipulatorId manipulatorId, const Picking::BoundRequestShapeBase& bound,
+            AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
         void Invalidate(ManipulatorManagerId managerId);
 
         virtual void Draw(
@@ -86,16 +87,15 @@ namespace AzToolsFramework
         //! from the camera if m_screenSizeFixed is true.
         float ManipulatorViewScaleMultiplier(const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState) const;
 
-        //! Wrap the logic for updating a bound.
-        //! Should be called at the end of the Draw function once a concrete BoundRequestShape has
-        //! been created to use for dimensions for rendering.
-        void RefreshBoundInternal(ManipulatorManagerId managerId, ManipulatorId manipulatorId, const Picking::BoundRequestShapeBase& bound);
-
     private:
-        Picking::RegisteredBoundId m_boundId = Picking::InvalidBoundId; //!< Used for hit detection.
+        struct ViewportBound
+        {
+            Picking::RegisteredBoundId m_id = Picking::InvalidBoundId;
+            bool m_dirty = true;
+        };
+        AZStd::unordered_map<AzFramework::ViewportId, ViewportBound> m_bounds;
         ManipulatorManagerId m_managerId = InvalidManipulatorManagerId; //! The manipulator manager this view has been registered with.
         bool m_screenSizeFixed = true; //!< Should manipulator size be adjusted based on camera distance.
-        bool m_boundDirty = true; //!< Do the bounds need to be recalculated.
     };
 
     // A collection of views (a manipulator may have 1 - * views)

@@ -1043,7 +1043,6 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::OnToolBarBindingHook()
         {
             // Populate Viewport top toolbar with Prefab actions and widgets
-            m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.focusUpOneLevel", 100);
             m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
         }
 

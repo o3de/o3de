@@ -13,9 +13,16 @@
 
 #include "Viewport.h"
 
-#include <QSplitter>
-#include <QPointer>
-#include <AzQtComponents/Components/ToolBarArea.h>
+#include <AzQtComponents/Components/DockMainWindow.h>
+#include <QSet>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+
+namespace AzToolsFramework
+{
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class ToolBarManagerInterface;
+}
 
 class CLayoutViewPane;
 class CViewport;
@@ -38,119 +45,54 @@ enum EViewLayout
     ET_Layout8
 };
 
-#define MAX_VIEWPORTS 9
+class QDockWidget;
 
-/** Window used as splitter window in Layout.
-*/
-class CLayoutSplitter
-    : public QSplitter
+class CLayoutWnd : public AzQtComponents::DockMainWindow
+    , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
     Q_OBJECT
 public:
-    CLayoutSplitter(QWidget* parent = nullptr);
+    explicit CLayoutWnd(QWidget* parent = nullptr);
+    ~CLayoutWnd() override;
 
-    // Implementation
-public:
-    virtual ~CLayoutSplitter();
-
-    void otherSplitterMoved(int pos, int index) { const QSignalBlocker sb(this);  QSplitter::moveSplitter(pos, index); }
-
-    // Generated message map functions
-protected:
-    void resizeEvent(QResizeEvent* event) override;
-
-    void CreateLayoutView(int row, int col, int id);
-
-    QSplitterHandle* createHandle() override;
-
-private:
-    friend class CLayoutWnd;
-};
-
-/** Main layout window.
-*/
-class CLayoutWnd
-    : public AzQtComponents::ToolBarArea
-{
-    // Construction
-    Q_OBJECT
-public:
-    CLayoutWnd(QSettings* settings, QWidget* parent = nullptr);
-
-    // Attributes
-public:
-    CLayoutViewPane* GetViewPane(int id);
-    CLayoutViewPane* GetViewPaneByIndex(unsigned int index);
-    unsigned int GetViewPaneCount();
-
-    //! Maximize viewport with specified type.
+    CLayoutViewPane* GetViewPaneByIndex(unsigned int index) const;
+    unsigned int GetViewPaneCount() const;
     void MaximizeViewport(int paneId);
-
-    //! Create specific layout.
-    void CreateLayout(EViewLayout layout, bool bBindViewports = true, EViewportType defaultView = ET_ViewportCamera);
+    void CreateLayout(EViewLayout layout, bool bindViewports = true, EViewportType defaultView = ET_ViewportCamera);
     EViewLayout GetLayout() const { return m_layout; }
 
-    //! Save layout window configuration to registry.
     void SaveConfig();
-    //! Load layout window configuration from registry.
     bool LoadConfig();
-    //! Get the config group name in the registry.
     static const char* GetConfigGroupName();
-
+    void ResetLayout();
+    void Cycle2DViewport();
     CLayoutViewPane* FindViewByClass(const QString& viewClassName);
-    void BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport = nullptr);
     QString ViewportTypeToClassName(EViewportType viewType);
 
-    //! Switch 2D viewports.
-    void Cycle2DViewport();
-
-    using AzQtComponents::ToolBarArea::SetMainWidget;
-
-public slots:
-    void ResetLayout();
-
-public:
-    virtual ~CLayoutWnd();
-
-    // Generated message map functions
 protected:
-    void OnDestroy();
-
-    // Bind viewports to split panes.
-    void BindViewports();
-    void UnbindViewports();
-
-    void CreateLayoutView(CLayoutSplitter* wndSplitter, int row, int col, int id, EViewportType viewType);
-
-    bool CycleViewport(EViewportType from, EViewportType to);
-
-private slots:
-    void OnFocusChanged(QWidget* oldWidget, QWidget* newWidget);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
 private:
-    void FocusFirstLayoutViewPane(CLayoutSplitter*);
-    void MoveViewport(CLayoutViewPane* from, CLayoutViewPane* to, const QString& viewClassName);
-    bool m_bMaximized;
+    void OnMenuRegistrationHook() override;
+    void OnToolBarRegistrationHook() override;
+    void OnActionRegistrationHook() override;
+    void OnMenuBindingHook() override;
+    void OnToolBarBindingHook() override;
 
-    //! What view type is current maximized.
-    EViewLayout m_layout;
+    bool CycleViewport(EViewportType from, EViewportType to);
+    void SelectPaneForWidget(QWidget* widget);
+    void UpdateDockFeatures();
+    QDockWidget* CreateViewportDock();
+    void AddPerspectiveTab(QDockWidget* source);
+    CLayoutViewPane* Pane(int slot) const;
 
-    // ViewPane id to viewport type
-    QString m_viewType[MAX_VIEWPORTS];
+    QList<QDockWidget*> m_docks;
+    EViewLayout m_layout = ET_Layout0;
+    QSet<QDockWidget*> m_closedDocks;
+    QList<QDockWidget*> m_hiddenByMaximize;
+    int m_maximizedSlot = -1;
 
-    //! Primary split window.
-    QPointer<CLayoutSplitter> m_splitWnd;
-    //! Secondary split window.
-    QPointer<CLayoutSplitter> m_splitWnd2;
-    //! Tertiary split window.
-    QPointer<CLayoutSplitter> m_splitWnd3;
-
-    //! View pane for maximized layout.
-    QPointer<CLayoutViewPane> m_maximizedView;
-    // Id of maximized view pane.
-    int m_maximizedViewId;
-
-    QSettings* m_settings;
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface;
+    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface;
+    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface;
 };
-
-/////////////////////////////////////////////////////////////////////////////

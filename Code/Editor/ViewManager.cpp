@@ -31,21 +31,6 @@
 
 #include <AzCore/Console/IConsole.h>
 
-static constexpr AZStd::string_view MultiViewportToggleKey = "/O3DE/Viewport/MultiViewportEnabled";
-
-bool CViewManager::IsMultiViewportEnabled()
-{
-    bool isMultiViewportEnabled = false;
-
-    // Retrieve new action manager setting
-    if (auto* registry = AZ::SettingsRegistry::Get())
-    {
-        registry->Get(isMultiViewportEnabled, MultiViewportToggleKey);
-    }
-
-    return isMultiViewportEnabled;
-}
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -102,6 +87,14 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
     if (m_pSelectedView == pViewport)
     {
         m_pSelectedView = nullptr;
+        for (auto* other : m_viewports)
+        {
+            if (other != pViewport && other->widget() && other->widget()->isVisible())
+            {
+                SelectViewport(other);
+                break;
+            }
+        }
     }
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
@@ -209,17 +202,16 @@ void CViewManager::Cycle2DViewport()
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetViewportAtPoint(const QPoint& point) const
 {
-    const auto viewportIter = AZStd::find_if(
-        m_viewports.begin(),
-        m_viewports.end(),
-        [&point](CViewport* viewport) -> bool
+    QWidget* target = QApplication::widgetAt(point);
+    for (auto* viewport : m_viewports)
+    {
+        QWidget* widget = viewport->widget();
+        if (widget && (widget == target || widget->isAncestorOf(target)))
         {
-            auto* widget = viewport->widget();
-            return widget && widget->rect().contains(widget->mapFromGlobal(point));
+            return viewport;
         }
-    );
-
-    return (viewportIter == m_viewports.end()) ? nullptr : *viewportIter;
+    }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -256,12 +248,13 @@ AZ::Vector3 CViewManager::GetClickPositionInViewportSpace() const
 //////////////////////////////////////////////////////////////////////////
 void CViewManager::SelectViewport(CViewport* pViewport)
 {
-    // Audio: Handle viewport change for listeners
-
-    if (m_pSelectedView != nullptr && m_pSelectedView != pViewport)
+    if (pViewport == m_pSelectedView || (m_pSelectedView && GetIEditor()->IsInGameMode()))
+    {
+        return;
+    }
+    if (m_pSelectedView)
     {
         m_pSelectedView->SetSelected(false);
-
     }
 
     m_pSelectedView = pViewport;
@@ -275,7 +268,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetGameViewport() const
 {
-    return GetViewport(ET_ViewportCamera);;
+    return m_pSelectedView && m_pSelectedView->GetType() == ET_ViewportCamera ? m_pSelectedView : GetViewport(ET_ViewportCamera);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -312,9 +305,4 @@ void CViewManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         UpdateViews();
         break;
     }
-}
-
-AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> CViewManager::GetManipulatorManager()
-{
-    return m_manipulatorManager;
 }

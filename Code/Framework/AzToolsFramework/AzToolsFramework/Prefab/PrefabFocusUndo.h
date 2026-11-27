@@ -9,33 +9,28 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#include <AzCore/Component/EntityId.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
 namespace AzToolsFramework::Prefab
 {
-    class PrefabFocusInterface;
-    class PrefabFocusPublicInterface;
-
     //! Undo node for prefab focus change operations.
     class AZTF_API PrefabFocusUndo
         : public UndoSystem::URSequencePoint
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusUndo, AZ::SystemAllocator)
-        explicit PrefabFocusUndo(const AZStd::string& undoOperationName);
+        using ApplyFocus = AZStd::function<void(const RootAliasPath&)>;
+        PrefabFocusUndo(RootAliasPath before, RootAliasPath after, ApplyFocus apply);
 
         bool Changed() const override;
-        void Capture(AZ::EntityId entityId);
 
         void Undo() override;
         void Redo() override;
 
-    protected:
-        PrefabFocusInterface* m_prefabFocusInterface = nullptr;
-        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
-
-        AZ::EntityId m_beforeEntityId;
-        AZ::EntityId m_afterEntityId;
+    private:
+        RootAliasPath m_before;
+        RootAliasPath m_after;
+        ApplyFocus m_apply;
     };
 } // namespace AzToolsFramework::Prefab

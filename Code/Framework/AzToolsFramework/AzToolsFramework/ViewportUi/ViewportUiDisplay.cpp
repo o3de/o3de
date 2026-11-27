@@ -350,9 +350,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::ChangeViewportBorderText(const char* borderTitle)
     {
-        // when the text changes if the width is different it will flicker as it changes,
-        // this sets the width to the entire overlay to avoid that
-        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setText(borderTitle);
     }
 
@@ -406,18 +403,29 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    // disables system background for widget and gives a transparent background
-    static void ConfigureWindowForViewportUi(QPointer<QMainWindow> mainWindow)
+    void ViewportUiDisplay::SetViewport(QWidget* parent, QWidget* renderOverlay, int viewportId)
     {
-        // no background for the widget else each set of buttons/text-fields/etc would have a black box around them
-        SetTransparentBackground(mainWindow);
-        mainWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+        if (m_uiMainWindow.parentWidget() != parent)
+        {
+            m_uiMainWindow.hide();
+            m_uiMainWindow.setParent(parent, Qt::Widget);
+        }
+        m_renderOverlay = renderOverlay;
+        m_viewportId = viewportId;
+        if (parent)
+        {
+            PositionUiOverlayOverRenderViewport();
+            m_uiMainWindow.raise();
+        }
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()
     {
         m_uiMainWindow.setObjectName(QString("ViewportUiWindow"));
-        ConfigureWindowForViewportUi(&m_uiMainWindow);
+        m_uiMainWindow.setWindowFlags(Qt::Widget);
+        SetTransparentBackground(&m_uiMainWindow);
+        m_uiMainWindow.setAttribute(Qt::WA_NativeWindow);
+        m_uiMainWindow.setAttribute(Qt::WA_ShowWithoutActivating);
         m_uiMainWindow.hide();
 
         m_uiOverlay.setObjectName(QString("ViewportUiOverlay"));
@@ -431,9 +439,10 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // style the label which will appear on top of the highlight border
         m_viewportBorderText.setStyleSheet(QString("background-color: %1; border: none").arg(HighlightBorderColor));
+        m_viewportBorderText.setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
         m_viewportBorderText.setFixedHeight(ViewportUiTopBorderSize);
         m_viewportBorderText.hide();
-        m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
+        m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop);
 
         m_viewportBorderBackButton.setAutoRaise(true); // hover highlight
         m_viewportBorderBackButton.setFixedHeight(ViewportUiTopBorderSize);
@@ -492,40 +501,31 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::UpdateUiOverlayGeometry()
     {
-        // add the viewport border region if visible
-        QRegion region;
-        if (m_viewportBorderText.isVisible())
-        {
-            // get the border region by taking the entire region and subtracting the non-border area
-            region += m_uiOverlay.rect();
-            region -= QRect(
-                QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
-                QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
-
-            // if the user changes the size of their window, release the width of the border so the
-            // overlay can resize
-            if (m_viewportBorderText.width() != m_renderOverlay->width())
-            {
-                m_viewportBorderText.setMinimumWidth(0);
-                m_viewportBorderText.setMaximumWidth(m_renderOverlay->width());
-            }
-        }
-
-        // add all children widget regions
-        region += m_uiOverlay.childrenRegion();
-
-        // set viewport ui visibility depending on if elements are present
-        const bool visible = !region.isEmpty() && UiDisplayEnabled();
+        const bool visible = UiDisplayEnabled() && !m_uiOverlay.childrenRegion().isEmpty();
         m_uiMainWindow.setVisible(visible);
         m_uiOverlay.setVisible(visible);
 
+        // Showing the controls can change their layout. Mask the final positions so the
+        // render surface receives pointer events everywhere between the controls.
+        m_fullScreenLayout.activate();
+        QRegion region = m_uiOverlay.childrenRegion();
+        if (GetViewportBorderVisible())
+        {
+            const QRect bounds = m_uiOverlay.rect();
+            region += QRegion(bounds).subtracted(bounds.adjusted(
+                HighlightBorderSize, ViewportUiTopBorderSize, -HighlightBorderSize, -HighlightBorderSize));
+        }
         m_uiMainWindow.setMask(region);
     }
 
     void ViewportUiDisplay::PositionUiOverlayOverRenderViewport()
     {
-        QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
-        m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
+        if (!m_renderOverlay)
+        {
+            return;
+        }
+        const QPoint origin = m_uiMainWindow.parentWidget()->mapFromGlobal(m_renderOverlay->mapToGlobal(QPoint{}));
+        m_uiMainWindow.setGeometry(QRect(origin, m_renderOverlay->size()));
         m_uiOverlay.setGeometry(m_uiMainWindow.rect());
         UpdateUiOverlayGeometry();
     }

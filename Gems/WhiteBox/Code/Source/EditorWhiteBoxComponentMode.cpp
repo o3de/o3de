@@ -47,7 +47,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
 
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
@@ -593,7 +593,7 @@ namespace WhiteBox
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            buttonId, AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
@@ -603,7 +603,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::RemoveSubModeSelectionCluster()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            AzToolsFramework::ViewportUi::EditorToolUiId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_modeSelectionClusterId);
     }
 
@@ -612,7 +612,7 @@ namespace WhiteBox
 
         // create the cluster for changing transform mode
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_modeSelectionClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            m_modeSelectionClusterId, AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
@@ -630,7 +630,7 @@ namespace WhiteBox
                 //TODO: this is a temporary icon
                 m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Align_to_Object");
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    AzToolsFramework::ViewportUi::EditorToolUiId,
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
                     m_transformModeButtonId, WhiteboxModeClusterManipulatorTooltip);
             }
@@ -638,11 +638,11 @@ namespace WhiteBox
 
         // set button tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
             m_defaultModeButtonId, WhiteboxModeClusterDefaultTooltip);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
             m_edgeRestoreModeButtonId, WhiteboxModeClusterEdgeRestoreTooltip);
 
@@ -667,12 +667,12 @@ namespace WhiteBox
                 }
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterId,
             m_modeSelectionHandler);
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
             m_modeSelectionClusterId, m_drawShapeModeButtonId,
             WhiteboxModeClusterDrawShapeTooltip);

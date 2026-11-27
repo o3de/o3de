@@ -8,6 +8,9 @@
 
 #include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <EditorViewportSettings.h>
+#include <MainWindow.h>
+#include <ViewPane.h>
+#include <Viewport.h>
 
 ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
 {
@@ -25,8 +28,19 @@ ViewportFieldOfViewPropertyWidget::ViewportFieldOfViewPropertyWidget()
     m_spinBox->setMinimum(30.0);
     m_spinBox->setMaximum(120.0);
 
-    const int DefaultViewportId = 0;
-    AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
+
+}
+
+void ViewportFieldOfViewPropertyWidget::showEvent(QShowEvent* event)
+{
+    AzQtComponents::PropertyInputDoubleWidget::showEvent(event);
+    auto* viewport = MainWindow::instance()->GetActiveViewport();
+    if (viewport)
+    {
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(viewport->GetViewportId());
+        OnCameraFovChanged(viewport->GetFOV());
+    }
 }
 
 ViewportFieldOfViewPropertyWidget::~ViewportFieldOfViewPropertyWidget()
@@ -36,7 +50,10 @@ ViewportFieldOfViewPropertyWidget::~ViewportFieldOfViewPropertyWidget()
 
 void ViewportFieldOfViewPropertyWidget::OnSpinBoxValueChanged(double newValue)
 {
-    SandboxEditor::SetCameraDefaultFovDegrees(aznumeric_cast<float>(newValue));
+    if (auto* pane = MainWindow::instance()->GetActiveView())
+    {
+        pane->SetViewportFOV(aznumeric_cast<float>(newValue));
+    }
 }
 
 void ViewportFieldOfViewPropertyWidget::OnCameraFovChanged(float fovRadians)

@@ -23,7 +23,7 @@ namespace AZ::Render
         EditorStateMaskRenderer(const Name& name);
 
         //! Renders the specified entities to this mask.
-        void RenderMaskEntities(Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds);
+        void RenderMaskEntities(Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds, RPI::View& view);
     private:
 
         //! The drawable components of the entities tagged for rendering to this mask.

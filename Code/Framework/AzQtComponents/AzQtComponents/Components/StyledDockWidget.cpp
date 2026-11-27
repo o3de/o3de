@@ -20,6 +20,8 @@
 #include <QStyleOptionFrame>
 #include <QStylePainter>
 #include <QTimer>
+#include <QAction>
+#include <QToolButton>
 #include <QWindow>
 
 namespace AzQtComponents
@@ -31,21 +33,43 @@ namespace AzQtComponents
         bool FloatingWindowsSupportMinimize();
     }
 
-    StyledDockWidget::StyledDockWidget(const QString& name, QWidget* parent)
-        : QDockWidget(name, parent)
-    {
-        init();
-    }
-
     StyledDockWidget::StyledDockWidget(QWidget* parent)
-        : StyledDockWidget(QString(), parent)
+        : StyledDockWidget(parent, nullptr)
     {
     }
 
-    void StyledDockWidget::init()
+    StyledDockWidget::StyledDockWidget(const QString& name, QWidget* parent)
+        : StyledDockWidget(parent)
     {
+        setWindowTitle(name);
+    }
+
+    StyledDockWidget::StyledDockWidget(QWidget* parent, QAction* tabAction)
+        : QDockWidget(parent)
+        , m_tabAction(tabAction)
+    {
+        if (tabAction)
+        {
+            tabAction->setParent(this);
+        }
         connect(this, &QDockWidget::topLevelChanged, this, &StyledDockWidget::onFloatingChanged);
         createCustomTitleBar();
+    }
+
+    QToolButton* StyledDockWidget::createTabButton(QWidget* parent) const
+    {
+        if (!m_tabAction)
+        {
+            return nullptr;
+        }
+
+        auto* button = new QToolButton(parent);
+        button->setAutoRaise(true);
+        button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        button->setIconSize(QSize(16, 16));
+        button->setAccessibleName(m_tabAction->text());
+        button->setDefaultAction(m_tabAction);
+        return button;
     }
 
     StyledDockWidget::~StyledDockWidget()

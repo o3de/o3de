@@ -49,6 +49,9 @@ namespace AzToolsFramework
         void DisplayViewport2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
     private:
+        void SelectViewportCache(AzFramework::ViewportId viewportId);
+        AzFramework::ViewportId m_cachedViewportId = AzFramework::InvalidViewportId;
+
         // AZ::Component
         void Activate() override;
         void Deactivate() override;

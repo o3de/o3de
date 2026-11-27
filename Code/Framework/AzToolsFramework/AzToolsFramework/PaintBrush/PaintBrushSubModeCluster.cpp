@@ -22,13 +22,13 @@ namespace AzToolsFramework
             AzToolsFramework::ViewportUi::ButtonId buttonId;
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
                 buttonId,
-                AzToolsFramework::ViewportUi::DefaultViewportId,
+                AzToolsFramework::ViewportUi::EditorToolUiId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
                 clusterId,
                 AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                AzToolsFramework::ViewportUi::DefaultViewportId,
+                AzToolsFramework::ViewportUi::EditorToolUiId,
                 &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
                 clusterId,
                 buttonId,
@@ -40,7 +40,7 @@ namespace AzToolsFramework
         // create the cluster for showing the Paint Brush Settings window
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_paintBrushControlClusterId,
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
@@ -71,7 +71,7 @@ namespace AzToolsFramework
                     &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_paintBrushControlClusterId,
             m_buttonSelectionHandler);
@@ -90,7 +90,7 @@ namespace AzToolsFramework
         AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_paintBrushControlClusterId);
     }
@@ -118,7 +118,7 @@ namespace AzToolsFramework
         }
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
             m_paintBrushControlClusterId,
             buttonId);

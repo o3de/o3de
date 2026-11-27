@@ -68,7 +68,7 @@ namespace AzToolsFramework
             bool borderVisible = false;
             ViewportUi::ViewportUiRequestBus::EventResult(
                 borderVisible,
-                ViewportUi::DefaultViewportId,
+                ViewportUi::EditorToolUiId,
                 &ViewportUi::ViewportUiRequestBus::Events::GetViewportBorderVisible);
 
             // if the border is visible, change the border title
@@ -76,14 +76,14 @@ namespace AzToolsFramework
             if (borderVisible)
             {
                 ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId,
+                    ViewportUi::EditorToolUiId,
                     &ViewportUi::ViewportUiRequestBus::Events::ChangeViewportBorderText,
                     GetComponentModeName());
             }
             else
             {
                 ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId,
+                    ViewportUi::EditorToolUiId,
                     &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
                     GetComponentModeName(),
                     []

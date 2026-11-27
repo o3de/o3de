@@ -203,8 +203,8 @@ namespace UnitTest
         // Given
         // setup viewport ui system
         AzToolsFramework::ViewportUi::ViewportUiManager viewportUiManager;
-        viewportUiManager.ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
-        viewportUiManager.InitializeViewportUi(&m_editorActions.m_defaultWidget, focusWidget.get());
+        viewportUiManager.ConnectViewportUiBus(AzToolsFramework::ViewportUi::EditorToolUiId);
+        viewportUiManager.SetViewport(&m_editorActions.m_defaultWidget, focusWidget.get(), AzToolsFramework::ViewportUi::DefaultViewportId);
 
         // begin EditorPickEntitySelection
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;

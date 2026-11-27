@@ -8,21 +8,14 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 
-#include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
-#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-
 namespace AzToolsFramework::Prefab
 {
-    PrefabFocusUndo::PrefabFocusUndo(const AZStd::string& undoOperationName)
-        : UndoSystem::URSequencePoint(undoOperationName)
+    PrefabFocusUndo::PrefabFocusUndo(RootAliasPath before, RootAliasPath after, ApplyFocus apply)
+        : UndoSystem::URSequencePoint("Focus Prefab")
+        , m_before(AZStd::move(before))
+        , m_after(AZStd::move(after))
+        , m_apply(AZStd::move(apply))
     {
-        m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-        AZ_Assert(m_prefabFocusInterface, "PrefabFocusUndo - Failed to grab prefab focus interface");
-
-        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-        AZ_Assert(m_prefabFocusPublicInterface, "PrefabFocusUndo - Failed to grab prefab focus public interface");
     }
 
     bool PrefabFocusUndo::Changed() const
@@ -30,23 +23,14 @@ namespace AzToolsFramework::Prefab
         return true;
     }
 
-    void PrefabFocusUndo::Capture(AZ::EntityId entityId)
-    {
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        m_beforeEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(entityContextId);
-        m_afterEntityId = entityId;
-    }
-
     void PrefabFocusUndo::Undo()
     {
-        m_prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(m_beforeEntityId);
+        m_apply(m_before);
     }
 
     void PrefabFocusUndo::Redo()
     {
-        m_prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(m_afterEntityId);
+        m_apply(m_after);
     }
 
 } // namespace AzToolsFramework::Prefab

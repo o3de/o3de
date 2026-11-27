@@ -175,6 +175,7 @@ namespace Camera
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
        
         bool m_updatingTransformFromEntity = false;
+        AZ::Name m_activeContextName;
         bool m_isActiveView = false;
 
         AZStd::function<bool()> m_shouldActivateFn;

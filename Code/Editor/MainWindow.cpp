@@ -287,11 +287,9 @@ MainWindow::MainWindow(QWidget* parent)
     , m_oldMainFrame(nullptr)
     , m_viewPaneManager(QtViewPaneManager::instance())
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
-    , m_activeView(nullptr)
     , m_settings("O3DE", "O3DE")
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
-    , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
     , m_autoRemindTimer(nullptr)
     , m_backgroundUpdateTimer(nullptr)
@@ -299,11 +297,6 @@ MainWindow::MainWindow(QWidget* parent)
 {
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
     m_instance = this;
-
-    //for new docking, create a DockMainWindow to host dock widgets so we can call QMainWindow::restoreState to restore docks without affecting our main toolbars.
-    m_viewPaneHost = new AzQtComponents::DockMainWindow();
-
-    m_viewPaneHost->setDockOptions(QMainWindow::GroupedDragging | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
     m_connectionListener = AZStd::make_shared<EngineConnectionListener>();
     QObject::connect(m_connectionLostTimer, &QTimer::timeout, this, &MainWindow::ShowConnectionDisconnectedDialog);
@@ -367,17 +360,22 @@ CLayoutWnd* MainWindow::GetLayout() const
 
 CLayoutViewPane* MainWindow::GetActiveView() const
 {
-    return m_activeView;
+    auto* viewport = GetActiveViewport();
+    return viewport ? viewport->GetViewPane() : nullptr;
 }
 
 QtViewport* MainWindow::GetActiveViewport() const
 {
-    return m_activeView ? qobject_cast<QtViewport*>(m_activeView->GetViewport()) : nullptr;
+    auto* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
+    return viewport ? qobject_cast<QtViewport*>(viewport->widget()) : nullptr;
 }
 
 void MainWindow::SetActiveView(CLayoutViewPane* v)
 {
-    m_activeView = v;
+    if (v && v->GetViewport())
+    {
+        GetIEditor()->GetViewManager()->SelectViewport(qobject_cast<QtViewport*>(v->GetViewport()));
+    }
 }
 
 MainWindow::~MainWindow()
@@ -392,12 +390,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitCentralWidget()
 {
-    m_pLayoutWnd = new CLayoutWnd(&m_settings);
-
-    // Set the central widgets before calling CreateLayout to avoid reparenting everything later
-    setCentralWidget(m_viewPaneHost);
-    m_viewPaneHost->setCentralWidget(m_pLayoutWnd);
-
     if (MainWindow::instance()->IsPreview())
     {
         m_pLayoutWnd->CreateLayout(ET_Layout0, true, ET_ViewportModel);
@@ -418,7 +410,9 @@ void MainWindow::InitCentralWidget()
 
 void MainWindow::Initialize()
 {
-    m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
+    m_pLayoutWnd = new CLayoutWnd;
+    setCentralWidget(m_pLayoutWnd);
+    m_viewPaneManager->SetMainWindow(m_pLayoutWnd, &m_settings, /*unused*/ QByteArray());
 
     RegisterStdViewClasses();
     InitCentralWidget();

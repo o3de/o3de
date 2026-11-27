@@ -186,15 +186,13 @@ namespace AZ
         void ViewportContext::OnBeginPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
-            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
+            m_manager->NotifyViewport(*this, &ViewportContextNotifications::OnRenderTick);
         }
 
         void ViewportContext::OnEndPrepareRender()
         {
             AZ_PROFILE_FUNCTION(RPI);
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
-            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
+            m_manager->NotifyViewport(*this, &ViewportContextNotifications::WaitForRender);
         }
 
         AZ::Name ViewportContext::GetName() const

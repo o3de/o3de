@@ -57,6 +57,7 @@ namespace AZ
         void EditorModeFeatureProcessor::Deactivate()
         {
             AZ::TickBus::Handler::BusDisconnect();
+            m_maskRenderers.clear();
             m_editorStatePassSystem.reset();
             DisableSceneNotification();
         }
@@ -72,12 +73,18 @@ namespace AZ
             if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
                 || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
+                if (m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline))
+                {
+                    auto& renderers = m_maskRenderers[renderPipeline];
+                    for (const auto& mask : m_editorStatePassSystem->GetMasks())
+                    {
+                        renderers.try_emplace(mask, mask);
+                    }
+                    return;
+                }
             }
-            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
-            {
-                m_editorStatePassSystem->RemoveStatePassesForPipeline(renderPipeline);
-            }
+            m_maskRenderers.erase(renderPipeline);
+            m_editorStatePassSystem->RemoveStatePassesForPipeline(renderPipeline);
         }
 
         void EditorModeFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
@@ -88,35 +95,26 @@ namespace AZ
             }
 
             m_editorStatePassSystem->AddPassesToRenderPipeline(renderPipeline);
-
-            if(!m_maskRenderers.empty())
-            {
-                return;
-            }
-
-            for (const auto& mask : m_editorStatePassSystem->GetMasks())
-            {
-                // Emplaces the mask key and mask renderer value in place for the mask renderers map
-                m_maskRenderers.emplace(
-                    AZStd::piecewise_construct, AZStd::forward_as_tuple(mask), AZStd::forward_as_tuple(mask));
-            }
         }
 
-        void EditorModeFeatureProcessor::Render([[maybe_unused]] const RenderPacket& packet)
+        void EditorModeFeatureProcessor::Render(const RenderPacket& packet)
         {
             if (!m_editorStatePassSystem || !m_maskMaterial)
             {
                 return;
             }
 
-            const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStates();
-            for (const auto& [mask, entities] : entityMaskMap)
+            for (auto& [pipeline, renderers] : m_maskRenderers)
             {
-                if(auto it = m_maskRenderers.find(mask);
-                    it != m_maskRenderers.end())
+                const auto view = pipeline->GetDefaultView();
+                if (!view || AZStd::find(packet.m_views.begin(), packet.m_views.end(), view) == packet.m_views.end())
                 {
-                    it->second.RenderMaskEntities(m_maskMaterial, entities);
-                } 
+                    continue;
+                }
+                for (const auto& [mask, entities] : m_editorStatePassSystem->GetEntitiesForEditorStates(pipeline))
+                {
+                    renderers.at(mask).RenderMaskEntities(m_maskMaterial, entities, *view);
+                }
             }
         }
 

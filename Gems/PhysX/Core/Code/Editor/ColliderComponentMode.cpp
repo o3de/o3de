@@ -342,7 +342,7 @@ namespace PhysX
         const auto modeIndex = static_cast<size_t>(newMode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_modeSelectionClusterId,
             m_buttonIds[modeIndex]);
     }
@@ -408,12 +408,12 @@ namespace PhysX
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            buttonId, AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
             clusterId,
             buttonId,
@@ -425,7 +425,7 @@ namespace PhysX
     void ColliderComponentMode::RemoveSubModeSelectionCluster()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            AzToolsFramework::ViewportUi::EditorToolUiId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_modeSelectionClusterId);
     }
 
@@ -433,7 +433,7 @@ namespace PhysX
     {
         // create the cluster for changing transform mode
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_modeSelectionClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            m_modeSelectionClusterId, AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
@@ -469,7 +469,7 @@ namespace PhysX
 
         m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
+            AzToolsFramework::ViewportUi::EditorToolUiId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterId,
             m_modeSelectionHandler);
     }

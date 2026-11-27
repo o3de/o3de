@@ -52,7 +52,8 @@ namespace AZ
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
 
             //! Map of all mask renderers for the draw tags used by the editor state feedback effects.
-            AZStd::unordered_map<Name, EditorStateMaskRenderer> m_maskRenderers;
+            using MaskRenderers = AZStd::unordered_map<Name, EditorStateMaskRenderer>;
+            AZStd::unordered_map<RPI::RenderPipeline*, MaskRenderers> m_maskRenderers;
 
             //! Material for sending draw packets to the entity mask pass.
             Data::Instance<RPI::Material> m_maskMaterial = nullptr;

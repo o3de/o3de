@@ -204,8 +204,7 @@ namespace UnitTest
 
         // When
         // imitate viewport entity changing
-        Camera::EditorCameraNotificationBus::Broadcast(
-            &Camera::EditorCameraNotificationBus::Events::OnViewportViewEntityChanged, m_entity->GetId());
+        m_editorModularViewportCameraComposer->TrackCameraEntity(m_entity->GetId());
 
         // ensure the viewport updates after the viewport view entity change
         // note: do a large step to ensure smoothing finishes (e.g. not 1.0f/60.0f)

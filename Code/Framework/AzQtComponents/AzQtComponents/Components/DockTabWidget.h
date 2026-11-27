@@ -59,6 +59,7 @@ namespace AzQtComponents
         void handleTabIndexPressed(int index);
 
     private:
+        void updateTabAction();
         DockTabBar* m_tabBar;
         QWidget* m_mainEditorWindow;
         QMap<QDockWidget*, QMetaObject::Connection> m_titleBarChangedConnections;

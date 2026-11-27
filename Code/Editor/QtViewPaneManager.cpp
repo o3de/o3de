@@ -665,6 +665,11 @@ bool QtViewPaneManager::exists()
     return s_viewPaneManagerInstance.exists();
 }
 
+AzQtComponents::FancyDocking* QtViewPaneManager::GetDockManager() const
+{
+    return m_advancedDockManager;
+}
+
 void QtViewPaneManager::SetMainWindow(AzQtComponents::DockMainWindow* mainWindow, QSettings* settings, const QByteArray& lastMainWindowState)
 {
     Q_ASSERT(mainWindow && !m_mainWindow && settings && !m_settings);

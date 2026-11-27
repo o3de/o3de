@@ -22,6 +22,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QHBoxLayout>
+#include <QToolButton>
 #include <QOperatingSystemVersion>
 #include <QStackedLayout>
 #include <QVector>
@@ -133,6 +134,12 @@ namespace AzQtComponents
         m_tabBar->setDrawBase(false);
 
         tabBarlayout->addWidget(m_tabBar);
+        auto* dock = qobject_cast<StyledDockWidget*>(parent);
+        if (dock)
+        {
+            m_tabBar->bindCloseButton(0, dock);
+            m_tabBar->setActionDock(dock->tabAction() ? dock : nullptr);
+        }
         tabBarlayout->addStretch();
 
         m_tabButtonsContainer = new QFrame(tabBarContainer);
@@ -157,7 +164,15 @@ namespace AzQtComponents
 
         m_label = new ElidingLabel(container);
         m_label->setObjectName(QStringLiteral("title"));
-        layout->addWidget(m_label, 1);
+        if (auto* button = dock ? dock->createTabButton(container) : nullptr)
+        {
+            layout->addWidget(m_label);
+            layout->addWidget(button);
+        }
+        else
+        {
+            layout->addWidget(m_label, 1);
+        }
 
         layout->addStretch();
 
@@ -713,6 +728,7 @@ namespace AzQtComponents
         if (dockWidgetParent)
         {
             dockMainWindow = qobject_cast<DockMainWindow*>(dockWidgetParent->parentWidget());
+            m_closeTabMenuAction->setEnabled(dockWidgetParent->features().testFlag(QDockWidget::DockWidgetClosable));
         }
         m_undockMenuAction->setEnabled(dockMainWindow && dockWidgetParent && !dockWidgetParent->isSingleFloatingChild());
 

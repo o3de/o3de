@@ -16,7 +16,7 @@ namespace AZ::Render
     }
 
     void EditorStateMaskRenderer::RenderMaskEntities(
-        Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds)
+        Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds, RPI::View& view)
     {
         if (entityIds.empty())
         {
@@ -41,10 +41,7 @@ namespace AZ::Render
         // Render all of the drawable entities that can draw (not being able to draw is not a failure)
         for (auto& [entityId, drawable] : m_drawableEntities)
         {
-            if (drawable.CanDraw())
-            {
-                drawable.Draw();
-            }
+            drawable.Draw(view);
         }
     }
 } // namespace AZ::Render

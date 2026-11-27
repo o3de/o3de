@@ -18,6 +18,7 @@
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -321,6 +322,7 @@ namespace AzToolsFramework
 
         if (iconsVisible)
         {
+            const auto* focus = AZ::Interface<Prefab::PrefabFocusInterface>::Get();
             auto editorViewportIconDisplay = EditorViewportIconDisplay::Get();
             if (!editorViewportIconDisplay)
             {
@@ -332,8 +334,13 @@ namespace AzToolsFramework
                  ++entityCacheIndex)
             {
                 if (const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
-                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && IsSelectableInViewport(entityCacheIndex))
+                    m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) && !m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
                 {
+                    const bool selectable = IsSelectableInViewport(entityCacheIndex);
+                    if (!(focus ? focus->IsEntityVisibleInViewportFocus(viewportInfo.m_viewportId, entityId, selectable) : selectable))
+                    {
+                        continue;
+                    }
                     if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
                         (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
                     {

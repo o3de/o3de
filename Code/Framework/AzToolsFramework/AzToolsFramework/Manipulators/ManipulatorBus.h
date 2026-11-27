@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzFramework/Viewport/ViewportId.h>
+
 #include <AzToolsFramework/Picking/BoundInterface.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
@@ -68,7 +70,8 @@ namespace AzToolsFramework
         //! @param boundShapeData The pointer to the new bound shape data.
         //! @return If \ref boundId has been registered return the same id, otherwise create a new bound and return its id.
         virtual Picking::RegisteredBoundId UpdateBound(
-            ManipulatorId manipulatorId, Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData) = 0;
+            ManipulatorId manipulatorId, Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData,
+            AzFramework::ViewportId viewportId) = 0;
     };
 
     //! Type to inherit to implement ManipulatorManagerRequests.

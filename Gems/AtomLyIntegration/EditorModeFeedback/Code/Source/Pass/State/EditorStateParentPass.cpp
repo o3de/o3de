@@ -35,6 +35,6 @@ namespace AZ::Render
                     "EditorStateParentPass", false, "[EditorStateParentPassData '%s']: Trying to construct without valid EditorStateParentPassData!", GetPathName().GetCStr());
                 return false;
         }
-        return passData->editorStatePass->IsEnabled();
+        return passData->editorStatePass->IsEnabled(GetRenderPipeline());
     }
 } // namespace AZ::Render

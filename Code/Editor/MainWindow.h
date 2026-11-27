@@ -209,13 +209,12 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     UndoStackStateAdapter* m_undoStateAdapter;
 
-    CLayoutViewPane* m_activeView;
     QSettings m_settings;
 
     AssetImporterManager* m_assetImporterManager;
     LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
-    CLayoutWnd* m_pLayoutWnd;
+    CLayoutWnd* m_pLayoutWnd = nullptr;
 
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
     QTimer* m_connectionLostTimer;
@@ -226,7 +225,6 @@ private:
 
     static MainWindow* m_instance;
 
-    AzQtComponents::DockMainWindow* m_viewPaneHost;
 
     QTimer* m_autoSaveTimer;
     QTimer* m_autoRemindTimer;

@@ -45,6 +45,11 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
     @pytest.mark.REQUIRES_gpu
+    class test_EditorWorkflow_DockedPerspectiveViewports(EditorSingleTest):
+        use_null_renderer = False
+        from .EditorScripts import EditorWorkflow_DockedPerspectiveViewports as test_module
+
+    @pytest.mark.REQUIRES_gpu
     class test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(EditorSingleTest):
         # Disable null renderer
         use_null_renderer = False

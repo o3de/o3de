@@ -47,12 +47,14 @@ namespace AzToolsFramework
     bool EditorInteractionSystemComponent::InternalHandleMouseViewportInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        SelectViewportCache(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
         return m_interactionRequests->InternalHandleMouseViewportInteraction(mouseInteraction);
     }
 
     bool EditorInteractionSystemComponent::InternalHandleMouseManipulatorInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        SelectViewportCache(mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId);
         return m_interactionRequests->InternalHandleMouseManipulatorInteraction(mouseInteraction);
     }
 
@@ -77,6 +79,7 @@ namespace AzToolsFramework
         EditorInteractionSystemViewportSelectionRequestBus::Handler::BusDisconnect();
 
         {
+            m_cachedViewportId = AzFramework::InvalidViewportId;
             m_entityDataCache = AZStd::make_unique<EditorVisibleEntityDataCache>();
             m_interactionRequests.reset(); // BusConnect/Disconnect in constructor/destructor,
                                            // so have to reset before assigning the new one
@@ -110,6 +113,7 @@ namespace AzToolsFramework
 
         // calculate which entities are in the view and can be interacted with
         // and cache that data to make iterating/looking it up much faster
+        m_cachedViewportId = viewportInfo.m_viewportId;
         m_entityDataCache->CalculateVisibleEntityDatas(viewportInfo);
         m_interactionRequests->DisplayViewportSelection(viewportInfo, debugDisplay);
     }
@@ -117,7 +121,17 @@ namespace AzToolsFramework
     void EditorInteractionSystemComponent::DisplayViewport2d(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        SelectViewportCache(viewportInfo.m_viewportId);
         m_interactionRequests->DisplayViewportSelection2d(viewportInfo, debugDisplay);
+    }
+
+    void EditorInteractionSystemComponent::SelectViewportCache(AzFramework::ViewportId viewportId)
+    {
+        if (m_cachedViewportId != viewportId)
+        {
+            m_entityDataCache->CalculateVisibleEntityDatas(AzFramework::ViewportInfo{ viewportId });
+            m_cachedViewportId = viewportId;
+        }
     }
 
     void EditorInteractionSystemComponent::NotifyCentralWidgetInitialized()

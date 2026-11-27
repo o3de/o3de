@@ -76,7 +76,7 @@ namespace WhiteBox
         debugDisplay.DepthTestOff();
         debugDisplay.PopMatrix();
 
-        RefreshBoundInternal(managerId, manipulatorId, polygonBounds);
+        RefreshBound(managerId, manipulatorId, polygonBounds, mouseInteraction.m_interactionId.m_viewportId);
     }
 
     ManipulatorViewEdge::ManipulatorViewEdge()
@@ -147,7 +147,7 @@ namespace WhiteBox
         edgeBounds.m_start = worldStartOffsetByVertexHandle;
         edgeBounds.m_end = worldEndOffsetByVertexHandle;
         edgeBounds.m_radius = screenRadius;
-        RefreshBoundInternal(managerId, manipulatorId, edgeBounds);
+        RefreshBound(managerId, manipulatorId, edgeBounds, mouseInteraction.m_interactionId.m_viewportId);
 
 #if defined(WHITE_BOX_DEBUG_VISUALS)
         debugDisplay.DepthTestOn();

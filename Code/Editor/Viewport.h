@@ -240,6 +240,7 @@ public:
 
     virtual void OnTitleMenu([[maybe_unused]] QMenu* menu) {}
 
+    CLayoutViewPane* GetViewPane() const { return m_viewPane; }
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
 
     CViewport *asCViewport() override { return this; }
@@ -529,6 +530,6 @@ protected:
 protected:
     bool m_mouseCaptured = false;
 
-private:
+protected:
     QWidget m_renderOverlay;
 };

@@ -56,7 +56,7 @@ namespace AZ::Render
         //}
     }
 
-    AzToolsFramework::EntityIdList SelectedEntityState::GetMaskedEntities() const
+    AzToolsFramework::EntityIdList SelectedEntityState::GetMaskedEntities([[maybe_unused]] const RPI::RenderPipeline* pipeline) const
     {
         AzToolsFramework::EntityIdList initialSelectedEntityList, selectedEntityList;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(

@@ -51,12 +51,6 @@ public:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    void SetNoViewportInfo();
-    void SetNormalViewportInfo();
-    void SetFullViewportInfo();
-    void SetCompactViewportInfo();
-    void OnToggleDisplayInfo();
-
 Q_SIGNALS:
     void ActionTriggered(int command);
 

@@ -31,6 +31,8 @@ namespace AzToolsFramework::ViewportUi
     inline const SwitcherId InvalidSwitcherId = SwitcherId(0);
 
     inline const int DefaultViewportId = 0;
+    //! Bus address for shared editing tools hosted by the selected perspective.
+    inline constexpr int EditorToolUiId = -1;
 
     //! Used to specify the desired validation type for the text field widget.
     enum class TextFieldValidationType

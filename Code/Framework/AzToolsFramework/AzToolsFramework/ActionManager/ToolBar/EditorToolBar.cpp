@@ -311,9 +311,12 @@ namespace AzToolsFramework
                     case ToolBarItemType::Widget:
                         {
                             EnumerateToolBars(
-                                [toolBarItem](QToolBar* toolBar) -> bool
+                                [&toolBarItem](QToolBar* toolBar) -> bool
                                 {
-                                    toolBar->addAction(toolBarItem.m_widgetAction);
+                                    if (auto* action = toolBarItem.GetWidgetAction(toolBar))
+                                    {
+                                        toolBar->addAction(action);
+                                    }
                                     return false;
                                 }
                             );
@@ -331,45 +334,44 @@ namespace AzToolsFramework
         , m_identifier(AZStd::move(identifier))
         , m_subMenuIdentifier(AZStd::move(subMenuIdentifier))
     {
-        switch (m_type)
+    }
+
+    QWidgetAction* EditorToolBar::ToolBarItem::GetWidgetAction(QToolBar* toolBar) const
+    {
+        const bool hasMenu = m_type == ToolBarItemType::ActionAndSubMenu;
+        const QString name = QString::fromUtf8((hasMenu ? m_subMenuIdentifier : m_identifier).c_str());
+        if (auto* existing = toolBar->findChild<QWidgetAction*>(name, Qt::FindDirectChildrenOnly))
         {
-            case ToolBarItemType::Widget:
-                {
-                    if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
-                    {
-                        m_widgetAction = new QWidgetAction(nullptr);
-                        m_widgetAction->setDefaultWidget(widget);
-                        m_widgetAction->setObjectName(m_identifier.c_str());
-                    }
-                }
-                break;
-
-            case ToolBarItemType::ActionAndSubMenu:
-                {
-                    QAction* action = s_actionManagerInternalInterface->GetAction(m_identifier);
-                    QMenu* subMenu = s_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
-
-                    if (action && subMenu)
-                    {
-                        QToolButton* toolButton = new QToolButton(s_defaultParentWidget);
-
-                        toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-                        toolButton->setAutoRaise(true);
-                        toolButton->setMenu(subMenu);
-                        toolButton->setDefaultAction(action);
-
-                        m_widgetAction = new QWidgetAction(s_defaultParentWidget);
-                        m_widgetAction->setDefaultWidget(toolButton);
-                        m_widgetAction->setObjectName(m_subMenuIdentifier.c_str());
-                    }
-                }
-                break;
-
-            case ToolBarItemType::Action:
-            case ToolBarItemType::Separator:
-            default:
-                break;
+            return existing;
         }
+
+        QWidget* widget = nullptr;
+        if (hasMenu)
+        {
+            QAction* action = s_actionManagerInternalInterface->GetAction(m_identifier);
+            QMenu* menu = s_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
+            if (action && menu)
+            {
+                auto* button = new QToolButton(toolBar);
+                button->setPopupMode(QToolButton::MenuButtonPopup);
+                button->setAutoRaise(true);
+                button->setDefaultAction(action);
+                button->setMenu(menu);
+                widget = button;
+            }
+        }
+        else
+        {
+            widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier);
+        }
+        if (!widget)
+        {
+            return nullptr;
+        }
+        auto* widgetAction = new QWidgetAction(toolBar);
+        widgetAction->setObjectName(name);
+        widgetAction->setDefaultWidget(widget);
+        return widgetAction;
     }
 
     void EditorToolBar::Initialize(QWidget* defaultParentWidget)

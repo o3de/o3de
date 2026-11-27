@@ -60,7 +60,6 @@ namespace AzQtComponents
     {
         setFixedHeight(DockBar::Height);
         setMovable(true);
-        SetUseMaxWidth(true);
 
         // Handle our close tab button clicks
         QObject::connect(this, &DockTabBar::tabCloseRequested, this, &DockTabBar::closeTab);
@@ -113,12 +112,51 @@ namespace AzQtComponents
      */
     QSize DockTabBar::sizeHint() const
     {
-        if (m_singleTabFillsWidth && count() == 1)
-        {
-            return TabBar::tabSizeHint(0);
-        }
+        const QSize tabs = m_singleTabFillsWidth && count() == 1 ? TabBar::tabSizeHint(0) : TabBar::sizeHint();
+        return tabs + QSize(trailingWidth(), 0);
+    }
 
-        return TabBar::sizeHint();
+    int DockTabBar::trailingWidth() const
+    {
+        return m_tabActionButton ? m_tabActionButton->width() : 0;
+    }
+
+    void DockTabBar::setActionDock(StyledDockWidget* dock)
+    {
+        if ((!dock && !m_tabActionButton) || (dock && m_tabActionButton && m_tabActionButton->defaultAction() == dock->tabAction()))
+        {
+            return;
+        }
+        if (m_tabActionButton)
+        {
+            m_tabActionButton->hide();
+            m_tabActionButton->deleteLater();
+        }
+        m_tabActionButton = dock ? dock->createTabButton(this) : nullptr;
+        m_showSelectedCloseButton = m_tabActionButton != nullptr;
+        setExpanding(!m_tabActionButton);
+        if (m_tabActionButton)
+        {
+            m_tabActionButton->adjustSize();
+            positionTabAction();
+            m_tabActionButton->show();
+        }
+        updateGeometry();
+        update();
+    }
+
+    void DockTabBar::bindCloseButton(int index, QDockWidget* dock)
+    {
+        const auto side = static_cast<ButtonPosition>(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
+        if (auto* button = tabButton(index, side))
+        {
+            auto updateEnabled = [button](QDockWidget::DockWidgetFeatures features)
+            {
+                button->setEnabled(features.testFlag(QDockWidget::DockWidgetClosable));
+            };
+            connect(dock, &QDockWidget::featuresChanged, button, updateEnabled);
+            updateEnabled(dock->features());
+        }
     }
 
     void DockTabBar::setSingleTabFillsWidth(bool singleTabFillsWidth)
@@ -140,26 +178,27 @@ namespace AzQtComponents
         return DockBar::GetTabTitleElided(title, titleWidth);
     }
 
-    /**
-     * Any time the tab layout changes (e.g. tabs are added/removed/resized or active tab changed),
-     * we need to check if we need to add our tab indicator underlay, and
-     * update which tab close button is visible
-     */
+    void DockTabBar::paintEvent(QPaintEvent* event)
+    {
+        TabBar::paintEvent(event);
+        // QTabBar can scroll the selected tab into view after tabLayoutChange().
+        positionTabAction();
+    }
+
+    void DockTabBar::positionTabAction()
+    {
+        if (m_tabActionButton && count())
+        {
+            const QRect last = QStyle::visualRect(layoutDirection(), rect(), tabRect(count() - 1));
+            const QRect button(QPoint(last.right() + 1, (height() - m_tabActionButton->height()) / 2), m_tabActionButton->size());
+            m_tabActionButton->move(QStyle::visualRect(layoutDirection(), rect(), button).topLeft());
+        }
+    }
+
     void DockTabBar::tabLayoutChange()
     {
         TabBar::tabLayoutChange();
-
-        // Only the active tab's close button should be shown
-        const ButtonPosition closeSide = (ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this);
-        const int numTabs = count();
-        const int activeTabIndex = currentIndex();
-        for (int i = 0; i < numTabs; ++i)
-        {
-            if (auto button = tabButton(i, closeSide))
-            {
-                button->setVisible(i == activeTabIndex);
-            }
-        }
+        positionTabAction();
 
         // If the tab indicators are showing, then we need to show our underlay
         if (m_leftButton->isVisible())
@@ -184,6 +223,7 @@ namespace AzQtComponents
 
     void DockTabBar::tabInserted(int index)
     {
+        TabBar::tabInserted(index);
         auto closeButton = new DockBarButton(DockBarButton::CloseButton);
         connect(closeButton, &DockBarButton::clicked, this, [closeButton, this] {
             int widgetIndex = tabAt(closeButton->pos());
@@ -247,6 +287,9 @@ namespace AzQtComponents
             // Only enable the close/undock group actions if we have more than one
             // tab in our tab widget
             bool enableGroupActions = (count() > 1);
+            const auto closeSide = static_cast<ButtonPosition>(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
+            const QWidget* closeButton = tabButton(index, closeSide);
+            m_closeTabMenuAction->setEnabled(closeButton && closeButton->isEnabled());
             m_closeTabGroupMenuAction->setEnabled(enableGroupActions);
 
             // Don't enable the undock action if this dock widget is the only pane

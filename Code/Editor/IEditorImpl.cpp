@@ -466,16 +466,7 @@ CViewManager* CEditorImpl::GetViewManager()
 
 CViewport* CEditorImpl::GetActiveView()
 {
-    MainWindow* mainWindow = MainWindow::instance();
-    if (mainWindow)
-    {
-        CLayoutViewPane* viewPane = mainWindow->GetActiveView();
-        if (viewPane)
-        {
-            return qobject_cast<QtViewport*>(viewPane->GetViewport());
-        }
-    }
-    return nullptr;
+    return m_pViewManager->GetSelectedViewport();
 }
 
 void CEditorImpl::SetActiveView(CViewport* viewport)

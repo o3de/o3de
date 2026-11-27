@@ -50,7 +50,7 @@ namespace AzToolsFramework::ComponentModeFramework
         // create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_switcherId,
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
             ViewportUi::Alignment::TopLeft);
 
@@ -65,14 +65,14 @@ namespace AzToolsFramework::ComponentModeFramework
 
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_transformButtonId,
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
             m_switcherId,
             transformIconPath.c_str(),
             "Transform");
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
             m_switcherId,
             m_transformButtonId);
@@ -86,7 +86,7 @@ namespace AzToolsFramework::ComponentModeFramework
         // register the SwitcherEventHandler which is defined in ComponentModeSwitcher
         m_handler = AZ::Event<ViewportUi::ButtonId>::Handler(handlerFunc);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler,
             m_switcherId,
             m_handler);
@@ -102,7 +102,7 @@ namespace AzToolsFramework::ComponentModeFramework
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, m_switcherId);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, m_switcherId);
     }
 
     static const EntityIdList& GetSelectedEntities()
@@ -195,7 +195,7 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         ViewportUi::ViewportUiRequestBus::EventResult(
             componentData.m_buttonId,
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
             m_switcherId,
             componentData.m_iconPath.c_str(),
@@ -204,7 +204,7 @@ namespace AzToolsFramework::ComponentModeFramework
         AZStd::string buttonTooltip = AZStd::string::format("Enter %s Edit mode", componentData.m_componentName.c_str());
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherButtonTooltip,
             m_switcherId,
             componentData.m_buttonId,
@@ -225,7 +225,7 @@ namespace AzToolsFramework::ComponentModeFramework
             componentDataIt != m_addedComponents.end())
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
+                ViewportUi::EditorToolUiId,
                 &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcherButton,
                 m_switcherId,
                 componentDataIt->m_buttonId);
@@ -289,7 +289,7 @@ namespace AzToolsFramework::ComponentModeFramework
                     if (!InComponentMode())
                     {
                         ViewportUi::ViewportUiRequestBus::Event(
-                            ViewportUi::DefaultViewportId,
+                            ViewportUi::EditorToolUiId,
                             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                             m_switcherId,
                             m_transformButtonId);
@@ -319,7 +319,7 @@ namespace AzToolsFramework::ComponentModeFramework
                 componentDataIt != m_addedComponents.end())
             {
                 ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId,
+                    ViewportUi::EditorToolUiId,
                     &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                     m_switcherId,
                     componentDataIt->m_buttonId);
@@ -352,7 +352,7 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         // when the selected entity switches, switch back to the transform button
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
+            ViewportUi::EditorToolUiId,
             &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
             m_switcherId,
             m_transformButtonId);
@@ -364,7 +364,7 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::OnImGuiDropDownShown()
     {
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
+            ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
         m_hiddenByImGui = true;
     }
 
@@ -373,7 +373,7 @@ namespace AzToolsFramework::ComponentModeFramework
         if (m_hiddenByImGui)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
+                ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
             // reset hiddenByImGui variable
             m_hiddenByImGui = false;
         }
@@ -386,7 +386,7 @@ namespace AzToolsFramework::ComponentModeFramework
         if (m_hiddenByImGui)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
+                ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
         }
     }
 
@@ -396,7 +396,7 @@ namespace AzToolsFramework::ComponentModeFramework
         if (m_hiddenByImGui)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
+                ViewportUi::EditorToolUiId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
         }
     }
 
@@ -441,7 +441,7 @@ namespace AzToolsFramework::ComponentModeFramework
             componentDataIt != m_addedComponents.end())
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
+                ViewportUi::EditorToolUiId,
                 &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                 m_switcherId,
                 componentDataIt->m_buttonId);

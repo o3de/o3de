@@ -36,6 +36,6 @@ namespace AZ::Render
                 "EditorStateBufferCopyPass", false, "[EditorStateBufferCopyPassData '%s']: Trying to construct without valid EditorStateBufferCopyPassData!", GetPathName().GetCStr());
             return false;
         }
-        return passData->editorStatePass->IsEnabled();
+        return passData->editorStatePass->IsEnabled(GetRenderPipeline());
     }
 } // namespace AZ::Render

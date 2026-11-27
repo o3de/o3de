@@ -8,10 +8,11 @@
 
 #include <Pass/State/FocusedEntityState.h>
 
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
-#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 namespace AZ::Render
 {
@@ -34,47 +35,40 @@ namespace AZ::Render
     FocusedEntityState::FocusedEntityState()
         : EditorStateBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
     {
-        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         SetEnabled(AzToolsFramework::PrefabEditModeEffectEnabled());
     }
 
-    FocusedEntityState::~FocusedEntityState()
+    void FocusedEntityState::UpdatePassDataForPipelines()
     {
-        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
-    }
-
-    void FocusedEntityState::OnEditorModeActivated(
-        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
-        AzToolsFramework::ViewportEditorMode mode)
-    {
-        if (AzToolsFramework::ViewportEditorMode::Focus == mode)
+        m_focusRoots.clear();
+        const auto* focus = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusInterface>::Get();
+        if (auto* contexts = RPI::ViewportContextRequests::Get(); focus && contexts)
         {
-            m_inFocusMode = true;
-        }
-    }
-    void FocusedEntityState::OnEditorModeDeactivated(
-        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-    {
-        if (AzToolsFramework::ViewportEditorMode::Focus == mode)
-        {
-            m_inFocusMode = false;
+            contexts->EnumerateViewportContexts([this, focus](RPI::ViewportContextPtr context)
+            {
+                if (context && context->GetCurrentPipeline())
+                {
+                    if (const auto root = focus->GetViewportFocusRoot(context->GetId()); root.IsValid())
+                    {
+                        m_focusRoots.emplace(context->GetCurrentPipeline().get(), root);
+                    }
+                }
+            });
         }
     }
 
-    bool FocusedEntityState::IsEnabled() const
+    bool FocusedEntityState::IsEnabled(const RPI::RenderPipeline* pipeline) const
     {
-        return EditorStateBase::IsEnabled() && m_inFocusMode;
+        return EditorStateBase::IsEnabled(pipeline) && m_focusRoots.contains(pipeline);
     }
 
-    AzToolsFramework::EntityIdList FocusedEntityState::GetMaskedEntities() const
+    AzToolsFramework::EntityIdList FocusedEntityState::GetMaskedEntities(const RPI::RenderPipeline* pipeline) const
     {
-        const auto focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
-        if (!focusModeInterface)
+        AzToolsFramework::EntityIdList entities;
+        if (const auto it = m_focusRoots.find(pipeline); it != m_focusRoots.end())
         {
-            return {};
+            AZ::TransformBus::EventResult(entities, it->second, &AZ::TransformInterface::GetEntityAndAllDescendants);
         }
-
-        return focusModeInterface->GetFocusedEntities(AzToolsFramework::GetEntityContextId());
+        return entities;
     }
 } // namespace AZ::Render
-

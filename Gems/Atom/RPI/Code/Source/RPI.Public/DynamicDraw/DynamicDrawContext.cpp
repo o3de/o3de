@@ -266,7 +266,7 @@ namespace AZ
             m_outputScope = OutputScopeType::RenderPipeline;
             m_scene = pipeline->GetScene();
             m_pass = nullptr;
-            m_drawFilter = pipeline->GetDrawFilterMask();
+            m_drawFilter = pipeline->GetInstanceDrawFilterMask();
             SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
             
             ReInit();

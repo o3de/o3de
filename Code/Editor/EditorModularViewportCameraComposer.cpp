@@ -76,12 +76,10 @@ namespace SandboxEditor
         : m_viewportId(viewportId)
     {
         EditorModularViewportCameraComposerNotificationBus::Handler::BusConnect(viewportId);
-        Camera::EditorCameraNotificationBus::Handler::BusConnect();
     }
 
     EditorModularViewportCameraComposer::~EditorModularViewportCameraComposer()
     {
-        Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         EditorModularViewportCameraComposerNotificationBus::Handler::BusDisconnect();
     }
 
@@ -443,7 +441,7 @@ namespace SandboxEditor
         m_orbitFocusCamera->SetFocusInputChannelId(SandboxEditor::CameraFocusChannelId());
     }
 
-    void EditorModularViewportCameraComposer::OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId)
+    void EditorModularViewportCameraComposer::TrackCameraEntity(const AZ::EntityId& viewEntityId)
     {
         if (viewEntityId.IsValid())
         {
@@ -503,9 +501,9 @@ namespace SandboxEditor
     }
 
     void EditorModularViewportCameraComposer::DisplayViewport(
-        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        if (m_pivot.has_value())
+        if (viewportInfo.m_viewportId == m_viewportId && m_pivot.has_value())
         {
             debugDisplay.CullOff();
             const AZ::Color color = ed_cameraPivotColor;

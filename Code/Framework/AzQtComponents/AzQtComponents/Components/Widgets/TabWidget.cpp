@@ -559,13 +559,13 @@ namespace AzQtComponents
                 return size;
             }
 
-            int availableWidth = tabWidget->width() - tabWidget->count() + 1;
+            int availableWidth = tabWidget->width() - trailingWidth() - tabWidget->count() + 1;
 
             // Reserve the space taken by the top-right corner widget, which holds the
             // action toolbar and/or the overflow button
             if (auto* corner = tabWidget->cornerWidget(Qt::TopRightCorner))
             {
-                availableWidth -= corner->width();
+                availableWidth -= corner->sizeHint().width();
             }
 
             if (index == currentIndex())
@@ -639,7 +639,7 @@ namespace AzQtComponents
             tabsWidth += tabRect(i).width();
         }
 
-        int availableWidth = tabWidget->width();
+        int availableWidth = tabWidget->width() - trailingWidth();
         if (tabWidget->isActionToolBarVisible())
         {
             availableWidth -= tabWidget->actionToolBar()->width();
@@ -681,7 +681,7 @@ namespace AzQtComponents
             
             if (tabBtn)
             {
-                bool shouldShow = (i == index);
+                bool shouldShow = tabBtn->isEnabled() && (i == index || (m_showSelectedCloseButton && i == currentIndex()));
 
                 int tabWidth = tabRect(i).width();
                 shouldShow &= tabWidth >= g_closeButtonMinTabWidth;
