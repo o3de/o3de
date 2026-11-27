@@ -26,7 +26,16 @@ class ThreadedLambda:
         self._is_cancelled = False
         # Subclasses should store here the result of stdout+stderr.
         self._report_msg = ""
-        self._thread = threading.Thread(target=job_func)
+        def _run_job():
+            try:
+                job_func()
+            except Exception as error:
+                self._is_success = False
+                self._report_msg += f"{type(error).__name__}: {error}\n"
+            finally:
+                self._is_finished = True
+
+        self._thread = threading.Thread(target=_run_job)
 
 
     def start(self):
@@ -37,7 +46,7 @@ class ThreadedLambda:
 
 
     def is_finished(self) -> bool:
-        return self._is_finished
+        return self._is_finished and not self._thread.is_alive()
 
 
     def is_success(self) -> bool:
