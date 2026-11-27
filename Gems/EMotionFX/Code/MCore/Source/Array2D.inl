@@ -36,7 +36,7 @@ void Array2D<T>::Resize(size_t numRows, bool autoShrink)
         // init the new table entries
         for (size_t i = oldNumRows; i < numRows; ++i)
         {
-            m_indexTable[i].m_startIndex  = m_data.size() + (i * m_numPreCachedElements);
+            m_indexTable[i].m_startIndex  = m_data.size() + ((i - oldNumRows) * m_numPreCachedElements);
             m_indexTable[i].m_numElements = 0;
         }
 
@@ -130,8 +130,8 @@ void Array2D<T>::Remove(size_t rowIndex, size_t elementIndex)
 template <class T>
 void Array2D<T>::RemoveRow(size_t rowIndex, bool autoShrink)
 {
-    AZ_Assert(rowIndex < m_indexTable.GetLength(), "Array2D<>::RemoveRow: rowIndex out of bounds");
-    m_indexTable.Remove(rowIndex);
+    AZ_Assert(rowIndex < m_indexTable.size(), "Array2D<>::RemoveRow: rowIndex out of bounds");
+    m_indexTable.erase(AZStd::next(begin(m_indexTable), rowIndex));
 
     // optimize memory usage when desired
     if (autoShrink)

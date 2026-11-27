@@ -1319,18 +1319,24 @@ namespace EMotionFX
             EMFX_SCALECODE
             (
                 ReduceTrackSamples<AZ::Vector3>(jointData.m_scaleTrack, m_staticJointData[i].m_staticTransform.m_scale, 0.0001f);
-                if (jointData.m_scaleTrack.m_times.empty())
+            )
+
+            m_jointData[i] = AZStd::move(jointData);
+
+            EMFX_SCALECODE
+            (
+                if (m_jointData[i].m_scaleTrack.m_times.empty())
                 {
                     ClearJointScaleSamples(i);
                 }
             )
 
-            if (jointData.m_positionTrack.m_times.empty())
+            if (m_jointData[i].m_positionTrack.m_times.empty())
             {
                 ClearJointPositionSamples(i);
             }
 
-            if (jointData.m_rotationTrack.m_times.empty())
+            if (m_jointData[i].m_rotationTrack.m_times.empty())
             {
                 ClearJointRotationSamples(i);
             }
@@ -1342,7 +1348,8 @@ namespace EMotionFX
         {
             FloatData& morphData = tempMorphData[i];
             ReduceTrackSamples<float>(morphData.m_track, m_staticMorphData[i].m_staticValue, 0.0001f);
-            if (morphData.m_track.m_times.empty())
+            m_morphData[i] = AZStd::move(morphData);
+            if (m_morphData[i].m_track.m_times.empty())
             {
                 ClearMorphSamples(i);
             }
@@ -1354,7 +1361,8 @@ namespace EMotionFX
         {
             FloatData& floatData = tempFloatData[i];
             ReduceTrackSamples<float>(floatData.m_track, m_staticFloatData[i].m_staticValue, 0.0001f);
-            if (floatData.m_track.m_times.empty())
+            m_floatData[i] = AZStd::move(floatData);
+            if (m_floatData[i].m_track.m_times.empty())
             {
                 ClearFloatSamples(i);
             }
@@ -1612,7 +1620,7 @@ namespace EMotionFX
         const MCore::Endian::EEndianType targetEndianType = saveSettings.m_targetEndianType;
 
         // Verify the name.
-        const AZStd::string& floatName = motionData->GetMorphName(floatDataIndex);
+        const AZStd::string& floatName = motionData->GetFloatName(floatDataIndex);
         if (floatName.empty())
         {
             AZ_Error("EMotionFX", false, "Cannot save motion float channel with empty name.");

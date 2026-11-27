@@ -25,7 +25,7 @@ namespace Maestro
         {
             AZ_WarningOnce("StringTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+            time = AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
         }
 
         const auto existingKeyIndex = FindKey(time);
@@ -93,7 +93,7 @@ namespace Maestro
         {
             AZ_WarningOnce("StringTrack", false, "SetKeyAtTime(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+            time = AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
         }
 
         key->time = time;

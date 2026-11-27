@@ -275,7 +275,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, float): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         for (int i = 0; i < m_nDimensions; i++)
@@ -297,7 +297,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Vector3): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         for (int i = 0; i < m_nDimensions; i++)
@@ -319,7 +319,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Vector4): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         for (int i = 0; i < m_nDimensions; i++)
@@ -341,7 +341,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "SetValue(%f, Quat): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         AZ_Assert(m_nDimensions == 3, "Expected 3 sub-tracks, found %d.", m_nDimensions);
@@ -505,7 +505,6 @@ namespace Maestro
 
     void CCompoundSplineTrack::SetSubTrackName(int nIndex, const char* name)
     {
-        name = nullptr;
         if (nIndex < 0 || nIndex >= m_nDimensions || !name || !name[0])
         {
             AZ_Assert(nIndex >= 0 && nIndex < m_nDimensions, "Sub-track index (%d) is out of range (0 .. %d).", nIndex, m_nDimensions);
@@ -648,7 +647,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "CreateKey(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         const auto existingKeyIndex = FindKey(time);
@@ -734,6 +733,7 @@ namespace Maestro
                 azstrcat(str, AZ_ARRAY_SIZE(str), m_subTrackNames[i].c_str());
             }
         }
+        description = str;
     }
 
     float CCompoundSplineTrack::GetKeyTime(int keyIndex) const
@@ -760,20 +760,21 @@ namespace Maestro
         int keysCount = 0;
         for (int i = 0; i < GetSubTrackCount(); ++i)
         {
+            if (!m_subTracks[i])
+            {
+                AZ_Assert(false, "Expected valid sub-track(%d)", i);
+                continue;
+            }
+
             const auto numKeysInTrack = m_subTracks[i]->GetNumKeys();
             for (int m = 0; m < numKeysInTrack; ++m)
             {
-                if (!m_subTracks[i])
-                {
-                    AZ_Assert(false, "Expected valid sub-track(%d)", i);
-                    continue;
-                }
-
                 if (AZStd::abs(m_subTracks[i]->GetKeyTime(m) - time) < AZ::Constants::Tolerance)
                 {
                     return keysCount + m;
                 }
             }
+            keysCount += numKeysInTrack;
         }
         return -1;
     }
@@ -791,7 +792,7 @@ namespace Maestro
         {
             AZ_WarningOnce("CompoundSplineTrack", false, "SetKeyTime(%d, %f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 keyIndex, time, timeRange.start, timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, timeRange.start, timeRange.end);
+            time = AZStd::clamp(time, timeRange.start, timeRange.end);
         }
 
         const int existingKeyIndex = FindKey(time);

@@ -107,7 +107,11 @@ namespace EMotionFX
         }
 
         // Call event handlers
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_EVENT];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_EVENT];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnEvent(eventInfo);
@@ -117,7 +121,11 @@ namespace EMotionFX
 
     void EventManager::OnPlayMotion(Motion* motion, PlayBackInfo* info)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PLAY_MOTION];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PLAY_MOTION];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnPlayMotion(motion, info);
@@ -130,7 +138,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnStartMotionInstance(info);
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_MOTION_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_MOTION_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStartMotionInstance(motionInstance, info);
@@ -143,7 +155,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnDeleteMotionInstance();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteMotionInstance(motionInstance);
@@ -153,7 +169,11 @@ namespace EMotionFX
 
     void EventManager::OnDeleteMotion(Motion* motion)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteMotion(motion);
@@ -166,7 +186,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnStop();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStop(motionInstance);
@@ -179,7 +203,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnHasLooped();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_LOOPED];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_LOOPED];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnHasLooped(motionInstance);
@@ -192,7 +220,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnHasReachedMaxNumLoops();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_NUM_LOOPS];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_NUM_LOOPS];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnHasReachedMaxNumLoops(motionInstance);
@@ -205,7 +237,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnHasReachedMaxPlayTime();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_PLAY_TIME];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_HAS_REACHED_MAX_PLAY_TIME];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnHasReachedMaxPlayTime(motionInstance);
@@ -218,7 +254,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnIsFrozenAtLastFrame();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_IS_FROZEN_AT_LAST_FRAME];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_IS_FROZEN_AT_LAST_FRAME];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnIsFrozenAtLastFrame(motionInstance);
@@ -231,7 +271,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnChangedPauseState();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_PAUSE_STATE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_PAUSE_STATE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnChangedPauseState(motionInstance);
@@ -244,7 +288,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnChangedActiveState();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_ACTIVE_STATE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CHANGED_ACTIVE_STATE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnChangedActiveState(motionInstance);
@@ -257,7 +305,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnStartBlending();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_BLENDING];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_BLENDING];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStartBlending(motionInstance);
@@ -270,7 +322,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnStopBlending();
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP_BLENDING];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STOP_BLENDING];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStopBlending(motionInstance);
@@ -283,7 +339,11 @@ namespace EMotionFX
         // trigger the event handlers inside the motion instance
         motionInstance->OnQueueMotionInstance(info);
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_QUEUE_MOTION_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_QUEUE_MOTION_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnQueueMotionInstance(motionInstance, info);
@@ -293,7 +353,11 @@ namespace EMotionFX
 
     void EventManager::OnDeleteActor(Actor* actor)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ACTOR];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ACTOR];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteActor(actor);
@@ -304,7 +368,11 @@ namespace EMotionFX
     // draw a debug triangle
     void EventManager::OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DRAW_TRIANGLE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DRAW_TRIANGLE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDrawTriangle(posA, posB, posC, normalA, normalB, normalC, color);
@@ -315,7 +383,11 @@ namespace EMotionFX
     // draw the triangles that got added using OnDrawTriangles()
     void EventManager::OnDrawTriangles()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DRAW_TRIANGLES];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DRAW_TRIANGLES];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDrawTriangles();
@@ -326,7 +398,11 @@ namespace EMotionFX
     // simulate physics
     void EventManager::OnSimulatePhysics(float timeDelta)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SIMULATE_PHYSICS];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SIMULATE_PHYSICS];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnSimulatePhysics(timeDelta);
@@ -336,7 +412,11 @@ namespace EMotionFX
 
     void EventManager::OnCustomEvent(uint32 eventType, void* data)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CUSTOM_EVENT];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CUSTOM_EVENT];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCustomEvent(eventType, data);
@@ -346,7 +426,11 @@ namespace EMotionFX
 
     void EventManager::OnStateEnter(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_ENTER];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_ENTER];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStateEnter(animGraphInstance, state);
@@ -359,7 +443,11 @@ namespace EMotionFX
 
     void EventManager::OnStateEntering(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_ENTERING];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_ENTERING];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStateEntering(animGraphInstance, state);
@@ -372,7 +460,11 @@ namespace EMotionFX
 
     void EventManager::OnStateExit(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_EXIT];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_EXIT];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStateExit(animGraphInstance, state);
@@ -385,7 +477,11 @@ namespace EMotionFX
 
     void EventManager::OnStateEnd(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_END];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_STATE_END];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStateEnd(animGraphInstance, state);
@@ -398,7 +494,11 @@ namespace EMotionFX
 
     void EventManager::OnStartTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_TRANSITION];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_START_TRANSITION];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnStartTransition(animGraphInstance, transition);
@@ -411,7 +511,11 @@ namespace EMotionFX
 
     void EventManager::OnEndTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_END_TRANSITION];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_END_TRANSITION];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnEndTransition(animGraphInstance, transition);
@@ -425,7 +529,11 @@ namespace EMotionFX
     // call the callbacks for when we renamed a node
     void EventManager::OnRenamedNode(AnimGraph* animGraph, AnimGraphNode* node, const AZStd::string& oldName)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_RENAMED_NODE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_RENAMED_NODE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnRenamedNode(animGraph, node, oldName);
@@ -436,7 +544,11 @@ namespace EMotionFX
     // call the callbacks for a node creation
     void EventManager::OnCreatedNode(AnimGraph* animGraph, AnimGraphNode* node)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATED_NODE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATED_NODE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreatedNode(animGraph, node);
@@ -451,7 +563,11 @@ namespace EMotionFX
         AnimGraphStateMachine* rootSM = animGraph->GetRootStateMachine();
         rootSM->OnRemoveNode(animGraph, nodeToRemove);
 
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_REMOVE_NODE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_REMOVE_NODE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnRemoveNode(animGraph, nodeToRemove);
@@ -462,7 +578,11 @@ namespace EMotionFX
     // call the callbacks
     void EventManager::OnRemovedChildNode(AnimGraph* animGraph, AnimGraphNode* parentNode)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_REMOVED_CHILD_NODE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_REMOVED_CHILD_NODE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnRemovedChildNode(animGraph, parentNode);
@@ -472,7 +592,11 @@ namespace EMotionFX
 
     void EventManager::OnSetVisualManipulatorOffset(AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SET_VISUAL_MANIPULATOR_OFFSET];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SET_VISUAL_MANIPULATOR_OFFSET];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnSetVisualManipulatorOffset(animGraphInstance, paramIndex, offset);
@@ -482,7 +606,11 @@ namespace EMotionFX
 
     void EventManager::OnInputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_INPUT_PORTS_CHANGED];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_INPUT_PORTS_CHANGED];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnInputPortsChanged(node, newInputPorts, memberName, memberValue);
@@ -492,7 +620,11 @@ namespace EMotionFX
 
     void EventManager::OnOutputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_OUTPUT_PORTS_CHANGED];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_OUTPUT_PORTS_CHANGED];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnOutputPortsChanged(node, newOutputPorts, memberName, memberValue);
@@ -502,7 +634,11 @@ namespace EMotionFX
 
     void EventManager::OnProgressStart()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_START];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_START];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnProgressStart();
@@ -513,7 +649,11 @@ namespace EMotionFX
 
     void EventManager::OnProgressEnd()
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_END];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_END];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnProgressValue(100.0f);
@@ -525,7 +665,11 @@ namespace EMotionFX
 
     void EventManager::OnProgressText(const char* text)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_TEXT];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_TEXT];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnProgressText(text);
@@ -535,7 +679,11 @@ namespace EMotionFX
 
     void EventManager::OnProgressValue(float percentage)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_VALUE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_PROGRESS_VALUE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnProgressValue(percentage);
@@ -545,7 +693,11 @@ namespace EMotionFX
 
     void EventManager::OnSubProgressText(const char* text)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SUB_PROGRESS_TEXT];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SUB_PROGRESS_TEXT];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnSubProgressText(text);
@@ -555,7 +707,11 @@ namespace EMotionFX
 
     void EventManager::OnSubProgressValue(float percentage)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SUB_PROGRESS_VALUE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SUB_PROGRESS_VALUE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnSubProgressValue(percentage);
@@ -566,7 +722,11 @@ namespace EMotionFX
     // perform a ray intersection test
     bool EventManager::OnRayIntersectionTest(const AZ::Vector3& start, const AZ::Vector3& end, IntersectionInfo* outIntersectInfo)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_RAY_INTERSECTION_TEST];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_RAY_INTERSECTION_TEST];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             const bool result = eventHandler->OnRayIntersectionTest(start, end, outIntersectInfo);
@@ -582,7 +742,11 @@ namespace EMotionFX
     // create an animgraph
     void EventManager::OnCreateAnimGraph(AnimGraph* animGraph)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ANIM_GRAPH];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ANIM_GRAPH];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateAnimGraph(animGraph);
@@ -593,7 +757,11 @@ namespace EMotionFX
     // create an animgraph instance
     void EventManager::OnCreateAnimGraphInstance(AnimGraphInstance* animGraphInstance)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ANIM_GRAPH_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ANIM_GRAPH_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateAnimGraphInstance(animGraphInstance);
@@ -604,7 +772,11 @@ namespace EMotionFX
     // create a motion
     void EventManager::OnCreateMotion(Motion* motion)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateMotion(motion);
@@ -615,7 +787,11 @@ namespace EMotionFX
     // create a motion set
     void EventManager::OnCreateMotionSet(MotionSet* motionSet)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_SET];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_SET];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateMotionSet(motionSet);
@@ -626,7 +802,11 @@ namespace EMotionFX
     // create a motion instance
     void EventManager::OnCreateMotionInstance(MotionInstance* motionInstance)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateMotionInstance(motionInstance);
@@ -637,7 +817,11 @@ namespace EMotionFX
     // create a motion system
     void EventManager::OnCreateMotionSystem(MotionSystem* motionSystem)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_SYSTEM];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_MOTION_SYSTEM];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateMotionSystem(motionSystem);
@@ -648,7 +832,11 @@ namespace EMotionFX
     // create an actor
     void EventManager::OnCreateActor(Actor* actor)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ACTOR];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ACTOR];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateActor(actor);
@@ -659,7 +847,11 @@ namespace EMotionFX
     // on post create actor
     void EventManager::OnPostCreateActor(Actor* actor)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_POST_CREATE_ACTOR];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_POST_CREATE_ACTOR];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnPostCreateActor(actor);
@@ -670,7 +862,11 @@ namespace EMotionFX
     // delete an animgraph
     void EventManager::OnDeleteAnimGraph(AnimGraph* animGraph)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ANIM_GRAPH];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ANIM_GRAPH];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteAnimGraph(animGraph);
@@ -681,7 +877,11 @@ namespace EMotionFX
     // delete an animgraph instance
     void EventManager::OnDeleteAnimGraphInstance(AnimGraphInstance* animGraphInstance)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteAnimGraphInstance(animGraphInstance);
@@ -692,7 +892,11 @@ namespace EMotionFX
     // delete motion set
     void EventManager::OnDeleteMotionSet(MotionSet* motionSet)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_SET];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_SET];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteMotionSet(motionSet);
@@ -703,7 +907,11 @@ namespace EMotionFX
     // delete a motion system
     void EventManager::OnDeleteMotionSystem(MotionSystem* motionSystem)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_SYSTEM];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_MOTION_SYSTEM];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnDeleteMotionSystem(motionSystem);
@@ -714,7 +922,11 @@ namespace EMotionFX
     // scale actor data
     void EventManager::OnScaleActorData(Actor* actor, float scaleFactor)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SCALE_ACTOR_DATA];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SCALE_ACTOR_DATA];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnScaleActorData(actor, scaleFactor);
@@ -725,7 +937,11 @@ namespace EMotionFX
     // scale motion data
     void EventManager::OnScaleMotionData(Motion* motion, float scaleFactor)
     {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SCALE_MOTION_DATA];
+        EventHandlerVector eventHandlers;
+        {
+            MCore::LockGuardRecursive lock(m_lock);
+            eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_SCALE_MOTION_DATA];
+        }
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnScaleMotionData(motion, scaleFactor);

@@ -170,7 +170,10 @@ namespace EMotionFX::MotionMatching
         m_trajectoryQuery.DebugDraw(debugDisplay, trajectoryQueryColor);
 
         // Draw the trajectory history starting after the sampled version of the past trajectory.
-        m_trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_cachedTrajectoryFeature->GetPastTimeRange());
+        if (m_cachedTrajectoryFeature)
+        {
+            m_trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_cachedTrajectoryFeature->GetPastTimeRange());
+        }
 
         // Draw the input for the motion matching search.
         DebugDrawQueryPose(debugDisplay, mm_debugDrawQueryPose, mm_debugDrawQueryVelocities);
@@ -224,7 +227,7 @@ namespace EMotionFX::MotionMatching
         MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = outputPose.GetActorInstance();
         sampleSettings.m_inPlace = false;
-        sampleSettings.m_mirror = false;
+        sampleSettings.m_mirror = m_motionInstance ? m_motionInstance->GetMirrorMotion() : false;
         sampleSettings.m_retarget = false;
         sampleSettings.m_inputPose = sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
 
@@ -258,8 +261,8 @@ namespace EMotionFX::MotionMatching
         else if (m_blendWeight > AZ::Constants::FloatEpsilon && m_blendWeight < 1.0f - AZ::Constants::FloatEpsilon)
         {
             Transform targetMotionExtractionDelta;
-            m_motionInstance->ExtractMotion(m_motionExtractionDelta);
-            m_prevMotionInstance->ExtractMotion(targetMotionExtractionDelta);
+            m_prevMotionInstance->ExtractMotion(m_motionExtractionDelta);
+            m_motionInstance->ExtractMotion(targetMotionExtractionDelta);
             m_motionExtractionDelta.Blend(targetMotionExtractionDelta, m_blendWeight);
         }
         else
@@ -349,16 +352,19 @@ namespace EMotionFX::MotionMatching
         m_trajectoryHistory.Update(timePassedInSeconds);
 
         // Update the trajectory query control points.
-        m_trajectoryQuery.Update(*m_actorInstance,
-            m_cachedTrajectoryFeature,
-            m_trajectoryHistory,
-            mode,
-            targetPos,
-            targetFacingDir,
-            useTargetFacingDir,
-            timePassedInSeconds,
-            pathRadius,
-            pathSpeed);
+        if (m_cachedTrajectoryFeature)
+        {
+            m_trajectoryQuery.Update(*m_actorInstance,
+                m_cachedTrajectoryFeature,
+                m_trajectoryHistory,
+                mode,
+                targetPos,
+                targetFacingDir,
+                useTargetFacingDir,
+                timePassedInSeconds,
+                pathRadius,
+                pathSpeed);
+        }
 
         // Calculate the new time value of the motion, but don't set it yet (the syncing might adjust this again)
         m_motionInstance->SetFreezeAtLastFrame(true);
@@ -413,7 +419,10 @@ namespace EMotionFX::MotionMatching
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
                 AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(m_actorInstance->GetThreadIndex())->GetPosePool();
-                velocityPoseData->CalculateVelocity(m_actorInstance, posePool, m_motionInstance->GetMotion(), newMotionTime, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
+                const size_t relativeToNodeIndex = m_cachedTrajectoryFeature
+                    ? m_cachedTrajectoryFeature->GetRelativeToNodeIndex()
+                    : m_actorInstance->GetActor()->GetMotionExtractionNodeIndex();
+                velocityPoseData->CalculateVelocity(m_actorInstance, posePool, m_motionInstance->GetMotion(), newMotionTime, relativeToNodeIndex);
             }
 
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();

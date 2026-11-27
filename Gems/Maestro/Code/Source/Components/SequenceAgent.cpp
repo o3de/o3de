@@ -17,7 +17,7 @@ namespace Maestro
         template <typename T>
         AZ_INLINE void DoSafeSet(AZ::BehaviorEBus::VirtualProperty* prop, AZ::EntityId entityId, T& data)
         {
-            if (!prop->m_setter)
+            if (!prop || !prop->m_setter)
             {
                 return;
             }
@@ -34,7 +34,7 @@ namespace Maestro
         template <typename T>
         AZ_INLINE void DoSafeGet(AZ::BehaviorEBus::VirtualProperty* prop, AZ::EntityId entityId, T& data)
         {
-            if (!prop->m_getter)
+            if (!prop || !prop->m_getter)
             {
                 return;
             }
@@ -54,6 +54,10 @@ namespace Maestro
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+        if (!behaviorContext)
+        {
+            return;
+        }
         
         AZ::Entity::ComponentArrayType entityComponents;
         GetEntityComponents(entityComponents);
@@ -129,13 +133,13 @@ namespace Maestro
         AZ::Uuid retTypeUuid = AZ::Uuid::CreateNull();
 
         auto findIter = m_addressToBehaviorVirtualPropertiesMap.find(animatableAddress);
-        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end())
+        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end() && findIter->second && findIter->second->m_getter)
         {
-            if (findIter->second->m_getter->m_event)
+            if (findIter->second->m_getter->m_event && findIter->second->m_getter->m_event->GetResult())
             {
                 retTypeUuid = findIter->second->m_getter->m_event->GetResult()->m_typeId;
             }
-            else if(findIter->second->m_getter->m_broadcast)
+            else if (findIter->second->m_getter->m_broadcast && findIter->second->m_getter->m_broadcast->GetResult())
             {
                 retTypeUuid = findIter->second->m_getter->m_broadcast->GetResult()->m_typeId;
             }
@@ -150,7 +154,7 @@ namespace Maestro
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
 
         auto findIter = m_addressToBehaviorVirtualPropertiesMap.find(animatableAddress);
-        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end())
+        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end() && findIter->second)
         {
             if (propertyTypeId == AZ::Vector3::TYPEINFO_Uuid())
             {
@@ -185,28 +189,28 @@ namespace Maestro
             {
                 AZ::s32 s32value = 0;
                 value.GetValue(s32value);
-                findIter->second->m_setter->m_event->Invoke(entityId, s32value);
+                SequenceAgentHelper::DoSafeSet(findIter->second, entityId, s32value);
                 changed = true;
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZ::u32>::Uuid())
             {
                 AZ::u32 u32value = 0;
                 value.GetValue(u32value);
-                findIter->second->m_setter->m_event->Invoke(entityId, u32value);
+                SequenceAgentHelper::DoSafeSet(findIter->second, entityId, u32value);
                 changed = true;
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZ::Data::AssetId>::Uuid())
             {
                 AZ::Data::AssetId assetIdValue;
                 value.GetValue(assetIdValue);
-                findIter->second->m_setter->m_event->Invoke(entityId, assetIdValue);
+                SequenceAgentHelper::DoSafeSet(findIter->second, entityId, assetIdValue);
                 changed = true;
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
             {
                 AZStd::string stringValue;
                 value.GetValue(stringValue);
-                findIter->second->m_setter->m_event->Invoke(entityId, stringValue);
+                SequenceAgentHelper::DoSafeSet(findIter->second, entityId, stringValue);
                 changed = true;
             }
             else
@@ -228,7 +232,7 @@ namespace Maestro
         const AZ::Uuid propertyTypeId = GetVirtualPropertyTypeId(animatableAddress);
 
         auto findIter = m_addressToBehaviorVirtualPropertiesMap.find(animatableAddress);
-        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end())
+        if (findIter != m_addressToBehaviorVirtualPropertiesMap.end() && findIter->second)
         {
             if (propertyTypeId == AZ::Vector3::TYPEINFO_Uuid())
             {
@@ -256,26 +260,26 @@ namespace Maestro
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZ::s32>::Uuid())
             {
-                AZ::s32 s32Value;
-                findIter->second->m_getter->m_event->InvokeResult(s32Value, entityId);
+                AZ::s32 s32Value = 0;
+                SequenceAgentHelper::DoSafeGet(findIter->second, entityId, s32Value);
                 returnValue.SetValue(s32Value);
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZ::u32>::Uuid())
             {
-                AZ::u32 u32Value;
-                findIter->second->m_getter->m_event->InvokeResult(u32Value, entityId);
+                AZ::u32 u32Value = 0;
+                SequenceAgentHelper::DoSafeGet(findIter->second, entityId, u32Value);
                 returnValue.SetValue(u32Value);
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZ::Data::AssetId>::Uuid())
             {
                 AZ::Data::AssetId assetIdValue;
-                findIter->second->m_getter->m_event->InvokeResult(assetIdValue, entityId);
+                SequenceAgentHelper::DoSafeGet(findIter->second, entityId, assetIdValue);
                 returnValue.SetValue(assetIdValue);
             }
             else if (propertyTypeId == AZ::AzTypeInfo<AZStd::string>::Uuid())
             {
                 AZStd::string stringValue;
-                findIter->second->m_getter->m_event->InvokeResult(stringValue, entityId);
+                SequenceAgentHelper::DoSafeGet(findIter->second, entityId, stringValue);
                 returnValue.SetValue(stringValue);
             }
             else

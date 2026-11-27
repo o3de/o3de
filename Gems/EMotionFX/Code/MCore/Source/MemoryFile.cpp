@@ -167,9 +167,17 @@ namespace MCore
     // read data from the file
     size_t MemoryFile::Read(void* data, size_t length)
     {
-        if (m_currentPos + length > (uint8*)m_memoryStart + m_length)
+        uint8* usedEnd = m_memoryStart + m_usedLength;
+        if (m_currentPos >= usedEnd)
         {
-            const size_t numRead = length - ((m_currentPos + length) - ((uint8*)m_memoryStart + m_length));
+            MCore::LogWarning("MCore::MemoryFile::Read() - We can only read 0 bytes of the %d bytes requested, as we are reading past the end of the memory file!", length);
+            return 0;
+        }
+
+        const size_t remainingBytes = static_cast<size_t>(usedEnd - m_currentPos);
+        if (length > remainingBytes)
+        {
+            const size_t numRead = remainingBytes;
             MCore::MemCopy(data, m_currentPos, numRead);
             Forward(numRead);
             MCore::LogWarning("MCore::MemoryFile::Read() - We can only read %d bytes of the %d bytes requested, as we are reading past the end of the memory file!", numRead, length);

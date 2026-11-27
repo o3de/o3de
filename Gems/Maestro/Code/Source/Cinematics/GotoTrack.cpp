@@ -61,7 +61,7 @@ namespace Maestro
             {
                 AZ_Warning("GotoTrack",false,"SetValue(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                     time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-                AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+                time = AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
             }
 
             IDiscreteFloatKey oKey;
@@ -140,7 +140,7 @@ namespace Maestro
         {
             AZ_WarningOnce("GotoTrack", false, "SetValue(%f): Time is out of range (%f .. %f) in track (%s), clamped.",
                 time, m_timeRange.start, m_timeRange.end, (GetNode() ? GetNode()->GetName() : ""));
-            AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
+            time = AZStd::clamp(time, m_timeRange.start, m_timeRange.end);
         }
 
         key->time = time;

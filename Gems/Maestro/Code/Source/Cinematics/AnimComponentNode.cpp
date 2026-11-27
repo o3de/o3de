@@ -176,6 +176,7 @@ namespace Maestro
                 IDiscreteFloatKey key;
                 track->GetKey(keyIdx, &key);
                 key.SetValue(currValue.GetFloatValue());
+                track->SetKey(keyIdx, &key);
             }
             else
             {
@@ -911,7 +912,7 @@ namespace Maestro
         const auto timeRange = sequence->GetTimeRange();
         if (time < timeRange.start || time > timeRange.end)
         {
-            AZ_Error("AnimComponentNode", false, "UpdateTrackDefaultValue(%f): time not in range (%f,%f)", time, timeRange.start, time > timeRange.end);
+            AZ_Error("AnimComponentNode", false, "UpdateTrackDefaultValue(%f): time not in range (%f,%f)", time, timeRange.start, timeRange.end);
             return;
         }
 
@@ -964,7 +965,7 @@ namespace Maestro
                 defaultValue.GetValue(vector3Value);
                 vector3Value = vector3Value.GetClamp(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
                 constexpr const bool applyMultiplier = true;
-                pTrack->SetValue(0, vector3Value, setDefault, applyMultiplier);
+                pTrack->SetValue(time, vector3Value, setDefault, applyMultiplier);
                 break;
             }
         case AnimValueType::Bool:
