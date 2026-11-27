@@ -409,7 +409,6 @@ namespace AZ
         {
             m_attachmentId = RHI::AttachmentId{};
             m_readbackItems.clear();
-            m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
             m_copyAttachmentId = RHI::AttachmentId{};
             m_decomposeScopeProducer = nullptr;
@@ -422,11 +421,13 @@ namespace AZ
             {
                 m_fence->Reset();
             }
+            // Keep this last: seeing Idle means the reset is complete.
+            m_state.store(ReadbackState::Idle, AZStd::memory_order_release);
         }
 
         AttachmentReadback::ReadbackState AttachmentReadback::GetReadbackState()
         {
-            return m_state;
+            return m_state.load(AZStd::memory_order_acquire);
         }
 
         void AttachmentReadback::SetCallback(CallbackFunction callback)
@@ -483,7 +484,9 @@ namespace AZ
 
         bool AttachmentReadback::IsReady() const
         {
-            return !(m_state == ReadbackState::Reading || m_state == ReadbackState::Uninitialized);
+            // Not Success or Failed: the callback and Reset() may still be running on the fence wait thread.
+            const ReadbackState state = m_state.load(AZStd::memory_order_acquire);
+            return state == ReadbackState::Idle || state == ReadbackState::AttachmentSet;
         }
 
         AttachmentReadback::ReadbackResult AttachmentReadback::GetReadbackResult() const
