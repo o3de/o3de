@@ -67,6 +67,8 @@ namespace PhysX
         void RegisterSimulationBodySimulationDisabledHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSimulationBodySimulationDisabled::Handler& handler) override;
         void RegisterSceneSimulationStartHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationStartHandler& handler) override;
         void RegisterSceneSimulationFinishHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler) override;
+        void RegisterSceneSimulationSynchronizedWithTickHandler(
+            AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationSynchronizedWithTickHandler& handler) override;
         void RegisterSceneActiveSimulatedBodiesHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler& handler) override;
         void RegisterSceneCollisionEventHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneCollisionsEvent::Handler& handler) override;
         void RegisterSceneTriggersEventHandler(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneTriggersEvent::Handler& handler) override;

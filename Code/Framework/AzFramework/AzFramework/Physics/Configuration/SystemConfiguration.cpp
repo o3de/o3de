@@ -37,6 +37,7 @@ namespace AzPhysics
                 ->Field("ShapecastBufferSize", &SystemConfiguration::m_shapecastBufferSize)
                 ->Field("OverlapBufferSize", &SystemConfiguration::m_overlapBufferSize)
                 ->Field("CollisionConfig", &SystemConfiguration::m_collisionConfig)
+                ->Field("RunSimulationInThread", &SystemConfiguration::m_runSimulationInThread)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -66,6 +67,8 @@ namespace AzPhysics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_overlapBufferSize,
                         QT_TRANSLATE_NOOP("PhysX", "Overlap Query Buffer Size"), QT_TRANSLATE_NOOP("PhysX", "Maximum number of hits from a overlap query"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_runSimulationInThread,
+                        QT_TRANSLATE_NOOP("PhysX", "Free run Simulation In Thread"), QT_TRANSLATE_NOOP("PhysX", "It runs simulation in separate thread, independent from rendering."))
                     ;
             }
         }
@@ -79,7 +82,8 @@ namespace AzPhysics
             m_overlapBufferSize == other.m_overlapBufferSize &&
             AZ::IsClose(m_maxTimestep, other.m_maxTimestep) &&
             AZ::IsClose(m_fixedTimestep, other.m_fixedTimestep) &&
-            m_collisionConfig == other.m_collisionConfig
+            m_collisionConfig == other.m_collisionConfig &&
+            m_runSimulationInThread == other.m_runSimulationInThread
             ;
     }
 
