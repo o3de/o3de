@@ -35,6 +35,8 @@ namespace AtomToolsFramework
     using CameraControllerPriorityFn =
         AZStd::function<AzFramework::ViewportControllerPriority(const AzFramework::CameraSystem& cameraSystem)>;
     using CameraViewportContextFn = AZStd::function<AZStd::unique_ptr<ModularCameraViewportContext>(AzFramework::ViewportId)>;
+    //! Resolve movement from the previous position to the desired position, returning an allowed world position.
+    using CameraMovementConstraint = AZStd::function<AZ::Vector3(const AZ::Vector3&, const AZ::Vector3&)>;
 
     //! The default behavior for what priority the camera controller should respond to events at.
     //! @note This can change based on the state of the camera controller/system.
@@ -62,6 +64,8 @@ namespace AtomToolsFramework
         void SetCameraPriorityBuilderCallback(const CameraPriorityBuilder& builder);
         //! Sets the camera controller viewport context builder callback to populate new ModularViewportCameraControllerInstances.
         void SetCameraViewportContextBuilderCallback(const CameraViewportContextBuilder& builder);
+        //! Optionally constrain camera movement after smoothing. Set before registering viewport instances.
+        void SetCameraMovementConstraint(const CameraMovementConstraint& constraint);
 
     private:
         //! Sets up a camera list based on this controller's CameraListBuilderCallback.
@@ -81,6 +85,7 @@ namespace AtomToolsFramework
         CameraPriorityBuilder m_cameraControllerPriorityBuilder;
         //! Builder to define what viewport context interface the camera controller should use.
         CameraViewportContextBuilder m_cameraViewportContextBuilder;
+        CameraMovementConstraint m_cameraMovementConstraint;
     };
 
     //! The production modular camera viewport context backed by an AZ::RPI::ViewportContextPtr.
@@ -138,6 +143,8 @@ namespace AtomToolsFramework
         //! Combine the current camera transform with any potential roll from the tracked
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;
+        //! Constrain the rendered position and synchronize the target to avoid accumulating blocked movement.
+        void ConstrainCameraMovement(const AZ::Vector3& previousPosition);
 
         //! Reconnect the current view matrix change handler after the viewport context view group has changed.
         //! @note: This happens after switching to track a different camera/viewport transform.
@@ -165,6 +172,7 @@ namespace AtomToolsFramework
         AZStd::optional<AzFramework::Camera> m_storedCamera; //!< A potentially stored camera for when a transform is being tracked.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
+        CameraMovementConstraint m_cameraMovementConstraint;
         CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.
 
         AZStd::optional<CameraAnimation> m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
