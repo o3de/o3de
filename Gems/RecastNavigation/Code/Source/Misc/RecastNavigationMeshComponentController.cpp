@@ -446,14 +446,17 @@ namespace RecastNavigation
             }
 
             // Create tasks for each tile and a finish task.
-            const RecastNavigationMeshConfig configCopy = config;
             AZStd::shared_ptr<AsyncCallbackState> callbackState = m_asyncCallbackState;
+            if (callbackState)
+            {
+                callbackState->m_config = config;
+            }
             for (AZStd::shared_ptr<TileGeometry> tile : tilesToBeProcessed)
             {
                 AZ::TaskToken token = m_taskGraph.AddTask(
-                    m_taskDescriptor, [this, tile, configCopy, callbackState]()
+                    m_taskDescriptor, [this, tile, callbackState]()
                     {
-                        if (!m_shouldProcessTiles || (callbackState && callbackState->m_controller == nullptr))
+                        if (!m_shouldProcessTiles || !callbackState || callbackState->m_controller == nullptr)
                         {
                             return;
                         }
@@ -461,7 +464,7 @@ namespace RecastNavigation
                         AZ_PROFILE_SCOPE(Navigation, "Navigation: task - computing tile");
 
                         NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
-                            configCopy, m_context.get());
+                            callbackState->m_config, m_context.get());
 
                         {
                             NavMeshQuery::LockGuard lock(*m_navObject);

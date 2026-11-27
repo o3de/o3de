@@ -131,6 +131,7 @@ namespace RecastNavigation
         {
             AZStd::mutex m_mutex;
             RecastNavigationMeshComponentController* m_controller = nullptr;
+            RecastNavigationMeshConfig m_config;
         };
         AZStd::shared_ptr<AsyncCallbackState> m_asyncCallbackState;
     };
