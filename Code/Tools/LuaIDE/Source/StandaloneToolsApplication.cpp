@@ -57,6 +57,10 @@ namespace StandaloneTools
 
         // AssetCatalogComponent was moved to the Application Entity to fulfil service requirements.
         EnsureComponentRemoved(AzFramework::AssetCatalogComponent::RTTI_Type());
+
+        // Networking lives on the system entity so gem system components that require the NetworkingService
+        // (e.g. MultiplayerCompression, which provides the TCP compressor used by RemoteTools) can be activated.
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
     }
 
     void BaseApplication::CreateApplicationComponents()
@@ -64,7 +68,6 @@ namespace StandaloneTools
         EnsureComponentCreated(AZ::TaskGraphSystemComponent::RTTI_Type());
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
-        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor

@@ -99,7 +99,7 @@ void GetInfluences(in uint weightStartOffsetForVertex, in uint jointIdStartOffse
     weights.y = InstanceSrg::m_sourceBlendWeights[weightStartOffsetForVertex + influenceIndex + 1];
 
     // Two indices, 16-bits each, stored in a 32-bit uint
-    uint rawIndex = InstanceSrg::m_sourceBlendIndices.Load(jointIdStartOffsetForVertex + influenceIndex);
+    uint rawIndex = InstanceSrg::m_sourceBlendIndices.Load(jointIdStartOffsetForVertex + influenceIndex * 2);
         
     // The first index in each 32-bit pair is in the most significant bits in the buffer
     jointIds.x = rawIndex >> 16 & 0x0000FFFF;
