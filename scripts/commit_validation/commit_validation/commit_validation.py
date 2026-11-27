@@ -183,4 +183,5 @@ EXCLUDED_VALIDATION_PATTERNS = [
     '*/user/log/*',
     '*/user/log_test_1/*',
     '*/user/log_test_2/*',
+    '*/user/log_test_*_*/*',
 ]

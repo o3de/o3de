@@ -1310,3 +1310,77 @@ class TestMultiTestCollector(unittest.TestCase):
         getattr(mock_obj, mock_shared_test_spec_2.__name__)(mock_obj, mock.MagicMock(), mock.MagicMock(),
                                                             mock_collected_test_data, mock.MagicMock())
         mock_obj._report_result.assert_called_with(mock_shared_test_spec_2.__name__, mock_result_2)
+
+
+@pytest.mark.parametrize("launcher_class", [LinuxEditor, WinEditor, LinuxAtomToolsLauncher, WinAtomToolsLauncher])
+@pytest.mark.parametrize("batched", [False, True])
+def test_reused_run_id_does_not_read_previous_launch_log(tmp_path, monkeypatch, launcher_class, batched):
+    """A timed-out launch without a log must not report a previous launch's output."""
+    import os
+    from pathlib import Path
+    from types import SimpleNamespace
+    from ly_test_tools.o3de import editor_test_utils
+
+    workspace = mock.MagicMock()
+    workspace.paths.project.return_value = str(tmp_path)
+    workspace.paths.engine_root.return_value = str(tmp_path)
+    workspace.paths.project_log.return_value = str(tmp_path / "user" / "log")
+    workspace.paths.crash_log.return_value = str(tmp_path / "user" / "log" / "error.log")
+    request = mock.MagicMock()
+    request.node.nodeid = "TestSuite.py::TestAutomation::test_case"
+    request.node.originalname = "test_case"
+    request.node.callspec.id = "test"
+
+    class TestSpec(multi_test_framework.SingleTest):
+        test_module = SimpleNamespace(__file__=str(tmp_path / "test_case.py"))
+
+    is_editor = launcher_class in (LinuxEditor, WinEditor)
+    log_name = "editor_test.log"
+    legacy_path = Path((editor_test_utils.retrieve_log_path if is_editor else
+                        editor_test_utils.atom_tools_log_path)(1, workspace))
+    legacy_path.mkdir(parents=True)
+    (legacy_path / log_name).write_text("STALE LEGACY LOG", encoding="utf-8")
+    # Missing log lookup should return immediately in this simulated launch.
+    monkeypatch.setattr(editor_test_utils.waiter, "wait_for", lambda *args, **kwargs: None)
+
+    def run(should_timeout):
+        suite = multi_test_framework.MultiTestSuite()
+        executable = launcher_class(workspace, []) if is_editor else launcher_class(workspace, "MaterialEditor", [])
+        paths = []
+
+        def start(**kwargs):
+            if is_editor:
+                directory = Path(executable.args[executable.args.index("-project-log-path") + 1])
+                path = directory / log_name
+            else:
+                path = Path(executable.args[executable.args.index("-logfile") + 1])
+            assert path.parent.is_dir()
+            paths.append(path)
+            if not should_timeout:
+                path.write_text("CURRENT LAUNCH LOG", encoding="utf-8")
+
+        executable.start = mock.Mock(side_effect=start)
+        executable.wait = mock.Mock(side_effect=(
+            ly_test_tools.launchers.exceptions.WaitTimeoutError() if should_timeout else None))
+        executable.get_output = mock.Mock(return_value="")
+        executable.get_returncode = mock.Mock(return_value=0)
+        executable.stop = mock.Mock()
+        if batched:
+            results = suite._exec_multitest(request, workspace, executable, 1, log_name, [TestSpec], [])
+        else:
+            results = suite._exec_single_test(request, workspace, executable, 1, log_name, TestSpec, [])
+        return results[TestSpec.__name__], paths[0]
+
+    first_result, first_path = run(False)
+    second_result, second_path = run(True)
+    assert isinstance(first_result, multi_test_framework.Result.Pass)
+    assert "CURRENT LAUNCH LOG" in first_result.log_output
+    assert isinstance(second_result, multi_test_framework.Result.Timeout)
+    assert first_path != second_path
+    assert first_path.parent != legacy_path
+    assert second_path.parent != legacy_path
+    assert first_path.read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+    assert not second_path.exists()
+    assert "CURRENT LAUNCH LOG" not in second_result.log_output
+    assert "STALE LEGACY LOG" not in second_result.log_output
+    workspace.artifact_manager.save_artifact.assert_any_call(os.fspath(first_path), f"(1){log_name}")

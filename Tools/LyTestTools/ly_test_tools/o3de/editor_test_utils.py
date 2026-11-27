@@ -77,7 +77,7 @@ def get_module_filename(testcase_module: types.ModuleType) -> str:
     return os.path.splitext(os.path.basename(testcase_module.__file__))[0]
 
 
-def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
+def retrieve_log_path(run_id: int | str, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
     return the log/ project path for this test run.
     :param run_id: editor id that will be used for differentiating paths
@@ -88,7 +88,7 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
 
 
 def atom_tools_log_path(
-        run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
+        run_id: int | str, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
     return the log path for Atom tools test runs
     :param run_id: executable id that will be used for differentiating paths
@@ -98,7 +98,7 @@ def atom_tools_log_path(
     return os.path.join(workspace.paths.project(), "user", "log", f"log_test_{run_id}")
 
 
-def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+def retrieve_crash_output(run_id: int | str, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                           timeout: float = 10) -> str:
     """
     returns the crash output string for the given test run.
@@ -124,7 +124,7 @@ def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.manage
     return crash_info
 
 
-def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
+def cycle_crash_report(run_id: int | str, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
     :param run_id: editor id that will be used for differentiating paths
@@ -145,7 +145,7 @@ def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
 
-def retrieve_editor_log_content(run_id: int,
+def retrieve_editor_log_content(run_id: int | str,
                                 log_name: str,
                                 workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                 timeout: int = 10) -> str:
@@ -175,7 +175,7 @@ def retrieve_editor_log_content(run_id: int,
     return editor_info
 
 
-def retrieve_non_editor_log_content(run_id: int,
+def retrieve_non_editor_log_content(run_id: int | str,
                                     log_name: str,
                                     workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                     timeout: int = 10) -> str:

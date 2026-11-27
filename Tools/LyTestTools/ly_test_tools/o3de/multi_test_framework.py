@@ -31,6 +31,7 @@ import tempfile
 import threading
 import types
 import typing
+import uuid
 import warnings
 
 import pytest
@@ -867,8 +868,12 @@ class MultiTestSuite(object):
         """
         test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, [test_spec], workspace)
 
+        # Run IDs are reused across suites and pytest invocations. Keep the artifact
+        # numbering, but give every executable launch its own log directory.
+        log_run_id = f"{run_id}_{uuid.uuid4().hex}"
+
         # Cycle any old crash report in case it wasn't cycled properly.
-        editor_utils.cycle_crash_report(run_id, workspace)
+        editor_utils.cycle_crash_report(log_run_id, workspace)
 
         # Here we handle populating variables based on the type of executable under test.
         test_result = None
@@ -885,12 +890,16 @@ class MultiTestSuite(object):
             cmdline = ["-runpythontest", test_filename,
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
-                       "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+                       "-project-log-path", log_path_function(log_run_id, workspace)] + test_cmdline_args
         elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
             log_path_function = editor_utils.atom_tools_log_path
             log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
-                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
+                       "-logfile", os.path.join(log_path_function(log_run_id, workspace), log_name)] + test_cmdline_args
+        if cmdline:
+            log_directory = log_path_function(log_run_id, workspace)
+            os.makedirs(log_directory)
+            logger.info("Using test log directory: %s", log_directory)
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -898,11 +907,11 @@ class MultiTestSuite(object):
             executable.wait(test_spec.timeout)
             output = executable.get_output()
             return_code = executable.get_returncode()
-            executable_log_content = log_content_function(run_id, log_name, workspace)
+            executable_log_content = log_content_function(log_run_id, log_name, workspace)
             # Save the executable log.
             workspace.artifact_manager.set_dest_path(request.node.originalname)
             workspace.artifact_manager.save_artifact(
-                os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
+                os.path.join(log_path_function(log_run_id, workspace), log_name), f'({run_id}){log_name}')
             server_log_name = os.path.join(workspace.paths.project_log(), 'Server.log')
             game_log_name = os.path.join(workspace.paths.project_log(), 'Game.log')
             if os.path.exists(server_log_name) and os.path.getsize(server_log_name):
@@ -914,18 +923,18 @@ class MultiTestSuite(object):
             else:
                 has_crashed = return_code != self._test_fail_retcode
                 if has_crashed:
-                    crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
+                    crash_output = editor_utils.retrieve_crash_output(log_run_id, workspace, self._timeout_crash_log)
                     test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
-                    dmp_file_name = os.path.join(log_path_function(run_id, workspace), 'error.dmp')
+                    dmp_file_name = os.path.join(log_path_function(log_run_id, workspace), 'error.dmp')
                     if os.path.exists(dmp_file_name):
                         workspace.artifact_manager.save_artifact(dmp_file_name)
                     # Save the crash log
                     crash_file_name = os.path.join(
-                        log_path_function(run_id, workspace), os.path.basename(workspace.paths.crash_log()))
+                        log_path_function(log_run_id, workspace), os.path.basename(workspace.paths.crash_log()))
                     if os.path.exists(crash_file_name):
                         workspace.artifact_manager.save_artifact(crash_file_name)
-                        editor_utils.cycle_crash_report(run_id, workspace)
+                        editor_utils.cycle_crash_report(log_run_id, workspace)
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
@@ -933,10 +942,10 @@ class MultiTestSuite(object):
         except WaitTimeoutError:
             output = executable.get_output()
             executable.stop()
-            executable_log_content = log_content_function(run_id, log_name, workspace)
+            executable_log_content = log_content_function(log_run_id, log_name, workspace)
             test_result = Result.Timeout(test_spec, output, test_spec.timeout, executable_log_content)
 
-        executable_log_content = log_content_function(run_id, log_name, workspace)
+        executable_log_content = log_content_function(log_run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, executable_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -1135,8 +1144,12 @@ class MultiTestSuite(object):
         """
         test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, test_spec_list, workspace)
 
+        # Run IDs are reused across suites and pytest invocations. Keep the artifact
+        # numbering, but give every executable launch its own log directory.
+        log_run_id = f"{run_id}_{uuid.uuid4().hex}"
+
         # Cycle any old crash report in case it wasn't cycled properly
-        editor_utils.cycle_crash_report(run_id, workspace)
+        editor_utils.cycle_crash_report(log_run_id, workspace)
 
         results = {}
 
@@ -1181,7 +1194,7 @@ class MultiTestSuite(object):
             cmdline = ["-runpythontest", temp_batched_script_file.name,
                        "-pythontestcase", temp_batched_case_file.name,
                        "-logfile", f"@log@/{log_name}",
-                       "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+                       "-project-log-path", log_path_function(log_run_id, workspace)] + test_cmdline_args
         # Atom Tools application
         elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
             log_path_function = editor_utils.atom_tools_log_path
@@ -1189,7 +1202,11 @@ class MultiTestSuite(object):
             test_filenames_str = ";".join(
                 editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
             cmdline = ["-runpythontest", test_filenames_str,
-                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
+                       "-logfile", os.path.join(log_path_function(log_run_id, workspace), log_name)] + test_cmdline_args
+        if cmdline:
+            log_directory = log_path_function(log_run_id, workspace)
+            os.makedirs(log_directory)
+            logger.info("Using test log directory: %s", log_directory)
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -1199,11 +1216,11 @@ class MultiTestSuite(object):
             executable.wait(self.timeout_shared_test)
             output = executable.get_output()
             return_code = executable.get_returncode()
-            executable_log_content = log_content_function(run_id, log_name, workspace)
+            executable_log_content = log_content_function(log_run_id, log_name, workspace)
             # Save the executable log
             try:
                 full_log_name = f'({run_id}){log_name}'
-                path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
+                path_to_artifact = os.path.join(log_path_function(log_run_id, workspace), log_name)
                 workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:
@@ -1233,18 +1250,18 @@ class MultiTestSuite(object):
                             if not crashed_result:
                                 # First test with "Unknown" result (no data in output) is likely the one that crashed.
                                 crash_error = editor_utils.retrieve_crash_output(
-                                    run_id, workspace, self._timeout_crash_log)
+                                    log_run_id, workspace, self._timeout_crash_log)
                                 # Save the .dmp file which is generated on Windows only
                                 dmp_file_name = os.path.join(
-                                    log_path_function(run_id, workspace), 'error.dmp')
+                                    log_path_function(log_run_id, workspace), 'error.dmp')
                                 if os.path.exists(dmp_file_name):
                                     workspace.artifact_manager.save_artifact(dmp_file_name)
                                 # Save the crash log
-                                crash_file_name = os.path.join(log_path_function(run_id, workspace),
+                                crash_file_name = os.path.join(log_path_function(log_run_id, workspace),
                                                                os.path.basename(workspace.paths.crash_log()))
                                 if os.path.exists(crash_file_name):
                                     workspace.artifact_manager.save_artifact(crash_file_name)
-                                    editor_utils.cycle_crash_report(run_id, workspace)
+                                    editor_utils.cycle_crash_report(log_run_id, workspace)
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                                 results[test_spec_name] = Result.Crash(
@@ -1258,14 +1275,14 @@ class MultiTestSuite(object):
                                                                      f"crashed before this test could be executed"
                     # if all the tests ran, the one that has caused the crash is the last test
                     if not crashed_result:
-                        crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
-                        editor_utils.cycle_crash_report(run_id, workspace)
+                        crash_error = editor_utils.retrieve_crash_output(log_run_id, workspace, self._timeout_crash_log)
+                        editor_utils.cycle_crash_report(log_run_id, workspace)
                         results[test_spec_name] = Result.Crash(
                             result.test_spec, output, return_code, crash_error, result.log_output)
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
-            executable_log_content = log_content_function(run_id, log_name, workspace)
+            executable_log_content = log_content_function(log_run_id, log_name, workspace)
 
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
