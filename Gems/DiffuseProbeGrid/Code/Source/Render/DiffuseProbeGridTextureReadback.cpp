@@ -20,7 +20,11 @@ namespace AZ
 
         void DiffuseProbeGridTextureReadback::BeginTextureReadback(DiffuseProbeGridBakeTexturesCallback callback)
         {
-            AZ_Assert(m_readbackState == DiffuseProbeGridReadbackState::Idle, "DiffuseProbeGridTextureReadback is already processing a readback request");
+            if (!IsIdle())
+            {
+                AZ_Assert(false, "DiffuseProbeGridTextureReadback is already processing a readback request");
+                return;
+            }
 
             m_callback = callback;
 
@@ -30,6 +34,11 @@ namespace AZ
 
         void DiffuseProbeGridTextureReadback::Update(const AZ::Name& passName)
         {
+            if (IsReadbackInFlight())
+            {
+                return;
+            }
+
             if (m_readbackState == DiffuseProbeGridReadbackState::Idle || m_readbackState == DiffuseProbeGridReadbackState::Complete)
             {
                 return;
@@ -106,6 +115,12 @@ namespace AZ
 
         void DiffuseProbeGridTextureReadback::FrameBegin(AZ::RPI::Pass::FramePrepareParams& params)
         {
+            // AttachmentReadback::FrameBegin is a no-op while in flight, so skipping it is safe.
+            if (IsReadbackInFlight())
+            {
+                return;
+            }
+
             if (m_readbackState == DiffuseProbeGridReadbackState::Idle)
             {
                 return;

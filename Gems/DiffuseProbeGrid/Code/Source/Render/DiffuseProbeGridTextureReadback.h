@@ -40,9 +40,11 @@ namespace AZ
             void Update(const AZ::Name& passName);
             void FrameBegin(AZ::RPI::Pass::FramePrepareParams& params);
 
-            bool IsIdle() const { return m_readbackState == DiffuseProbeGridReadbackState::Idle; }
+            bool IsIdle() const { return !IsReadbackInFlight() && m_readbackState == DiffuseProbeGridReadbackState::Idle; }
 
         private:
+            //! True while the fence wait thread may still write m_readbackState and the results.
+            bool IsReadbackInFlight() const { return m_attachmentReadback != nullptr && !m_attachmentReadback->IsReady(); }
 
             DiffuseProbeGrid* m_diffuseProbeGrid = nullptr;
             DiffuseProbeGridReadbackState m_readbackState = DiffuseProbeGridReadbackState::Idle;

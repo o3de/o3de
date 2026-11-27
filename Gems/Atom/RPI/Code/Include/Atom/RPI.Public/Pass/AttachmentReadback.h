@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <AzCore/std/parallel/atomic.h>
 
 namespace AZ
 {
@@ -103,7 +104,7 @@ namespace AZ
             bool IsFinished() const;
 
             //! Whether it's ready to readback an attachment
-            //! Returns false if it's not initialized or it's in the process of readback from another attachment
+            //! Returns false if it's not initialized or a readback hasn't fully finished yet.
             bool IsReady() const;
 
             //! Prepare this scope producer for the frame.
@@ -171,7 +172,8 @@ namespace AZ
             uint32_t m_readbackBufferCurrentIndex = 0u;
             uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
 
-            ReadbackState m_state = ReadbackState::Uninitialized;
+            //! Written on the main thread and the fence wait thread.
+            AZStd::atomic<ReadbackState> m_state{ ReadbackState::Uninitialized };
 
             Ptr<RHI::Fence> m_fence;
 
