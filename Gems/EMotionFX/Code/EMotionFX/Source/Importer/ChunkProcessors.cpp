@@ -1135,7 +1135,7 @@ namespace EMotionFX
         {
             return false;
         }
-        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_size, importParams.m_endianType);
+        MCore::Endian::ConvertUnsignedInt64(&fileEventTable.m_size, importParams.m_endianType);
 
         if (GetLogging())
         {
@@ -1172,7 +1172,7 @@ namespace EMotionFX
         {
             return false;
         }
-        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_size, importParams.m_endianType);
+        MCore::Endian::ConvertUnsignedInt64(&fileEventTable.m_size, importParams.m_endianType);
 
         if (GetLogging())
         {
