@@ -94,6 +94,7 @@ set(FILES
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.cpp
     API/EditorPythonScriptNotificationsBus.h
+    API/EditorSequenceSystemLifecycle.h
     API/EntityPropertyEditorNotificationBus.cpp
     API/EntityPropertyEditorNotificationBus.h
     API/EntityPropertyEditorRequestsBus.cpp

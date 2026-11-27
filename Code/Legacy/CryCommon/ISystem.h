@@ -47,7 +47,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
-struct IMovieSystem;
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -795,7 +794,6 @@ struct ISystem
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
     virtual ICryFont* GetICryFont() = 0;
-    virtual IMovieSystem* GetIMovieSystem() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;

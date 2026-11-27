@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <SandboxAPI.h>
+
 #include <QDialog>
 #include <QScopedPointer>
 #include "Util/Variable.h"
@@ -18,7 +20,7 @@ namespace Ui {
     class CGenericSelectItemDialog;
 }
 
-class CGenericSelectItemDialog
+class SANDBOX_API CGenericSelectItemDialog
     : public QDialog
 {
     Q_OBJECT
