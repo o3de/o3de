@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Application/Application.h>
@@ -24,6 +25,8 @@
 #include <Source/PythonSystemComponent.h>
 #include <Source/PythonReflectionComponent.h>
 #include <Source/PythonMarshalComponent.h>
+
+#include <stdexcept>
 
 namespace UnitTest
 {
@@ -75,11 +78,8 @@ namespace UnitTest
 
         void SetUp() override
         {
-            // fetch the Engine Root folder
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                settingsRegistry->Get(m_engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            }
+            // tests can run from a relocated copy of the binaries, but Python belongs to the source engine set at configure time
+            m_engineRoot = AZ::IO::FixedMaxPath(EDITOR_PYTHON_BINDINGS_TEST_ENGINE_ROOT).LexicallyNormal();
 
             m_fileIOHelper = AZStd::make_unique<FileIOHelper>();
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
@@ -89,6 +89,12 @@ namespace UnitTest
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadSettingsRegistry = false;
             m_app.Create(appDesc, startupParameters);
+
+            // point AZ::Utils::GetEnginePath and the registry's engine root at that same source engine
+            AZ::CommandLine engineCommandLine;
+            engineCommandLine.Parse(AZ::CommandLine::ParamContainer{ AZStd::string::format("--engine-path=%s", m_engineRoot.c_str()) });
+            AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*AZ::SettingsRegistry::Get(), engineCommandLine);
+            AZ::SettingsRegistry::Get()->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, m_engineRoot.Native());
 
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
         }
@@ -110,13 +116,19 @@ namespace UnitTest
             }
 
             auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-            if (editorPythonEventsInterface)
+            if (!editorPythonEventsInterface)
             {
-                if (editorPythonEventsInterface->StartPython())
+                throw std::runtime_error("Embedded Python service is missing from the test fixture");
+            }
+
+            if (!editorPythonEventsInterface->IsPythonActive())
+            {
+                if (!editorPythonEventsInterface->StartPython())
                 {
-                    // Keep the GIL for tests that call pybind11 directly.
-                    PyEval_RestoreThread(PyGILState_GetThisThreadState());
+                    throw std::runtime_error("Embedded Python failed to initialize; inspect its startup diagnostics");
                 }
+                // Keep the GIL for tests that call pybind11 directly.
+                PyEval_RestoreThread(PyGILState_GetThisThreadState());
             }
         }
 

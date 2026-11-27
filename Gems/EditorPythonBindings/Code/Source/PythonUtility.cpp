@@ -544,8 +544,14 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        pybind11::object BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator)
+        pybind11::object BehaviorValueParameterToPython(
+            AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator, AZStd::string* error)
         {
+            if (error)
+            {
+                error->clear();
+            }
+
             auto pyValue = Internal::ConvertFromEnumClass(behaviorValue);
             if (pyValue.has_value())
             {
@@ -568,10 +574,54 @@ namespace EditorPythonBindings
             {
                 return customResult.value();
             }
-            else if (behaviorValue.m_typeId != AZ::Uuid::CreateNull() && behaviorValue.GetValueAddress())
+
+            const bool isNullPointer =
+                (behaviorValue.m_traits & AZ::BehaviorParameter::TR_POINTER) && !behaviorValue.GetValueAddress();
+
+            // a registered marshaller declined the value; a structured call reports that rather than falling back to a proxy
+            if (error && !isNullPointer && PythonMarshalTypeRequestBus::HasHandlers(behaviorValue.m_typeId))
             {
-                return PythonProxyObjectManagement::CreatePythonProxyObject(behaviorValue.m_typeId, behaviorValue.GetValueAddress());
+                *error = AZStd::string::format(
+                    "Registered native marshaller refused result type %s", behaviorValue.m_typeId.ToString<AZStd::string>().c_str());
+                return pybind11::none();
             }
+
+            if (behaviorValue.m_typeId != AZ::Uuid::CreateNull() && behaviorValue.GetValueAddress())
+            {
+                if (error)
+                {
+                    // the proxy owns a copy of the result, so a structured call needs an editor scoped class with a cloner
+                    const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(behaviorValue.m_typeId);
+                    const bool canCopyIntoProxy =
+                        behaviorClass && Scope::IsBehaviorFlaggedForEditor(behaviorClass->m_attributes) && behaviorClass->m_cloner;
+                    if (!canCopyIntoProxy)
+                    {
+                        *error = AZStd::string::format(
+                            "Result type %s has no copyable Automation/Common class or native marshaller",
+                            behaviorValue.m_typeId.ToString<AZStd::string>().c_str());
+                        return pybind11::none();
+                    }
+                }
+
+                auto proxy = PythonProxyObjectManagement::CreatePythonProxyObject(behaviorValue.m_typeId, behaviorValue.GetValueAddress());
+                if (error && proxy.is_none())
+                {
+                    *error = AZStd::string::format(
+                        "Cannot create owned proxy for result type %s", behaviorValue.m_typeId.ToString<AZStd::string>().c_str());
+                }
+                return proxy;
+            }
+
+            if (error)
+            {
+                // a null pointer result is a valid None for a structured call
+                if (isNullPointer)
+                {
+                    return pybind11::none();
+                }
+                *error = AZStd::string::format("Cannot marshal result type %s", behaviorValue.m_typeId.ToString<AZStd::string>().c_str());
+            }
+
             AZ_Warning("python", false, "Cannot convert type %s",
                 behaviorValue.m_name ? behaviorValue.m_name : behaviorValue.m_typeId.ToString<AZStd::string>().c_str());
             return pybind11::cast<pybind11::none>(Py_None);
@@ -592,12 +642,44 @@ namespace EditorPythonBindings
         constexpr size_t MaxBehaviorMethodArguments = 32;
         using BehaviorMethodArgumentArray = AZStd::array<AZ::BehaviorArgument, MaxBehaviorMethodArguments>;
 
-        pybind11::object InvokeBehaviorMethodWithResult(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs, AZ::BehaviorObject self, AZ::BehaviorArgument& result)
+        pybind11::object InvokeBehaviorMethodWithResult(
+            AZ::BehaviorMethod* behaviorMethod,
+            pybind11::args pythonInputArgs,
+            AZ::BehaviorObject self,
+            AZ::BehaviorArgument& result,
+            AZStd::string* error = nullptr,
+            bool* didInvoke = nullptr)
         {
+            // structured callers receive the reason for a failure; Python callers only get the warning and None
+            auto fail = [error](AZStd::string message) -> pybind11::object
+            {
+                if (error)
+                {
+                    *error = AZStd::move(message);
+                }
+                return pybind11::none();
+            };
+
             if (behaviorMethod->GetNumArguments() > MaxBehaviorMethodArguments || pythonInputArgs.size() > MaxBehaviorMethodArguments)
             {
                 AZ_Error("python", false, "Too many arguments for class method; set:%zu max:%zu", behaviorMethod->GetMinNumberOfArguments(), MaxBehaviorMethodArguments);
-                return pybind11::cast<pybind11::none>(Py_None);
+                return fail("Too many arguments");
+            }
+
+            // +1 for the 'this' coming in from a marshaled Python/BehaviorObject
+            const auto totalPythonArgs = pythonInputArgs.size() + (self.IsValid() ? 1 : 0);
+
+            // a structured call rejects a wrong argument count before converting any argument
+            const bool isArgumentCountValid =
+                totalPythonArgs >= behaviorMethod->GetMinNumberOfArguments() && totalPythonArgs <= behaviorMethod->GetNumArguments();
+            if (error && !isArgumentCountValid)
+            {
+                return fail(AZStd::string::format(
+                    "Method %s expects %zu..%zu arguments; got %zu",
+                    behaviorMethod->m_name.c_str(),
+                    behaviorMethod->GetMinNumberOfArguments(),
+                    behaviorMethod->GetNumArguments(),
+                    totalPythonArgs));
             }
 
             Convert::StackVariableAllocator stackVariableAllocator;
@@ -627,7 +709,7 @@ namespace EditorPythonBindings
                 else
                 {
                     AZ_Warning("python", false, "Missing self info index 0 in class method %s", behaviorMethod->m_name.c_str());
-                    return pybind11::cast<pybind11::none>(Py_None);
+                    return fail("Missing self parameter");
                 }
             }
 
@@ -641,7 +723,7 @@ namespace EditorPythonBindings
                     if (!behaviorArgument)
                     {
                         AZ_Warning("python", false, "Missing argument at index %d in class method %s", parameterCount, behaviorMethod->m_name.c_str());
-                        return pybind11::cast<pybind11::none>(Py_None);
+                        return fail("Missing reflected argument");
                     }
                     if (!Convert::PythonToBehaviorValueParameter(*behaviorArgument, currentPythonArg, parameters[parameterCount], stackVariableAllocator))
                     {
@@ -650,18 +732,21 @@ namespace EditorPythonBindings
                             parameterCount,
                             behaviorArgument->m_name, behaviorArgument->m_typeId.ToString<AZStd::string>().c_str(),
                             Convert::GetPythonTypeName(currentPythonArg).c_str());
-                        return pybind11::cast<pybind11::none>(Py_None);
+                        return fail(AZStd::string::format(
+                            "Argument %d conversion failed: expected native type %s; received %s",
+                            parameterCount,
+                            behaviorArgument->m_typeId.ToString<AZStd::string>().c_str(),
+                            Convert::GetPythonTypeName(currentPythonArg).c_str()));
                     }
                     ++parameterCount;
                 }
             }
 
             // did the Python script send the right amount of arguments?
-            const auto totalPythonArgs = pythonInputArgs.size() + (self.IsValid() ? 1 : 0); // +1 for the 'this' coming in from a marshaled Python/BehaviorObject
             if (totalPythonArgs < behaviorMethod->GetMinNumberOfArguments())
             {
                 AZ_Warning("python", false, "Method %s requires at least %zu parameters got %zu", behaviorMethod->m_name.c_str(), behaviorMethod->GetMinNumberOfArguments(), totalPythonArgs);
-                return pybind11::cast<pybind11::none>(Py_None);
+                return fail("Not enough arguments");
             }
             else if (totalPythonArgs > behaviorMethod->GetNumArguments())
             {
@@ -674,39 +759,154 @@ namespace EditorPythonBindings
                 {
                     if (behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs), &result))
                     {
+                        if (didInvoke)
+                        {
+                            *didInvoke = true;
+                        }
                         result.m_azRtti = behaviorMethod->GetResult()->m_azRtti;
                         result.m_typeId = behaviorMethod->GetResult()->m_typeId;
                         result.m_traits = behaviorMethod->GetResult()->m_traits;
-                        return Convert::BehaviorValueParameterToPython(result, stackVariableAllocator);
+                        return Convert::BehaviorValueParameterToPython(result, stackVariableAllocator, error);
                     }
                     else
                     {
                         AZ_Warning("python", false, "Failed to call class method %s", behaviorMethod->m_name.c_str());
+                        return fail(AZStd::string::format("Failed to call class method %s", behaviorMethod->m_name.c_str()));
                     }
                 }
                 else
                 {
                     AZ_Warning("python", false, "Failed to allocate return value for method %s", behaviorMethod->m_name.c_str());
+                    return fail(AZStd::string::format("Failed to allocate return value for method %s", behaviorMethod->m_name.c_str()));
                 }
             }
             else if (!behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs)))
             {
                 AZ_Warning("python", false, "Failed to invoke class method %s", behaviorMethod->m_name.c_str());
+                return fail(AZStd::string::format("Failed to invoke class method %s", behaviorMethod->m_name.c_str()));
+            }
+
+            // the method has no result, and the call succeeded
+            if (didInvoke)
+            {
+                *didInvoke = true;
             }
             return pybind11::cast<pybind11::none>(Py_None);
         }
 
-        pybind11::object InvokeBehaviorMethod(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs, AZ::BehaviorObject self)
+        //! Holds the storage a BehaviorMethod result is allocated into, and frees it when the call's scope ends,
+        //! including when marshaling the result to Python throws
+        class ScopedBehaviorResult
         {
-            AZ::BehaviorArgument result;
-            result.m_value = nullptr;
-            pybind11::object pythonOutput = InvokeBehaviorMethodWithResult(behaviorMethod, pythonInputArgs, self, result);
-            if (result.m_value)
+        public:
+            AZ_DISABLE_COPY_MOVE(ScopedBehaviorResult);
+
+            ScopedBehaviorResult()
             {
-                Internal::DeallocateBehaviorValueParameter(result);
+                m_argument.m_value = nullptr;
             }
 
-            return pythonOutput;
+            ~ScopedBehaviorResult()
+            {
+                if (m_argument.m_value)
+                {
+                    Internal::DeallocateBehaviorValueParameter(m_argument);
+                }
+            }
+
+            AZ::BehaviorArgument& GetArgument()
+            {
+                return m_argument;
+            }
+
+        private:
+            AZ::BehaviorArgument m_argument;
+        };
+
+        pybind11::object InvokeBehaviorMethod(
+            AZ::BehaviorMethod* behaviorMethod,
+            pybind11::args pythonInputArgs,
+            AZ::BehaviorObject self,
+            AZStd::string* error = nullptr,
+            bool* didInvoke = nullptr)
+        {
+            ScopedBehaviorResult result;
+            return InvokeBehaviorMethodWithResult(behaviorMethod, pythonInputArgs, self, result.GetArgument(), error, didInvoke);
+        }
+
+        //! Shared by both StructuredMethod overloads, which have already checked method and reset didInvoke
+        StructuredResult StructuredInvoke(AZ::BehaviorMethod* method, pybind11::args args, AZ::BehaviorObject self, bool* didInvoke)
+        {
+            try
+            {
+                AZStd::string error;
+                auto value = InvokeBehaviorMethod(method, args, self, &error, didInvoke);
+
+                // the native call or a conversion can set a Python error without throwing;
+                // constructing error_already_set takes that error and clears it
+                if (PyErr_Occurred())
+                {
+                    pybind11::error_already_set pythonError;
+                    return AZ::Failure(AZStd::string(pythonError.what()));
+                }
+
+                if (!error.empty())
+                {
+                    return AZ::Failure(AZStd::move(error));
+                }
+                return AZ::Success(AZStd::move(value));
+            }
+            catch (const std::exception& exception)
+            {
+                return AZ::Failure(AZStd::string(exception.what()));
+            }
+        }
+
+        StructuredResult StructuredMethod(AZ::BehaviorMethod* method, pybind11::object target, pybind11::args args, bool* didInvoke)
+        {
+            if (didInvoke)
+            {
+                *didInvoke = false;
+            }
+
+            if (!method)
+            {
+                return AZ::Failure(AZStd::string("Missing reflected method"));
+            }
+
+            // the target goes in as argument zero and is marshaled like any other argument,
+            // so the proxy keeps its actual RTTI and can be cast to the base class a method belongs to
+            pybind11::tuple callArgs(args);
+            if (!target.is_none())
+            {
+                if (!pybind11::isinstance<PythonProxyObject>(target))
+                {
+                    return AZ::Failure(AZStd::string("Target is not a reflected object"));
+                }
+
+                callArgs = pybind11::tuple(args.size() + 1);
+                callArgs[0] = target;
+                for (size_t index = 0; index < args.size(); ++index)
+                {
+                    callArgs[index + 1] = args[index];
+                }
+            }
+
+            return StructuredInvoke(method, pybind11::reinterpret_borrow<pybind11::args>(callArgs), {}, didInvoke);
+        }
+
+        StructuredResult StructuredMethod(AZ::BehaviorMethod* method, AZ::BehaviorObject self, pybind11::args args, bool* didInvoke)
+        {
+            if (didInvoke)
+            {
+                *didInvoke = false;
+            }
+
+            if (!method || !self.IsValid() || method->GetNumArguments() == 0)
+            {
+                return AZ::Failure(AZStd::string("Missing constructor method or storage"));
+            }
+            return StructuredInvoke(method, args, self, didInvoke);
         }
 
         pybind11::object StaticMethod(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs)
@@ -734,25 +934,25 @@ namespace EditorPythonBindings
 
     namespace Text
     {
-        namespace Internal
+        AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute)
         {
-            AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute)
+            AZStd::string attributeValue = "";
+            if (auto attributeItem = azrtti_cast<AZ::AttributeData<AZStd::string>*>(AZ::FindAttribute(attribute, attributes)))
             {
-                AZStd::string attributeValue = "";
-                if (auto attributeItem = azrtti_cast<AZ::AttributeData<AZStd::string>*>(AZ::FindAttribute(attribute, attributes)))
-                {
-                    attributeValue = attributeItem->Get(nullptr);
-                    return attributeValue;
-                }
-
-                if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, attributes)))
-                {
-                    attributeValue = attributeItem->Get(nullptr);
-                    return attributeValue;
-                }
-                return {};
+                attributeValue = attributeItem->Get(nullptr);
+                return attributeValue;
             }
 
+            if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, attributes)))
+            {
+                attributeValue = attributeItem->Get(nullptr);
+                return attributeValue;
+            }
+            return {};
+        }
+
+        namespace Internal
+        {
             AZStd::string TypeNameFallback(const AZ::TypeId& typeId)
             {
                 // fall back to class data m_name
@@ -1012,7 +1212,7 @@ namespace EditorPythonBindings
             AZStd::string comment = behaviorEBus->m_toolTip;
             if (comment.empty())
             {
-                comment = Internal::ReadStringAttribute(behaviorEBus->m_attributes, AZ::Script::Attributes::ToolTip);
+                comment = ReadStringAttribute(behaviorEBus->m_attributes, AZ::Script::Attributes::ToolTip);
             }
 
             if (!behaviorEBus->m_events.empty())
@@ -1149,7 +1349,7 @@ namespace EditorPythonBindings
             }
             if (defineTooltip)
             {
-                AZStd::string methodTooltip = Internal::ReadStringAttribute(behaviorMethod.m_attributes, AZ::Script::Attributes::ToolTip);
+                AZStd::string methodTooltip = ReadStringAttribute(behaviorMethod.m_attributes, AZ::Script::Attributes::ToolTip);
                 if (!methodTooltip.empty())
                 {
                     methodTooltipAndDebugDescription += methodTooltip;
@@ -1199,8 +1399,7 @@ namespace EditorPythonBindings
                 }
                 if (defineTooltip)
                 {
-                    AZStd::string classTooltip =
-                        Internal::ReadStringAttribute(behaviorClass->m_attributes, AZ::Script::Attributes::ToolTip);
+                    AZStd::string classTooltip = ReadStringAttribute(behaviorClass->m_attributes, AZ::Script::Attributes::ToolTip);
                     if (!classTooltip.empty())
                     {
                         Internal::AddCommentBlock(1, classTooltip, body);

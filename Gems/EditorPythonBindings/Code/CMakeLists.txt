@@ -95,6 +95,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 .
                 Tests
                 Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                EDITOR_PYTHON_BINDINGS_TEST_ENGINE_ROOT="${LY_ROOT_FOLDER}"
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest

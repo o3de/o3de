@@ -338,6 +338,11 @@ namespace EditorPythonBindings
                         // Reset the result parameter
                         m_resultParam = {};
 
+                        // Keep the returned Python object alive until the next result. A proxy result is passed to native
+                        // code as a pointer into that object, and Python frees the proxy when its last reference drops.
+                        // Releasing it here makes BehaviorEBusHandler::CallResult copy freed memory.
+                        m_resultObject = pyResult;
+
                         const AZ::u32 traits = result->m_traits;
                         if (Convert::PythonToBehaviorValueParameter(*result, pyResult, m_resultParam, m_stackVariableAllocator))
                         {
@@ -365,6 +370,7 @@ namespace EditorPythonBindings
             AZStd::unordered_map<AZStd::string, pybind11::function> m_callbackMap;
             Convert::StackVariableAllocator m_stackVariableAllocator;
             AZ::BehaviorArgument m_resultParam;
+            pybind11::object m_resultObject;
         };
     }
 
