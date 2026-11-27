@@ -144,6 +144,11 @@ namespace EMotionFX
             void SetActiveMotionSet(const char* activeMotionSetName) override;
             void StartAnimGraph() override;
             void StopAnimGraph() override;
+            void FireEvent(const char* eventName) override;
+            void ClearEvent(const char* eventName) override;
+            void ClearAllEvents() override;
+            bool IsStateActive(const char* stateName) override;
+            bool TransitionToState(const char* stateName) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
