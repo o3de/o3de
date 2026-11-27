@@ -375,14 +375,37 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
+    // Native render viewports may not receive Qt hover or leave events, so query the cursor directly.
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::LiveMousePosition() const
+    {
+        const QPoint globalCursorPosition = QCursor::pos();
+        const QPoint localCursorPosition = mapFromGlobal(globalCursorPosition);
+        if (isVisible() && rect().contains(localCursorPosition) && QApplication::widgetAt(globalCursorPosition) == this)
+        {
+            return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(localCursorPosition * devicePixelRatioF());
+        }
+
+        return AZStd::nullopt;
+    }
+
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mousePosition.has_value();
+        return MousePosition().has_value();
     }
 
     AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
     {
-        return m_mousePosition;
+        if (const auto liveMousePosition = LiveMousePosition(); liveMousePosition.has_value())
+        {
+            return liveMousePosition;
+        }
+
+        if (QApplication::mouseButtons() != Qt::NoButton && rect().contains(mapFromGlobal(QCursor::pos())))
+        {
+            return m_mousePosition;
+        }
+
+        return AZStd::nullopt;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
