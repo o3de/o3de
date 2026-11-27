@@ -113,11 +113,16 @@ namespace AZ
             RHI::ShaderInputNameIndex m_borderUpdateColumnDistanceSrgProbeTextureNameIndex = "m_probeTexture";
             RHI::ShaderInputNameIndex m_borderUpdateColumnDistanceSrgNumTexelsNameIndex = "m_numTexels";
 
-            RHI::ShaderInputNameIndex m_relocationSrgGridDataNameIndex = "m_gridData";
-            RHI::ShaderInputNameIndex m_relocationSrgProbeRayTraceNameIndex = "m_probeRayTrace";
-            RHI::ShaderInputNameIndex m_relocationSrgProbeDataNameIndex = "m_probeData";
-            RHI::ShaderInputNameIndex m_relocationSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
-            RHI::ShaderInputNameIndex m_relocationSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+            struct RelocationInputs
+            {
+                RHI::ShaderInputNameIndex m_gridData = "m_gridData";
+                RHI::ShaderInputNameIndex m_probeRayTrace = "m_probeRayTrace";
+                RHI::ShaderInputNameIndex m_probeData = "m_probeData";
+                RHI::ShaderInputNameIndex m_frameUpdateCount = "m_frameUpdateCount";
+                RHI::ShaderInputNameIndex m_frameUpdateIndex = "m_frameUpdateIndex";
+            };
+            RelocationInputs m_relocationInputs;
+            RelocationInputs m_contactRelocationInputs;
 
             RHI::ShaderInputNameIndex m_classificationSrgGridDataNameIndex = "m_gridData";
             RHI::ShaderInputNameIndex m_classificationSrgProbeRayTraceNameIndex = "m_probeRayTrace";
@@ -200,6 +205,7 @@ namespace AZ
             void SetUseDiffuseIbl(bool useDiffuseIbl) { m_useDiffuseIbl = useDiffuseIbl; }
 
             DiffuseProbeGridMode GetMode() const { return m_mode; }
+            bool UsesSoftwareTracing() const { return m_usesSoftwareTracing; }
             void SetMode(DiffuseProbeGridMode mode);
 
             bool GetScrolling() const { return m_scrolling; }
@@ -209,7 +215,7 @@ namespace AZ
             void SetEdgeBlendIbl(bool edgeBlendIbl);
 
             uint32_t GetFrameUpdateCount() const { return m_frameUpdateCount; }
-            void SetFrameUpdateCount(uint32_t frameUpdateCount) { m_frameUpdateCount = frameUpdateCount; }
+            void SetFrameUpdateCount(uint32_t frameUpdateCount);
 
             uint32_t GetFrameUpdateIndex() const { return m_frameUpdateIndex; }
 
@@ -229,8 +235,9 @@ namespace AZ
             void SetVisualizationSphereRadius(float visualizationSphereRadius);
 
             uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
-            void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
-            void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
+            bool IsContactRelocation() const { return m_relocationFrame < m_frameUpdateCount; }
+            void AdvanceRelocation();
+            void ResetRemainingRelocationIterations();
 
             void ResetCullingVisibility();
             bool GetIsVisible() const;
@@ -250,7 +257,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnIrradianceSrg() const { return m_borderUpdateColumnIrradianceSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowDistanceSrg() const { return m_borderUpdateRowDistanceSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnDistanceSrg() const { return m_borderUpdateColumnDistanceSrg; }
-            const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() const { return m_relocationSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() const { return IsContactRelocation() ? m_contactRelocationSrg : m_relocationSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetClassificationSrg() const { return m_classificationSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetVisualizationPrepareSrg() const { return m_visualizationPrepareSrg; }
@@ -270,6 +277,7 @@ namespace AZ
             void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::ImageView* outputImageView);
             void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateQuerySrgBindings(const Data::Instance<RPI::ShaderResourceGroup>& srg, float ambientMultiplier);
 
             // textures
             const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
@@ -377,6 +385,7 @@ namespace AZ
             AZ::SimpleLcgRandom m_random;
 
             // probe relocation settings
+            uint32_t m_relocationFrame = 0;
             int32_t m_remainingRelocationIterations = DefaultNumRelocationIterations;
 
             // render data
@@ -394,6 +403,7 @@ namespace AZ
 
             // grid mode (RealTime or Baked)
             DiffuseProbeGridMode m_mode = DiffuseProbeGridMode::RealTime;
+            bool m_usesSoftwareTracing = false;
 
             // grid data buffer
             RHI::Ptr<RHI::Buffer> m_gridDataBuffer;
@@ -432,6 +442,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_borderUpdateRowDistanceSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_borderUpdateColumnDistanceSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_relocationSrg;
+            Data::Instance<RPI::ShaderResourceGroup> m_contactRelocationSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_classificationSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_renderObjectSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_querySrg;

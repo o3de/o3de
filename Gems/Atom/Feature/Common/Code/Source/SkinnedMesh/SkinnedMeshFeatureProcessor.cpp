@@ -194,6 +194,33 @@ namespace AZ
 
                 const RPI::Cullable& cullable = (*renderProxy.m_meshHandle)->GetCullable();
 
+                if (m_lowestLodSkinningEnabled && !renderProxy.m_dispatchItemsByLod.empty())
+                {
+                    auto* meshes = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessorInterface>();
+                    if (meshes && meshes->GetVisible(*renderProxy.m_meshHandle) && meshes->GetRayTracingEnabled(*renderProxy.m_meshHandle))
+                    {
+                        // Geometry tracing consumes the lowest LOD even when rasterization selects a different LOD.
+                        // The dispatch sets also deduplicate the normal view-driven submissions below.
+                        const size_t lod = renderProxy.m_dispatchItemsByLod.size() - 1;
+                        AZStd::lock_guard lock(m_dispatchItemMutex);
+                        for (const auto& dispatch : renderProxy.m_dispatchItemsByLod[lod])
+                        {
+                            if (dispatch->IsEnabled())
+                            {
+                                m_skinningDispatches.insert(&dispatch->GetRHIDispatchItem());
+                            }
+                        }
+                        for (const auto& dispatch : renderProxy.m_morphTargetDispatchItemsByLod[lod])
+                        {
+                            if (dispatch && dispatch->GetWeight() > AZ::Constants::FloatEpsilon)
+                            {
+                                m_morphTargetDispatches.insert(&dispatch->GetRHIDispatchItem());
+                            }
+                        }
+                    }
+                }
+
+
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
                     RPI::View* view = viewPtr.get();

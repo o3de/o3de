@@ -348,6 +348,11 @@ namespace AZ
             virtual void UpdateFallbackPBRMaterialEntry(
                 const MeshInfoHandle handle, AZStd::function<bool(FallbackPBR::MaterialEntry*)> updateFunction) = 0;
             virtual const Data::Instance<RPI::Buffer>& GetFallbackPBRMaterialBuffer() const = 0;
+
+            //! Visits loaded, explicitly visible meshes enabled for ray tracing, including meshes outside the view frustum.
+            //! Independent of hardware ray tracing support. Call after feature processor simulation; the callback must not
+            //! acquire/release meshes or retain the ModelDataInstanceInterface reference beyond this call.
+            virtual void EnumerateRayTracingMeshes(const AZStd::function<void(ModelDataInstanceInterface&)>& visitor) = 0;
         };
     } // namespace Render
 } // namespace AZ

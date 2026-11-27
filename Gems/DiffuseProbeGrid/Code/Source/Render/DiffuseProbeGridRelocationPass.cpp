@@ -42,41 +42,46 @@ namespace AZ
             }
             else
             {
-                LoadShader();
+                LoadShader(m_relocation, "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRelocation.azshader");
+                LoadShader(m_contactRelocation, "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridContactRelocation.azshader");
+                if (!m_contactRelocation.m_pipelineState)
+                {
+                    m_contactRelocation = m_relocation;
+                }
             }
         }
 
-        void DiffuseProbeGridRelocationPass::LoadShader()
+        void DiffuseProbeGridRelocationPass::LoadShader(RelocationShader& shader, const char* shaderFilePath)
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRelocation.azshader";
-            m_shader = RPI::LoadCriticalShader(shaderFilePath);
-            if (m_shader == nullptr)
+            shader.m_shader = RPI::LoadCriticalShader(shaderFilePath);
+            if (shader.m_shader == nullptr)
             {
                 return;
             }
 
             // load pipeline state
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, m_shader->GetDefaultShaderOptions());
-            m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            const auto& shaderVariant = shader.m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shader.m_shader->GetDefaultShaderOptions());
+            shader.m_pipelineState = shader.m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
             // load Pass Srg asset
-            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+            shader.m_srgLayout = shader.m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
             // retrieve the number of threads per thread group from the shader
-            const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
+            const auto outcome = RPI::GetComputeShaderNumThreads(shader.m_shader->GetAsset(), shader.m_dispatchArgs);
             if (!outcome.IsSuccess())
             {
-                AZ_Error("PassSystem", false, "[DiffuseProbeRelocationPass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
+                shader.m_pipelineState = nullptr;
+                AZ_Error("PassSystem", false, "[DiffuseProbeRelocationPass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath, outcome.GetError().c_str());
             }
         }
 
         bool DiffuseProbeGridRelocationPass::IsEnabled() const
         {
-            if (!RenderPass::IsEnabled())
+            if (!m_relocation.m_pipelineState || !RenderPass::IsEnabled())
             {
                 return false;
             }
@@ -87,29 +92,24 @@ namespace AZ
                 return false;
             }
 
-            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
-                return false;
-            }
-
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).empty())
             {
                 // no diffuse probe grids
                 return false;
             }
 
+            auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
             // check TLAS version
-            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            uint32_t rayTracingDataRevision = !diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids().empty() && rayTracingFeatureProcessor ?
+                rayTracingFeatureProcessor->GetRevision() : m_rayTracingDataRevision;
             if (rayTracingDataRevision != m_rayTracingDataRevision)
             {
                 return true;
             }
 
             // check to see if any grids need relocation
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 if (diffuseProbeGrid->GetRemainingRelocationIterations() > 0)
                 {
@@ -125,13 +125,13 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
 
             // reset the relocation iterations on the grids if the TLAS was updated
-            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            uint32_t rayTracingDataRevision = !diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids().empty() && rayTracingFeatureProcessor ?
+                rayTracingFeatureProcessor->GetRevision() : m_rayTracingDataRevision;
             if (rayTracingDataRevision != m_rayTracingDataRevision)
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleHardwareProbeGrids())
                 {
                     diffuseProbeGrid->ResetRemainingRelocationIterations();
                 }
@@ -149,9 +149,9 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this).size()));
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // grid data
                 {
@@ -189,14 +189,20 @@ namespace AZ
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                diffuseProbeGrid->UpdateRelocationSrg(m_shader, m_srgLayout);
-                if (!diffuseProbeGrid->GetRelocationSrg()->IsQueuedForCompile())
+                if (diffuseProbeGrid->GetRemainingRelocationIterations() == 0)
                 {
-                    diffuseProbeGrid->GetRelocationSrg()->Compile();
+                    continue;
+                }
+                const auto& shader = diffuseProbeGrid->IsContactRelocation() ? m_contactRelocation : m_relocation;
+                diffuseProbeGrid->UpdateRelocationSrg(shader.m_shader, shader.m_srgLayout);
+                const auto& srg = diffuseProbeGrid->GetRelocationSrg();
+                if (!srg->IsQueuedForCompile())
+                {
+                    srg->Compile();
                 }
             }
         }
@@ -208,16 +214,22 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             // submit the DispatchItems for each DiffuseProbeGrid in this range
+            const auto& grids = diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this);
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
-                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+                const auto& diffuseProbeGrid = grids[index];
+                if (diffuseProbeGrid->GetRemainingRelocationIterations() == 0)
+                {
+                    continue;
+                }
 
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetRelocationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
                 RHI::DeviceDispatchItem dispatchItem;
-                dispatchItem.m_arguments = m_dispatchArgs;
-                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
+                const auto& shader = diffuseProbeGrid->IsContactRelocation() ? m_contactRelocation : m_relocation;
+                dispatchItem.m_arguments = shader.m_dispatchArgs;
+                dispatchItem.m_pipelineState = shader.m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
@@ -232,10 +244,10 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             // submit the DispatchItems for each DiffuseProbeGrid
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGridsForUpdate(*this))
             {
                 // relocation stops after a limited number of iterations
-                diffuseProbeGrid->DecrementRemainingRelocationIterations();
+                diffuseProbeGrid->AdvanceRelocation();
             }
 
             RenderPass::FrameEndInternal();

@@ -75,6 +75,13 @@
         },
         {
             "assetId": {
+                "guid": "{5AA4293B-96DA-5566-8C5C-7ACBD56854D7}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridcontactrelocation.azshader"
+        },
+        {
+            "assetId": {
                 "guid": "{E1A185DF-DC80-58B1-B77B-CE8BEDB61D3B}"
             },
             "platformFlags": 255,

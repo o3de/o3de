@@ -53,6 +53,11 @@ namespace EMotionFX
 
             Actor* GetActor() const;
 
+            //! A rendering backend may consume geometry outside the camera view (for example diffuse GI).
+            //! Keep animation and geometry available when requested; rasterization still performs its own culling.
+            virtual bool RequiresUpdateWhenOutOfView() const { return false; }
+
+
         protected:
             AZ::Data::Asset<ActorAsset> m_actorAsset;
             ActorInstance* m_actorInstance = nullptr;

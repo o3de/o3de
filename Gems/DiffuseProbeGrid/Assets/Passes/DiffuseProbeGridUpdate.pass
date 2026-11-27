@@ -12,6 +12,10 @@
                     "TemplateName": "DiffuseProbeGridRayTracingPassTemplate"
                 },
                 {
+                    "Name": "DiffuseProbeGridSoftwareRayTracingPass",
+                    "TemplateName": "DiffuseProbeGridSoftwareRayTracingPassTemplate"
+                },
+                {
                     "Name": "DiffuseProbeGridBlendIrradiancePass",
                     "TemplateName": "DiffuseProbeGridBlendIrradiancePassTemplate"
                 },
@@ -35,4 +39,3 @@
         }
     }
 }
- 

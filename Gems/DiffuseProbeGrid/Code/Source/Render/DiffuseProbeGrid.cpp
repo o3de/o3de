@@ -15,6 +15,11 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
+#include <cmath>
+
+AZ_CVAR(bool, r_diffuseGI_stochasticProbeSampling, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Rotate non-fixed probe rays each frame to improve angular coverage without increasing the ray count.");
 
 namespace AZ
 {
@@ -103,7 +108,23 @@ namespace AZ
                 }
             }
 
-            m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            if (r_diffuseGI_stochasticProbeSampling && m_mode == DiffuseProbeGridMode::RealTime)
+            {
+                // Uniformly sample unit quaternions rather than Euler angles, which bias the ray distribution.
+                // The DDGI shaders leave relocation/classification rays fixed and rotate only the remaining rays.
+                const float u = m_random.GetRandomFloat();
+                const float phi = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float theta = AZ::Constants::TwoPi * m_random.GetRandomFloat();
+                const float xyRadius = std::sqrt(1.0f - u);
+                const float zwRadius = std::sqrt(u);
+                m_probeRayRotation = AZ::Quaternion(
+                    xyRadius * std::sin(phi), xyRadius * std::cos(phi),
+                    zwRadius * std::sin(theta), zwRadius * std::cos(theta));
+            }
+            else
+            {
+                m_probeRayRotation = AZ::Quaternion::CreateIdentity();
+            }
             m_frameUpdateIndex = (m_frameUpdateIndex + 1) % m_frameUpdateCount;
         }
 
@@ -156,7 +177,7 @@ namespace AZ
             m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
             // probes need to be relocated since the grid position changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+            ResetRemainingRelocationIterations();
 
             m_updateRenderObjectSrg = true;
         }
@@ -195,16 +216,10 @@ namespace AZ
 
         void DiffuseProbeGrid::SetMode(DiffuseProbeGridMode mode)
         {
-            // handle auto-select
-            if (mode == DiffuseProbeGridMode::AutoSelect)
-            {
-                m_mode = (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
-            }
-            else
-            {
-                m_mode = mode;
-            }
-
+            const bool autoUsesBaked = mode == DiffuseProbeGridMode::AutoSelect &&
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices;
+            m_mode = mode == DiffuseProbeGridMode::Baked || autoUsesBaked ? DiffuseProbeGridMode::Baked : DiffuseProbeGridMode::RealTime;
+            m_usesSoftwareTracing = mode == DiffuseProbeGridMode::RealTimeSoftware;
             m_updateTextures = true;
         }
 
@@ -218,7 +233,7 @@ namespace AZ
             m_scrolling = scrolling;
 
             // probes need to be relocated since the scrolling mode changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+            ResetRemainingRelocationIterations();
 
             m_gridDataInitialized = false;
         }
@@ -412,8 +427,9 @@ namespace AZ
                     initImage(request);
                 }
 
-                // probes need to be relocated since the textures changed
-                m_remainingRelocationIterations = DefaultNumRelocationIterations;
+                // New textures have no prior probe offsets. Start with a full contact sweep.
+                m_relocationFrame = 0;
+                ResetRemainingRelocationIterations();
             }
 
             m_updateTextures = false;
@@ -659,25 +675,64 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGrid::SetFrameUpdateCount(uint32_t frameUpdateCount)
+        {
+            if (m_frameUpdateCount != frameUpdateCount)
+            {
+                m_frameUpdateCount = frameUpdateCount;
+                m_relocationFrame = 0;
+                ResetRemainingRelocationIterations();
+            }
+        }
+
+        void DiffuseProbeGrid::ResetRemainingRelocationIterations()
+        {
+            if (m_remainingRelocationIterations == 0)
+            {
+                m_relocationFrame = 0;
+            }
+            m_remainingRelocationIterations = DefaultNumRelocationIterations;
+        }
+
+        void DiffuseProbeGrid::AdvanceRelocation()
+        {
+            if (m_remainingRelocationIterations == 0)
+            {
+                return;
+            }
+            if (!IsContactRelocation())
+            {
+                --m_remainingRelocationIterations;
+            }
+            // Continuous scene revisions can keep relocation active. Keep normal iterations
+            // progressing and revisit contacts after each full relocation interval.
+            if (++m_relocationFrame >= m_frameUpdateCount + DefaultNumRelocationIterations)
+            {
+                m_relocationFrame = 0;
+            }
+        }
+
         void DiffuseProbeGrid::UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
-            if (!m_relocationSrg)
+            auto& inputs = IsContactRelocation() ? m_renderData->m_contactRelocationInputs : m_renderData->m_relocationInputs;
+            auto& srg = IsContactRelocation() ? m_contactRelocationSrg : m_relocationSrg;
+            if (!srg)
             {
-                m_relocationSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
-                AZ_Error("DiffuseProbeGrid", m_relocationSrg.get(), "Failed to create Relocation shader resource group");
+                srg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", srg.get(), "Failed to create Relocation shader resource group");
             }
 
-            m_relocationSrg->SetBufferView(
-                m_renderData->m_relocationSrgGridDataNameIndex,
+            srg->SetBufferView(
+                inputs.m_gridData,
                 m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_relocationSrg->SetImageView(
-                m_renderData->m_relocationSrgProbeRayTraceNameIndex,
+            srg->SetImageView(
+                inputs.m_probeRayTrace,
                 m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_relocationSrg->SetImageView(
-                m_renderData->m_relocationSrgProbeDataNameIndex,
+            srg->SetImageView(
+                inputs.m_probeData,
                 m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-            m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
-            m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
+            srg->SetConstant(inputs.m_frameUpdateCount, m_frameUpdateCount);
+            srg->SetConstant(inputs.m_frameUpdateIndex, m_frameUpdateIndex);
         }
 
         void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
@@ -805,19 +860,24 @@ namespace AZ
                 AZ_Error("DiffuseProbeGrid", m_querySrg.get(), "Failed to create Query shader resource group");
             }
 
-            m_querySrg->SetBufferView(
+            UpdateQuerySrgBindings(m_querySrg, m_ambientMultiplier);
+        }
+
+        void DiffuseProbeGrid::UpdateQuerySrgBindings(const Data::Instance<RPI::ShaderResourceGroup>& srg, float ambientMultiplier)
+        {
+            srg->SetBufferView(
                 m_renderData->m_querySrgGridDataNameIndex,
                 m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeIrradianceNameIndex,
                 GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeDistanceNameIndex,
                 GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_querySrg->SetImageView(
+            srg->SetImageView(
                 m_renderData->m_querySrgProbeDataNameIndex,
                 GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
-            m_querySrg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, m_ambientMultiplier);
+            srg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, ambientMultiplier);
         }
 
         void DiffuseProbeGrid::UpdateCulling()

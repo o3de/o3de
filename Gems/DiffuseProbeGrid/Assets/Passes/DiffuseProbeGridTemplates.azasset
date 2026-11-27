@@ -9,6 +9,10 @@
                 "Path": "Passes/DiffuseProbeGridRayTracing.pass"
             },
             {
+                "Name": "DiffuseProbeGridSoftwareRayTracingPassTemplate",
+                "Path": "Passes/DiffuseProbeGridSoftwareRayTracing.pass"
+            },
+            {
                 "Name": "DiffuseProbeGridUpdatePassTemplate",
                 "Path": "Passes/DiffuseProbeGridUpdate.pass"
             },

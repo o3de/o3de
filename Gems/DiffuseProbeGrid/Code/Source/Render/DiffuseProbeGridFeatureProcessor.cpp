@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -15,6 +16,10 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
+#include <Render/DiffuseProbeGridTracing.h>
+#include <Render/DiffuseProbeGridSoftwareRayTracingPass.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
+#include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
@@ -185,6 +190,18 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Deactivate()
         {
+            ReleaseSoftwareTracingResources();
+            m_softwareResourcesActive = false;
+
+            if (m_lowestLodSkinningEnabled)
+            {
+                if (auto* skinning = GetParentScene()->GetFeatureProcessor<SkinnedMeshFeatureProcessorInterface>())
+                {
+                    skinning->SetLowestLodSkinningEnabled(false);
+                }
+                m_lowestLodSkinningEnabled = false;
+            }
+
             if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 // GI is not supported on this platform
@@ -212,6 +229,29 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
+            const bool needsSoftware = AZStd::any_of(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(),
+                [](const auto& grid) { return grid->UsesSoftwareTracing(); });
+            if (needsSoftware != m_softwareResourcesActive)
+            {
+                if (!needsSoftware)
+                {
+                    ReleaseSoftwareTracingResources();
+                }
+                m_softwareResourcesActive = needsSoftware;
+                UpdatePasses();
+            }
+
+            const bool updateLowestLod = needsSoftware || (!m_realTimeDiffuseProbeGrids.empty() && IsDiffuseProbeGridOffscreenSkinningRequested() &&
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices);
+            if (updateLowestLod != m_lowestLodSkinningEnabled)
+            {
+                if (auto* skinning = GetParentScene()->GetFeatureProcessor<SkinnedMeshFeatureProcessorInterface>())
+                {
+                    skinning->SetLowestLodSkinningEnabled(updateLowestLod);
+                    m_lowestLodSkinningEnabled = updateLowestLod;
+                }
+            }
+
             AZ_PROFILE_SCOPE(AzRender, "DiffuseProbeGridFeatureProcessor: Simulate");
 
             // update pipeline states
@@ -338,17 +378,49 @@ namespace AZ
             }
         }
 
+        const DiffuseProbeGridFeatureProcessor::DiffuseProbeGridVector& DiffuseProbeGridFeatureProcessor::GetProbeGridsForUpdate(
+            const RPI::Pass& consumer) const
+        {
+            const auto* rayTracing = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
+            const bool hardwareReady = !m_visibleHardwareProbeGrids.empty() && rayTracing && rayTracing->GetSubMeshCount();
+            const bool softwareReady = !m_visibleSoftwareProbeGrids.empty() && IsDiffuseProbeGridSoftwareTracingReady(consumer);
+            if (hardwareReady && softwareReady)
+            {
+                return m_visibleRealTimeDiffuseProbeGrids;
+            }
+            if (hardwareReady)
+            {
+                return m_visibleHardwareProbeGrids;
+            }
+            if (softwareReady)
+            {
+                return m_visibleSoftwareProbeGrids;
+            }
+            static const DiffuseProbeGridVector empty;
+            return empty;
+        }
+
         void DiffuseProbeGridFeatureProcessor::OnEndPrepareRender()
         {
             // re-build the list of visible diffuse probe grids
             m_visibleDiffuseProbeGrids.clear();
             m_visibleRealTimeDiffuseProbeGrids.clear();
+            m_visibleSoftwareProbeGrids.clear();
+            m_visibleHardwareProbeGrids.clear();
+            const bool supportsHardware = RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
             for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
             {
-                if (diffuseProbeGrid->GetIsVisible())
+                if (diffuseProbeGrid->GetIsVisible() &&
+                    (diffuseProbeGrid->GetMode() != DiffuseProbeGridMode::Baked || diffuseProbeGrid->HasValidBakedTextures()))
                 {
                     if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime)
                     {
+                        if (!diffuseProbeGrid->UsesSoftwareTracing() && !supportsHardware)
+                        {
+                            continue;
+                        }
+                        auto& backendGrids = diffuseProbeGrid->UsesSoftwareTracing() ? m_visibleSoftwareProbeGrids : m_visibleHardwareProbeGrids;
+                        backendGrids.push_back(diffuseProbeGrid);
                         m_visibleRealTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
                     }
 
@@ -377,47 +449,14 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "RemoveProbeGrid called with an invalid handle");
 
-            // remove from main list
-            auto itEntry = AZStd::find_if(m_diffuseProbeGrids.begin(), m_diffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
-            {
-                return (entry == probeGrid);
-            });
-
-            AZ_Assert(itEntry != m_diffuseProbeGrids.end(), "RemoveProbeGrid called with a probe grid that is not in the probe list");
-            m_diffuseProbeGrids.erase(itEntry);
-
-            // remove from side list of real-time grids
-            itEntry = AZStd::find_if(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
-            {
-                return (entry == probeGrid);
-            });
-
-            if (itEntry != m_realTimeDiffuseProbeGrids.end())
-            {
-                m_realTimeDiffuseProbeGrids.erase(itEntry);
-            }
-
-            // remove from side list of visible grids
-            itEntry = AZStd::find_if(m_visibleDiffuseProbeGrids.begin(), m_visibleDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
-            {
-                return (entry == probeGrid);
-            });
-
-            if (itEntry != m_visibleDiffuseProbeGrids.end())
-            {
-                m_visibleDiffuseProbeGrids.erase(itEntry);
-            }
-
-            // remove from side list of visible real-time grids
-            itEntry = AZStd::find_if(m_visibleRealTimeDiffuseProbeGrids.begin(), m_visibleRealTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
-            {
-                return (entry == probeGrid);
-            });
-
-            if (itEntry != m_visibleRealTimeDiffuseProbeGrids.end())
-            {
-                m_visibleRealTimeDiffuseProbeGrids.erase(itEntry);
-            }
+            AZ_Assert(AZStd::find(m_diffuseProbeGrids.begin(), m_diffuseProbeGrids.end(), probeGrid) != m_diffuseProbeGrids.end(),
+                "RemoveProbeGrid called with a probe grid that is not in the probe list");
+            AZStd::erase(m_diffuseProbeGrids, probeGrid);
+            AZStd::erase(m_realTimeDiffuseProbeGrids, probeGrid);
+            AZStd::erase(m_visibleDiffuseProbeGrids, probeGrid);
+            AZStd::erase(m_visibleRealTimeDiffuseProbeGrids, probeGrid);
+            AZStd::erase(m_visibleHardwareProbeGrids, probeGrid);
+            AZStd::erase(m_visibleSoftwareProbeGrids, probeGrid);
 
             probeGrid = nullptr;
         }
@@ -498,7 +537,14 @@ namespace AZ
 
         bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
         {
-            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+            return AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED && (m_softwareResourcesActive ||
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices);
+        }
+
+        bool DiffuseProbeGridFeatureProcessor::CanBakeTextures(const DiffuseProbeGridHandle& probeGrid)
+        {
+            return AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED && probeGrid && probeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
+                (probeGrid->UsesSoftwareTracing() || RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices);
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -976,18 +1022,34 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::ReleaseSoftwareTracingResources()
+        {
+            auto* passSystem = RPI::PassSystemInterface::Get();
+            if (!passSystem || !GetParentScene())
+            {
+                return;
+            }
+            const auto filter = RPI::PassFilter::CreateWithPassName(Name("DiffuseProbeGridSoftwareRayTracingPass"), GetParentScene());
+            passSystem->ForEachPass(filter, [](RPI::Pass* pass)
+            {
+                if (auto* software = azrtti_cast<DiffuseProbeGridSoftwareRayTracingPass*>(pass))
+                {
+                    software->ReleaseResources();
+                }
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
+        }
+
         void DiffuseProbeGridFeatureProcessor::UpdatePasses()
         {
-            // disable the DiffuseProbeGridUpdatePass if the platform does not support raytracing
-            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
+            const bool enabled = m_softwareResourcesActive ||
+                RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [enabled](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
-                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
-                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                    {
-                        pass->SetEnabled(false);
-                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                    });
-            }
+                pass->SetEnabled(enabled);
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
         }
 
         void DiffuseProbeGridFeatureProcessor::OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset)

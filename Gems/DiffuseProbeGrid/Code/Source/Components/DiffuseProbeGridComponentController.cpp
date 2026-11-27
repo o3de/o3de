@@ -182,7 +182,8 @@ namespace AZ
                      m_configuration.m_editorMode == DiffuseProbeGridMode::Baked ||
                      m_configuration.m_editorMode == DiffuseProbeGridMode::AutoSelect)
             {
-                AZ_Error("DiffuseProbeGrid", false, "DiffuseProbeGrid mode is set to Baked or Auto-Select, but it does not have baked texture assets. Please re-bake this DiffuseProbeGrid.");
+                AZ_Warning("DiffuseProbeGrid", false,
+                    "This grid uses Baked or Auto Select and has no baked textures. Bake the grid to use baked lighting.");
             }
 
             m_featureProcessor->SetMode(m_handle, m_configuration.m_runtimeMode);
@@ -428,24 +429,15 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)
         {
-            if (!m_featureProcessor)
-            {
-                return;
-            }
-
-            // update the configuration and change the DiffuseProbeGrid mode
             m_configuration.m_editorMode = editorMode;
-            m_featureProcessor->SetMode(m_handle, m_configuration.m_editorMode);
+            if (m_featureProcessor && m_handle)
+            {
+                m_featureProcessor->SetMode(m_handle, editorMode);
+            }
         }
 
         void DiffuseProbeGridComponentController::SetRuntimeMode(DiffuseProbeGridMode runtimeMode)
         {
-            if (!m_featureProcessor)
-            {
-                return;
-            }
-
-            // only update the configuration
             m_configuration.m_runtimeMode = runtimeMode;
         }
 
@@ -484,7 +476,7 @@ namespace AZ
 
         bool DiffuseProbeGridComponentController::CanBakeTextures()
         {
-        return m_featureProcessor && m_featureProcessor->CanBakeTextures();
+            return m_featureProcessor && m_featureProcessor->CanBakeTextures(m_handle);
         }
 
         void DiffuseProbeGridComponentController::BakeTextures(DiffuseProbeGridBakeTexturesCallback callback)

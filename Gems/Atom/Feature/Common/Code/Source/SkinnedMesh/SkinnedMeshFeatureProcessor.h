@@ -62,6 +62,8 @@ namespace AZ
             void SetMorphTargetWeights(const SkinnedMeshHandle& handle, uint32_t lodIndex, const AZStd::vector<float>& weights) override;
             void EnableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) override;
             void DisableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) override;
+            void SetLowestLodSkinningEnabled(bool enabled) override { m_lowestLodSkinningEnabled = enabled; }
+            bool GetLowestLodSkinningEnabled() const override { return m_lowestLodSkinningEnabled; }
 
             Data::Instance<RPI::Shader> GetSkinningShader() const;
             RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
@@ -75,6 +77,7 @@ namespace AZ
 
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
+            bool m_lowestLodSkinningEnabled = false;
 
             void InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline);
 

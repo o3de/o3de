@@ -26,7 +26,9 @@ namespace AZ
         {
             RealTime,
             Baked,
-            AutoSelect
+            AutoSelect,
+            RealTimeSoftware,
+            RealTimeHardware
         };
 
         enum class DiffuseProbeGridTextureNotificationType
@@ -152,6 +154,7 @@ namespace AZ
             virtual void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) = 0;
 
             virtual bool CanBakeTextures() = 0;
+            virtual bool CanBakeTextures(const DiffuseProbeGridHandle& probeGrid) { return probeGrid && CanBakeTextures(); }
             virtual void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,

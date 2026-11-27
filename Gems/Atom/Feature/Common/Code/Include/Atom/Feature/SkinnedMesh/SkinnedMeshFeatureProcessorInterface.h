@@ -52,6 +52,11 @@ namespace AZ
             virtual void EnableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) = 0;
             //! Disable skinning for a given mesh and lod of a skinned mesh handle
             virtual void DisableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) = 0;
+
+            //! Keep the lowest LOD of visible, ray-tracing-enabled meshes current for geometry consumers independent
+            //! of view LOD selection and hardware ray tracing support. The requesting system must reset on deactivation.
+            virtual void SetLowestLodSkinningEnabled(bool enabled) = 0;
+            virtual bool GetLowestLodSkinningEnabled() const = 0;
         };
     } // namespace Render
 } // namespace AZ
