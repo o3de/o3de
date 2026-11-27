@@ -464,6 +464,12 @@ namespace EMStudio
 
     BlendGraphViewWidget::~BlendGraphViewWidget()
     {
+        // The constructor connects to this bus but nothing previously disconnected it. Since the bus
+        // uses the default Multiple handler policy, every close-then-reopen of the Animation Editor left
+        // one more dangling handler registered -- the next GetSelectedActor()/GetSelectedActorInstance()
+        // broadcast (queried frequently, e.g. on every selection change) would call through it.
+        EMotionFX::ActorEditorRequestBus::Handler::BusDisconnect();
+
         // Unregister this window as the widget for the Animation Editor Action Context.
         if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
