@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/string/string_view.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
@@ -32,8 +33,9 @@ namespace AZ
             virtual void ReleaseObjectId(ObjectId& id) = 0;
 
             //! Sets the transform (and optionally non-uniform scale) for a given id. Id must be one reserved earlier.
+            //! @param debugName Optional name of the object (e.g. its asset), used only in diagnostic messages.
             virtual void SetTransformForId(ObjectId id, const AZ::Transform& transform,
-                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) = 0;
+                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne(), AZStd::string_view debugName = {}) = 0;
             //! Gets the transform for a given id. Id must be one reserved earlier.
             virtual AZ::Transform GetTransformForId(ObjectId) const = 0;
             //! Gets the non-uniform scale for a given id. Id must be one reserved earlier.
