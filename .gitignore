@@ -26,3 +26,7 @@ _savebackup/
 CrashDB/
 *.DotSettings.user
 imgui.ini
+build/
+o3de_3rdparty_pkgs/
+3rdParty/
+
