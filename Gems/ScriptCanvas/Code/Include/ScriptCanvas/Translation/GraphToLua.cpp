@@ -2524,26 +2524,14 @@ namespace ScriptCanvas
             auto meta = AZStd::rtti_pointer_cast<const Grammar::MathExpressionMetaData>(execution->GetMetaData());
             AZ_Assert(meta, "math expression needs meta data");
 
-            size_t inputIndex = 0;
-
-            const size_t inputStringSentinel = meta->m_expressionString.size();
-            const auto& inputString = meta->m_expressionString;
-
-            for (size_t inputStringIndex = 0; inputStringIndex < inputStringSentinel; inputStringIndex++)
+            const auto source = MakeRuntimeSafeStringLiteral(meta->m_expressionString);
+            m_dotLua.Write("SC_MathExpression(%s, %s", m_tableName.c_str(), source.c_str());
+            for (size_t inputIndex = 0; inputIndex < execution->GetInputCount(); ++inputIndex)
             {
-                auto character = inputString[inputStringIndex];
-                if (character == '@')
-                {
-                    WriteFunctionCallInput(execution, inputIndex, IsFormatStringInput::No);
-                    ++inputIndex;
-                }
-                else
-                {
-                    AZStd::string oneChar;
-                    oneChar.push_back(character);
-                    m_dotLua.Write(oneChar);
-                }
+                m_dotLua.Write(", ");
+                WriteFunctionCallInput(execution, inputIndex, IsFormatStringInput::No);
             }
+            m_dotLua.Write(")");
         }
 
         void GraphToLua::WriteResolvedScope(Grammar::ExecutionTreeConstPtr execution, const Grammar::LexicalScope& lexicalScope)

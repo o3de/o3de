@@ -332,6 +332,7 @@ set(FILES
     Include/ScriptCanvas/Variable/VariableCore.h
     Include/ScriptCanvas/Variable/VariableData.h
     Include/ScriptCanvas/Utils/DataUtils.h
+    Include/ScriptCanvas/Utils/Expression.h
     Include/ScriptCanvas/Utils/NodeUtils.h
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h

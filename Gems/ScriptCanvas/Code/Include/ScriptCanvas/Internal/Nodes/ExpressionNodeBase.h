@@ -7,12 +7,8 @@
  */
 #pragma once
 
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/string/regex.h>
-
 #include <ScriptCanvas/Core/Node.h>
-
-#include <ExpressionEvaluation/ExpressionEngine.h>
+#include <ScriptCanvas/Utils/Expression.h>
 
 #include <Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.generated.h>
 
@@ -33,24 +29,25 @@ namespace ScriptCanvas
 
                 ExpressionNodeBase();
 
+                static bool VersionConverter(AZ::SerializeContext&, AZ::SerializeContext::DataElementNode&);
+
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 
                 AZStd::string GetRawFormat() const;
 
                 const AZStd::unordered_map<AZStd::string, SlotId>& GetSlotsByName() const;
-                                
+
+                const ScriptCanvas::Expression::Program& GetExpression() const
+                {
+                    return m_expression;
+                }
+
             protected:
-
-                // Maps the slot name to the created SlotId for that slot
-                using NamedSlotIdMap = AZStd::map<AZ::Crc32, SlotId>;
-                NamedSlotIdMap m_formatSlotMap;
-
                 // The string formatting string used on the node, any value within brackets creates an input slot
                 AZStd::string m_format = "";
 
                 // Node...
                 void OnInit() override;  
-                void OnPostActivate() override;
                 void ConfigureVisualExtensions() override;
                 bool CanDeleteSlot(const SlotId& slotId) const override;
 
@@ -75,12 +72,10 @@ namespace ScriptCanvas
                 AZ::Crc32 GetPropertyId() const { return AZ_CRC_CE("FormatStringProperty"); }
                 
             protected:
-                virtual ExpressionEvaluation::ParseOutcome ParseExpression(const AZStd::string& formatString);
-
                 virtual AZStd::string GetExpressionSeparator() const;
 
             private:
-                void PushVariable(const AZStd::string& variableName, const Datum& datum);
+                bool ParseExpression();
 
                 // NodePropertyInterface...
                 void OnPropertyChanged() override;
@@ -91,20 +86,18 @@ namespace ScriptCanvas
                 struct SlotCacheSetup
                 {
                     SlotId m_previousId;
-                    Data::Type m_displayType;
-
                     VariableId m_reference;
                     Datum      m_defaultValue;
                 };
-                
-                ExpressionEvaluation::ExpressionTree m_expressionTree;
+
+                ScriptCanvas::Expression::Program m_expression;
 
                 bool m_isInError = false;
 
                 AZStd::unordered_map<SlotId, AZStd::string> m_slotToVariableMap;
                 AZStd::unordered_map<AZStd::string, SlotId> m_slotsByVariables;
 
-                ExpressionEvaluation::ParsingError m_parseError;
+                AZStd::string m_parseError;
 
                 TypedNodePropertyInterface<ScriptCanvas::Data::StringType> m_stringInterface;
                 bool m_parsingFormat = false;
