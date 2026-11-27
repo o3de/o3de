@@ -7,6 +7,7 @@
             "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
             "Name": "Decal_AlbedoWithOpacity",
             "PixelFormat": "BC7t",
+            "AlphaDilate": true,
             "IsPowerOf2": true,
             "MipMapSetting": {
                 "MipGenType": "Box"
@@ -19,6 +20,7 @@
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "PixelFormat": "ASTC_4x4",
+                "AlphaDilate": true,
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -31,6 +33,7 @@
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "PixelFormat": "ASTC_4x4",
+                "AlphaDilate": true,
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -43,6 +46,7 @@
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "PixelFormat": "BC3",
+                "AlphaDilate": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -54,6 +58,7 @@
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "PixelFormat": "BC7t",
+                "AlphaDilate": true,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
