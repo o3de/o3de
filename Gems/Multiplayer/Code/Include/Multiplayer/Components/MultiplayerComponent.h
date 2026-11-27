@@ -211,6 +211,12 @@ namespace Multiplayer
             SizeType origSize = aznumeric_cast<SizeType>(value.size());
             SizeType newSize = origSize;
             serializer.Serialize(newSize, "Size");
+            if (newSize > SIZE)
+            {
+                // A size beyond the vector's capacity means the stream is corrupt or malicious
+                serializer.Invalidate();
+                return;
+            }
             value.resize(newSize);
             if (modifyRecord && origSize == newSize)
             {

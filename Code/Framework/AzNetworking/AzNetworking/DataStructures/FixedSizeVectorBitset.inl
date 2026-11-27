@@ -36,7 +36,7 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline void FixedSizeVectorBitset<CAPACITY, ElementType>::SetBit(uint32_t index, bool value)
     {
-        if (index > m_count)
+        if (index >= m_count)
         {
             return;
         }
@@ -46,7 +46,7 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline bool FixedSizeVectorBitset<CAPACITY, ElementType>::GetBit(uint32_t index) const
     {
-        if (index > m_count)
+        if (index >= m_count)
         {
             return false;
         }
@@ -170,6 +170,12 @@ namespace AzNetworking
         {
             return false;
         }
+        if (count > CAPACITY)
+        {
+            // A count beyond the bitset's capacity means the stream is corrupt or malicious
+            serializer.Invalidate();
+            return false;
+        }
         m_count = count;
 
         const uint32_t numBytesToSerialize = (m_count + 7) / 8; // Round up nearest byte
@@ -188,11 +194,14 @@ namespace AzNetworking
     template <AZStd::size_t CAPACITY, typename ElementType>
     inline void FixedSizeVectorBitset<CAPACITY, ElementType>::ClearUnusedBits()
     {
-        uint32_t usedElementSize = (GetSize() + BitsetType::ElementTypeBits - 1) / BitsetType::ElementTypeBits;
-        for (uint32_t i = usedElementSize + 1; i < BitsetType::ElementCount; ++i)
+        // Clear every bit at or past the count, including the rest of the last partly used element, which a serialized
+        // count that isn't a multiple of 8 leaves filled with whatever the stream sent
+        const AZStd::size_t fullElementCount = GetSize() / BitsetType::ElementTypeBits;
+        const AZStd::size_t usedBitsInLastElement = GetSize() % BitsetType::ElementTypeBits;
+        for (AZStd::size_t i = fullElementCount; i < BitsetType::ElementCount; ++i)
         {
-            m_bitset.GetContainer()[i] = 0;
+            const ElementType keepMask = static_cast<ElementType>((i == fullElementCount) ? (ElementType(1) << usedBitsInLastElement) - 1 : 0);
+            m_bitset.GetContainer()[i] &= keepMask;
         }
-        m_bitset.ClearUnusedBits();
     }
 }

@@ -48,10 +48,16 @@ namespace AzNetworking
             // Dynamic containers require different read/write serialization interfaces
             if (write)
             {
+                if (size > container.max_size())
+                {
+                    // A size beyond the container's capacity means the stream is corrupt or malicious
+                    serializer.Invalidate();
+                    return false;
+                }
                 container.clear();
                 AzNetworking::AzContainerHelper::ReserveContainer<TYPE>(container, size);
                 ValueType element;
-                for (uint32_t i = 0; i < size; ++i)
+                for (uint32_t i = 0; success && i < size; ++i)
                 {
                     success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
                     container.insert(container.end(), element);
@@ -106,9 +112,15 @@ namespace AzNetworking
 
             if (write)
             {
+                if (size > container.max_size())
+                {
+                    // A size beyond the container's capacity means the stream is corrupt or malicious
+                    serializer.Invalidate();
+                    return false;
+                }
                 container.clear();
                 ValueType element;
-                for (uint32_t i = 0; i < size; ++i)
+                for (uint32_t i = 0; success && i < size; ++i)
                 {
                     success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
                     container.insert(element);
@@ -145,9 +157,15 @@ namespace AzNetworking
 
             if (write)
             {
+                if (size > container.max_size())
+                {
+                    // A size beyond the container's capacity means the stream is corrupt or malicious
+                    serializer.Invalidate();
+                    return false;
+                }
                 container.clear();
                 ValueType element;
-                for (uint32_t i = 0; i < size; ++i)
+                for (uint32_t i = 0; success && i < size; ++i)
                 {
                     success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
                     container.insert(element);
@@ -185,7 +203,7 @@ namespace AzNetworking
             {
                 container.clear();
                 ValueType element;
-                for (uint32_t i = 0; i < size; ++i)
+                for (uint32_t i = 0; success && i < size; ++i)
                 {
                     success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
                     container.insert(element);
@@ -243,6 +261,12 @@ namespace AzNetworking
             uint32_t outBytes = static_cast<uint32_t>(size);
 
             bool success = serializer.Serialize(size, "Size");
+            if (size > MaxElementCount)
+            {
+                // A length beyond the string's capacity means the stream is corrupt or malicious
+                serializer.Invalidate();
+                return false;
+            }
             value.resize_no_construct(size);
             success &= serializer.SerializeBytes(reinterpret_cast<uint8_t*>(value.data()), static_cast<uint32_t>(size), true, outBytes, "String");
 
