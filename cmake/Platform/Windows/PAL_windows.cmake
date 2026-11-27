@@ -19,6 +19,10 @@ ly_set(PAL_TRAIT_BUILD_UNITY_EXCLUDE_EXTENSIONS)
 ly_set(PAL_TRAIT_BUILD_EXCLUDE_ALL_TEST_RUNS_FROM_IDE FALSE)
 ly_set(PAL_TRAIT_BUILD_CPACK_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED FALSE)
+# Which backend the external crash handler uses when it is enabled above.
+# "Crashpad" (default) preserves existing behaviour; "SentryNative" builds the sentry-native
+# backend in Code/Tools/CrashHandler/SentryNative instead.
+ly_set(PAL_TRAIT_CRASH_HANDLER_BACKEND "Crashpad")
 
 ly_set(PAL_TRAIT_PROF_PIX_SUPPORTED TRUE)
 
