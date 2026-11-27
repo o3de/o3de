@@ -26,6 +26,7 @@ namespace RemoteTools
     static constexpr const char* RemoteServerAddress = "127.0.0.1";
     // id for the local application
     static constexpr AZ::u32 SelfNetworkId = 0xFFFFFFFF;
+    static constexpr uint32_t MaxRemoteToolsMessageSize = 64 * 1024 * 1024; // 64 MiB cap
 
     AZ_CVAR(uint16_t, remote_outbox_interval, 50, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to process outbound messages.");
     AZ_CVAR(uint16_t, remote_join_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
@@ -105,14 +106,29 @@ namespace RemoteTools
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
         m_joinThread = nullptr;
-        if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
-            for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
+            if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
             {
-                networking->DestroyNetworkInterface(registryIt->second.m_name);
+                for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+                {
+                    networking->DestroyNetworkInterface(registryIt->second.m_name);
+                }
             }
+            m_entryRegistry.clear();
         }
-        m_entryRegistry.clear();
+        {
+            AZStd::lock_guard<AZStd::mutex> lock(m_inboxMutex);
+            for (auto& [key, messages] : m_inbox)
+            {
+                for (AzFramework::RemoteToolsMessage* msg : messages)
+                {
+                    delete msg;
+                }
+                messages.clear();
+            }
+            m_inbox.clear();
+        }
     }
 
     void RemoteToolsSystemComponent::OnSystemTick()
@@ -130,18 +146,25 @@ namespace RemoteTools
         if (m_joinThread && !m_joinThread->IsRunning())
         {
             m_joinThread->Join();
+            if (m_restartJoinThread.exchange(false))
+            {
+                m_joinThread->Start();
+            }
         }
     }
 
     void RemoteToolsSystemComponent::RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
-        if (!m_entryRegistry.contains(key))
         {
-            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
+            if (!m_entryRegistry.contains(key))
+            {
+                m_entryRegistry[key] = RemoteToolsRegistryEntry();
+            }
+            m_entryRegistry[key].m_isHost = false;
+            m_entryRegistry[key].m_name = name;
+            m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
         }
-        m_entryRegistry[key].m_isHost = false;
-        m_entryRegistry[key].m_name = name;
-        m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
 
         if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
@@ -159,16 +182,19 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::RegisterToolingServiceHost(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
-        if (!m_entryRegistry.contains(key))
         {
-            m_entryRegistry[key] = RemoteToolsRegistryEntry();
-        }
-        m_entryRegistry[key].m_isHost = true;
-        m_entryRegistry[key].m_name = name;
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
+            if (!m_entryRegistry.contains(key))
+            {
+                m_entryRegistry[key] = RemoteToolsRegistryEntry();
+            }
+            m_entryRegistry[key].m_isHost = true;
+            m_entryRegistry[key].m_name = name;
 
-        AzFramework::RemoteToolsEndpointContainer::pair_iter_bool ret = m_entryRegistry[key].m_availableTargets.insert_key(key);
-        AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
-        ti.SetInfo("Self", key, SelfNetworkId);
+            AzFramework::RemoteToolsEndpointContainer::pair_iter_bool ret = m_entryRegistry[key].m_availableTargets.insert_key(key);
+            AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
+            ti.SetInfo("Self", key, SelfNetworkId);
+        }
 
         if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
@@ -181,6 +207,7 @@ namespace RemoteTools
 
     const AzFramework::ReceivedRemoteToolsMessages* RemoteToolsSystemComponent::GetReceivedMessages(AZ::Crc32 key) const
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_inboxMutex);
         if (m_inbox.contains(key))
         {
             return &m_inbox.at(key);
@@ -190,6 +217,7 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::ClearReceivedMessages(AZ::Crc32 key)
     {
+        AZStd::lock_guard<AZStd::mutex> lock(m_inboxMutex);
         if (m_inbox.contains(key))
         {
             m_inbox.at(key).clear();
@@ -204,6 +232,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointJoinedHandler(
         AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (!m_entryRegistry.contains(key))
         {
             m_entryRegistry[key] = RemoteToolsRegistryEntry();
@@ -214,6 +243,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointLeftHandler(
         AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (!m_entryRegistry.contains(key))
         {
             m_entryRegistry[key] = RemoteToolsRegistryEntry();
@@ -224,6 +254,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointConnectedHandler(
         AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler& handler)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (!m_entryRegistry.contains(key))
         {
             m_entryRegistry[key] = RemoteToolsRegistryEntry();
@@ -234,6 +265,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointChangedHandler(
         AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler& handler)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (!m_entryRegistry.contains(key))
         {
             m_entryRegistry[key] = RemoteToolsRegistryEntry();
@@ -243,6 +275,7 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::EnumTargetInfos(AZ::Crc32 key, AzFramework::RemoteToolsEndpointContainer& infos)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             infos = m_entryRegistry[key].m_availableTargets;
@@ -256,6 +289,7 @@ namespace RemoteTools
     void RemoteToolsSystemComponent::SetDesiredEndpoint(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
         AZ_TracePrintf("RemoteToolsSystemComponent", "Set Target - %u", desiredTargetID);
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             RemoteToolsRegistryEntry& entry = m_entryRegistry[key];
@@ -288,6 +322,7 @@ namespace RemoteTools
 
     AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetDesiredEndpoint(AZ::Crc32 key)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             return m_entryRegistry[key].m_lastTarget;
@@ -298,6 +333,7 @@ namespace RemoteTools
 
     AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetEndpointInfo(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             AzFramework::RemoteToolsEndpointContainer container = m_entryRegistry[key].m_availableTargets;
@@ -313,6 +349,7 @@ namespace RemoteTools
 
     bool RemoteToolsSystemComponent::IsEndpointOnline(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             AzFramework::RemoteToolsEndpointContainer container = m_entryRegistry[key].m_availableTargets;
@@ -353,29 +390,39 @@ namespace RemoteTools
         if (target.IsSelf())
         {
             AZStd::vector<AZStd::byte> buffer;
-            buffer.reserve(static_cast<uint32_t>(totalSize));
-            memcpy(buffer.begin(), msgBuffer.data(), totalSize);
+            buffer.resize_no_construct(static_cast<uint32_t>(totalSize));
+            if (totalSize > 0)
+            {
+                memcpy(buffer.begin(), msgBuffer.data(), totalSize);
+            }
             AzFramework::RemoteToolsMessage* result = DeserializeMessage(target.GetPersistentId(), buffer, static_cast<uint32_t>(totalSize));
 
-            m_inboxMutex.lock();
-            if (!m_inbox[target.GetPersistentId()].full())
+            if (result)
             {
-                m_inbox[target.GetPersistentId()].push_back(result);
+                m_inboxMutex.lock();
+                if (!m_inbox[target.GetPersistentId()].full())
+                {
+                    m_inbox[target.GetPersistentId()].push_back(result);
+                }
+                else
+                {
+                    // As no network latency and not bound to framerate with local messages, possible to overflow the inbox size
+                    AZ_Error("RemoteTool", false, "Inbox is full, a local message got skipped on %d channel", target.GetPersistentId());
+                    delete result;
+                }
+                m_inboxMutex.unlock();
             }
-            else
-            {
-                // As no network latency and not bound to framerate with local messages, possible to overflow the inbox size
-                AZ_Error("RemoteTool", false, "Inbox is full, a local message got skipped on %d channel", target.GetPersistentId());
-                delete result;
-            }
-            m_inboxMutex.unlock();
 
             return;
         }
 
+        AZ::Name interfaceName;
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
+            interfaceName = AZ::Name(m_entryRegistry[target.GetPersistentId()].m_name);
+        }
         AzNetworking::INetworkInterface* networkInterface =
-            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(
-                AZ::Name(m_entryRegistry[target.GetPersistentId()].m_name));
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(interfaceName);
 
         auto connectionId = static_cast<AzNetworking::ConnectionId>(target.GetNetworkId());
         const uint8_t* outBuffer = reinterpret_cast<const uint8_t*>(msgBuffer.data());
@@ -418,6 +465,7 @@ namespace RemoteTools
     {
         AZ::Crc32 key(packet.GetPersistentId());
 
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
         if (m_entryRegistry.contains(key))
         {
             const AZ::Crc32 persistentId(packet.GetPersistentId());
@@ -437,17 +485,18 @@ namespace RemoteTools
     {
         const AZ::Crc32 key(packet.GetPersistentId());
 
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
+
         // Receive
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
             && static_cast<uint32_t>(connection->GetConnectionId()) != m_entryRegistry[key].m_lastTarget.GetNetworkId())
         {
             // Listener should route traffic based on selected target
             return true;
-        }
-      
-        if (!m_entryRegistry.contains(key))
-        {
-            m_entryRegistry[key] = RemoteToolsRegistryEntry();
         }
 
         // If we're a client, set the host to our desired target
@@ -470,15 +519,39 @@ namespace RemoteTools
         }
 
         const uint32_t totalBufferSize = packet.GetSize();
+        if (totalBufferSize == 0 || totalBufferSize > MaxRemoteToolsMessageSize)
+        {
+            AZ_Error("RemoteToolsSystemComponent", false, "Invalid RemoteToolsMessage size %u (max %u)", totalBufferSize, MaxRemoteToolsMessageSize);
+            m_entryRegistry[key].m_tmpInboundBuffer.clear();
+            m_entryRegistry[key].m_tmpInboundBufferPos = 0;
+            return false;
+        }
 
-        // Messages can be larger than the size of a packet so reserve a buffer for the total message size
+        // Messages can be larger than the size of a packet so allocate a buffer for the total message size
         if (m_entryRegistry[key].m_tmpInboundBufferPos == 0)
         {
-            m_entryRegistry[key].m_tmpInboundBuffer.reserve(totalBufferSize);
+            m_entryRegistry[key].m_tmpInboundBuffer.resize_no_construct(totalBufferSize);
+        }
+        else if (m_entryRegistry[key].m_tmpInboundBuffer.size() != totalBufferSize
+            || m_entryRegistry[key].m_tmpInboundBufferPos >= totalBufferSize)
+        {
+            AZ_Error("RemoteToolsSystemComponent", false, "Mismatched fragment totalBufferSize %u (expected %zu, pos %u)",
+                totalBufferSize, m_entryRegistry[key].m_tmpInboundBuffer.size(), m_entryRegistry[key].m_tmpInboundBufferPos);
+            m_entryRegistry[key].m_tmpInboundBuffer.clear();
+            m_entryRegistry[key].m_tmpInboundBufferPos = 0;
+            return false;
         }
 
         // Read as much data as the packet can include and append it to the buffer
-        const uint32_t readSize = AZStd::min(totalBufferSize - m_entryRegistry[key].m_tmpInboundBufferPos, RemoteToolsBufferSize);
+        const uint32_t remainingInMessage = totalBufferSize - m_entryRegistry[key].m_tmpInboundBufferPos;
+        const uint32_t packetPayloadSize = static_cast<uint32_t>(packet.GetMessageBuffer().GetSize());
+        const uint32_t readSize = AZStd::min(AZStd::min(remainingInMessage, RemoteToolsBufferSize), packetPayloadSize);
+        if (readSize == 0)
+        {
+            m_entryRegistry[key].m_tmpInboundBuffer.clear();
+            m_entryRegistry[key].m_tmpInboundBufferPos = 0;
+            return false;
+        }
         memcpy(
             m_entryRegistry[key].m_tmpInboundBuffer.begin() + m_entryRegistry[key].m_tmpInboundBufferPos,
             packet.GetMessageBuffer().GetBuffer(), readSize);
@@ -493,7 +566,16 @@ namespace RemoteTools
             if (msg)
             {
                 m_inboxMutex.lock();
-                m_inbox[AZ::Crc32(msg->GetSenderTargetId())].push_back(msg);
+                auto& inboxQueue = m_inbox[AZ::Crc32(msg->GetSenderTargetId())];
+                if (!inboxQueue.full())
+                {
+                    inboxQueue.push_back(msg);
+                }
+                else
+                {
+                    AZ_Error("RemoteTool", false, "Inbox is full, an inbound message got skipped on %u channel", msg->GetSenderTargetId());
+                    delete msg;
+                }
                 m_inboxMutex.unlock();
             }
         }
@@ -537,6 +619,7 @@ namespace RemoteTools
         // If our desired target has left the network, flag it and notify listeners
         if (reason != AzNetworking::DisconnectReason::ConnectionRejected)
         {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_entryRegistryMutex);
             for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
             {
                 AzFramework::RemoteToolsEndpointContainer& container = registryIt->second.m_availableTargets;
@@ -553,11 +636,7 @@ namespace RemoteTools
             }
         }
 
-        if (m_joinThread && !m_joinThread->IsRunning())
-        {
-            m_joinThread->Join();
-            m_joinThread->Start();
-        }
+        m_restartJoinThread = true;
     }
 
     AzFramework::RemoteToolsMessage* RemoteToolsSystemComponent::DeserializeMessage(
@@ -580,6 +659,15 @@ namespace RemoteTools
         {
             if (msg->GetCustomBlobSize() > 0)
             {
+                const AZ::IO::SizeType currentPos = msgBuffer.GetCurPos();
+                const AZ::IO::SizeType remainingBytes = (currentPos <= totalBufferSize) ? (totalBufferSize - currentPos) : 0;
+                if (msg->GetCustomBlobSize() > remainingBytes || msg->GetCustomBlobSize() > MaxRemoteToolsMessageSize)
+                {
+                    AZ_Error("RemoteToolsSystemComponent", false, "Invalid CustomBlobSize %zu (remaining bytes: %llu)",
+                        msg->GetCustomBlobSize(), static_cast<unsigned long long>(remainingBytes));
+                    delete msg;
+                    return nullptr;
+                }
                 void* blob = azmalloc(msg->GetCustomBlobSize(), 1, AZ::OSAllocator);
                 msgBuffer.Read(msg->GetCustomBlobSize(), blob);
                 msg->AddCustomBlob(blob, msg->GetCustomBlobSize(), true);

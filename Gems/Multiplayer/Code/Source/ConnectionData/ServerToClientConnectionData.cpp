@@ -40,6 +40,7 @@ namespace Multiplayer
     {
         m_entityReplicationManager.Clear(false);
         m_controlledEntityRemovedHandler.Disconnect();
+        m_controlledEntityMigrationHandler.Disconnect();
     }
 
     void ServerToClientConnectionData::SetControlledEntity(NetworkEntityHandle primaryPlayerEntity)
@@ -88,9 +89,11 @@ namespace Multiplayer
 
     void ServerToClientConnectionData::OnControlledEntityRemove()
     {
-        m_connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByServer, AzNetworking::TerminationEndpoint::Local);
+        m_controlledEntityRemovedHandler.Disconnect();
+        m_controlledEntityMigrationHandler.Disconnect();
         m_entityReplicationManager.Clear(false);
         m_controlledEntity.Reset();
+        m_connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByServer, AzNetworking::TerminationEndpoint::Local);
     }
 
     void ServerToClientConnectionData::OnControlledEntityMigration

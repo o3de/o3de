@@ -38,6 +38,7 @@ namespace Multiplayer
                         {
                             AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
                                 "The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                            return;
                         }
 
                         NetworkTransformComponent* networkComponent = entity->FindComponent<NetworkTransformComponent>();
@@ -99,6 +100,9 @@ namespace Multiplayer
     {
         m_resetCountChangedEventHandler.Disconnect();
         m_parentChangedEventHandler.Disconnect();
+        m_scaleChangedEventHandler.Disconnect();
+        m_translationChangedEventHandler.Disconnect();
+        m_rotationChangedEventHandler.Disconnect();
         m_entityCorrectionEventHandler.Disconnect();
         m_entityPreRenderEventHandler.Disconnect();
     }

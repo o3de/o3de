@@ -79,7 +79,7 @@ namespace SaveData
             // system call
             auto uid = getuid();
             auto pwuid = getpwuid(uid);
-            homeDir = pwuid->pw_dir;
+            homeDir = pwuid ? pwuid->pw_dir : nullptr;
         }
 
         AZ_Assert(homeDir, "Unable to determine home directory for current Linux user");

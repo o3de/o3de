@@ -147,7 +147,10 @@ namespace Multiplayer
         const PrefabEntityId prefabEntityId(AZ::Name(m_playerSpawnable.m_spawnableAsset.GetHint().c_str()));
 
         const AZ::Transform transform = GetNextSpawnPoint();
-        m_spawnIndex = ++m_spawnIndex % m_spawnPoints.size();
+        if (!m_spawnPoints.empty())
+        {
+            m_spawnIndex = (m_spawnIndex + 1) % aznumeric_cast<uint32_t>(m_spawnPoints.size());
+        }
 
         INetworkEntityManager::EntityList entityList =
             GetNetworkEntityManager()->CreateEntitiesImmediate(prefabEntityId, NetEntityRole::Authority, transform);
@@ -161,13 +164,19 @@ namespace Multiplayer
                 "that is network enabled with a Network Binding component.",
                 prefabEntityId.m_prefabName.GetCStr());
         }
-
-        controlledEntity = entityList[0];
+        else
+        {
+            controlledEntity = entityList[0];
+        }
         return controlledEntity;
     }
 
     void SimplePlayerSpawnerComponent::OnPlayerLeave(ConstNetworkEntityHandle entityHandle, [[maybe_unused]] const ReplicationSet& replicationSet, [[maybe_unused]] AzNetworking::DisconnectReason reason)
     {
+        if (!entityHandle.GetEntity() || !entityHandle.GetEntity()->GetTransform())
+        {
+            return;
+        }
         // Walk hierarchy backwards to remove all children before parents
         AZStd::vector<AZ::EntityId> hierarchy = entityHandle.GetEntity()->GetTransform()->GetEntityAndAllDescendants();
         for (auto it = hierarchy.rbegin(); it != hierarchy.rend(); ++it)

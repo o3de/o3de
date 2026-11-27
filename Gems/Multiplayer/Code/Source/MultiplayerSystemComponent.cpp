@@ -783,12 +783,25 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::IsHandshakeComplete(AzNetworking::IConnection* connection) const
     {
+        if (connection == nullptr || connection->GetUserData() == nullptr)
+        {
+            return false;
+        }
         return reinterpret_cast<IConnectionData*>(connection->GetUserData())->DidHandshake();
     }
 
     bool MultiplayerSystemComponent::AttemptPlayerConnect(AzNetworking::IConnection* connection, MultiplayerPackets::Connect& packet)
     {
-        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        if (connection == nullptr || connection->GetUserData() == nullptr)
+        {
+            return false;
+        }
+        auto* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+        if (connectionData->GetConnectionDataType() != ConnectionDataType::ServerToClient)
+        {
+            return false;
+        }
+        static_cast<ServerToClientConnectionData*>(connectionData)->SetProviderTicket(packet.GetTicket().c_str());
 
         const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
         if (!levelName || *levelName == '\0')
@@ -857,7 +870,7 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(levelName)))
         {
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+            static_cast<ServerToClientConnectionData*>(connectionData)->SetDidHandshake(true);
 
             if (packet.GetTemporaryUserId() == 0)
             {
@@ -877,6 +890,24 @@ namespace Multiplayer
         MultiplayerPackets::Connect& packet
     )
     {
+        if (connection == nullptr || connection->GetUserData() == nullptr)
+        {
+            return false;
+        }
+        if (GetAgentType() != MultiplayerAgentType::ClientServer && GetAgentType() != MultiplayerAgentType::DedicatedServer)
+        {
+            return false;
+        }
+        if (connection->GetConnectionRole() != ConnectionRole::Acceptor)
+        {
+            return false;
+        }
+        auto* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+        if (connectionData->GetConnectionDataType() != ConnectionDataType::ServerToClient || connectionData->DidHandshake())
+        {
+            return false;
+        }
+
         PlayerConnectionConfig config;
         config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
         config.m_playerSessionId = packet.GetTicket();
@@ -887,9 +918,8 @@ namespace Multiplayer
         {
             if (!sessionRequests->ValidatePlayerJoinSession(config))
             {
-                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
-                return true;
+                connection->Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local);
+                return false;
             }
         }
 
@@ -923,7 +953,21 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        reinterpret_cast<IConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+        if (connection == nullptr || connection->GetUserData() == nullptr)
+        {
+            return false;
+        }
+        if (GetAgentType() != MultiplayerAgentType::Client || connection->GetConnectionRole() != ConnectionRole::Connector)
+        {
+            return false;
+        }
+        IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+        if (connectionData->GetConnectionDataType() != ConnectionDataType::ClientToServer || connectionData->DidHandshake())
+        {
+            return false;
+        }
+
+        connectionData->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
             sv_map = packet.GetMap().c_str();
@@ -935,15 +979,11 @@ namespace Multiplayer
         else
         {
             // Bypass map loading and immediately ready the connection for updates
-            IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
-            if (connectionData)
-            {
-                connectionData->SetCanSendUpdates(true);
+            connectionData->SetCanSendUpdates(true);
 
-                // @nt: TODO - delete once dropped RPC problem fixed
-                // Connection has migrated, we are now waiting for the autonomous entity replicator to be created
-                connectionData->GetReplicationManager().AddAutonomousEntityReplicatorCreatedHandler(m_autonomousEntityReplicatorCreatedHandler);
-            }
+            // @nt: TODO - delete once dropped RPC problem fixed
+            // Connection has migrated, we are now waiting for the autonomous entity replicator to be created
+            connectionData->GetReplicationManager().AddAutonomousEntityReplicatorCreatedHandler(m_autonomousEntityReplicatorCreatedHandler);
         }
 
         m_serverAcceptanceReceivedEvent.Signal();
@@ -957,6 +997,10 @@ namespace Multiplayer
         MultiplayerPackets::ReadyForEntityUpdates& packet
     )
     {
+        if (!IsHandshakeComplete(connection))
+        {
+            return false;
+        }
         IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
         if (connectionData)
         {
@@ -973,7 +1017,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::SyncConsole& packet
     )
     {
-        if (GetAgentType() != MultiplayerAgentType::Client)
+        if (GetAgentType() != MultiplayerAgentType::Client || !IsHandshakeComplete(connection))
         {
             return false;
         }
@@ -988,6 +1032,10 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::ConsoleCommand& packet
     )
     {
+        if (!IsHandshakeComplete(connection))
+        {
+            return false;
+        }
         const bool isClient = (GetAgentType() == MultiplayerAgentType::Client);
         const AZ::ConsoleFunctorFlags requiredSet = isClient ? AZ::ConsoleFunctorFlags::Null : AZ::ConsoleFunctorFlags::AllowClientSet;
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(packet.GetCommand().c_str(), AZ::ConsoleSilentMode::NotSilent, AZ::ConsoleInvokedFrom::AzNetworking, requiredSet);
@@ -1001,6 +1049,10 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::EntityUpdates& packet
     )
     {
+        if (!IsHandshakeComplete(connection))
+        {
+            return false;
+        }
         bool handledAll = true;
         if (connection->GetUserData() == nullptr)
         {
@@ -1036,6 +1088,10 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::EntityRpcs& packet
     )
     {
+        if (!IsHandshakeComplete(connection))
+        {
+            return false;
+        }
         if (connection->GetUserData() == nullptr)
         {
             AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing, entity updates size %u", aznumeric_cast<uint32_t>(packet.GetEntityRpcs().size()));
@@ -1053,6 +1109,10 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::RequestReplicatorReset& packet
     )
     {
+        if (!IsHandshakeComplete(connection))
+        {
+            return false;
+        }
         if (connection->GetUserData() == nullptr)
         {
             AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing");
@@ -1070,7 +1130,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::ClientMigration& packet
     )
     {
-        if (GetAgentType() != MultiplayerAgentType::Client)
+        if (GetAgentType() != MultiplayerAgentType::Client || !IsHandshakeComplete(connection))
         {
             // Only clients are allowed to migrate from one server to another
             return false;
@@ -1316,11 +1376,13 @@ namespace Multiplayer
 
                 if (AZ::Interface<ISessionHandlingProviderRequests>::Get() != nullptr)
                 {
-                    PlayerConnectionConfig config;
-                    config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-                    config.m_playerSessionId =
-                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetProviderTicket();
-                    AZ::Interface<ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+                    if (auto* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData()))
+                    {
+                        PlayerConnectionConfig config;
+                        config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+                        config.m_playerSessionId = connectionData->GetProviderTicket();
+                        AZ::Interface<ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+                    }
                 }
             }
         }

@@ -55,7 +55,11 @@ namespace Multiplayer
         serializer.Serialize(ownerId, "OwnerId");
 
         uint32_t inputCount = aznumeric_cast<uint32_t>(m_inputs.size());
-        serializer.Serialize(inputCount, "InputCount");
+        if (!serializer.Serialize(inputCount, "InputCount", 0, static_cast<uint32_t>(m_inputs.capacity()))
+            || inputCount > m_inputs.capacity())
+        {
+            return false;
+        }
 
         if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
         {

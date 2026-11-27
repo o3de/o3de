@@ -97,6 +97,7 @@ namespace Streamer
         StatsContainer* m_readingFileLocks{ m_fileLocks };
         AZStd::atomic<StatsContainer*> m_transferFileLocks{  };
         StatsContainer* m_displayingFileLocks{ m_fileLocks + 1};
+        AZStd::atomic_bool m_stackConfigurationRequested{ false };
         AZStd::atomic_bool m_stackConfigurationAvailable{ false };
     };
 

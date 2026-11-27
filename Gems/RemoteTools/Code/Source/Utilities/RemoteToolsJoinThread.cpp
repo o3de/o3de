@@ -52,25 +52,28 @@ namespace RemoteTools
     {
         bool isRequestingConnection = false;
         auto& networkInterfaces = AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces();
-        for (const auto& [persistentId, toolsRegistryEntry] : m_remoteToolsComponent->m_entryRegistry)
         {
-            AZ::Name serviceName = toolsRegistryEntry.m_name;
-            if (!toolsRegistryEntry.m_isHost && networkInterfaces.contains(serviceName))
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_remoteToolsComponent->m_entryRegistryMutex);
+            for (const auto& [persistentId, toolsRegistryEntry] : m_remoteToolsComponent->m_entryRegistry)
             {
-                auto networkInterface = networkInterfaces.find(serviceName);
-                if (networkInterface->second->GetConnectionSet().GetActiveConnectionCount() == 0)
+                AZ::Name serviceName = toolsRegistryEntry.m_name;
+                if (!toolsRegistryEntry.m_isHost && networkInterfaces.contains(serviceName))
                 {
-                    AzNetworking::ConnectionId connId = networkInterface->second->Connect(toolsRegistryEntry.m_ip);
-                    if (connId != AzNetworking::InvalidConnectionId)
+                    auto networkInterface = networkInterfaces.find(serviceName);
+                    if (networkInterface->second->GetConnectionSet().GetActiveConnectionCount() == 0)
                     {
-                        RemoteToolsPackets::RemoteToolsConnect initPacket;
-                        initPacket.SetPersistentId(persistentId);
-                        initPacket.SetDisplayName(GetPersistentName());
-                        networkInterface->second->SendReliablePacket(connId, initPacket);
-                    }
-                    else
-                    {
-                        isRequestingConnection = true;
+                        AzNetworking::ConnectionId connId = networkInterface->second->Connect(toolsRegistryEntry.m_ip);
+                        if (connId != AzNetworking::InvalidConnectionId)
+                        {
+                            RemoteToolsPackets::RemoteToolsConnect initPacket;
+                            initPacket.SetPersistentId(persistentId);
+                            initPacket.SetDisplayName(GetPersistentName());
+                            networkInterface->second->SendReliablePacket(connId, initPacket);
+                        }
+                        else
+                        {
+                            isRequestingConnection = true;
+                        }
                     }
                 }
             }

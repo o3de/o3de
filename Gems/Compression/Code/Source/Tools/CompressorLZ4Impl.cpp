@@ -8,6 +8,7 @@
 
 #include "CompressorLZ4Impl.h"
 
+#include <AzCore/std/limits.h>
 #include <Compression/CompressionLZ4API.h>
 
 #include <lz4.h>
@@ -29,7 +30,11 @@ namespace CompressionLZ4
 
     [[nodiscard]] size_t CompressorLZ4::CompressBound([[maybe_unused]] size_t uncompressedBufferSize) const
     {
-        return LZ4_compressBound(static_cast<int>(uncompressedBufferSize));
+        if (uncompressedBufferSize > static_cast<size_t>(LZ4_MAX_INPUT_SIZE))
+        {
+            return 0;
+        }
+        return static_cast<size_t>(LZ4_compressBound(static_cast<int>(uncompressedBufferSize)));
     }
 
     Compression::CompressionResultData CompressorLZ4::CompressBlock(
@@ -37,6 +42,15 @@ namespace CompressionLZ4
         [[maybe_unused]] const Compression::CompressionOptions& compressionOptions) const
     {
         Compression::CompressionResultData resultData;
+
+        if (uncompressedData.size() > static_cast<size_t>(LZ4_MAX_INPUT_SIZE))
+        {
+            resultData.m_compressionOutcome.m_resultString = Compression::CompressionResultString::format(
+                "Input buffer is too large to compress"
+                " in a single call. The maximum lz4 input size is %d. The input size is %zu", LZ4_MAX_INPUT_SIZE, uncompressedData.size());
+            resultData.m_compressionOutcome.m_result = Compression::CompressionResult::Failed;
+            return resultData;
+        }
 
         if (const int worstCaseCompressedSize = LZ4_compressBound(static_cast<int>(uncompressedData.size()));
             worstCaseCompressedSize == 0)
@@ -47,20 +61,24 @@ namespace CompressionLZ4
             resultData.m_compressionOutcome.m_result = Compression::CompressionResult::Failed;
             return resultData;
         }
-        else if (compressionBuffer.size() < worstCaseCompressedSize)
+        else if (compressionBuffer.size() < static_cast<size_t>(worstCaseCompressedSize))
         {
             resultData.m_compressionOutcome.m_resultString = Compression::CompressionResultString::format(
                 "Output buffer capacity is less than the upper bound for worst case."
                 " Worst case size is %d; output buffer capacity is %zu\n",
                 worstCaseCompressedSize, compressionBuffer.size());
+            resultData.m_compressionOutcome.m_result = Compression::CompressionResult::Failed;
+            return resultData;
         }
+
+        const size_t clampedOutputCapacity = AZStd::min(compressionBuffer.size(), static_cast<size_t>(AZStd::numeric_limits<int>::max()));
 
         // Note that this returns a non-negative int so we are narrowing into a size_t here
         int compressedSize = LZ4_compress_default(
             reinterpret_cast<const char*>(uncompressedData.data()),
             reinterpret_cast<char*>(compressionBuffer.data()),
             static_cast<int>(uncompressedData.size()),
-            static_cast<int>(compressionBuffer.size()));
+            static_cast<int>(clampedOutputCapacity));
 
         if (compressedSize == 0)
         {
