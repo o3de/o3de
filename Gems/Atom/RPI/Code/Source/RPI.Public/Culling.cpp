@@ -383,25 +383,24 @@ namespace AZ
 #endif
         }
 
-        static void ProcessVisibilityNode(const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::IVisibilityScene::NodeData& nodeData)
+        static void ProcessVisibilityNode(const AZStd::shared_ptr<WorklistData>& worklistData, const AZStd::shared_ptr<WorkListType>& worklist, size_t nodeIndex)
         {
+            const AzFramework::IVisibilityScene::NodeData& nodeData = worklist->m_nodes[nodeIndex];
             bool nodeIsContainedInFrustum = !worklistData->m_debugCtx->m_enableFrustumCulling || ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
 
             s32 startIdx = 0, size = s32(nodeData.m_entries.size());
-            const AZStd::vector<AzFramework::VisibilityEntry*>& entries = nodeData.m_entries;
 
             if (worklistData->m_taskGraphEvent)
             {
                 static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
                 AZ::TaskGraph taskGraph{ "ProcessCullableEntries" };
-                AZ::TaskGraphEvent taskGraphEvent{ "ProcessCullableEntries Wait" };
 
                 while (r_useEntryCountForNodeJobs && (size - startIdx) > s32(r_numEntriesPerCullingJob))
                 {
-                    taskGraph.AddTask(descriptor, [=, &entries]() -> void
+                    taskGraph.AddTask(descriptor, [=]() -> void
                         {
-                            ProcessEntrylist(worklistData, entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
+                            ProcessEntrylist(worklistData, worklist->m_nodes[nodeIndex].m_entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
                         });
                     startIdx += s32(r_numEntriesPerCullingJob);
                 }
@@ -418,9 +417,9 @@ namespace AZ
             {
                 while (r_useEntryCountForNodeJobs && (size - startIdx) > s32(r_numEntriesPerCullingJob))
                 {
-                    auto processEntries = [=, &entries]() -> void
+                    auto processEntries = [=]() -> void
                     {
-                        ProcessEntrylist(worklistData, entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
+                        ProcessEntrylist(worklistData, worklist->m_nodes[nodeIndex].m_entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
                     };
 
                     AZ::Job* job = AZ::CreateJobFunction(AZStd::move(processEntries), true);
@@ -455,15 +454,15 @@ namespace AZ
 #endif
         }
 
-        static void ProcessWorklist(const AZStd::shared_ptr<WorklistData>& worklistData, const WorkListType& worklist)
+        static void ProcessWorklist(const AZStd::shared_ptr<WorklistData>& worklistData, const AZStd::shared_ptr<WorkListType>& worklist)
         {
             AZ_PROFILE_SCOPE(RPI, "Culling: ProcessWorklist");
 
-            AZ_Assert(worklist.m_nodes.size() > 0, "Received empty worklist in ProcessWorklist");
+            AZ_Assert(worklist->m_nodes.size() > 0, "Received empty worklist in ProcessWorklist");
 
-            for (const AzFramework::IVisibilityScene::NodeData& nodeData : worklist.m_nodes)
+            for (size_t nodeIndex = 0; nodeIndex < worklist->m_nodes.size(); ++nodeIndex)
             {
-                ProcessVisibilityNode(worklistData, nodeData);
+                ProcessVisibilityNode(worklistData, worklist, nodeIndex);
             }
         }
 
@@ -760,14 +759,14 @@ namespace AZ
                     // capture worklistData & worklist by value
                     auto processWorklist = [worklistData, worklist]()
                     {
-                        ProcessWorklist(worklistData, *worklist);
+                        ProcessWorklist(worklistData, worklist);
                     };
 
                     if (taskGraph != nullptr)
                     {
                         taskGraph->AddTask(descriptor, [worklistData, worklist]()
                             {
-                                ProcessWorklist(worklistData, *worklist);
+                                ProcessWorklist(worklistData, worklist);
                             });
                     }
                     else
@@ -806,7 +805,7 @@ namespace AZ
                 // capture worklistData & worklist by value
                 auto processWorklist = [worklistData, worklist]()
                 {
-                    ProcessWorklist(worklistData, *worklist);
+                    ProcessWorklist(worklistData, worklist);
                 };
 
                 if (taskGraph != nullptr)

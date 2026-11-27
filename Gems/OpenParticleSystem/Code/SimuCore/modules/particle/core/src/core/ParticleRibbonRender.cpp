@@ -162,7 +162,7 @@ namespace SimuCore::ParticleCore {
                 AZ::u32 lastLast = indicesInRibbon[indicesInRibbon.size() - 2];
                 Particle lastLastParticle = particle[lastLast];
                 lastDir = lastParticle.globalPosition - lastLastParticle.globalPosition;
-                if (float sqlength = lastDir.GetLengthSq() > AZ::Constants::FloatEpsilon)
+                if (float sqlength = lastDir.GetLengthSq(); sqlength > AZ::Constants::FloatEpsilon)
                 {
                     lastDir = lastDir / std::sqrt(sqlength);
                 }
@@ -232,6 +232,7 @@ namespace SimuCore::ParticleCore {
             ParticleDriver::bufferDestroyFn(gDriver, vertexBufferView.buffer);
             reCreateVb = true;
         }
+        const AZ::u32 vbByteSize = static_cast<AZ::u32>(vb.size() * sizeof(ParticleRibbonVertex));
 
         // and to calculate the index count, its going to be 6 indexes per quad rendered.
         bool reCreateIb = false;
@@ -242,10 +243,11 @@ namespace SimuCore::ParticleCore {
             ParticleDriver::bufferDestroyFn(gDriver, indexBufferView.buffer);
             reCreateIb = true;
         }
+        const AZ::u32 ibByteSize = static_cast<AZ::u32>(ib.size() * sizeof(AZ::u32));
 
         FillVertexAndIndexBuffer(world, config, vb, ib);
-        UpdateVertexBuffer(vertexBufferView, vb, reCreateVb);
-        UpdateIndexBuffer(indexBufferView, ib, reCreateIb);
+        UpdateVertexBuffer(vertexBufferView, vb, vbByteSize, reCreateVb);
+        UpdateIndexBuffer(indexBufferView, ib, ibByteSize, reCreateIb);
     }
 
     void ParticleRibbonRender::FillVertexAndIndexBuffer(const WorldInfo& world, const RibbonConfig& config,
@@ -374,46 +376,46 @@ namespace SimuCore::ParticleCore {
     }
 
     void ParticleRibbonRender::UpdateVertexBuffer(
-        BufferView& bufferView, AZStd::vector<ParticleRibbonVertex>& vb, bool reCreate) const
+        BufferView& bufferView, AZStd::vector<ParticleRibbonVertex>& vb, AZ::u32 vbByteSize, bool reCreate) const
     {
         if (reCreate || bufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
+            info.size = vbByteSize;
             info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
+            bufferView.size = vbByteSize;
             bufferView.stride = sizeof(ParticleRibbonVertex);
         } else {
             BufferUpdate info = {};
             info.usage = BufferUsage::VERTEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = newVbSize * static_cast<AZ::u32>(sizeof(ParticleRibbonVertex));
+            info.size = vbByteSize;
             info.data = reinterpret_cast<const AZ::u8*>(vb.data());
             ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
         }
     }
 
     void ParticleRibbonRender::UpdateIndexBuffer(
-        BufferView& bufferView, AZStd::vector<AZ::u32>& ib, bool reCreate) const
+        BufferView& bufferView, AZStd::vector<AZ::u32>& ib, AZ::u32 ibByteSize, bool reCreate) const
     {
         if (reCreate || bufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            info.size = ibByteSize;
             info.data = reinterpret_cast<const AZ::u8*>(ib.data());
             info.usage = BufferUsage::INDEX;
             info.memory = MemoryType::DYNAMIC;
             ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
             bufferView.offset = 0;
-            bufferView.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            bufferView.size = ibByteSize;
             bufferView.stride = sizeof(AZ::u32);
         } else {
             BufferUpdate info = {};
             info.usage = BufferUsage::INDEX;
             info.memory = MemoryType::DYNAMIC;
-            info.size = newIbSize * static_cast<AZ::u32>(sizeof(AZ::u32));
+            info.size = ibByteSize;
             info.data = reinterpret_cast<const AZ::u8*>(ib.data());
             ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
         }

@@ -73,6 +73,7 @@ namespace SimuCore::ParticleCore {
         FreeEffector(*dataPool, emitEffectors);
         FreeEffector(*dataPool, spawnEffectors);
         FreeEffector(*dataPool, updateEffectors);
+        FreeEffector(*dataPool, eventEffectors);
     }
 
     ParticleRender* ParticleEmitter::SetParticleRender(AZ::u32 data, RenderType type)

@@ -78,36 +78,54 @@ namespace Terrain
     //! Final result must be less or equal than the MacroClipmapStackSizeMax/DetailClipmapStackSizeMax.
     uint32_t ClipmapConfiguration::CalculateMacroClipmapStackSize() const
     {
+        if (m_macroClipmapScaleBase <= 1.0f || m_macroClipmapMaxResolution <= 0.0f)
+        {
+            AZ_Assert(false, "Invalid macro clipmap configuration: scaleBase (%f) must be > 1.0 and maxResolution (%f) must be > 0.0.",
+                m_macroClipmapScaleBase, m_macroClipmapMaxResolution);
+            return 1u;
+        }
+
         float clipmapSize = aznumeric_cast<float>(m_clipmapSize);
         float minRenderDistance = clipmapSize / m_macroClipmapMaxResolution / 2.0f; // Render distance is half of the image.
 
         uint32_t stackSizeNeeded = 1u;
         // Add more layers until it meets the max resolution.
-        for (float radius = m_macroClipmapMaxRenderRadius; radius > minRenderDistance; radius /= m_macroClipmapScaleBase)
+        for (float radius = m_macroClipmapMaxRenderRadius;
+             radius > minRenderDistance && stackSizeNeeded < MacroClipmapStackSizeMax;
+             radius /= m_macroClipmapScaleBase)
         {
             ++stackSizeNeeded;
         }
 
         AZ_Assert(stackSizeNeeded <= MacroClipmapStackSizeMax, "Stack size needed is bigger than max. Consider increasing MacroClipmapStackSizeMax and the same name constant in TerrainSrg.azsli.");
 
-        return stackSizeNeeded;
+        return AZStd::min(stackSizeNeeded, MacroClipmapStackSizeMax);
     }
 
     uint32_t ClipmapConfiguration::CalculateDetailClipmapStackSize() const
     {
+        if (m_detailClipmapScaleBase <= 1.0f || m_detailClipmapMaxResolution <= 0.0f)
+        {
+            AZ_Assert(false, "Invalid detail clipmap configuration: scaleBase (%f) must be > 1.0 and maxResolution (%f) must be > 0.0.",
+                m_detailClipmapScaleBase, m_detailClipmapMaxResolution);
+            return 1u;
+        }
+
         float clipmapSize = aznumeric_cast<float>(m_clipmapSize);
         float minRenderDistance = clipmapSize / m_detailClipmapMaxResolution / 2.0f; // Render distance is half of the image.
 
         uint32_t stackSizeNeeded = 1u;
         // Add more layers until it meets the max resolution.
-        for (float radius = m_detailClipmapMaxRenderRadius; radius > minRenderDistance; radius /= m_detailClipmapScaleBase)
+        for (float radius = m_detailClipmapMaxRenderRadius;
+             radius > minRenderDistance && stackSizeNeeded < DetailClipmapStackSizeMax;
+             radius /= m_detailClipmapScaleBase)
         {
             ++stackSizeNeeded;
         }
 
-        AZ_Assert(stackSizeNeeded <= MacroClipmapStackSizeMax, "Stack size needed is bigger than max. Consider increasing DetailClipmapStackSizeMax and the same name constant in TerrainSrg.azsli.");
+        AZ_Assert(stackSizeNeeded <= DetailClipmapStackSizeMax, "Stack size needed is bigger than max. Consider increasing DetailClipmapStackSizeMax and the same name constant in TerrainSrg.azsli.");
 
-        return stackSizeNeeded;
+        return AZStd::min(stackSizeNeeded, DetailClipmapStackSizeMax);
     }
 
     TerrainClipmapManager::TerrainClipmapManager()
@@ -139,6 +157,8 @@ namespace Terrain
         {
             ClearMacroClipmapImages();
             ClearMacroClipmapGpuBuffer();
+            ClearDetailClipmapImages();
+            ClearDetailClipmapGpuBuffer();
             m_config = config;
 
             return;
@@ -149,8 +169,8 @@ namespace Terrain
         bool macroRefresh = false;
         bool detailRefresh = false;
 
-        // If clipmap size is changed, everything will be recreated.
-        if (config.m_clipmapSize != m_config.m_clipmapSize)
+        // If clipmaps were previously disabled or clipmap size is changed, everything will be recreated.
+        if (!m_config.m_clipmapEnabled || config.m_clipmapSize != m_config.m_clipmapSize)
         {
             macroRecreation = true;
             detailRecreation = true;
@@ -220,6 +240,11 @@ namespace Terrain
             else if (detailRefresh)
             {
                 InitializeDetailClipmapData();
+            }
+
+            if ((macroRecreation || detailRecreation) && m_terrainSrg)
+            {
+                UpdateSrgIndices(m_terrainSrg);
             }
 
             return;

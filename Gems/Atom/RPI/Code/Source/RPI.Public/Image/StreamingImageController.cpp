@@ -64,26 +64,28 @@ namespace AZ
         {
             AZ_Assert(image, "Image must not be null.");
 
-            // Remove image from the list first before clearing the image streaming context
-            // since the compare functions may use the image's StreamingImageContext
-            {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
-                m_streamableImages.erase(image);
-                m_expandingImages.erase(image);
-                m_expandableImages.erase(image);
-                m_evictableImages.erase(image);
-            }
-
             const StreamingImageContextPtr& context = image->m_streamingContext;
             AZ_Assert(context, "Image streaming context must not be null.");
 
+            // Enforce lock hierarchy: m_contextAccessMutex -> m_imageListAccessMutex -> m_mipExpandMutex.
+            // Remove image from the lists before clearing the image streaming context
+            // since the compare functions may use the image's StreamingImageContext.
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_contextAccessMutex);
+                AZStd::lock_guard<AZStd::mutex> contextLock(m_contextAccessMutex);
+                {
+                    AZStd::lock_guard<AZStd::recursive_mutex> listLock(m_imageListAccessMutex);
+                    m_streamableImages.erase(image);
+                    m_expandingImages.erase(image);
+                    m_expandableImages.erase(image);
+                    m_evictableImages.erase(image);
+
+                    AZStd::lock_guard<AZStd::mutex> mipExpandLock(m_mipExpandMutex);
+                    context->m_queuedForMipExpand = false;
+                    context->m_streamingImage = nullptr;
+                }
                 m_contexts.erase(*context);
             }
 
-            context->m_queuedForMipExpand = false;
-            context->m_streamingImage = nullptr;
             image->m_streamingController = nullptr;
             image->m_streamingContext = nullptr;
         }
@@ -157,14 +159,24 @@ namespace AZ
             // Finalize the mip expansion events generated from the controller. This is done once per update. Anytime
             // a new mip chain asset is ready, the streaming image will notify the controller, which will then queue
             // the request.
+            // Enforce lock hierarchy: m_contextAccessMutex -> m_imageListAccessMutex -> m_mipExpandMutex.
             {
-                AZStd::lock_guard<AZStd::mutex> mipExpandlock(m_mipExpandMutex);
-                while (m_mipExpandQueue.size() > 0)
+                AZStd::lock_guard<AZStd::recursive_mutex> imageListAccessLock(m_imageListAccessMutex);
+                while (jobCount < c_jobCount && m_lastLowMemory == 0)
                 {
-                    StreamingImageContextPtr context = m_mipExpandQueue.front();
+                    StreamingImageContextPtr context;
+                    {
+                        AZStd::lock_guard<AZStd::mutex> mipExpandLock(m_mipExpandMutex);
+                        if (m_mipExpandQueue.empty())
+                        {
+                            break;
+                        }
+                        context = m_mipExpandQueue.front();
+                        m_mipExpandQueue.pop();
+                    }
+
                     if (context->m_queuedForMipExpand)
                     {
-                    
                         if (StreamingImage* image = context->TryGetImage())
                         {
                             StreamingDebugOutput("StreamingImageController", "ExpandMipChain for [%s]\n", image->GetRHIImage()->GetName().GetCStr());
@@ -181,13 +193,8 @@ namespace AZ
                             }
                         }
                     }
-                    m_mipExpandQueue.pop();
 
                     jobCount++;
-                    if (jobCount >= c_jobCount || m_lastLowMemory > 0)
-                    {
-                        break;
-                    }
                 }
             }
 

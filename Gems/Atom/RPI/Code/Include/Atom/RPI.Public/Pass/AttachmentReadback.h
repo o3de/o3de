@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <AzCore/std/parallel/atomic.h>
 
 namespace AZ
 {
@@ -171,7 +172,7 @@ namespace AZ
             uint32_t m_readbackBufferCurrentIndex = 0u;
             uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
 
-            ReadbackState m_state = ReadbackState::Uninitialized;
+            AZStd::atomic<ReadbackState> m_state{ ReadbackState::Uninitialized };
 
             Ptr<RHI::Fence> m_fence;
 

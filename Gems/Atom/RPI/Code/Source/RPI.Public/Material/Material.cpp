@@ -58,6 +58,13 @@ namespace AZ
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
             // All of these members must be reset if the material can be reinitialized because of the shader reload notification bus
+            if (m_instanceData.m_materialTypeId >= 0)
+            {
+                if (auto instanceHandler = MaterialInstanceHandlerInterface::Get())
+                {
+                    instanceHandler->ReleaseMaterialInstance(m_instanceData);
+                }
+            }
             m_instanceData = {};
             m_rhiShaderResourceGroup = {};
             m_materialProperties = {};

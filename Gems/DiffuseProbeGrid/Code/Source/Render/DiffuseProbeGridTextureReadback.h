@@ -10,6 +10,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
+#include <AzCore/std/parallel/atomic.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
 
 namespace AZ
@@ -34,7 +35,7 @@ namespace AZ
         {
         public:
             DiffuseProbeGridTextureReadback(DiffuseProbeGrid* diffuseProbeGrid);
-            ~DiffuseProbeGridTextureReadback() = default;
+            ~DiffuseProbeGridTextureReadback();
 
             void BeginTextureReadback(DiffuseProbeGridBakeTexturesCallback callback);
             void Update(const AZ::Name& passName);
@@ -45,8 +46,7 @@ namespace AZ
         private:
 
             DiffuseProbeGrid* m_diffuseProbeGrid = nullptr;
-            DiffuseProbeGridReadbackState m_readbackState = DiffuseProbeGridReadbackState::Idle;
-            AZStd::shared_ptr<AZ::RPI::AttachmentReadback> m_attachmentReadback;
+            AZStd::atomic<DiffuseProbeGridReadbackState> m_readbackState{ DiffuseProbeGridReadbackState::Idle };
             DiffuseProbeGridBakeTexturesCallback m_callback;
 
             AZ::RPI::AttachmentReadback::ReadbackResult m_irradianceReadbackResult;
@@ -56,6 +56,9 @@ namespace AZ
             // number of frames to delay before starting the texture readbacks, this allows the textures to settle
             static constexpr int32_t DefaultNumInitializationFrames = 50;
             int32_t m_remainingInitializationFrames = DefaultNumInitializationFrames;
+
+            // Listed last so any in-flight async readback callback completes before result members are destroyed
+            AZStd::shared_ptr<AZ::RPI::AttachmentReadback> m_attachmentReadback;
         };
     }   // namespace Render
 }   // namespace AZ

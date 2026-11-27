@@ -92,8 +92,10 @@ namespace AMD
 
         // Read the stream to a buffer and parse it line by line
         AZStd::vector<char> charBuffer;
-        charBuffer.resize_no_construct(stream->GetLength() + 1);
-        stream->Read(stream->GetLength(), charBuffer.data());
+        const size_t streamLength = stream->GetLength();
+        charBuffer.resize_no_construct(streamLength + 1);
+        const size_t bytesRead = stream->Read(streamLength, charBuffer.data());
+        charBuffer[bytesRead] = '\0';
 
         AZStd::vector<AZStd::string> sTokens;
         AZStd::vector<AZStd::string> fileLines;
@@ -126,7 +128,15 @@ namespace AMD
             // Load bone names.
             if (token.find("numOfBones") != std::string::npos)
             {
+                if (sTokens.size() < 2)
+                {
+                    return false;
+                }
                 numOfBones = atoi(sTokens[1].c_str());
+                if (numOfBones < 0)
+                {
+                    return false;
+                }
                 int countBone = 0;
 
                 // Continue reading the file.
@@ -144,6 +154,10 @@ namespace AMD
 
                     sTokens.clear();
                     AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
+                    if (sTokens.size() < 2)
+                    {
+                        return false;
+                    }
                     m_boneNames.push_back(sTokens[1].c_str());
                     countBone++;
 
@@ -154,7 +168,15 @@ namespace AMD
 
             if (token.find("numOfVertices") != std::string::npos) // load bone indices and weights for each strand
             {
-                const int numVertices = (AMD::uint32)atoi(sTokens[1].c_str());
+                if (sTokens.size() < 2)
+                {
+                    return false;
+                }
+                const int numVertices = atoi(sTokens[1].c_str());
+                if (numVertices < 0)
+                {
+                    return false;
+                }
                 m_boneSkinningData.resize(numVertices);
                 m_vertices.resize(numVertices);
                 m_normals.resize(numVertices);
@@ -177,6 +199,10 @@ namespace AMD
                     sTokens.clear();
                     AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
                     assert(sTokens.size() == 15);
+                    if (sTokens.size() < 15)
+                    {
+                        return false;
+                    }
 
                     int vertexIndex = atoi(sTokens[0].c_str());
                     AZ_UNUSED(vertexIndex);
@@ -223,7 +249,15 @@ namespace AMD
             }
             else if (token.find("numOfTriangles") != std::string::npos) // triangle indices
             {
+                if (sTokens.size() < 2)
+                {
+                    return false;
+                }
                 const int numTriangles = atoi(sTokens[1].c_str());
+                if (numTriangles < 0)
+                {
+                    return false;
+                }
                 int numIndices = numTriangles * 3;
                 m_indices.resize(numIndices);
                 int index = 0;
@@ -244,6 +278,10 @@ namespace AMD
                     sTokens.clear();
                     AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
                     assert(sTokens.size() == 4);
+                    if (sTokens.size() < 4)
+                    {
+                        return false;
+                    }
 
                     int triangleIndex = atoi(sTokens[0].c_str());
                     AZ_UNUSED(triangleIndex);
@@ -690,6 +728,11 @@ namespace AMD
         AMD::int32 numOfBones = 0;
         [[maybe_unused]] auto eiSeekResult = EI_Seek(ioObject, 0);
         [[maybe_unused]] auto eiReadResult = EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
+        if (numOfBones < 0)
+        {
+            boneNames.clear();
+            return;
+        }
 
         //    boneNames.reserve(numOfBones);
         boneNames.resize(numOfBones);
@@ -701,7 +744,12 @@ namespace AMD
             AMD::int32 charLen = 0;
             eiReadResult = EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
 
-            char boneName[128];
+            char boneName[128] = {};
+            if (charLen <= 0 || charLen >= static_cast<AMD::int32>(AZ_ARRAY_SIZE(boneName)))
+            {
+                boneNames.clear();
+                return;
+            }
             eiReadResult = EI_Read(boneName, sizeof(char) * charLen, ioObject);
             boneName[charLen] = '\0';   // adding 0 termination to be on the safe side.
             boneNames[i] = std::string(boneName);
@@ -712,6 +760,11 @@ namespace AMD
     {
         AMD::int32 numOfBones = 0;
         stream->Read(sizeof(AMD::int32), &numOfBones);
+        if (numOfBones < 0)
+        {
+            boneNames.clear();
+            return;
+        }
 
         boneNames.resize(numOfBones);
         for (int i = 0; i < numOfBones; i++)
@@ -722,7 +775,12 @@ namespace AMD
             AMD::int32 charLen = 0;
             stream->Read(sizeof(AMD::int32), &charLen); // character length includes null termination already.
 
-            char boneName[128];
+            char boneName[128] = {};
+            if (charLen <= 0 || charLen >= static_cast<AMD::int32>(AZ_ARRAY_SIZE(boneName)))
+            {
+                boneNames.clear();
+                return;
+            }
             stream->Read(sizeof(char) * charLen, &boneName);
             boneName[charLen] = '\0'; // adding 0 termination to be on the safe side.
             boneNames[i] = std::string(boneName);
@@ -738,9 +796,9 @@ namespace AMD
         [[maybe_unused]] auto eiSeekResult = EI_Seek(ioObject, 0);
         [[maybe_unused]] auto eiReadResult = EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
 
-        if (skeletonBoneIndices.size() != numOfBones)
+        if (numOfBones < 0 || skeletonBoneIndices.size() != static_cast<size_t>(numOfBones))
         {
-            TRESSFX_ASSERT(skeletonBoneIndices.size() != numOfBones);
+            TRESSFX_ASSERT(numOfBones >= 0 && skeletonBoneIndices.size() == static_cast<size_t>(numOfBones));
             return false;
         }
 
@@ -752,7 +810,11 @@ namespace AMD
             AMD::int32 charLen = 0;
             eiReadResult = EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
 
-            char boneName[128];
+            char boneName[128] = {};
+            if (charLen <= 0 || charLen >= static_cast<AMD::int32>(AZ_ARRAY_SIZE(boneName)))
+            {
+                return false;
+            }
             eiReadResult = EI_Read(boneName, sizeof(char) * charLen, ioObject);
         }
 
@@ -761,8 +823,8 @@ namespace AMD
         eiReadResult = EI_Read((char*)&numOfStrandsInStream, sizeof(AMD::int32), ioObject);
 
         //If the number of strands from the input stream (tfxbone) is bigger than what we already know from tfx, something is wrong.
-        if (m_numGuideStrands < numOfStrandsInStream)
-            return 0;
+        if (numOfStrandsInStream < 0 || m_numGuideStrands < numOfStrandsInStream)
+            return false;
 
         m_boneSkinningData.resize(m_numTotalStrands);
 
@@ -774,10 +836,14 @@ namespace AMD
 
             for (AMD::int32 j = 0; j < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++j)
             {
-                AMD::int32 boneIndex;
+                AMD::int32 boneIndex = 0;
                 eiReadResult = EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
-                assert(boneIndex >= 0);
-                skinData.boneIndex[j] = (float)skeletonBoneIndices[boneIndex]; // Change the joint index to be what the engine wants
+                assert(boneIndex >= -1 && boneIndex < numOfBones);
+                if (boneIndex < -1 || boneIndex >= numOfBones)
+                {
+                    return false;
+                }
+                skinData.boneIndex[j] = (boneIndex >= 0) ? (float)skeletonBoneIndices[boneIndex] : -1.0f; // Change the joint index to be what the engine wants
                 eiReadResult = EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
             }
 
@@ -819,6 +885,10 @@ namespace AMD
 
         AMD::int32 numOfBones = 0;
         stream->Read(sizeof(AMD::int32), &numOfBones);
+        if (numOfBones < 0)
+        {
+            return false;
+        }
 
         m_boneNames.resize(numOfBones);
         for (int i = 0; i < numOfBones; i++)
@@ -829,7 +899,12 @@ namespace AMD
             AMD::int32 charLen = 0;
             stream->Read(sizeof(AMD::int32), &charLen); // character length includes null termination already.
 
-            char boneName[128];
+            char boneName[128] = {};
+            if (charLen <= 0 || charLen >= static_cast<AMD::int32>(AZ_ARRAY_SIZE(boneName)))
+            {
+                m_boneNames.clear();
+                return false;
+            }
             stream->Read(sizeof(char) * charLen, &boneName);
             boneName[charLen] = '\0'; // adding 0 termination to be on the safe side.
             m_boneNames[i] = std::string(boneName);
@@ -840,8 +915,8 @@ namespace AMD
         stream->Read(sizeof(AMD::int32), &numOfStrandsInStream);
 
         // If the number of strands from the input stream (tfxbone) is bigger than what we already know from tfx, something is wrong.
-        if (m_numGuideStrands < numOfStrandsInStream)
-            return 0;
+        if (numOfStrandsInStream < 0 || m_numGuideStrands < numOfStrandsInStream)
+            return false;
 
         //AMD::int32 boneSkinningMemSize = m_numTotalStrands * sizeof(TressFXBoneSkinningData);
         m_boneSkinningData.resize(m_numTotalStrands);
@@ -854,9 +929,13 @@ namespace AMD
 
             for (AMD::int32 j = 0; j < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++j)
             {
-                AMD::int32 boneIndex;
+                AMD::int32 boneIndex = 0;
                 stream->Read(sizeof(AMD::int32), &boneIndex);
-                assert(boneIndex >= 0);
+                assert(boneIndex >= -1 && boneIndex < numOfBones);
+                if (boneIndex < -1 || boneIndex >= numOfBones)
+                {
+                    return false;
+                }
                 skinData.boneIndex[j] = (float)boneIndex; // Stores the bone index from tfx directly
                 stream->Read(sizeof(AMD::real32), &skinData.weight[j]);
             }
@@ -971,9 +1050,9 @@ namespace AMD
     {
         uint32 numMismatchedBone = 0;
         outLookup.resize(boneNames.size());
-        for (int i = 0; i < m_boneNames.size(); ++i)
+        for (size_t i = 0; i < boneNames.size(); ++i)
         {
-            const std::string& boneName = m_boneNames[i];
+            const std::string& boneName = boneNames[i];
             if (boneIndicesMap.find(boneName) == boneIndicesMap.end())
             {
                 // Error handling.

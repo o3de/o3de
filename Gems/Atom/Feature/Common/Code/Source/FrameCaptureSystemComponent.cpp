@@ -182,6 +182,10 @@ namespace AZ
             const uint32_t bitsPerChannel = bytesPerChannel * 8;
 
             TIFF* out = TIFFOpen(outputFilePath.c_str(), "w");
+            if (!out)
+            {
+                return FrameCaptureOutputResult{ FrameCaptureResult::FileWriteError, "Unable to open tif frame capture output file " + outputFilePath };
+            }
             TIFFSetField(out, TIFFTAG_IMAGEWIDTH, width);
             TIFFSetField(out, TIFFTAG_IMAGELENGTH, height);
             TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, numChannels);
@@ -195,6 +199,11 @@ namespace AZ
             size_t pitch = width * numChannels * bytesPerChannel;
             AZ_Assert((pitch * height) == buffer->size(), "Image buffer does not match allocated bytes for tiff saving.")
             unsigned char* raster = (unsigned char*)_TIFFmalloc((tsize_t)(pitch * height));
+            if (!raster)
+            {
+                TIFFClose(out);
+                return FrameCaptureOutputResult{ FrameCaptureResult::InternalError, "Unable to allocate memory for tif frame capture output to " + outputFilePath };
+            }
             memcpy(raster, buffer->data(), pitch * height);
             bool success = true;
             for (uint32_t h = 0; h < height; ++h)
@@ -622,15 +631,25 @@ namespace AZ
                     m_inProgressCaptures.pop_front();
                     continue;
                 }
-                AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
-                CaptureState* capture = captureHandle.GetCaptureState();
-                if (capture->m_result == FrameCaptureResult::None)
+                FrameCaptureResult captureResult = FrameCaptureResult::None;
+                AZStd::string captureInfo;
                 {
-                    break;
+                    AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
+                    CaptureState* capture = captureHandle.GetCaptureState();
+                    if (!capture || capture->m_result == FrameCaptureResult::None)
+                    {
+                        break;
+                    }
+                    captureResult = capture->m_result;
+                    captureInfo = capture->m_latestCaptureInfo;
                 }
-                FrameCaptureNotificationBus::Event(captureHandle.GetCaptureStateIndex(), &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished, capture->m_result, capture->m_latestCaptureInfo.c_str());
                 m_inProgressCaptures.pop_front();
                 m_idleCaptures.push_back(captureHandle);
+                FrameCaptureNotificationBus::Event(
+                    captureHandle.GetCaptureStateIndex(),
+                    &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished,
+                    captureResult,
+                    captureInfo.c_str());
             }
         }
 
@@ -936,7 +955,7 @@ namespace AZ
                 error.m_errorMessage = AZStd::string::format("Failed to load image file: %s.", resolvedFilePathB);
                 return AZ::Failure(error);
             }
-            else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
+            else if (imageB.GetBufferFormat() != Utils::PngFile::Format::RGBA)
             {
                 error.m_errorMessage = AZStd::string::format("Image comparison only supports 8-bit RGBA png. %s is not.", resolvedFilePathB);
                 return AZ::Failure(error);

@@ -96,9 +96,9 @@ namespace OpenParticle
         auto alignSize = SimuCore::ParticleCore::ParticleDataPool::AlignSize(stride);
         auto& block = buffers[alignSize];
         AZ::u32 offset = static_cast<AZ::u32>(block.size());
-        block.resize(block.size() + alignSize);
+        block.resize(block.size() + alignSize, 0);
         AZ::u8* dst = &block[offset];
-        memcpy(dst, src, alignSize);
+        memcpy(dst, src, stride);
         
         return offset;
     }

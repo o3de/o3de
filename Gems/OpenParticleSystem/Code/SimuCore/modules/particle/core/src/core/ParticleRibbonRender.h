@@ -69,8 +69,8 @@ namespace SimuCore::ParticleCore {
         void FillHeadVertex(BufferInfo& info) const;
         void FillEndVertex(BufferInfo& info) const;
 
-        void UpdateVertexBuffer(BufferView& bufferView, AZStd::vector<ParticleRibbonVertex>& vb, bool reCreate) const;
-        void UpdateIndexBuffer(BufferView& bufferView, AZStd::vector<AZ::u32>& ib, bool reCreate) const;
+        void UpdateVertexBuffer(BufferView& bufferView, AZStd::vector<ParticleRibbonVertex>& vb, AZ::u32 vbByteSize, bool reCreate) const;
+        void UpdateIndexBuffer(BufferView& bufferView, AZStd::vector<AZ::u32>& ib, AZ::u32 ibByteSize, bool reCreate) const;
 
         void UpdateBuffer(const WorldInfo& world, const RibbonConfig& config);
 

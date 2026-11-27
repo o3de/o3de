@@ -18,6 +18,11 @@ namespace AZ
         {
         }
 
+        DiffuseProbeGridTextureReadback::~DiffuseProbeGridTextureReadback()
+        {
+            m_attachmentReadback.reset();
+        }
+
         void DiffuseProbeGridTextureReadback::BeginTextureReadback(DiffuseProbeGridBakeTexturesCallback callback)
         {
             AZ_Assert(m_readbackState == DiffuseProbeGridReadbackState::Idle, "DiffuseProbeGridTextureReadback is already processing a readback request");

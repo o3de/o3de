@@ -225,14 +225,23 @@ namespace Terrain
             float lerpX, float lerpY, float& outHeight, bool& outExists);
 
         AZ::EntityId FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const;
+        AZ::EntityId FindBestAreaEntityAtPositionUnlocked(const AZ::Vector3& position, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(
             const float x,
             const float y,
             Sampler sampler,
             AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
             bool* terrainExistsPtr) const;
+        void GetOrderedSurfaceWeightsUnlocked(
+            const float x,
+            const float y,
+            Sampler sampler,
+            AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+            bool* terrainExistsPtr) const;
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
+        float GetHeightSynchronousUnlocked(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
+        float GetTerrainAreaHeightUnlocked(float x, float y, bool& terrainExists) const;
         AZ::Vector3 GetNormalSynchronous(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const;
 
         typedef AZStd::function<void(
@@ -243,6 +252,10 @@ namespace Terrain
             AZ::EntityId areaId)> BulkQueriesCallback;
 
         void GetHeightsSynchronous(
+            const AZStd::span<const AZ::Vector3>& inPositions,
+            Sampler sampler, AZStd::span<float> heights,
+            AZStd::span<bool> terrainExists) const;
+        void GetHeightsSynchronousUnlocked(
             const AZStd::span<const AZ::Vector3>& inPositions,
             Sampler sampler, AZStd::span<float> heights,
             AZStd::span<bool> terrainExists) const;
@@ -267,6 +280,12 @@ namespace Terrain
             AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
             AZStd::span<bool> terrainExists) const;
         void MakeBulkQueries(
+            const AZStd::span<const AZ::Vector3> inPositions,
+            AZStd::span<AZ::Vector3> outPositions,
+            AZStd::span<bool> outTerrainExists,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWieghts,
+            BulkQueriesCallback queryCallback) const;
+        void MakeBulkQueriesUnlocked(
             const AZStd::span<const AZ::Vector3> inPositions,
             AZStd::span<AZ::Vector3> outPositions,
             AZStd::span<bool> outTerrainExists,
