@@ -43,6 +43,7 @@
         "Multiplayer",
         "NvCloth",
         "OpenParticleSystem",
+        "OpenXRVk",
         "PhysX5",
         "PhysX5Debug",
         "PrefabBuilder",
