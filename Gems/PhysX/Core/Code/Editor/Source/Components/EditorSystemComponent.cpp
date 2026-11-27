@@ -14,6 +14,10 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 
 #include <IEditor.h>
 
@@ -23,11 +27,14 @@
 #include <Editor/PropertyTypes.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
+#include <Editor/Source/Components/EditorCameraCollision.h>
 #include <Pipeline/PhysicsPrefabProcessor.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
 {
+    constexpr AZStd::string_view CameraCollisionActionIdentifier = "o3de.action.game.cameraCollision";
+
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         ColliderComponentMode::Reflect(context);
@@ -111,10 +118,12 @@ namespace PhysX
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        AZ::Interface<Camera::EditorCameraCollisionInterface>::Register(this);
     }
 
     void EditorSystemComponent::Deactivate()
     {
+        AZ::Interface<Camera::EditorCameraCollisionInterface>::Unregister(this);
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -148,18 +157,71 @@ namespace PhysX
     {
         ColliderComponentMode::RegisterActions();
         JointsComponentMode::RegisterActions();
+
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            AzToolsFramework::ActionProperties properties;
+            properties.m_name = "Camera Collision";
+            properties.m_description = "Stop the editor camera at physical colliders and slide along them.";
+            properties.m_category = "Game";
+            properties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+            actionManager->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, CameraCollisionActionIdentifier, properties,
+                [this]
+                {
+                    SetCameraCollisionEnabled(!IsCameraCollisionEnabled());
+                },
+                [this]
+                {
+                    return IsCameraCollisionEnabled();
+                });
+        }
     }
 
     void EditorSystemComponent::OnActionContextModeBindingHook()
     {
         ColliderComponentMode::BindActionsToModes();
         JointsComponentMode::BindActionsToModes();
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            actionManager->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, CameraCollisionActionIdentifier);
+        }
     }
 
     void EditorSystemComponent::OnMenuBindingHook()
     {
         ColliderComponentMode::BindActionsToMenus();
         JointsComponentMode::BindActionsToMenus();
+        if (auto* menuManager = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+        {
+            // Immediately after Move Player and Camera Separately (700).
+            menuManager->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, CameraCollisionActionIdentifier, 750);
+        }
+    }
+
+    bool EditorSystemComponent::IsCameraCollisionEnabled() const
+    {
+        return m_cameraCollisionEnabled;
+    }
+
+    void EditorSystemComponent::SetCameraCollisionEnabled(const bool enabled)
+    {
+        m_cameraCollisionEnabled = enabled;
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            if (actionManager->IsActionRegistered(CameraCollisionActionIdentifier))
+            {
+                actionManager->UpdateAction(CameraCollisionActionIdentifier);
+            }
+        }
+    }
+
+    AZ::Vector3 EditorSystemComponent::ConstrainCameraMovement(
+        const AZ::Vector3& previousPosition, const AZ::Vector3& desiredPosition) const
+    {
+        return m_cameraCollisionEnabled
+            ? ResolveCameraCollision(m_editorWorldSceneHandle, previousPosition, desiredPosition)
+            : desiredPosition;
     }
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()
