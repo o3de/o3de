@@ -138,9 +138,16 @@ namespace AzNetworking
 
         auto cleanupUnused = [](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
         {
-            deque.erase(
-                AZStd::remove_if(deque.begin(), deque.end(), [](ListenPort& listenPort) { return listenPort.m_tcpNetworkInterface == nullptr; }),
-                deque.end());
+            const size_t count = deque.size();
+            for (size_t i = 0; i < count; ++i)
+            {
+                ListenPort port = AZStd::move(deque.front());
+                deque.pop_front();
+                if (port.m_tcpNetworkInterface != nullptr)
+                {
+                    deque.push_back(AZStd::move(port));
+                }
+            }
         };
         m_listenPorts.VisitDeque(cleanupUnused);
 

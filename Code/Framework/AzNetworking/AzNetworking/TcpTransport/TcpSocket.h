@@ -26,7 +26,8 @@ namespace AzNetworking
         //! @param socketFd existing socket file descriptor, this TcpSocket instance will assume ownership
         TcpSocket(SocketFd socketFd);
 
-        AZ_DISABLE_COPY(TcpSocket);
+        TcpSocket(const TcpSocket&) = delete;
+        TcpSocket& operator=(const TcpSocket&) = delete;
         TcpSocket(TcpSocket&& rhs) noexcept;
         TcpSocket& operator=(TcpSocket&& rhs) noexcept;
 
