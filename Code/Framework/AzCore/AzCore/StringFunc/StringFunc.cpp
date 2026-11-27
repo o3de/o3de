@@ -384,7 +384,7 @@ namespace AZ::StringFunc::Internal
                 }
                 else
                 {
-                    inout = {};
+                    inout.clear();
                     bSomethingWasStripped = true;
                     return true;
                 }
@@ -403,7 +403,7 @@ namespace AZ::StringFunc::Internal
                 }
                 else
                 {
-                    inout = {};
+                    inout.clear();
                     bSomethingWasStripped = true;
                     return true;
                 }
