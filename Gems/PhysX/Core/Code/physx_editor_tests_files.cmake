@@ -32,4 +32,5 @@ set(FILES
     Tests/ShapeGeometryTests.cpp
     Tests/EditorCharacterControllerTests.cpp
     Tests/EditorGameplayControllerTests.cpp
+    Tests/EditorCameraCollisionTests.cpp
 )
