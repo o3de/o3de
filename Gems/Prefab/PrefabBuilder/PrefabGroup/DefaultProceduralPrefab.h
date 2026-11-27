@@ -74,6 +74,13 @@ namespace AZ::SceneAPI
             const AZStd::string& meshGroupName,
             const AZStd::string& sourceFileExtension) const;
 
+        bool AddPhysicsComponents(
+            const AZ::EntityId& entityId,
+            const Containers::Scene& scene,
+            const Containers::SceneGraph::NodeIndex& meshNodeIndex,
+            const char* bodyComponentTypeName,
+            const AZStd::string& relativeSourcePath) const;
+
         bool CreateMeshGroupAndComponents(
             ManifestUpdates& manifestUpdates,
             AZ::EntityId entityId,
