@@ -1,0 +1,64 @@
+{
+  "colors": [
+    {
+        "name": "indigo",
+        "color": [63,81,181],
+        "price": "Free"
+    },
+    {
+        "name": "light blue",
+        "color": [3,169,244],
+        "price": "Free"
+    },
+    {
+        "name": "teal",
+        "color": [0,150,136],
+        "price": "Free"
+    },
+    {
+        "name": "green",
+        "color": [76,175,80],
+        "price": "Free"
+    },
+    {
+        "name": "lime",
+        "color": [205,220,57],
+        "price": "Free"
+    },
+    {
+        "name": "yellow",
+        "color": [255,235,59],
+        "price": "Free"
+    },
+    {
+        "name": "amber",
+        "color": [255,193,7],
+        "price": "Free"
+    },
+    {
+        "name": "orange",
+        "color": [255,152,0],
+        "price": "Free"
+    },
+    {
+        "name": "red",
+        "color": [192,57,43],
+        "price": "Free"
+    },
+    {
+        "name": "brown",
+        "color": [121,85,72],
+        "price": "Free"
+    },
+    {
+        "name": "grey",
+        "color": [158,158,158],
+        "price": "Free"
+    },
+    {
+        "name": "blue grey",
+        "color": [96,125,139],
+        "price": "Free"
+    }
+  ]
+}

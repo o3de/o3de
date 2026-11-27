@@ -1,0 +1,118 @@
+{
+    "Entities": {
+        "Entity_[17217517421347918472]": {
+            "Id": {
+                "id": 17217517421347918472
+            },
+            "Name": "ScrollBarVertical",
+            "Components": {
+                "Component_[12339126340670055183]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12339126340670055183,
+                    "Offsets": {
+                        "left": -10.0,
+                        "top": -100.0,
+                        "right": 10.0,
+                        "bottom": 100.0
+                    }
+                },
+                "Component_[3816532789757283233]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 3816532789757283233
+                },
+                "Component_[5495474622059254070]": {
+                    "$type": "UiScrollBarComponent",
+                    "Id": 5495474622059254070,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17217517425642885768
+                            }
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17217517425642885768
+                            }
+                        }
+                    ],
+                    "HandleEntity": {
+                        "id": 17217517425642885768
+                    },
+                    "Orientation": 1
+                },
+                "Component_[9667789009062053896]": {
+                    "$type": "UiImageComponent",
+                    "Id": 9667789009062053896,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/scrollbar_vert_track.dds"
+                    },
+                    "ImageType": 1
+                },
+                "Component_[9824107299941315139]": {
+                    "$type": "UiElementComponent",
+                    "Id": 9824107299941315139,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17217517425642885768
+                            }
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17217517425642885768]": {
+            "Id": {
+                "id": 17217517425642885768
+            },
+            "Name": "Handle",
+            "Components": {
+                "Component_[14464506410496874832]": {
+                    "$type": "UiElementComponent",
+                    "Id": 14464506410496874832,
+                    "Id": 3
+                },
+                "Component_[15095225667894888521]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15095225667894888521
+                },
+                "Component_[4009501817628937916]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4009501817628937916,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 0.10000000149011612
+                    },
+                    "Offsets": {
+                        "left": 1.0,
+                        "top": 0.0,
+                        "right": -1.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[6404622281409761616]": {
+                    "$type": "UiImageComponent",
+                    "Id": 6404622281409761616,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/scrollbar_handle.dds"
+                    },
+                    "Color": [
+                        0.9137254953384399,
+                        0.9137254953384399,
+                        0.9137254953384399
+                    ],
+                    "ImageType": 1
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

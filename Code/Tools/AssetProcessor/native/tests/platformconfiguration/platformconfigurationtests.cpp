@@ -443,12 +443,12 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     ASSERT_TRUE(tempPath.absolutePath() == computedEngineRoot.absolutePath());
 
     // create ONE of the two files - they are optional, but the paths to them should always be checked and generated.
-    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("Gems/LyShine/AssetProcessorGemConfig.ini"), ";nothing to see here"));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("Gems/Shine/AssetProcessorGemConfig.ini"), ";nothing to see here"));
 
     // note that it is expected that the gems system gives us absolute paths.
     AZStd::vector<AzFramework::GemInfo> fakeGems;
-    fakeGems.emplace_back("LyShine");// true = pretend this is a game gem.
-    fakeGems.back().m_absoluteSourcePaths.push_back(tempPath.absoluteFilePath("Gems/LyShine").toUtf8().constData());
+    fakeGems.emplace_back("Shine");// true = pretend this is a game gem.
+    fakeGems.back().m_absoluteSourcePaths.push_back(tempPath.absoluteFilePath("Gems/Shine").toUtf8().constData());
     fakeGems.emplace_back("LmbrCentral");
     fakeGems.back().m_absoluteSourcePaths.push_back(tempPath.absoluteFilePath("Gems/LmbrCentral/v2").toUtf8().constData());
 
@@ -456,7 +456,7 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
     // to avoid trying to load those DLLs we avoid calling the actual ReadGems function
     config.AddGemScanFolders(fakeGems);
 
-    QString expectedScanFolder = tempPath.absoluteFilePath("Gems/LyShine/Assets");
+    QString expectedScanFolder = tempPath.absoluteFilePath("Gems/Shine/Assets");
 
     AssetUtilities::ResetAssetRoot();
 

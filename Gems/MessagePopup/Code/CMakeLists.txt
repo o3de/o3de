@@ -22,7 +22,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             Legacy::CryCommon
-            Gem::LyShine.Clients.API
+            Gem::Shine.Clients.API
 )
 
 ly_add_target(

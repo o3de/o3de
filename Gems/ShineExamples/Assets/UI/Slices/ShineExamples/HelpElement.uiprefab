@@ -1,0 +1,123 @@
+{
+    "Entities": {
+        "Entity_[17269454150166041224]": {
+            "Id": {
+                "id": 17269454150166041224
+            },
+            "Name": "HelpImage",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 2,
+                    "IsVisibleInEditor": false,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17269459673493983880
+                            }
+                        }
+                    ]
+                },
+                "Component_[11458778140478293691]": {
+                    "$type": "UiButtonComponent",
+                    "Id": 11458778140478293691
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "Color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Alpha": 0.6000000238418579
+                },
+                "Component_[7230654036152240496]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 7230654036152240496,
+                    "ScriptComponent": {
+                        "Script": {
+                            "assetId": {
+                                "guid": "{C258E915-12F7-5593-B6D8-539E238604D6}",
+                                "subId": 1
+                            },
+                            "assetHint": "ui/scripts/ShineExamples/hidethiselementbutton.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{C258E915-12F7-5593-B6D8-539E238604D6}",
+                            "subId": 1
+                        },
+                        "assetHint": "ui/scripts/ShineExamples/hidethiselementbutton.luac"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17269459673493983880]": {
+            "Id": {
+                "id": 17269459673493983880
+            },
+            "Name": "HelpText",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "Help text",
+                    "MarkupEnabled": true,
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    }
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 3
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <LyShine/UiAssetTypes.h>
+#include <Shine/UiAssetTypes.h>
 
 #include <VirtualGamepad/VirtualGamepadBus.h>
 

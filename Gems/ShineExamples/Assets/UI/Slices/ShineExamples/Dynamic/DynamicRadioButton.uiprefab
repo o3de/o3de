@@ -1,0 +1,304 @@
+{
+    "Entities": {
+        "Entity_[558956777220]": {
+            "Id": {
+                "id": 558956777220
+            },
+            "Name": "RadioButton1",
+            "Components": {
+                "Component_[1385417330579471054]": {
+                    "$type": "UiElementComponent",
+                    "Id": 1385417330579471054,
+                    "Id": 66,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 563251744516
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 571841679108
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[5561546572159806389]": {
+                    "$type": "UiRadioButtonComponent",
+                    "Id": 5561546572159806389,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/radiobutton_background_hover.dds"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 571841679108
+                            },
+                            "Color": [
+                                0.7176470756530762,
+                                0.7333332896232605,
+                                0.7411764860153198
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Color": [
+                                0.38823530077934265,
+                                0.4588235020637512,
+                                0.5137255191802979
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Color": [
+                                0.5882353186607361,
+                                0.6235293745994568,
+                                0.698039174079895
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/radiobutton_background_disabled.dds"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 571841679108
+                            },
+                            "Color": [
+                                0.3764705955982208,
+                                0.384313702583313,
+                                0.38823530077934265
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/radiobutton_background_disabled.dds"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 571841679108
+                            },
+                            "Color": [
+                                0.6823530197143555,
+                                0.6823530197143555,
+                                0.6823530197143555
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 567546711812
+                            },
+                            "Color": [
+                                0.6823530197143555,
+                                0.6823530197143555,
+                                0.6823530197143555
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 563251744516
+                            },
+                            "Color": [
+                                0.8078430891036987,
+                                0.8078430891036987,
+                                0.8078430891036987
+                            ]
+                        }
+                    ],
+                    "OptionalCheckedEntity": {
+                        "id": 567546711812
+                    }
+                },
+                "Component_[8603212130069340986]": {
+                    "$type": "UiLayoutCellComponent",
+                    "Id": 8603212130069340986,
+                    "TargetHeightOverridden": true,
+                    "TargetHeight": 40.0,
+                    "ExtraHeightRatioOverridden": true
+                },
+                "Component_[948020824279796190]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 948020824279796190,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 300.010009765625,
+                        "bottom": 40.0
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[563251744516]": {
+            "Id": {
+                "id": 563251744516
+            },
+            "Name": "Circle",
+            "Components": {
+                "Component_[12621505696790213218]": {
+                    "$type": "UiImageComponent",
+                    "Id": 12621505696790213218,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/radiobutton_background_normal.dds"
+                    },
+                    "Color": [
+                        0.43921568989753723,
+                        0.43921568989753723,
+                        0.43921568989753723
+                    ],
+                    "ImageType": 2
+                },
+                "Component_[3672577756982932199]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 3672577756982932199,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 0.0
+                    },
+                    "Offsets": {
+                        "left": 2.0,
+                        "top": -16.0,
+                        "right": 34.0,
+                        "bottom": 16.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[993087442120893231]": {
+                    "$type": "UiElementComponent",
+                    "Id": 993087442120893231,
+                    "Id": 24,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 567546711812
+                            }
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[571841679108]": {
+            "Id": {
+                "id": 571841679108
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 40.0,
+                        "top": 8.0,
+                        "right": -8.0,
+                        "bottom": -8.0
+                    }
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "Text": "RadioButton1",
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "TextHAlignment": 0
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 26
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[567546711812]": {
+            "Id": {
+                "id": 567546711812
+            },
+            "Name": "Dot",
+            "Components": {
+                "Component_[15602039163934615808]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15602039163934615808,
+                    "Offsets": {
+                        "left": -7.0,
+                        "top": -5.0,
+                        "right": 7.0,
+                        "bottom": 9.0
+                    }
+                },
+                "Component_[3757812230385720060]": {
+                    "$type": "UiImageComponent",
+                    "Id": 3757812230385720060,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/radiobutton_dot.dds"
+                    },
+                    "Color": [
+                        0.8392156958580017,
+                        0.8392156958580017,
+                        0.8392156958580017
+                    ]
+                },
+                "Component_[4442025690883899859]": {
+                    "$type": "UiElementComponent",
+                    "Id": 4442025690883899859,
+                    "Id": 25
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

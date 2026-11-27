@@ -1,0 +1,45 @@
+{
+    "Entities": {
+        "Entity_[14829820523140734107]": {
+            "Id": {
+                "id": 14829820523140734107
+            },
+            "Name": "Panel",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 2
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Offsets": {
+                        "left": -460.0,
+                        "top": -290.0,
+                        "right": 460.0,
+                        "bottom": 290.0
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/panelbkgd.dds"
+                    },
+                    "Color": [
+                        0.7882353067398071,
+                        0.8274509906768799,
+                        0.8627451062202454
+                    ],
+                    "ImageType": 1
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

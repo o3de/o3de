@@ -1,0 +1,88 @@
+{
+    "Entities": {
+        "Entity_[17595007362623263368]": {
+            "Id": {
+                "id": 17595007362623263368
+            },
+            "Name": "DropTarget",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 92
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 95.0,
+                        "top": 10.0,
+                        "right": 175.0,
+                        "bottom": 90.0
+                    }
+                },
+                "Component_[17001288831791980728]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 17001288831791980728,
+                    "ScriptComponent": {
+                        "Script": {
+                            "assetId": {
+                                "guid": "{B6468F5D-2712-5683-833D-5339CADE05C3}",
+                                "subId": 1
+                            },
+                            "assetHint": "ui/scripts/ShineExamples/draganddrop/droptarget.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{B6468F5D-2712-5683-833D-5339CADE05C3}",
+                            "subId": 1
+                        },
+                        "assetHint": "ui/scripts/ShineExamples/draganddrop/droptarget.luac"
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132
+                },
+                "Component_[7997305478627101102]": {
+                    "$type": "UiDropTargetComponent",
+                    "Id": 7997305478627101102,
+                    "DropValidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17595007362623263368
+                            },
+                            "Color": [
+                                0.6666666865348816,
+                                1.0,
+                                0.498039186000824
+                            ]
+                        }
+                    ],
+                    "DropInvalidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17595007362623263368
+                            },
+                            "Color": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ]
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -105,8 +105,8 @@ namespace GameStateSamples
         void OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint scriptTimePoint) override
         {
             // Ideally this would be called at startup (either above in OnCrySystemInitialized, or better during AZ system component
-            // initialisation), but because the initial game state depends on loading a UI canvas using LYShine we need to wait until
-            // the first tick, because LyShine in turn is not properly initialized until UiRenderer::OnBootstrapSceneReady has been
+            // initialisation), but because the initial game state depends on loading a UI canvas using Shine we need to wait until
+            // the first tick, because Shine in turn is not properly initialized until UiRenderer::OnBootstrapSceneReady has been
             // called, which doesn't happen until a queued tick event that gets called right at the end of initialisation before we
             // enter the main game loop.
             CreateAndPushInitialGameState();

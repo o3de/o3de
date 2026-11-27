@@ -26,3 +26,4 @@ _savebackup/
 CrashDB/
 *.DotSettings.user
 imgui.ini
+AutomatedTesting/Registry/ap_stats.setreg

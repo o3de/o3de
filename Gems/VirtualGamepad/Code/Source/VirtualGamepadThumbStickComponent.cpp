@@ -10,8 +10,8 @@
 
 #include <VirtualGamepad/VirtualGamepadBus.h>
 
-#include <LyShine/Bus/UiElementBus.h>
-#include <LyShine/Bus/UiTransformBus.h>
+#include <Shine/Bus/UiElementBus.h>
+#include <Shine/Bus/UiTransformBus.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -308,7 +308,7 @@ namespace VirtualGamepad
         result.push_back(AZStd::make_pair(AZ::EntityId(AZ::EntityId()), "<None>"));
 
         // Get a list of all child elements and add them to the result
-        LyShine::EntityArray childElements;
+        Shine::EntityArray childElements;
         UiElementBus::EventResult(childElements, GetEntityId(), &UiElementInterface::GetChildElements);
         for (const auto& childElement : childElements)
         {

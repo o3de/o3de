@@ -1,0 +1,117 @@
+{
+    "Entities": {
+        "Entity_[17217511532947755656]": {
+            "Id": {
+                "id": 17217511532947755656
+            },
+            "Name": "ScrollBarHorizontal",
+            "Components": {
+                "Component_[12339126340670055183]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12339126340670055183,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -10.0,
+                        "right": 100.0,
+                        "bottom": 10.0
+                    }
+                },
+                "Component_[3816532789757283233]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 3816532789757283233
+                },
+                "Component_[5495474622059254070]": {
+                    "$type": "UiScrollBarComponent",
+                    "Id": 5495474622059254070,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17217511537242722952
+                            }
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17217511537242722952
+                            }
+                        }
+                    ],
+                    "HandleEntity": {
+                        "id": 17217511537242722952
+                    }
+                },
+                "Component_[9667789009062053896]": {
+                    "$type": "UiImageComponent",
+                    "Id": 9667789009062053896,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/scrollbar_horiz_track.dds"
+                    },
+                    "ImageType": 1
+                },
+                "Component_[9824107299941315139]": {
+                    "$type": "UiElementComponent",
+                    "Id": 9824107299941315139,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17217511537242722952
+                            }
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17217511537242722952]": {
+            "Id": {
+                "id": 17217511537242722952
+            },
+            "Name": "Handle",
+            "Components": {
+                "Component_[14464506410496874832]": {
+                    "$type": "UiElementComponent",
+                    "Id": 14464506410496874832,
+                    "Id": 3
+                },
+                "Component_[15095225667894888521]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15095225667894888521
+                },
+                "Component_[4009501817628937916]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 4009501817628937916,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.10000000149011612,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": 1.0,
+                        "right": 0.0,
+                        "bottom": -1.0
+                    }
+                },
+                "Component_[6404622281409761616]": {
+                    "$type": "UiImageComponent",
+                    "Id": 6404622281409761616,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/scrollbar_handle.dds"
+                    },
+                    "Color": [
+                        0.9137254953384399,
+                        0.9137254953384399,
+                        0.9137254953384399
+                    ],
+                    "ImageType": 1
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

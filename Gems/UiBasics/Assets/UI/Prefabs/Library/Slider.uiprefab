@@ -1,0 +1,280 @@
+{
+    "Entities": {
+        "Entity_[17225689653190513288]": {
+            "Id": {
+                "id": 17225689653190513288
+            },
+            "Name": "Slider",
+            "Components": {
+                "Component_[13978669654085701155]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 13978669654085701155,
+                    "Offsets": {
+                        "left": -100.0,
+                        "top": -15.0,
+                        "right": 100.0,
+                        "bottom": 15.0
+                    }
+                },
+                "Component_[14882628701970246871]": {
+                    "$type": "UiElementComponent",
+                    "Id": 14882628701970246871,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225689648895545992
+                            }
+                        }
+                    ]
+                },
+                "Component_[15019215596492111559]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15019215596492111559
+                },
+                "Component_[18011612939371101104]": {
+                    "$type": "UiSliderComponent",
+                    "Id": 18011612939371101104,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225689644600578696
+                            },
+                            "Color": [
+                                0.9333332777023315,
+                                0.9333332777023315,
+                                0.9333332777023315
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225689644600578696
+                            },
+                            "Color": [
+                                0.6509804129600525,
+                                0.6509804129600525,
+                                0.6509804129600525
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17225689648895545992
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/slider_track_disabled.dds"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225689640305611400
+                            },
+                            "Color": [
+                                0.8313726186752319,
+                                0.9137254953384399,
+                                0.9372549057006836
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17225689644600578696
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/slider_handle_disabled.dds"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17225689644600578696
+                            },
+                            "Color": [
+                                0.9294118285179138,
+                                0.9411764740943909,
+                                0.9294118285179138
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17225689640305611400
+                            },
+                            "Alpha": 0.800000011920929
+                        },
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17225689640305611400
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/slider_fill_disabled.dds"
+                            }
+                        }
+                    ],
+                    "TrackEntity": {
+                        "id": 17225689648895545992
+                    },
+                    "FillEntity": {
+                        "id": 17225689640305611400
+                    },
+                    "ManipulatorEntity": {
+                        "id": 17225689644600578696
+                    },
+                    "Value": 25.0
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225689648895545992]": {
+            "Id": {
+                "id": 17225689648895545992
+            },
+            "Name": "Track",
+            "Components": {
+                "Component_[1279857509575284740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 1279857509575284740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "right": 1.0
+                    },
+                    "Offsets": {
+                        "left": 12.0,
+                        "top": -8.0,
+                        "right": -12.0,
+                        "bottom": 8.0
+                    }
+                },
+                "Component_[14771753961147658405]": {
+                    "$type": "UiImageComponent",
+                    "Id": 14771753961147658405,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/slider_track_normal.dds"
+                    },
+                    "Color": [
+                        0.9882352948188782,
+                        0.9882352948188782,
+                        0.9882352948188782
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[15853340981201194422]": {
+                    "$type": "UiElementComponent",
+                    "Id": 15853340981201194422,
+                    "Id": 3,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17225689640305611400
+                            }
+                        },
+                        {
+                            "ChildEntityId": {
+                                "id": 17225689644600578696
+                            },
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[4985641758597242711]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4985641758597242711
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225689640305611400]": {
+            "Id": {
+                "id": 17225689640305611400
+            },
+            "Name": "Fill",
+            "Components": {
+                "Component_[10288018860499007001]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10288018860499007001
+                },
+                "Component_[14545510052396658295]": {
+                    "$type": "UiImageComponent",
+                    "Id": 14545510052396658295,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/slider_fill_normal.dds"
+                    },
+                    "Color": [
+                        0.6039215922355652,
+                        0.7803922295570374,
+                        0.8392156958580017
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[2951519243136173196]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 2951519243136173196,
+                    "Anchors": {
+                        "left": 0.0
+                    },
+                    "Offsets": {
+                        "left": 0.0,
+                        "top": -8.0,
+                        "right": 0.0,
+                        "bottom": 8.0
+                    }
+                },
+                "Component_[8395617662816111758]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8395617662816111758,
+                    "Id": 4
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17225689644600578696]": {
+            "Id": {
+                "id": 17225689644600578696
+            },
+            "Name": "Handle",
+            "Components": {
+                "Component_[15637249190064530002]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15637249190064530002,
+                    "Offsets": {
+                        "left": -16.0,
+                        "top": -16.0,
+                        "right": 16.0,
+                        "bottom": 16.0
+                    }
+                },
+                "Component_[17094843205966431929]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17094843205966431929,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/slider_handle_normal.dds"
+                    },
+                    "Color": [
+                        0.800000011920929,
+                        0.800000011920929,
+                        0.800000011920929
+                    ],
+                    "ImageType": 2
+                },
+                "Component_[17162613524250262687]": {
+                    "$type": "UiElementComponent",
+                    "Id": 17162613524250262687,
+                    "Id": 5
+                },
+                "Component_[17526202281442472778]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 17526202281442472778
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -21,7 +21,7 @@ ly_add_target(
         INTERFACE
             Gem::GameState
             Gem::LocalUser
-            Gem::LyShine.Clients.API
+            Gem::Shine.Clients.API
             Gem::SaveData.Static
             Gem::MessagePopup.Static
             Legacy::CryCommon
@@ -61,4 +61,4 @@ ly_add_source_properties(
 ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
-ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders Gem::LyShineExamples.Builders)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders Gem::ShineExamples.Builders)

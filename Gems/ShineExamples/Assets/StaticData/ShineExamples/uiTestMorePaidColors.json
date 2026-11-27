@@ -1,0 +1,584 @@
+{
+  "colors": [
+    {
+        "name": "maroon",
+        "color": [128,0,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "firebrick",
+        "color": [178,34,34],
+        "price": "$0.99"
+    },
+    {
+        "name": "coral",
+        "color": [255, 127, 80],
+        "price": "$0.99"
+    },
+    {
+        "name": "orange",
+        "color": [255,165,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "gold",
+        "color": [255, 215, 0],
+        "price": "$0.99"
+    },
+    {
+        "name": "yellow",
+        "color": [255, 255, 0],
+        "price": "$0.99"
+    },
+    {
+        "name": "yellow green",
+        "color": [154,205,50],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark olive green",
+        "color": [85,107,47],
+        "price": "$0.99"
+    },
+    {
+        "name": "olive drab",
+        "color": [107,142,35],
+        "price": "$0.99"
+    },
+    {
+        "name": "lawn green",
+        "color": [124,252,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "chart reuse",
+        "color": [127,255,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "green yellow",
+        "color": [173,255,47],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark green",
+        "color": [0,100,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "green",
+        "color": [0,128,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "forest green",
+        "color": [34,139,34],
+        "price": "$0.99"
+    },
+    {
+        "name": "lime",
+        "color": [0,255,0],
+        "price": "$0.99"
+    },
+    {
+        "name": "lime green",
+        "color": [50,205,50],
+        "price": "$0.99"
+    },
+    {
+        "name": "light green",
+        "color": [144,238,144],
+        "price": "$0.99"
+    },
+    {
+        "name": "pale green",
+        "color": [152,251,152],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark sea green",
+        "color": [143,188,143],
+        "price": "$0.99"
+    },
+    {
+        "name": "med spring green",
+        "color": [0,250,154],
+        "price": "$0.99"
+    },
+    {
+        "name": "spring green",
+        "color": [0,255,127],
+        "price": "$0.99"
+    },
+    {
+        "name": "sea green",
+        "color": [46,139,87],
+        "price": "$0.99"
+    },
+    {
+        "name": "med aqua marine",
+        "color": [102,205,170],
+        "price": "$0.99"
+    },
+    {
+        "name": "med sea green",
+        "color": [60,179,113],
+        "price": "$0.99"
+    },
+    {
+        "name": "light sea green",
+        "color": [32,178,170],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark slate gray",
+        "color": [47,79,79],
+        "price": "$0.99"
+    },
+    {
+        "name": "teal",
+        "color": [0,128,128],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark cyan",
+        "color": [0,139,139],
+        "price": "$0.99"
+    },
+    {
+        "name": "aqua",
+        "color": [0,255,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "cyan",
+        "color": [0,255,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "light cyan",
+        "color": [224,255,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark turquoise",
+        "color": [0,206,209],
+        "price": "$0.99"
+    },
+    {
+        "name": "turquoise",
+        "color": [64,224,208],
+        "price": "$0.99"
+    },
+    {
+        "name": "med turquoise",
+        "color": [72,209,204],
+        "price": "$0.99"
+    },
+    {
+        "name": "pale turquoise",
+        "color": [175,238,238],
+        "price": "$0.99"
+    },
+    {
+        "name": "aqua marine",
+        "color": [127,255,212],
+        "price": "$0.99"
+    },
+    {
+        "name": "powder blue",
+        "color": [176,224,230],
+        "price": "$0.99"
+    },
+    {
+        "name": "cadet blue",
+        "color": [95,158,160],
+        "price": "$0.99"
+    },
+    {
+        "name": "steel blue",
+        "color": [70,130,180],
+        "price": "$0.99"
+    },
+    {
+        "name": "corn flower blue",
+        "color": [100,149,237],
+        "price": "$0.99"
+    },
+    {
+        "name": "deep sky blue",
+        "color": [0,191,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "dodger blue",
+        "color": [30,144,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "light blue",
+        "color": [173,216,230],
+        "price": "$0.99"
+    },
+    {
+        "name": "sky blue",
+        "color": [135,206,235],
+        "price": "$0.99"
+    },
+    {
+        "name": "light sky blue",
+        "color": [135,206,250],
+        "price": "$0.99"
+    },
+    {
+        "name": "midnight blue",
+        "color": [25,25,112],
+        "price": "$0.99"
+    },
+    {
+        "name": "navy",
+        "color": [0,0,128],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark blue",
+        "color": [0,0,139],
+        "price": "$0.99"
+    },
+    {
+        "name": "med blue",
+        "color": [0,0,205],
+        "price": "$0.99"
+    },
+    {
+        "name": "blue",
+        "color": [0,0,255],
+        "price": "$0.99"
+    },
+    {
+        "name": "royal blue",
+        "color": [65,105,225],
+        "price": "$0.99"
+    },
+    {
+        "name": "blue violet",
+        "color": [138,43,226],
+        "price": "$0.99"
+    },
+    {
+        "name": "indigo",
+        "color": [75,0,130],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark slate blue",
+        "color": [72,61,139],
+        "price": "$0.99"
+    },
+    {
+        "name": "slate blue",
+        "color": [106,90,205],
+        "price": "$0.99"
+    },
+    {
+        "name": "med slate blue",
+        "color": [123,104,238],
+        "price": "$0.99"
+    },
+    {
+        "name": "med purple",
+        "color": [147,112,219],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark magenta",
+        "color": [139,0,139],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark violet",
+        "color": [148,0,211],
+        "price": "$0.99"
+    },
+    {
+        "name": "dark orchid",
+        "color": [153,50,204],
+        "price": "$0.99"
+    },
+{
+        "name": "med orchid",
+        "color": [186,85,211],
+        "price": "$1.99"
+    },
+    {
+        "name": "purple",
+        "color": [128,0,128],
+        "price": "$1.99"
+    },
+    {
+        "name": "thistle",
+        "color": [216,191,216],
+        "price": "$1.99"
+    },
+    {
+        "name": "plum",
+        "color": [221,160,221],
+        "price": "$1.99"
+    },
+    {
+        "name": "violet",
+        "color": [238,130,238],
+        "price": "$1.99"
+    },
+    {
+        "name": "fuchsia",
+        "color": [255,0,255],
+        "price": "$1.99"
+    },
+    {
+        "name": "orchid",
+        "color": [218,112,214],
+        "price": "$1.99"
+    },
+    {
+        "name": "med violet red",
+        "color": [199,21,133],
+        "price": "$1.99"
+    },
+    {
+        "name": "pale violet red",
+        "color": [219,112,147],
+        "price": "$1.99"
+    },
+    {
+        "name": "deep pink",
+        "color": [255,20,147],
+        "price": "$1.99"
+    },
+    {
+        "name": "hot pink",
+        "color": [255,105,180],
+        "price": "$1.99"
+    },
+    {
+        "name": "light pink",
+        "color": [255,182,193],
+        "price": "$1.99"
+    },
+    {
+        "name": "pink",
+        "color": [255,192,203],
+        "price": "$1.99"
+    },
+    {
+        "name": "antique white",
+        "color": [250,235,215],
+        "price": "$1.99"
+    },
+    {
+        "name": "beige",
+        "color": [245,245,220],
+        "price": "$1.99"
+    },
+    {
+        "name": "bisque",
+        "color": [255,228,196],
+        "price": "$1.99"
+    },
+    {
+        "name": "blanched almond",
+        "color": [255,235,205],
+        "price": "$1.99"
+    },
+    {
+        "name": "wheat",
+        "color": [245,222,179],
+        "price": "$1.99"
+    },
+    {
+        "name": "corn silk",
+        "color": [255,248,220],
+        "price": "$1.99"
+    },
+    {
+        "name": "lemon chiffon",
+        "color": [255,250,205],
+        "price": "$1.99"
+    },
+    {
+        "name": "light golden yellow",
+        "color": [250,250,210],
+        "price": "$1.99"
+    },
+    {
+        "name": "light yellow",
+        "color": [255,255,224],
+        "price": "$1.99"
+    },
+    {
+        "name": "saddle brown",
+        "color": [139,69,19],
+        "price": "$1.99"
+    },
+    {
+        "name": "sienna",
+        "color": [160,82,45],
+        "price": "$1.99"
+    },
+    {
+        "name": "chocolate",
+        "color": [210,105,30],
+        "price": "$1.99"
+    },
+    {
+        "name": "peru",
+        "color": [205,133,63],
+        "price": "$1.99"
+    },
+    {
+        "name": "sandy brown",
+        "color": [244,164,96],
+        "price": "$1.99"
+    },
+    {
+        "name": "burly wood",
+        "color": [222,184,135],
+        "price": "$1.99"
+    },
+    {
+        "name": "tan",
+        "color": [210,180,140],
+        "price": "$1.99"
+    },
+    {
+        "name": "rosy brown",
+        "color": [188,143,143],
+        "price": "$1.99"
+    },
+    {
+        "name": "moccasin",
+        "color": [255,228,181],
+        "price": "$1.99"
+    },
+    {
+        "name": "navajo white",
+        "color": [255,222,173],
+        "price": "$1.99"
+    },
+    {
+        "name": "peach puff",
+        "color": [255,218,185],
+        "price": "$1.99"
+    },
+    {
+        "name": "misty rose",
+        "color": [255,228,225],
+        "price": "$1.99"
+    },
+    {
+        "name": "lavender blush",
+        "color": [255,240,245],
+        "price": "$1.99"
+    },
+    {
+        "name": "linen",
+        "color": [250,240,230],
+        "price": "$1.99"
+    },
+    {
+        "name": "old lace",
+        "color": [253,245,230],
+        "price": "$1.99"
+    },
+    {
+        "name": "papaya whip",
+        "color": [255,239,213],
+        "price": "$1.99"
+    },
+    {
+        "name": "sea shell",
+        "color": [255,245,238],
+        "price": "$1.99"
+    },
+    {
+        "name": "mint cream",
+        "color": [245,255,250],
+        "price": "$1.99"
+    },
+    {
+        "name": "slate gray",
+        "color": [112,128,144],
+        "price": "$1.99"
+    },
+    {
+        "name": "light slate gray",
+        "color": [119,136,153],
+        "price": "$1.99"
+    },
+    {
+        "name": "light steel blue",
+        "color": [176,196,222],
+        "price": "$1.99"
+    },
+    {
+        "name": "lavender",
+        "color": [230,230,250],
+        "price": "$1.99"
+    },
+    {
+        "name": "floral white",
+        "color": [255,250,240],
+        "price": "$1.99"
+    },
+    {
+        "name": "alice blue",
+        "color": [240,248,255],
+        "price": "$1.99"
+    },
+    {
+        "name": "ghost white",
+        "color": [248,248,255],
+        "price": "$1.99"
+    },
+    {
+        "name": "honeydew",
+        "color": [240,255,240],
+        "price": "$1.99"
+    },
+    {
+        "name": "ivory",
+        "color": [255,255,240],
+        "price": "$1.99"
+    },
+    {
+        "name": "azure",
+        "color": [240,255,255],
+        "price": "$1.99"
+    },
+    {
+        "name": "snow",
+        "color": [255,250,250],
+        "price": "$1.99"
+    },
+    {
+        "name": "black",
+        "color": [0,0,0],
+        "price": "$1.99"
+    },
+    {
+        "name": "dim grey",
+        "color": [105,105,105],
+        "price": "$1.99"
+    },
+    {
+        "name": "grey",
+        "color": [128,128,128],
+        "price": "$1.99"
+    },
+    {
+        "name": "light grey",
+        "color": [169,169,169],
+        "price": "$1.99"
+    }
+  ]
+}

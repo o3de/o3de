@@ -21,7 +21,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LyShine.Clients.API
+            Gem::Shine.Clients.API
 )
 
 ly_add_target(
@@ -49,6 +49,6 @@ ly_add_source_properties(
             O3DE_GEM_VERSION=${gem_version})
 
 # the virtual gamepad is needed everywhere except servers:
-ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LyShine.Clients)
-ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LyShine.Tools)
-ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::UiBasics.Builders Gem::LyShine.Builders)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::Shine.Clients)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::Shine.Tools)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::UiBasics.Builders Gem::Shine.Builders)

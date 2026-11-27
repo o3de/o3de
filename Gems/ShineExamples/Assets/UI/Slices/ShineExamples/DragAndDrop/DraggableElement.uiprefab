@@ -1,0 +1,222 @@
+{
+    "Entities": {
+        "Entity_[17594990208523883144]": {
+            "Id": {
+                "id": 17594990208523883144
+            },
+            "Name": "Draggable",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 88,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17594990212818850440
+                            }
+                        }
+                    ]
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Offsets": {
+                        "left": -45.0,
+                        "top": -45.0,
+                        "right": 45.0,
+                        "bottom": 45.0
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/button_normal.tif.streamingimage"
+                    },
+                    "Color": [
+                        0.6039215922355652,
+                        0.7803922295570374,
+                        0.8392156958580017
+                    ],
+                    "ImageType": 1
+                },
+                "Component_[2284019717151692070]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 2284019717151692070,
+                    "ScriptComponent": {
+                        "Properties": {
+                            "Properties": [
+                                {
+                                    "$type": "AzFramework::ScriptPropertyGenericClass",
+                                    "id": 1003435149,
+                                    "name": "DragParent",
+                                    "value": {
+                                        "$type": "EntityId",
+                                        "value": {
+                                            "id": 4294967295
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "Script": {
+                            "assetId": {
+                                "guid": "{23B49DF4-29FF-5F8A-9F2C-7BAC320783F2}",
+                                "subId": 1
+                            },
+                            "assetHint": "ui/scripts/ShineExamples/draganddrop/draggableelement.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{23B49DF4-29FF-5F8A-9F2C-7BAC320783F2}",
+                            "subId": 1
+                        },
+                        "assetHint": "ui/scripts/ShineExamples/draganddrop/draggableelement.luac"
+                    }
+                },
+                "Component_[7097845172961130391]": {
+                    "$type": "UiDraggableComponent",
+                    "Id": 7097845172961130391,
+                    "HoverStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                0.0,
+                                0.6666666865348816,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "PressedStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                0.0,
+                                0.3333333134651184,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "DisabledStateActions": [
+                        {
+                            "$type": "UiInteractableStateSprite",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Sprite": {
+                                "AssetPath": "ui/textures/prefab/button_disabled.tif.streamingimage"
+                            }
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                0.7607843279838562,
+                                0.7607843279838562,
+                                0.7607843279838562
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990212818850440
+                            },
+                            "Color": [
+                                0.7607843279838562,
+                                0.7607843279838562,
+                                0.7607843279838562
+                            ]
+                        }
+                    ],
+                    "DragNormalStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                0.6745098233222961,
+                                0.6745098233222961,
+                                0.6745098233222961
+                            ]
+                        }
+                    ],
+                    "DragValidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                0.0,
+                                0.6666666865348816,
+                                0.0
+                            ]
+                        }
+                    ],
+                    "DragInvalidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17594990208523883144
+                            },
+                            "Color": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ]
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17594990212818850440]": {
+            "Id": {
+                "id": 17594990212818850440
+            },
+            "Name": "Image",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 89
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 5.0,
+                        "top": 5.0,
+                        "right": -5.0,
+                        "bottom": -5.0
+                    }
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/shineexamples/scroll_box_icon_1.dds"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

@@ -18,9 +18,9 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 
-#include <LyShine/Bus/UiButtonBus.h>
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiButtonBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
 
 #include <ILevelSystem.h>
 #include <ISystem.h>

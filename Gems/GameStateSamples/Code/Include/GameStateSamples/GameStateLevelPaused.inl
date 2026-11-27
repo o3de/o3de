@@ -14,10 +14,10 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
-#include <LyShine/Bus/UiButtonBus.h>
-#include <LyShine/Bus/UiCanvasBus.h>
-#include <LyShine/Bus/UiCanvasManagerBus.h>
-#include <LyShine/Bus/UiCursorBus.h>
+#include <Shine/Bus/UiButtonBus.h>
+#include <Shine/Bus/UiCanvasBus.h>
+#include <Shine/Bus/UiCanvasManagerBus.h>
+#include <Shine/Bus/UiCursorBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameStateSamples

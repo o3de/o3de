@@ -15,8 +15,8 @@ namespace LmbrCentral
     /*!
      * Texture asset type configuration.
      * Reflect as: AzFramework::SimpleAssetReference<TextureAsset>
-     * Currently only used by LyShine for Sprites and will require a bit of
-     * work to move it and TextureAssetInfo into LyShine without breaking
+     * Currently only used by Shine for Sprites and will require a bit of
+     * work to move it and TextureAssetInfo into Shine without breaking
      * existing .uicanvas files 
      */
     class TextureAsset

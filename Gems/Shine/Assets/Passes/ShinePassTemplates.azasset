@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "ShineParentTemplate",
+                "Path": "Passes/ShineParent.pass"
+            },
+            {
+                "Name": "ShineChildPassTemplate",
+                "Path": "Passes/ShineChildPass.pass"
+            },
+            {
+                "Name": "RttChildPassTemplate",
+                "Path": "Passes/RttChildPass.pass"
+            }      
+        ]
+    }
+}

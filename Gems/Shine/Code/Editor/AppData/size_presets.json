@@ -1,0 +1,21 @@
+{
+    "canvasSizeToolbar": 
+        [ 
+            { "width": 800, "height": 600, "title": "4:3 SVGA" },
+            { "width": 1024, "height": 768, "title": "4:3 XGA" },
+            { "width": 1136, "height": 640, "title": "16:9 Landscape" },
+            { "width": 640, "height": 1136, "title": "9:16 Portrait" },
+            { "width": 1280, "height": 720, "title": "16:9 HD 720" },
+            { "width": 1334, "height": 750, "title": "16:9 Landscape" },
+            { "width": 750, "height": 1334, "title": "9:16 Portrait" },
+            { "width": 1366, "height": 768, "title": "16:9" },
+            { "width": 1600, "height": 900, "title": "16:9" },
+            { "width": 1920, "height": 1080, "title": "16:9 HD 1080" },
+            { "width": 2048, "height": 1536, "title": "4:3 Landscape" },
+            { "width": 1536, "height": 2048, "title": "3:4 Portrait" },
+            { "width": 2560, "height": 1440, "title": "16:9 WQHD" },
+            { "width": 2732, "height": 2048, "title": "4:3 Landscape" },
+            { "width": 2048, "height": 2732, "title": "3:4 Portrait" },
+            { "width": 3840, "height": 2160, "title": "16:9 4K UHD-1" }
+        ]
+}

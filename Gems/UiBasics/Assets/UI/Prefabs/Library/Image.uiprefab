@@ -1,0 +1,36 @@
+{
+    "Entities": {
+        "Entity_[17165417810190062216]": {
+            "Id": {
+                "id": 17165417810190062216
+            },
+            "Name": "Image",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 2
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Offsets": {
+                        "left": -150.0,
+                        "top": -150.0,
+                        "right": 150.0,
+                        "bottom": 150.0
+                    }
+                },
+                "Component_[15415492539526387555]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 15415492539526387555
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}
