@@ -624,7 +624,8 @@ namespace AZ
                 }
                 AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
                 CaptureState* capture = captureHandle.GetCaptureState();
-                if (capture->m_result == FrameCaptureResult::None)
+                // m_result is set before the readback finishes resetting; wait until it can be reused.
+                if (capture->m_result == FrameCaptureResult::None || !capture->m_readback->IsReady())
                 {
                     break;
                 }

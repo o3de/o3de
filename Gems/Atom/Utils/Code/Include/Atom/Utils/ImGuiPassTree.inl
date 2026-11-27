@@ -110,7 +110,11 @@ namespace AZ::Render
                 needSaveAttachment = true;
             }
 
-            ImGui::TextWrapped("%s", m_attachmentReadbackInfo.c_str());
+            // ReadbackCallback writes m_attachmentReadbackInfo on the fence wait thread.
+            if (!m_readback || m_readback->IsReady())
+            {
+                ImGui::TextWrapped("%s", m_attachmentReadbackInfo.c_str());
+            }
         }
 
         ImGui::End();
@@ -181,8 +185,9 @@ namespace AZ::Render
             m_previewPass->SetColorTransformRange(m_attachmentColorTranformRange);
         }
 
-        if (needSaveAttachment)
-        {            
+        // Skip the save while the previous readback is still in flight.
+        if (needSaveAttachment && (!m_readback || m_readback->IsReady()))
+        {
             m_attachmentReadbackInfo = "";
             if (!m_readback)
             {
