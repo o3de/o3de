@@ -15,6 +15,8 @@ set(FILES
     Editor/ReflectComponent.cpp
     Editor/SystemComponent.h
     Editor/SystemComponent.cpp
+    Editor/LuaSymbolCategoryReporter.h
+    Editor/LuaSymbolCategoryReporter.cpp
     Editor/QtMetaTypes.h
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
