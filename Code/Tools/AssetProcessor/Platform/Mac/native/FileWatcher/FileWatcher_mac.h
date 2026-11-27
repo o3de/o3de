@@ -17,7 +17,6 @@ class FileWatcher::PlatformImplementation
 {
 public:
     FSEventStreamRef m_stream = nullptr;
-    CFRunLoopRef m_runLoop = nullptr;
     
     // until a file is removed, the mac FSStream will send
     // all changes done to that file every time the file changes (including
@@ -33,6 +32,5 @@ public:
     void ConsumeEvents(size_t numEvents, const char **filePaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[]);
     
     FileWatcher* m_watcher = nullptr;
-    dispatch_queue_t m_dispatchQueue;
+    dispatch_queue_t m_dispatchQueue = nullptr;
 };
-

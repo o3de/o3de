@@ -59,6 +59,11 @@ namespace UnitTest
             // parenting children so they inherit visibility.
             m_dummyWidget->show();
             m_dummyWidget->activateWindow();
+            // TODO: Refactor these tests so focus transitions do not depend on an active top-level window,
+            // then remove this deprecated workaround.
+            AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
+            QApplication::setActiveWindow(m_dummyWidget.get());
+            AZ_POP_DISABLE_WARNING
             QApplication::processEvents();
         }
 

@@ -141,7 +141,8 @@ namespace EMotionFX
                 if (msg.contains(
                         "has active key-value observers (KVO)! These will stop working now that the window is recreated, and will result "
                         "in exceptions when the observers are removed") ||
-                    (msg.contains("ThemeChangeObserverWindow") && msg.contains("Class already exists")))
+                    (msg.contains("ThemeChangeObserverWindow") && msg.contains("Class already exists")) ||
+                    msg.contains("Replace uses of missing font family \"Open Sans\" with one that exists"))
                 {
                     break;
                 }

@@ -12,6 +12,7 @@
 #include <AzTest/Utils.h>
 
 #include <sys/mman.h>
+#include <sys/stat.h>
 
 namespace UnitTest
 {
@@ -79,5 +80,13 @@ namespace UnitTest
         EXPECT_EQ(testData, AZStd::string_view(static_cast<const char*>(buffer), testData.size()));
         EXPECT_TRUE(testFile.Eof());
         EXPECT_EQ(0, munmap(buffer, requestSize));
+    }
+
+    TEST_F(SystemFilePlatformFixture, Length_NamedPipeWithoutWriter_ReturnsZero)
+    {
+        auto namedPipePath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / "SystemFileLengthPipe";
+        ASSERT_EQ(mkfifo(namedPipePath.c_str(), S_IRUSR | S_IWUSR), 0);
+
+        EXPECT_EQ(AZ::IO::SystemFile::Length(namedPipePath.c_str()), 0);
     }
 }   // namespace UnitTest
