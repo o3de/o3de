@@ -5,6 +5,8 @@
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },
 
+    "Definitions" : ["OUTPUT_COVERAGE=1"],
+
     "ProgramSettings" : 
     {
         "EntryPoints":

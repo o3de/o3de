@@ -13,6 +13,7 @@
 
 // TODO(MaterialPipeline): In the end, after all refactoring and rearranging of our shader code is done, some of these flags might become unnecessary and should be re-evaluated.
 #define OUTPUT_DEPTH 1
+#define OUTPUT_COVERAGE 1
 #define FORCE_OPAQUE 1
 #define OUTPUT_SUBSURFACE 0
 #define ENABLE_TRANSMISSION 0

@@ -11,6 +11,14 @@
 #define MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE 1
 #define PIPELINE_HAS_PASS_SRG 0
 
+// The depth pre-pass (DepthPass_CustomZ.shader.template) sets OUTPUT_COVERAGE=1 so alpha-to-coverage cutout
+// materials write the same per-sample mask as the forward pass. The shadow map pass shares this file but
+// leaves it off: shadow maps are single-sampled and keep the hard alpha clip. It must be decided before the
+// material type is included because GetAlphaAndClip() reads it.
+#ifndef OUTPUT_COVERAGE
+#define OUTPUT_COVERAGE 0
+#endif
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef MATERIAL_TYPE_DEFINES_AZSLI_FILE_PATH
@@ -41,6 +49,10 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 struct PsOutput
 {
     precise float m_depth : SV_Depth;
+#if OUTPUT_COVERAGE
+    // Same per-sample mask the forward pass emits, so a cutout edge covers identical samples in both.
+    uint m_coverage : SV_Coverage;
+#endif
 };
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
@@ -56,6 +68,13 @@ PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     PsOutput OUT;
     OUT.m_depth = IN.position.z;
+#if OUTPUT_COVERAGE
+    #if MATERIAL_HAS_ALPHA_TO_COVERAGE_MASK
+    OUT.m_coverage = GetAlphaToCoverageMask();
+    #else
+    OUT.m_coverage = 0xFFFFFFFFu;
+    #endif
+#endif
 
     return OUT;
 }
