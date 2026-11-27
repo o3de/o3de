@@ -28,8 +28,6 @@
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
-AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::AssetSystem::AssetSystemRequests);
-
 #if defined(AZ_MONOLITHIC_BUILD)
 AZ_DECLARE_BUDGET(AzFramework);
 #else
