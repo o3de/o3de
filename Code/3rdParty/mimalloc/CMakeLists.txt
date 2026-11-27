@@ -6,12 +6,12 @@
 #
 
 o3de_fetch_content(mimalloc
-    VERSION "3.7.0"
+    VERSION "3.7.1"
     LICENSE "MIT"
-    URL "https://github.com/microsoft/mimalloc/archive/refs/tags/v3.7.0.tar.gz"
-    URL_HASH "1b8653b9ff9b841a97f2c50fd996e89e1a0cb712c3c5b0980ef16a027eb7acf8"
+    URL "https://github.com/microsoft/mimalloc/archive/refs/tags/v3.7.1.tar.gz"
+    URL_HASH "8bc9f820eaf3dad3509d7930d80c40512bc51e04989641f892ee64c46b7ab0d8"
     GIT "https://github.com/microsoft/mimalloc.git"
-    GIT_HASH "1ed67b5156a763441d2ec3c20221a7b3cd866129"
+    GIT_HASH "1c842769cd1ef35f044f659804806505b58f0b48"
     NO_ADD_SUBDIR
 )
 FetchContent_MakeAvailable(mimalloc)
