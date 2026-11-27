@@ -599,6 +599,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
 o3de_register_3rdparty_root("${LY_ROOT_FOLDER}/Code/3rdParty")
+set_property(GLOBAL PROPERTY "O3DE_3RDPARTY_PACKAGE_3rdParty::OpenXR" openxr-sdk)
 
 if(NOT INSTALLED_ENGINE)
     # Add the 3rdParty cmake files to the IDE

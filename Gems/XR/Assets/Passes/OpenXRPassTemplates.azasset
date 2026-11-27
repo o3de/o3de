@@ -1,0 +1,13 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "FoveatedImagePassTemplate",
+                "Path": "Passes/FoveatedImage.pass"
+            }
+        ]
+    }
+}

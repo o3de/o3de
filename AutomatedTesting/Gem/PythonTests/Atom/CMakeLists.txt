@@ -7,6 +7,22 @@
 #
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    if(TARGET Gem::OpenXRVk.Builders)
+        ly_add_pytest(
+            NAME AutomatedTesting::Atom_OpenXR_Smoke
+            TEST_SUITE smoke
+            TEST_SERIAL
+            TIMEOUT 600
+            PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_OpenXR.py
+            RUNTIME_DEPENDENCIES
+                AssetProcessor
+                AutomatedTesting.Assets
+                Editor
+            COMPONENT
+                Atom
+        )
+    endif()
+
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Periodic_GPU
         TEST_SUITE periodic

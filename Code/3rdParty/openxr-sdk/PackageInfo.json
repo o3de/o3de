@@ -1,0 +1,12 @@
+{
+    "PackageName": "OpenXR",
+    "Version": "1.1.65",
+    "URL": "https://github.com/KhronosGroup/OpenXR-SDK",
+    "License": "Apache-2.0 AND MIT AND BSL-1.0",
+    "LicenseFile": "LICENSE.txt",
+    "Source": {
+        "URL": "https://github.com/KhronosGroup/OpenXR-SDK/archive/refs/tags/release-1.1.65.tar.gz",
+        "Revision": "24a1f2b92d212501a2b1b8d30ffd53abf55fcfa8",
+        "SHA256": "27aa797baf680c5f836b6138e78e59e2f72d6becfef6d4587ed9a57756d6d3b3"
+    }
+}

@@ -1,0 +1,72 @@
+<ObjectStream version="3">
+	<Class name="MotionSet" version="1" type="{FE63321D-3593-4214-AFA4-F620CDC17B9B}">
+		<Class name="AZStd::string" field="name" value="RightControllerMotion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZStd::unordered_map&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*, AZStd::hash&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;&gt;, AZStd::equal_to&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;&gt;, allocator&gt;" field="motionEntries" type="{7E795792-CEDD-52D6-ABCB-6EFC3BAF1CDA}">
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_trigger_front" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_trigger_front" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_trigger_front.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_thumbstick_000" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_thumbstick_000" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_thumbstick_000.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_button_oculus" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_button_oculus" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_button_oculus.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_thumbstick_270" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_thumbstick_270" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_thumbstick_270.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_thumbstick_180" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_thumbstick_180" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_thumbstick_180.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_button_b" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_button_b" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_button_b.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_trigger_grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_trigger_grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_trigger_grip.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_button_a" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_button_a" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_button_a.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, MotionSet::MotionEntry*&gt;" field="element" type="{7D28A706-15EE-5B30-B2F7-A224146B4C7F}">
+				<Class name="AZStd::string" field="value1" value="right_b_thumbstick_090" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="MotionSet::MotionEntry" field="value2" version="1" type="{A1859687-2DE7-4B29-8A39-07836FDF5956}">
+					<Class name="AZStd::string" field="id" value="right_b_thumbstick_090" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="assetId" value="assets/meta quest touch pro/models/fbx 2013/right_b_thumbstick_090.motion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				</Class>
+			</Class>
+		</Class>
+		<Class name="AZStd::vector&lt;MotionSet*, allocator&gt;" field="childSets" type="{69F77F3B-4CDE-5995-BDC6-341621DF9A6E}"/>
+	</Class>
+</ObjectStream>
+
