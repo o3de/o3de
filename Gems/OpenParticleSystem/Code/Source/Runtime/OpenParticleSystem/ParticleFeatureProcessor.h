@@ -48,7 +48,7 @@ namespace OpenParticle
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-        void Simulate(float delta);
+        void Simulate(float delta, const AZ::Transform& activeCameraTransform);
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet);
 
         void Init();
@@ -131,5 +131,6 @@ namespace OpenParticle
         AZStd::unordered_map<AZ::u32, ParticlePipelineState> m_pipelineStates;
         AZStd::optional<AZStd::chrono::time_point<AZStd::chrono::high_resolution_clock>> time;
         float m_timeToSim{0};
+        AZ::Transform m_activeCameraTransform = AZ::Transform::CreateIdentity();
     };
 } // namespace OpenParticle

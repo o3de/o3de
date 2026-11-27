@@ -63,7 +63,7 @@ namespace OpenParticle
 
         bool Init(ParticleAsset& asset);
 
-        void Tick(float delta);
+        void Tick(float delta, const AZ::Transform& activeCameraTransform);
 
         void Render(DriverWrap& driverWrap, const AZ::RPI::FeatureProcessor::RenderPacket& packet);
 
