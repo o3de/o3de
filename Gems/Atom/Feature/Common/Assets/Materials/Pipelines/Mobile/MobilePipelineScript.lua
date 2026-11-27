@@ -14,10 +14,32 @@ function MaterialTypeSetup(context)
     Print('Material type uses lighting model "' .. lightingModel .. '".')
 
     context:ExcludeAllShaders()
-    
-    context:IncludeShader("ShadowmapPass")
 
+    opacityMode = context:GetBuildSetting("opacityMode", "Dynamic")
+    if(opacityMode ~= "Dynamic" and opacityMode ~= "Opaque" and opacityMode ~= "Cutout" and
+       opacityMode ~= "Blended" and opacityMode ~= "TintedTransparent") then
+        Warning('Unrecognised "opacityMode" build setting "' .. opacityMode .. '". Building every shader.')
+        opacityMode = "Dynamic"
+    end
+
+    buildOpaqueShader = opacityMode == "Dynamic" or opacityMode == "Opaque"
+    buildCutoutShaders = opacityMode == "Dynamic" or opacityMode == "Cutout"
+    buildBlendedShaders = opacityMode == "Dynamic" or opacityMode == "Blended"
+    buildTintedTransparentShaders = opacityMode == "Dynamic" or opacityMode == "TintedTransparent"
+
+    -- Only the shadowmap shader casts a shadow, so an opaque surface needs it whether or not it moves its vertices. Base and
+    -- Skin build nothing but their forward shader, so they always need it. This pipeline has no depth prepass shader.
+    buildShadowShader = buildOpaqueShader or (lightingModel ~= "Standard" and lightingModel ~= "Enhanced")
+
+    if(buildShadowShader) then
+        context:IncludeShader("ShadowmapPass")
+    end
+
+    -- Base has no transparent shader here, so a "Blended" declaration is reported and ignored.
     if(lightingModel == "Base") then
+        if(opacityMode == "Blended" or opacityMode == "TintedTransparent") then
+            Warning('The Base lighting model has no transparent shader. Building its forward shader instead.')
+        end
         context:IncludeShader("ForwardPass_BaseLighting")
         return true
     end
@@ -27,11 +49,19 @@ function MaterialTypeSetup(context)
             Warning("The mobile pipeline does not support the Enhanced lighting model. Will use Standard lighting as a fallback.")
         end
         
-        context:IncludeShader("ShadowmapPass_CustomZ")
-        context:IncludeShader("ForwardPass_StandardLighting")
-        context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
-        context:IncludeShader("Transparent_StandardLighting")
-        context:IncludeShader("TintedTransparent_StandardLighting")
+        if(buildOpaqueShader) then
+            context:IncludeShader("ForwardPass_StandardLighting")
+        end
+        if(buildCutoutShaders) then
+            context:IncludeShader("ShadowmapPass_CustomZ")
+            context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
+        end
+        if(buildBlendedShaders) then
+            context:IncludeShader("Transparent_StandardLighting")
+        end
+        if(buildTintedTransparentShaders) then
+            context:IncludeShader("TintedTransparent_StandardLighting")
+        end
         return true
     end
     

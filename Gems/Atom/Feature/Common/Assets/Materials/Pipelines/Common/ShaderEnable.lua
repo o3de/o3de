@@ -19,18 +19,22 @@ function GetMaterialPropertyDependencies()
 end
 
 -- Enables a shader with @shaderTag, if that shader exists.
+-- Returns whether that shader was there to set.
 function TrySetShaderEnabled(context, shaderTag, enabled)
     if(context:HasShaderWithTag(shaderTag)) then
         local shader = context:GetShaderByTag(shaderTag)
         if(shader) then
             --Print("Set shader enabled '" .. shaderTag .. "' = " .. tostring(enabled))
             shader:SetEnabled(enabled)
+            return true
         end
     end
+    return false
 end
 
 -- Enables a shader with @shaderTag, if that shader exists, and disables @fallbackShaderTag.
 -- Otherwise enables the shader @fallbackShaderTag, if that shader exists.
+-- Returns whether either of them was there to set.
 function TrySetShaderEnabledWithFallback(context, shaderTag, fallbackShaderTag, enabled)
     if(context:HasShaderWithTag(shaderTag)) then
         local shader = context:GetShaderByTag(shaderTag)
@@ -38,9 +42,11 @@ function TrySetShaderEnabledWithFallback(context, shaderTag, fallbackShaderTag, 
             --Print("Set shader enabled '" .. shaderTag .. "' = " .. tostring(enabled))
             shader:SetEnabled(enabled)
             TrySetShaderEnabled(context, fallbackShaderTag, false)
+            return true
         end
+        return false
     else
-        TrySetShaderEnabled(context, fallbackShaderTag, enabled)
+        return TrySetShaderEnabled(context, fallbackShaderTag, enabled)
     end
 end
 
@@ -66,22 +72,29 @@ function Process(context)
     enableMainPass = not isTransparent and not isTintedTransparent
     enableShadowPass = not isTransparent and not isTintedTransparent and castShadows
 
+    local mainPassResolved = false
+    local depthPassResolved = false
+    local shadowPassResolved = false
+
     if hasPerPixelDepth or hasPerPixelClip then
-        TrySetShaderEnabledWithFallback(context, "depth_customZ", "depth", enableDepthPass)
-        TrySetShaderEnabledWithFallback(context, "shadow_customZ", "shadow", enableShadowPass)
+        depthPassResolved = TrySetShaderEnabledWithFallback(context, "depth_customZ", "depth", enableDepthPass)
+        shadowPassResolved = TrySetShaderEnabledWithFallback(context, "shadow_customZ", "shadow", enableShadowPass)
         
         -- The main pass could have different names in different pipelines
-        TrySetShaderEnabledWithFallback(context, "forward_customZ", "forward", enableMainPass)
-        TrySetShaderEnabledWithFallback(context, "main_customZ", "main", enableMainPass)
+        -- Assigned first and combined after: or between the two calls would skip the second.
+        local resolvedForwardCustomZ = TrySetShaderEnabledWithFallback(context, "forward_customZ", "forward", enableMainPass)
+        local resolvedMainCustomZ = TrySetShaderEnabledWithFallback(context, "main_customZ", "main", enableMainPass)
+        mainPassResolved = resolvedForwardCustomZ or resolvedMainCustomZ
     else
-        TrySetShaderEnabled(context, "depth", enableDepthPass)
-        TrySetShaderEnabled(context, "shadow", enableShadowPass)
+        depthPassResolved = TrySetShaderEnabled(context, "depth", enableDepthPass)
+        shadowPassResolved = TrySetShaderEnabled(context, "shadow", enableShadowPass)
         TrySetShaderEnabled(context, "depth_customZ", false)
         TrySetShaderEnabled(context, "shadow_customZ", false)
         
         -- The main pass could have different names in different pipelines
-        TrySetShaderEnabled(context, "forward", enableMainPass)
-        TrySetShaderEnabled(context, "main", enableMainPass)
+        local resolvedForward = TrySetShaderEnabled(context, "forward", enableMainPass)
+        local resolvedMain = TrySetShaderEnabled(context, "main", enableMainPass)
+        mainPassResolved = resolvedForward or resolvedMain
         TrySetShaderEnabled(context, "forward_customZ", false)
         TrySetShaderEnabled(context, "main_customZ", false)
     end
@@ -98,6 +111,32 @@ function Process(context)
         TrySetShaderEnabled(context, "tintedTransparent", isTintedTransparent)
         TrySetShaderEnabled(context, "depthPassTransparentMin", isTransparent or isTintedTransparent)
         TrySetShaderEnabled(context, "depthPassTransparentMax", isTransparent or isTintedTransparent)
+    end
+
+    -- The Try functions stay silent about absent tags, which is normal across pipelines, but a shader this material needs
+    -- may have been left out by the "opacityMode" build setting, and then nothing draws.
+    if(isTransparent and not context:HasShaderWithTag("transparent")) then
+        Warning('Material sets "isTransparent", but no transparent shader was built for this material pipeline. Nothing will be drawn.')
+    end
+
+    if(isTintedTransparent and not context:HasShaderWithTag("tintedTransparent")) then
+        Warning('Material sets "isTintedTransparent", but no tinted transparent shader was built for this material pipeline. Nothing will be drawn.')
+    end
+
+    if(enableMainPass and not mainPassResolved) then
+        Warning('Material is opaque, but no forward or main shader was built for this material pipeline. Nothing will be drawn.')
+    end
+
+    -- Not every pipeline has a depth prepass or a shadow pass, so a missing one is only reported when this pipeline built
+    -- that pass for some other opacity mode. Without it the material is missing from the depth buffer, or casts no shadow.
+    local pipelineHasDepthPass = context:HasShaderWithTag("depth") or context:HasShaderWithTag("depth_customZ")
+    if(enableDepthPass and pipelineHasDepthPass and not depthPassResolved) then
+        Warning('Material is opaque, but no depth shader for its opacity was built for this material pipeline. It will be missing from the depth prepass.')
+    end
+
+    local pipelineHasShadowPass = context:HasShaderWithTag("shadow") or context:HasShaderWithTag("shadow_customZ")
+    if(enableShadowPass and pipelineHasShadowPass and not shadowPassResolved) then
+        Warning('Material casts shadows, but no shadow shader for its opacity was built for this material pipeline. It will cast no shadow.')
     end
 
 end
