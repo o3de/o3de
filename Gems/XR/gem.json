@@ -13,12 +13,12 @@
     "user_tags": [],
     "requirements": "",
     "documentation_url": "",
-    "dependencies": [],
+    "dependencies": [
+        "Atom_RPI"
+    ],
     "compatible_engines": [
         "o3de-sdk>=2.4.0",
         "o3de>=2.4.0"
     ],
-    "repo_uri": "https://raw.githubusercontent.com/o3de/o3de-extras/development",
-    "download_source_uri": "https://github.com/o3de/o3de-extras/releases/download/2.0/xr-1.2.0-gem.zip",
     "version": "1.2.0"
 }

@@ -60,13 +60,13 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            ${openxr_dependency}
+            3rdParty::openxr-sdk
             AZ::AtomCore
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
             Gem::XR.Static
             Gem::PhysX5.Static
-            Gem::Atom_Feature_Common.Public			
+            Gem::Atom_Feature_Common.Public
             Gem::CommonFeaturesAtom.Static
             Gem::EMotionFXStaticLib
             Gem::EMotionFX
@@ -121,7 +121,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzCore
                 AZ::AssetBuilderSDK
-                ${openxr_dependency}
                 Gem::${gem_name}.Static
                 Gem::EMotionFXStaticLib
                 Gem::EMotionFX

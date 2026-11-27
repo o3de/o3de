@@ -58,6 +58,7 @@
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
         "Gems/OpenParticleSystem",
+        "Gems/OpenXRVk",
         "Gems/PhysX/Common",
         "Gems/PhysX/Core/PhysX5",
         "Gems/PhysX/Debug/PhysX5",
@@ -94,7 +95,8 @@
         "Gems/Vegetation",
         "Gems/VideoPlaybackFramework",
         "Gems/VirtualGamepad",
-        "Gems/WhiteBox"
+        "Gems/WhiteBox",
+        "Gems/XR"
     ],
     "gem_names": [
         "Atom_Bootstrap",

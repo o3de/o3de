@@ -1,4 +1,6 @@
-# Controller Models and Animations Setup in O3DE
+# OpenXR Vulkan
+
+## Controller Models and Animations Setup in O3DE
 
 There are many VR devices on the market, each with different controllers, so developers are responsible for integrating the appropriate 3D models into their applications.
 

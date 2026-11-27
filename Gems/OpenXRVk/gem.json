@@ -13,8 +13,13 @@
     "user_tags": [],
     "requirements": "",
     "documentation_url": "",
-    "dependencies": [],
-    "repo_uri": "https://raw.githubusercontent.com/o3de/o3de-extras/development",
-    "download_source_uri": "https://github.com/o3de/o3de-extras/releases/download/2.0/openxrvk-1.3.0-gem.zip",
+    "dependencies": [
+        "Atom_Feature_Common",
+        "Atom_RHI_Vulkan",
+        "CommonFeaturesAtom",
+        "EMotionFX",
+        "PhysX5",
+        "XR"
+    ],
     "version": "1.3.0"
 }
