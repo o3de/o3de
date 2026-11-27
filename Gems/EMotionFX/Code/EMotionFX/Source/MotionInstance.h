@@ -824,6 +824,12 @@ namespace EMotionFX
 
         void CalcRelativeTransform(Node* rootNode, float curTime, float oldTime, Transform* outTransform) const;
         bool ExtractMotion(Transform& outTrajectoryDelta);
+        // Non-mutating sampling of one forward, non-looping extraction interval. Translation
+        // follows ExtractMotion's actor-local convention and is already oriented by the supplied
+        // actor-local rotation; actor/parent scale is applied by the caller. Does not include the
+        // one-time first-frame bind-pose adjustment or change playback/first-reposition flags.
+        bool SampleMotionExtractionDelta(float startTime, float endTime,
+            const AZ::Quaternion& actorLocalRotation, Transform& outTrajectoryDelta) const;
         void CalcGlobalTransform(const AZStd::vector<size_t>& hierarchyPath, float timeValue, Transform* outTransform) const;
         void ResetTimes();
 

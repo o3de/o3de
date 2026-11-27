@@ -642,7 +642,7 @@ namespace EMotionFX
             }
         }
 
-        void SystemComponent::ApplyMotionExtraction(const ActorInstance* actorInstance, float timeDelta)
+        void SystemComponent::ApplyMotionExtraction(ActorInstance* actorInstance, float timeDelta)
         {
             AZ_Assert(actorInstance, "Cannot apply motion extraction. Actor instance is not valid.");
             AZ_Assert(actorInstance->GetActor(), "Cannot apply motion extraction. Actor instance is not linked to a valid actor.");
@@ -657,6 +657,40 @@ namespace EMotionFX
             }
 
             const AZ::EntityId entityId = entity->GetId();
+
+            // Animation jobs have finished. Modifiers run here on the main thread so they can
+            // safely read gameplay targets without adding an independent movement/tick path.
+            if (RootMotionModifierRequestBus::FindFirstHandler(entityId))
+            {
+                AZ::Transform currentWorldTransform = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(currentWorldTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
+                const AZ::Transform originalWorldTransform = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+                AZ::Transform desiredWorldTransform = originalWorldTransform;
+                bool modified = false;
+                RootMotionModifierRequestBus::EventResult(modified, entityId, &RootMotionModifierRequests::ModifyRootMotion,
+                    *actorInstance, timeDelta, currentWorldTransform, desiredWorldTransform);
+                if (modified)
+                {
+                    const bool valid = desiredWorldTransform.IsFinite()
+                        && AZ::IsClose(desiredWorldTransform.GetRotation().GetLengthSq(), 1.0f, 0.001f)
+                        && AZ::IsClose(desiredWorldTransform.GetUniformScale(), originalWorldTransform.GetUniformScale(), 0.00001f);
+                    AZ_Warning("EMotionFX", valid, "Root-motion modifier returned an invalid pose or changed actor scale.");
+                    if (valid)
+                    {
+                        Transform correctedLocal = Transform(desiredWorldTransform).CalcRelativeTo(actorInstance->GetParentWorldSpaceTransform());
+                        // AZ::Transform has uniform scale; preserve the actor's original scale data.
+                        EMFX_SCALECODE(correctedLocal.m_scale = actorInstance->GetLocalSpaceTransform().m_scale;)
+                        const bool validLocal = correctedLocal.m_position.IsFinite() && correctedLocal.m_rotation.IsFinite()
+                            && AZ::IsClose(correctedLocal.m_rotation.GetLengthSq(), 1.0f, 0.001f);
+                        AZ_Warning("EMotionFX", validLocal, "Root-motion modifier pose could not be converted to actor local space.");
+                        if (validLocal)
+                        {
+                            actorInstance->SetLocalSpaceTransform(correctedLocal);
+                            actorInstance->UpdateWorldTransform();
+                        }
+                    }
+                }
+            }
 
             // Check if we have any physics character controllers.
             bool hasCustomMotionExtractionController = false;
@@ -681,8 +715,25 @@ namespace EMotionFX
 
                 if (hasPhysicsController)
                 {
-                    Physics::CharacterRequestBus::Event(
-                        entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
+                    bool queued = false;
+                    RootMotionModifierRequestBus::EventResult(queued, entityId,
+                        &RootMotionModifierRequests::QueueRootMotionTranslation, positionDelta, timeDelta);
+                    if (queued)
+                    {
+                        // The physics owner holds a displacement, not a velocity divided by
+                        // a potentially tiny hit-stop tick. Rebase the actor position now so
+                        // frames with zero physics substeps cannot enqueue the same drift again.
+                        Transform rebasedWorld = actorInstance->GetWorldSpaceTransform();
+                        rebasedWorld.m_position = currentTransform.GetTranslation();
+                        const Transform rebasedLocal = rebasedWorld.CalcRelativeTo(actorInstance->GetParentWorldSpaceTransform());
+                        actorInstance->SetLocalSpacePosition(rebasedLocal.m_position);
+                        actorInstance->UpdateWorldTransform();
+                    }
+                    else
+                    {
+                        Physics::CharacterRequestBus::Event(
+                            entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
+                    }
                 }
                 else if (hasCustomMotionExtractionController)
                 {
