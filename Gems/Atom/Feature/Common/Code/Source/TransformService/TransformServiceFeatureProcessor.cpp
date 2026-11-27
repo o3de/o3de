@@ -208,7 +208,7 @@ namespace AZ
         }
 
         void TransformServiceFeatureProcessor::SetTransformForId(
-            ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale, AZStd::string_view debugName)
+            ObjectId id, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale, [[maybe_unused]] AZStd::string_view debugName)
         {
             AZ_Error("TransformServiceFeatureProcessor", m_isWriteable, "Transform data cannot be written to during this phase");
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to set the transform for an invalid handle.");
