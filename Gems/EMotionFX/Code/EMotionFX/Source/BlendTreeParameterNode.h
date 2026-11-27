@@ -74,6 +74,7 @@ namespace EMotionFX
 
     private:
         bool GetTypeSupportsFloat(uint32 parameterType);
+        void ConvertToWorldSpace(const AnimGraphInstance* animGraphInstance, size_t parameterIndex, MCore::Attribute* value) const;
 
         AZStd::vector<AZStd::string>    m_parameterNames;
         AZStd::vector<AZ::u32>          m_parameterIndices;              /**< The indices of the visible and available parameters. */
