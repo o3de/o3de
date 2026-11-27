@@ -99,18 +99,21 @@ def atom_tools_log_path(
 
 
 def retrieve_crash_output(run_id: int | str, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                          timeout: float = 10) -> str:
+                          timeout: float = 10, *, log_directory: str | None = None) -> str:
     """
     returns the crash output string for the given test run.
     :param run_id: editor id that will be used for differentiating paths
     :param workspace: Workspace fixture
     :param timeout: Maximum time (seconds) to wait for crash output file to appear
+    :param log_directory: Explicit executable log directory; defaults to the legacy Editor path.
     :return str: The contents of the editor crash file (error.log)
     """
     crash_info = "-- No crash log available --"
     # Grab the file name of the crash log which can be different depending on platform
     crash_file_name = os.path.basename(workspace.paths.crash_log())
-    crash_log = os.path.join(retrieve_log_path(run_id, workspace), crash_file_name)
+    if log_directory is None:
+        log_directory = retrieve_log_path(run_id, workspace)
+    crash_log = os.path.join(log_directory, crash_file_name)
     try:
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    

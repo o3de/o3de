@@ -27,6 +27,7 @@ import logging
 import math
 import os
 import re
+import shutil
 import tempfile
 import threading
 import types
@@ -317,6 +318,94 @@ class Result(object):
                 f"{self.get_log_output_str()}\n"
             )
             return output
+
+
+class _RunLogContext:
+    """Own the application log directory for one executable launch.
+
+    Numeric run IDs still name artifacts. Only a directory created by this
+    context may be removed, and failed runs or unsuccessful artifact copies
+    retain their source files for diagnosis.
+    """
+
+    def __init__(self, executable, workspace, run_id, log_name):
+        self.workspace = workspace
+        self.run_id = run_id
+        self.log_name = log_name
+        self.log_run_id = f"{run_id}_{uuid.uuid4().hex}"
+        self.is_editor = type(executable) in (WinEditor, LinuxEditor)
+        self.is_atom_tools = type(executable) in (WinAtomToolsLauncher, LinuxAtomToolsLauncher)
+        self.owns_directory = self.is_editor or self.is_atom_tools
+        self.artifacts_saved = True
+        if self.is_atom_tools:
+            self.directory = editor_utils.atom_tools_log_path(self.log_run_id, workspace)
+            self._read_log = editor_utils.retrieve_non_editor_log_content
+        else:
+            self.directory = editor_utils.retrieve_log_path(self.log_run_id, workspace)
+            self._read_log = editor_utils.retrieve_editor_log_content
+
+        if self.owns_directory:
+            # Do not accept an existing directory, even in the unlikely event
+            # of an identifier collision.
+            os.makedirs(self.directory)
+            logger.info("Using test log directory: %s", self.directory)
+
+    def command_line(self):
+        if self.is_editor:
+            return ["-logfile", f"@log@/{self.log_name}", "-project-log-path", self.directory]
+        if self.is_atom_tools:
+            return ["-logfile", os.path.join(self.directory, self.log_name),
+                    "-project-log-path", self.directory]
+        return []
+
+    def read(self):
+        return self._read_log(self.log_run_id, self.log_name, self.workspace)
+
+    def save_file(self, path, artifact_name=None):
+        try:
+            if artifact_name is None:
+                saved_path = self.workspace.artifact_manager.save_artifact(path)
+            else:
+                saved_path = self.workspace.artifact_manager.save_artifact(path, artifact_name)
+        except OSError as exc:
+            # A missing or inaccessible diagnostic file must not replace the
+            # executable's actual failure, crash, or timeout result.
+            self.artifacts_saved = False
+            logger.warning("Could not save test artifact %s: %s", path, exc)
+            return
+        if saved_path is None:
+            # NullArtifactManager deliberately does not copy files.
+            self.artifacts_saved = False
+
+    def save_application_log(self):
+        self.save_file(os.path.join(self.directory, self.log_name), f"({self.run_id}){self.log_name}")
+
+    def save_crash_artifacts(self):
+        crash_name = os.path.basename(self.workspace.paths.crash_log())
+        for name in dict.fromkeys(("error.dmp", crash_name)):
+            path = os.path.join(self.directory, name)
+            if os.path.exists(path):
+                self.save_file(path)
+
+    def collect_crash(self, timeout):
+        crash_output = editor_utils.retrieve_crash_output(
+            self.log_run_id, self.workspace, timeout, log_directory=self.directory)
+        self.save_crash_artifacts()
+        return crash_output
+
+    def finish(self, results):
+        if not self.owns_directory:
+            return
+        # Retain failed runs and any run for which artifact collection was
+        # incomplete. Successful runs with saved diagnostics need no duplicate
+        # project-side directory.
+        if not self.artifacts_saved or not all(isinstance(result, Result.Pass) for result in results.values()):
+            logger.info("Retaining test log directory: %s", self.directory)
+            return
+        try:
+            shutil.rmtree(self.directory)
+        except OSError as exc:
+            logger.warning("Could not remove test log directory %s: %s", self.directory, exc)
 
 
 class MultiTestSuite(object):
@@ -867,87 +956,51 @@ class MultiTestSuite(object):
         :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
         """
         test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, [test_spec], workspace)
-
-        # Run IDs are reused across suites and pytest invocations. Keep the artifact
-        # numbering, but give every executable launch its own log directory.
-        log_run_id = f"{run_id}_{uuid.uuid4().hex}"
-
-        # Cycle any old crash report in case it wasn't cycled properly.
-        editor_utils.cycle_crash_report(log_run_id, workspace)
-
-        # Here we handle populating variables based on the type of executable under test.
-        test_result = None
-        results = {}
+        logs = _RunLogContext(executable, workspace, run_id, log_name)
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         test_case_name = editor_utils.compile_test_case_name(request, test_spec)
         cmdline = []
-        # Since there are no default logging features, we default to using Editor logging for any executable.
-        log_path_function = editor_utils.retrieve_log_path
-        log_content_function = editor_utils.retrieve_editor_log_content
-        if type(executable) in [WinEditor, LinuxEditor]:
-            log_path_function = editor_utils.retrieve_log_path
-            log_content_function = editor_utils.retrieve_editor_log_content
-            cmdline = ["-runpythontest", test_filename,
-                       f"-pythontestcase={test_case_name}",
-                       "-logfile", f"@log@/{log_name}",
-                       "-project-log-path", log_path_function(log_run_id, workspace)] + test_cmdline_args
-        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
-            log_path_function = editor_utils.atom_tools_log_path
-            log_content_function = editor_utils.retrieve_non_editor_log_content
-            cmdline = ["-runpythontest", test_filename,
-                       "-logfile", os.path.join(log_path_function(log_run_id, workspace), log_name)] + test_cmdline_args
+        if logs.is_editor:
+            cmdline = ["-runpythontest", test_filename, f"-pythontestcase={test_case_name}"]
+        elif logs.is_atom_tools:
+            cmdline = ["-runpythontest", test_filename]
         if cmdline:
-            log_directory = log_path_function(log_run_id, workspace)
-            os.makedirs(log_directory)
-            logger.info("Using test log directory: %s", log_directory)
-        executable.args.extend(cmdline)
+            executable.args.extend(cmdline + logs.command_line() + test_cmdline_args)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
+        timed_out = False
         try:
             executable.wait(test_spec.timeout)
-            output = executable.get_output()
+        except WaitTimeoutError:
+            timed_out = True
+            executable.stop()
+
+        # Capture output after the process has exited or been stopped.
+        output = executable.get_output()
+        executable_log_content = logs.read()
+        workspace.artifact_manager.set_dest_path(request.node.originalname)
+        logs.save_application_log()
+
+        for name in ("Server.log", "Game.log"):
+            path = os.path.join(workspace.paths.project_log(), name)
+            if os.path.exists(path) and os.path.getsize(path):
+                logs.save_file(path)
+
+        if timed_out:
+            logs.save_crash_artifacts()
+            test_result = Result.Timeout(test_spec, output, test_spec.timeout, executable_log_content)
+        else:
             return_code = executable.get_returncode()
-            executable_log_content = log_content_function(log_run_id, log_name, workspace)
-            # Save the executable log.
-            workspace.artifact_manager.set_dest_path(request.node.originalname)
-            workspace.artifact_manager.save_artifact(
-                os.path.join(log_path_function(log_run_id, workspace), log_name), f'({run_id}){log_name}')
-            server_log_name = os.path.join(workspace.paths.project_log(), 'Server.log')
-            game_log_name = os.path.join(workspace.paths.project_log(), 'Game.log')
-            if os.path.exists(server_log_name) and os.path.getsize(server_log_name):
-                workspace.artifact_manager.save_artifact(server_log_name)
-            if os.path.exists(game_log_name) and os.path.getsize(game_log_name):
-                workspace.artifact_manager.save_artifact(game_log_name)
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, executable_log_content)
+            elif return_code == self._test_fail_retcode:
+                test_result = Result.Fail(test_spec, output, executable_log_content)
             else:
-                has_crashed = return_code != self._test_fail_retcode
-                if has_crashed:
-                    crash_output = editor_utils.retrieve_crash_output(log_run_id, workspace, self._timeout_crash_log)
-                    test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
-                    # Save the .dmp file which is generated on Windows only
-                    dmp_file_name = os.path.join(log_path_function(log_run_id, workspace), 'error.dmp')
-                    if os.path.exists(dmp_file_name):
-                        workspace.artifact_manager.save_artifact(dmp_file_name)
-                    # Save the crash log
-                    crash_file_name = os.path.join(
-                        log_path_function(log_run_id, workspace), os.path.basename(workspace.paths.crash_log()))
-                    if os.path.exists(crash_file_name):
-                        workspace.artifact_manager.save_artifact(crash_file_name)
-                        editor_utils.cycle_crash_report(log_run_id, workspace)
-                    else:
-                        logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                else:
-                    test_result = Result.Fail(test_spec, output, executable_log_content)
-        except WaitTimeoutError:
-            output = executable.get_output()
-            executable.stop()
-            executable_log_content = log_content_function(log_run_id, log_name, workspace)
-            test_result = Result.Timeout(test_spec, output, test_spec.timeout, executable_log_content)
+                crash_output = logs.collect_crash(self._timeout_crash_log)
+                test_result = Result.Crash(test_spec, output, return_code, crash_output, executable_log_content)
 
-        executable_log_content = log_content_function(log_run_id, log_name, workspace)
-        results = self._get_results_using_output([test_spec], output, executable_log_content)
-        results[test_spec.__name__] = test_result
+        results = {test_spec.__name__: test_result}
+        logs.finish(results)
         return results
 
     ####################
@@ -1143,183 +1196,90 @@ class MultiTestSuite(object):
         :return: A dict of Result objects
         """
         test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, test_spec_list, workspace)
-
-        # Run IDs are reused across suites and pytest invocations. Keep the artifact
-        # numbering, but give every executable launch its own log directory.
-        log_run_id = f"{run_id}_{uuid.uuid4().hex}"
-
-        # Cycle any old crash report in case it wasn't cycled properly
-        editor_utils.cycle_crash_report(log_run_id, workspace)
-
-        results = {}
-
-        # Here we handle populating variables based on the type of executable under test.
-        cmdline = []
-        # Since there are no default logging features, we default to using Editor logging for any executable.
-        log_path_function = editor_utils.retrieve_log_path
-        log_content_function = editor_utils.retrieve_editor_log_content
-        temp_batched_script_file = None
-        temp_batched_case_file = None
-
-        # Editor
-        if type(executable) in [WinEditor, LinuxEditor]:
-            # We create a file containing a semicolon separated scripts and test cases for the executable to read.
-            test_script_list = ""
-            test_case_list = ""
-
-            for test_spec in test_spec_list:
-                # Test script
-                test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
-
-                # Test case
-                test_case_name = editor_utils.compile_test_case_name(request, test_spec)
-                test_case_list += f"{test_case_name};"
-
-            # Remove the trailing semicolon from the last entry
-            test_script_list = test_script_list[:-1]
-            test_script_list = test_script_list.replace('\\', '/')
-            test_case_list = test_case_list[:-1]
-
-            temp_batched_script_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-            temp_batched_script_file.write(test_script_list.replace('\\', '\\\\'))
-            temp_batched_script_file.flush()
-            temp_batched_script_file.close()
-
-            temp_batched_case_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-            temp_batched_case_file.write(test_case_list)
-            temp_batched_case_file.flush()
-            temp_batched_case_file.close()
-            log_path_function = editor_utils.retrieve_log_path
-            log_content_function = editor_utils.retrieve_editor_log_content
-            cmdline = ["-runpythontest", temp_batched_script_file.name,
-                       "-pythontestcase", temp_batched_case_file.name,
-                       "-logfile", f"@log@/{log_name}",
-                       "-project-log-path", log_path_function(log_run_id, workspace)] + test_cmdline_args
-        # Atom Tools application
-        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
-            log_path_function = editor_utils.atom_tools_log_path
-            log_content_function = editor_utils.retrieve_non_editor_log_content
-            test_filenames_str = ";".join(
-                editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
-            cmdline = ["-runpythontest", test_filenames_str,
-                       "-logfile", os.path.join(log_path_function(log_run_id, workspace), log_name)] + test_cmdline_args
-        if cmdline:
-            log_directory = log_path_function(log_run_id, workspace)
-            os.makedirs(log_directory)
-            logger.info("Using test log directory: %s", log_directory)
-        executable.args.extend(cmdline)
-        executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
-
-        output = ""
-        executable_log_content = ""
+        logs = _RunLogContext(executable, workspace, run_id, log_name)
+        temp_files = []
         try:
-            executable.wait(self.timeout_shared_test)
-            output = executable.get_output()
-            return_code = executable.get_returncode()
-            executable_log_content = log_content_function(log_run_id, log_name, workspace)
-            # Save the executable log
+            cmdline = []
+            if logs.is_editor:
+                # Store script and case lists in separate files as required by
+                # the Editor, and track them before attempting to write.
+                test_scripts = ";".join(editor_utils.get_testcase_module_filepath(test.test_module)
+                                        for test in test_spec_list)
+                test_cases = ";".join(editor_utils.compile_test_case_name(request, test)
+                                      for test in test_spec_list)
+                with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as script_file:
+                    temp_files.append(script_file.name)
+                    script_file.write(test_scripts.replace("\\", "/"))
+                with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as case_file:
+                    temp_files.append(case_file.name)
+                    case_file.write(test_cases)
+                cmdline = ["-runpythontest", temp_files[0], "-pythontestcase", temp_files[1]]
+            elif logs.is_atom_tools:
+                test_scripts = ";".join(editor_utils.get_testcase_module_filepath(test.test_module)
+                                        for test in test_spec_list)
+                cmdline = ["-runpythontest", test_scripts]
+            if cmdline:
+                executable.args.extend(cmdline + logs.command_line() + test_cmdline_args)
+            executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
+
+            timed_out = False
             try:
-                full_log_name = f'({run_id}){log_name}'
-                path_to_artifact = os.path.join(log_path_function(log_run_id, workspace), log_name)
-                workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                executable.wait(self.timeout_shared_test)
+            except WaitTimeoutError:
+                timed_out = True
+                executable.stop()
 
-            except FileNotFoundError:
-                # Error logging is already performed and we don't want this to fail the test
-                pass
-            if return_code == 0:
-                # No need to scrape the output, as all the tests have passed
-                for test_spec in test_spec_list:
-                    results[test_spec.__name__] = Result.Pass(test_spec, output, executable_log_content)
-            else:
-                # Scrape the output to attempt to find out which tests failed.
-                # This function should always populate the result list.
-                # If it didn't then it will have "Unknown" as the type of result.
-                results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-                if not len(results) == len(test_spec_list):
-                    logger.debug(f"\nList of Results: {results}\n"
-                                 f"Test Spec List: {test_spec_list}\n")
-                    raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
-                                                        "don't match the number of tests that ran.")
-
-                # If the executable crashed, find out in which test it happened and update the results.
-                has_crashed = return_code != self._test_fail_retcode
-                if has_crashed:
-                    crashed_result = None
-                    for test_spec_name, result in results.items():
-                        if isinstance(result, Result.Unknown):
-                            if not crashed_result:
-                                # First test with "Unknown" result (no data in output) is likely the one that crashed.
-                                crash_error = editor_utils.retrieve_crash_output(
-                                    log_run_id, workspace, self._timeout_crash_log)
-                                # Save the .dmp file which is generated on Windows only
-                                dmp_file_name = os.path.join(
-                                    log_path_function(log_run_id, workspace), 'error.dmp')
-                                if os.path.exists(dmp_file_name):
-                                    workspace.artifact_manager.save_artifact(dmp_file_name)
-                                # Save the crash log
-                                crash_file_name = os.path.join(log_path_function(log_run_id, workspace),
-                                                               os.path.basename(workspace.paths.crash_log()))
-                                if os.path.exists(crash_file_name):
-                                    workspace.artifact_manager.save_artifact(crash_file_name)
-                                    editor_utils.cycle_crash_report(log_run_id, workspace)
-                                else:
-                                    logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                                results[test_spec_name] = Result.Crash(
-                                    result.test_spec, output, return_code, crash_error, result.log_output)
-                                crashed_result = result
-                            else:
-                                # If there are remaining "Unknown" results, these couldn't execute because of the crash,
-                                # update with info about the offender
-                                results[test_spec_name].extra_info = f"This test has unknown result," \
-                                                                     f"test '{crashed_result.test_spec.__name__}'" \
-                                                                     f"crashed before this test could be executed"
-                    # if all the tests ran, the one that has caused the crash is the last test
-                    if not crashed_result:
-                        crash_error = editor_utils.retrieve_crash_output(log_run_id, workspace, self._timeout_crash_log)
-                        editor_utils.cycle_crash_report(log_run_id, workspace)
-                        results[test_spec_name] = Result.Crash(
-                            result.test_spec, output, return_code, crash_error, result.log_output)
-        except WaitTimeoutError:
-            executable.stop()
             output = executable.get_output()
-            executable_log_content = log_content_function(log_run_id, log_name, workspace)
+            executable_log_content = logs.read()
+            logs.save_application_log()
+            if timed_out:
+                logs.save_crash_artifacts()
+                return_code = None
+            else:
+                return_code = executable.get_returncode()
 
-            # The executable timed out when running the tests, get the data from the output to find out which ones ran
-            results = self._get_results_using_output(test_spec_list, output, executable_log_content)
-            if not len(results) == len(test_spec_list):
-                logger.debug(f"\nList of Results: {results}\n"
-                             f"Test Spec List: {test_spec_list}\n")
-                raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
-                                                    "don't match the number of tests that ran.")
+            if not timed_out and return_code == 0:
+                results = {test.__name__: Result.Pass(test, output, executable_log_content)
+                           for test in test_spec_list}
+            else:
+                results = self._get_results_using_output(test_spec_list, output, executable_log_content)
+                if len(results) != len(test_spec_list):
+                    raise EditorToolsFrameworkException(
+                        "Error when retrieving test results, the number of results don't match the number of tests that ran.")
 
-            # Similar logic here as crashes, the first test that has no result is the one that timed out
-            timed_out_result = None
-            for test_spec_name, result in results.items():
-                if isinstance(result, Result.Unknown):
-                    if not timed_out_result:
-                        results[test_spec_name] = Result.Timeout(result.test_spec,
-                                                                 result.output,
-                                                                 self.timeout_shared_test,
-                                                                 result.log_output)
-                        timed_out_result = result
+                if timed_out or return_code != self._test_fail_retcode:
+                    crash_output = None if timed_out else logs.collect_crash(self._timeout_crash_log)
+                    # The first test without a report is the likely offender.
+                    # If all reported results, attribute the process exit failure
+                    # to the last test instead of dereferencing a missing result.
+                    offender = None
+                    for name, result in results.items():
+                        if isinstance(result, Result.Unknown):
+                            if offender is None:
+                                offender = name
+                            else:
+                                failure = "timed out" if timed_out else "crashed"
+                                result.extra_info = (f"Test '{offender}' {failure} before this test could be executed")
+                    if offender is None:
+                        offender = test_spec_list[-1].__name__
+                    result = results[offender]
+                    if timed_out:
+                        results[offender] = Result.Timeout(result.test_spec, output,
+                                                           self.timeout_shared_test, result.log_output)
                     else:
-                        # If there are remaining "Unknown" results, these couldn't execute because of the timeout,
-                        # update with info about the offender
-                        results[test_spec_name].extra_info = f"This test has unknown result, test " \
-                                                             f"'{timed_out_result.test_spec.__name__}' timed out " \
-                                                             f"before this test could be executed"
-            # If all the tests ran then the last test caused the timeout as it didn't close the executable.
-            if not timed_out_result:
-                results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
-                                                         results[test_spec_name].output,
-                                                         self.timeout_shared_test,
-                                                         result.log_output)
+                        results[offender] = Result.Crash(result.test_spec, output, return_code,
+                                                         crash_output, result.log_output)
+
+            logs.finish(results)
+            return results
         finally:
-            if temp_batched_script_file:
-                os.unlink(temp_batched_script_file.name)
-            if temp_batched_case_file:
-                os.unlink(temp_batched_case_file.name)
-        return results
+            for path in temp_files:
+                try:
+                    os.unlink(path)
+                except FileNotFoundError:
+                    pass
+                except OSError as exc:
+                    logger.warning("Could not remove batched test list %s: %s", path, exc)
 
     @staticmethod
     def _get_results_using_output(test_spec_list: list[AbstractTestBase],

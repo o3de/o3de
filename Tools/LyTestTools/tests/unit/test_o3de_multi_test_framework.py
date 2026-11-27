@@ -571,9 +571,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.path.join', mock.MagicMock())
-    def test_ExecSingleTest_TestSucceeds_ReturnsPass(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecSingleTest_TestSucceeds_ReturnsPass(self, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
                                                      mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
@@ -588,16 +587,14 @@ class TestRunningTests(unittest.TestCase):
         results = mock_test_suite._exec_single_test(
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec, [])
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Pass)
-        assert mock_cycle_crash.called
         assert mock_executable.start.called
 
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.path.join', mock.MagicMock())
-    def test_ExecSingleTest_TestFails_ReturnsFail(self, mock_cycle_crash, mock_get_testcase_filepath, mock_retrieve_log,
+    def test_ExecSingleTest_TestFails_ReturnsFail(self, mock_get_testcase_filepath, mock_retrieve_log,
                                                   mock_retrieve_editor_log, mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
         mock_workspace = mock.MagicMock()
@@ -612,7 +609,6 @@ class TestRunningTests(unittest.TestCase):
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Fail)
-        assert mock_cycle_crash.called
         assert mock_executable.start.called
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
@@ -620,10 +616,9 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
-    def test_ExecSingleTest_TestCrashes_ReturnsCrash(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecSingleTest_TestCrashes_ReturnsCrash(self, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
                                                      mock_get_output_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
@@ -637,19 +632,16 @@ class TestRunningTests(unittest.TestCase):
 
         results = mock_test_suite._exec_single_test(
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec, [])
-        assert mock_cycle_crash.call_count == 2
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Crash)
         assert mock_executable.start.called
         assert mock_retrieve_crash.called
-        # Save executable log output, crash log, and crash dmp
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
+        assert mock_workspace.artifact_manager.save_artifact.called
 
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    def test_ExecSingleTest_TestTimeout_ReturnsTimeout(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecSingleTest_TestTimeout_ReturnsTimeout(self, mock_get_testcase_filepath,
                                                        mock_retrieve_log, mock_retrieve_editor_log,
                                                        mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
@@ -665,17 +657,15 @@ class TestRunningTests(unittest.TestCase):
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Timeout)
-        assert mock_cycle_crash.called
         assert mock_executable.start.called
         assert mock_executable.stop.called
 
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.unlink', mock.MagicMock())
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    def test_ExecMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash):
+    def test_ExecMultitest_AllTestsPass_ReturnsPasses(self):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
         mock_workspace = mock.MagicMock()
         mock_artifact_manager = mock.MagicMock()
@@ -699,18 +689,16 @@ class TestRunningTests(unittest.TestCase):
         assert len(results) == 2
         assert isinstance(results['mock_test_name'], multi_test_framework.Result.Pass)
         assert isinstance(results['mock_test_name_2'], multi_test_framework.Result.Pass)
-        assert mock_cycle_crash.called
 
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.unlink', mock.MagicMock())
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecMultitest_OneFailure_CallsCorrectFunc(
-            self, mock_cycle_crash, mock_get_testcase_filepath, mock_get_results):
+            self, mock_get_testcase_filepath, mock_get_results):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -727,7 +715,6 @@ class TestRunningTests(unittest.TestCase):
                 mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec_list, [])
 
         assert len(results) == 2
-        assert mock_cycle_crash.called
         assert mock_get_results.called
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
@@ -735,13 +722,12 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.unlink', mock.MagicMock())
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    def test_ExecMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecMultitest_OneCrash_ReportsOnUnknownResult(self, mock_get_testcase_filepath,
                                                            mock_retrieve_log, mock_retrieve_editor_log,
                                                            mock_get_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
@@ -763,24 +749,21 @@ class TestRunningTests(unittest.TestCase):
 
         results = mock_test_suite._exec_multitest(
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec_list, [])
-        assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Crash)
-        # Save executable log output, crash log, and crash dmp
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
+        assert mock_workspace.artifact_manager.save_artifact.called
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     @mock.patch('os.unlink', mock.MagicMock())
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    def test_ExecMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecMultitest_ManyUnknown_ReportsUnknownResults(self, mock_get_testcase_filepath,
                                                              mock_retrieve_log, mock_retrieve_editor_log,
                                                              mock_get_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
@@ -804,7 +787,6 @@ class TestRunningTests(unittest.TestCase):
 
         results = mock_test_suite._exec_multitest(
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec_list, [])
-        assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Crash)
         assert isinstance(results[mock_test_spec_2.__name__], multi_test_framework.Result.Unknown)
@@ -814,8 +796,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    def test_ExecMultitest_EditorTimeout_ReportsCorrectly(self, mock_cycle_crash, mock_get_testcase_filepath,
+    def test_ExecMultitest_EditorTimeout_ReportsCorrectly(self, mock_get_testcase_filepath,
                                                           mock_retrieve_log, mock_retrieve_editor_log, mock_get_results):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
         mock_workspace = mock.MagicMock()
@@ -838,7 +819,6 @@ class TestRunningTests(unittest.TestCase):
 
         results = mock_test_suite._exec_multitest(
             mock.MagicMock(), mock_workspace, mock_executable, 0, 'mock_log_name', mock_test_spec_list, [])
-        assert mock_cycle_crash.called
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Timeout)
         assert isinstance(results[mock_test_spec_2.__name__], multi_test_framework.Result.Unknown)
@@ -1312,15 +1292,16 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_obj._report_result.assert_called_with(mock_shared_test_spec_2.__name__, mock_result_2)
 
 
-@pytest.mark.parametrize("launcher_class", [LinuxEditor, WinEditor, LinuxAtomToolsLauncher, WinAtomToolsLauncher])
-@pytest.mark.parametrize("batched", [False, True])
-def test_reused_run_id_does_not_read_previous_launch_log(tmp_path, monkeypatch, launcher_class, batched):
-    """A timed-out launch without a log must not report a previous launch's output."""
-    import os
+@pytest.fixture
+def simulated_log_run(tmp_path, monkeypatch):
+    """Use real filesystem and artifact copies; mock only process execution."""
+    import json
     from pathlib import Path
     from types import SimpleNamespace
+    from ly_test_tools._internal.managers.artifact_manager import ArtifactManager
     from ly_test_tools.o3de import editor_test_utils
 
+    monkeypatch.setattr(editor_test_utils.waiter, "wait_for", lambda *args, **kwargs: None)
     workspace = mock.MagicMock()
     workspace.paths.project.return_value = str(tmp_path)
     workspace.paths.engine_root.return_value = str(tmp_path)
@@ -1334,53 +1315,132 @@ def test_reused_run_id_does_not_read_previous_launch_log(tmp_path, monkeypatch, 
     class TestSpec(multi_test_framework.SingleTest):
         test_module = SimpleNamespace(__file__=str(tmp_path / "test_case.py"))
 
-    is_editor = launcher_class in (LinuxEditor, WinEditor)
-    log_name = "editor_test.log"
-    legacy_path = Path((editor_test_utils.retrieve_log_path if is_editor else
-                        editor_test_utils.atom_tools_log_path)(1, workspace))
-    legacy_path.mkdir(parents=True)
-    (legacy_path / log_name).write_text("STALE LEGACY LOG", encoding="utf-8")
-    # Missing log lookup should return immediately in this simulated launch.
-    monkeypatch.setattr(editor_test_utils.waiter, "wait_for", lambda *args, **kwargs: None)
+    invocation = 0
 
-    def run(should_timeout):
-        suite = multi_test_framework.MultiTestSuite()
+    def run(launcher_class, batched, *, return_code=0, timeout=False, write_log=True,
+            report=False, write_crash=False, fail_copy=False):
+        nonlocal invocation
+        invocation += 1
+        manager = ArtifactManager(str(tmp_path / f"artifacts_{invocation}"))
+        workspace.artifact_manager = manager
+        if fail_copy:
+            monkeypatch.setattr(manager, "save_artifact", mock.Mock(side_effect=PermissionError("copy denied")))
+
+        is_editor = launcher_class in (LinuxEditor, WinEditor)
         executable = launcher_class(workspace, []) if is_editor else launcher_class(workspace, "MaterialEditor", [])
+        suite = multi_test_framework.MultiTestSuite()
         paths = []
+        log_name = "editor_test.log"
 
         def start(**kwargs):
-            if is_editor:
-                directory = Path(executable.args[executable.args.index("-project-log-path") + 1])
-                path = directory / log_name
-            else:
-                path = Path(executable.args[executable.args.index("-logfile") + 1])
-            assert path.parent.is_dir()
+            directory = Path(executable.args[executable.args.index("-project-log-path") + 1])
+            path = directory / log_name
+            assert directory.is_dir()
+            expected_log = f"@log@/{log_name}" if is_editor else str(path)
+            assert executable.args[executable.args.index("-logfile") + 1] == expected_log
             paths.append(path)
-            if not should_timeout:
+            if write_log:
                 path.write_text("CURRENT LAUNCH LOG", encoding="utf-8")
+            if write_crash:
+                (directory / "error.log").write_text("CURRENT CRASH", encoding="utf-8")
+                (directory / "error.dmp").write_bytes(b"CURRENT DUMP")
 
         executable.start = mock.Mock(side_effect=start)
         executable.wait = mock.Mock(side_effect=(
-            ly_test_tools.launchers.exceptions.WaitTimeoutError() if should_timeout else None))
-        executable.get_output = mock.Mock(return_value="")
-        executable.get_returncode = mock.Mock(return_value=0)
+            ly_test_tools.launchers.exceptions.WaitTimeoutError() if timeout else None))
+        payload = json.dumps({"name": "test_case", "success": return_code == 0, "output": "test output"})
         executable.stop = mock.Mock()
+
+        def get_output():
+            if timeout:
+                executable.stop.assert_called_once()
+            return f"JSON_START({payload})JSON_END" if report else ""
+
+        executable.get_output = mock.Mock(side_effect=get_output)
+        executable.get_returncode = mock.Mock(return_value=return_code)
         if batched:
             results = suite._exec_multitest(request, workspace, executable, 1, log_name, [TestSpec], [])
         else:
             results = suite._exec_single_test(request, workspace, executable, 1, log_name, TestSpec, [])
-        return results[TestSpec.__name__], paths[0]
+        return results[TestSpec.__name__], paths[0], Path(manager.dest_path)
 
-    first_result, first_path = run(False)
-    second_result, second_path = run(True)
-    assert isinstance(first_result, multi_test_framework.Result.Pass)
-    assert "CURRENT LAUNCH LOG" in first_result.log_output
-    assert isinstance(second_result, multi_test_framework.Result.Timeout)
-    assert first_path != second_path
-    assert first_path.parent != legacy_path
-    assert second_path.parent != legacy_path
-    assert first_path.read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+    return run
+
+
+@pytest.mark.parametrize("launcher_class", [LinuxEditor, WinEditor, LinuxAtomToolsLauncher, WinAtomToolsLauncher])
+@pytest.mark.parametrize("batched", [False, True])
+def test_reused_run_id_does_not_read_previous_launch_log(tmp_path, simulated_log_run, launcher_class, batched):
+    is_editor = launcher_class in (LinuxEditor, WinEditor)
+    legacy = tmp_path / "user"
+    if not is_editor:
+        legacy /= "log"
+    legacy /= "log_test_1"
+    legacy.mkdir(parents=True)
+    (legacy / "editor_test.log").write_text("STALE LEGACY LOG", encoding="utf-8")
+
+    first, first_path, first_artifacts = simulated_log_run(launcher_class, batched)
+    second, second_path, _ = simulated_log_run(launcher_class, batched, timeout=True, write_log=False)
+    assert isinstance(first, multi_test_framework.Result.Pass)
+    assert "CURRENT LAUNCH LOG" in first.log_output
+    assert not first_path.parent.exists()
+    assert (first_artifacts / "(1)editor_test.log").read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+    assert isinstance(second, multi_test_framework.Result.Timeout)
+    assert first_path.parent != second_path.parent
+    assert first_path.parent != legacy
+    assert second_path.parent != legacy
+    assert second_path.parent.is_dir()
     assert not second_path.exists()
-    assert "CURRENT LAUNCH LOG" not in second_result.log_output
-    assert "STALE LEGACY LOG" not in second_result.log_output
-    workspace.artifact_manager.save_artifact.assert_any_call(os.fspath(first_path), f"(1){log_name}")
+    assert "CURRENT LAUNCH LOG" not in second.log_output
+    assert "STALE LEGACY LOG" not in second.log_output
+    assert (legacy / "editor_test.log").read_text(encoding="utf-8") == "STALE LEGACY LOG"
+
+
+@pytest.mark.parametrize("launcher_class", [LinuxEditor, WinAtomToolsLauncher])
+@pytest.mark.parametrize("batched", [False, True])
+def test_timeout_preserves_current_log_and_artifact(simulated_log_run, launcher_class, batched):
+    result, path, artifacts = simulated_log_run(launcher_class, batched, timeout=True, report=True)
+    assert isinstance(result, multi_test_framework.Result.Timeout)
+    assert "CURRENT LAUNCH LOG" in result.log_output
+    assert path.read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+    assert (artifacts / "(1)editor_test.log").read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+
+
+@pytest.mark.parametrize("launcher_class", [LinuxEditor, WinAtomToolsLauncher])
+@pytest.mark.parametrize("batched", [False, True])
+def test_missing_application_log_does_not_mask_crash(simulated_log_run, launcher_class, batched):
+    result, path, artifacts = simulated_log_run(
+        launcher_class, batched, return_code=1, write_log=False, write_crash=True)
+    assert isinstance(result, multi_test_framework.Result.Crash)
+    assert result.ret_code == 1
+    assert result.stacktrace == "CURRENT CRASH"
+    assert not path.exists()
+    assert (path.parent / "error.log").exists()
+    assert (artifacts / "error.log").read_text(encoding="utf-8") == "CURRENT CRASH"
+    assert (artifacts / "error.dmp").read_bytes() == b"CURRENT DUMP"
+
+
+@pytest.mark.parametrize("batched", [False, True])
+def test_artifact_copy_failure_preserves_source_and_test_failure(simulated_log_run, batched):
+    result, path, _ = simulated_log_run(
+        LinuxEditor, batched, return_code=15, report=True, fail_copy=True)
+    assert isinstance(result, multi_test_framework.Result.Fail)
+    assert "CURRENT LAUNCH LOG" in result.log_output
+    assert path.read_text(encoding="utf-8") == "CURRENT LAUNCH LOG"
+
+
+def test_parallel_log_directory_allocation(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from pathlib import Path
+
+    workspace = mock.MagicMock()
+    workspace.paths.project.return_value = str(tmp_path)
+    executable = LinuxEditor(workspace, [])
+
+    def allocate(_):
+        return multi_test_framework._RunLogContext(executable, workspace, 1, "editor_test.log")
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        contexts = list(pool.map(allocate, range(16)))
+    directories = {Path(context.directory) for context in contexts}
+    assert len(directories) == len(contexts)
+    assert all(directory.is_dir() for directory in directories)
