@@ -177,6 +177,7 @@ namespace Audio
                 AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioFileEntryData, audioFileEntry->m_implData);
                 azdestroy(audioFileEntry, Audio::AudioSystemAllocator);
                 m_audioFileEntries.erase(iter);
+                success = true;
             }
             else if (dataScope == eADS_LEVEL_SPECIFIC && audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_NEEDS_RESET_TO_MANUAL_LOADING))
             {
@@ -303,6 +304,8 @@ namespace Audio
             {
                 if (UncacheFileCacheEntryInternal(audioFileEntry, true, true))
                 {
+                    AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioFileEntryData, audioFileEntry->m_implData);
+                    azdestroy(audioFileEntry, Audio::AudioSystemAllocator);
                     it = m_audioFileEntries.erase(it);
                     continue;
                 }
@@ -723,17 +726,18 @@ namespace Audio
                 AZLOG_NOTICE("FileCacheManager - Unable to uncache file '%s'", fileEntryInfo.sFileName);
                 return;
             }
+
+            AZ::AllocatorInstance<AudioBankAllocator>::Get().DeAllocate(
+                audioFileEntry->m_memoryBlock,
+                audioFileEntry->m_fileSize,
+                audioFileEntry->m_memoryBlockAlignment
+            );
+
+            audioFileEntry->m_memoryBlock = nullptr; // <- DeAllocate doesn't set the pointer back to nullptr, thus leaving an dangling pointer instead, this is why fails when you change the g_languageAudio cvar.
+            m_currentByteTotal -= audioFileEntry->m_fileSize;
         }
 
-        AZ::AllocatorInstance<AudioBankAllocator>::Get().DeAllocate(
-            audioFileEntry->m_memoryBlock,
-            audioFileEntry->m_fileSize,
-            audioFileEntry->m_memoryBlockAlignment
-        );
-
-        audioFileEntry->m_memoryBlock = nullptr; // <- DeAllocate doesn't set the pointer back to nullptr, thus leaving an dangling pointer instead, this is why fails when you change the g_languageAudio cvar.
-        audioFileEntry->m_flags.ClearFlags(eAFF_CACHED | eAFF_REMOVABLE);
-        m_currentByteTotal -= audioFileEntry->m_fileSize;
+        audioFileEntry->m_flags.ClearFlags(eAFF_CACHED | eAFF_REMOVABLE | eAFF_LOADING);
         AZ_Warning("FileCacheManager", audioFileEntry->m_useCount == 0, "Use-count of file '%s' is non-zero while uncaching it! Use Count: %d", audioFileEntry->m_filePath.c_str(), audioFileEntry->m_useCount);
         audioFileEntry->m_useCount = 0;
     #if !defined(AUDIO_RELEASE)

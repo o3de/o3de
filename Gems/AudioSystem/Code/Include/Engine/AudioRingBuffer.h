@@ -149,9 +149,10 @@ namespace Audio
                     ::memset(m_buffer, 0, wraparoundSamples * s_bytesPerSample);
                 }
 
-                m_write = wraparoundSamples;
+                m_write = wraparoundSamples % m_size;
             }
 
+            m_samplesReady += numSamples;
             return numFrames;
         }
 
@@ -255,9 +256,10 @@ namespace Audio
                     ::memset(m_buffer, 0, wraparoundSamples * s_bytesPerSample);
                 }
 
-                m_write = wraparoundSamples;
+                m_write = wraparoundSamples % m_size;
             }
 
+            m_samplesReady += numSamples;
             return numFrames;
         }
 
@@ -409,11 +411,13 @@ namespace Audio
                         size_t wraparoundSamples = numSamples - currentToEndSamples;
                         ::memcpy(destBuffers[0], &m_buffer[m_read], currentToEndSamples * s_bytesPerSample);
                         ::memcpy(&destBuffers[0][currentToEndSamples], m_buffer, wraparoundSamples * s_bytesPerSample);
-                        m_read = wraparoundSamples;
+                        m_read = wraparoundSamples % m_size;
                     }
                 }
             }
 
+            m_read %= m_size;
+            m_samplesReady -= (numFrames * numChannels);
             return numFrames;
         }
 
@@ -427,6 +431,7 @@ namespace Audio
             ::memset(m_buffer, 0xAA, m_size * s_bytesPerSample);
             m_write = 0;
             m_read = 0;
+            m_samplesReady = 0;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -459,14 +464,7 @@ namespace Audio
         size_t SamplesReady() const
         {
             // no lock!  should only be called inside api that has already locked the buffer.
-            if (m_read > m_write)
-            {   // read-head needs to wrap around to catch up to write-head
-                return (m_write + m_size - m_read);
-            }
-            else
-            {   // read-head is behind write-head and won't wrap around
-                return (m_write - m_read);
-            }
+            return m_samplesReady;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -482,6 +480,7 @@ namespace Audio
         size_t m_write = 0;             // write-head index into buffer
         size_t m_read = 0;              // read-head index into buffer
         size_t m_size = 0;              // total size of buffer in samples. bytes = (m_size * s_bytesPerSample)
+        size_t m_samplesReady = 0;      // number of samples currently stored and ready for consumption
         AZStd::mutex m_mutex;           // protects buffer access
     };
 

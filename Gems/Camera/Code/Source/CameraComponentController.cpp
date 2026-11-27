@@ -241,7 +241,7 @@ namespace Camera
     {
         AZStd::function<void(AZ::RPI::ViewPtr view)> onChange = [this](AZ::RPI::ViewPtr view)
         {
-            if (!m_updatingTransformFromEntity && !m_isLockedFn())
+            if (!m_updatingTransformFromEntity && (!m_isLockedFn || !m_isLockedFn()))
             {
                 AZ::TransformBus::Event(m_entityId, &AZ::TransformInterface::SetWorldTM, view->GetCameraTransform());
             }
@@ -338,8 +338,13 @@ namespace Camera
 
         if (m_renderToTexturePipeline)
         {
-            auto scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
-            scene->RemoveRenderPipeline(m_renderToTexturePipeline->GetId());
+            if (auto* rpiSystem = AZ::RPI::RPISystemInterface::Get())
+            {
+                if (auto scene = rpiSystem->GetSceneByName(AZ::Name("Main")))
+                {
+                    scene->RemoveRenderPipeline(m_renderToTexturePipeline->GetId());
+                }
+            }
             m_renderToTexturePipeline = nullptr;
         }
 
@@ -355,7 +360,16 @@ namespace Camera
 
     void CameraComponentController::CreateRenderPipelineForTexture()
     {
-        auto scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+        auto* rpiSystem = AZ::RPI::RPISystemInterface::Get();
+        if (!rpiSystem)
+        {
+            return;
+        }
+        auto scene = rpiSystem->GetSceneByName(AZ::Name("Main"));
+        if (!scene)
+        {
+            return;
+        }
 
         const AZStd::string pipelineName = "Camera_" + m_entityId.ToString() + "_Pipeline";
 
@@ -363,7 +377,7 @@ namespace Camera
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = m_config.m_pipelineTemplate;
-        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        pipelineDesc.m_renderSettings.m_multisampleState = rpiSystem->GetApplicationMultisampleState();
         pipelineDesc.m_allowModification = m_config.m_allowPipelineChanges;
         m_renderToTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForImage(pipelineDesc, m_config.m_renderTextureAsset);
 

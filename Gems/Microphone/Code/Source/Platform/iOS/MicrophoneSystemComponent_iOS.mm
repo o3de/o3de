@@ -213,19 +213,20 @@ public:
             auto targetBuffer = new AZ::s16[targetSize];
 
             numFrames = m_captureData->ConsumeData(reinterpret_cast<void**>(&sourceBuffer), numFrames, m_config.m_numChannels, false);
+            targetSize = GetDownsampleSize(numFrames, m_config.m_sampleRate, targetConfig.m_sampleRate);
 
-            if(numFrames > 0)
+            if(numFrames > 0 && targetSize > 0)
             {
                 Downsample(sourceBuffer, numFrames, m_config.m_sampleRate, targetBuffer, targetSize, targetConfig.m_sampleRate);
 
                 // swap target data to output
-                ::memcpy(*outputData, targetBuffer, numFrames * targetConfig.m_numChannels * (targetConfig.m_bitsPerSample >> 3));
+                ::memcpy(*outputData, targetBuffer, targetSize * targetConfig.m_numChannels * (targetConfig.m_bitsPerSample >> 3));
             }
 
             delete [] sourceBuffer;
             delete [] targetBuffer;
 
-            return numFrames;
+            return targetSize;
         }
         else
         {

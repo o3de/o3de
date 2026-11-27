@@ -114,8 +114,8 @@ namespace PhysX
                 defaultMaterialConfiguration.m_staticFriction, defaultMaterialConfiguration.m_dynamicFriction, defaultMaterialConfiguration.m_restitution),
             [](physx::PxMaterial* pxMaterial)
             {
-                pxMaterial->release();
                 pxMaterial->userData = nullptr;
+                pxMaterial->release();
             });
         AZ_Assert(m_pxMaterial, "Failed to create physx material");
         m_pxMaterial->userData = this;

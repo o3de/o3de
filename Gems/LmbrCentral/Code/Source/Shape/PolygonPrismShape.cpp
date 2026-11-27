@@ -163,15 +163,21 @@ namespace LmbrCentral
         : m_polygonPrism(other.m_polygonPrism)
         , m_intersectionDataCache(other.m_intersectionDataCache)
         , m_currentTransform(other.m_currentTransform)
+        , m_currentNonUniformScale(other.m_currentNonUniformScale)
         , m_entityId(other.m_entityId)
     {
     }
 
     PolygonPrismShape& PolygonPrismShape::operator=(const PolygonPrismShape& other)
     {
+        if (this == &other)
+        {
+            return *this;
+        }
         m_polygonPrism = other.m_polygonPrism;
         m_intersectionDataCache = other.m_intersectionDataCache;
         m_currentTransform = other.m_currentTransform;
+        m_currentNonUniformScale = other.m_currentNonUniformScale;
         m_entityId = other.m_entityId;
         return *this;
     }
@@ -507,7 +513,9 @@ namespace LmbrCentral
                 worldFromLocalWithUniformScale.GetInverse().TransformPoint(point) / polygonPrism.GetNonUniformScale();
 
             // ensure the point is not above or below the prism (in its local space)
-            if (localPoint.GetZ() < 0.0f || localPoint.GetZ() > polygonPrism.GetHeight())
+            const float minZ = AZ::GetMin(0.0f, polygonPrism.GetHeight());
+            const float maxZ = AZ::GetMax(0.0f, polygonPrism.GetHeight());
+            if (localPoint.GetZ() < minZ || localPoint.GetZ() > maxZ)
             {
                 return false;
             }
@@ -533,10 +541,11 @@ namespace LmbrCentral
                 {
                     const AZ::Vector3 highestVertex = segmentStart.GetY() > segmentEnd.GetY() ? segmentStart : segmentEnd;
 
-                    const float threshold = (highestVertex - point).Dot(AZ::Vector3::CreateAxisY());
-                    if (AZ::IsClose(segmentProportion, 0.0f, AZ::Constants::FloatEpsilon))
+                    const float threshold = (highestVertex - localPointFlattened).Dot(AZ::Vector3::CreateAxisY());
+                    if (AZ::IsClose(segmentProportion, 0.0f, AZ::Constants::FloatEpsilon) ||
+                        AZ::IsClose(segmentProportion, 1.0f, AZ::Constants::FloatEpsilon))
                     {
-                        // if at beginning of segment, only count intersection if segment is going up (y-axis)
+                        // if at endpoint of segment, only count intersection if the other vertex is above the ray (y-axis)
                         // (prevent counting segments twice when intersecting at vertex)
                         if (threshold > 0.0f)
                         {

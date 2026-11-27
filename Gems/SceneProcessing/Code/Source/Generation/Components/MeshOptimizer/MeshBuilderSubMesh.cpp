@@ -181,7 +181,7 @@ namespace AZ::MeshBuilder
         // iterate through all bones from the input bone list and find the matching bones
         for (size_t inputJointIndex : jointList)
         {
-            for (size_t jointIndex : jointList)
+            for (size_t jointIndex : m_jointList)
             {
                 if (jointIndex == inputJointIndex)
                 {

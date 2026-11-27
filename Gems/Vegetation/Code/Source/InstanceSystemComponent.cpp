@@ -248,6 +248,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::GarbageCollectUniqueDescriptors()
     {
+        AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
         //garbage collect unreferenced descriptors after all other references from all other systems are released
         for (auto descItr = m_uniqueDescriptorsToDelete.begin(); descItr != m_uniqueDescriptorsToDelete.end(); )
         {
@@ -578,7 +579,7 @@ namespace Vegetation
         }
 
         //offloading garbage collection to job to save time deallocating tasks on main thread
-        auto garbageCollectionJob = AZ::CreateJobFunction([]() mutable {}, true);
+        auto garbageCollectionJob = AZ::CreateJobFunction([removedTasksPtr]() mutable { removedTasksPtr.reset(); }, true);
         garbageCollectionJob->Start();
     }
 

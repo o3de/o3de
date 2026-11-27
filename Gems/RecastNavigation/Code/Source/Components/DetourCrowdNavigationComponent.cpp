@@ -70,6 +70,7 @@ namespace RecastNavigation
             return false;
         }
 
+        m_navMeshQuery = navMeshQuery;
         m_agentEntityToCrowdIndex.clear();
 
         // Choose parameter set based on mode
@@ -119,32 +120,40 @@ namespace RecastNavigation
 
     void DetourCrowdNavigationComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (!m_crowd || deltaTime <= 0.0f)
+        if (!m_crowd || !m_navMeshQuery || deltaTime <= 0.0f)
         {
             return;
         }
 
-        m_crowd->update(deltaTime, nullptr);
-
-        AZStd::vector<AZStd::pair<AZ::EntityId, AZ::u32>> trackedAgents;
-        trackedAgents.reserve(m_agentEntityToCrowdIndex.size());
-        for (const auto& [agentEntityId, crowdIndex] : m_agentEntityToCrowdIndex)
+        AZStd::vector<AZStd::pair<AZ::EntityId, AZStd::pair<AZ::Vector3, AZ::Vector3>>> agentUpdates;
         {
-            trackedAgents.emplace_back(agentEntityId, crowdIndex);
-        }
-
-        for (const auto& [agentEntityId, crowdIndex] : trackedAgents)
-        {
-            const dtCrowdAgent* crowdAgent = m_crowd->getAgent(static_cast<int>(crowdIndex));
-            if (!crowdAgent || !crowdAgent->active)
+            NavMeshQuery::LockGuard lock(*m_navMeshQuery);
+            if (!lock.GetNavMesh())
             {
-                continue;
+                return;
             }
 
-            const AZ::Vector3 worldPosition = RecastVector3::CreateFromFloatValuesWithoutAxisSwapping(crowdAgent->npos).AsVector3WithZup();
-            const AZ::Vector3 worldVelocity = RecastVector3::CreateFromFloatValuesWithoutAxisSwapping(crowdAgent->vel).AsVector3WithZup();
+            m_crowd->update(deltaTime, nullptr);
+
+            agentUpdates.reserve(m_agentEntityToCrowdIndex.size());
+            for (const auto& [agentEntityId, crowdIndex] : m_agentEntityToCrowdIndex)
+            {
+                const dtCrowdAgent* crowdAgent = m_crowd->getAgent(static_cast<int>(crowdIndex));
+                if (!crowdAgent || !crowdAgent->active)
+                {
+                    continue;
+                }
+
+                const AZ::Vector3 worldPosition = RecastVector3::CreateFromFloatValuesWithoutAxisSwapping(crowdAgent->npos).AsVector3WithZup();
+                const AZ::Vector3 worldVelocity = RecastVector3::CreateFromFloatValuesWithoutAxisSwapping(crowdAgent->vel).AsVector3WithZup();
+                agentUpdates.emplace_back(agentEntityId, AZStd::make_pair(worldPosition, worldVelocity));
+            }
+        }
+
+        for (const auto& [agentEntityId, posVel] : agentUpdates)
+        {
             DetourCrowdAgentNotificationBus::Event(
-                agentEntityId, &DetourCrowdAgentNotifications::OnAgentPositionUpdated, worldPosition, worldVelocity);
+                agentEntityId, &DetourCrowdAgentNotifications::OnAgentPositionUpdated, posVel.first, posVel.second);
         }
     }
 
@@ -156,7 +165,7 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string("Cannot add agent: invalid entity id."));
         }
 
-        if (!m_crowd)
+        if (!m_crowd || !m_navMeshQuery)
         {
             return AZ::Failure(AZStd::string("Cannot add agent: crowd is not initialized."));
         }
@@ -166,6 +175,8 @@ namespace RecastNavigation
             return AZ::Failure(
                 AZStd::string::format("Cannot add agent: entity '%s' is already registered.", agentEntityId.ToString().c_str()));
         }
+
+        NavMeshQuery::LockGuard lock(*m_navMeshQuery);
 
         const int maxAgents = m_crowd->getAgentCount();
         if (maxAgents <= 0)
@@ -234,6 +245,12 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string::format("Cannot remove agent: %s", crowdIndexOutcome.GetError().c_str()));
         }
 
+        if (!m_navMeshQuery)
+        {
+            return AZ::Failure(AZStd::string("Cannot remove agent: navigation mesh query is not available."));
+        }
+
+        NavMeshQuery::LockGuard lock(*m_navMeshQuery);
         const AZ::u32 crowdIndex = crowdIndexOutcome.GetValue();
         m_agentEntityToCrowdIndex.erase(agentEntityId);
         m_crowd->removeAgent(crowdIndex);
@@ -250,6 +267,18 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string::format("Cannot set move target: %s", crowdIndexOutcome.GetError().c_str()));
         }
 
+        // Get the navigation mesh query to find the target polygon reference
+        AZStd::shared_ptr<NavMeshQuery> navMeshQuery = m_navMeshQuery;
+        if (!navMeshQuery)
+        {
+            RecastNavigationMeshRequestBus::EventResult(navMeshQuery, m_navQueryEntityId, &RecastNavigationMeshRequests::GetNavigationObject);
+        }
+        if (!navMeshQuery)
+        {
+            return AZ::Failure(AZStd::string("Cannot set move target: navigation mesh query is not available."));
+        }
+
+        NavMeshQuery::LockGuard lock(*navMeshQuery);
         const int crowdIndex = static_cast<int>(crowdIndexOutcome.GetValue());
         const dtCrowdAgent* agent = m_crowd->getAgent(crowdIndex);
         if (!agent || !agent->active)
@@ -257,15 +286,6 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string::format("Cannot set move target: agent at crowd index %d is not active.", crowdIndex));
         }
 
-        // Get the navigation mesh query to find the target polygon reference
-        AZStd::shared_ptr<NavMeshQuery> navMeshQuery;
-        RecastNavigationMeshRequestBus::EventResult(navMeshQuery, m_navQueryEntityId, &RecastNavigationMeshRequests::GetNavigationObject);
-        if (!navMeshQuery)
-        {
-            return AZ::Failure(AZStd::string("Cannot set move target: navigation mesh query is not available."));
-        }
-
-        NavMeshQuery::LockGuard lock(*navMeshQuery);
         dtNavMeshQuery* query = lock.GetNavQuery();
         if (!query)
         {
@@ -305,6 +325,12 @@ namespace RecastNavigation
             return AZ::Failure(AZStd::string::format("Cannot reset move target: %s", crowdIndexOutcome.GetError().c_str()));
         }
 
+        if (!m_navMeshQuery)
+        {
+            return AZ::Failure(AZStd::string("Cannot reset move target: navigation mesh query is not available."));
+        }
+
+        NavMeshQuery::LockGuard lock(*m_navMeshQuery);
         const int crowdIndex = static_cast<int>(crowdIndexOutcome.GetValue());
         const dtCrowdAgent* agent = m_crowd->getAgent(crowdIndex);
         if (!agent || !agent->active)
@@ -412,6 +438,7 @@ namespace RecastNavigation
         DetourCrowdNavigationRequestBus::Handler::BusDisconnect();
         m_agentEntityToCrowdIndex.clear();
         m_crowd = nullptr;
+        m_navMeshQuery.reset();
         m_crowdInitialized = false;
     }
 } // namespace RecastNavigation

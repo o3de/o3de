@@ -70,5 +70,6 @@ namespace RecastNavigation
         AZStd::unordered_map<AZ::EntityId, AZ::u32> m_agentEntityToCrowdIndex;
 
         RecastPointer<dtCrowd> m_crowd = nullptr;
+        AZStd::shared_ptr<NavMeshQuery> m_navMeshQuery;
     };
 } // namespace RecastNavigation

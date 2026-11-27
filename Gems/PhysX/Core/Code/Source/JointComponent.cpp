@@ -283,7 +283,7 @@ namespace PhysX
         // The follower body has to be a RigidBody, otherwise it won't be moving anywhere
         if (!info.m_followerBody ||
             (info.m_followerBody->GetNativeType() != NativeTypeIdentifiers::RigidBody &&
-             info.m_leadBody->GetNativeType() != NativeTypeIdentifiers::ArticulationLink))
+             info.m_followerBody->GetNativeType() != NativeTypeIdentifiers::ArticulationLink))
         {
             info.m_followerBody = nullptr;
             const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in follower entity associated with joint. Please add a rigid body component to the entity.");

@@ -375,8 +375,9 @@ namespace PhysX
                 if (scenePtr->GetId() == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(handle))
                 {
                     m_sceneRemovedEvent.Signal(handle);
-                    m_sceneList[index].reset();
+                    AZStd::unique_ptr<AzPhysics::Scene> sceneToDelete = AZStd::move(m_sceneList[index]);
                     m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
+                    sceneToDelete.reset();
                 }
             }
         }
@@ -392,11 +393,14 @@ namespace PhysX
 
     void PhysXSystem::RemoveAllScenes()
     {
-        m_sceneList.clear();
+        AZStd::vector<AZStd::unique_ptr<AzPhysics::Scene>> scenesToDelete;
+        scenesToDelete.swap(m_sceneList);
 
         //clear the free slots queue
         AZStd::queue<AzPhysics::SceneIndex> empty;
         m_freeSceneSlots.swap(empty);
+
+        scenesToDelete.clear();
     }
 
     AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> PhysXSystem::FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId)
@@ -429,7 +433,7 @@ namespace PhysX
     void PhysXSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization /*= false*/)
     {
         if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(newConfig);
-            m_systemConfig != (*physXConfig))
+            physXConfig != nullptr && m_systemConfig != (*physXConfig))
         {
             m_systemConfig = (*physXConfig);
             m_configChangeEvent.Signal(physXConfig);

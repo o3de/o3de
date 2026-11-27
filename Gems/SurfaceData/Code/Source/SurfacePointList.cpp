@@ -61,6 +61,12 @@ namespace SurfaceData
         // Construct the list with the set of passed-in surface points but don't finalize it.
         // This is primarily a convenience for unit tests that want to test surface modifiers with specific inputs.
 
+        if (surfacePoints.empty())
+        {
+            StartListConstruction(AZStd::span<const AZ::Vector3>(), 0, {});
+            return;
+        }
+
         StartListConstruction(AZStd::span<const AZ::Vector3>(&(surfacePoints.begin()->m_position), 1), surfacePoints.size(), {});
 
         for (auto& point : surfacePoints)
@@ -158,7 +164,7 @@ namespace SurfaceData
         // If we've made it here, we're adding the point, not merging it.
 
         // Verify we aren't adding more points than expected.
-        AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] <= m_maxSurfacePointsPerInput, "Adding too many surface points.");
+        AZ_Assert(m_numSurfacePointsPerInput[inPositionIndex] < m_maxSurfacePointsPerInput, "Adding too many surface points.");
 
         // Expand our output AABB to include this point.
         m_surfacePointBounds.AddPoint(position);
@@ -226,16 +232,7 @@ namespace SurfaceData
                 {
                     if (m_surfaceWeightsList[m_sortedSurfacePointIndices[next]].HasAnyMatchingTags(desiredTags))
                     {
-                        m_sortedSurfacePointIndices[index] = AZStd::move(m_sortedSurfacePointIndices[next]);
-                        m_surfaceCreatorIdList[m_sortedSurfacePointIndices[index]] =
-                            AZStd::move(m_surfaceCreatorIdList[m_sortedSurfacePointIndices[next]]);
-                        m_surfacePositionList[m_sortedSurfacePointIndices[index]] =
-                            AZStd::move(m_surfacePositionList[m_sortedSurfacePointIndices[next]]);
-                        m_surfaceNormalList[m_sortedSurfacePointIndices[index]] =
-                            AZStd::move(m_surfaceNormalList[m_sortedSurfacePointIndices[next]]);
-                        m_surfaceWeightsList[m_sortedSurfacePointIndices[index]] =
-                            AZStd::move(m_surfaceWeightsList[m_sortedSurfacePointIndices[next]]);
-
+                        m_sortedSurfacePointIndices[index] = m_sortedSurfacePointIndices[next];
                         ++index;
                     }
                 }
@@ -264,7 +261,7 @@ namespace SurfaceData
     {
         AZ_Assert(!m_listIsBeingConstructed, "Trying to query a SurfacePointList that's still under construction.");
 
-        return m_surfacePositionList.empty();
+        return GetSize() == 0;
     }
 
     bool SurfacePointList::IsEmpty(size_t inputPositionIndex) const
