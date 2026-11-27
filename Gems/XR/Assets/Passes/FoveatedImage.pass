@@ -1,0 +1,45 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FoveatedImagePassTemplate",
+            "PassClass": "FoveatedImagePass",
+            "Slots": [
+                {
+                    "Name": "FoveatedImageOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Copy"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "FoveatedImage",
+                    "Lifetime": "Imported",
+                    "ImageDescriptor": {
+                        "BindFlags": [
+                            "ShadingRate",
+                            "ShaderReadWrite"
+                        ]
+                    },
+                    "SizeSource": {
+                      "Source": {
+                        "Pass": "Parent",
+                        "Attachment": "PipelineOutput"
+                      }
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                  "LocalSlot": "FoveatedImageOutput",
+                  "AttachmentRef": {
+                    "Pass": "This",
+                    "Attachment": "FoveatedImage"
+                  }
+                }
+            ]
+        }
+    }
+}

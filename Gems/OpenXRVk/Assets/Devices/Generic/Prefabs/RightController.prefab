@@ -1,0 +1,271 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "RightController",
+        "Components": {
+            "EditorDisabledCompositionComponent": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 34078033412513395
+            },
+            "EditorEntityIconComponent": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 14051435202281902661
+            },
+            "EditorEntitySortComponent": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 9025176256997049541,
+                "Child Entity Order": [
+                    "Entity_[548132110339]"
+                ]
+            },
+            "EditorInspectorComponent": {
+                "$type": "EditorInspectorComponent",
+                "Id": 173019820387906955
+            },
+            "EditorLockComponent": {
+                "$type": "EditorLockComponent",
+                "Id": 11458128771806052389
+            },
+            "EditorOnlyEntityComponent": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 874673196786636231
+            },
+            "EditorPendingCompositionComponent": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12769481896772108205
+            },
+            "EditorPrefabComponent": {
+                "$type": "EditorPrefabComponent",
+                "Id": 3083936774343637650
+            },
+            "EditorVisibilityComponent": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 9680360673113429721
+            },
+            "TransformComponent": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 11869452665309692181,
+                "Parent Entity": ""
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[548132110339]": {
+            "Id": "Entity_[548132110339]",
+            "Name": "RightController",
+            "Components": {
+                "EditorActorComponent": {
+                    "$type": "EditorActorComponent",
+                    "Id": 1151242312296902806,
+                    "ActorAsset": {
+                        "assetId": {
+                            "guid": "{4311EABE-3E23-55A1-A7B1-F5D850B5FAAE}",
+                            "subId": 4293839047
+                        },
+                        "loadBehavior": "QueueLoad",
+                        "assetHint": "assets/meta quest touch pro/models/questpro_controllers_right.actor"
+                    },
+                    "AttachmentTarget": ""
+                },
+                "EditorAnimGraphComponent": {
+                    "$type": "EditorAnimGraphComponent",
+                    "Id": 9228021136834747917,
+                    "AnimGraphAsset": {
+                        "assetId": {
+                            "guid": "{A9520B93-DD92-5190-80D7-E0766596BDAF}"
+                        },
+                        "assetHint": "devices/generic/animations/rightcontrolleranimgraph.animgraph"
+                    },
+                    "MotionSetAsset": {
+                        "assetId": {
+                            "guid": "{16981D70-E0B0-56B7-9C53-44FEA074CC30}"
+                        },
+                        "assetHint": "devices/generic/animations/rightcontrollermotionset.motionset"
+                    },
+                    "ActiveMotionSetName": "RightControllerMotion",
+                    "ParameterDefaults": {
+                        "Parameters": [
+                            {
+                                "$type": "AzFramework::ScriptPropertyNumber",
+                                "id": 888802634,
+                                "name": "Grip"
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyBoolean",
+                                "id": 443223901,
+                                "name": "Trigger"
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyBoolean",
+                                "id": 4089946065,
+                                "name": "Button_A"
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyBoolean",
+                                "id": 1791938155,
+                                "name": "Button_B"
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyBoolean",
+                                "id": 1578484111,
+                                "name": "Button_Oculus"
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyNumber",
+                                "id": 3235505549,
+                                "name": "ForwardBack",
+                                "value": 0.5
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyNumber",
+                                "id": 171951434,
+                                "name": "RightLeft",
+                                "value": 0.5
+                            },
+                            {
+                                "$type": "AzFramework::ScriptPropertyNumber",
+                                "id": 1000405998,
+                                "name": "VerticalHorizontal",
+                                "value": 0.5
+                            }
+                        ]
+                    }
+                },
+                "EditorDisabledCompositionComponent": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15970460307388455415
+                },
+                "EditorEntityIconComponent": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 282401860055992202
+                },
+                "EditorEntitySortComponent": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 6244102222729912879,
+                    "Child Entity Order": [
+                        "Instance_[2350972108222]/ContainerEntity"
+                    ]
+                },
+                "EditorInspectorComponent": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 1047808035942075827
+                },
+                "EditorLockComponent": {
+                    "$type": "EditorLockComponent",
+                    "Id": 6100418284897881271
+                },
+                "EditorMaterialComponent": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 4816716514059182530,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": {
+                                "{}": {
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{C7DE388F-A267-54EE-8206-9E4798AEE907}"
+                                        },
+                                        "assetHint": "assets/meta quest touch pro/materials/rightcontroller.azmaterial"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "EditorOnlyEntityComponent": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 18248624067260463296
+                },
+                "EditorPendingCompositionComponent": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 11197243245082505255
+                },
+                "EditorVisibilityComponent": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 609030806181826849
+                },
+                "TransformComponent": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 6366583670024026618,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "XRControllerAnimationsComponent": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 15144022874051115297,
+                    "m_template": {
+                        "$type": "XRControllerAnimationsComponent",
+                        "Controller Items config": [
+                            {
+                                "controlItemType": 1,
+                                "parameterControlLabel": "Grip",
+                                "controlActionLabel": "right_grip"
+                            },
+                            {
+                                "controlItemType": 1,
+                                "parameterControlLabel": "Trigger",
+                                "controlActionLabel": "right_trigger"
+                            },
+                            {
+                                "parameterControlLabel": "Button_A",
+                                "controlActionLabel": "right_button_a"
+                            },
+                            {
+                                "parameterControlLabel": "Button_B",
+                                "controlActionLabel": "right_button_b"
+                            },
+                            {
+                                "parameterControlLabel": "Button_Oculus",
+                                "controlActionLabel": "right_button_menu"
+                            },
+                            {
+                                "controlItemType": 2,
+                                "parameterControlLabel": "RightLeft",
+                                "controlActionLabel": "right_stick_x"
+                            },
+                            {
+                                "controlItemType": 2,
+                                "parameterControlLabel": "ForwardBack",
+                                "controlActionLabel": "right_stick_y"
+                            }
+                        ]
+                    }
+                },
+                "XRControllerComponent": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 5841023491515403141,
+                    "m_template": {
+                        "$type": "XRControllerComponent",
+                        "Label of Pose Label": "right_aim_pose"
+                    }
+                }
+            }
+        }
+    },
+    "Instances": {
+        "Instance_[2350972108222]": {
+            "Source": "OpenXRVk/Prefabs/RayInteractor.prefab",
+            "Patches": [
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/TransformComponent/Parent Entity",
+                    "value": "../Entity_[548132110339]"
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/TransformComponent/Transform Data/Translate/0",
+                    "value": -0.005869269371032715
+                },
+                {
+                    "op": "replace",
+                    "path": "/ContainerEntity/Components/TransformComponent/Transform Data/Translate/1",
+                    "value": 0.032036617398262024
+                },
+                {
+                    "op": "replace",
+                    "path": "/Entities/Entity_[2196353285566]/Components/OpenXRVk::XRRayInteractorComponent/m_template/Label of the grip button",
+                    "value": "right_grip"
+                }
+            ]
+        }
+    }
+}

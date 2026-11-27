@@ -1,0 +1,171 @@
+<ObjectStream version="3">
+	<Class name="OpenXRInteractionProfilesAsset" version="1" type="{02555DCD-E363-42FB-935C-4E67CC3A1699}">
+		<Class name="AssetData" field="BaseClass1" version="1" type="{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}"/>
+		<Class name="AZStd::vector&lt;OpenXRInteractionProfileDescriptor, allocator&gt;" field="InteractionProfiles" type="{3C0349C5-3973-557D-81A6-D8DED0B8F61B}">
+			<Class name="OpenXRInteractionProfileDescriptor" field="element" version="1" type="{BC73B4BC-4F15-4B1E-AEA9-B133FBB5AD16}">
+				<Class name="AZStd::string" field="UniqueName" value="Khronos Simple" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="/interaction_profiles/khr/simple_controller" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;OpenXRInteractionUserPathDescriptor, allocator&gt;" field="UserPathDescriptors" type="{9CEF8D8D-9393-529F-A3C6-C67422B80D96}">
+					<Class name="OpenXRInteractionUserPathDescriptor" field="element" version="1" type="{F3913A15-41FC-4EC9-A381-296C0AB6D6C6}">
+						<Class name="AZStd::string" field="Name" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/user/hand/left" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="ComponentPaths" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}"/>
+					</Class>
+					<Class name="OpenXRInteractionUserPathDescriptor" field="element" version="1" type="{F3913A15-41FC-4EC9-A381-296C0AB6D6C6}">
+						<Class name="AZStd::string" field="Name" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/user/hand/right" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="ComponentPaths" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}"/>
+					</Class>
+				</Class>
+				<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="CommonComponentPathDescriptors" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}">
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Select Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/select/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Menu Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/menu/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Grip Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/grip/pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Vibration" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/aim/pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Output Vibration" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/output/haptic" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Vibration" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="OpenXRInteractionProfileDescriptor" field="element" version="1" type="{BC73B4BC-4F15-4B1E-AEA9-B133FBB5AD16}">
+				<Class name="AZStd::string" field="UniqueName" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="/interaction_profiles/oculus/touch_controller" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;OpenXRInteractionUserPathDescriptor, allocator&gt;" field="UserPathDescriptors" type="{9CEF8D8D-9393-529F-A3C6-C67422B80D96}">
+					<Class name="OpenXRInteractionUserPathDescriptor" field="element" version="1" type="{F3913A15-41FC-4EC9-A381-296C0AB6D6C6}">
+						<Class name="AZStd::string" field="Name" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/user/hand/left" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="ComponentPaths" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}">
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="X Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/x/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="X Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/x/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="Y Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/y/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="Y Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/y/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="Menu Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/menu/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRInteractionUserPathDescriptor" field="element" version="1" type="{F3913A15-41FC-4EC9-A381-296C0AB6D6C6}">
+						<Class name="AZStd::string" field="Name" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/user/hand/right" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="ComponentPaths" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}">
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="A Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/a/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="A Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/a/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="B Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/b/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+								<Class name="AZStd::string" field="Name" value="B Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="Path" value="/input/b/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+				<Class name="AZStd::vector&lt;OpenXRInteractionComponentPathDescriptor, allocator&gt;" field="CommonComponentPathDescriptors" type="{3B1B11C6-132C-509E-A79E-B04AB829CFA7}">
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Squeeze" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/squeeze/value" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Float" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Trigger Value" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/trigger/value" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Float" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Trigger Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/trigger/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/thumbstick/x" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Float" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Thumbstick Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/thumbstick/y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Float" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Thumbstick Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/thumbstick/click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Thumbstick Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/thumbstick/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Thumbrest Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/thumbrest/touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Boolean" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Grip Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/grip/pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/input/aim/pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+					<Class name="OpenXRInteractionComponentPathDescriptor" field="element" version="1" type="{E2038854-929D-484F-A34E-1C7390EE2CCB}">
+						<Class name="AZStd::string" field="Name" value="Vibrate" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Path" value="/output/haptic" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="ActionType" value="Vibration" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

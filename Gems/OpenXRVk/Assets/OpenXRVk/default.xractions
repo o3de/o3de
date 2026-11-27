@@ -1,0 +1,279 @@
+<ObjectStream version="3">
+	<Class name="OpenXRActionSetsAsset" version="1" type="{C2DEE370-6151-4701-AEA5-AEA3CA247CFF}">
+		<Class name="AssetData" field="BaseClass1" version="1" type="{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}"/>
+		<Class name="Asset&lt;OpenXRInteractionProfilesAsset&gt;" field="InteractionProfilesAsset" value="id={8DAACF0D-7509-5EF6-83E8-935550C77941}:0,type={02555DCD-E363-42FB-935C-4E67CC3A1699},hint={openxrvk/system.xrprofiles},loadBehavior=1" version="3" type="{5BB03E72-3A4C-56A3-82FE-DB0E915DC985}"/>
+		<Class name="AZStd::vector&lt;OpenXRActionSetDescriptor, allocator&gt;" field="ActionSetDescriptors" type="{77143880-BF52-5468-B42A-0485DA0C32F7}">
+			<Class name="OpenXRActionSetDescriptor" field="element" version="1" type="{3A08BC1F-656F-441F-89C3-829F95B9B329}">
+				<Class name="AZStd::string" field="Name" value="main_action_set" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="LocalizedName" value="Main Action Set" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="unsigned int" field="Priority" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="AZStd::string" field="Comment" value="A simple action set." type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;OpenXRActionDescriptor, allocator&gt;" field="ActionDescriptors" type="{24F3EBED-4499-5592-9413-F5C010362529}">
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="move_frontways" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Move Frontways" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="move_sideways" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Move Sideways" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="shift_yaw_rotate" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Shift Yaw Rotate" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="move_up" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Move Up" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Y Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="B Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="move_down" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Move Down" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="X Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="A Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_aim_pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_aim_pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Right Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Aim Pose" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Squeeze" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Right Grip" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Squeeze" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_trigger" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Trigger" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Trigger Value" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_trigger" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Right Trigger" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Trigger Value" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_button_a" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Button A" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="A Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_button_b" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Button B" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="B Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_button_menu" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="right_button_menu" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbrest Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_stick_x" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Horizontal Stick" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="right_stick_y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Vertical Stick" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(R)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_button_x" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Button X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="X Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_button_y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Button Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Y Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_button_menu" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Button Menu" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Menu Click" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_stick_x" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick X" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+					<Class name="OpenXRActionDescriptor" field="element" version="1" type="{90BBF6F6-C7D6-4F64-B784-CE03F86DC36B}">
+						<Class name="AZStd::string" field="Name" value="left_stick_y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="LocalizedName" value="Left Thumbstick Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="Comment" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::vector&lt;OpenXRActionPathDescriptor, allocator&gt;" field="ActionPathDescriptors" type="{6A1AA49C-7A58-5B23-8B25-30B162E65135}">
+							<Class name="OpenXRActionPathDescriptor" field="element" version="1" type="{F25D6382-C9E0-414B-A542-1758F5477D03}">
+								<Class name="AZStd::string" field="InteractionProfile" value="Oculus Touch" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="UserPath" value="(L)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								<Class name="AZStd::string" field="ComponentPath" value="Thumbstick Y" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+
