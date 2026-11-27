@@ -12,4 +12,6 @@ set(FILES
     FindPIX.cmake
     FindVkValidation.cmake
     FindWwise.cmake
+    PinBundledQtPackages.cmake
+    tests/PinBundledQtPackagesTest.cmake
 )
