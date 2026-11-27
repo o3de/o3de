@@ -70,6 +70,7 @@
         "Gems/RecastNavigation",
         "Gems/RemoteTools",
         "Gems/SaveData",
+        "Gems/SceneColorView",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
         "Gems/ScriptAutomation",
