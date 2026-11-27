@@ -281,25 +281,44 @@ namespace AZStd
         // must be variadic for now treat it as convertable
         inline reference emplace_back(Args&& ... args)
         {
-            if (m_last == m_end)
+            if (m_last != m_end)
             {
-                size_t newSize = (m_last - m_start) + 1;
-                size_t capacity = m_end - m_start;
-                // grow by 50%, if we can.
-                capacity += capacity / 2;
-                if (capacity < newSize)
-                {
-                    capacity = newSize;
-                }
-                reserve(capacity);
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+                orphan_range(m_last, m_last);
+#endif
+                Internal::construct<pointer>::single(m_last, AZStd::forward<Args>(args) ...);
+                reference emplacedElement = *m_last;
+                ++m_last;
+                return emplacedElement;
+            }
+
+            size_type oldSize = m_last - m_start;
+            size_type newSize = oldSize + 1;
+            size_type capacity = m_end - m_start;
+            // grow by 50%, if we can.
+            capacity += capacity / 2;
+            if (capacity < newSize)
+            {
+                capacity = newSize;
+            }
+
+            size_type byteSize = sizeof(node_type) * capacity;
+            pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
+            Internal::construct<pointer>::single(newStart + oldSize, AZStd::forward<Args>(args) ...);
+            AZStd::uninitialized_move(m_start, m_last, newStart);
+
+            if (m_start)
+            {
+                Internal::destroy<pointer>::range(m_start, m_last);
+                deallocate_memory(0);
             }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-            orphan_range(m_last, m_last);
-#endif //
-            Internal::construct<pointer>::single(m_last, AZStd::forward<Args>(args) ...);
-            reference emplacedElement = *m_last;
-            ++m_last;
-            return emplacedElement;
+            orphan_all();
+#endif
+            m_start = newStart;
+            m_last = newStart + newSize;
+            m_end = newStart + capacity;
+            return *(m_last - 1);
         }
 
         template<Internal::container_compatible_range<T> R>
@@ -684,11 +703,10 @@ namespace AZStd
                 size_type byteSize = capacity * sizeof(node_type);
 
                 pointer newStart = reinterpret_cast<pointer>(static_cast<void*>(m_allocator.allocate(byteSize, alignof(node_type))));
+                // Fill new elements first before moving from [m_start, m_last) in case value aliases an element in this vector.
+                AZStd::uninitialized_fill_n(newStart + offset, numElements, value);
                 // Copy the elements before insert position.
                 pointer newLast = AZStd::uninitialized_move(m_start, insertPosPtr, newStart);
-                // add new data
-                AZStd::uninitialized_fill_n(newLast, numElements, value);
-
                 newLast += numElements;
                 // Copy the elements after the insert position.
                 newLast = AZStd::uninitialized_move(insertPosPtr, m_last, newLast);

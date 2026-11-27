@@ -40,7 +40,7 @@ namespace AZ::StringFunc::Internal
         }
         if constexpr (AZStd::is_same_v<StringType, AZStd::string_view>)
         {
-            in = in.substr(0, num);
+            in = in.substr(num);
         }
         else
         {
@@ -64,11 +64,11 @@ namespace AZ::StringFunc::Internal
         }
         if constexpr (AZStd::is_same_v<StringType, AZStd::string_view>)
         {
-            in = in.substr(len - num);
+            in = in.substr(0, len - num);
         }
         else
         {
-            in.erase(len - num, len);
+            in.erase(len - num, num);
         }
         return in;
     }
@@ -344,8 +344,8 @@ namespace AZ::StringFunc::Internal
         {
             for (const char stripCharacter : stripCharacters)
             {
-                const char lower = static_cast<char>(tolower(stripCharacter));
-                const char upper = static_cast<char>(toupper(stripCharacter));
+                const char lower = static_cast<char>(tolower(static_cast<unsigned char>(stripCharacter)));
+                const char upper = static_cast<char>(toupper(static_cast<unsigned char>(stripCharacter)));
                 if (lower != upper)
                 {
                     combinedStripCharacters.push_back(lower);
@@ -371,7 +371,7 @@ namespace AZ::StringFunc::Internal
         }
         else
         {
-            if (bStripBeginning)
+            if (bStripBeginning && !inout.empty())
             {
                 //strip beginning
                 if ((pos = inout.find_first_not_of(stripCharactersSet)) != StringType::npos)
@@ -384,17 +384,18 @@ namespace AZ::StringFunc::Internal
                 }
                 else
                 {
+                    inout = {};
                     bSomethingWasStripped = true;
-                    StringFunc::Internal::LChop(inout, 1);
+                    return true;
                 }
             }
 
-            if (bStripEnding)
+            if (bStripEnding && !inout.empty())
             {
                 //strip ending
                 if ((pos = inout.find_last_not_of(stripCharactersSet)) != StringType::npos)
                 {
-                    if (pos != inout.length())
+                    if (pos != inout.length() - 1)
                     {
                         bSomethingWasStripped = true;
                         StringFunc::Internal::LKeep(inout, pos, true);
@@ -402,8 +403,9 @@ namespace AZ::StringFunc::Internal
                 }
                 else
                 {
+                    inout = {};
                     bSomethingWasStripped = true;
-                    StringFunc::Internal::RChop(inout, 1);
+                    return true;
                 }
             }
         }
@@ -523,14 +525,14 @@ namespace AZ::StringFunc
         }
 
         size_t inLen = in.size();
-        if (inLen < pos)
+        if (inLen <= pos)
         {
             return AZStd::string::npos;
         }
 
         if (!bCaseSensitive)
         {
-            c = (char)tolower(c);
+            c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
         }
 
         if (bReverse)
@@ -538,18 +540,11 @@ namespace AZ::StringFunc
             pos = inLen - pos - 1;
         }
 
-        char character;
-
-        do
+        for (;;)
         {
-            if (!bCaseSensitive)
-            {
-                character = (char)tolower(in[pos]);
-            }
-            else
-            {
-                character = in[pos];
-            }
+            char character = !bCaseSensitive
+                ? static_cast<char>(tolower(static_cast<unsigned char>(in[pos])))
+                : in[pos];
 
             if (character == c)
             {
@@ -558,13 +553,21 @@ namespace AZ::StringFunc
 
             if (bReverse)
             {
-                pos = pos > 0 ? pos-1 : pos;
+                if (pos == 0)
+                {
+                    break;
+                }
+                --pos;
             }
             else
             {
-                pos++;
+                ++pos;
+                if (pos >= inLen)
+                {
+                    break;
+                }
             }
-        } while (bReverse ? pos : character != '\0');
+        }
 
         return AZStd::string::npos;
     }
@@ -590,7 +593,7 @@ namespace AZ::StringFunc
             offset = 0;
         }
 
-        if (offset + slen > inlen)
+        if (slen > inlen || offset > inlen - slen)
         {
             return AZStd::string::npos;
         }
@@ -633,7 +636,7 @@ namespace AZ::StringFunc
             {
                 pCur++;
             }
-        } while (bReverse ? pCur >= in.data() : pCur - in.data() <= static_cast<ptrdiff_t>(inlen));
+        } while (bReverse ? pCur >= in.data() : pCur - in.data() <= static_cast<ptrdiff_t>(inlen - slen));
 
         return AZStd::string::npos;
     }
@@ -2376,23 +2379,23 @@ namespace AZ::StringFunc
                     break;
 
                 case '\b':
-                    inout.replace(i, i + 1, "\\b");
+                    inout.replace(i, 1, "\\b");
                     break;
 
                 case '\f':
-                    inout.replace(i, i + 1, "\\f");
+                    inout.replace(i, 1, "\\f");
                     break;
 
                 case '\n':
-                    inout.replace(i, i + 1, "\\n");
+                    inout.replace(i, 1, "\\n");
                     break;
 
                 case '\r':
-                    inout.replace(i, i + 1, "\\r");
+                    inout.replace(i, 1, "\\r");
                     break;
 
                 case '\t':
-                    inout.replace(i, i + 1, "\\t");
+                    inout.replace(i, 1, "\\t");
                     break;
 
                 default:
@@ -2403,10 +2406,10 @@ namespace AZ::StringFunc
                     if (character >= '\x0000' && character <= '\x001f')
                     {
                         // jumping "\uXXXX" characters
-                        jumpChar = 6;
+                        jumpChar = 5;
 
-                        AZStd::string hexStr = AZStd::string::format("\\u%04x", static_cast<int>(character));
-                        inout.replace(i, i + 1, hexStr);
+                        AZStd::string hexStr = AZStd::string::format("\\u%04x", static_cast<int>(static_cast<unsigned char>(character)));
+                        inout.replace(i, 1, hexStr);
                     }
                     else
                     {
@@ -2455,7 +2458,7 @@ namespace AZ::StringFunc
 
         bool IsValidEncodedChar(const char encodedChar)
         {
-            return c_inverseBase64Table[static_cast<size_t>(encodedChar)] != 0xff;
+            return c_inverseBase64Table[static_cast<unsigned char>(encodedChar)] != 0xff;
         }
 
         AZStd::string Encode(const AZ::u8* in, const size_t size)
@@ -2532,7 +2535,7 @@ namespace AZ::StringFunc
                         return false;
                     }
 
-                    result.push_back((c_inverseBase64Table[static_cast<size_t>(decodeBuf[0])] << 2) | ((c_inverseBase64Table[static_cast<size_t>(decodeBuf[1])] & 0x30) >> 4));
+                    result.push_back((c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[0])] << 2) | ((c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[1])] & 0x30) >> 4));
                 }
 
                 {
@@ -2548,7 +2551,7 @@ namespace AZ::StringFunc
                         return false;
                     }
 
-                    result.push_back(((c_inverseBase64Table[static_cast<size_t>(decodeBuf[1])] & 0x0f) << 4) | ((c_inverseBase64Table[static_cast<size_t>(decodeBuf[2])] & 0x3c) >> 2));
+                    result.push_back(((c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[1])] & 0x0f) << 4) | ((c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[2])] & 0x3c) >> 2));
                 }
 
                 {
@@ -2564,7 +2567,7 @@ namespace AZ::StringFunc
                         return false;
                     }
 
-                    result.push_back(((c_inverseBase64Table[static_cast<size_t>(decodeBuf[2])] & 0x03) << 6) | (c_inverseBase64Table[static_cast<size_t>(decodeBuf[3])] & 0x3f));
+                    result.push_back(((c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[2])] & 0x03) << 6) | (c_inverseBase64Table[static_cast<unsigned char>(decodeBuf[3])] & 0x3f));
                 }
             }
 

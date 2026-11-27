@@ -615,7 +615,16 @@ namespace AZStd
 
         void push_back(const_reference value)
         {
-            emplace_back(value);
+            const_pointer valuePtr = AZStd::addressof(value);
+            if (valuePtr >= data() && valuePtr < data() + size())
+            {
+                value_type copy(value);
+                emplace_back(AZStd::move(copy));
+            }
+            else
+            {
+                emplace_back(value);
+            }
         }
 
         void assign(size_type numElements, const_reference value)
@@ -667,16 +676,33 @@ namespace AZStd
             }
 
             // We need to move data with care, it is overlapping.
+            if constexpr (is_move_constructible_v<value_type> && is_move_assignable_v<value_type>)
+            {
+                value_type temp(AZStd::forward<Args>(args)...);
 
-            // first move the last element into the uninitialized position as that will not overlap.
-            pointer nonOverlap = dataEnd - 1;
-            AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+                // first move the last element into the uninitialized position as that will not overlap.
+                pointer nonOverlap = dataEnd - 1;
+                AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
 
-            // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
-            // to move the elments to the right by 1
-            AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
-            // add new elements
-            AZStd::construct_at(insertPosPtr, AZStd::forward<Args>(args)...);
+                // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
+                // to move the elments to the right by 1
+                AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
+                // assign new element
+                *insertPosPtr = AZStd::move(temp);
+            }
+            else
+            {
+                // first move the last element into the uninitialized position as that will not overlap.
+                pointer nonOverlap = dataEnd - 1;
+                AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+
+                // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
+                // to move the elments to the right by 1
+                AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
+                // destroy the moved-from element and construct in-place
+                AZStd::destroy_at(insertPosPtr);
+                AZStd::construct_at(insertPosPtr, AZStd::forward<Args>(args)...);
+            }
             resize_no_construct(size() + 1);
             return iterator(insertPosPtr);
         }
@@ -862,12 +888,12 @@ namespace AZStd
             if constexpr (forward_iterator<Iterator>)
             {
                 size_type numElements = AZStd::ranges::distance(first, last);
+                const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
                 if (numElements == 0)
                 {
-                    return begin();
+                    return AZStd::ranges::next(begin(), offset);
                 }
 
-                const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
                 pointer insertPosPtr = data() + offset;
 
                 AZSTD_CONTAINER_ASSERT(Capacity >= size() + numElements, "AZStd::fixed_vector::insert_iter - capacity is reached!");
@@ -887,10 +913,10 @@ namespace AZStd
                     // so placement new should not be used for them
                     insertPosPtr = AZStd::copy(first, lastToAssign, insertPosPtr);
                     // Add new elements to uninitialized elements.
-                    iterator newDataEnd = AZStd::uninitialized_copy(lastToAssign, last, insertPosPtr);
+                    AZStd::uninitialized_copy(lastToAssign, last, insertPosPtr);
 
                     // Update the fixed storage size
-                    resize_no_construct(AZStd::ranges::distance(dataStart, newDataEnd));
+                    resize_no_construct(AZStd::ranges::distance(dataStart, dataEnd) + numElements);
                 }
                 else
                 {
@@ -904,7 +930,7 @@ namespace AZStd
                     AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
 
                     // add new elements
-                    AZStd::move(first, last, insertPosPtr);
+                    AZStd::copy(first, last, insertPosPtr);
 
                     resize_no_construct(AZStd::ranges::distance(dataStart, newLast));
                 }

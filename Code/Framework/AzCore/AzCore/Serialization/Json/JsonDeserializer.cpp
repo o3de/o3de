@@ -139,9 +139,10 @@ namespace AZ
             const SerializeContext::ClassData* resolvedClassData = context.GetSerializeContext()->FindClassData(resolvedTypeId);
             if (resolvedClassData)
             {
-                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, true, useCustom, context);
+                void* allocatedInstance = *objectPtr;
+                status = JsonDeserializer::Load(allocatedInstance, resolvedTypeId, value, true, useCustom, context);
 
-                *objectPtr = resolvedClassData->m_azRtti->Cast(*objectPtr, typeId);
+                *objectPtr = resolvedClassData->m_azRtti->Cast(allocatedInstance, typeId);
 
                 if (isNull && (status.GetProcessing() == Processing::Halted || status.GetProcessing() == Processing::Altered))
                 {
@@ -149,7 +150,7 @@ namespace AZ
                     // If loading fails, that steps has to be undone to adhere to the no-side effects rule.
                     AZ_Assert(resolvedClassData->m_factory,
                         "Expected class data to have a factory as it was previously used in the Json Deserializer to create a new instance.");
-                    resolvedClassData->m_factory->Destroy(*objectPtr);
+                    resolvedClassData->m_factory->Destroy(allocatedInstance);
                     *objectPtr = nullptr;
                 }
                 return status;
@@ -567,7 +568,8 @@ namespace AZ
 
                 if (actualClassData->m_factory)
                 {
-                    actualClassData->m_factory->Destroy(*object);
+                    void* actualPtr = rtti.Cast(*object, actualClassId);
+                    actualClassData->m_factory->Destroy(actualPtr);
                     *object = nullptr;
                 }
                 else
@@ -647,7 +649,8 @@ namespace AZ
 
                         if (actualClassData->m_factory)
                         {
-                            actualClassData->m_factory->Destroy(*object);
+                            void* actualPtr = rtti.Cast(*object, actualClassId);
+                            actualClassData->m_factory->Destroy(actualPtr);
                             *object = nullptr;
                         }
                         else

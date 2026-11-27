@@ -298,7 +298,7 @@ namespace AZ::IO
         }
 
         m_redirectCallback = {};
-        if (m_pipeData != 1)
+        if (m_pipeData != -1)
         {
             PosixInternal::Close(static_cast<int>(m_pipeData));
             m_pipeData = -1;

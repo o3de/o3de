@@ -107,9 +107,12 @@ namespace AZ::Data
         else if (loadParams.m_dependencyRules == AssetDependencyLoadRules::LoadAll)
         {
             AssetCatalogRequestBus::BroadcastResult(getDependenciesResult, &AssetCatalogRequestBus::Events::GetAllProductDependencies, rootAssetId);
-            for (const auto& thisAsset : getDependenciesResult.GetValue())
+            if (getDependenciesResult.IsSuccess())
             {
-                preloadDependencies[rootAssetId].insert(thisAsset.m_assetId);
+                for (const auto& thisAsset : getDependenciesResult.GetValue())
+                {
+                    preloadDependencies[rootAssetId].insert(thisAsset.m_assetId);
+                }
             }
         }
         // Do as much validation of dependencies as we can before the AddWaitingAssets and GetAsset calls for dependencies below

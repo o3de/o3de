@@ -135,8 +135,9 @@ namespace AZStd
             }
             void destroy() override // nothrow
             {
+                A a2(a_);
                 this->~this_type();
-                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
+                a2.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
             }
             void* get_deleter(Internal::sp_typeinfo const&) override
             {
@@ -183,8 +184,9 @@ namespace AZStd
 
             void destroy() override // nothrow
             {
+                A a2(a_);
                 this->~this_type();
-                a_.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
+                a2.deallocate(this, sizeof(this_type), AZStd::alignment_of_v<this_type>);
             }
 
             void* get_deleter(Internal::sp_typeinfo const& ti) override
@@ -511,6 +513,7 @@ namespace AZStd
             if (pi_ == nullptr || !pi_->add_ref_lock())
             {
                 AZ_Assert(pi_ != nullptr, "Bad weak pointer");
+                pi_ = nullptr;
             }
         }
 

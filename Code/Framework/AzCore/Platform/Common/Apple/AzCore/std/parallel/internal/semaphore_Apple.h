@@ -27,7 +27,8 @@ namespace AZStd
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
 
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, maxSemCount);
+        int availSemCount = maxSemCount - AZStd::min(initSemCount, maxSemCount);
+        result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, availSemCount);
         AZ_Assert(result == 0, "semaphore_create error for max count semaphore %s\n", strerror(errno));
     }
 
@@ -40,7 +41,8 @@ namespace AZStd
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
 
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, maxSemCount);
+        int availSemCount = maxSemCount - AZStd::min(initSemCount, maxSemCount);
+        result = semaphore_create(mach_task_self(), &m_maxCountSemaphore, SYNC_POLICY_FIFO, availSemCount);
         AZ_Assert(result == 0, "semaphore_create error for max count semaphore %s\n", strerror(errno));
     }
 
@@ -56,12 +58,16 @@ namespace AZStd
 
     inline void semaphore::acquire()
     {
-        int result = semaphore_signal(m_maxCountSemaphore);
+        int result = 0;
+        while ((result = semaphore_wait(m_semaphore)) == KERN_ABORTED)
+        {
+            continue;
+        }
         (void)result;
-        AZ_Assert(result == 0, "semaphore_wait error for max count semaphore: %s\n", strerror(errno));
+        AZ_Assert(result == KERN_SUCCESS, "semaphore_wait error %d\n", result);
 
-        result = semaphore_wait(m_semaphore);
-        AZ_Assert(result == 0, "semaphore_wait error %s\n", strerror(errno));
+        result = semaphore_signal(m_maxCountSemaphore);
+        AZ_Assert(result == KERN_SUCCESS, "semaphore_signal error for max count semaphore: %d\n", result);
     }
 
     template <class Rep, class Period>
@@ -76,7 +82,7 @@ namespace AZStd
         mts.tv_nsec = static_cast<clock_res_t>(chrono::duration_cast<chrono::nanoseconds>(remainder).count());
 
         int result = 0;
-        while ((result = semaphore_timedwait(m_semaphore, mts)) == -1 && errno == EINTR)
+        while ((result = semaphore_timedwait(m_semaphore, mts)) == KERN_ABORTED)
         {
             continue; /* Restart if interrupted by handler */
         }
@@ -85,8 +91,15 @@ namespace AZStd
         // if "Some thread-oriented operation (semaphore_wait) timed out"
         // http://opensource.apple.com//source/xnu/xnu-2422.1.72/osfmk/kern/sync_sema.c
         // http://opensource.apple.com/source/xnu/xnu-2422.1.72/osfmk/mach/kern_return.h
-        AZ_Assert(result == 0 || result == KERN_OPERATION_TIMED_OUT, "semaphore_timedwait error %d\n", result);
-        return result == 0;
+        AZ_Assert(result == KERN_SUCCESS || result == KERN_OPERATION_TIMED_OUT, "semaphore_timedwait error %d\n", result);
+        if (result == KERN_SUCCESS)
+        {
+            int sigResult = semaphore_signal(m_maxCountSemaphore);
+            (void)sigResult;
+            AZ_Assert(sigResult == KERN_SUCCESS, "semaphore_signal error for max count semaphore: %d\n", sigResult);
+            return true;
+        }
+        return false;
     }
 
     template <class Clock, class Duration>
@@ -103,15 +116,23 @@ namespace AZStd
 
     inline void semaphore::release(unsigned int releaseCount)
     {
-        int result = semaphore_wait(m_maxCountSemaphore);
-        AZ_Assert(result == 0, "semaphore_wait error for max count semaphore: %s\n", strerror(errno));
-
+        int result = 0;
         while (releaseCount)
         {
-            result = semaphore_signal(m_semaphore);
-            AZ_Assert(result == 0, "semaphore_signal error: %s\n", strerror(errno));
+            while ((result = semaphore_wait(m_maxCountSemaphore)) == KERN_ABORTED)
+            {
+                continue;
+            }
+            AZ_Assert(result == KERN_SUCCESS, "semaphore_wait error for max count semaphore: %d\n", result);
+            if (result != KERN_SUCCESS)
+            {
+                break;
+            }
 
-            if (result != 0)
+            result = semaphore_signal(m_semaphore);
+            AZ_Assert(result == KERN_SUCCESS, "semaphore_signal error: %d\n", result);
+
+            if (result != KERN_SUCCESS)
             {
                 break; // exit on error
             }

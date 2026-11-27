@@ -264,9 +264,11 @@ namespace AZ
         // Clear any handlers still pending registration
         for (Handler* handler : m_addList)
         {
-            AZ_Assert(handler, "NULL handler encountered in Event addList");
-            AZ_Assert(handler->m_event == this, "Entry event does not match");
-            handler->Disconnect();
+            if (handler)
+            {
+                AZ_Assert(handler->m_event == this, "Entry event does not match");
+                handler->Disconnect();
+            }
         }
 
         // Free up any owned memory
@@ -298,7 +300,10 @@ namespace AZ
         {
             for (Handler* handler : m_addList)
             {
-                AZ_Assert(handler, "NULL handler encountered in Event addList");
+                if (!handler)
+                {
+                    continue;
+                }
                 if (m_freeList.empty())
                 {
                     handler->m_index = aznumeric_cast<int32_t>(m_handlers.size());
@@ -335,10 +340,12 @@ namespace AZ
 
         for (Handler* handler : m_addList)
         {
-            // This should have happened as part of a move so none of the pointers should refer to this event (they should also all refer to the same event)
-            AZ_Assert(handler, "NULL handler encountered in Event addList");
-            AZ_Assert(handler->m_event != this, "Should not refer to this");
-            handler->m_event = this;
+            if (handler)
+            {
+                // This should have happened as part of a move so none of the pointers should refer to this event (they should also all refer to the same event)
+                AZ_Assert(handler->m_event != this, "Should not refer to this");
+                handler->m_event = this;
+            }
         }
     }
 

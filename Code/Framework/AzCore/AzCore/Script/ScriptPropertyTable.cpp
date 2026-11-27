@@ -309,6 +309,11 @@ namespace AZ
             delete mapPair.second;
         }
 
+        for (auto& mapPair : m_genericMapping)
+        {
+            delete mapPair.second;
+        }
+
         ReleaseCachedTable();
     }
 
@@ -327,7 +332,7 @@ namespace AZ
         }
         else if (m_stringProperty->TryRead(scriptDataContext,keyIndex))
         {
-            retVal = FindTableValue(m_stringProperty->m_name);
+            retVal = FindTableValue(m_stringProperty->m_value);
         }
         else if (m_genericProperty->TryRead(scriptDataContext,keyIndex))
         {
@@ -361,7 +366,7 @@ namespace AZ
     ScriptProperty* ScriptPropertyTable::FindTableValue(const AZStd::string_view& keyValue) const
     {
         AZ::ScriptProperty* retVal = nullptr;
-        AZ::Crc32 crcIndex = AZ::Crc32(keyValue.data());
+        AZ::Crc32 crcIndex = AZ::Crc32(keyValue);
         
         auto mapIter = m_keyMapping.find(crcIndex);
         
@@ -429,7 +434,7 @@ namespace AZ
 
     void ScriptPropertyTable::UpdateTableValue(const AZStd::string_view& keyValue, AZ::ScriptDataContext& scriptDataContext, int index)
     {
-        AZ::Crc32 crcIndex = AZ::Crc32(keyValue.data());
+        AZ::Crc32 crcIndex = AZ::Crc32(keyValue);
         auto mapIter = m_keyMapping.find(crcIndex);
 
         if (mapIter != m_keyMapping.end())
@@ -519,9 +524,10 @@ namespace AZ
         {
             // Only want to support indexes for now.
             double integerPart = 0;
-            if (AZ::IsClose(modf(m_numberProperty->m_value, &integerPart), 0 , 0.01))
+            const double keyNumber = static_cast<const AZ::ScriptPropertyNumber*>(keyProperty)->m_value;
+            if (AZ::IsClose(modf(keyNumber, &integerPart), 0 , 0.01))
             {
-                SetTableValue(static_cast<int>(static_cast<const AZ::ScriptPropertyNumber*>(keyProperty)->m_value), value);
+                SetTableValue(static_cast<int>(keyNumber), value);
             }
         }
         else if (typeId == azrtti_typeid<AZ::ScriptPropertyString>())
@@ -555,7 +561,7 @@ namespace AZ
     
     void ScriptPropertyTable::SetTableValue(const AZStd::string_view& keyValue, const ScriptProperty* value)
     {
-        AZ::Crc32 crcIndex = AZ::Crc32(keyValue.data());
+        AZ::Crc32 crcIndex = AZ::Crc32(keyValue);
         auto mapIter = m_keyMapping.find(crcIndex);
 
         if (mapIter != m_keyMapping.end())

@@ -580,7 +580,7 @@ namespace AZStd
             // we expect most people will call with insertPos if the node can't be inserted)
             node_ptr_type newNode = static_cast<node_ptr_type>(create_node(AZStd::move(value)));
             iterator result = insert_unique_node(insertPos, newNode);
-            if (result == insertPos)
+            if (result.m_node != newNode)
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
@@ -615,7 +615,7 @@ namespace AZStd
             // we need to construct the node just to get the key/value
             node_ptr_type newNode = static_cast<node_ptr_type>(create_node(AZStd::forward<InputArguments>(arguments) ...));
             iterator result = insert_unique_node(insertPos, newNode);
-            if (result == insertPos)
+            if (result.m_node != newNode)
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);

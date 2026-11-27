@@ -22,14 +22,22 @@ namespace AZ::Internal
             return;
         }
 
+        m_dependencyCount.store(other.m_dependencyCount.load(AZStd::memory_order_relaxed), AZStd::memory_order_relaxed);
+        m_successorOffset = other.m_successorOffset;
+        m_inboundLinkCount = other.m_inboundLinkCount;
+        m_outboundLinkCount = other.m_outboundLinkCount;
+        m_graph = other.m_graph;
         m_invoker = other.m_invoker;
         m_relocator = other.m_relocator;
         m_destroyer = other.m_destroyer;
-
-        // We now own the lambda, so clear the moved-from task's destroyer
-        other.m_destroyer = nullptr;
+        m_descriptor = other.m_descriptor;
 
         m_relocator(m_lambda, other.m_lambda);
+        if (other.m_destroyer)
+        {
+            other.m_destroyer(other.m_lambda);
+            other.m_destroyer = nullptr;
+        }
     }
 
     Task& Task::operator=(Task&& other) noexcept

@@ -423,8 +423,8 @@ namespace AZ::Dom
                 const Value* sourceValue = stateBeforeApplication.FindChild(GetSourcePath());
                 if (sourceValue == nullptr)
                 {
-                    AZStd::string errorMessage = "Unable to invert DOM copy patch, source path not found: ";
-                    m_domPath.AppendToString(errorMessage);
+                    AZStd::string errorMessage = "Unable to invert DOM move patch, source path not found: ";
+                    GetSourcePath().AppendToString(errorMessage);
                     return AZ::Failure(AZStd::move(errorMessage));
                 }
 
@@ -432,15 +432,13 @@ namespace AZ::Dom
                 const Value* destinationValue = stateBeforeApplication.FindChild(GetDestinationPath());
                 if (destinationValue != nullptr)
                 {
-                    InversePatches result({PatchOperation::AddOperation(GetSourcePath(), *sourceValue)});
-                    result.push_back(PatchOperation::ReplaceOperation(GetDestinationPath(), *destinationValue));
                     return AZ::Success<InversePatches>({
                         PatchOperation::AddOperation(GetSourcePath(), *sourceValue),
                         PatchOperation::ReplaceOperation(GetDestinationPath(), *destinationValue),
                     });
                 }
                 // Otherwise, just do a move
-                return AZ::Success<InversePatches>({PatchOperation::MoveOperation(GetDestinationPath(), GetSourcePath())});
+                return AZ::Success<InversePatches>({PatchOperation::MoveOperation(GetSourcePath(), GetDestinationPath())});
             }
         case Type::Test:
             {
@@ -461,9 +459,7 @@ namespace AZ::Dom
         Path target = path;
         if (target.IsEmpty())
         {
-            Value wrapper(Dom::Type::Array);
-            wrapper.ArrayPushBack(rootElement);
-            return AZ::Success<PathContext>({ wrapper, PathEntry(0) });
+            return AZ::Success<PathContext>({ rootElement, PathEntry() });
         }
 
         if (verifyFullPath || !allowEndOfArray)
@@ -531,6 +527,12 @@ namespace AZ::Dom
 
     PatchOutcome PatchOperation::ApplyAdd(Value& rootElement) const
     {
+        if (m_domPath.IsEmpty())
+        {
+            rootElement = GetValue();
+            return AZ::Success();
+        }
+
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
         if (!pathLookup.IsSuccess())
         {
@@ -562,6 +564,12 @@ namespace AZ::Dom
 
     PatchOutcome PatchOperation::ApplyRemove(Value& rootElement) const
     {
+        if (m_domPath.IsEmpty())
+        {
+            rootElement.SetNull();
+            return AZ::Success();
+        }
+
         auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
         {
@@ -629,34 +637,53 @@ namespace AZ::Dom
         }
 
         const PathContext& sourceContext = sourceLookup.GetValue();
-        Value valueToMove = sourceContext.m_value[sourceContext.m_key];
-        if (sourceContext.m_key.IsEndOfArray())
+        Value valueToMove;
+        if (GetSourcePath().IsEmpty())
         {
-            sourceContext.m_value.ArrayPopBack();
-        }
-        else if (sourceContext.m_key.IsIndex())
-        {
-            sourceContext.m_value.ArrayErase(sourceContext.m_value.MutableArrayBegin() + sourceContext.m_key.GetIndex());
+            valueToMove = AZStd::move(rootElement);
+            rootElement.SetNull();
         }
         else
         {
-            sourceContext.m_value.EraseMember(sourceContext.m_key.GetKey());
+            valueToMove = sourceContext.m_value[sourceContext.m_key];
+            if (sourceContext.m_key.IsEndOfArray())
+            {
+                sourceContext.m_value.ArrayPopBack();
+            }
+            else if (sourceContext.m_key.IsIndex())
+            {
+                sourceContext.m_value.ArrayErase(sourceContext.m_value.MutableArrayBegin() + sourceContext.m_key.GetIndex());
+            }
+            else
+            {
+                sourceContext.m_value.EraseMember(sourceContext.m_key.GetKey());
+            }
+        }
+
+        if (m_domPath.IsEmpty())
+        {
+            rootElement = AZStd::move(valueToMove);
+            return AZ::Success();
         }
 
         auto newDestLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        if (!newDestLookup.IsSuccess())
+        {
+            return AZ::Failure(newDestLookup.TakeError());
+        }
         const PathContext& destContext = newDestLookup.GetValue();
         const PathEntry& destinationIndex = destContext.m_key;
         Value& targetValue = destContext.m_value;
 
         if (destinationIndex.IsIndex() || destinationIndex.IsEndOfArray())
         {
-            const size_t index = destinationIndex.GetIndex();
-            if (destinationIndex.IsEndOfArray() || targetValue.ArraySize() == index)
+            if (destinationIndex.IsEndOfArray() || targetValue.ArraySize() == destinationIndex.GetIndex())
             {
                 targetValue.ArrayPushBack(AZStd::move(valueToMove));
             }
             else
             {
+                const size_t index = destinationIndex.GetIndex();
                 auto& arrayToChange = targetValue.GetMutableArray();
                 arrayToChange.insert(arrayToChange.begin() + index, AZStd::move(valueToMove));
             }

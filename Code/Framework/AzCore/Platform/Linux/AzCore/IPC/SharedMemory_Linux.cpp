@@ -69,22 +69,24 @@ namespace AZ
 
         // Create or open the named semaphore
         bool mutexCreated = false;
-        SharedMemoryPathType fullName {};
-        ComposeName(fullName, m_name, MutexSuffix);
+        SharedMemoryPathType mutexFullName {};
+        ComposeName(mutexFullName, m_name, MutexSuffix);
 
-        m_globalMutex = sem_open(fullName.c_str(), O_CREAT | O_EXCL, 0600, 1);
+        m_globalMutex = sem_open(mutexFullName.c_str(), O_CREAT | O_EXCL, 0600, 1);
         if (m_globalMutex == SEM_FAILED)
         {
             if (errno != EEXIST)
             {
+                m_globalMutex = nullptr;
                 AZ_Trace(ShmMemoryLogName, "Open new Mutex failed with error %d\n", errno);
                 return CreateFailed;
             }
 
             // It exists already, try to open.
-            m_globalMutex = sem_open(fullName.c_str(), 0);
+            m_globalMutex = sem_open(mutexFullName.c_str(), 0);
             if (m_globalMutex == SEM_FAILED)
             {
+                m_globalMutex = nullptr;
                 AZ_Trace(ShmMemoryLogName, "Open existing Mutex failed with error %d\n", errno);
                 return CreateFailed;
             }
@@ -94,7 +96,21 @@ namespace AZ
             mutexCreated = true;
         }
 
+        auto cleanupMutexOnError = [&]()
+        {
+            if (m_globalMutex && m_globalMutex != SEM_FAILED)
+            {
+                sem_close(m_globalMutex);
+            }
+            m_globalMutex = nullptr;
+            if (mutexCreated)
+            {
+                sem_unlink(mutexFullName.c_str());
+            }
+        };
+
         // Create or open the shared memory object
+        SharedMemoryPathType fullName {};
         ComposeName(fullName, m_name, SharedMemorySuffix);
         m_mapHandle = shm_open(fullName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0600);
 
@@ -104,12 +120,14 @@ namespace AZ
             if (errno != EEXIST)
             {
                 AZ_Trace(ShmMemoryLogName, "shm_open failed with error %d\n", errno);
+                cleanupMutexOnError();
                 return CreateFailed;
             }
 
             if (!openIfCreated)
             {
                 AZ_Trace(ShmMemoryLogName, "shm_open failed because it already exists and openIfCreated is false\n");
+                cleanupMutexOnError();
                 return CreateFailed;
             }
 
@@ -117,6 +135,7 @@ namespace AZ
             if (m_mapHandle == -1)
             {
                 AZ_Trace(ShmMemoryLogName, "shm_open failed with error %d\n", errno);
+                cleanupMutexOnError();
                 return CreateFailed;
             }
         }
@@ -134,6 +153,7 @@ namespace AZ
                 shm_unlink(fullName.c_str());
                 close(m_mapHandle);
                 m_mapHandle = -1;
+                cleanupMutexOnError();
                 return CreateFailed;
             }
 
@@ -144,6 +164,7 @@ namespace AZ
                 shm_unlink(fullName.c_str());
                 close(m_mapHandle);
                 m_mapHandle = -1;
+                cleanupMutexOnError();
                 return CreateFailed;
             }
 
@@ -221,7 +242,7 @@ namespace AZ
             }
         }
 
-        if (m_globalMutex)
+        if (m_globalMutex && m_globalMutex != SEM_FAILED)
         {
             if (sem_close(m_globalMutex) == -1)
             {

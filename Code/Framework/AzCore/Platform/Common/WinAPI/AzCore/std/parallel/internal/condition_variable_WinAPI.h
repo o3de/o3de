@@ -105,14 +105,7 @@ namespace AZStd
     template <class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable::wait_for(unique_lock<mutex>& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        while (!pred())
-        {
-            if (wait_for(lock, rel_time) == cv_status::timeout)
-            {
-                return pred();
-            }
-        }
-        return pred();
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, AZStd::move(pred));
     }
     condition_variable::native_handle_type
     inline condition_variable::native_handle()
@@ -180,7 +173,7 @@ namespace AZStd
             return wait_for(lock, abs_time - now);
         }
 
-        return cv_status::no_timeout;
+        return cv_status::timeout;
     }
     template <class Lock, class Clock, class Duration, class Predicate>
     AZ_FORCE_INLINE bool condition_variable_any::wait_until(Lock& lock, const chrono::time_point<Clock, Duration>& abs_time, Predicate pred)
@@ -197,13 +190,13 @@ namespace AZStd
     template <class Lock, class Rep, class Period>
     AZ_FORCE_INLINE cv_status condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time)
     {
-        chrono::milliseconds toWait = rel_time;
+        auto toWait = chrono::duration_cast<chrono::milliseconds>(rel_time);
         EnterCriticalSection(AZ_STD_MUTEX_CAST(m_mutex));
         lock.unlock();
 
         // We need to make sure we use CriticalSection based mutex.
         cv_status returnCode = cv_status::no_timeout;
-        int ret = SleepConditionVariableCS(AZ_COND_VAR_CAST(m_cond_var), AZ_STD_MUTEX_CAST(m_mutex), toWait.count());
+        int ret = SleepConditionVariableCS(AZ_COND_VAR_CAST(m_cond_var), AZ_STD_MUTEX_CAST(m_mutex), static_cast<DWORD>(toWait.count()));
         // according to MSDN docs, ret is 0 on FAILURE, and nonzero otherwise.
         if (ret == 0)
         {
@@ -224,14 +217,7 @@ namespace AZStd
     template <class Lock, class Rep, class Period, class Predicate>
     AZ_FORCE_INLINE bool condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time, Predicate pred)
     {
-        while (!pred())
-        {
-            if (!wait_for(lock, rel_time))
-            {
-                return pred();
-            }
-        }
-        return pred();
+        return wait_until(lock, chrono::steady_clock::now() + rel_time, AZStd::move(pred));
     }
     condition_variable_any::native_handle_type
     inline condition_variable_any::native_handle()

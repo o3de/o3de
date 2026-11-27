@@ -14,6 +14,8 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/osstring.h>
 
@@ -161,6 +163,7 @@ namespace AZ
             AZStd::unique_ptr<JniObject> m_javaInstance; //!< JNI instance of the com.amazon.lumberyard.io.APKHandler Java object
             DirectoryCache m_cachedDirectories; //!< Cache of directories and their respective files already found through previous JNI calls
             size_t m_numBytesToRead; //!< Temp cache of the correct number of bytes to read when fread is called on an asset
+            mutable AZStd::recursive_mutex m_mutex;
         };
     } // namespace Android
 } // namespace AZ
