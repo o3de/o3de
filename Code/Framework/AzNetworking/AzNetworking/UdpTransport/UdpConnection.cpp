@@ -258,6 +258,10 @@ namespace AzNetworking
         case CorePackets::PacketType::ConnectionHandshakePacket:
         {
             AZLOG(NET_CorePackets, "Received core packet %s", "ConnectionHandshakePacket");
+            if (!m_networkInterface.IsEncrypted())
+            {
+                return PacketDispatchResult::Failure;
+            }
             CorePackets::ConnectionHandshakePacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {

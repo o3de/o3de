@@ -32,6 +32,25 @@ namespace AzNetworking
         }
     }
 
+    TcpSocket::TcpSocket(TcpSocket&& rhs) noexcept
+        : m_socketFd(rhs.m_socketFd)
+        , m_warnedBindForPortFailure(rhs.m_warnedBindForPortFailure)
+    {
+        rhs.m_socketFd = InvalidSocketFd;
+    }
+
+    TcpSocket& TcpSocket::operator=(TcpSocket&& rhs) noexcept
+    {
+        if (this != &rhs)
+        {
+            Close();
+            m_socketFd = rhs.m_socketFd;
+            m_warnedBindForPortFailure = rhs.m_warnedBindForPortFailure;
+            rhs.m_socketFd = InvalidSocketFd;
+        }
+        return *this;
+    }
+
     TcpSocket::~TcpSocket()
     {
         Close();

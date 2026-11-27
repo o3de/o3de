@@ -28,6 +28,12 @@ namespace AzNetworking
         }
     }
 
+    TcpSocketManager::~TcpSocketManager()
+    {
+        CloseSocket(m_epollFd);
+        m_epollFd = InvalidSocketFd;
+    }
+
     bool TcpSocketManager::AddSocket(SocketFd socketFd)
     {
         if (socketFd < SocketFd{ 0 })
@@ -35,8 +41,8 @@ namespace AzNetworking
             return false;
         }
 
-        struct epoll_event fdEvents;
-        fdEvents.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        struct epoll_event fdEvents{};
+        fdEvents.events = EPOLLIN | EPOLLOUT;
         fdEvents.data.fd = static_cast<int32_t>(socketFd);
 
         if (epoll_ctl(static_cast<int32_t>(m_epollFd), EPOLL_CTL_ADD, static_cast<int32_t>(socketFd), &fdEvents) < 0)
@@ -52,6 +58,10 @@ namespace AzNetworking
 
     bool TcpSocketManager::ClearSocket(SocketFd socketFd)
     {
+        if (socketFd >= SocketFd{ 0 } && m_epollFd != InvalidSocketFd)
+        {
+            epoll_ctl(static_cast<int32_t>(m_epollFd), EPOLL_CTL_DEL, static_cast<int32_t>(socketFd), nullptr);
+        }
         ClearSocketHelper(socketFd);
         return true;
     }
@@ -59,7 +69,8 @@ namespace AzNetworking
     void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
         struct epoll_event socketEvents[MaxEpollEvents];
-        const int32_t numEpollEvents = epoll_wait(static_cast<int32_t>(m_epollFd), socketEvents, MaxEpollEvents, -1);
+        const int32_t timeoutMs = AZStd::max<int32_t>(0, static_cast<int32_t>(maxBlockMs));
+        const int32_t numEpollEvents = epoll_wait(static_cast<int32_t>(m_epollFd), socketEvents, MaxEpollEvents, timeoutMs);
         if (numEpollEvents < 0)
         {
             const int32_t error = GetLastNetworkError();
@@ -71,7 +82,7 @@ namespace AzNetworking
             for (int32_t event = 0; event < numEpollEvents; ++event)
             {
                 const SocketFd socketFd = static_cast<SocketFd>(socketEvents[event].data.fd);
-                if (socketEvents[event].events & EPOLLIN)
+                if (socketEvents[event].events & (EPOLLIN | EPOLLERR | EPOLLHUP))
                 {
                     readCallback(socketFd);
                 }

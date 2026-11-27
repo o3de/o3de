@@ -40,7 +40,7 @@ namespace AzNetworking
         struct HasReserveMethod
         {
             template <typename U>
-            static decltype(U().reserve()) Evaluate(int);
+            static decltype(AZStd::declval<U>().reserve(0)) Evaluate(int);
 
             template <typename U>
             static AZStd::false_type Evaluate(...);
@@ -82,7 +82,7 @@ namespace AzNetworking
 
     // Non-containers
     template <typename TYPE>
-    struct SerializeObjectHelper<TYPE, AZStd::enable_if_t<!AzContainerHelper::IsIterableContainer<TYPE>::value>>
+    struct SerializeObjectHelper<TYPE, AZStd::enable_if_t<!AzContainerHelper::IsIterableContainer<TYPE>::Value>>
     {
         static bool SerializeObject(ISerializer& serializer, TYPE& value)
         {
@@ -102,7 +102,16 @@ namespace AzNetworking
 
     inline bool ISerializer::Serialize(char& value, const char* name, uint8_t minValue, uint8_t maxValue)
     {
-        return Serialize(reinterpret_cast<uint8_t&>(value), name, minValue, maxValue);
+        uint8_t byteValue = static_cast<uint8_t>(value);
+        if (!Serialize(byteValue, name, minValue, maxValue))
+        {
+            return false;
+        }
+        if (GetSerializerMode() == SerializerMode::WriteToObject)
+        {
+            value = static_cast<char>(byteValue);
+        }
+        return true;
     }
 
     template <typename TYPE>
@@ -140,18 +149,17 @@ namespace AzNetworking
         {
             using SizeType = typename AZStd::underlying_type<TYPE>::type;
 
-            SizeType& integralValue = reinterpret_cast<SizeType&>(value);
+            SizeType integralValue = static_cast<SizeType>(value);
 
             if (!serializer.Serialize(integralValue, name))
             {
                 return false;
             }
 
-            //auto enumMembers = AzEnumTraits<TYPE>::Members;
-            //if (AZStd::find(enumMembers.begin(), enumMembers.end(), static_cast<Type>(integralValue)) == enumMembers.end())
-            //{
-            //    return false;
-            //}
+            if (serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                value = static_cast<TYPE>(integralValue);
+            }
 
             return true;
         }
@@ -166,11 +174,16 @@ namespace AzNetworking
         {
             using RawType = typename AZStd::underlying_type<TYPE>::type;
 
-            RawType& rawValue = reinterpret_cast<RawType&>(value);
+            RawType rawValue = static_cast<RawType>(value);
 
             if (!serializer.Serialize(rawValue, name))
             {
                 return false;
+            }
+
+            if (serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                value = static_cast<TYPE>(rawValue);
             }
 
             return true;

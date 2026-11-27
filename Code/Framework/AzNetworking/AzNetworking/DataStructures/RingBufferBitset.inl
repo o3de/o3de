@@ -74,7 +74,14 @@ namespace AzNetworking
     {
         const uint32_t headBitsToShift = std::min<uint32_t>(count, m_unusedHeadBits);
 
-        m_container[m_headElementOffset] <<= headBitsToShift;
+        if (headBitsToShift >= NumBitsetChunkedBits)
+        {
+            m_container[m_headElementOffset] = 0;
+        }
+        else if (headBitsToShift > 0)
+        {
+            m_container[m_headElementOffset] <<= headBitsToShift;
+        }
         m_unusedHeadBits -= headBitsToShift;
         count -= headBitsToShift;
 
@@ -83,7 +90,7 @@ namespace AzNetworking
             IncrementHead();
         }
 
-        while (count > NumBitsetChunkedBits)
+        while (count >= NumBitsetChunkedBits)
         {
             count -= NumBitsetChunkedBits;
             IncrementHead();
@@ -123,14 +130,14 @@ namespace AzNetworking
     inline bool GetBitHelper(TYPE element, uint32_t bitIndex)
     {
         AZ_Assert(bitIndex < AZ::RequiredBitsForValue(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::RequiredBitsForValue(TYPE(~0)));
-        return ((element >> bitIndex) & 0x01) ? true : false;
+        return ((element >> bitIndex) & TYPE{ 1 }) ? true : false;
     }
 
     template <typename TYPE>
     inline void SetBitHelper(TYPE &element, uint32_t bitIndex, bool value)
     {
         AZ_Assert(bitIndex < AZ::RequiredBitsForValue(TYPE(~0)), "Out of bounds access (requested %u, size %u)", bitIndex, AZ::RequiredBitsForValue(TYPE(~0)));
-        const TYPE mask = TYPE(0x01 << bitIndex);
+        const TYPE mask = TYPE(TYPE{ 1 } << bitIndex);
         element = (value) ? (element | mask) : (element & (TYPE)(~mask));
     }
 }

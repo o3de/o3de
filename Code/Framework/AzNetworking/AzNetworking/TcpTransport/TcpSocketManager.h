@@ -29,6 +29,7 @@ namespace AzNetworking
         using SocketEventCallback = AZStd::function<void(SocketFd)>;
 
         TcpSocketManager();
+        ~TcpSocketManager();
 
         //! Adds the provided socket to the internal socket management mechanism.
         //! @param socketFd the socket file descriptor to add

@@ -48,8 +48,8 @@ namespace AzNetworking
         ListenPort listenPort;
         listenPort.m_listenPort = tcpNetworkInterface.GetPort();
         listenPort.m_tcpNetworkInterface = &tcpNetworkInterface;
-        m_listenPorts.PushBackItem(listenPort);
-        AZLOG_INFO("TcpListenThread opening port: %d for incoming traffic", aznumeric_cast<int32_t>(listenPort.m_listenPort));
+        m_listenPorts.PushBackItem(AZStd::move(listenPort));
+        AZLOG_INFO("TcpListenThread opening port: %d for incoming traffic", aznumeric_cast<int32_t>(tcpNetworkInterface.GetPort()));
 
         // Start the listen thread if we have ports to listen on
         if (!IsRunning())
@@ -62,15 +62,18 @@ namespace AzNetworking
 
     bool TcpListenThread::StopListening(TcpNetworkInterface& tcpNetworkInterface)
     {
-        --m_listenPortCount;
-
-        auto visitor = [&tcpNetworkInterface](ListenPort& listenPort)
+        auto visitor = [this, &tcpNetworkInterface](ListenPort& listenPort)
         {
             if (listenPort.m_tcpNetworkInterface == &tcpNetworkInterface)
             {
                 // This kills any ability to route new incoming connections to the network interface
                 listenPort.m_tcpNetworkInterface = nullptr;
+                m_tcpSocketManager.ClearSocket(listenPort.m_listenSocket.GetSocketFd());
                 listenPort.m_listenSocket.Close();
+                if (m_listenPortCount > 0)
+                {
+                    --m_listenPortCount;
+                }
             }
         };
         m_listenPorts.Visit(visitor);
@@ -135,7 +138,9 @@ namespace AzNetworking
 
         auto cleanupUnused = [](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
         {
-            AZStd::remove_if(deque.begin(), deque.end(), [](ListenPort& listenPort) { return listenPort.m_tcpNetworkInterface == nullptr; });
+            deque.erase(
+                AZStd::remove_if(deque.begin(), deque.end(), [](ListenPort& listenPort) { return listenPort.m_tcpNetworkInterface == nullptr; }),
+                deque.end());
         };
         m_listenPorts.VisitDeque(cleanupUnused);
 

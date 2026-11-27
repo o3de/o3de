@@ -12,6 +12,7 @@
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
@@ -43,17 +44,27 @@ namespace AzNetworking
             const bool write = (serializer.GetSerializerMode() == SerializerMode::WriteToObject);
 
             uint32_t size = static_cast<uint32_t>(container.size());
-            bool success = serializer.Serialize(size, "Size");
+            if (!serializer.Serialize(size, "Size"))
+            {
+                return false;
+            }
 
             // Dynamic containers require different read/write serialization interfaces
             if (write)
             {
+                if (serializer.GetCapacity() > 0 && size > (serializer.GetCapacity() - serializer.GetSize()))
+                {
+                    return false;
+                }
                 container.clear();
                 AzNetworking::AzContainerHelper::ReserveContainer<TYPE>(container, size);
                 ValueType element;
                 for (uint32_t i = 0; i < size; ++i)
                 {
-                    success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                     container.insert(container.end(), element);
                 }
             }
@@ -62,10 +73,58 @@ namespace AzNetworking
                 uint32_t i = 0;
                 for (auto it = container.begin(); it != container.end(); ++it, ++i)
                 {
-                    success &= serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                 }
             }
-            return success;
+            return true;
+        }
+    };
+
+    // Fixed size vector
+    template <typename TYPE, AZStd::size_t Capacity>
+    struct SerializeAzContainer<AZStd::fixed_vector<TYPE, Capacity>>
+    {
+        using ContainerType = AZStd::fixed_vector<TYPE, Capacity>;
+        static bool Serialize(ISerializer& serializer, ContainerType& container)
+        {
+            using ValueType = typename ContainerType::value_type;
+            constexpr uint32_t max = static_cast<uint32_t>(Capacity);
+            const bool write = (serializer.GetSerializerMode() == SerializerMode::WriteToObject);
+
+            uint32_t size = static_cast<uint32_t>(container.size());
+            if (!serializer.Serialize(size, "Size", 0, max) || size > max)
+            {
+                return false;
+            }
+
+            if (write)
+            {
+                container.clear();
+                ValueType element;
+                for (uint32_t i = 0; i < size; ++i)
+                {
+                    if (!serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
+                    container.push_back(element);
+                }
+            }
+            else
+            {
+                uint32_t i = 0;
+                for (auto it = container.begin(); it != container.end(); ++it, ++i)
+                {
+                    if (!serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     };
 
@@ -102,7 +161,10 @@ namespace AzNetworking
             const bool write = (serializer.GetSerializerMode() == SerializerMode::WriteToObject);
 
             SizeType size = container.size();
-            bool success = serializer.Serialize(size, "Size");
+            if (!serializer.Serialize(size, "Size", static_cast<SizeType>(0), static_cast<SizeType>(FixedNumElements)) || size > FixedNumElements)
+            {
+                return false;
+            }
 
             if (write)
             {
@@ -110,9 +172,11 @@ namespace AzNetworking
                 ValueType element;
                 for (uint32_t i = 0; i < size; ++i)
                 {
-                    success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                     container.insert(element);
-
                 }
             }
             else
@@ -120,10 +184,13 @@ namespace AzNetworking
                 uint32_t i = 0;
                 for (auto it = container.begin(); it != container.end(); ++it, ++i)
                 {
-                    success &= serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                 }
             }
-            return success;
+            return true;
         }
     };
 
@@ -141,7 +208,10 @@ namespace AzNetworking
             const bool write = (serializer.GetSerializerMode() == SerializerMode::WriteToObject);
 
             SizeType size = container.size();
-            bool success = serializer.Serialize(size, "Size");
+            if (!serializer.Serialize(size, "Size", static_cast<SizeType>(0), static_cast<SizeType>(FixedNumElements)) || size > FixedNumElements)
+            {
+                return false;
+            }
 
             if (write)
             {
@@ -149,9 +219,11 @@ namespace AzNetworking
                 ValueType element;
                 for (uint32_t i = 0; i < size; ++i)
                 {
-                    success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                     container.insert(element);
-
                 }
             }
             else
@@ -159,10 +231,13 @@ namespace AzNetworking
                 uint32_t i = 0;
                 for (auto it = container.begin(); it != container.end(); ++it, ++i)
                 {
-                    success &= serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                 }
             }
-            return success;
+            return true;
         }
     };
 
@@ -179,15 +254,25 @@ namespace AzNetworking
             const bool write = (serializer.GetSerializerMode() == SerializerMode::WriteToObject);
 
             SizeType size = static_cast<uint32_t>(container.size());
-            bool success = serializer.Serialize(size, "Size");
+            if (!serializer.Serialize(size, "Size"))
+            {
+                return false;
+            }
 
             if (write)
             {
+                if (serializer.GetCapacity() > 0 && size > (serializer.GetCapacity() - serializer.GetSize()))
+                {
+                    return false;
+                }
                 container.clear();
                 ValueType element;
                 for (uint32_t i = 0; i < size; ++i)
                 {
-                    success &= serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(element, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                     container.insert(element);
                 }
             }
@@ -196,10 +281,13 @@ namespace AzNetworking
                 uint32_t i = 0;
                 for (auto it = container.begin(); it != container.end(); ++it, ++i)
                 {
-                    success &= serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str());
+                    if (!serializer.Serialize(*it, GenerateIndexLabel<max>(i).c_str()))
+                    {
+                        return false;
+                    }
                 }
             }
-            return success;
+            return true;
         }
     };
 
@@ -225,6 +313,14 @@ namespace AzNetworking
             uint32_t outBytes = size;
 
             bool success = serializer.Serialize(size, "Size");
+            if (!success)
+            {
+                return false;
+            }
+            if (serializer.GetSerializerMode() == SerializerMode::WriteToObject && serializer.GetCapacity() > 0 && size > (serializer.GetCapacity() - serializer.GetSize()))
+            {
+                return false;
+            }
             value.resize_no_construct(size);
             success &= serializer.SerializeBytes(reinterpret_cast<uint8_t*>(value.data()), size, true, outBytes, "String");
 
@@ -240,9 +336,13 @@ namespace AzNetworking
         {
             using SizeType = typename AZ::SizeType<AZ::RequiredBytesForValue<MaxElementCount>(), false>::Type;
             SizeType size = aznumeric_cast<SizeType>(value.length());
-            uint32_t outBytes = static_cast<uint32_t>(size);
 
-            bool success = serializer.Serialize(size, "Size");
+            bool success = serializer.Serialize(size, "Size", static_cast<SizeType>(0), static_cast<SizeType>(MaxElementCount));
+            if (!success || size > MaxElementCount)
+            {
+                return false;
+            }
+            uint32_t outBytes = static_cast<uint32_t>(size);
             value.resize_no_construct(size);
             success &= serializer.SerializeBytes(reinterpret_cast<uint8_t*>(value.data()), static_cast<uint32_t>(size), true, outBytes, "String");
 
@@ -312,8 +412,16 @@ namespace AzNetworking
         static bool SerializeObject(ISerializer& serializer, AZ::VectorN& value)
         {
             AZStd::size_t size = value.GetDimensionality();
-            if (serializer.Serialize(size, "size"))
+            if (!serializer.Serialize(size, "size"))
             {
+                return false;
+            }
+            if (serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                if (serializer.GetCapacity() > 0 && size > (serializer.GetCapacity() - serializer.GetSize()))
+                {
+                    return false;
+                }
                 value.Resize(size);
             }
             return serializer.Serialize(value.GetVectorValues(), "data");
@@ -400,8 +508,17 @@ namespace AzNetworking
         {
             AZStd::size_t rows = value.GetRowCount();
             AZStd::size_t cols = value.GetColumnCount();
-            if (serializer.Serialize(rows, "rows") && serializer.Serialize(cols, "cols"))
+            if (!serializer.Serialize(rows, "rows") || !serializer.Serialize(cols, "cols"))
             {
+                return false;
+            }
+            if (serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                const AZStd::size_t remainingBytes = (serializer.GetCapacity() > 0) ? (serializer.GetCapacity() - serializer.GetSize()) : std::numeric_limits<AZStd::size_t>::max();
+                if (rows > remainingBytes || cols > remainingBytes || (cols > 0 && rows > (remainingBytes / cols)))
+                {
+                    return false;
+                }
                 value.Resize(rows, cols);
             }
             return serializer.Serialize(value.GetMatrixElements(), "data");

@@ -20,14 +20,17 @@ namespace AzNetworking
         FD_ZERO(&m_writerFdSet);
     }
 
+    TcpSocketManager::~TcpSocketManager() = default;
+
     bool TcpSocketManager::AddSocket(SocketFd socketFd)
     {
-        if (socketFd <= SocketFd{ 0 })
+        const int32_t rawFd = static_cast<int32_t>(socketFd);
+        if (rawFd <= 0 || rawFd >= FD_SETSIZE)
         {
             return false;
         }
 
-        FD_SET(static_cast<int32_t>(socketFd), &m_sourceFdSet);
+        FD_SET(rawFd, &m_sourceFdSet);
         m_maxFd = AZStd::max<SocketFd>(m_maxFd, socketFd);
         AddSocketHelper(socketFd);
         return true;
@@ -35,14 +38,23 @@ namespace AzNetworking
 
     bool TcpSocketManager::ClearSocket(SocketFd socketFd)
     {
-        FD_CLR(static_cast<int32_t>(socketFd), &m_sourceFdSet);
+        const int32_t rawFd = static_cast<int32_t>(socketFd);
+        if (rawFd > 0 && rawFd < FD_SETSIZE)
+        {
+            FD_CLR(rawFd, &m_sourceFdSet);
+        }
         ClearSocketHelper(socketFd);
+        m_maxFd = SocketFd{ 0 };
+        for (SocketFd activeFd : m_socketFds)
+        {
+            m_maxFd = AZStd::max<SocketFd>(m_maxFd, activeFd);
+        }
         return true;
     }
 
     void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
-        if(static_cast<int32_t>(m_maxFd) <= 0 || m_socketFds.empty())
+        if (static_cast<int32_t>(m_maxFd) <= 0 || m_socketFds.empty())
         {
             // There are no available sockets to process
             return;
@@ -51,12 +63,19 @@ namespace AzNetworking
         m_readerFdSet = m_sourceFdSet;
         m_writerFdSet = m_sourceFdSet;
 
-        struct timeval tv = { 0, static_cast<int32_t>(maxBlockMs) * 1000 };
+        const int64_t maxMs = AZStd::max<int64_t>(0, static_cast<int64_t>(maxBlockMs));
+        struct timeval tv;
+        tv.tv_sec = static_cast<decltype(tv.tv_sec)>(maxMs / 1000);
+        tv.tv_usec = static_cast<decltype(tv.tv_usec)>((maxMs % 1000) * 1000);
         const int32_t selectResult = ::select(static_cast<int32_t>(m_maxFd) + 1, &m_readerFdSet, &m_writerFdSet, nullptr, &tv);
         if (selectResult < 0)
         {
             const int32_t error = GetLastNetworkError();
             AZLOG_ERROR("select returned an error (%d:%s)", error, GetNetworkErrorDesc(error));
+        }
+        if (selectResult <= 0)
+        {
+            return;
         }
 
         for (auto socketFd : m_socketFds)

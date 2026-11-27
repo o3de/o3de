@@ -26,6 +26,10 @@ namespace AzNetworking
         //! @param socketFd existing socket file descriptor, this TcpSocket instance will assume ownership
         TcpSocket(SocketFd socketFd);
 
+        AZ_DISABLE_COPY(TcpSocket);
+        TcpSocket(TcpSocket&& rhs) noexcept;
+        TcpSocket& operator=(TcpSocket&& rhs) noexcept;
+
         virtual ~TcpSocket();
 
         //! Creates a new socket instance, transferring all ownership from the current instance to the new instance.

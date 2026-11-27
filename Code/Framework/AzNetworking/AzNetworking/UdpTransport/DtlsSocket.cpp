@@ -77,7 +77,8 @@ namespace AzNetworking
             return UdpSocket::SendInternal(address, data, size, encrypt, dtlsEndpoint);
         }
 
-        if (dtlsEndpoint.m_sslSocket == nullptr)
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(dtlsEndpoint.m_mutex);
+        if (dtlsEndpoint.m_sslSocket == nullptr || dtlsEndpoint.m_writeBio == nullptr)
         {
             AZLOG_ERROR("Trying to send on an open socketfd, but with a nullptr ssl socket wrapper!");
             return SocketOpResultErrorNoSsl;
@@ -104,6 +105,10 @@ namespace AzNetworking
             return SocketOpResultError;
         }
         const int32_t sentBytesEnc = BIO_read(dtlsEndpoint.m_writeBio, encrpytedSendBuffer, sizeof(encrpytedSendBuffer));
+        if (sentBytesEnc <= 0)
+        {
+            return SocketOpResultError;
+        }
 
         // Track encryption metrics
         m_sentBytesEncryptionInflation += aznumeric_cast<uint32_t>(sentBytesEnc - aznumeric_cast<int32_t>(size));

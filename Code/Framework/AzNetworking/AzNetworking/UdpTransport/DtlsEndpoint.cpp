@@ -34,6 +34,11 @@ namespace AzNetworking
 
     DtlsEndpoint::~DtlsEndpoint()
     {
+        if (m_aliveToken)
+        {
+            *m_aliveToken = false;
+        }
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         Close(m_sslSocket); // Note this also closes any attached BIO instances
         m_readBio = nullptr;
         m_writeBio = nullptr;
@@ -41,6 +46,7 @@ namespace AzNetworking
 
     DtlsEndpoint::ConnectResult DtlsEndpoint::Connect(const DtlsSocket& socket, const IpAddress& address, [[maybe_unused]] UdpPacketEncodingBuffer& outDtlsData)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         const ConnectResult result = ConstructEndpointInternal(socket, address);
 #if AZ_TRAIT_USE_OPENSSL
         if (result != ConnectResult::Failed)
@@ -56,6 +62,7 @@ namespace AzNetworking
 
     DtlsEndpoint::ConnectResult DtlsEndpoint::Accept(const DtlsSocket& socket, const IpAddress& address)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         const ConnectResult result = ConstructEndpointInternal(socket, address);
 #if AZ_TRAIT_USE_OPENSSL
         if (result != ConnectResult::Failed)
@@ -71,6 +78,7 @@ namespace AzNetworking
 
     bool DtlsEndpoint::IsConnecting() const
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         return ((m_state == HandshakeState::Connecting)
              || (m_state == HandshakeState::Accepting)
              || (m_state == HandshakeState::Failed)); // In all cases caller should call CompleteHandshake() next and check the return value
@@ -81,18 +89,26 @@ namespace AzNetworking
         ConnectResult result = ConnectResult::Failed;
 #if AZ_TRAIT_USE_OPENSSL
         UdpPacketEncodingBuffer outDtlsData;
-        if (dtlsData.GetSize() > 0)
+        bool continueHandshake = false;
         {
-            const uint8_t* encryptedData = dtlsData.GetBuffer();
-            const uint32_t encryptedSize = static_cast<uint32_t>(dtlsData.GetSize());
-            BIO_write(m_readBio, encryptedData, encryptedSize);
-        }
-        DtlsEndpoint::HandshakeState prevState = m_state;
-        result = PerformHandshakeInternal(outDtlsData);
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+            if (m_sslSocket == nullptr || m_readBio == nullptr || m_writeBio == nullptr)
+            {
+                return ConnectResult::Failed;
+            }
+            if (dtlsData.GetSize() > 0)
+            {
+                const uint8_t* encryptedData = dtlsData.GetBuffer();
+                const uint32_t encryptedSize = static_cast<uint32_t>(dtlsData.GetSize());
+                BIO_write(m_readBio, encryptedData, encryptedSize);
+            }
+            DtlsEndpoint::HandshakeState prevState = m_state;
+            result = PerformHandshakeInternal(outDtlsData);
 
-        // Pass along any remaining handshake data
-        // If we're the connecting endpoint and the handshake is complete, both sides are encrypted and this isn't necessary so skip it
-        bool continueHandshake = prevState != DtlsEndpoint::HandshakeState::Connecting || m_state != DtlsEndpoint::HandshakeState::Complete;
+            // Pass along any remaining handshake data
+            // If we're the connecting endpoint and the handshake is complete, both sides are encrypted and this isn't necessary so skip it
+            continueHandshake = prevState != DtlsEndpoint::HandshakeState::Connecting || m_state != DtlsEndpoint::HandshakeState::Complete;
+        }
         if (outDtlsData.GetSize() > 0 && continueHandshake)
         {
             CorePackets::ConnectionHandshakePacket handshakePacket = CorePackets::ConnectionHandshakePacket();
@@ -107,6 +123,7 @@ namespace AzNetworking
 
     const uint8_t* DtlsEndpoint::DecodePacket([[maybe_unused]] UdpConnection& connection, const uint8_t* encryptedData, int32_t encryptedSize, uint8_t* outDecodedData, int32_t& outDecodedSize)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         if (m_sslSocket == nullptr || IsConnecting())
         {
             // If the ssl socket is nullptr, it means encryption is not enabled, just passthrough the received data
@@ -135,24 +152,40 @@ namespace AzNetworking
         {
             AZLOG_WARN("An existing SSL socket was open during a call to connect, closing old socket");
             Close(m_sslSocket); // Note this also closes any attached BIO instances
+            m_readBio = nullptr;
+            m_writeBio = nullptr;
         }
 #if AZ_TRAIT_USE_OPENSSL
         m_address = address;
         m_sslSocket = SSL_new(socket.m_sslContext);
         m_readBio = BIO_new(BIO_s_mem());
-        BIO_set_mem_eof_return(m_readBio, -1);
         m_writeBio = BIO_new(BIO_s_mem());
+        if (m_sslSocket == nullptr || m_readBio == nullptr || m_writeBio == nullptr)
+        {
+            AZLOG_ERROR("SSL_new or BIO_new failed, could not create SSL socket wrapper instance");
+            PrintSslErrorStack();
+            if (m_readBio != nullptr)
+            {
+                BIO_free(m_readBio);
+                m_readBio = nullptr;
+            }
+            if (m_writeBio != nullptr)
+            {
+                BIO_free(m_writeBio);
+                m_writeBio = nullptr;
+            }
+            if (m_sslSocket != nullptr)
+            {
+                Close(m_sslSocket);
+            }
+            return ConnectResult::Failed;
+        }
+        BIO_set_mem_eof_return(m_readBio, -1);
         BIO_set_mem_eof_return(m_writeBio, -1);
         SSL_set_bio(m_sslSocket, m_readBio, m_writeBio);
         if (net_UseDtlsCookies)
         {
             SSL_set_options(m_sslSocket, SSL_OP_COOKIE_EXCHANGE);
-        }
-        if (m_sslSocket == nullptr)
-        {
-            AZLOG_ERROR("SSL_new failed, could not create SSL socket wrapper instance");
-            PrintSslErrorStack();
-            return ConnectResult::Failed;
         }
 #endif
         return ConnectResult::Pending;
@@ -160,7 +193,7 @@ namespace AzNetworking
 
     DtlsEndpoint::ConnectResult DtlsEndpoint::PerformHandshakeInternal([[maybe_unused]] UdpPacketEncodingBuffer& outHandshakeData)
     {
-        if (m_state == HandshakeState::Failed)
+        if (m_state == HandshakeState::Failed || m_sslSocket == nullptr || m_readBio == nullptr || m_writeBio == nullptr)
         {
             return ConnectResult::Failed;
         }

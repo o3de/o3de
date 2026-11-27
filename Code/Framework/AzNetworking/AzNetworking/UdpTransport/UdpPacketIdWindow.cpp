@@ -80,13 +80,34 @@ namespace AzNetworking
         const uint64_t secondChunk = aznumeric_cast<uint64_t>(m_ackWindow.GetBitsetElement(1));
         const uint32_t unusedHeadBits = m_ackWindow.GetUnusedHeadBits();
         const uint32_t usedHeadBits = m_ackWindow.NumBitsetChunkedBits - unusedHeadBits;
-        outWindow = aznumeric_cast<BitsetChunk>((secondChunk << usedHeadBits) | firstChunk);
+        if (usedHeadBits == 0)
+        {
+            outWindow = aznumeric_cast<BitsetChunk>(secondChunk);
+        }
+        else if (usedHeadBits >= m_ackWindow.NumBitsetChunkedBits)
+        {
+            outWindow = aznumeric_cast<BitsetChunk>(firstChunk);
+        }
+        else
+        {
+            outWindow = aznumeric_cast<BitsetChunk>((secondChunk << usedHeadBits) | firstChunk);
+        }
         return outWindow;
     }
 
     bool UdpPacketIdWindow::UpdateForReceivedPacket(UdpPacketHeader& header)
     {
         const SequenceId receivedSequenceId = header.GetLocalSequenceId();
+
+        if (m_headPacketId == InvalidPacketId)
+        {
+            m_ackWindow.PushBackBits(1);
+            m_ackWindow.SetBit(0, true);
+            header.SetLocalRolloverCount(m_sequenceRolloverCount);
+            m_headSequenceId = receivedSequenceId;
+            m_headPacketId = MakePacketId(m_sequenceRolloverCount, m_headSequenceId);
+            return true;
+        }
 
         if (SequenceMoreRecent(receivedSequenceId, m_headSequenceId))
         {
@@ -187,10 +208,13 @@ namespace AzNetworking
                 if (!m_ackWindow.GetBit(bit))
                 {
                     m_ackWindow.SetBit(bit, true);
-                    AZLOG(NET_DebugUdp, "Acking packet ID %u", aznumeric_cast<uint32_t>(receivedPacketId) - bit);
-                    if (connection != nullptr)
+                    if (aznumeric_cast<uint32_t>(receivedPacketId) >= bit)
                     {
-                        connection->ProcessAcked(receivedPacketId - aznumeric_cast<PacketId>(bit), currentTimeMs);
+                        AZLOG(NET_DebugUdp, "Acking packet ID %u", aznumeric_cast<uint32_t>(receivedPacketId) - bit);
+                        if (connection != nullptr)
+                        {
+                            connection->ProcessAcked(receivedPacketId - aznumeric_cast<PacketId>(bit), currentTimeMs);
+                        }
                     }
                 }
             }

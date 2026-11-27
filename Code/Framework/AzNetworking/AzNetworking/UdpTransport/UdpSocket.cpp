@@ -26,6 +26,12 @@ namespace AzNetworking
 
     UdpSocket::~UdpSocket()
     {
+#ifdef ENABLE_LATENCY_DEBUG
+        if (m_aliveToken)
+        {
+            *m_aliveToken = false;
+        }
+#endif
         Close();
     }
 
@@ -96,6 +102,12 @@ namespace AzNetworking
 
     void UdpSocket::Close()
     {
+#ifdef ENABLE_LATENCY_DEBUG
+        if (m_aliveToken)
+        {
+            *m_aliveToken = false;
+        }
+#endif
         CloseSocket(m_socketFd);
         m_socketFd = InvalidSocketFd;
     }
@@ -126,12 +138,12 @@ namespace AzNetworking
             if (int32_t(m_random.GetRandom() % 100) < (connectionQuality.m_lossPercentage))
             {
                 // Pretend we sent, but don't actually send
-                return true;
+                return static_cast<int32_t>(size);
             }
         }
 #endif
 
-        int32_t sentBytes = size;
+        int32_t sentBytes = static_cast<int32_t>(size);
 
 #ifdef ENABLE_LATENCY_DEBUG
         if (connectionQuality.m_latencyMs <= AZ::Time::ZeroTimeMs)
@@ -160,13 +172,22 @@ namespace AzNetworking
             const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
-            AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([&, deferredData = deferred]
-                    { SendInternalDeferred(deferredData); }, AZ::Name("Deferred packet"), deferTimeMs);
+            AZStd::shared_ptr<bool> socketAlive = m_aliveToken;
+            AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([this, socketAlive, deferredData = deferred]
+            {
+                if (socketAlive && *socketAlive && (!deferredData.m_encrypt || (deferredData.m_endpointAlive && *deferredData.m_endpointAlive)))
+                {
+                    SendInternalDeferred(deferredData);
+                }
+            }, AZ::Name("Deferred packet"), deferTimeMs);
         }
 #endif
 
-        m_sentPackets++;
-        m_sentBytes += sentBytes;
+        if (sentBytes > 0)
+        {
+            m_sentPackets++;
+            m_sentBytes += sentBytes;
+        }
 
         return sentBytes;
     }
@@ -181,12 +202,10 @@ namespace AzNetworking
             return 0;
         }
 
-        sockaddr_in from;
+        sockaddr_in from{};
         socklen_t   fromLen = sizeof(from);
 
         const int32_t receivedBytes = static_cast<int32_t>(recvfrom(static_cast<int32_t>(m_socketFd), reinterpret_cast<char*>(outData), static_cast<int32_t>(size), 0, (sockaddr*)&from, &fromLen));
-
-        outAddress = IpAddress(ByteOrder::Network, from.sin_addr.s_addr, from.sin_port);
 
         if (receivedBytes < 0)
         {
@@ -206,6 +225,7 @@ namespace AzNetworking
                 }
                 else
                 {
+                    outAddress = IpAddress(ByteOrder::Network, from.sin_addr.s_addr, from.sin_port);
                     return SocketOpResultError;
                 }
             }
@@ -217,6 +237,8 @@ namespace AzNetworking
         {
             return 0;
         }
+
+        outAddress = IpAddress(ByteOrder::Network, from.sin_addr.s_addr, from.sin_port);
 
         m_recvPackets++;
         m_recvBytes += receivedBytes;

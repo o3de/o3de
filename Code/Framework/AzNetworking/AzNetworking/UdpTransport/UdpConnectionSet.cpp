@@ -13,6 +13,7 @@ namespace AzNetworking
 {
     bool UdpConnectionSet::AddConnection(AZStd::unique_ptr<UdpConnection> connection)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         AZ_Assert(connection, "Adding a nullptr UdpConnection instance to the connection set");
         if (!connection)
         {
@@ -34,6 +35,7 @@ namespace AzNetworking
 
     bool UdpConnectionSet::DeleteConnection(const IpAddress& address)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         AZLOG(UdpConnectionSet, "Deleting Udp connection by remote address (%s)", address.GetString().c_str());
         UdpConnection* connection = GetConnection(address);
         if (connection == nullptr)
@@ -53,6 +55,7 @@ namespace AzNetworking
 
     void UdpConnectionSet::VisitConnections(const ConnectionVisitor& visitor)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         for (auto& connection : m_connectionIdMap)
         {
             visitor(*connection.second);
@@ -61,6 +64,7 @@ namespace AzNetworking
 
     bool UdpConnectionSet::DeleteConnection(ConnectionId connectionId)
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         AZLOG(UdpConnectionSet, "Deleting Udp connection by connectionId (%u)", aznumeric_cast<uint32_t>(connectionId));
         UdpConnection* connection = static_cast<UdpConnection*>(GetConnection(connectionId));
         if (connection == nullptr)
@@ -80,6 +84,7 @@ namespace AzNetworking
 
     IConnection* UdpConnectionSet::GetConnection(ConnectionId connectionId) const
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         ConnectionIdMap::const_iterator lookup = m_connectionIdMap.find(connectionId);
         if (lookup != m_connectionIdMap.end())
         {
@@ -90,6 +95,7 @@ namespace AzNetworking
 
     ConnectionId UdpConnectionSet::GetNextConnectionId()
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         // In the case of wrap-around, don't return a connectionId that's in-use or is the invalid connection Id
         do
         {
@@ -104,11 +110,13 @@ namespace AzNetworking
 
     uint32_t UdpConnectionSet::GetConnectionCount() const
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         return aznumeric_cast<uint32_t>(m_connectionIdMap.size());
     }
 
     uint32_t UdpConnectionSet::GetActiveConnectionCount() const
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         uint32_t activeConnections = 0;
         for (auto iter = m_connectionIdMap.begin(); iter != m_connectionIdMap.end(); ++iter)
         {
@@ -127,6 +135,7 @@ namespace AzNetworking
 
     UdpConnection* UdpConnectionSet::GetConnection(const IpAddress& address) const
     {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         RemoteAddressMap::const_iterator lookup = m_remoteAddressMap.find(address);
         if (lookup != m_remoteAddressMap.end())
         {

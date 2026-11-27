@@ -12,6 +12,7 @@
 #include <AzNetworking/AzNetworking_Traits_Platform.h>
 #include <AzNetworking/Utilities/Endian.h>
 #include <AzNetworking/Utilities/NetworkIncludes.h>
+#include <cmath>
 
 namespace AzNetworking
 {
@@ -86,21 +87,39 @@ namespace AzNetworking
         return SerializeBoundedValue<AZ::u64>(minValue, maxValue, value);
     }
 
-    bool NetworkOutputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
+    bool NetworkOutputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, float minValue, float maxValue)
     {
         uint32_t networkOrder = 0;
         m_serializerValid &= SerializeBytes((uint8_t*)&networkOrder, sizeof(float));
         networkOrder = ntohl(networkOrder);
-        value = m_serializerValid ? *reinterpret_cast<float*>(&networkOrder) : value;
+        if (m_serializerValid)
+        {
+            float decoded = 0.0f;
+            memcpy(&decoded, &networkOrder, sizeof(float));
+            m_serializerValid &= std::isfinite(decoded) && (decoded >= minValue) && (decoded <= maxValue);
+            if (m_serializerValid)
+            {
+                value = decoded;
+            }
+        }
         return m_serializerValid;
     }
 
-    bool NetworkOutputSerializer::Serialize(double& value, [[maybe_unused]] const char* name, [[maybe_unused]] double minValue, [[maybe_unused]] double maxValue)
+    bool NetworkOutputSerializer::Serialize(double& value, [[maybe_unused]] const char* name, double minValue, double maxValue)
     {
         uint64_t networkOrder = 0;
         m_serializerValid &= SerializeBytes((uint8_t *)&networkOrder, sizeof(double));
         networkOrder = ntohll(networkOrder);
-        value = m_serializerValid ? *reinterpret_cast<double*>(&networkOrder) : value;
+        if (m_serializerValid)
+        {
+            double decoded = 0.0;
+            memcpy(&decoded, &networkOrder, sizeof(double));
+            m_serializerValid &= std::isfinite(decoded) && (decoded >= minValue) && (decoded <= maxValue);
+            if (m_serializerValid)
+            {
+                value = decoded;
+            }
+        }
         return m_serializerValid;
     }
 
@@ -137,22 +156,32 @@ namespace AzNetworking
     template <typename ORIGINAL_TYPE>
     bool NetworkOutputSerializer::SerializeBoundedValue(ORIGINAL_TYPE minValue, ORIGINAL_TYPE maxValue, ORIGINAL_TYPE& outValue)
     {
+        if (minValue > maxValue)
+        {
+            m_serializerValid = false;
+            return false;
+        }
         const uint64_t valueRange = static_cast<uint64_t>(maxValue) - static_cast<uint64_t>(minValue);
+        uint64_t offsetValue = 0;
         if (valueRange <= AZStd::numeric_limits<uint8_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(valueRange))) + minValue;
+            offsetValue = static_cast<uint64_t>(SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(valueRange)));
         }
         else if (valueRange <= AZStd::numeric_limits<uint16_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(valueRange))) + minValue;
+            offsetValue = static_cast<uint64_t>(SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(valueRange)));
         }
         else if (valueRange <= AZStd::numeric_limits<uint32_t>::max())
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(valueRange))) + minValue;
+            offsetValue = static_cast<uint64_t>(SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(valueRange)));
         }
         else
         {
-            outValue = static_cast<ORIGINAL_TYPE>(SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(valueRange))) + minValue;
+            offsetValue = SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(valueRange));
+        }
+        if (m_serializerValid)
+        {
+            outValue = static_cast<ORIGINAL_TYPE>(offsetValue + static_cast<uint64_t>(minValue));
         }
         return m_serializerValid;
     }
@@ -190,9 +219,8 @@ namespace AzNetworking
     bool NetworkOutputSerializer::SerializeBytes(uint8_t* data, uint32_t count)
     {
         const uint32_t currSize = m_bufferPosition;
-        const uint32_t nextSize = m_bufferPosition + count;
 
-        if (!m_serializerValid || (nextSize > m_bufferCapacity))
+        if (!m_serializerValid || (m_bufferPosition > m_bufferCapacity) || (count > (m_bufferCapacity - m_bufferPosition)))
         {
             // Keep the failed boolean so we can verify serialization success
             m_serializerValid = false;

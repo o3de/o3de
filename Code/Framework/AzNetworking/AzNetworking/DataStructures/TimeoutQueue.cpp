@@ -15,6 +15,7 @@ namespace AzNetworking
 {
     void TimeoutQueue::Reset()
     {
+        AZStd::lock_guard lock(m_mutex);
         m_timeoutItemMap.clear();
         m_timeoutItemQueue = TimeoutItemQueue();
         m_nextTimeoutId = TimeoutId{0};
@@ -61,74 +62,92 @@ namespace AzNetworking
 
     void TimeoutQueue::UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts)
     {
-        AZStd::lock_guard lock(m_mutex);
-
         int32_t numTimeouts = 0;
         if (maxTimeouts < 0)
         {
             maxTimeouts = INT_MAX;
         }
         AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
-        while (m_timeoutItemQueue.size() > 0)
+        for (;;)
         {
-            const TimeoutQueueItem queueItem = m_timeoutItemQueue.top();
-            const TimeoutId    itemTimeoutId = queueItem.m_timeoutId;
-            const AZ::TimeMs   itemTimeoutMs = queueItem.m_timeoutTimeMs;
-
-            // Head item has not timed out yet, we can terminate because we've run out of timed out items
-            if (itemTimeoutMs >= currentTimeMs)
+            TimeoutId itemTimeoutId = TimeoutId{ 0 };
+            TimeoutItem mapItem;
             {
-                break;
-            }
+                AZStd::lock_guard lock(m_mutex);
+                if (m_timeoutItemQueue.empty())
+                {
+                    break;
+                }
 
-            ++numTimeouts;
+                const TimeoutQueueItem queueItem = m_timeoutItemQueue.top();
+                itemTimeoutId = queueItem.m_timeoutId;
+                const AZ::TimeMs itemTimeoutMs = queueItem.m_timeoutTimeMs;
 
-            if (numTimeouts >= maxTimeouts)
-            {
-                AZLOG_WARN("Terminating timeout queue iteration due to hitting timeout count limit: %d", numTimeouts);
-                break;
-            }
+                // Head item has not timed out yet, we can terminate because we've run out of timed out items
+                if (itemTimeoutMs >= currentTimeMs)
+                {
+                    break;
+                }
 
-            // Pop the item, we're either going to time it out or reinsert it
-            m_timeoutItemQueue.pop();
+                ++numTimeouts;
 
-            TimeoutItemMap::iterator iter = m_timeoutItemMap.find(itemTimeoutId);
-            if (iter == m_timeoutItemMap.end())
-            {
-                // Item has already been deleted, just continue
-                continue;
-            }
+                if (numTimeouts >= maxTimeouts)
+                {
+                    AZLOG_WARN("Terminating timeout queue iteration due to hitting timeout count limit: %d", numTimeouts);
+                    break;
+                }
 
-            TimeoutItem mapItem = iter->second;
+                // Pop the item, we're either going to time it out or reinsert it
+                m_timeoutItemQueue.pop();
 
-            // Check to see if the item has been refreshed since it was inserted
-            if (mapItem.m_nextTimeoutTimeMs > currentTimeMs)
-            {
-                TimeoutQueueItem reQueueItem(itemTimeoutId, mapItem.m_nextTimeoutTimeMs);
-                m_timeoutItemQueue.push(reQueueItem);
-                continue;
+                TimeoutItemMap::iterator iter = m_timeoutItemMap.find(itemTimeoutId);
+                if (iter == m_timeoutItemMap.end())
+                {
+                    // Item has already been deleted, just continue
+                    continue;
+                }
+
+                mapItem = iter->second;
+
+                // Check to see if the item has been refreshed since it was inserted
+                if (mapItem.m_nextTimeoutTimeMs > currentTimeMs)
+                {
+                    TimeoutQueueItem reQueueItem(itemTimeoutId, mapItem.m_nextTimeoutTimeMs);
+                    m_timeoutItemQueue.push(reQueueItem);
+                    continue;
+                }
             }
 
             // By this point, the item is definitely timed out
-            // Invoke the timeout function to see how to proceed
+            // Invoke the timeout function outside m_mutex to avoid AB-BA deadlocks with connection send mutexes
             const TimeoutResult result = timeoutHandler(mapItem);
 
-            if (result == TimeoutResult::Refresh)
             {
-                mapItem.UpdateTimeoutTime(currentTimeMs);
-                // Re-insert into priority queue
-                TimeoutQueueItem reQueueItem(itemTimeoutId, mapItem.m_nextTimeoutTimeMs);
-                m_timeoutItemQueue.push(reQueueItem);
-                continue;
+                AZStd::lock_guard lock(m_mutex);
+                TimeoutItemMap::iterator iter = m_timeoutItemMap.find(itemTimeoutId);
+                if (iter == m_timeoutItemMap.end())
+                {
+                    continue;
+                }
+
+                if (result == TimeoutResult::Refresh)
+                {
+                    mapItem.UpdateTimeoutTime(currentTimeMs);
+                    iter->second.m_nextTimeoutTimeMs = mapItem.m_nextTimeoutTimeMs;
+                    // Re-insert into priority queue
+                    TimeoutQueueItem reQueueItem(itemTimeoutId, mapItem.m_nextTimeoutTimeMs);
+                    m_timeoutItemQueue.push(reQueueItem);
+                    continue;
+                }
+
+                AZLOG(TimeoutQueue, "Popping timeoutid %u with user data %" PRIu64 ", expire time %d, current time %u",
+                    aznumeric_cast<uint32_t>(itemTimeoutId),
+                    mapItem.m_userData,
+                    aznumeric_cast<uint32_t>(mapItem.m_nextTimeoutTimeMs),
+                    aznumeric_cast<uint32_t>(currentTimeMs));
+
+                m_timeoutItemMap.erase(iter);
             }
-
-            AZLOG(TimeoutQueue, "Popping timeoutid %u with user data %" PRIu64 ", expire time %d, current time %u",
-                aznumeric_cast<uint32_t>(itemTimeoutId),
-                mapItem.m_userData,
-                aznumeric_cast<uint32_t>(mapItem.m_nextTimeoutTimeMs),
-                aznumeric_cast<uint32_t>(currentTimeMs));
-
-            m_timeoutItemMap.erase(itemTimeoutId);
         }
     }
 }

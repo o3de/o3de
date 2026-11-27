@@ -286,24 +286,15 @@ namespace AzNetworking
         TcpPacketEncodingBuffer writeBuffer;
         if (m_compressor && packetType != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
         {
+            writeBuffer.Resize(writeBuffer.GetCapacity());
             const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadSize);
+            const AZStd::size_t availableWriteBufferCapacity = writeBuffer.GetCapacity();
+            const AZStd::size_t compressBufferSize = AZStd::min(maxSizeNeeded, availableWriteBufferCapacity);
             AZStd::size_t compressionMemBytesUsed = 0;
-            CompressorError compErr = m_compressor->Compress(payloadBuffer.GetBuffer(), payloadSize, writeBuffer.GetBuffer(), maxSizeNeeded, compressionMemBytesUsed);
+            CompressorError compErr = m_compressor->Compress(payloadBuffer.GetBuffer(), payloadSize, writeBuffer.GetBuffer(), compressBufferSize, compressionMemBytesUsed);
 
-            if (compErr != CompressorError::Ok)
-            {
-                AZLOG_ERROR("Failed to compress packet with error %d", aznumeric_cast<int32_t>(compErr));
-                return false;
-            }
-
-            if (compressionMemBytesUsed >= payloadSize)
-            {
-                // Track how many packets are being sent with no compression gain
-                m_networkInterface.GetMetrics().m_sendCompressedPacketsNoGain++;
-            }
-
-            // Only use compression if there's actual gain
-            if (compressionMemBytesUsed < payloadSize)
+            // Only use compression if compression succeeded and there's actual gain; otherwise fall back to uncompressed
+            if (compErr == CompressorError::Ok && compressionMemBytesUsed < static_cast<AZStd::size_t>(payloadSize))
             {
                 // Track byte delta caused by compression
                 m_networkInterface.GetMetrics().m_sendBytesCompressedDelta += (payloadSize - compressionMemBytesUsed);
@@ -321,6 +312,11 @@ namespace AzNetworking
                     return false;
                 }
                 headerBuffer.Resize(serializer.GetSize());
+            }
+            else
+            {
+                // Track how many packets are being sent with no compression gain
+                m_networkInterface.GetMetrics().m_sendCompressedPacketsNoGain++;
             }
         }
 

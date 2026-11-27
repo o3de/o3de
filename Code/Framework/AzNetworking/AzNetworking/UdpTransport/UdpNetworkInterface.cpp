@@ -292,6 +292,13 @@ namespace AzNetworking
                 timeoutItem->UpdateTimeoutTime(startTimeMs);
                 connection->m_timeoutCounter = 0;
 
+                if (m_socket->IsEncrypted() && connection->GetDtlsEndpoint().IsConnecting() &&
+                    !IsHandshakePacket(connection->GetDtlsEndpoint(), header.GetPacketType()))
+                {
+                    // Do not dispatch non-handshake packets while the DTLS handshake is still in progress
+                    continue;
+                }
+
                 PacketDispatchResult handledPacket = PacketDispatchResult::Failure;
                 if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
                 {
@@ -310,14 +317,6 @@ namespace AzNetworking
                         // Connection is realized once a packet is received and socket handshake is verified complete
                         connection->m_state = ConnectionState::Connected;
                     }
-                }
-                else if (m_socket->IsEncrypted() && connection->GetDtlsEndpoint().IsConnecting() &&
-                    !IsHandshakePacket(connection->GetDtlsEndpoint(), header.GetPacketType()))
-                {
-                    // It's possible for one side to finish its half of the encryption handshake and start sending encrypted data
-                    // This will appear as a SerializationError due to the incomplete encryption handshake
-                    // If it's not an expected unencrypted type then skip it for now
-                    continue;
                 }
                 else if (handledPacket == PacketDispatchResult::Skipped)
                 {
@@ -504,6 +503,16 @@ namespace AzNetworking
         UdpPacketHeader header(connection.GetPacketTracker(), packet.GetPacketType(), reliableSequence);
         const PacketId localPacketId = header.GetPacketId();
 
+        bool addedToReliableQueue = false;
+        const auto cleanupReliableEntry = [&connection, localPacketId, &addedToReliableQueue]()
+        {
+            if (addedToReliableQueue)
+            {
+                connection.m_reliableQueue.OnPacketAcked(connection.m_networkInterface, connection, localPacketId);
+                addedToReliableQueue = false;
+            }
+        };
+
         // If it's a reliable packet, make sure our reliable queue knows about it now because we might need to drop it if our connection is
         // not set up
         if (reliabilityType == ReliabilityType::Reliable)
@@ -511,7 +520,9 @@ namespace AzNetworking
             if (!connection.PrepareReliablePacketForSend(localPacketId, reliableSequence, packet))
             {
                 connection.Disconnect(DisconnectReason::ReliableQueueFull, TerminationEndpoint::Local);
+                return InvalidPacketId;
             }
+            addedToReliableQueue = true;
         }
 
         // If we're still connecting, only transmit packets related to establishing connection and queue the rest for later
@@ -537,18 +548,21 @@ namespace AzNetworking
             if (!header.SerializePacketFlags(serializer))
             {
                 AZLOG_ERROR("PacketId %u failed flag serialization and will not be sent", aznumeric_cast<uint32_t>(localPacketId));
+                cleanupReliableEntry();
                 return InvalidPacketId;
             }
 
             if (!serializer.Serialize(header, "Header"))
             {
                 AZLOG_ERROR("PacketId %u failed header serialization and will not be sent", aznumeric_cast<uint32_t>(localPacketId));
+                cleanupReliableEntry();
                 return InvalidPacketId;
             }
 
             if (!serializer.Serialize(const_cast<IPacket&>(packet), "Payload"))
             {
                 AZLOG_ERROR("PacketId %u failed payload serialization and will not be sent", aznumeric_cast<uint32_t>(localPacketId));
+                cleanupReliableEntry();
                 return InvalidPacketId;
             }
 
@@ -560,6 +574,9 @@ namespace AzNetworking
         // If the packet doesn't fit within our MTU (minus potential SSL encryption overhead), break it up
         if (packetSize > connection.GetConnectionMtu() - net_SslInflationOverhead)
         {
+            // Aggregate fragmented packets are not tracked in the reliable queue directly (their individual chunks are)
+            cleanupReliableEntry();
+
             // Each fragmented packet we send adds an extra fragmented packet header, need to deduct that from our chunk size, otherwise we infinitely loop
             // SSL encryption can also inflate our payload so we pre-emptively deduct an estimated tax
             const uint32_t chunkSize = connection.GetConnectionMtu() - net_FragmentedHeaderOverhead - net_SslInflationOverhead;
@@ -588,6 +605,7 @@ namespace AzNetworking
         UdpPacketEncodingBuffer writeBuffer;
         if (m_compressor && shouldCompress)
         {
+            writeBuffer.Resize(writeBuffer.GetCapacity());
             NetworkInputSerializer flagSerializer(writeBuffer.GetBuffer(), static_cast<uint32_t>(writeBuffer.GetCapacity()));
             ISerializer& serializer = flagSerializer; // To get the default typeinfo parameters in ISerializer
 
@@ -595,6 +613,7 @@ namespace AzNetworking
             if (!header.SerializePacketFlags(serializer))
             {
                 AZLOG_ERROR("PacketId %u failed flag serialization for compression and will not be sent", aznumeric_cast<uint32_t>(localPacketId));
+                cleanupReliableEntry();
                 return InvalidPacketId;
             }
             uint32_t flagSize = flagSerializer.GetSize();
@@ -604,24 +623,25 @@ namespace AzNetworking
             const uint32_t payloadSize = static_cast<uint32_t>(buffer.GetSize() - flagSize);
             uint8_t* payload = buffer.GetBuffer() + flagSize;
             const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadSize);
+            const AZStd::size_t availableWriteBufferCapacity = (writeBuffer.GetCapacity() > flagSize) ? (writeBuffer.GetCapacity() - flagSize) : 0;
+            const AZStd::size_t compressBufferSize = AZStd::min(maxSizeNeeded, availableWriteBufferCapacity);
             AZStd::size_t compressionMemBytesUsed = 0;
-            CompressorError compErr = m_compressor->Compress(payload, payloadSize, writeBuffer.GetBuffer() + flagSize, maxSizeNeeded, compressionMemBytesUsed);
+            CompressorError compErr = m_compressor->Compress(payload, payloadSize, writeBuffer.GetBuffer() + flagSize, compressBufferSize, compressionMemBytesUsed);
 
-            if (compErr != CompressorError::Ok)
-            {
-                AZLOG_ERROR("Failed to compress packet with error %d", aznumeric_cast<int32_t>(compErr));
-                return InvalidPacketId;
-            }
-
-            // Only use compression if there's actual gain
-            if (compressionMemBytesUsed < payloadSize)
+            // Only use compression if compression succeeded and there's actual gain; otherwise fall back to uncompressed
+            if (compErr == CompressorError::Ok && compressionMemBytesUsed < payloadSize)
             {
                 writeBuffer.Resize(aznumeric_cast<int32_t>(flagSize + compressionMemBytesUsed));
                 packetSize = static_cast<uint32_t>(writeBuffer.GetSize());
                 packetData = writeBuffer.GetBuffer();
                 // Track byte delta caused by compression
-                GetMetrics().m_sendBytesCompressedDelta += (packetSize - compressionMemBytesUsed);
-            }        
+                GetMetrics().m_sendBytesCompressedDelta += (payloadSize - compressionMemBytesUsed);
+            }
+            else
+            {
+                header.SetPacketFlag(PacketFlag::Compressed, false);
+                GetMetrics().m_sendCompressedPacketsNoGain++;
+            }
         }
 
         AZLOG(NET_Debug, "Sending local sequence id %d, remote sequence id %d, %s, reliable id: %d, ack vector %x",
@@ -635,7 +655,7 @@ namespace AzNetworking
         AZLOG(NET_DebugDtls, "Connection is sending packet type %d", aznumeric_cast<int32_t>(packet.GetPacketType()));
         // If we're not connected then we're still handshaking and require packets to be unencrypted
         const bool shouldEncrypt = !IsHandshakePacket(connection.GetDtlsEndpoint(), packet.GetPacketType());
-        if (m_socket->Send(address, packetData, packetSize, shouldEncrypt, connection.GetDtlsEndpoint(), connection.GetConnectionQuality()))
+        if (m_socket->Send(address, packetData, packetSize, shouldEncrypt, connection.GetDtlsEndpoint(), connection.GetConnectionQuality()) > 0)
         {
             RegisterWithTimeoutQueue(connection.GetConnectionId(), localPacketId, reliabilityType, connection.GetMetrics());
             connection.ProcessSent(localPacketId, packet, packetSize + UdpPacketHeaderSize, reliabilityType);
@@ -645,6 +665,7 @@ namespace AzNetworking
         else
         {
             AZLOG_ERROR("PacketId %u failed to send on the socket", aznumeric_cast<uint32_t>(localPacketId));
+            cleanupReliableEntry();
         }
 
         return InvalidPacketId;

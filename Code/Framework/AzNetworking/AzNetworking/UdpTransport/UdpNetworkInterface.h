@@ -186,7 +186,7 @@ namespace AzNetworking
         AZStd::unique_ptr<ICompressor> m_compressor;
         UdpReaderThread& m_readerThread;
         UdpHeartbeatThread& m_heartbeatThread;
-        AZStd::atomic<AZ::TimeMs> m_lastSystemTickUpdate;
+        AZStd::atomic<AZ::TimeMs> m_lastSystemTickUpdate{ AZ::Time::ZeroTimeMs };
 
         struct RemovedConnection
         {
