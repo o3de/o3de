@@ -188,7 +188,9 @@ def _edit_objects(object_typename: str,
                   release_archive_path: pathlib.Path = None,
                   force: bool = None,
                   download_prefix: str = None,
-                  upload_git_release_tag: str = None):
+                  upload_git_release_tag: str = None,
+                  copy_to_repo_subfolder = None,
+                  repo_path: pathlib.Path = None):
     """
     Modifies the 'gems_data/projects_data/templates_data' in repo_json
     :param object_typename: The type object field you want to change
@@ -198,6 +200,7 @@ def _edit_objects(object_typename: str,
     :param replace_objects: A list of object paths that will completely replace the current object_list
     :param release_archive_path: Optional local path to a folder where a release archive should be written
     :param download_prefix: The prefix of the download uri
+    :param copy_to_repo_subfolder: Copies over the object you want to register to yout repo.json to associated repo object folder 
     """
     # The beginning remote repo json template
     repo_objects_data = repo_json.get(f'{object_typename}s_data',[])
@@ -212,6 +215,9 @@ def _edit_objects(object_typename: str,
             # object JSON data of the object you want to add
             json_data = manifest.get_json_data(object_typename, object_path, validator)
             if json_data:
+                if copy_to_repo_subfolder:
+                    destination_path =_get_copy_destination_path(repo_path, object_path, copy_to_repo_subfolder)
+                    _copy_to_repo_subfolder(object_path, destination_path, force)
                 # for a project called TestProject that is version 1.0.0, 
                 # --release_archive_path would create a filename of `testproject-1.0.0-project.zip`
                 if release_archive_path:
@@ -368,6 +374,41 @@ def print_repo_diff(repo_json: dict,
             else:
                 pretty_print_string.append(f'{object_key.capitalize()}s Modified: {len(modified_objects)}')
     print('\n'.join(pretty_print_string))
+
+# Copies over user specified object into associated repo object folder.
+def _copy_to_repo_subfolder(object_path: pathlib.Path,
+                            destination_path: pathlib.Path,
+                            force: bool = None) -> int:
+    if not destination_path.exists():
+        shutil.copytree(object_path, destination_path)
+    elif force:
+        shutil.rmtree(destination_path)
+        shutil.copytree(object_path, destination_path)
+    else:
+        logger.warning(f'Object already exists at path {destination_path}. Use --force command to overwrite the existing folder or '
+                    'provide a new location to save your object.')
+        return 1
+    
+def _get_copy_destination_path(repo_path: pathlib.Path,
+                               object_path: pathlib.Path, 
+                               destination_path):
+    copy_result_path = destination_path
+    # --cr "any string" (repo root)
+    if isinstance(destination_path, str):
+        object_name = object_path.name
+        remote_repo_directory = os.path.dirname(repo_path)
+        copy_result_path = pathlib.Path(remote_repo_directory) / object_name
+    # --cr "path" (user specified path)
+    elif isinstance(destination_path, pathlib.Path):
+        object_name = object_path.name
+        copy_result_path = pathlib.Path(destination_path) / object_name
+    # --cr (default object folder)
+    else:
+        object_name = object_path.name
+        object_folder = object_path.parent.name
+        remote_repo_directory = os.path.dirname(repo_path)
+        copy_result_path = pathlib.Path(remote_repo_directory) / object_folder / object_name
+    return copy_result_path
     
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
@@ -385,7 +426,9 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        release_archive_path: pathlib.Path = None,
                        force: bool = None,
                        download_prefix: str = None,
-                       upload_git_release_tag: str = None) -> int:
+                       upload_git_release_tag: str = None,
+                       copy_to_repo_subfolder = None
+                       ) -> int:
     """
     Edits and modifies the remote repo properties for the repo.json located at 'repo_path'.
     :param repo_path: The path to the repo.json file
@@ -429,13 +472,16 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         _auto_update_json(auto_update, repo_path, repo_json)
 
     if add_gems or delete_gems or replace_gems:
-        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix, upload_git_release_tag)
+        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force,
+                      download_prefix, upload_git_release_tag, copy_to_repo_subfolder, repo_path)
 
     if add_projects or delete_projects or replace_projects:
-        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix, upload_git_release_tag)
+        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force,
+                      download_prefix, upload_git_release_tag, copy_to_repo_subfolder, repo_path)
 
     if add_templates or delete_templates or replace_templates:
-        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix, upload_git_release_tag)
+        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force,
+                      download_prefix, upload_git_release_tag, copy_to_repo_subfolder, repo_path)
 
     if repo_json_original != repo_json and not dry_run:
         utils.backup_file(repo_path)
@@ -445,6 +491,13 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         return 0
     else:     
         return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1    
+    
+def _process_argument(value):
+    if isinstance(value, str):
+        path = pathlib.Path(value)
+        if path.exists():
+            return path
+    return value
 
 def _edit_repo_props(args: argparse) -> int:
     return edit_repo_props(repo_path=args.repo_path,
@@ -467,8 +520,8 @@ def _edit_repo_props(args: argparse) -> int:
                               release_archive_path=args.release_archive_path,
                               force=args.force,
                               download_prefix=args.download_prefix,
-                              upload_git_release_tag=args.upload_git_release_tag
-                              )
+                              upload_git_release_tag=args.upload_git_release_tag,
+                              copy_to_repo_subfolder=args.copy_to_repo_subfolder)
 
 
 def add_parser_args(parser):
@@ -490,6 +543,12 @@ def add_parser_args(parser):
                                help='Prints the anticipated changes to your repo.json file object fields without actually writing to repo.json file.')
     general_group.add_argument('--force', '-f', action='store_true', default=False,
                                    help='Overwrite the release-archive zip file if there is already an existing zip with the same name.')
+    general_group.add_argument('--copy-to-repo-subfolder', '-cr', nargs='?', const=True, default=False, type=_process_argument,
+                                   help='''Copies the object at the provided path to your remote repo.
+                                   Example Usage:
+                                   `-cr`: will copy the object to its associated object default folder in your remote repo |
+                                   `-cr "C:\RemoteRepo"`: will copy the object to the path you specified |
+                                   `-cr "any string"`: will copy the object to the root of your remote repo directory''')
 
     gem_group = parser.add_argument_group('Gem Modification Args')
     gem_group.add_argument('--add-gems', '-ag', type=pathlib.Path, nargs='*', required=False,
