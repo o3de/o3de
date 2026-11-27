@@ -49,6 +49,10 @@ ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools   NAMESPACE Gem TARGETS Gem::${gem_name})
+    # The Lua IDE talks to the Editor/Launcher over AzNetworking TCP (RemoteTools). When this gem is enabled,
+    # net_TcpCompressor defaults to the MultiplayerCompressor, so the Lua IDE must load it too, otherwise it
+    # cannot decompress the packets it receives and the debugger never attaches.
+    ly_create_alias(NAME ${gem_name}.LuaTools NAMESPACE Gem TARGETS Gem::${gem_name})
 endif()
 
 ################################################################################
