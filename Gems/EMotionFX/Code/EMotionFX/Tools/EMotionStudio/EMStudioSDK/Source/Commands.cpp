@@ -23,6 +23,7 @@
 
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
+#include <SceneAPIExt/Rules/SocketSetupRule.h>
 #include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionMetaDataRule.h>
@@ -200,6 +201,17 @@ namespace EMStudio
                 else
                 {
                     EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::SimulatedObjectSetupRule, AZStd::shared_ptr<EMotionFX::SimulatedObjectSetup>>(*scene, group);
+                }
+
+                // Save socket rule
+                const AZStd::shared_ptr<EMotionFX::SocketSetup>& socketSetup = actor->GetSocketSetup();
+                if (socketSetup->GetNumSockets() > 0)
+                {
+                    EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::SocketSetupRule, AZStd::shared_ptr<EMotionFX::SocketSetup>>(*scene, group, socketSetup);
+                }
+                else
+                {
+                    EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::SocketSetupRule, AZStd::shared_ptr<EMotionFX::SocketSetup>>(*scene, group);
                 }
             }
         }

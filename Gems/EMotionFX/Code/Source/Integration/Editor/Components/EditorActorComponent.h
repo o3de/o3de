@@ -61,6 +61,17 @@ namespace EMotionFX
             void SetRenderCharacter(bool enable) override;
             bool GetRenderActorVisible() const override;
             size_t GetNumJoints() const override;
+            size_t GetNumSockets() const override;
+            AZStd::string GetSocketName(size_t socketIndex) const override;
+            size_t GetSocketIndexByName(const char* name) const override;
+            AZ::Transform GetSocketTransform(size_t socketIndex, Space space) const override;
+            AZ::Vector3 GetSocketForward(size_t socketIndex, Space space) const override;
+            AZ::Transform GetSocketTransformByName(const char* name, Space space) const override;
+            AZ::Vector3 GetSocketForwardByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketBindTransform(size_t socketIndex, Space space) const override;
+            AZ::Transform GetSocketBindTransformByName(const char* name, Space space) const override;
+            AZ::Transform GetSocketTransformFromEntity(size_t socketIndex) const override;
+            AZ::Transform GetSocketTransformFromEntityByName(const char* name) const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
             void EnableInstanceUpdate(bool enable) override;

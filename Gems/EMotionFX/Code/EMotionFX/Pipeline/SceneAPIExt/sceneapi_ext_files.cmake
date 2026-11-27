@@ -43,6 +43,8 @@ set(FILES
     Rules/MotionSamplingRule.h
     Rules/SimulatedObjectSetupRule.h
     Rules/SimulatedObjectSetupRule.cpp
+    Rules/SocketSetupRule.h
+    Rules/SocketSetupRule.cpp
     Rules/MotionRangeRule.h
     Rules/MotionRangeRule.cpp
     Rules/MorphTargetRule.h

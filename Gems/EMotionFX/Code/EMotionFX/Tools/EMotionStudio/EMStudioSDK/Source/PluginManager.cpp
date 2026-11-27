@@ -39,6 +39,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
+#include <Editor/Plugins/Socket/SocketWidget.h>
 
 namespace EMStudio
 {
@@ -224,6 +225,7 @@ namespace EMStudio
         RegisterPlugin(new AnimGraphPlugin());
         RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
         RegisterPlugin(new EMotionFX::SimulatedObjectWidget());
+        RegisterPlugin(new EMotionFX::SocketWidget());
         RegisterPlugin(new InspectorWindow());
 
         m_activePlugins.reserve(m_registeredPlugins.size());

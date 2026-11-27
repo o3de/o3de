@@ -29,6 +29,7 @@
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.h>
+#include <EMotionFX/CommandSystem/Source/SocketCommands.h>
 
 
 namespace CommandSystem
@@ -71,6 +72,11 @@ namespace CommandSystem
         RegisterCommand(aznew EMotionFX::CommandRemoveSimulatedObject());
         RegisterCommand(aznew EMotionFX::CommandRemoveSimulatedJoints());
         RegisterCommand(aznew EMotionFX::CommandAdjustSimulatedJoint());
+
+        // register socket related commands.
+        RegisterCommand(aznew EMotionFX::CommandAddSocket());
+        RegisterCommand(aznew EMotionFX::CommandRemoveSocket());
+        RegisterCommand(aznew EMotionFX::CommandAdjustSocket());
 
         // register motion commands
         RegisterCommand(new CommandImportMotion());
