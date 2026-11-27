@@ -42,7 +42,7 @@ namespace OpenXRVk
 
     private:
         // Serialized data...
-		AZStd::vector<XRControllersConfig> m_controllersConfig;
+        AZStd::vector<XRControllersConfig> m_controllersConfig;
     };
 
 } // namespace OpenXRVk

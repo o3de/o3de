@@ -1,3 +1,14 @@
+--------------------------------------------------------------------------------------
+--
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
+--
+--
+--
+----------------------------------------------------------------------------------------------------
+
 -- Basic camera movement that uses the default OpenXR ActionSets asset
 -- that ships with the OpenXRVk Gem.
 -- This script can be used as an alternative to XrCameraMovementComponent.

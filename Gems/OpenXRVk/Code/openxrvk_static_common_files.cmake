@@ -44,8 +44,8 @@ set(FILES
     Source/OpenXRVkActionsManager.h
     Source/OpenXRVkBehaviorReflection.cpp
     Source/OpenXRVkBehaviorReflection.h
-	Source/XRRayInteractorComponent.h
-	Source/XRRayInteractorComponent.cpp
-	Source/XRInteractableComponent.h
-	Source/XRInteractableComponent.cpp
+    Source/XRRayInteractorComponent.h
+    Source/XRRayInteractorComponent.cpp
+    Source/XRInteractableComponent.h
+    Source/XRInteractableComponent.cpp
 )

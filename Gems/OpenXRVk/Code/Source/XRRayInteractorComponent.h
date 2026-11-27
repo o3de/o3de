@@ -44,7 +44,7 @@ namespace OpenXRVk
         void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
 
     private:
-		AZ::EntityId m_currentlyHoveredEntity = AZ::EntityId();
+        AZ::EntityId m_currentlyHoveredEntity = AZ::EntityId();
         float m_maxLength = 10;
         AZStd::string m_gripControlActionLabel;
 

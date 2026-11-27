@@ -36,8 +36,8 @@ namespace OpenXRVk
                 SystemComponent::CreateDescriptor(),
                 XRCameraMovementComponent::CreateDescriptor(),
                 XRControllerComponent::CreateDescriptor(),
-				XRRayInteractorComponent::CreateDescriptor(),
-				XRInteractableComponent::CreateDescriptor(),
+                XRRayInteractorComponent::CreateDescriptor(),
+                XRInteractableComponent::CreateDescriptor(),
                 XRControllerAnimationsComponent::CreateDescriptor(),
                 #if defined (OPENXRVK_BUILDERS)
                 OpenXRVkBuilders::OpenXRAssetsBuilderSystemComponent::CreateDescriptor(),

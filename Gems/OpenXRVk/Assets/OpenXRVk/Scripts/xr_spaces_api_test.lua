@@ -1,3 +1,14 @@
+--------------------------------------------------------------------------------------
+--
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
+--
+--
+--
+----------------------------------------------------------------------------------------------------
+
 -- this LUA script shows how to use the OpenXRReferenceSpaces API.
 -- It creates a custom reference space called 'MySpace', and prints
 -- its pose, along with the pose of the `View` Reference Space pose,
